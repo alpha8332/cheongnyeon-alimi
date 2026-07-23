@@ -16,6 +16,23 @@
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
 
+## 문서 영역
+
+| 영역 | 책임 |
+| --- | --- |
+| [architecture](architecture/README.md) | 전체 시스템 구조, 경계, 흐름과 아키텍처 결정 |
+| [api](api/README.md) | 외부에 제공하는 API 계약, 오류와 사용 예시 |
+| [data](data/README.md) | 데이터 출처, Schema, 정규화와 수집 정책 |
+| [governance](governance/README.md) | 브랜치, 커밋, 리뷰, 기여와 문서화 규칙 |
+| [development](development/README.md) | 개발 환경, 구현 지침과 완료된 개발 기록 |
+| [develop_plan](develop_plan/README.md) | 아직 완료하지 않은 작업의 계획과 상태 |
+| [troubleshooting](troubleshooting/README.md) | 실제 발생하고 원인이 확인된 문제의 해결 기록 |
+| [operations](operations/README.md) | Collector, Scheduler, 백업과 운영 절차 |
+| [contest](contest/README.md) | 대회 보고서, 시연, 제출과 SBOM 자료 |
+
+각 영역의 `README.md`는 해당 영역의 책임과 문서 추가 기준을 설명한다. 세부
+문서는 실제로 작성할 내용이 있을 때만 생성한다.
+
 ## 변경 유형별 문서 갱신
 
 | 변경 유형 | 필수 확인 문서 | 조건부 확인 문서 |
