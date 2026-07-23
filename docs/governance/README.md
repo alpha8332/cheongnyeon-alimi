@@ -14,9 +14,17 @@
 현재 적용되는 문서화 규칙은
 [documentation_policy.md](documentation_policy.md)에서 확인한다.
 
+## 현재 정책
+
+- [브랜치 전략](branch_strategy.md)
+- [커밋 작성 규칙](commit_convention.md)
+- [코드 리뷰 정책](code_review.md)
+- [문서화 정책](documentation_policy.md)
+- [역할과 책임](role_assignment.md)
+
 ## 포함하지 않는 내용
 
-- 기능별 구현 계획: `docs/develop_plan/`
+- Forest 개발 계획: `docs/development/develop_plan/`
 - 실제 구현과 검증 결과: `docs/development/`
 - 배포 후 서비스 운영 절차: `docs/operations/`
 

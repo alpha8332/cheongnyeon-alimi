@@ -11,9 +11,16 @@
 - Fixture, Seed, 런타임 데이터의 구분
 - 데이터 출처의 이용 조건과 개인정보 보호 기준
 
+## 현재 문서
+
+- [데이터 소스](data_sources.md)
+- [데이터 Schema 기준선](data_schema.md)
+- [데이터 정규화 규칙](normalization_rules.md)
+- [데이터 수집 정책](collection_policy.md)
+
 ## 포함하지 않는 내용
 
-- 미확정 데이터 설계: `docs/develop_plan/`
+- 미확정 데이터 설계: `docs/development/develop_plan/`
 - PostgreSQL의 물리 테이블과 마이그레이션 구현 상세
 - Collector 실행, 재시도와 장애 복구 절차: `docs/operations/`
 - API 응답 계약: `docs/api/`

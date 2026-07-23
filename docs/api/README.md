@@ -13,7 +13,7 @@
 
 ## 포함하지 않는 내용
 
-- 구현 전 API 초안: `docs/develop_plan/`
+- 구현 전 API 초안: `docs/development/develop_plan/`
 - 데이터 수집 원문과 정규화 규칙: `docs/data/`
 - 내부 서비스와 Repository 구현 상세: `docs/development/`
 
