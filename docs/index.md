@@ -12,6 +12,13 @@
   형식과 커밋 구성 기준
 - [코드 리뷰 정책](governance/code_review.md): PR 작성, 리뷰와 병합 기준
 - [역할과 책임](governance/role_assignment.md): 영역별 책임과 공동 통합 지점
+- [시스템 아키텍처 개요](architecture/overview.md): 목표 구조와 계층별 책임
+- [시스템 흐름](architecture/system_flow.md): 외부 소스부터 Web UI까지의
+  데이터 흐름
+- [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위와
+  향후 분리 기준
+- [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
+  관리 규칙
 - [개발 기록](development/development_notes.md): 완료한 기능과 주요 구조
   변경의 구현 및 검증 기록
 - [개발 계획 관리](develop_plan/README.md): 아직 완료하지 않은 작업의 계획,

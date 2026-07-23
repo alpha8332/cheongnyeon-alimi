@@ -159,3 +159,64 @@ GitHub에서 프로젝트 문서 영역을 바로 탐색할 수 있게 하고, �
 - GitHub 브랜치 보호, CODEOWNERS와 PR 템플릿은 실제 설정 작업 Slice에서
   정책과 일치하도록 구성한다.
 - Slice D3에서 현재 시스템 아키텍처 기준선을 문서화한다.
+
+## 2026-07-23 - 시스템 아키텍처 기준선 수립
+
+### 작업 정보
+
+- 영역: architecture
+- 브랜치: `docs/governance/collaboration-policy`
+- 관련 계획: Slice D3 - 시스템 아키텍처 기준선
+
+### 목적
+
+데이터 개발 전에 외부 소스부터 Web UI까지의 공통 용어, 계층별 입력·출력과
+책임 경계를 확정한다.
+
+### 구현 내용
+
+- `External Sources → Collector → RawPolicyDocument → Source Extractor →
+  ExtractedPolicy → Normalizer → NormalizedProgram → Validator →
+  Fixture/Seed 또는 PostgreSQL → FastAPI → React` 흐름을 기준선으로
+  문서화했다.
+- Collector, Extractor, Normalizer와 Validator의 책임을 분리했다.
+- JSON Schema를 데이터·백엔드·프론트엔드 사이의 논리적 계약으로 정의했다.
+- 운영 Raw와 개발용 최소 Fixture의 저장 정책을 구분했다.
+- 초기 `frontend`, `backend`, `database` 3개 컨테이너와 향후
+  Collector·Scheduler 분리 조건을 정리했다.
+- 아키텍처 변경을 기록할 ADR 형식과 상태를 정의했다.
+
+### 주요 변경 파일
+
+- `docs/architecture/overview.md`
+- `docs/architecture/system_flow.md`
+- `docs/architecture/container_structure.md`
+- `docs/architecture/decisions/README.md`
+- `docs/architecture/README.md`
+- `docs/index.md`
+- `CHANGELOG.md`
+
+### 설계 결정
+
+- 현재 저장소 상태와 목표 아키텍처를 구분해 미구현 기능을 완료된 것처럼
+  표현하지 않는다.
+- Collector는 독립 모듈로 유지하되 초기부터 별도 컨테이너로 분리하지 않는다.
+- 검증 실패 데이터는 정상 Fixture, Seed 또는 DB 입력에 조용히 포함하지
+  않는다.
+- 실행 단위나 책임 경계 변경은 ADR 검토 후 반영한다.
+
+### 검증
+
+- Markdown 파일의 로컬 상대 링크와 대상 파일 존재 여부를 확인했다.
+- 네 아키텍처 산출물의 공통 흐름과 용어가 일치하는지 대조했다.
+- 각 계층의 입력, 책임과 출력이 정의됐는지 확인했다.
+- 목표 구조와 현재 미구현 상태가 구분됐는지 확인했다.
+- Git diff 공백 오류와 빈 파일·빈 디렉터리 여부를 확인했다.
+- `opensource_plan/`에 변경이 없는지 확인했다.
+
+### 남은 작업
+
+- Slice D4에서 데이터 출처, Schema, 정규화와 수집 정책의 기준선을
+  구체화한다.
+- 실제 Docker 구성과 health check는 개발 기반 구축 Slice에서 구현하고
+  이 문서와 대조한다.
