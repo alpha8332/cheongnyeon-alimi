@@ -200,5 +200,14 @@ AI Agent는 작업 전에 다음을 수행한다.
 - 비밀키, 개인정보 또는 비공개 데이터가 없는가?
 - 임시 산출물, 테스트용 파일과 빈 디렉터리가 남아 있지 않은가?
 
+문서 변경을 완료하기 전에 다음 검증을 실행한다.
+
+```powershell
+python scripts/validate_docs.py
+```
+
+검사 항목과 실패 처리 기준은
+[문서 품질 검증](../development/documentation_validation.md)을 따른다.
+
 이 정책을 변경할 때는 `docs/index.md`의 빠른 안내와 충돌하지 않는지 함께
 확인한다.

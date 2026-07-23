@@ -17,6 +17,7 @@
   Slice와 완료 기준
 - [개발 기록](development_notes/README.md): Forest에서 실제로 구현하고
   검증한 상세 결과
+- [문서 품질 검증](documentation_validation.md): 문서 검증 명령과 검사 규칙
 
 ## 포함하지 않는 내용
 

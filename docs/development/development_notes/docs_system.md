@@ -3,7 +3,7 @@
 ## 작업 정보
 
 - 시작일: 2026-07-23
-- 상태: in-progress
+- 상태: completed
 - 영역: documentation
 - 관련 계획: [`01_docs_system.md`](../develop_plan/01_docs_system.md)
 - 관련 Slice: D0~D6
@@ -36,8 +36,8 @@ GitHub에서 프로젝트 문서를 바로 탐색할 수 있는 기준과 검증
 | D2 | completed | 협업·거버넌스 정책 이관 |
 | D3 | completed | 시스템 아키텍처 기준선 수립 |
 | D4 | completed | 데이터 문서 기준선 수립 |
-| D5 | in-progress | Forest 계획 구조와 Docs Forest 계획 작성, 첫 Data Forest 계획 대기 |
-| D6 | pending | 문서 품질 검증 장치 구축 |
+| D5 | completed | Forest 계획·기록 구조와 Docs Forest 문서 연결 |
+| D6 | completed | 문서 검증기, 단위 테스트와 실행 가이드 구축 |
 
 ## 구현 내용
 
@@ -98,7 +98,16 @@ GitHub에서 프로젝트 문서를 바로 탐색할 수 있는 기준과 검증
 - D0~D4 기록을 이 `docs_system.md`에 통합했다.
 - `develop_plan/`을 `docs/development/` 아래로 이동했다.
 - `01_docs_system.md`에 D0~D6의 목적, 진행 상태와 완료 기준을 작성했다.
-- 첫 Data Forest 계획은 아직 작성하지 않아 D5를 진행 중으로 유지했다.
+- 첫 Data Forest 계획은 Data Forest를 시작할 때 작성하도록 범위를 분리했다.
+
+### D6 - 문서 품질 검증 장치
+
+- Python 표준 라이브러리만 사용하는 `scripts/validate_docs.py`를 추가했다.
+- 필수 문서, Markdown 링크, 이전 저장소명과 비밀값 패턴을 검사한다.
+- 빈 문서·디렉터리와 Forest 계획·개발 기록의 대응 및 상태를 검사한다.
+- 완료된 Forest에 미완료 Slice가 남아 있으면 실패하도록 했다.
+- 임시 디렉터리를 사용하는 단위 테스트를 추가했다.
+- 로컬 실행, 검사 범위, 규칙 변경과 CI 연동 방법을 문서화했다.
 
 ## 주요 변경 파일
 
@@ -111,6 +120,9 @@ GitHub에서 프로젝트 문서를 바로 탐색할 수 있는 기준과 검증
 - `docs/development/README.md`
 - `docs/development/develop_plan/`
 - `docs/development/development_notes/`
+- `docs/development/documentation_validation.md`
+- `scripts/validate_docs.py`
+- `tests/test_validate_docs.py`
 
 ## 설계 결정
 
@@ -134,12 +146,14 @@ GitHub에서 프로젝트 문서를 바로 탐색할 수 있는 기준과 검증
 - 빈 문서와 작업 중 생성한 임시 파일이 없는지 확인했다.
 - D0~D4의 구현 내용과 결정이 이 Forest 기록에 통합됐는지 대조했다.
 - 아키텍처와 데이터 기준선에서 확정·미확정 상태가 구분됐는지 확인했다.
+- 문서 검증기 단위 테스트를 실행했다.
+- 실제 저장소를 대상으로 문서 검증기를 실행했다.
+- 테스트가 만든 임시 디렉터리가 자동으로 제거되는지 확인했다.
 
 ## 남은 작업
 
-- D5에서 첫 Data Forest 계획을 추가하고 Docs Forest 계획의 상태·연결을
-  보완한다.
-- D6에서 문서 링크, 필수 파일, 저장소명, 비밀정보와 상태값을 자동 검증한다.
 - `application_status`의 의미와 enum을 Data Schema 구현 전에 공동 검토한다.
 - 온통청년 API의 공식 endpoint, 호출 제한과 이용 조건을 Collector 구현 전에
   확인한다.
+- 첫 Data Forest를 시작할 때 대응하는 계획과 개발 기록 문서를 생성한다.
+- 문서 검증 CI Workflow는 배포·CI 설정 작업에서 추가한다.

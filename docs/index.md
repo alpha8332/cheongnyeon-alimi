@@ -32,6 +32,8 @@
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/docs_system.md)
+- [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
+  검사 범위와 CI 연동 기준
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나

@@ -4,7 +4,7 @@
 
 - 번호: 01
 - 담당 영역: 데이터 담당 선행 기반
-- 상태: in-progress
+- 상태: completed
 - 관련 브랜치:
   - `docs/governance/documentation-system`
   - `docs/governance/collaboration-policy`
@@ -109,27 +109,31 @@
 
 ### D5 - Forest 기반 develop plan 구축
 
-- 상태: in-progress
-- 목적: Docs Forest와 첫 Data Forest의 계획을 저장소 문서로 관리
-- 현재 결과:
+- 상태: completed
+- 목적: Forest 단위로 개발 계획과 개발 기록을 관리하는 구조 구축
+- 완료 결과:
   - Forest 기반 `develop_plan/`과 `development_notes/` 구조
   - 이 Docs System Forest 계획과 개발 기록의 상호 연결
-- 남은 산출물:
-  - 첫 Data Forest 개발 계획
+  - Forest 내부 Slice의 상태·의존성·검증·완료 기준 관리 방식
 - 완료 기준:
   - Forest마다 계획 문서와 개발 기록 문서가 대응함
   - Slice 의존성, 테스트와 완료 기준이 계획 안에서 확인 가능
 
 ### D6 - 문서 품질 검증 장치
 
-- 상태: pending
+- 상태: completed
 - 목적: 문서 시스템의 핵심 규칙을 반복 가능하게 검사
-- 검증 후보:
+- 완료 결과:
+  - Python 표준 라이브러리 기반 로컬 검증기
+  - 검증기 단위 테스트
+  - 실행 방법과 CI 연동 기준 문서
+- 검증 항목:
   - Markdown 링크
   - 필수 문서 존재 여부
   - 저장소명 오기
   - 비밀정보 패턴
-  - 계획·기록 상태와 필수 항목
+  - 빈 문서와 빈 디렉터리
+  - Forest 계획·기록 대응, 상태와 필수 항목
 - 완료 기준:
   - 로컬 명령으로 문서 검증 가능
   - CI 도입 가능 구조
@@ -163,7 +167,7 @@
 - 온통청년 API의 공식 endpoint, 응답 형식, 호출 제한과 이용 조건은 실제
   Collector 구현 전에 확인해야 한다.
 - 대표 HTTPS 웹사이트와 실제 source ID가 아직 확정되지 않았다.
-- GitHub 브랜치 보호와 문서 검증 CI는 아직 구현되지 않았다.
+- GitHub 브랜치 보호와 문서 검증 CI Workflow는 아직 구현되지 않았다.
 
 ## 관련 문서
 

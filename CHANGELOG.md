@@ -24,3 +24,5 @@
 - Raw, Extracted와 Normalized 데이터 계약, 정규화 및 안전한 수집 기준선
 - 개발 계획과 실제 구현 기록을 Forest별 문서로 대응시키는
   `develop_plan/` 및 `development_notes/` 구조
+- 문서 링크, 필수 파일, 비밀값 패턴과 Forest 문서 구조를 검사하는 문서
+  품질 검증기 및 단위 테스트
