@@ -103,3 +103,59 @@ GitHub에서 프로젝트 문서 영역을 바로 탐색할 수 있게 하고, �
 
 - Slice D2에서 기존 계획 문서의 협업 규칙을 현재 정책과 충돌 없이
   Markdown 기준 문서로 이관한다.
+
+## 2026-07-23 - 협업 및 거버넌스 정책 이관
+
+### 작업 정보
+
+- 영역: governance
+- 브랜치: `docs/governance/collaboration-policy`
+- 관련 계획: Slice D2 - 협업·거버넌스 문서 이관
+
+### 목적
+
+여러 Word 계획 문서에 나뉜 브랜치, 커밋, 리뷰와 역할 규칙을 실제 개발에서
+사용할 하나의 Markdown 정책 체계로 통합한다.
+
+### 구현 내용
+
+- `main`, `develop`과 작업 브랜치의 역할 및 병합 흐름을 정의했다.
+- 작업 브랜치 이름을 `<type>/<domain>/<task>`로 통일했다.
+- Conventional Commits의 type, scope와 description 규칙을 정리했다.
+- PR 작성자·리뷰어 책임과 최소 병합 기준을 연결했다.
+- 데이터, 백엔드, 프론트엔드와 팀장·공통 책임 및 공동 계약 항목을 정의했다.
+- 문서화 정책에서 다른 거버넌스 문서와 실제 저장소 우선 원칙을 연결했다.
+
+### 주요 변경 파일
+
+- `docs/governance/branch_strategy.md`
+- `docs/governance/commit_convention.md`
+- `docs/governance/code_review.md`
+- `docs/governance/documentation_policy.md`
+- `docs/governance/role_assignment.md`
+- `docs/governance/README.md`
+- `docs/index.md`
+- `CHANGELOG.md`
+
+### 설계 결정
+
+- 짧은 하이픈형 브랜치 예시는 사용하지 않고 세 구간 이름 규칙으로 통일했다.
+- 현재 릴리스 흐름은 `develop → main`으로 유지하고 별도 release 브랜치는
+  정책 정의 전까지 도입하지 않는다.
+- 역할 문서는 담당자 이름 대신 영역별 책임과 공동 검토 지점을 정의한다.
+- 계획과 실제 상태가 다르면 저장소 상태를 확인하되 임의로 설정을 변경하지
+  않는다.
+
+### 검증
+
+- Markdown 파일의 로컬 상대 링크와 대상 파일 존재 여부를 확인했다.
+- 거버넌스 문서 사이의 브랜치 이름, PR 방향과 승인 기준을 대조했다.
+- 프로젝트명과 금지된 짧은 브랜치 예시가 남아 있지 않은지 확인했다.
+- Git diff 공백 오류와 빈 파일·빈 디렉터리 여부를 확인했다.
+- `opensource_plan/`에 변경이 없는지 확인했다.
+
+### 남은 작업
+
+- GitHub 브랜치 보호, CODEOWNERS와 PR 템플릿은 실제 설정 작업 Slice에서
+  정책과 일치하도록 구성한다.
+- Slice D3에서 현재 시스템 아키텍처 기준선을 문서화한다.

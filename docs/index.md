@@ -7,6 +7,11 @@
 
 - [문서화 정책](governance/documentation_policy.md): 문서의 역할, 갱신
   기준, 작성 및 검증 규칙
+- [브랜치 전략](governance/branch_strategy.md): 브랜치 역할, 이름과 병합 흐름
+- [커밋 작성 규칙](governance/commit_convention.md): Conventional Commits
+  형식과 커밋 구성 기준
+- [코드 리뷰 정책](governance/code_review.md): PR 작성, 리뷰와 병합 기준
+- [역할과 책임](governance/role_assignment.md): 영역별 책임과 공동 통합 지점
 - [개발 기록](development/development_notes.md): 완료한 기능과 주요 구조
   변경의 구현 및 검증 기록
 - [개발 계획 관리](develop_plan/README.md): 아직 완료하지 않은 작업의 계획,
