@@ -8,14 +8,19 @@
 - 로컬 개발 환경과 설정 방법
 - 프로젝트 공통 코딩 지침
 - 구현된 기능과 주요 구조 변경의 개발 기록
+- 아직 완료하지 않은 Forest의 개발 계획
 - 실제로 실행한 테스트와 검증 결과
 
-완료된 작업의 기록은
-[development_notes.md](development_notes.md)에서 확인한다.
+개발 문서는 Forest를 기준으로 계획과 실제 결과를 대응시킨다.
+
+- [개발 계획](develop_plan/README.md): 아직 완료하지 않은 Forest의 범위,
+  Slice와 완료 기준
+- [개발 기록](development_notes/README.md): Forest에서 실제로 구현하고
+  검증한 상세 결과
 
 ## 포함하지 않는 내용
 
-- 미래 작업의 범위와 설계: `docs/develop_plan/`
+- 일반 프로젝트 로드맵과 대회 일정
 - 사용자와 팀을 위한 변경 요약: 루트 `CHANGELOG.md`
 - 재사용 가능한 장애 해결 절차: `docs/troubleshooting/`
 - 운영 환경의 정기 작업과 복구 절차: `docs/operations/`

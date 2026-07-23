@@ -19,10 +19,19 @@
   향후 분리 기준
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
-- [개발 기록](development/development_notes.md): 완료한 기능과 주요 구조
-  변경의 구현 및 검증 기록
-- [개발 계획 관리](develop_plan/README.md): 아직 완료하지 않은 작업의 계획,
-  상태 및 완료 기준 관리
+- [데이터 소스](data/data_sources.md): 1주차 수집 대상과 소스 등록 기준
+- [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
+  데이터 계약 원칙
+- [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
+  변환 기준
+- [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
+  원칙
+- [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,
+  Slice와 완료 기준
+- [Docs System Forest 계획](development/develop_plan/01_docs_system.md)
+- [Forest 개발 기록](development/development_notes/README.md): Forest별
+  실제 구현과 검증 결과
+- [Docs System Forest 개발 기록](development/development_notes/docs_system.md)
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
@@ -36,8 +45,7 @@
 | [api](api/README.md) | 외부에 제공하는 API 계약, 오류와 사용 예시 |
 | [data](data/README.md) | 데이터 출처, Schema, 정규화와 수집 정책 |
 | [governance](governance/README.md) | 브랜치, 커밋, 리뷰, 기여와 문서화 규칙 |
-| [development](development/README.md) | 개발 환경, 구현 지침과 완료된 개발 기록 |
-| [develop_plan](develop_plan/README.md) | 아직 완료하지 않은 작업의 계획과 상태 |
+| [development](development/README.md) | 개발 환경, Forest 계획과 실제 개발 기록 |
 | [troubleshooting](troubleshooting/README.md) | 실제 발생하고 원인이 확인된 문제의 해결 기록 |
 | [operations](operations/README.md) | Collector, Scheduler, 백업과 운영 절차 |
 | [contest](contest/README.md) | 대회 보고서, 시연, 제출과 SBOM 자료 |
@@ -56,7 +64,7 @@
 | DB 구조 변경 | `CHANGELOG.md`, 개발 기록, DB 문서 | 마이그레이션 및 운영 문서 |
 | 환경변수·실행 방법 변경 | `.env.example`, 설정 문서 | 루트 `README.md`, 운영 문서 |
 | 배포 구조 변경 | `CHANGELOG.md`, 아키텍처 문서 | 설정 및 운영 문서 |
-| 계획 수립·변경 | 관련 `docs/develop_plan/` 문서 | 결정이 확정된 경우 관련 기준 문서 |
+| 계획 수립·변경 | 관련 `docs/development/develop_plan/` 문서 | 결정이 확정된 경우 관련 기준 문서 |
 | 오탈자·서식 수정 | 해당 문서 | 일반적으로 변경 이력과 개발 기록은 불필요 |
 
 문서가 아직 존재하지 않는 영역의 작업은 해당 문서를 같은 작업에서 만들거나,
@@ -64,9 +72,10 @@
 
 ## 문서 역할
 
-- `docs/develop_plan/`은 미래의 작업 범위와 수행 방법을 기록한다.
-- `docs/development/development_notes.md`는 실제로 완료한 구현과 검증 결과를
-  기록한다.
+- `docs/development/develop_plan/`은 Forest의 미래 작업 범위와 Slice 수행
+  방법을 기록한다.
+- `docs/development/development_notes/`는 Forest에서 실제로 구현하고 검증한
+  결과를 상세 문서 하나로 기록한다.
 - `CHANGELOG.md`는 사용자나 팀에 의미 있는 결과를 요약한다.
 - `docs/troubleshooting/`은 실제로 발생했고 원인과 해결 방법이 확인된 문제만
   기록한다.

@@ -14,7 +14,7 @@
 
 ## 포함하지 않는 내용
 
-- 구현 전 운영 설계: `docs/develop_plan/`
+- 구현 전 운영 설계: `docs/development/develop_plan/`
 - 시스템 구성 요소의 구조적 책임: `docs/architecture/`
 - 실제 발생한 개발 환경 문제의 해결 기록: `docs/troubleshooting/`
 

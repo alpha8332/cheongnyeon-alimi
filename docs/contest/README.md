@@ -13,7 +13,7 @@
 ## 포함하지 않는 내용
 
 - 일상적인 개발 기록: `docs/development/`
-- 제품 기능의 미확정 계획: `docs/develop_plan/`
+- 제품 기능의 미확정 계획: `docs/development/develop_plan/`
 - 현재 시스템 계약의 기준 문서: `docs/architecture/`, `docs/api/`,
   `docs/data/`
 

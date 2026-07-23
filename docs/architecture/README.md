@@ -19,7 +19,7 @@
 
 ## 포함하지 않는 내용
 
-- 아직 합의되지 않은 미래 설계: `docs/develop_plan/`
+- 아직 합의되지 않은 미래 설계: `docs/development/develop_plan/`
 - 개별 API의 요청·응답 계약: `docs/api/`
 - 데이터 필드와 정규화 규칙: `docs/data/`
 - 서비스 실행과 장애 대응 절차: `docs/operations/`

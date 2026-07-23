@@ -24,7 +24,7 @@
 
 ## 포함하지 않는 내용
 
-- 기능별 구현 계획: `docs/develop_plan/`
+- Forest 개발 계획: `docs/development/develop_plan/`
 - 실제 구현과 검증 결과: `docs/development/`
 - 배포 후 서비스 운영 절차: `docs/operations/`
 
