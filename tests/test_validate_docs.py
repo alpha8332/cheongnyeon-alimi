@@ -82,6 +82,63 @@ class DocumentationValidationTests(unittest.TestCase):
 
             self.assertEqual([], errors)
 
+    def test_draft_plan_in_owner_area_does_not_require_note(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            plan_dir = root / "docs/development/develop_plan/data"
+            plan_dir.mkdir(parents=True)
+            plan = "\n".join(
+                [
+                    "# Data Pipeline Forest",
+                    "",
+                    "## 계획 정보",
+                    "- 상태: draft",
+                    *(f"\n## {heading}" for heading in validate_docs.PLAN_HEADINGS[1:]),
+                ]
+            )
+            (plan_dir / "01_data_pipeline.md").write_text(plan, encoding="utf-8")
+
+            errors = validate_docs.check_forest_documents(root)
+
+            self.assertEqual([], errors)
+
+    def test_in_progress_plan_requires_note_in_same_owner_area(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            plan_dir = root / "docs/development/develop_plan/data"
+            note_dir = root / "docs/development/development_notes/backend"
+            plan_dir.mkdir(parents=True)
+            note_dir.mkdir(parents=True)
+            plan = "\n".join(
+                [
+                    "# Data Pipeline Forest",
+                    "",
+                    "## 계획 정보",
+                    "- 상태: in-progress",
+                    *(f"\n## {heading}" for heading in validate_docs.PLAN_HEADINGS[1:]),
+                ]
+            )
+            note = "\n".join(
+                [
+                    "# Data Pipeline Forest",
+                    "",
+                    "## 작업 정보",
+                    "- 상태: in-progress",
+                    *(f"\n## {heading}" for heading in validate_docs.NOTE_HEADINGS[1:]),
+                ]
+            )
+            (plan_dir / "01_data_pipeline.md").write_text(plan, encoding="utf-8")
+            (note_dir / "data_pipeline.md").write_text(note, encoding="utf-8")
+
+            errors = validate_docs.check_forest_documents(root)
+
+            self.assertTrue(
+                any("matching development note is missing" in error for error in errors)
+            )
+            self.assertTrue(
+                any("matching numbered develop plan is missing" in error for error in errors)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

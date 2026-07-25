@@ -9,6 +9,7 @@
 | 번호 | Forest | 계획 | 상태 |
 | --- | --- | --- | --- |
 | 01 | Docs System | [개발 계획](01_docs_system.md) | completed |
+| Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | draft |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.
@@ -16,7 +17,8 @@
 ## Forest 기준
 
 - 하나의 목표와 결과 흐름을 공유하는 작업 집합을 Forest로 관리한다.
-- Forest마다 개발 계획 문서 하나와 개발 기록 문서 하나를 둔다.
+- Forest마다 개발 계획 문서 하나를 둔다. 실제 구현을 시작하면 같은 담당
+  영역에 개발 기록 문서 하나를 만든다.
 - Forest 안의 Slice는 계획 문서 내부에서 순서, 의존성과 완료 기준을
   구분한다.
 - Slice마다 별도 계획 파일을 만들지 않는다.
@@ -34,6 +36,8 @@
 
 Forest가 `completed`가 되면 관련 개발 기록과 커밋 또는 PR을 연결한다.
 `superseded`가 되면 대체 계획과 변경 이유를 기록한다.
+`draft`와 `approved` 계획은 아직 구현 결과가 없으므로 개발 기록을 요구하지
+않는다. `in-progress`로 변경할 때 대응하는 개발 기록을 생성한다.
 
 ## 계획 문서 필수 항목
 

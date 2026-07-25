@@ -26,14 +26,15 @@
 
 ```text
 docs_system.md
-data_schema.md
-data_collection.md
-normalization.md
+data/data_pipeline.md
+backend/favorites.md
+frontend/calendar.md
+integration/policy_delivery.md
 ```
 
-데이터 개발에서는 Schema, 수집·크롤링, 정규화처럼 독립적인 목표와 완료
-기준을 가진 Forest별로 상세 개발 기록을 작성한다. 예시는 파일 이름 형식이며
-현재 구현 완료를 뜻하지 않는다.
+담당 영역과 독립적인 완료 기준을 가진 Forest별로 상세 개발 기록을 작성한다.
+예시는 파일 이름 형식이며 현재 구현 완료나 해당 디렉터리의 사전 생성을
+뜻하지 않는다.
 
 ## 필수 항목
 

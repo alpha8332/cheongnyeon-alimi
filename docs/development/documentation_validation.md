@@ -29,7 +29,7 @@ Documentation validation passed.
 - 이전 저장소명 사용 여부
 - 문서에 실제 비밀값으로 보이는 할당이 있는지 여부
 - `docs/` 내부의 빈 파일과 빈 디렉터리
-- 번호가 있는 Forest 계획과 같은 이름의 개발 기록 대응
+- 담당 영역별 번호가 있는 Forest 계획과 구현 단계 개발 기록의 대응
 - Forest 계획과 개발 기록의 필수 섹션
 - 허용된 Forest 상태값
 - 완료된 Forest에 미완료 Slice가 남아 있는지 여부
@@ -51,16 +51,20 @@ HTTP 링크의 실제 접속 가능 여부와 Markdown 문법 전체 lint는 현
 
 ## Forest 문서 규칙
 
-계획 파일은 다음 형식을 사용한다.
+공통 계획 또는 담당 영역별 계획 파일은 다음 형식을 사용한다.
 
 ```text
 docs/development/develop_plan/NN_forest_name.md
+docs/development/develop_plan/<owner>/NN_forest_name.md
 ```
 
-개발 기록은 같은 Forest 이름을 사용한다.
+`draft`와 `approved` 계획은 개발 기록을 요구하지 않는다. 구현을 시작해
+`in-progress`가 되면 계획과 같은 담당 영역에 같은 Forest 이름의 개발 기록을
+생성한다.
 
 ```text
 docs/development/development_notes/forest_name.md
+docs/development/development_notes/<owner>/forest_name.md
 ```
 
 예:

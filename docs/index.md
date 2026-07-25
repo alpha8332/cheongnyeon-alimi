@@ -19,7 +19,7 @@
   향후 분리 기준
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
-- [데이터 소스](data/data_sources.md): 1주차 수집 대상과 소스 등록 기준
+- [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
   데이터 계약 원칙
 - [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
@@ -29,6 +29,7 @@
 - [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,
   Slice와 완료 기준
 - [Docs System Forest 계획](development/develop_plan/01_docs_system.md)
+- [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/docs_system.md)

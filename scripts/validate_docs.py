@@ -185,28 +185,32 @@ def first_status(text: str) -> str | None:
     return match.group(1) if match else None
 
 
-def forest_name_from_plan(path: Path) -> str:
-    return re.sub(r"^\d+_", "", path.stem)
+def forest_key(path: Path, base_dir: Path, *, numbered_plan: bool) -> tuple[str, str]:
+    """Return the owner area and Forest name used to pair plans and notes."""
+
+    area = path.relative_to(base_dir).parent.as_posix()
+    name = re.sub(r"^\d+_", "", path.stem) if numbered_plan else path.stem
+    return area, name
 
 
 def check_forest_documents(root: Path) -> list[str]:
     errors: list[str] = []
     plan_dir = root / "docs/development/develop_plan"
     note_dir = root / "docs/development/development_notes"
-    plans = sorted(plan_dir.glob("[0-9][0-9]_*.md"))
+    plans = sorted(plan_dir.rglob("[0-9][0-9]_*.md"))
     notes = {
-        path.stem: path
-        for path in note_dir.glob("*.md")
+        forest_key(path, note_dir, numbered_plan=False): path
+        for path in note_dir.rglob("*.md")
         if path.name.lower() != "readme.md"
     }
 
     if not plans:
         errors.append("no numbered Forest develop plan exists")
 
-    plan_names: set[str] = set()
+    plan_keys: set[tuple[str, str]] = set()
     for plan in plans:
-        name = forest_name_from_plan(plan)
-        plan_names.add(name)
+        key = forest_key(plan, plan_dir, numbered_plan=True)
+        plan_keys.add(key)
         text = plan.read_text(encoding="utf-8")
         for heading in PLAN_HEADINGS:
             if not has_heading(text, heading):
@@ -224,12 +228,12 @@ def check_forest_documents(root: Path) -> list[str]:
             errors.append(
                 f"{relative(plan, root)}: completed Forest has unfinished Slice"
             )
-        if name not in notes:
+        if status in {"in-progress", "completed"} and key not in notes:
             errors.append(
                 f"{relative(plan, root)}: matching development note is missing"
             )
 
-    for name, note in notes.items():
+    for key, note in notes.items():
         text = note.read_text(encoding="utf-8")
         for heading in NOTE_HEADINGS:
             if not has_heading(text, heading):
@@ -247,7 +251,7 @@ def check_forest_documents(root: Path) -> list[str]:
             errors.append(
                 f"{relative(note, root)}: completed Forest has unfinished Slice"
             )
-        if name not in plan_names:
+        if key not in plan_keys:
             errors.append(
                 f"{relative(note, root)}: matching numbered develop plan is missing"
             )
