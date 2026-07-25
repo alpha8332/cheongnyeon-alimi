@@ -30,6 +30,9 @@ Documentation validation passed.
 - 문서에 실제 비밀값으로 보이는 할당이 있는지 여부
 - `docs/` 내부의 빈 파일과 빈 디렉터리
 - 담당 영역별 번호가 있는 Forest 계획과 구현 단계 개발 기록의 대응
+- Forest 문서가 `data`, `backend`, `frontend`, `integration` 중 정확히 한
+  단계의 담당 영역에 있는지 여부
+- 모든 Forest 계획·기록이 각 안내 README와 `docs/index.md`에 등록됐는지 여부
 - Forest 계획과 개발 기록의 필수 섹션
 - 허용된 Forest 상태값
 - 완료된 Forest에 미완료 Slice가 남아 있는지 여부
@@ -51,10 +54,9 @@ HTTP 링크의 실제 접속 가능 여부와 Markdown 문법 전체 lint는 현
 
 ## Forest 문서 규칙
 
-공통 계획 또는 담당 영역별 계획 파일은 다음 형식을 사용한다.
+계획 파일은 다음 형식을 사용한다.
 
 ```text
-docs/development/develop_plan/NN_forest_name.md
 docs/development/develop_plan/<owner>/NN_forest_name.md
 ```
 
@@ -63,9 +65,15 @@ docs/development/develop_plan/<owner>/NN_forest_name.md
 생성한다.
 
 ```text
-docs/development/development_notes/forest_name.md
 docs/development/development_notes/<owner>/forest_name.md
 ```
+
+`<owner>`에는 `data`, `backend`, `frontend`, `integration`만 사용할 수 있다.
+담당 영역을 생략하거나 영역 아래에 임의의 추가 계층을 만들면 검증에
+실패한다.
+
+새 계획은 `develop_plan/README.md`와 `docs/index.md`, 새 개발 기록은
+`development_notes/README.md`와 `docs/index.md`에 각각 링크로 등록한다.
 
 예:
 
@@ -82,9 +90,9 @@ Slice가 남아 있으면 안 된다.
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-테스트는 임시 디렉터리에서 깨진 링크, 이전 저장소명, 비밀값과 Forest
-계획·기록 대응을 검증한다. 임시 디렉터리는 테스트 종료 후 자동으로
-삭제된다.
+테스트는 임시 디렉터리에서 깨진 링크, 이전 저장소명, 비밀값, Forest
+계획·기록 대응, 담당 영역과 색인 등록을 검증한다. 임시 디렉터리는 테스트
+종료 후 자동으로 삭제된다.
 
 ## 규칙 변경
 

@@ -139,6 +139,83 @@ class DocumentationValidationTests(unittest.TestCase):
                 any("matching numbered develop plan is missing" in error for error in errors)
             )
 
+    def test_unknown_or_nested_owner_area_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            plan_dir = root / "docs/development/develop_plan/mobile/nested"
+            plan_dir.mkdir(parents=True)
+            plan = "\n".join(
+                [
+                    "# Mobile Forest",
+                    "",
+                    "## 계획 정보",
+                    "- 상태: draft",
+                    *(f"\n## {heading}" for heading in validate_docs.PLAN_HEADINGS[1:]),
+                ]
+            )
+            (plan_dir / "01_mobile.md").write_text(plan, encoding="utf-8")
+
+            errors = validate_docs.check_forest_documents(root)
+
+            self.assertTrue(
+                any("invalid Forest owner area" in error for error in errors)
+            )
+
+    def test_forest_documents_must_be_registered_in_readmes_and_index(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            plan_dir = root / "docs/development/develop_plan"
+            note_dir = root / "docs/development/development_notes"
+            plan = plan_dir / "backend/01_favorites.md"
+            note = note_dir / "backend/favorites.md"
+            index = root / "docs/index.md"
+            plan.parent.mkdir(parents=True)
+            note.parent.mkdir(parents=True)
+            plan.write_text("# Favorites plan\n", encoding="utf-8")
+            note.write_text("# Favorites note\n", encoding="utf-8")
+            (plan_dir / "README.md").write_text("# Plans\n", encoding="utf-8")
+            (note_dir / "README.md").write_text("# Notes\n", encoding="utf-8")
+            index.write_text("# Index\n", encoding="utf-8")
+
+            errors = validate_docs.check_forest_indexes(root)
+
+            self.assertEqual(4, len(errors))
+            self.assertTrue(any("develop plan README" in error for error in errors))
+            self.assertTrue(any("development notes README" in error for error in errors))
+            self.assertEqual(2, sum("docs index" in error for error in errors))
+
+    def test_registered_forest_documents_pass_index_check(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            plan_dir = root / "docs/development/develop_plan"
+            note_dir = root / "docs/development/development_notes"
+            plan = plan_dir / "frontend/01_calendar.md"
+            note = note_dir / "frontend/calendar.md"
+            index = root / "docs/index.md"
+            plan.parent.mkdir(parents=True)
+            note.parent.mkdir(parents=True)
+            plan.write_text("# Calendar plan\n", encoding="utf-8")
+            note.write_text("# Calendar note\n", encoding="utf-8")
+            (plan_dir / "README.md").write_text(
+                "[Calendar](frontend/01_calendar.md)\n", encoding="utf-8"
+            )
+            (note_dir / "README.md").write_text(
+                "[Calendar](frontend/calendar.md)\n", encoding="utf-8"
+            )
+            index.write_text(
+                "\n".join(
+                    [
+                        "[Calendar plan](development/develop_plan/frontend/01_calendar.md)",
+                        "[Calendar note](development/development_notes/frontend/calendar.md)",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            errors = validate_docs.check_forest_indexes(root)
+
+            self.assertEqual([], errors)
+
 
 if __name__ == "__main__":
     unittest.main()

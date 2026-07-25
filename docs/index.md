@@ -95,11 +95,26 @@
 - 둘 이상의 영역이 함께 책임지는 계획·결과·문제는 `integration/`에 둔다.
 - 실제 문서가 없으면 담당 영역 디렉터리를 미리 만들지 않는다.
 
+### AI Agent 최소 필독 문서
+
+모든 AI Agent는 작업 전에 최소한 다음 문서를 확인한다.
+
+1. `docs/index.md`
+2. [문서화 정책](governance/documentation_policy.md)
+3. [역할과 책임](governance/role_assignment.md)
+4. 담당 영역의 Forest 계획
+
+브랜치 생성·커밋·리뷰가 포함되면
+[브랜치 전략](governance/branch_strategy.md),
+[커밋 작성 규칙](governance/commit_convention.md),
+[코드 리뷰 정책](governance/code_review.md)도 확인한다.
+
 AI Agent에는 다음처럼 요청할 수 있다.
 
 > `docs/index.md`와 `docs/governance/`의 관련 규칙을 읽고 작업하라. 작업 전
 > 계획과 작업 후 구현 결과를 담당 영역의 문서에 기록하고, 변경된 공통 계약
-> 문서와 문서 색인을 갱신한 뒤 문서 검증을 실행하라.
+> 문서와 문서 색인을 갱신하라. 의미 있는 완료 결과만 CHANGELOG에 요약하고
+> 문서 검증을 실행하라.
 
 세부 의무와 예외는
 [문서화 정책](governance/documentation_policy.md)을 따른다.
