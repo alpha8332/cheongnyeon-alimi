@@ -8,7 +8,8 @@
 - 관련 브랜치:
   - `docs/governance/documentation-system`
   - `docs/governance/collaboration-policy`
-- 개발 기록: [`docs_system.md`](../development_notes/docs_system.md)
+- 개발 기록:
+  [`docs_system.md`](../../development_notes/integration/docs_system.md)
 - 참고 계획:
   `opensource_plan/개발 계획/1. docs 구조 설계.docx`
 
@@ -171,8 +172,8 @@
 
 ## 관련 문서
 
-- [`docs/index.md`](../../index.md)
-- [문서화 정책](../../governance/documentation_policy.md)
-- [Docs System Forest 개발 기록](../development_notes/docs_system.md)
-- [시스템 아키텍처 개요](../../architecture/overview.md)
-- [데이터 문서 안내](../../data/README.md)
+- [`docs/index.md`](../../../index.md)
+- [문서화 정책](../../../governance/documentation_policy.md)
+- [Docs System Forest 개발 기록](../../development_notes/integration/docs_system.md)
+- [시스템 아키텍처 개요](../../../architecture/overview.md)
+- [데이터 문서 안내](../../../data/README.md)

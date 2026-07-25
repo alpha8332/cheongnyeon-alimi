@@ -8,14 +8,14 @@
 
 | Forest | 문서 | 관련 Slice | 내용 |
 | --- | --- | --- | --- |
-| Docs System | [개발 기록](docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
+| Docs System | [개발 기록](integration/docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
 함께 갱신한다.
 
 ## Forest 기준
 
-- 하나의 Forest마다 개발 기록 문서 하나를 작성한다.
+- 하나의 Forest마다 계획과 같은 담당 영역에 개발 기록 문서 하나를 작성한다.
 - Forest 내부의 Slice는 문서 안의 섹션과 진행 표로 구분한다.
 - 같은 목표와 결과 흐름을 가진 Slice를 별도 문서로 쪼개지 않는다.
 - 목표, 산출물과 완료 기준이 독립적인 새 Forest가 시작될 때 새 문서를
@@ -26,14 +26,20 @@
 
 ```text
 docs_system.md
-data_schema.md
-data_collection.md
-normalization.md
+data/data_pipeline.md
+backend/favorites.md
+frontend/calendar.md
+integration/policy_delivery.md
 ```
 
-데이터 개발에서는 Schema, 수집·크롤링, 정규화처럼 독립적인 목표와 완료
-기준을 가진 Forest별로 상세 개발 기록을 작성한다. 예시는 파일 이름 형식이며
-현재 구현 완료를 뜻하지 않는다.
+담당 영역과 독립적인 완료 기준을 가진 Forest별로 상세 개발 기록을 작성한다.
+예시는 파일 이름 형식이며 현재 구현 완료나 해당 디렉터리의 사전 생성을
+뜻하지 않는다.
+
+Data, Backend와 Frontend 중 한 영역의 구현 결과는 해당 영역에 기록한다.
+Seed → API → 화면처럼 여러 영역을 하나의 완료 기준으로 검증한 결과는
+`integration/`에 기록한다. 한 영역의 상세 구현 기록과 통합 검증 결과가 모두
+필요하면 서로 링크하고 같은 내용을 장문으로 복제하지 않는다.
 
 ## 필수 항목
 
@@ -60,7 +66,8 @@ normalization.md
 - 실행한 검증만 결과로 기록한다.
 - 미실행·실패 항목과 알려진 제약을 숨기지 않는다.
 - 미래 구현 상세는 `docs/development/develop_plan/`에 둔다.
-- 사용자와 팀에 의미 있는 요약은 루트 `CHANGELOG.md`에 별도로 기록한다.
+- Forest가 완료되면 사용자와 팀에 의미 있는 결과만 루트 `CHANGELOG.md`에
+  1~2개 항목으로 요약하고 이 개발 기록을 링크한다.
 - 실제 발생하고 해결된 문제는 `docs/troubleshooting/`에 기록한다.
 
 ## 상태와 변경
