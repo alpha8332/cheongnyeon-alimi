@@ -44,7 +44,7 @@
 
 | 영역 | 책임 |
 | --- | --- |
-| [architecture](architecture/README.md) | 전체 시스템 구조, 경계, 흐름과 아키텍처 결정 |
+| [architecture](architecture/README.md) | 공통 시스템 구조, 경계, 흐름과 영역 간 아키텍처 결정 |
 | [api](api/README.md) | 외부에 제공하는 API 계약, 오류와 사용 예시 |
 | [data](data/README.md) | 데이터 출처, Schema, 정규화와 수집 정책 |
 | [governance](governance/README.md) | 브랜치, 커밋, 리뷰, 기여와 문서화 규칙 |

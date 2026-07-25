@@ -10,6 +10,7 @@
 
 ### Added
 
+- Architecture 공통 문서와 역할별 구조 문서 및 개발 기록의 분류 기준
 - 역할에 관계없이 변경 책임과 문서 역할로 위치를 결정하는 문서 라우팅 안내
 - 개발 계획·기록과 문제 해결 문서를 Data, Backend, Frontend, Integration
   담당 영역으로 분류하는 규칙

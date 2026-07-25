@@ -17,6 +17,27 @@
 - [컨테이너 구조](container_structure.md)
 - [아키텍처 결정 기록](decisions/README.md)
 
+## 문서 분류 기준
+
+Architecture 문서는 담당자의 작업 기록이 아니라 현재 시스템의 구조, 경계와
+영역 간 관계를 설명한다.
+
+- `overview.md`, `system_flow.md`, `container_structure.md`는 Data, Backend,
+  Frontend가 함께 참조하는 공통 문서로 유지한다.
+- 특정 영역의 구조 설명이 공통 문서에서 분리할 만큼 커졌을 때만 `data/`,
+  `backend/`, `frontend/` 하위 디렉터리와 문서를 생성한다.
+- 둘 이상의 영역에 영향을 주거나 되돌리기 어려운 구조 결정은
+  [`decisions/`](decisions/README.md)에 ADR로 기록한다.
+- 여러 영역의 현재 구조를 함께 설명해야 하지만 별도 ADR이 필요하지 않으면
+  이 디렉터리의 공통 문서에 반영한다.
+- 기능 구현 과정, 변경 파일과 테스트 결과는 Architecture가 아니라 담당
+  영역의 `docs/development/development_notes/`에 기록한다.
+- 미래 구조 제안과 아직 구현하지 않은 설계는 Architecture의 현재 상태처럼
+  작성하지 않고 관련 `docs/development/develop_plan/`에서 관리한다.
+
+문서를 작성한 담당자가 아니라 설명하는 구조의 범위로 위치를 결정한다. 실제
+내용이 없는 역할별 디렉터리는 미리 만들지 않는다.
+
 ## 포함하지 않는 내용
 
 - 아직 합의되지 않은 미래 설계: `docs/development/develop_plan/`
