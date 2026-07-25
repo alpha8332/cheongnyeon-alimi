@@ -8,7 +8,7 @@
 
 | 번호 | Forest | 계획 | 상태 |
 | --- | --- | --- | --- |
-| 01 | Docs System | [개발 계획](01_docs_system.md) | completed |
+| Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
 | Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | draft |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
@@ -23,6 +23,18 @@
   구분한다.
 - Slice마다 별도 계획 파일을 만들지 않는다.
 - 독립적인 목표, 산출물과 완료 기준이 생길 때 새 Forest 계획을 만든다.
+
+담당 영역이 명확한 Forest는 다음 경로를 사용한다.
+
+| 영역 | 경로 | 사용 기준 |
+| --- | --- | --- |
+| Data | `data/` | 수집, 추출, 정규화, 검증과 Fixture·Seed |
+| Backend | `backend/` | API, 서비스, DB 연동과 Backend 기능 |
+| Frontend | `frontend/` | 화면, 상태 관리와 사용자 상호작용 |
+| Integration | `integration/` | 둘 이상의 영역 또는 팀 공통 기반 |
+
+실제 계획 문서가 생길 때만 해당 디렉터리를 생성한다. 담당 영역이 불명확하면
+임의로 분류하지 않고 범위를 먼저 합의한다.
 
 ## 상태
 

@@ -70,7 +70,7 @@ docs/development/development_notes/<owner>/forest_name.md
 예:
 
 ```text
-01_docs_system.md ↔ docs_system.md
+integration/01_docs_system.md ↔ integration/docs_system.md
 ```
 
 Forest가 `completed` 상태라면 계획과 기록에 `pending` 또는 `in-progress`

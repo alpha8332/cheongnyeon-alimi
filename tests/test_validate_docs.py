@@ -53,8 +53,8 @@ class DocumentationValidationTests(unittest.TestCase):
     def test_forest_plan_and_note_are_paired(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            plan_dir = root / "docs/development/develop_plan"
-            note_dir = root / "docs/development/development_notes"
+            plan_dir = root / "docs/development/develop_plan/integration"
+            note_dir = root / "docs/development/development_notes/integration"
             plan_dir.mkdir(parents=True)
             note_dir.mkdir(parents=True)
             plan = "\n".join(

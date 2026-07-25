@@ -5,7 +5,8 @@
 - 시작일: 2026-07-23
 - 상태: completed
 - 영역: documentation
-- 관련 계획: [`01_docs_system.md`](../develop_plan/01_docs_system.md)
+- 관련 계획:
+  [`01_docs_system.md`](../../develop_plan/integration/01_docs_system.md)
 - 관련 Slice: D0~D6
 - 브랜치:
   - `docs/governance/documentation-system`: D0~D1

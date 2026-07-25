@@ -8,14 +8,14 @@
 
 | Forest | 문서 | 관련 Slice | 내용 |
 | --- | --- | --- | --- |
-| Docs System | [개발 기록](docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
+| Docs System | [개발 기록](integration/docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
 함께 갱신한다.
 
 ## Forest 기준
 
-- 하나의 Forest마다 개발 기록 문서 하나를 작성한다.
+- 하나의 Forest마다 계획과 같은 담당 영역에 개발 기록 문서 하나를 작성한다.
 - Forest 내부의 Slice는 문서 안의 섹션과 진행 표로 구분한다.
 - 같은 목표와 결과 흐름을 가진 Slice를 별도 문서로 쪼개지 않는다.
 - 목표, 산출물과 완료 기준이 독립적인 새 Forest가 시작될 때 새 문서를
