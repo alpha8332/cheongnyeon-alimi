@@ -1,0 +1,11 @@
+# Python Cache
+__pycache__/
+*.pyc
+
+# Environment Variables & Virtual Environments
+.env
+.venv/
+
+# Test & Development Settings
+.pytest_cache/
+.vscode/
