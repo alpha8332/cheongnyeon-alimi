@@ -10,8 +10,8 @@
 
 ### Added
 
-- 문서 탐색·라우팅, 협업 규칙, Architecture·Data 기준선과 Forest별
-  계획·개발 기록을 연결하는 Docs System 구축
+- 문서 탐색·라우팅, 협업·의존성·통합 배포 책임, Architecture·Data 기준선과
+  Forest별 계획·개발 기록을 연결하는 Docs System 구축
   ([개발 기록](docs/development/development_notes/integration/docs_system.md))
 - 문서 링크, 필수 파일, 비밀값 패턴, Forest 담당 영역·대응과 색인 등록을
   확인하는 로컬 문서 검증 기반 추가
