@@ -60,8 +60,8 @@
 
 | 변경 유형 | 필수 확인 문서 | 조건부 확인 문서 |
 | --- | --- | --- |
-| 새로운 기능 | `CHANGELOG.md`, 개발 기록 | 관련 API, 데이터, 아키텍처, 운영 문서 |
-| 주요 버그 수정 | `CHANGELOG.md` | 실제 해결된 경우 관련 troubleshooting 문서 |
+| 완료된 주요 기능 | `CHANGELOG.md`, 개발 기록 | 관련 API, 데이터, 아키텍처, 운영 문서 |
+| 영향이 큰 버그 수정 | `CHANGELOG.md` | 실제 해결된 경우 관련 troubleshooting 문서 |
 | 데이터 스키마 변경 | `CHANGELOG.md`, 개발 기록, 데이터 문서 | JSON Schema, API 예시, DB 문서 |
 | API 계약 변경 | `CHANGELOG.md`, API 문서 | 개발 기록, 프론트엔드 연동 문서 |
 | DB 구조 변경 | `CHANGELOG.md`, 개발 기록, DB 문서 | 마이그레이션 및 운영 문서 |
@@ -110,11 +110,14 @@ AI Agent에는 다음처럼 요청할 수 있다.
   방법을 기록한다.
 - `docs/development/development_notes/`는 Forest에서 실제로 구현하고 검증한
   결과를 상세 문서 하나로 기록한다.
-- `CHANGELOG.md`는 사용자나 팀에 의미 있는 결과를 요약한다.
+- `CHANGELOG.md`는 완료된 Forest, 주요 기능·버그와 호환성 변경을 Forest당
+  1~2개 항목으로 요약하고 상세 개발 기록을 연결한다.
 - `docs/troubleshooting/`은 실제로 발생했고 원인과 해결 방법이 확인된 문제만
   기록한다.
 
 계획, 구현 결과, 변경 이력, 문제 해결 기록을 서로 대신하여 사용하지 않는다.
+내부 리팩터링, 동작을 바꾸지 않는 테스트 추가와 단순 문서 수정은 일반적으로
+CHANGELOG에 기록하지 않는다.
 
 ## 작업 전 체크리스트
 
