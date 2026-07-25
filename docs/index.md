@@ -73,6 +73,37 @@
 문서가 아직 존재하지 않는 영역의 작업은 해당 문서를 같은 작업에서 만들거나,
 개발 계획에 후속 작업과 완료 기준을 기록한다.
 
+## 문서 라우팅
+
+먼저 문서의 역할을 정하고, 계획·개발 기록·문제 해결 문서인 경우에만 담당
+영역을 선택한다.
+
+| 변경 내용 | 기록 위치 |
+| --- | --- |
+| Data Forest 계획 | `docs/development/develop_plan/data/` |
+| Backend 즐겨찾기 계획 | `docs/development/develop_plan/backend/` |
+| Frontend 캘린더 구현 결과 | `docs/development/development_notes/frontend/` |
+| Seed → API → 화면 통합 | `docs/development/develop_plan/integration/` 및 대응하는 `development_notes/integration/` |
+| 현재 데이터 계약 | `docs/data/` |
+| Frontend ↔ Backend API 계약 | `docs/api/` |
+| 실제 해결한 Backend 장애 | `docs/troubleshooting/backend/` |
+
+- 미래 범위와 완료 기준은 `develop_plan/`에 기록한다.
+- 실제 구현과 검증 결과는 `development_notes/`에 기록한다.
+- 현재 유효한 계약은 `data/`, `api/`, `architecture/`, `operations/` 등 관련
+  기준 문서에 반영한다.
+- 둘 이상의 영역이 함께 책임지는 계획·결과·문제는 `integration/`에 둔다.
+- 실제 문서가 없으면 담당 영역 디렉터리를 미리 만들지 않는다.
+
+AI Agent에는 다음처럼 요청할 수 있다.
+
+> `docs/index.md`와 `docs/governance/`의 관련 규칙을 읽고 작업하라. 작업 전
+> 계획과 작업 후 구현 결과를 담당 영역의 문서에 기록하고, 변경된 공통 계약
+> 문서와 문서 색인을 갱신한 뒤 문서 검증을 실행하라.
+
+세부 의무와 예외는
+[문서화 정책](governance/documentation_policy.md)을 따른다.
+
 ## 문서 역할
 
 - `docs/development/develop_plan/`은 Forest의 미래 작업 범위와 Slice 수행

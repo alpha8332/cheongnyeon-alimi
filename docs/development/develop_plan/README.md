@@ -36,6 +36,18 @@
 실제 계획 문서가 생길 때만 해당 디렉터리를 생성한다. 담당 영역이 불명확하면
 임의로 분류하지 않고 범위를 먼저 합의한다.
 
+예:
+
+```text
+data/01_data_pipeline.md
+backend/01_favorites.md
+frontend/01_calendar.md
+integration/01_policy_delivery.md
+```
+
+현재 데이터·API 계약 자체는 Forest 계획에만 적지 않고 각각 `docs/data/`와
+`docs/api/`의 기준 문서에도 반영한다.
+
 ## 상태
 
 | 상태 | 의미 |

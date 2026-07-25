@@ -88,7 +88,23 @@ Collector가 늦어지더라도 합의된 Seed로 백엔드와 프론트엔드 �
 있다. 계약 변경은 영향받는 담당자와 공동 검토하고 관련 문서를 함께
 갱신한다.
 
-## 7. 실제 담당 확인
+## 7. 역할별 문서화 책임
+
+담당자는 자신의 구현 기록뿐 아니라 작업이 변경한 공통 계약도 함께
+갱신한다.
+
+| 작업 책임 | 계획·개발 기록 | 함께 확인할 기준 문서 |
+| --- | --- | --- |
+| Data | `develop_plan/data/`, `development_notes/data/` | `docs/data/`, 영향받는 `docs/api/` |
+| Backend | `develop_plan/backend/`, `development_notes/backend/` | `docs/api/`, DB·아키텍처·운영 문서 |
+| Frontend | `develop_plan/frontend/`, `development_notes/frontend/` | API 사용 계약, 화면 흐름·접근성 문서 |
+| 공동 통합 | `develop_plan/integration/`, `development_notes/integration/` | 영향받는 모든 공통 계약 |
+
+실제로 해결한 장애는 같은 책임 영역의 `docs/troubleshooting/` 하위 문서에
+기록한다. 담당자가 누구인지가 아니라 변경 또는 문제의 책임 영역을 기준으로
+분류한다.
+
+## 8. 실제 담당 확인
 
 역할 배정은 계획 문서보다 현재 Issue, Pull Request, CODEOWNERS와 저장소
 설정을 우선하여 확인한다. 이 문서와 실제 배정이 다르면 임의로 책임을
