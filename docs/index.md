@@ -11,12 +11,13 @@
 - [커밋 작성 규칙](governance/commit_convention.md): Conventional Commits
   형식과 커밋 구성 기준
 - [코드 리뷰 정책](governance/code_review.md): PR 작성, 리뷰와 병합 기준
-- [역할과 책임](governance/role_assignment.md): 영역별 책임과 공동 통합 지점
+- [역할과 책임](governance/role_assignment.md): 영역별 책임, 의존성 산출물과
+  공동 통합·배포 지점
 - [시스템 아키텍처 개요](architecture/overview.md): 목표 구조와 계층별 책임
 - [시스템 흐름](architecture/system_flow.md): 외부 소스부터 Web UI까지의
   데이터 흐름
-- [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위와
-  향후 분리 기준
+- [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
+  영역별 산출물과 통합·배포 시점
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
@@ -66,6 +67,7 @@
 | API 계약 변경 | `CHANGELOG.md`, API 문서 | 개발 기록, 프론트엔드 연동 문서 |
 | DB 구조 변경 | `CHANGELOG.md`, 개발 기록, DB 문서 | 마이그레이션 및 운영 문서 |
 | 환경변수·실행 방법 변경 | `.env.example`, 설정 문서 | 루트 `README.md`, 운영 문서 |
+| 라이브러리·의존성 변경 | 담당 앱 manifest와 lockfile, 개발 기록 | 실행 방법, 통합·배포 영향 |
 | 배포 구조 변경 | `CHANGELOG.md`, 아키텍처 문서 | 설정 및 운영 문서 |
 | 계획 수립·변경 | 관련 `docs/development/develop_plan/` 문서 | 결정이 확정된 경우 관련 기준 문서 |
 | 오탈자·서식 수정 | 해당 문서 | 일반적으로 변경 이력과 개발 기록은 불필요 |
