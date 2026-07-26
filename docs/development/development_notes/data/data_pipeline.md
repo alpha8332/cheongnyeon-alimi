@@ -8,7 +8,7 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 6 기술 산출물 완료, 공동 검토 대기
+- 현재 Slice: Data 7 기술 검증 완료, Data 6 공동 검토 대기
 
 ## 목적
 
@@ -22,10 +22,10 @@ Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0부터 Data 6의 기술 범위까지 수행했다. 공통 실행·
-HTTP·Raw 기반, 두 source Collector·Extractor, 공통 Normalizer·Validator와
-합성 Fixture·Seed를 구현했다. Data 6의 Backend·Frontend 공동 승인은
-대기 중이다.
+누적한다. Data 0부터 Data 7의 기술 범위를 수행했다. 공통 실행·HTTP·Raw
+기반, 두 source Collector·Extractor, 공통 Normalizer·Validator와 합성
+Fixture·Seed를 구현하고 최종 회귀를 통과했다. Data 6의 Backend·Frontend
+공동 승인은 대기 중이다.
 
 ## Slice 진행 현황
 
@@ -38,7 +38,7 @@ HTTP·Raw 기반, 두 source Collector·Extractor, 공통 Normalizer·Validator�
 | Data 4 | completed | 공통 Extracted 계약과 두 Source Extractor 구현 |
 | Data 5 | completed | Normalized Schema·Normalizer·품질 분류 구현 |
 | Data 6 | in-progress | 합성 Fixture·Seed 완료, 소비자 공동 승인 대기 |
-| Data 7 | pending | 미착수 |
+| Data 7 | completed | 전체 파이프라인·회귀·문서 최종 검증 완료 |
 
 ## 구현 내용
 
@@ -491,6 +491,43 @@ Data 기술 검토와 자동 검증은 완료했다. 그러나 현재 저장소�
 승인 기록이 없다. Data 담당이 공동 승인을 대신 기록하지 않으며 실제 승인
 또는 소비 테스트가 생길 때까지 Data 6 상태를 `in-progress`로 유지한다.
 
+### Data 7 - 커밋된 Fixture 종단 간 재생
+
+Data 7에서는 생성 함수의 중간 결과가 아니라 Git에 저장된 합성 Raw
+envelope 8개를 직접 로드하는 통합 테스트를 추가했다.
+
+```text
+Committed Raw 8
+→ Extracted 5
+→ Normalized·Validated: valid 2, partial 2, invalid 1
+→ canonical Seed 4 + rejected 1
+```
+
+accepted 결과의 전체 객체 배열이 `initial_programs.json`과 같고 invalid
+candidate·issue 배열이 `rejected/programs.json`과 같은지 확인한다. 이
+검증으로 Raw 관계·Hash, source mapping, Normalizer, Validator, 품질 분리와
+Seed 직렬화가 하나의 오프라인 흐름에서 연결됨을 확인했다.
+
+운영 Raw 25개도 외부 호출 없이 다시 처리했다. Extracted 20건과 partial
+20건을 만들었고 invalid와 error severity issue는 0건이었다. Data 7에서
+실제 API 요청은 추가하지 않았으므로 누적 호출 횟수는 기존 기록과 같다.
+
+### Data 7 - Forest 완료 감사
+
+Fixture 결정성 12개 파일, 전체 회귀 81건, 문서 검증, diff 공백 검사,
+Git ignore와 비밀값 대조를 통과했다. Data 기준 문서, 실행 가능한 Schema,
+Fixture·Seed와 개발 기록의 필드·품질·재배포 경계도 일치한다.
+
+Data 7의 기술 완료 기준은 모두 충족했다. canonical Fixture·Seed까지
+제공하는 결과는 팀에 의미가 있으므로 기존 `CHANGELOG.md` Data 항목을
+확장했다.
+
+Forest 전체는 완료 처리하지 않는다. Data 6의 Backend·Frontend 공동 승인과
+그에 따른 importer·Mock 또는 명시적 승인 기록이 아직 없기 때문이다.
+Data 7 이후 남은 첫 완료 게이트는
+[Fixture와 Seed 계약](../../../data/fixture_seed_contract.md)의 두 pending
+행을 실제 검토 결과로 갱신하는 것이다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
@@ -671,7 +708,7 @@ canonical JSON 계약을 사용한다.
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
 - 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  Data 0~6 전체 80건 통과
+  Data 0~7 전체 81건 통과
 - Raw 계약 테스트: JSON·XML Schema 사례, Python·Schema 필드 일치, byte
   왕복, Hash 결정성·변조 탐지, 역할 연결, URL·저장 경로·덮어쓰기 경계 11건
   통과
@@ -687,9 +724,10 @@ canonical JSON 계약을 사용한다.
   연령 경계, 지역 alias·미매핑 코드, 다중 category, null·빈 배열, Python·
   Schema 왕복, 합성 JSON Fixture와 오류 위치, valid·partial·invalid 분리
   13건 통과
-- Fixture·Seed 테스트: 합성 Raw·Extracted·Normalized 재생, committed byte,
+- Fixture·Seed 테스트: 합성 Raw·Extracted·Normalized 재생, committed byte와
+  커밋된 Raw부터 Seed·rejected까지의 종단 간 일치,
   Schema, source·null·배열·enum·날짜·provenance, rejected 분리, 네트워크
-  독립성, CSV 미생성과 비밀·개인 식별자 부재 9건 통과
+  독립성, CSV 미생성과 비밀·개인 식별자 부재 10건 통과
 - 결정적 산출물 검사:
   `python scripts/build_data_fixtures.py --check` 12개 파일 통과
 - 실제 호출 통합 검증: 온통청년 1회와 복지로 4회 성공, Raw 25개 재로드와

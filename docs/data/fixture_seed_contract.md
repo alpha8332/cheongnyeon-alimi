@@ -122,7 +122,7 @@ uv run python -B scripts/build_data_fixtures.py --check
 
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
-| Data | reviewed | Schema·Fixture·Seed·rejected·재생성 테스트 완료 |
+| Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
 | Backend | pending | 담당자 승인 또는 실제 importer 소비 테스트 필요 |
 | Frontend | pending | 담당자 승인 또는 TypeScript·Mock 소비 테스트 필요 |
 

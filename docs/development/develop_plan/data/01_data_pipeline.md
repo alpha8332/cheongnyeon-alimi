@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 6 기술 산출물 완료, 공동 검토 대기
+- 현재 Slice: Data 7 기술 검증 완료, Data 6 공동 검토 대기
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -426,7 +426,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 7 - 최종 검증과 Forest 기록
 
-- 상태: pending
+- 상태: completed
 - 목적: 전체 흐름과 문서 동기화를 최종 확인한다.
 - 완료 기준:
   - Raw → Extracted → Normalized → Validated → Seed 흐름 통과
@@ -434,6 +434,20 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - `python scripts/validate_docs.py` 통과
   - Data 개발 기록에 실제 호출·테스트·제약 기록
   - 완료 결과가 의미 있을 때만 `CHANGELOG.md` 갱신
+- 진행 결과:
+  - 커밋된 합성 Raw 8개를 직접 다시 로드해 Extracted 5건,
+    valid 2·partial 2·invalid 1로 변환하고 accepted 4건이 canonical
+    Seed와, invalid 1건이 rejected와 정확히 일치함을 통합 테스트로 검증함
+  - 운영 Raw 25개도 추가 API 호출 없이 Extracted 20건·partial 20건으로
+    재처리했고 검증 오류 0건을 확인함
+  - Fixture 결정성 12개 파일, Data 전체 회귀 81건, 문서 검증과 diff 공백
+    검사를 통과함
+  - 실제 API를 추가 호출하지 않았으며 기존 호출 횟수·제약·재배포 경계를
+    개발 기록에서 재확인함
+  - canonical Fixture·Seed까지 제공하는 의미 있는 Forest 결과를 기존
+    `CHANGELOG.md` Data 항목에 합쳐 기록함
+  - Data 7 기술 검증은 완료했지만 Data 6의 Backend·Frontend 공동 승인
+    기준이 남아 Forest 전체 상태는 `in-progress`로 유지함
 
 ## 검증 계획
 

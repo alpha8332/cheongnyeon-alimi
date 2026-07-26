@@ -11,6 +11,7 @@ from unittest.mock import patch
 from collectors.bokjiro import SOURCE_ID as BOKJIRO_SOURCE_ID
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.normalized import DataQualityStatus, NormalizedProgram
+from collectors.normalizer import Normalizer
 from collectors.raw import RawDocumentRole, RawPolicyDocument
 from collectors.validation import NormalizedProgramValidator
 from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
@@ -112,6 +113,51 @@ class DataFixtureContractTests(unittest.TestCase):
             load_json(EXTRACTED_PATH),
         )
         self.assertEqual(5, len(extracted))
+
+    def test_committed_raw_replays_through_validation_to_seed(
+        self,
+    ) -> None:
+        documents = load_raw_documents()
+        extracted = [
+            *YouthCenterExtractor().extract(documents),
+            *BokjiroExtractor().extract(documents),
+        ]
+        results = [
+            Normalizer().normalize(policy)
+            for policy in extracted
+        ]
+        accepted = [
+            result.program.to_dict()
+            for result in results
+            if result.program is not None
+        ]
+        rejected = [
+            {
+                "source_id": result.candidate.get("source_id"),
+                "external_id": result.candidate.get("external_id"),
+                "status": result.status.value,
+                "candidate": result.candidate,
+                "issues": [
+                    issue.to_dict()
+                    for issue in result.issues
+                ],
+            }
+            for result in results
+            if result.program is None
+        ]
+
+        self.assertEqual(load_json(SEED_PATH), accepted)
+        self.assertEqual(load_json(REJECTED_PATH), rejected)
+        self.assertEqual(
+            Counter(
+                {
+                    DataQualityStatus.VALID: 2,
+                    DataQualityStatus.PARTIAL: 2,
+                    DataQualityStatus.INVALID: 1,
+                }
+            ),
+            Counter(result.status for result in results),
+        )
 
     def test_seed_is_schema_valid_and_excludes_invalid_results(self) -> None:
         validator = NormalizedProgramValidator()
