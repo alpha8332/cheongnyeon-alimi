@@ -14,6 +14,7 @@
 ## 현재 문서
 
 - [데이터 소스](data_sources.md)
+- [API Source Profile](source_profiles.md)
 - [데이터 Schema 기준선](data_schema.md)
 - [데이터 정규화 규칙](normalization_rules.md)
 - [데이터 수집 정책](collection_policy.md)

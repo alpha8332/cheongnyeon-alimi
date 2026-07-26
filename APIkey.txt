@@ -1,2 +1,0 @@
-온통청년 api 인증키: 048670f1-2ba8-4373-badc-be5d60de0c0a
-중앙부처복지서비스 api 인증키: 1d85a0dbb6e5333d85ba1b857abd3370aaeae6d0fbc27fbe16b41a24bfac6362

@@ -78,6 +78,11 @@ HTTP_REQUEST_DELAY_SECONDS
 읽기 전용 비밀 자료로 취급하고 Git, Fixture, 테스트 snapshot과 개발 기록에
 복사하지 않는다.
 
+과거 Git 이력에 인증키 파일과 비밀 포함 참고 문서가 들어간 사실이 확인되면
+ignore와 인덱스 제외만으로 해결된 것으로 간주하지 않는다. 해당 키를
+폐기·재발급하고, 저장소 이력 정리는 협업 영향과 원격 상태를 확인한 뒤
+별도로 결정한다.
+
 ## 공식 API 호출 예산
 
 실제 외부 API 호출은 단위 테스트와 분리된 명시적 통합 검증으로만 실행한다.
@@ -140,6 +145,21 @@ canonical JSON에서 결정적으로 생성하며, 배열 직렬화와 `null` �
 
 실제 runtime 저장 경로와 ignore 규칙은 Collector 저장 구현 시 함께
 검증한다.
+
+현재 재유입 방지 경계는 다음과 같다.
+
+```text
+.env
+.env.*
+APIkey.txt
+runtime/raw/
+data/runtime/raw/
+```
+
+`.env.example`은 실제 값 없이 변수명과 안전한 예시만 포함하는 경우 Git에
+포함할 수 있다. 비밀이 포함된 로컬 참고 문서는 정확한 경로를 `.gitignore`에
+등록한다. Runtime Raw의 최종 위치는 Raw 저장 Slice에서 확정하되 위 후보
+경로는 확정 전에도 Git에 포함되지 않게 유지한다.
 
 ## 개인정보와 민감정보
 

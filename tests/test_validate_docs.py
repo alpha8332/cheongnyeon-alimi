@@ -50,6 +50,20 @@ class DocumentationValidationTests(unittest.TestCase):
             self.assertEqual(1, len(errors))
             self.assertIn("possible secret value", errors[0])
 
+    def test_bokjiro_secret_assignment_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            document = root / "unsafe.md"
+            document.write_text(
+                "BOKJIRO_API_KEY=actual-secret-value\n",
+                encoding="utf-8",
+            )
+
+            errors = validate_docs.check_secret_assignments(root, [document])
+
+            self.assertEqual(1, len(errors))
+            self.assertIn("BOKJIRO_API_KEY", errors[0])
+
     def test_forest_plan_and_note_are_paired(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

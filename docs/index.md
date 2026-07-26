@@ -21,6 +21,8 @@
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
+- [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
+  실제 응답 구조와 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
   데이터 계약 원칙
 - [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
@@ -34,6 +36,7 @@
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
+- [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항

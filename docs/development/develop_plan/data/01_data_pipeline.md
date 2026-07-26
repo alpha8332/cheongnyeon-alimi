@@ -3,12 +3,12 @@
 ## 계획 정보
 
 - 담당 영역: Data
-- 상태: draft
+- 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: 계획 구체화
-- 개발 기록: 구현 시작 시
-  `docs/development/development_notes/data/data_pipeline.md` 생성
+- 현재 Slice: Data 0 완료
+- 개발 기록:
+  [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
 ## 목적
 
@@ -25,7 +25,7 @@
 
 | 소스 | 계획 식별자 | 기준 응답 | 기준 수집 단위 |
 | --- | --- | --- | --- |
-| 온통청년 청년정책 API | `youthcenter-api` | XML 또는 JSON 여부 사전 검증 | 정책 목록 항목 |
+| 온통청년 청년정책 API | `youthcenter-api` | JSON | 정책 목록 항목 |
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | XML | 목록 항목과 선택한 상세 |
 
 이 변경으로 Source Extractor가 서로 다른 두 공식 API의 필드와 목록·상세 구조를
@@ -43,9 +43,11 @@ Selector와 Web Collector 검증은 별도 Forest 후보로 이동한다.
 - 공식 이용방법은 결과를 XML로 설명하지만 로컬 참고 자료에는 JSON 선택
   파라미터와 10건의 JSON 샘플이 있다.
 
-따라서 어느 한쪽을 즉시 코드 계약으로 확정하지 않는다. 구현 시작 전
-인증키를 노출하지 않는 최소 호출로 현재 endpoint, 인증 파라미터와 응답 형식을
-확인하고, 결과를 Source Profile에 기록한다.
+보유 키로 두 계약을 각각 검증한 결과, 공식 제공목록 endpoint는 HTTP 302로
+외부에서 접근할 수 없는 HTTP 8080 포트에 redirect했고 로컬 참고 자료의
+`/go/ythip/getPlcy`는 HTTP 200 JSON을 반환했다. 따라서 현재 Collector는
+실동작이 확인된 로컬 제공 계약을 사용하고 공식 제공목록 endpoint는 새 키
+또는 gateway 수정이 확인될 때 다시 검토한다.
 
 복지로는 현재 공식 자료에서 다음 사항을 확인했다.
 
@@ -224,7 +226,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 0 - Source Preflight와 비밀정보 경계
 
-- 상태: pending
+- 상태: completed
 - 목적: 두 API의 현재 계약과 안전한 실행 조건을 확인한다.
 - 작업:
   - 로컬 참고 자료와 현재 공식 자료의 차이 기록
@@ -236,6 +238,15 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - 두 source ID와 현재 호출 계약이 문서화됨
   - 인증키가 URL, 로그, 예외와 Fixture에 남지 않음
   - 실제 호출 횟수와 결과가 개발 기록에 남음
+- 진행 결과:
+  - `youthcenter-api`와 `bokjiro-central-welfare-api`를 현재 source ID로
+    문서화함
+  - 온통청년 `/go/ythip/getPlcy`의 HTTP 200 JSON 10건 응답과 60개 정책
+    필드를 확인함
+  - 복지로 목록·상세의 HTTPS XML 계약을 최소 실호출로 확인함
+  - `/opi/youthPlcyList.do`는 보유 키로 HTTP 8080 redirect가 발생해 현재
+    계약에서 제외함
+  - 비밀 포함 파일, `.env`와 runtime Raw의 Git 재유입 방지 규칙을 추가함
 
 ### Data 1 - 공통 모델과 HTTP 기반
 
