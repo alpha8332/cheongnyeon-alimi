@@ -8,23 +8,24 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 5 완료
+- 현재 Slice: Data 6 기술 산출물 완료, 공동 검토 대기
 
 ## 목적
 
 온통청년과 복지로 공식 API의 현재 요청 계약과 실제 응답 구조를 확인하고,
 두 공식 API의 source Collector와 공유 실행·HTTP·Raw 저장 기반을 구축하고,
 저장된 Raw를 공통 `ExtractedPolicy`와 `NormalizedProgram`으로 재처리하고
-품질을 분류한다. 인증키와 운영 Raw가 Git, 로그, 예외, URL 기록과 Fixture에
-남지 않도록 저장소 기준선을 유지하면서 제한된 실제 수집부터 Schema
-검증까지 확인한다.
+품질을 분류하며 합성 Fixture와 canonical Seed로 재현한다. 인증키와 운영
+Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 기준선을
+유지하면서 제한된 실제 수집부터 Schema·Seed 검증까지 확인한다.
 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0부터 Data 5까지 수행했다. 공통 실행·HTTP·Raw 기반,
-두 source Collector·Extractor와 공통 Normalizer·Validator를 구현했다.
-배포 가능한 Fixture와 Seed는 시작하지 않았다.
+누적한다. 현재는 Data 0부터 Data 6의 기술 범위까지 수행했다. 공통 실행·
+HTTP·Raw 기반, 두 source Collector·Extractor, 공통 Normalizer·Validator와
+합성 Fixture·Seed를 구현했다. Data 6의 Backend·Frontend 공동 승인은
+대기 중이다.
 
 ## Slice 진행 현황
 
@@ -36,7 +37,7 @@
 | Data 3 | completed | 두 공식 API 제한 수집과 Raw 변환 검증 |
 | Data 4 | completed | 공통 Extracted 계약과 두 Source Extractor 구현 |
 | Data 5 | completed | Normalized Schema·Normalizer·품질 분류 구현 |
-| Data 6 | pending | 미착수 |
+| Data 6 | in-progress | 합성 Fixture·Seed 완료, 소비자 공동 승인 대기 |
 | Data 7 | pending | 미착수 |
 
 ## 구현 내용
@@ -427,6 +428,69 @@ Frontend 타입·Mock이 없어 직접 변경할 파일은 없다. 다만 단일
 승인하기 전에 Backend·Frontend 담당과 공동 검토해야 한다. 승인 전
 Normalized 1.0.0은 Data 파이프라인 내부 기준안이다.
 
+### Data 6 - 재배포 경계
+
+2026-07-26 기준 복지로 공공데이터포털은 중앙부처 복지서비스 API의
+이용허락범위를 `제한 없음`으로 표시한다. 온통청년은 공식 이용방법에서
+회원가입·인증키 신청·담당자 승인을 요구하고, 현행 이용약관은 대량 이용을
+별도 계약으로 두며 서비스에서 얻은 게시 자료의 무단 상업적 가공·판매를
+제한한다.
+
+온통청년 API 원문의 Git 재배포 범위는 명시적으로 확인되지 않았다. 두
+소스의 테스트 경계를 일관되게 유지하고 개인정보·시점 의존성도 배제하기
+위해 실제 runtime Raw와 정책 내용은 Fixture에 복사하지 않았다. 대신 실제
+응답에서 관찰한 JSON·XML 역할과 필드 이름만 재현한 합성 Raw를 사용한다.
+모든 ID는 `SYN-`, URL은 `fixture.invalid`, 내용은 합성 문구다.
+
+### Data 6 - Fixture와 canonical Seed
+
+고정 문서 ID·수집 시각·payload를 가진 합성 Raw 8개에서 같은 파이프라인으로
+Extracted 5건을 만들었다. Normalized 결과는 valid 2건·partial 2건·invalid
+1건이다.
+
+| 계층 | 경로 | 결과 |
+| --- | --- | ---: |
+| Raw | `data/fixtures/raw/` | 온통청년 4·복지로 4 |
+| Extracted | `data/fixtures/extracted/policies.json` | 5 |
+| Normalized | `data/fixtures/normalized/programs.json` | 4 |
+| rejected | `data/fixtures/rejected/programs.json` | 1 |
+| Seed | `data/seeds/initial_programs.json` | 4 |
+
+Normalized Fixture와 Seed는 byte가 같은 JSON 배열이다. Seed는 Schema-valid
+valid·partial만 포함하고 필수 제목이 없는 invalid는 `$.title`,
+`schema_type`, `error` 사유와 candidate를 rejected에 보존한다.
+
+대표 사례는 source 2종, 목록 전용·상세 결합, 지역·연령 있음과 없음,
+특정기간·상시, open·closed, 다중 category, null·빈 배열과 Raw provenance를
+포함한다. CSV importer 요구나 소비 코드가 없어 파생 CSV는 만들지 않았다.
+
+### Data 6 - 결정적 재생성과 오프라인 검증
+
+`scripts/build_data_fixtures.py --write`는 합성 정의에서 Raw부터 Seed까지
+12개 JSON 파일을 다시 만들고 `--check`는 committed byte와 예상 파일 집합을
+검사한다. 외부 API, 인증키와 `runtime/raw/`를 읽지 않는다.
+
+Data 6 테스트 9건은 다음을 확인한다.
+
+- 12개 산출물의 결정적 byte 일치와 추가·누락 파일 탐지
+- Raw 역할·관계·Hash와 합성 host·비밀정보 경계
+- Raw → Extracted 5건 재현
+- Seed 4건의 Normalized Schema와 valid 2·partial 2 분류
+- source·null·빈 배열·enum·날짜·다중 category·상세 provenance 보존
+- invalid의 정확한 오류 위치와 정상 Seed 제외
+- 외부 네트워크 호출 없음, CSV 미생성과 인증 파라미터·개인 식별자 부재
+
+### Data 6 - Backend·Frontend 공동 검토 상태
+
+[Fixture와 Seed 계약](../../../data/fixture_seed_contract.md)에 Backend와
+Frontend가 확인할 적재·Mock·nullable·배열·품질·provenance 항목을
+기록했다.
+
+Data 기술 검토와 자동 검증은 완료했다. 그러나 현재 저장소에는 Backend
+모델·Importer, Frontend TypeScript 타입·Mock, 담당 Issue·PR이나 두 영역의
+승인 기록이 없다. Data 담당이 공동 승인을 대신 기록하지 않으며 실제 승인
+또는 소비 테스트가 생길 때까지 Data 6 상태를 `in-progress`로 유지한다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
@@ -450,12 +514,19 @@ Normalized 1.0.0은 Data 파이프라인 내부 기준안이다.
 - `collectors/source_common.py`
 - `collectors/youthcenter.py`
 - `collectors/validation.py`
+- `data/fixtures/raw/`
+- `data/fixtures/extracted/policies.json`
+- `data/fixtures/normalized/programs.json`
+- `data/fixtures/rejected/programs.json`
+- `data/seeds/initial_programs.json`
 - `data/schema/normalized_program.schema.json`
 - `data/schema/raw_policy_document.schema.json`
+- `scripts/build_data_fixtures.py`
 - `scripts/validate_docs.py`
 - `tests/test_collectors_cli.py`
 - `tests/test_collectors_http.py`
 - `tests/test_extractors.py`
+- `tests/test_data_fixtures.py`
 - `tests/test_normalization.py`
 - `tests/fixtures/normalized/valid.json`
 - `tests/fixtures/normalized/partial.json`
@@ -468,6 +539,7 @@ Normalized 1.0.0은 Data 파이프라인 내부 기준안이다.
 - `docs/data/data_sources.md`
 - `docs/data/collection_policy.md`
 - `docs/data/data_schema.md`
+- `docs/data/fixture_seed_contract.md`
 - `docs/data/README.md`
 - `docs/development/develop_plan/data/01_data_pipeline.md`
 - `docs/development/develop_plan/README.md`
@@ -572,6 +644,26 @@ invalid로 버리지 않는다. 원문 text와 위치가 있는 warning을 보�
 배열로 표시한다. 제목·출처·provenance 또는 Schema 위반만 정상 결과에서
 완전히 분리한다.
 
+### 실제 원문 대신 source-shaped 합성 Raw를 배포한다
+
+복지로 이용허락이 제한 없음이어도 실제 응답은 시점에 따라 바뀌고,
+온통청년은 API 원문 재배포 범위가 명확하지 않다. 한 소스만 실제 원문으로
+두면 테스트 증거 수준도 달라진다. 따라서 field·문서 역할·목록 상세 연결은
+관찰 계약을 재현하되 정책 내용·ID·URL·시각은 합성·고정한다.
+
+### partial은 rejected가 아니라 소비 가능한 품질 상태다
+
+복지로처럼 지역·연령·신청기간이 없는 정책도 Schema를 통과하고 확인 가능한
+내용이 있다. canonical Seed는 valid와 partial을 포함하고 invalid만
+rejected로 분리한다. Backend·Frontend는 partial 처리 방식을 검토해야 하며
+누락을 기본값으로 숨기지 않는다.
+
+### 합의되지 않은 CSV를 만들지 않는다
+
+JSON은 null·배열·enum·날짜·provenance를 그대로 보존한다. 현재 CSV importer
+요구가 없으므로 중복 표현을 추가하지 않고 normalized Fixture와 Seed가 같은
+canonical JSON 계약을 사용한다.
+
 ## 검증 결과
 
 - 복지로 최소 실호출: 목록 1회, 상세 1회 성공
@@ -579,7 +671,7 @@ invalid로 버리지 않는다. 원문 text와 위치가 있는 warning을 보�
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
 - 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  Data 0~5 전체 71건 통과
+  Data 0~6 전체 80건 통과
 - Raw 계약 테스트: JSON·XML Schema 사례, Python·Schema 필드 일치, byte
   왕복, Hash 결정성·변조 탐지, 역할 연결, URL·저장 경로·덮어쓰기 경계 11건
   통과
@@ -595,6 +687,11 @@ invalid로 버리지 않는다. 원문 text와 위치가 있는 warning을 보�
   연령 경계, 지역 alias·미매핑 코드, 다중 category, null·빈 배열, Python·
   Schema 왕복, 합성 JSON Fixture와 오류 위치, valid·partial·invalid 분리
   13건 통과
+- Fixture·Seed 테스트: 합성 Raw·Extracted·Normalized 재생, committed byte,
+  Schema, source·null·배열·enum·날짜·provenance, rejected 분리, 네트워크
+  독립성, CSV 미생성과 비밀·개인 식별자 부재 9건 통과
+- 결정적 산출물 검사:
+  `python scripts/build_data_fixtures.py --check` 12개 파일 통과
 - 실제 호출 통합 검증: 온통청년 1회와 복지로 4회 성공, Raw 25개 재로드와
   관계·비밀·안전 URL·Git ignore 검증 통과
 - 실제 Raw 재처리: 추가 외부 호출 없이 두 소스 각 10건, 총 20건 추출,
@@ -604,7 +701,7 @@ invalid로 버리지 않는다. 원문 text와 위치가 있는 warning을 보�
 - 문서 검증: `python scripts/validate_docs.py` 통과
 - diff 공백 오류 검사: `git diff --check` 통과
 - Git 상태: 두 비밀 파일 모두 추적 대상 아님, 두 경로 모두 ignore 확인
-- 비밀값 검색: ignore 대상 비밀 파일을 제외한 Git 포함 후보 86개를 실제 두
+- 비밀값 검색: ignore 대상 비밀 파일을 제외한 Git 포함 후보 101개를 실제 두
   키 값과 대조했고 일치 파일 0개
 - 임시 산출물: Source Preflight 임시 스크립트와 테스트가 생성한 Python 3.14
   bytecode 제거
@@ -615,10 +712,8 @@ invalid로 버리지 않는다. 원문 text와 위치가 있는 warning을 보�
 - 온통청년 계정별 공식 호출 한도 확인
 - 두 API 키 폐기·재발급
 - 필요하면 저장소 관리자와 과거 Git 이력 정리 방식 결정
-- Data 6에서 이용 조건과 비밀정보를 검토한 최소 Raw Fixture 결정
-- Data 6 Fixture·Seed 확정 전에 Normalized 1.0.0의 category 배열,
-  application schedule·status, required key·null·빈 배열·provenance를
-  Backend·Frontend와 공동 승인
+- 합성 Fixture·Seed의 category 배열, application schedule·status, required
+  key·null·빈 배열·provenance를 Backend·Frontend가 실제 소비 관점에서 승인
 - 온통청년 지역 코드를 표준 이름으로 바꿀 공식·버전 고정 code table 결정
 - 현재 NTFS runtime 경로의 hard link 저장은 실호출 25개에서 성공함. 다른
   운영 filesystem이 hard link를 지원하지 않으면 부분 저장 대신 안전하게

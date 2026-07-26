@@ -182,8 +182,10 @@ valid·partial 결과는 Schema-valid Python 모델을 포함하고 invalid 결�
 candidate와 오류만 남겨 정상 결과와 분리한다.
 
 Data 5의 정상·경계·실패 사례는 개인정보나 외부 원문이 없는 합성 테스트
-데이터를 사용한다. 재배포할 Raw·Extracted·Normalized Fixture와 canonical
-Seed는 Data 6에서 이용 조건과 소비자 계약을 검토한 뒤 만든다.
+데이터를 사용한다. Data 6의 Raw·Extracted·Normalized Fixture와 canonical
+Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합성 데이터다.
+구체적인 대표 사례와 소비자 검토 상태는
+[Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
 
 ## 규칙 변경
 
@@ -197,5 +199,5 @@ Seed는 Data 6에서 이용 조건과 소비자 계약을 검토한 뒤 만든�
 - Backend 필터와 Frontend 표시 영향
 
 현재 Backend·Frontend 소비 구현은 없지만 단일 category에서 배열로의 전환,
-신청 일정·상태 분리, null·빈 배열과 provenance 필드는 Data 6 전에 공동
-검토해야 한다.
+신청 일정·상태 분리, null·빈 배열과 provenance 필드는 안정적인 영역 간
+계약으로 승인하기 전에 공동 검토해야 한다.

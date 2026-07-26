@@ -74,11 +74,23 @@ HTTP 302로 외부에서 접근할 수 없는 HTTP 8080 포트에 redirect했다
 실제 동작이 확인된 `/go/ythip/getPlcy`를 사용하고 공식 제공목록의 다른
 endpoint는 새 키 또는 gateway 수정이 확인될 때 다시 검토한다.
 
+### 이용·재배포 검토
+
+2026-07-26 기준
+[공식 OPEN API 이용방법][youth-api-guide]은 회원가입, 인증키 신청과 담당자
+승인을 요구한다. [현행 이용약관][youth-terms]은 대량 이용을 별도 계약
+대상으로 두고 서비스에서 얻은 게시 자료의 무단 상업적 가공·판매를
+제한한다.
+
+API 정책 원문의 Git 재배포 범위가 별도로 명확하지 않으므로 운영 Raw와 실제
+정책 내용을 Fixture·Seed에 포함하지 않는다. 테스트 자료는 source 필드
+구조와 경계만 재현한 합성 데이터다.
+
 ### 남은 확인 사항
 
 - 정책 상세 원문 URL의 안정성과 접근 조건
 - 오류 응답, 호출 제한과 재시도 가능 상태 코드
-- 이용약관, 공공데이터 이용 조건과 출처 표기 요구사항
+- API 응답 원문의 비상업적 재배포와 출처 표기 조건
 - 응답에 개인정보 또는 저장을 제한해야 하는 필드가 있는지 여부
 
 현재 숫자 호출 한도는 공식 공개 페이지에서 확인하지 못했다. 대량 이용과
@@ -111,6 +123,10 @@ detail: /NationalWelfaredetailedV001
 계정의 현재 할당량과 응답 헤더를 연동 전에 다시 확인하고, 테스트마다
 호출하지 않는다.
 
+같은 공식 자료는 2026-07-26 기준 이용허락범위를 `제한 없음`으로 표시한다.
+다만 Fixture의 최소성, 두 소스 간 일관된 경계와 시점 의존성 제거를 위해
+복지로도 실제 정책 원문이 아닌 합성 Raw를 사용한다.
+
 2026-07-26 Source Preflight의 목록 1건·상세 1건과 Data 3의 목록 10건·상세
 3건을 호출해 다음을 확인했다.
 
@@ -128,7 +144,6 @@ detail: /NationalWelfaredetailedV001
 - 오류 payload와 할당량 초과의 실제 HTTP 상태
 - 2025년 API 변경 공지 이후 추가·삭제된 응답 필드
 - 생애주기, 가구유형, 관심주제 코드표의 현재 값
-- 목록·상세 원문의 Fixture 재배포와 출처 표시 조건
 
 [2025년 변경 공지](https://www.data.go.kr/bbs/ntc/selectNotice.do?originId=NOTICE_0000000004050)는
 온라인 신청 가능 여부와 관심주제 추가, 일부 미사용 필드 제거를 안내한다.
@@ -189,8 +204,11 @@ Collector 문서를 함께 갱신한다.
 - 대표 HTTPS 웹사이트
 - 온통청년 API의 오류 payload
 - 복지로 선택 필드의 누락·빈 element 경계 사례
-- 각 소스의 공식 호출 제한과 재배포 조건
+- 온통청년 API 원문의 명시적인 비상업적 재배포·출처 표시 조건
 - 온통청년의 숫자 호출 한도와 복지로 트래픽 기간 단위
 
-미확정 사항은 후속 Source Profile 확인, 명시적 실제 호출 또는 Data 6의
-Fixture·재배포 검토에서 공식 자료와 실제 샘플을 근거로 확정한다.
+미확정 사항은 후속 Source Profile 확인 또는 명시적 실제 호출에서 공식
+자료와 실제 샘플을 근거로 확정한다.
+
+[youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide
+[youth-terms]: https://www.youthcenter.go.kr/cmnFooter/termsInfo

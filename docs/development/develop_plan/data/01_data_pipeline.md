@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 5 완료
+- 현재 Slice: Data 6 기술 산출물 완료, 공동 검토 대기
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -396,7 +396,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 6 - Fixture와 Seed 계약
 
-- 상태: pending
+- 상태: in-progress
 - 목적: Backend와 Frontend가 사용할 재현 가능한 샘플 데이터를 제공한다.
 - 작업:
   - 검토된 Raw·Extracted·Normalized Fixture
@@ -409,6 +409,20 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - 소스·null·빈 배열·enum·날짜 표현이 보존됨
   - 외부 네트워크 없이 Fixture 기반 테스트가 가능함
   - Backend·Frontend가 사용할 계약이 공동 검토됨
+- 진행 결과:
+  - 실제 API 원문 대신 두 소스의 관찰된 JSON·XML 구조만 재현한 합성 Raw
+    8개와 Extracted 5건을 구현함
+  - valid 2건·partial 2건의 Normalized Fixture와 byte가 같은 canonical
+    JSON Seed 4건을 생성하고 invalid 1건과 `$.title` 실패 사유를 분리함
+  - 고정 ID·시각·payload를 사용하는 재생성 명령과 committed byte 비교
+    명령을 구현하고 외부 네트워크·runtime Raw 의존이 없음을 검증함
+  - null·빈 배열·다중 category·날짜, fixed·always, open·closed,
+    목록 전용·상세 결합과 provenance 대표 사례를 포함함
+  - CSV 소비 요구가 없어 파생 CSV는 생성하지 않음
+  - 복지로는 공식 이용허락범위 `제한 없음`, 온통청년은 승인형 API와
+    상업적 가공 제한을 확인해 실제 원문을 Git에 포함하지 않음
+  - Data 기술 검토는 완료했으나 저장소에 Backend·Frontend 구현과 승인
+    증거가 없어 공동 검토 완료 기준은 아직 충족하지 못함
 
 ### Data 7 - 최종 검증과 Forest 기록
 

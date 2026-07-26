@@ -4,7 +4,7 @@
 
 - 상태: 논리적 기준선
 - 현재 구현 상태: Raw·Extracted·Normalized Python 모델, Raw·Normalized
-  JSON Schema와 runtime Raw 저장 구현
+  JSON Schema, 합성 Fixture와 canonical JSON Seed 구현
 
 이 문서는 `RawPolicyDocument`, `ExtractedPolicy`와
 `NormalizedProgram`의 역할과 필드 원칙을 정의한다. 실행 가능한 계약은
@@ -157,9 +157,9 @@ provenance가 가리키는 Raw에서 재현한다.
 fallback한다.
 
 `ExtractedPolicy`는 XML 태그와 JSON 필드명을 공통 Normalizer로 노출하지 않기
-위한 내부 경계다. 이번 구현은 Normalized Schema, Fixture, Seed, Backend API와
-Frontend 타입을 변경하지 않는다. 이 내부 계약이 서비스 소비자 계약으로
-승격되면 필수·null·배열 규칙을 Backend·Frontend와 공동 검토해야 한다.
+위한 내부 경계다. 이 모델을 바꿀 때는 Normalized Schema, Fixture와 Seed의
+재생성 영향을 확인한다. Extracted 자체를 서비스 소비자 계약으로 승격하려면
+필수·null·배열 규칙을 Backend·Frontend와 별도로 공동 검토해야 한다.
 
 ## `NormalizedProgram`
 
@@ -278,8 +278,9 @@ invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하�
 ### Backend·Frontend 영향과 승인 게이트
 
 Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
-버전이다. 현재 저장소에는 이를 소비하는 Backend 응답 모델, DB Schema,
-Frontend 타입, Fixture와 Seed가 없어 직접 동기화할 구현 파일은 없다.
+버전이다. Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical
+Seed를 구현했다. 현재 저장소에는 이를 소비하는 Backend 응답 모델, DB
+Schema와 Frontend 타입이 없어 직접 동기화할 구현 파일은 없다.
 
 다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
 
@@ -289,9 +290,9 @@ Frontend 타입, Fixture와 Seed가 없어 직접 동기화할 구현 파일은 
 - 선택 단일 값은 null, 복수 값은 빈 배열, 모든 필드 key는 required
 - invalid는 정상 API 응답·DB 적재·Frontend Mock에서 제외
 
-Data 6의 canonical Fixture와 Seed를 Backend·Frontend 소비 계약으로 승인하기
-전에 이 구조를 양쪽 담당자와 공동 검토한다. 승인 전까지 이번 Schema는 Data
-파이프라인 내부의 실행 가능한 기준안이다.
+[Fixture와 Seed 계약](fixture_seed_contract.md)은 양쪽 검토 항목과 현재
+승인 상태를 기록한다. Backend·Frontend 승인 전까지 이번 Schema와 Seed는
+Data 파이프라인의 실행 가능한 소비자 기준안이다.
 
 ## JSON Schema 동기화 규칙
 
@@ -307,9 +308,9 @@ Schema 변경 PR은 다음을 포함한다.
 5. Backend 응답 Schema와 Frontend 타입 영향 검토
 6. 호환성이 깨지면 `CHANGELOG.md`와 전환 방법
 
-이번 첫 Normalized Schema는 합성 valid·partial·invalid JSON Fixture로
-계약을 검증했다. 실제 소스 기반 Fixture와 Seed는 Data 6 범위이며, 소비자
-공동 검토 없이 현재 runtime Raw를 배포 데이터로 복사하지 않는다.
+합성 valid·partial·invalid 단위 Fixture와 두 소스 형태의 합성 Raw에서
+재생성한 Normalized Fixture·Seed로 계약을 검증한다. 현재 runtime Raw는
+소비자 공동 검토나 이용 조건과 관계없이 배포 데이터로 복사하지 않는다.
 
 Raw Schema는 Semantic Versioning 문자열을 사용한다. required·타입·역할
 관계처럼 기존 문서를 무효화하는 변경은 major, 기존 문서를 계속 허용하는
@@ -318,5 +319,5 @@ Raw Schema는 Semantic Versioning 문자열을 사용한다. required·타입·�
 
 Raw Schema는 Collector 재처리와 provenance를 위한 내부 계약이다.
 Normalized Schema는 향후 Backend·Frontend 소비 계약의 기준안이지만 현재
-소비 구현은 없다. Data 6에서 Fixture·Seed를 확정할 때 소비자 검토 결과와
-함께 Schema 변경 필요성을 다시 확인한다.
+소비 구현은 없다. Fixture·Seed 소비자 검토에서 변경 요청이 생기면 Schema,
+Fixture와 Seed를 같은 변경에서 동기화한다.

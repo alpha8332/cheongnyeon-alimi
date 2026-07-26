@@ -4,7 +4,7 @@
 
 - 상태: 기준선
 - 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API Collector·Extractor와
-  공통 Normalizer·Validator 구현
+  공통 Normalizer·Validator, 합성 Fixture·canonical Seed 구현
 
 이 문서는 외부 정책 데이터를 안전하고 재현 가능하게 수집하기 위한 공통
 원칙을 정의한다.
@@ -170,6 +170,10 @@ Git에 포함할 Fixture는 다음 조건을 모두 만족해야 한다.
 - 이용 조건상 재배포 가능
 - 출처와 생성 또는 수집 방법 기록
 - 원본 구조를 검증하는 데 필요한 특성 유지
+
+현재 두 API Fixture는 실제 응답을 복사하지 않고 관찰된 필드 구조를 합성한
+자료다. 합성 경계, 재생성 명령과 소비자 검토 상태는
+[Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
 
 Seed는 JSON을 canonical 표현으로 사용해 배열, `null`, enum과 provenance의
 타입을 보존한다. CSV는 Backend 초기 적재에 필요하다고 합의한 경우에만
