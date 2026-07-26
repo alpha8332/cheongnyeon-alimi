@@ -8,21 +8,21 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 1 완료
+- 현재 Slice: Data 2 완료
 
 ## 목적
 
 온통청년과 복지로 공식 API의 현재 요청 계약과 실제 응답 구조를 확인하고,
-두 소스 Collector가 공유할 안전한 실행·HTTP 기반을 구축한다. 인증키와 운영
-Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 기준선을
-유지한다.
+두 소스 Collector가 공유할 안전한 실행·HTTP·Raw 저장 기반을 구축한다.
+인증키와 운영 Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록
+저장소 기준선을 유지한다.
 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0과 Data 1을 수행했다. 공통 Collector 실행 계약과
-HTTP 기반까지만 구현했으며 실제 소스 Collector, Raw 모델, Extractor,
-Normalizer, Schema, Fixture와 Seed는 시작하지 않았다.
+누적한다. 현재는 Data 0부터 Data 2까지 수행했다. 공통 Collector 실행 계약,
+HTTP 기반과 Raw 모델·Schema·runtime 저장을 구현했다. 실제 소스 Collector,
+Extractor, Normalized Schema, Fixture와 Seed는 시작하지 않았다.
 
 ## Slice 진행 현황
 
@@ -30,7 +30,7 @@ Normalizer, Schema, Fixture와 Seed는 시작하지 않았다.
 | --- | --- | --- |
 | Data 0 | completed | 두 API 실응답과 비밀정보 경계 확인 |
 | Data 1 | completed | 공통 Collector·Registry·CLI와 HTTP Client 구현 |
-| Data 2 | pending | 미착수 |
+| Data 2 | completed | 원본 byte 기반 Raw 계약·Schema·안전 저장 구현 |
 | Data 3 | pending | 미착수 |
 | Data 4 | pending | 미착수 |
 | Data 5 | pending | 미착수 |
@@ -160,6 +160,57 @@ data/runtime/raw/
 인증 파라미터를 구성하는 Data 3·4 범위로 남겼다. 이 Slice에서는 외부 API를
 추가 호출하지 않았다.
 
+### Data 2 - Raw 모델과 실행 가능한 Schema
+
+`RawPolicyDocument` Schema version `1.0.0`을 Python 모델과 Draft 2020-12
+JSON Schema로 함께 구현했다. JSON 객체를 다시 직렬화하거나 XML tree를
+문자열로 바꾸면 원문 byte가 달라질 수 있으므로 `raw_payload_base64`에는
+HTTP body 원본 byte를 Base64로 저장한다. `content_hash`는 Base64 문자열이나
+envelope가 아닌 디코딩한 원본 byte의 SHA-256이다.
+
+Python 모델은 생성과 로드 시 다음을 함께 검증한다.
+
+- Schema version, source ID, UUID hex document ID와 모든 required 필드
+- Base64 payload, `byte_length`와 `sha256:<64 lowercase hex>` 일치
+- timezone이 있는 `collected_at`과 200~299 `http_status`
+- query·fragment·user information이 없는 HTTPS `source_url`
+- 역할별 `external_id`와 `parent_document_id` 조건
+- 추가 필드가 없는 JSON envelope
+
+실패 응답은 정상 Raw 문서로 만들지 않는다. 응답 오류와 실행 실패 기록은
+후속 Collector 실행 기록 범위로 분리한다.
+
+### Data 2 - 전체·항목·상세 보존 경계
+
+| 역할 | 보존 경계 | 연결 |
+| --- | --- | --- |
+| `list_response` | 목록 HTTP body 전체 | 관계 ID 없음 |
+| `list_item` | 목록에서 분리한 한 항목 | 부모 `list_response.document_id` |
+| `detail_response` | 상세 HTTP body 전체 | source-scoped `external_id` |
+
+`list_response`와 `detail_response`가 권위 있는 HTTP 원문이다. `list_item`은
+Extractor가 항목 단위로 처리하기 위한 파생 Raw이므로 부모 전체 응답을
+반드시 참조한다. 목록 항목과 상세 응답은 같은 `source_id + external_id`로
+연결하며 현재 온통청년은 `plcyNo`, 복지로는 `servId`를 사용한다.
+
+### Data 2 - Runtime Raw 저장
+
+최종 운영 Raw root를 `runtime/raw/`로 확정했다.
+
+```text
+runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
+```
+
+`RawDocumentStore`는 설정 root 아래에서만 저장·로드한다. 완성된 임시 파일을
+같은 filesystem에서 hard link해 부분 envelope 노출을 방지하고 기존
+`document_id` 파일은 덮어쓰지 않는다. 로드할 때 실제 resolve 경로가 root
+밖이면 symlink를 포함해 거부한다. `data/runtime/raw/`는 사용하지 않지만
+오입력된 Raw의 재유입 방지를 위해 기존 ignore를 유지한다.
+
+Data 2 테스트는 관찰된 구조를 축소한 JSON 목록 전체·항목과 XML 상세 byte를
+사용했다. 검토된 배포 Fixture는 Data 6 범위이므로 만들지 않았고 외부 API도
+추가 호출하지 않았다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
@@ -169,15 +220,20 @@ data/runtime/raw/
 - `collectors/cli.py`
 - `collectors/errors.py`
 - `collectors/http.py`
+- `collectors/raw.py`
 - `collectors/registry.py`
+- `collectors/storage.py`
+- `data/schema/raw_policy_document.schema.json`
 - `scripts/validate_docs.py`
 - `tests/test_collectors_cli.py`
 - `tests/test_collectors_http.py`
+- `tests/test_raw_storage.py`
 - `tests/test_validate_docs.py`
 - `tests/test_secret_boundaries.py`
 - `docs/data/source_profiles.md`
 - `docs/data/data_sources.md`
 - `docs/data/collection_policy.md`
+- `docs/data/data_schema.md`
 - `docs/data/README.md`
 - `docs/development/develop_plan/data/01_data_pipeline.md`
 - `docs/development/develop_plan/README.md`
@@ -218,6 +274,20 @@ Data 0에서 확인한 온통청년 302처럼 redirect 목적지가 안전하거
 Client는 응답 본문을 예외에 넣지 않는다. 소스별 결과 코드와 안전하게
 선별한 진단 정보는 실제 Collector가 해당 소스 계약에 따라 처리한다.
 
+### 원문 byte와 파생 항목을 같은 증거 수준으로 취급하지 않는다
+
+JSON/XML 파싱 결과는 원문 의미를 보존해도 byte 표현을 보존하지 못한다.
+따라서 목록·상세 HTTP body 전체는 Base64로 원본 byte를 저장하고 Hash의
+기준으로 삼는다. 항목별 Raw는 부모 전체 응답을 추적할 수 있는 파생 문서로
+명시해 원본 HTTP body처럼 가장하지 않는다.
+
+### Raw Schema는 서비스 소비자 계약과 분리한다
+
+이번 required·null·enum 규칙은 Collector 재처리를 위한 Raw 내부 계약이다.
+`NormalizedProgram`, Fixture, Seed, Backend API와 Frontend 타입은 변경하지
+않았다. 향후 Backend가 Raw를 적재하거나 Frontend 관리자 기능이 Raw를
+소비하면 영향받는 계약을 공동 검토한다.
+
 ## 검증 결과
 
 - 복지로 최소 실호출: 목록 1회, 상세 1회 성공
@@ -225,7 +295,12 @@ Client는 응답 본문을 예외에 넣지 않는다. 소스별 결과 코드�
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
 - 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  Data 0·1 전체 30건 통과
+  Data 0~2 전체 41건 통과
+- Raw 계약 테스트: JSON·XML Schema 사례, Python·Schema 필드 일치, byte
+  왕복, Hash 결정성·변조 탐지, 역할 연결, URL·저장 경로·덮어쓰기 경계 11건
+  통과
+- Raw 검증은 새 패키지 없이 표준 라이브러리와 Schema에서 사용하는
+  Draft 2020-12 keyword 계약 assertion으로 수행
 - 문서 검증: `python scripts/validate_docs.py` 통과
 - diff 공백 오류 검사: `git diff --check` 통과
 - Git 상태: 두 비밀 파일 모두 추적 대상 아님, 두 경로 모두 ignore 확인
@@ -240,6 +315,10 @@ Client는 응답 본문을 예외에 넣지 않는다. 소스별 결과 코드�
 - 온통청년 계정별 공식 호출 한도 확인
 - 두 API 키 폐기·재발급
 - 필요하면 저장소 관리자와 과거 Git 이력 정리 방식 결정
-- Raw 저장 Slice에서 최종 runtime Raw 경로 확정
-- Data 2에서 Raw 계약과 저장 구현
 - Data 3·4에서 실제 source Collector 등록과 환경변수 로딩 구현
+- Data 3에서 실제 응답으로 Raw 역할·연결 생성 검증
+- Data 6에서 이용 조건과 비밀정보를 검토한 최소 Raw Fixture 결정
+- 현재 저장기는 같은 filesystem의 hard link를 지원하지 않으면 부분 저장
+  대신 안전하게 실패함. 실제 Runtime Volume에서 Data 3 통합 검증 필요
+- 합의된 Python 의존성 manifest가 생기면 표준 Draft 2020-12 validator를
+  추가해 현재 표준 라이브러리 keyword assertion과 교차 검증

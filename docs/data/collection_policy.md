@@ -116,10 +116,11 @@ ignore와 인덱스 제외만으로 해결된 것으로 간주하지 않는다. 
 
 Raw는 받은 내용을 재현 가능한 형태로 보존한다.
 
-- 전체 응답과 항목별 Raw를 필요에 따라 함께 저장
+- 목록·상세 HTTP 응답 전체 byte를 Base64로 보존
+- 목록 항목별 파생 Raw는 부모 목록 응답을 참조
 - 출처 URL과 timezone을 포함한 수집 시각 기록
 - content type과 raw format 기록
-- SHA-256 content hash 기록
+- 원본 byte의 SHA-256 content hash와 byte 길이 기록
 - Collector 버전 기록
 - 원문을 정규화된 필드로 덮어쓰지 않음
 
@@ -129,8 +130,10 @@ Hash는 다음을 위한 기반이다.
 - 변경 여부 확인
 - 중복 저장 방지
 
-Hash 생성, 변경 이력과 중복 판정 기능의 구현 단계는 관련 Forest 계획에서
-정한다.
+현재 `RawPolicyDocument`는 Base64를 디코딩한 원본 byte로
+`sha256:<64 lowercase hex>`를 계산한다. Hash와 byte 길이가 payload와
+일치하지 않으면 저장·로드하지 않는다. 변경 이력과 소스 간 중복 판정은
+후속 Forest 범위다.
 
 ## Git과 Runtime 데이터
 
@@ -158,8 +161,8 @@ Seed는 JSON을 canonical 표현으로 사용해 배열, `null`, enum과 provena
 canonical JSON에서 결정적으로 생성하며, 배열 직렬화와 `null` 표현을
 문서화하고 두 표현의 일관성을 자동 검증한다.
 
-실제 runtime 저장 경로와 ignore 규칙은 Collector 저장 구현 시 함께
-검증한다.
+실제 runtime 저장 경로는 `runtime/raw/`다. 저장 envelope도 운영 Raw이므로
+Git에 포함하지 않는다.
 
 현재 재유입 방지 경계는 다음과 같다.
 
@@ -173,8 +176,17 @@ data/runtime/raw/
 
 `.env.example`은 실제 값 없이 변수명과 안전한 예시만 포함하는 경우 Git에
 포함할 수 있다. 비밀이 포함된 로컬 참고 문서는 정확한 경로를 `.gitignore`에
-등록한다. Runtime Raw의 최종 위치는 Raw 저장 Slice에서 확정하되 위 후보
-경로는 확정 전에도 Git에 포함되지 않게 유지한다.
+등록한다. `data/runtime/raw/`는 현재 저장기가 사용하지 않는 과거 후보지만
+잘못된 경로의 Raw가 Git에 재유입되지 않도록 ignore를 유지한다.
+
+저장 경로는 다음과 같다.
+
+```text
+runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
+```
+
+저장기는 설정 root 밖 경로, query나 user information이 포함된 `source_url`,
+형식에 맞지 않는 source ID·document ID와 기존 문서 덮어쓰기를 거부한다.
 
 ## 개인정보와 민감정보
 

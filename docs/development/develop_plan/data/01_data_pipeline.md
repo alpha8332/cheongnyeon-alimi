@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 1 완료
+- 현재 Slice: Data 2 완료
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -277,7 +277,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 2 - Raw 계약과 저장
 
-- 상태: pending
+- 상태: completed
 - 목적: 두 API의 목록·항목·상세 원문을 손실 없이 보존한다.
 - 작업:
   - Raw Python 모델과 JSON Schema
@@ -288,6 +288,20 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - JSON과 XML 기반 Raw 사례가 Schema를 통과함
   - 동일한 원문은 동일한 hash를 생성함
   - 경로 이탈과 운영 Raw의 Git 포함을 방지함
+- 진행 결과:
+  - Raw Schema `1.0.0`, Python `RawPolicyDocument`와 JSON Schema를 구현함
+  - 목록 전체 `list_response`, 파생 `list_item`, 상세 `detail_response` 역할과
+    `parent_document_id`, source-scoped `external_id` 연결 규칙을 확정함
+  - HTTP body 원본 byte를 Base64로 보존하고 디코딩한 byte에
+    `sha256:<64 lowercase hex>`와 `byte_length`를 검증함
+  - query·fragment·user information이 없는 HTTPS `source_url`만 허용함
+  - 운영 저장 위치를 `runtime/raw/`로 확정하고 UTC 날짜·source·역할별
+    불변 JSON envelope 저장과 로드를 구현함
+  - 중복 덮어쓰기, 설정 root 밖 경로와 symlink 경로 이탈을 거부함
+  - JSON 목록·항목과 XML 상세 사례의 Schema 통과, byte 왕복, hash 결정성과
+    Git ignore 경계를 외부 API 호출 없이 검증함
+  - Raw는 내부 provenance 계약이므로 Normalized Schema, Fixture, Seed,
+    Backend API와 Frontend 타입은 변경하지 않음
 
 ### Data 3 - 온통청년과 복지로 Collector
 

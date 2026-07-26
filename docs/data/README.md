@@ -19,6 +19,11 @@
 - [데이터 정규화 규칙](normalization_rules.md)
 - [데이터 수집 정책](collection_policy.md)
 
+## 실행 가능한 Schema
+
+- [RawPolicyDocument JSON Schema](../../data/schema/raw_policy_document.schema.json):
+  원본 byte와 목록·항목·상세 연결 메타데이터 계약
+
 ## 포함하지 않는 내용
 
 - 미확정 데이터 설계: `docs/development/develop_plan/`

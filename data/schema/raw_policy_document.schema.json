@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:raw-policy-document:1.0.0",
+  "title": "RawPolicyDocument",
+  "description": "Lossless external response bytes and collection metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_id",
+    "source_id",
+    "source_type",
+    "document_role",
+    "external_id",
+    "parent_document_id",
+    "source_url",
+    "collected_at",
+    "content_type",
+    "raw_format",
+    "raw_payload_base64",
+    "content_hash",
+    "byte_length",
+    "http_status",
+    "collector_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "document_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "api",
+        "web"
+      ]
+    },
+    "document_role": {
+      "type": "string",
+      "enum": [
+        "list_response",
+        "list_item",
+        "detail_response"
+      ]
+    },
+    "external_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^\\S+$"
+    },
+    "parent_document_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://(?![^/?#]*@)[^\\s?#]+$"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[^\\r\\n]+$"
+    },
+    "raw_format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "xml",
+        "html"
+      ]
+    },
+    "raw_payload_base64": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "byte_length": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "http_status": {
+      "type": "integer",
+      "minimum": 200,
+      "maximum": 299
+    },
+    "collector_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^\\r\\n]+$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "document_role"
+        ],
+        "properties": {
+          "document_role": {
+            "const": "list_response"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "external_id": {
+            "type": "null"
+          },
+          "parent_document_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "document_role"
+        ],
+        "properties": {
+          "document_role": {
+            "const": "list_item"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^\\S+$"
+          },
+          "parent_document_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "document_role"
+        ],
+        "properties": {
+          "document_role": {
+            "const": "detail_response"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^\\S+$"
+          },
+          "parent_document_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

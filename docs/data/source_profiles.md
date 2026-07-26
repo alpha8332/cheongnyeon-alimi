@@ -19,8 +19,10 @@
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | 목록 1건과 상세 1건 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
-`external_id` 후보는 온통청년의 `plcyNo`, 복지로의 `servId`이며 최종 Raw와
-Extracted 계약은 후속 Slice에서 확정한다.
+Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
+목록 항목과 상세 응답은 같은 `source_id + external_id`로 연결하고 목록
+항목은 부모 전체 응답의 `document_id`도 참조한다. Extracted 계약은 후속
+Slice에서 확정한다.
 
 ## 온통청년 청년정책 API
 
@@ -274,8 +276,9 @@ Normalizer가 명시적으로 변환하기 전에는 Raw string으로 보존한�
 - 오류 로그에는 source ID, operation, 실행 시각, HTTP 상태와 오류 분류만
   남기며 URI와 query string을 남기지 않는다.
 - API 응답은 Source Preflight 중 메모리에서 구조만 집계하고 저장하지 않았다.
-- 실제 Raw 저장은 `runtime/raw/` 또는 `data/runtime/raw/` 아래를 Git 제외
-  경계로 사용하되 최종 저장 경로는 Raw 저장 Slice에서 확정한다.
+- 실제 Raw 저장은 Git에서 제외된 `runtime/raw/`를 사용한다.
+- `data/runtime/raw/`는 사용하지 않는 과거 후보지만 재유입 방지를 위해
+  ignore를 유지한다.
 - 비밀이 포함된 로컬 키 파일과 참고 DOCX는 Git 추적에서 제외한다.
 - 과거 Git 이력에 비밀 파일이 존재하므로 현재 키는 노출된 것으로 간주하고
   폐기·재발급해야 한다. 인덱스 제외는 과거 이력을 제거하지 않는다.
