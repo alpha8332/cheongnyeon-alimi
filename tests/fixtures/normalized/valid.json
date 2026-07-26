@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "source_id": "fixture-source",
+  "source_name": "합성 Fixture",
+  "external_id": "VALID-1",
+  "title": "정상 청년정책",
+  "organization": "Fixture 기관",
+  "summary": null,
+  "category_text": "주거",
+  "categories": [
+    "housing"
+  ],
+  "application_period_text": "2026-07-01 ~ 2026-07-31",
+  "application_start": "2026-07-01",
+  "application_end": "2026-07-31",
+  "application_schedule": "fixed_period",
+  "application_status": "open",
+  "region_text": "서울시",
+  "regions": [
+    "서울특별시"
+  ],
+  "age_min": 19,
+  "age_max": 34,
+  "age_condition_text": "만 19세 이상 34세 이하",
+  "eligibility_text": "청년",
+  "support_content": "합성 지원 내용",
+  "application_method": "온라인",
+  "education_statuses": [],
+  "employment_statuses": [],
+  "required_conditions": [],
+  "preferred_conditions": [],
+  "excluded_conditions": [],
+  "source_url": "https://example.test/policies/valid",
+  "collected_at": "2026-07-26T07:30:00+00:00",
+  "provenance": [
+    {
+      "raw_document_id": "11111111111111111111111111111111",
+      "document_role": "list_item",
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "collected_at": "2026-07-26T07:30:00+00:00",
+      "source_url": "https://example.test/api/policies"
+    }
+  ],
+  "data_quality_status": "valid"
+}

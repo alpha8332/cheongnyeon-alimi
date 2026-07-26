@@ -65,10 +65,17 @@ ALLOWED_STATUSES = {
     "superseded",
 }
 
+ALLOWED_OWNER_AREAS = {
+    "data",
+    "backend",
+    "frontend",
+    "integration",
+}
+
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*]\(([^)]+)\)")
 SECRET_ASSIGNMENT = re.compile(
     r"(?im)\b("
-    r"YOUTHCENTER_API_KEY|API_KEY|SECRET_KEY|ACCESS_TOKEN|"
+    r"YOUTHCENTER_API_KEY|BOKJIRO_API_KEY|API_KEY|SECRET_KEY|ACCESS_TOKEN|"
     r"PRIVATE_KEY|PASSWORD"
     r")\s*[:=]\s*[\"']?([^\s`\"']+)"
 )
@@ -185,28 +192,49 @@ def first_status(text: str) -> str | None:
     return match.group(1) if match else None
 
 
-def forest_name_from_plan(path: Path) -> str:
-    return re.sub(r"^\d+_", "", path.stem)
+def forest_key(path: Path, base_dir: Path, *, numbered_plan: bool) -> tuple[str, str]:
+    """Return the owner area and Forest name used to pair plans and notes."""
+
+    area = path.relative_to(base_dir).parent.as_posix()
+    name = re.sub(r"^\d+_", "", path.stem) if numbered_plan else path.stem
+    return area, name
+
+
+def check_forest_owner_area(path: Path, base_dir: Path, root: Path) -> list[str]:
+    """Require a Forest document in exactly one supported owner directory."""
+
+    owner_parts = path.relative_to(base_dir).parts[:-1]
+    if len(owner_parts) != 1 or owner_parts[0] not in ALLOWED_OWNER_AREAS:
+        return [
+            f"{relative(path, root)}: invalid Forest owner area; expected one of "
+            f"{', '.join(sorted(ALLOWED_OWNER_AREAS))}"
+        ]
+    return []
 
 
 def check_forest_documents(root: Path) -> list[str]:
     errors: list[str] = []
     plan_dir = root / "docs/development/develop_plan"
     note_dir = root / "docs/development/development_notes"
-    plans = sorted(plan_dir.glob("[0-9][0-9]_*.md"))
+    plans = sorted(plan_dir.rglob("[0-9][0-9]_*.md"))
     notes = {
-        path.stem: path
-        for path in note_dir.glob("*.md")
+        forest_key(path, note_dir, numbered_plan=False): path
+        for path in note_dir.rglob("*.md")
         if path.name.lower() != "readme.md"
     }
 
     if not plans:
         errors.append("no numbered Forest develop plan exists")
 
-    plan_names: set[str] = set()
+    plan_keys: set[tuple[str, str]] = set()
     for plan in plans:
-        name = forest_name_from_plan(plan)
-        plan_names.add(name)
+        errors.extend(check_forest_owner_area(plan, plan_dir, root))
+        key = forest_key(plan, plan_dir, numbered_plan=True)
+        if key in plan_keys:
+            errors.append(
+                f"{relative(plan, root)}: duplicate Forest plan in owner area"
+            )
+        plan_keys.add(key)
         text = plan.read_text(encoding="utf-8")
         for heading in PLAN_HEADINGS:
             if not has_heading(text, heading):
@@ -224,12 +252,13 @@ def check_forest_documents(root: Path) -> list[str]:
             errors.append(
                 f"{relative(plan, root)}: completed Forest has unfinished Slice"
             )
-        if name not in notes:
+        if status in {"in-progress", "completed"} and key not in notes:
             errors.append(
                 f"{relative(plan, root)}: matching development note is missing"
             )
 
-    for name, note in notes.items():
+    for key, note in notes.items():
+        errors.extend(check_forest_owner_area(note, note_dir, root))
         text = note.read_text(encoding="utf-8")
         for heading in NOTE_HEADINGS:
             if not has_heading(text, heading):
@@ -247,11 +276,56 @@ def check_forest_documents(root: Path) -> list[str]:
             errors.append(
                 f"{relative(note, root)}: completed Forest has unfinished Slice"
             )
-        if name not in plan_names:
+        if key not in plan_keys:
             errors.append(
                 f"{relative(note, root)}: matching numbered develop plan is missing"
             )
 
+    return errors
+
+
+def resolved_markdown_targets(path: Path) -> set[Path]:
+    """Return local Markdown link targets resolved from one document."""
+
+    targets: set[Path] = set()
+    text = path.read_text(encoding="utf-8")
+    for match in MARKDOWN_LINK.finditer(text):
+        raw_target = match.group(1).strip()
+        if raw_target.startswith(("http://", "https://", "mailto:", "#")):
+            continue
+        target = link_target(raw_target)
+        if target:
+            targets.add((path.parent / target).resolve())
+    return targets
+
+
+def check_forest_indexes(root: Path) -> list[str]:
+    """Require every Forest plan and note in its README and the docs index."""
+
+    plan_dir = root / "docs/development/develop_plan"
+    note_dir = root / "docs/development/development_notes"
+    plans = sorted(plan_dir.rglob("[0-9][0-9]_*.md"))
+    notes = sorted(
+        path
+        for path in note_dir.rglob("*.md")
+        if path.name.lower() != "readme.md"
+    )
+    registries = (
+        (plan_dir / "README.md", plans, "develop plan README"),
+        (note_dir / "README.md", notes, "development notes README"),
+        (root / "docs/index.md", [*plans, *notes], "docs index"),
+    )
+
+    errors: list[str] = []
+    for registry, documents, label in registries:
+        if not registry.is_file():
+            continue
+        targets = resolved_markdown_targets(registry)
+        for document in documents:
+            if document.resolve() not in targets:
+                errors.append(
+                    f"{relative(document, root)}: missing from {label}"
+                )
     return errors
 
 
@@ -265,6 +339,7 @@ def validate_repository(root: Path) -> list[str]:
         check_secret_assignments(root, files),
         check_empty_docs(root),
         check_forest_documents(root),
+        check_forest_indexes(root),
     )
     return [error for result in checks for error in result]
 

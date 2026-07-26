@@ -10,19 +10,13 @@
 
 ### Added
 
-- 문서 탐색, 갱신 기준과 작업 전후 체크리스트를 제공하는 문서 시스템 기반
-- 계획, 개발 기록, 변경 이력과 문제 해결 기록을 구분하는 문서화 정책
-- 아키텍처, API, 데이터, 거버넌스, 개발, 계획, 문제 해결, 운영과 대회
-  문서의 책임을 구분하는 기본 디렉터리 구조
-- 루트 `README.md`에서 프로젝트 문서 진입점으로 연결하는 안내
-- 브랜치, 커밋, 코드 리뷰와 역할 분담을 하나의 협업 흐름으로 연결한
-  거버넌스 정책
-- 외부 정책 소스부터 React UI까지의 계층, 데이터 흐름과 책임 경계를
-  정의한 시스템 아키텍처 기준선
-- 초기 3개 컨테이너 구성과 향후 실행 단위 변경을 관리하는 ADR 규칙
-- 온통청년 API와 대표 HTTPS 웹 소스의 등록·검증 기준
-- Raw, Extracted와 Normalized 데이터 계약, 정규화 및 안전한 수집 기준선
-- 개발 계획과 실제 구현 기록을 Forest별 문서로 대응시키는
-  `develop_plan/` 및 `development_notes/` 구조
-- 문서 링크, 필수 파일, 비밀값 패턴과 Forest 문서 구조를 검사하는 문서
-  품질 검증기 및 단위 테스트
+- 온통청년·복지로 source Collector·Extractor, 비밀정보 안전한 공통 HTTP·CLI,
+  Raw 보존부터 provenance 기반 정규화·Schema 검증·품질 분류와 결정적
+  Fixture·canonical Seed까지의 데이터 파이프라인 기반 추가
+  ([개발 기록](docs/development/development_notes/data/data_pipeline.md))
+- 문서 탐색·라우팅, 협업·의존성·통합 배포 책임, Architecture·Data 기준선과
+  Forest별 계획·개발 기록을 연결하는 Docs System 구축
+  ([개발 기록](docs/development/development_notes/integration/docs_system.md))
+- 문서 링크, 필수 파일, 비밀값 패턴, Forest 담당 영역·대응과 색인 등록을
+  확인하는 로컬 문서 검증 기반 추가
+  ([개발 기록](docs/development/development_notes/integration/docs_system.md))

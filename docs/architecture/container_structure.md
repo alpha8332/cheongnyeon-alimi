@@ -42,7 +42,8 @@ services:
 - `/api` 계약에 따른 Backend 호출
 - 런타임 비밀정보를 번들에 포함하지 않음
 
-Dockerfile은 `frontend/`에 둔다.
+Frontend Dockerfile의 목표 위치는 `frontend/`이다. 파일 작성과 이미지 빌드는
+Frontend Forest의 기본 책임이 아니라 통합·배포 Forest에서 수행한다.
 
 ### `backend`
 
@@ -56,7 +57,8 @@ Collector 코드는 최상위 `collectors/`의 독립 모듈로 유지한다. �
 명령으로 실행한다. API 요청 처리 과정에서 긴 수집 작업을 동기 실행하는
 구조를 의미하지 않는다.
 
-Dockerfile은 `backend/`에 둔다.
+Backend Dockerfile의 목표 위치는 `backend/`이다. 파일 작성과 이미지 빌드는
+Backend Forest의 기본 책임이 아니라 통합·배포 Forest에서 수행한다.
 
 ### `database`
 
@@ -84,6 +86,30 @@ repository
 논리적 모듈과 컨테이너를 반드시 1:1로 만들지 않는다. Collector를 최상위
 모듈로 분리하는 이유는 책임과 테스트 경계를 유지하기 위해서이며, 초기부터
 별도 운영 컨테이너가 필요하다는 뜻은 아니다.
+
+## 개발 산출물과 컨테이너 통합
+
+각 영역은 컨테이너 파일보다 먼저 재현 가능한 애플리케이션 산출물을
+제공한다.
+
+| 영역 | 통합 전에 제공할 산출물 |
+| --- | --- |
+| Frontend | 소스 코드, `package.json`, 단일 lockfile, 환경변수 예시, 실행·테스트 명령 |
+| Backend | 소스 코드, 합의된 Python manifest·lockfile, 환경변수 예시, 실행·테스트 명령 |
+| Data | 데이터 처리 코드, Schema·Fixture·Seed와 확정된 실행 환경에 반영한 Python 의존성 |
+
+관련 Forest 결과가 `develop`에 병합된 뒤 통합·배포 Forest에서 다음을
+수행한다.
+
+1. Frontend와 Backend Dockerfile 작성
+2. Database를 포함한 Compose 구성
+3. 서비스 네트워크, 환경변수, Volume과 health check 설정
+4. manifest와 lockfile을 이용한 재현 가능한 이미지 빌드
+5. `docker compose up` 기반 전체 실행과 통합 테스트
+
+통합 담당은 라이브러리와 버전을 추측하지 않고 각 영역이 제공한 manifest와
+lockfile을 사용한다. 개별 영역 Forest에서 컨테이너 작업이 필요하면 해당
+Forest 계획에 범위와 완료 기준을 명시해야 한다.
 
 ## 데이터 저장
 

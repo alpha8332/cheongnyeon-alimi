@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:normalized-program:1.0.0",
+  "title": "NormalizedProgram",
+  "description": "Canonical policy data with quality status and Raw provenance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_id",
+    "source_name",
+    "external_id",
+    "title",
+    "organization",
+    "summary",
+    "category_text",
+    "categories",
+    "application_period_text",
+    "application_start",
+    "application_end",
+    "application_schedule",
+    "application_status",
+    "region_text",
+    "regions",
+    "age_min",
+    "age_max",
+    "age_condition_text",
+    "eligibility_text",
+    "support_content",
+    "application_method",
+    "education_statuses",
+    "employment_statuses",
+    "required_conditions",
+    "preferred_conditions",
+    "excluded_conditions",
+    "source_url",
+    "collected_at",
+    "provenance",
+    "data_quality_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "source_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "external_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^\\S+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "organization": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "summary": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "category_text": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "categories": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "housing",
+          "finance",
+          "welfare",
+          "employment",
+          "startup",
+          "education",
+          "other"
+        ]
+      }
+    },
+    "application_period_text": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "application_start": {
+      "$ref": "#/$defs/nullableDate"
+    },
+    "application_end": {
+      "$ref": "#/$defs/nullableDate"
+    },
+    "application_schedule": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "fixed_period",
+        "always",
+        "until_budget_exhausted",
+        null
+      ]
+    },
+    "application_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "open",
+        "closed",
+        "scheduled",
+        null
+      ]
+    },
+    "region_text": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "regions": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "age_min": {
+      "$ref": "#/$defs/nullableAge"
+    },
+    "age_max": {
+      "$ref": "#/$defs/nullableAge"
+    },
+    "age_condition_text": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "eligibility_text": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "support_content": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "application_method": {
+      "$ref": "#/$defs/nullableText"
+    },
+    "education_statuses": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "employment_statuses": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "required_conditions": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "preferred_conditions": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "excluded_conditions": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://(?![^/?#]*@)[^\\s]+$"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/provenance"
+      }
+    },
+    "data_quality_status": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "partial",
+        "invalid"
+      ]
+    }
+  },
+  "$defs": {
+    "nullableText": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "nullableDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "nullableAge": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 150
+    },
+    "stringArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^\\S(?:.*\\S)?$"
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_document_id",
+        "document_role",
+        "content_hash",
+        "collected_at",
+        "source_url"
+      ],
+      "properties": {
+        "raw_document_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "document_role": {
+          "type": "string",
+          "enum": [
+            "list_response",
+            "list_item",
+            "detail_response"
+          ]
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://(?![^/?#]*@)[^\\s?#]+$"
+        }
+      }
+    }
+  }
+}

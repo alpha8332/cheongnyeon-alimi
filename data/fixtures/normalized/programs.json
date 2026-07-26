@@ -1,0 +1,213 @@
+[
+  {
+    "age_condition_text": "19세 ~ 34세",
+    "age_max": 34,
+    "age_min": 19,
+    "application_end": "2026-06-30",
+    "application_method": "온라인 신청",
+    "application_period_text": "2026. 1. 1. ~ 2026. 6. 30.",
+    "application_schedule": "fixed_period",
+    "application_start": "2026-01-01",
+    "application_status": "closed",
+    "categories": [
+      "housing"
+    ],
+    "category_text": "주거",
+    "collected_at": "2026-07-26T06:00:00+00:00",
+    "data_quality_status": "valid",
+    "education_statuses": [],
+    "eligibility_text": "합성 청년 대상",
+    "employment_statuses": [],
+    "excluded_conditions": [],
+    "external_id": "SYN-YOUTH-001",
+    "organization": "합성 주거기관",
+    "preferred_conditions": [],
+    "provenance": [
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+        "document_role": "list_response",
+        "raw_document_id": "10000000000000000000000000000000",
+        "source_url": "https://fixture.invalid/youthcenter/getPlcy"
+      },
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:02dfcff3dbe823a51fddc106dfea263c0a8edb6d142c93e95ea1921fd3534d7b",
+        "document_role": "list_item",
+        "raw_document_id": "11000000000000000000000000000001",
+        "source_url": "https://fixture.invalid/youthcenter/getPlcy"
+      }
+    ],
+    "region_text": "서울시",
+    "regions": [
+      "서울특별시"
+    ],
+    "required_conditions": [],
+    "schema_version": "1.0.0",
+    "source_id": "youthcenter-api",
+    "source_name": "온통청년 청년정책 API",
+    "source_url": "https://fixture.invalid/youth/001",
+    "summary": null,
+    "support_content": "합성 월 지원",
+    "title": "합성 청년 주거 지원"
+  },
+  {
+    "age_condition_text": "연령 제한 없음",
+    "age_max": null,
+    "age_min": null,
+    "application_end": null,
+    "application_method": null,
+    "application_period_text": "상시",
+    "application_schedule": "always",
+    "application_start": null,
+    "application_status": "open",
+    "categories": [
+      "finance",
+      "welfare"
+    ],
+    "category_text": "금융･복지･문화",
+    "collected_at": "2026-07-26T06:00:00+00:00",
+    "data_quality_status": "valid",
+    "education_statuses": [],
+    "eligibility_text": null,
+    "employment_statuses": [],
+    "excluded_conditions": [],
+    "external_id": "SYN-YOUTH-002",
+    "organization": "합성 등록기관",
+    "preferred_conditions": [],
+    "provenance": [
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+        "document_role": "list_response",
+        "raw_document_id": "10000000000000000000000000000000",
+        "source_url": "https://fixture.invalid/youthcenter/getPlcy"
+      },
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:9c536a8b315e01159d3e65d66fa842edaf18c7097cbcf5c60eb44cf0fc4ebf03",
+        "document_role": "list_item",
+        "raw_document_id": "11000000000000000000000000000002",
+        "source_url": "https://fixture.invalid/youthcenter/getPlcy"
+      }
+    ],
+    "region_text": "전국",
+    "regions": [
+      "전국"
+    ],
+    "required_conditions": [],
+    "schema_version": "1.0.0",
+    "source_id": "youthcenter-api",
+    "source_name": "온통청년 청년정책 API",
+    "source_url": "https://fixture.invalid/youth/002",
+    "summary": null,
+    "support_content": "합성 생활 지원",
+    "title": "합성 상시 생활 지원"
+  },
+  {
+    "age_condition_text": null,
+    "age_max": null,
+    "age_min": null,
+    "application_end": null,
+    "application_method": null,
+    "application_period_text": null,
+    "application_schedule": null,
+    "application_start": null,
+    "application_status": null,
+    "categories": [
+      "finance",
+      "welfare"
+    ],
+    "category_text": "서민금융,생활지원",
+    "collected_at": "2026-07-26T06:01:00+00:00",
+    "data_quality_status": "partial",
+    "education_statuses": [],
+    "eligibility_text": "합성 지원 대상 합성 선정 기준",
+    "employment_statuses": [],
+    "excluded_conditions": [],
+    "external_id": "SYN-BOK-001",
+    "organization": "합성 복지부처",
+    "preferred_conditions": [],
+    "provenance": [
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:7d64e81c498ec1ba442c28c44c0b8092e7b7ea21e5db398c4f3430629cf256c6",
+        "document_role": "list_response",
+        "raw_document_id": "20000000000000000000000000000000",
+        "source_url": "https://fixture.invalid/bokjiro/list"
+      },
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:5510c01d1ccb614d254cd6c4e49d8c5fdc215b27bf0954873be3c392526a82c7",
+        "document_role": "list_item",
+        "raw_document_id": "21000000000000000000000000000001",
+        "source_url": "https://fixture.invalid/bokjiro/list"
+      },
+      {
+        "collected_at": "2026-07-26T06:01:00+00:00",
+        "content_hash": "sha256:dd1671eec158beb0847a62adb1d734a1d699c0a8e7131debaef32ba697b634e4",
+        "document_role": "detail_response",
+        "raw_document_id": "22000000000000000000000000000001",
+        "source_url": "https://fixture.invalid/bokjiro/detail"
+      }
+    ],
+    "region_text": null,
+    "regions": [],
+    "required_conditions": [],
+    "schema_version": "1.0.0",
+    "source_id": "bokjiro-central-welfare-api",
+    "source_name": "복지로 중앙부처 복지서비스 API",
+    "source_url": "https://fixture.invalid/bokjiro/001",
+    "summary": null,
+    "support_content": "합성 상세 지원 내용",
+    "title": "합성 청년 자산 지원 상세"
+  },
+  {
+    "age_condition_text": null,
+    "age_max": null,
+    "age_min": null,
+    "application_end": null,
+    "application_method": null,
+    "application_period_text": null,
+    "application_schedule": null,
+    "application_start": null,
+    "application_status": null,
+    "categories": [],
+    "category_text": null,
+    "collected_at": "2026-07-26T06:00:00+00:00",
+    "data_quality_status": "partial",
+    "education_statuses": [],
+    "eligibility_text": null,
+    "employment_statuses": [],
+    "excluded_conditions": [],
+    "external_id": "SYN-BOK-002",
+    "organization": "합성 복지부처",
+    "preferred_conditions": [],
+    "provenance": [
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:7d64e81c498ec1ba442c28c44c0b8092e7b7ea21e5db398c4f3430629cf256c6",
+        "document_role": "list_response",
+        "raw_document_id": "20000000000000000000000000000000",
+        "source_url": "https://fixture.invalid/bokjiro/list"
+      },
+      {
+        "collected_at": "2026-07-26T06:00:00+00:00",
+        "content_hash": "sha256:08159489ee4536ceb8d5876a26acf37d29b2d06ce4ff8998985bae76821c0f3d",
+        "document_role": "list_item",
+        "raw_document_id": "21000000000000000000000000000002",
+        "source_url": "https://fixture.invalid/bokjiro/list"
+      }
+    ],
+    "region_text": null,
+    "regions": [],
+    "required_conditions": [],
+    "schema_version": "1.0.0",
+    "source_id": "bokjiro-central-welfare-api",
+    "source_name": "복지로 중앙부처 복지서비스 API",
+    "source_url": "https://fixture.invalid/bokjiro/002",
+    "summary": null,
+    "support_content": "상세가 없는 합성 목록 사례",
+    "title": "합성 목록 전용 지원"
+  }
+]
