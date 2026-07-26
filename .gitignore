@@ -1,0 +1,19 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+APIkey.txt
+opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx
+
+# Runtime collection artifacts
+runtime/raw/
+data/runtime/raw/
+
+# Python local artifacts
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Editor-local settings
+.vscode/
