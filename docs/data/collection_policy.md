@@ -58,6 +58,7 @@ request delay: 1.0 seconds
 
 ```text
 YOUTHCENTER_API_KEY
+BOKJIRO_API_KEY
 HTTP_TIMEOUT_SECONDS
 HTTP_MAX_RETRIES
 HTTP_REQUEST_DELAY_SECONDS
@@ -68,6 +69,28 @@ HTTP_REQUEST_DELAY_SECONDS
 - `.env.example`에는 변수명과 비밀이 아닌 예시만 기록한다.
 - 인증키를 URL, 로그, 예외 메시지, Fixture와 문서에 포함하지 않는다.
 - 키가 없으면 모호한 네트워크 오류 대신 명확한 설정 오류를 반환한다.
+- 인증 파라미터 이름이 소스마다 달라도 `apiKeyNm`, `openApiVlak`,
+  `serviceKey`와 같은 값은 공통 redaction 대상으로 처리한다.
+- 요청 URL을 기록해야 하면 query string 전체를 제거하거나 허용된
+  비인증 파라미터만 다시 구성한다.
+
+현재 로컬 참고 자료 일부에는 실제 인증키가 포함되어 있다. 해당 파일은
+읽기 전용 비밀 자료로 취급하고 Git, Fixture, 테스트 snapshot과 개발 기록에
+복사하지 않는다.
+
+## 공식 API 호출 예산
+
+실제 외부 API 호출은 단위 테스트와 분리된 명시적 통합 검증으로만 실행한다.
+
+- 기본 테스트는 검토된 JSON·XML Fixture를 사용한다.
+- Source Preflight는 현재 endpoint, 인증과 응답 형식을 확인하는 최소 호출만
+  수행한다.
+- 복지로 목록은 한 페이지를 재사용하고 상세는 대표 3~5건만 호출한다.
+- 호출 전에 현재 계정의 할당량과 공식 제한을 확인한다.
+- 429 또는 제공기관의 할당량 오류는 제한적으로 재시도하지 않고 실행을
+  중단해 남은 호출량을 보호한다.
+- 실제 호출 결과에는 키 값과 전체 query string을 제외한 소스, 실행 시각,
+  호출 건수, HTTP 결과와 응답 구조 확인 결과만 기록한다.
 
 ## Raw 보존
 
@@ -95,8 +118,9 @@ Hash 생성, 변경 이력과 중복 판정 기능의 구현 단계는 관련 Fo
 | --- | --- | --- |
 | Schema | `data/schema/*.schema.json` | 포함 |
 | 테스트 Raw Fixture | 축소·검토한 XML, JSON, HTML | 조건부 포함 |
-| 개발 Fixture | `data/fixtures/programs.json` | 포함 |
-| 개발 Seed | `data/seeds/initial_programs.csv` | 포함 |
+| 개발 Fixture | `data/fixtures/normalized/programs.json` | 포함 |
+| canonical 개발 Seed | `data/seeds/initial_programs.json` | 포함 |
+| 파생 CSV Seed | canonical JSON에서 생성한 CSV | 합의·검증 시 포함 |
 | 실제 수집 Raw | 전체 API 응답, 운영 HTML | 제외 |
 | 처리 결과 | runtime normalized, rejected | 제외 |
 | DB 데이터 | PostgreSQL Volume | 제외 |
@@ -108,6 +132,11 @@ Git에 포함할 Fixture는 다음 조건을 모두 만족해야 한다.
 - 이용 조건상 재배포 가능
 - 출처와 생성 또는 수집 방법 기록
 - 원본 구조를 검증하는 데 필요한 특성 유지
+
+Seed는 JSON을 canonical 표현으로 사용해 배열, `null`, enum과 provenance의
+타입을 보존한다. CSV는 Backend 초기 적재에 필요하다고 합의한 경우에만
+canonical JSON에서 결정적으로 생성하며, 배열 직렬화와 `null` 표현을
+문서화하고 두 표현의 일관성을 자동 검증한다.
 
 실제 runtime 저장 경로와 ignore 규칙은 Collector 저장 구현 시 함께
 검증한다.
