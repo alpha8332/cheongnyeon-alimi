@@ -10,6 +10,9 @@
 
 ### Added
 
+- source ID 기반 Collector Registry·CLI와 비밀정보 안전한 JSON·XML 공통 HTTP
+  Client 기반 추가
+  ([개발 기록](docs/development/development_notes/data/data_pipeline.md))
 - 문서 탐색·라우팅, 협업·의존성·통합 배포 책임, Architecture·Data 기준선과
   Forest별 계획·개발 기록을 연결하는 Docs System 구축
   ([개발 기록](docs/development/development_notes/integration/docs_system.md))

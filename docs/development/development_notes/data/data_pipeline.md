@@ -8,26 +8,28 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 0 완료
+- 현재 Slice: Data 1 완료
 
 ## 목적
 
-온통청년과 복지로 공식 API의 현재 요청 계약, 실제 응답 구조와 안전한 실행
-경계를 확인한다. 인증키와 운영 Raw가 Git, 로그, 예외, URL 기록과 Fixture에
-남지 않도록 저장소 기준선을 만든다.
+온통청년과 복지로 공식 API의 현재 요청 계약과 실제 응답 구조를 확인하고,
+두 소스 Collector가 공유할 안전한 실행·HTTP 기반을 구축한다. 인증키와 운영
+Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 기준선을
+유지한다.
 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0만 수행했으며 Collector, Raw 모델, Extractor,
-Normalizer, Schema, Fixture와 Seed 구현은 시작하지 않았다.
+누적한다. 현재는 Data 0과 Data 1을 수행했다. 공통 Collector 실행 계약과
+HTTP 기반까지만 구현했으며 실제 소스 Collector, Raw 모델, Extractor,
+Normalizer, Schema, Fixture와 Seed는 시작하지 않았다.
 
 ## Slice 진행 현황
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | Data 0 | completed | 두 API 실응답과 비밀정보 경계 확인 |
-| Data 1 | pending | 미착수 |
+| Data 1 | completed | 공통 Collector·Registry·CLI와 HTTP Client 구현 |
 | Data 2 | pending | 미착수 |
 | Data 3 | pending | 미착수 |
 | Data 4 | pending | 미착수 |
@@ -125,10 +127,52 @@ data/runtime/raw/
 단위 테스트는 비밀 파일, `.env` 계열과 runtime Raw 후보가 ignore되고
 `.env.example`은 예외로 남는지 확인한다.
 
+### Data 1 - 공통 Collector 실행 구조
+
+`collectors` 패키지에 source ID와 `collect()`를 요구하는 `Collector`
+프로토콜을 추가했다. `CollectorRegistry`는 안정적인 kebab-case source ID와
+0-argument factory를 연결하고, 중복·미등록·factory 결과의 ID 불일치를 설정
+오류로 처리한다.
+
+`python -m collectors --source SOURCE_ID`는 Registry에서 선택한 Collector를
+실행한다. `--list-sources`도 제공한다. 이 Slice에는 실제 API Collector를
+등록하지 않았으므로 기본 Registry는 비어 있다. Mock Registry를 주입한 CLI
+테스트로 source 선택과 실행을 검증했으며 실제 `youthcenter-api`와
+`bokjiro-central-welfare-api` 등록은 Data 3·4에서 수행한다.
+
+### Data 1 - 공통 HTTP Client
+
+표준 라이브러리 기반 `HttpClient`와 주입 가능한 `HttpTransport`를 구현했다.
+기본값은 Timeout 10초, 추가 재시도 최대 3회, 0.5초 지수 backoff, 요청 시작
+간 최소 1초와 `cheongnyeon-alimi-collector` User-Agent다.
+
+- Timeout·전송 오류와 5xx만 제한적으로 재시도
+- 401·403, 429, 일반 4xx, 소진된 5xx, 예상 밖 상태를 별도 예외로 분류
+- bytes 응답과 JSON·XML 파싱 제공
+- 429는 호출량 보호를 위해 재시도하지 않음
+- 자동 redirect를 차단해 query 인증정보가 다른 목적지로 전달되지 않게 함
+- 모든 query 값과 URL user information을 `<redacted>`로 치환
+- 오류 응답 본문과 하위 전송·파싱 예외 원문을 공통 예외에 포함하지 않음
+- 주입한 sleep·monotonic clock으로 실제 대기 없이 간격과 backoff 검증
+
+복지로 XML의 애플리케이션 결과 코드는 공통 HTTP 상태가 아니므로 Data 4
+소스 Collector에서 분류한다. 환경변수 로딩도 각 소스 Collector가 실제
+인증 파라미터를 구성하는 Data 3·4 범위로 남겼다. 이 Slice에서는 외부 API를
+추가 호출하지 않았다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
+- `collectors/__init__.py`
+- `collectors/__main__.py`
+- `collectors/base.py`
+- `collectors/cli.py`
+- `collectors/errors.py`
+- `collectors/http.py`
+- `collectors/registry.py`
 - `scripts/validate_docs.py`
+- `tests/test_collectors_cli.py`
+- `tests/test_collectors_http.py`
 - `tests/test_validate_docs.py`
 - `tests/test_secret_boundaries.py`
 - `docs/data/source_profiles.md`
@@ -167,14 +211,21 @@ HTTP 상태와 XML 결과 코드를 함께 분류해야 한다.
 무효화하지 않는다. 현재 키는 노출된 것으로 간주하고 재발급해야 한다.
 저장소 이력 재작성과 협업자 동기화는 사용자의 별도 승인 없이 수행하지 않는다.
 
+### 공통 Client는 redirect와 오류 payload를 자동 해석하지 않는다
+
+Data 0에서 확인한 온통청년 302처럼 redirect 목적지가 안전하거나 유효하다고
+가정할 수 없으므로 공통 Client는 3xx를 자동 추적하지 않는다. 또한 HTTP
+Client는 응답 본문을 예외에 넣지 않는다. 소스별 결과 코드와 안전하게
+선별한 진단 정보는 실제 Collector가 해당 소스 계약에 따라 처리한다.
+
 ## 검증 결과
 
 - 복지로 최소 실호출: 목록 1회, 상세 1회 성공
 - 온통청년 실호출: `/go/ythip/getPlcy`에서 JSON 1건과 10건 요청 성공
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
-- 단위 테스트:
+- 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  12건 통과
+  Data 0·1 전체 30건 통과
 - 문서 검증: `python scripts/validate_docs.py` 통과
 - diff 공백 오류 검사: `git diff --check` 통과
 - Git 상태: 두 비밀 파일 모두 추적 대상 아님, 두 경로 모두 ignore 확인
@@ -190,4 +241,5 @@ HTTP 상태와 XML 결과 코드를 함께 분류해야 한다.
 - 두 API 키 폐기·재발급
 - 필요하면 저장소 관리자와 과거 Git 이력 정리 방식 결정
 - Raw 저장 Slice에서 최종 runtime Raw 경로 확정
-- Data 1 이후 Collector와 Schema 구현
+- Data 2에서 Raw 계약과 저장 구현
+- Data 3·4에서 실제 source Collector 등록과 환경변수 로딩 구현

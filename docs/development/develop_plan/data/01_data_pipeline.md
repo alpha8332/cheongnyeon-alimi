@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 0 완료
+- 현재 Slice: Data 1 완료
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -250,7 +250,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 1 - 공통 모델과 HTTP 기반
 
-- 상태: pending
+- 상태: completed
 - 목적: Collector가 공유할 실행 구조와 HTTP 동작을 구현한다.
 - 작업:
   - Collector 인터페이스, Registry와 CLI
@@ -262,6 +262,18 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - `--source`로 Collector를 선택할 수 있음
   - Mock으로 정상, Timeout, 429, 4xx와 5xx 동작을 검증함
   - 비밀값이 로그와 예외에 노출되지 않음
+- 진행 결과:
+  - `Collector` 프로토콜, source ID 기반 `CollectorRegistry`와
+    `python -m collectors --source SOURCE_ID` CLI를 구현함
+  - 총 시도 횟수를 제한하는 Timeout·전송·5xx 재시도, 지수 backoff와
+    요청 시작 간 최소 간격을 구현함
+  - 401·403 인증 실패, 429, 일반 4xx, 소진된 5xx, Timeout·전송·JSON·XML
+    파싱 오류를 서로 다른 예외로 분류함
+  - 자동 redirect를 차단하고 오류 URL의 모든 query 값과 user information을
+    `<redacted>`로 대체하며 응답 본문과 원본 예외 메시지를 노출하지 않음
+  - 주입한 Transport와 가상 clock으로 정상·실패·재시도·호출 간격을 검증함
+  - 실제 소스 Collector 등록과 환경변수 로딩은 Data 3·4 범위로, Raw 결과
+    모델과 저장은 Data 2 범위로 유지함
 
 ### Data 2 - Raw 계약과 저장
 
