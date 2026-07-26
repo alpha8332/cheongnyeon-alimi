@@ -8,21 +8,22 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 3 완료
+- 현재 Slice: Data 4 완료
 
 ## 목적
 
 온통청년과 복지로 공식 API의 현재 요청 계약과 실제 응답 구조를 확인하고,
-두 공식 API의 source Collector와 공유 실행·HTTP·Raw 저장 기반을 구축한다.
-인증키와 운영 Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록
-저장소 기준선을 유지하면서 제한된 실제 수집을 검증한다.
+두 공식 API의 source Collector와 공유 실행·HTTP·Raw 저장 기반을 구축하고,
+저장된 Raw를 공통 `ExtractedPolicy`로 재처리한다. 인증키와 운영 Raw가 Git,
+로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 기준선을 유지하면서
+제한된 실제 수집과 소스별 추출을 검증한다.
 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0부터 Data 3까지 수행했다. 공통 실행·HTTP·Raw 기반과
-온통청년·복지로 source Collector를 구현했다. Extractor, Normalized Schema,
-Fixture와 Seed는 시작하지 않았다.
+누적한다. 현재는 Data 0부터 Data 4까지 수행했다. 공통 실행·HTTP·Raw 기반,
+온통청년·복지로 source Collector와 두 Source Extractor를 구현했다.
+Normalized Schema, Fixture와 Seed는 시작하지 않았다.
 
 ## Slice 진행 현황
 
@@ -32,7 +33,7 @@ Fixture와 Seed는 시작하지 않았다.
 | Data 1 | completed | 공통 Collector·Registry·CLI와 HTTP Client 구현 |
 | Data 2 | completed | 원본 byte 기반 Raw 계약·Schema·안전 저장 구현 |
 | Data 3 | completed | 두 공식 API 제한 수집과 Raw 변환 검증 |
-| Data 4 | pending | 미착수 |
+| Data 4 | completed | 공통 Extracted 계약과 두 Source Extractor 구현 |
 | Data 5 | pending | 미착수 |
 | Data 6 | pending | 미착수 |
 | Data 7 | pending | 미착수 |
@@ -276,6 +277,73 @@ payload는 모두 0건이었다. 두 source runtime 경로도 Git ignore임을 �
 먼저 구성한 재검증에서는 관계 오류 0건이었다. 저장 문서나 Collector 관계
 계약의 오류는 아니며 해당 임시 집계 코드는 저장하지 않았다.
 
+### Data 4 - 공통 Extracted 계약
+
+`ExtractedPolicy` Python 모델은 두 Extractor가 같은 텍스트 경계를 사용하도록
+다음 값을 공통으로 제공한다.
+
+- source ID와 표시 이름, source-scoped external ID
+- 제목, 기관, 분류, 신청기간, 지역, 연령, 자격, 지원 내용과 신청 방법 원문
+- 안전하게 선별한 공개 source URL과 최신 수집 시각
+- 기여 Raw별 document ID, 역할, content hash, 수집 시각과 안전 endpoint
+- 역할별 source 전체 필드를 담은 `extra.source_fields`
+
+공통 선택 필드의 source 값이 없거나 빈 문자열이면 null을 사용하지만
+`extra`에는 필드 부재와 빈 문자열을 원래 상태로 유지한다. 복지로 XML leaf는
+한 번 나타나면 string, 반복되면 원문 순서의 string 배열로 보존한다. 이
+계약은 Normalizer 입력용 내부 경계이며 Normalized Schema, Fixture, Seed,
+Backend API와 Frontend 타입은 변경하지 않았다.
+
+### Data 4 - 온통청년 Extractor
+
+`YouthCenterExtractor`는 부모 목록 전체와 JSON 목록 항목을 검증한 뒤
+`plcyNo`와 Raw external ID가 같은 항목만 추출한다. 제목·운영기관·대분류·
+신청기간·지역 코드·연령·자격·지원 내용·신청 방법을 공통 필드로 전달한다.
+운영기관이 비면 등록기관을 유지하고 `aplyYmd`가 비면 검증된
+`aplyPrdSeCd`의 특정기간·상시·마감 의미를 전달한다.
+
+목록 항목의 전체 60개 필드는 매핑 여부와 관계없이 `extra`에 보존한다.
+따라서 대·중분류, 키워드, 제공방법·승인상태·신청기간과 자격 코드, 빈
+문자열을 후속 단계에서 확인할 수 있다.
+
+### Data 4 - 복지로 Extractor와 목록·상세 결합
+
+`BokjiroExtractor`는 `source_id + servId`가 같은 목록과 상세만 결합한다.
+상세가 있으면 상세 제목·주관부처·대상·선정기준·급여 내용을 우선하며 비거나
+상세가 없으면 목록 제목·부처·요약을 유지한다. 중복 ID, 부모 목록이 없는
+항목, 목록에 없는 상세와 payload·Raw metadata의 ID 불일치는 추출 오류다.
+
+목록과 상세의 전체 leaf 값을 각각 보존한다. Data 3 Raw에서는 상세 3건의
+`servSeCode`, `servSeDetailLink`, `servSeDetailNm`이 반복 배열이었고 목록
+항목의 `intrsThemaArray`, `lifeArray`, `trgterIndvdlArray`에는 선택 누락이
+있었다.
+
+### Data 4 - 실제 Raw 재처리와 Source Profile
+
+Data 3에서 저장한 runtime Raw 25개를 다시 로드해 외부 호출 없이
+재처리했다.
+
+| Source ID | 입력 | Extracted | 상세 결합 |
+| --- | --- | ---: | ---: |
+| `youthcenter-api` | 목록 전체 1·항목 10 | 10 | 해당 없음 |
+| `bokjiro-central-welfare-api` | 목록 전체 1·항목 10·상세 3 | 10 | 3 |
+
+온통청년은 10건 모두 60개 string 필드가 있었고 16개 필드에서 빈 문자열이
+관찰됐다. 복지로 목록은 15개 필드 중 `intrsThemaArray` 1건,
+`lifeArray` 2건, `trgterIndvdlArray` 5건이 누락됐다. 상세 3건은 19개 필드가
+모두 존재하고 빈 값이 없었으며 3개 반복 leaf를 배열로 집계했다.
+
+모든 정책에서 `extra`의 목록·상세 필드와 해당 Raw를 독립적으로 다시 파싱한
+결과가 같았고 source field 보존 오류는 0건이었다. provenance ID·hash·source
+연결 오류, 실제 인증키 일치와 불안전한 Extracted source URL도 모두 0건이었다.
+추출 결과 20건은 JSON 직렬화 가능했고 runtime Raw 25개는 계속 Git ignore
+상태였다.
+
+Source Preflight와 Data 3 Raw의 온통청년 빈 값 수를 비교하면
+`bizPrdBgngYmd`와 `bizPrdEndYmd`가 각각 8건에서 6건으로 달랐다. 필드·타입
+변경은 아니므로 시점별 page 1 데이터 변화로 기록하고 빈 값 비율을 고정
+계약으로 사용하지 않는다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
@@ -287,7 +355,10 @@ payload는 모두 0건이었다. 두 source runtime 경로도 Git ignore임을 �
 - `collectors/cli.py`
 - `collectors/config.py`
 - `collectors/errors.py`
+- `collectors/extracted.py`
+- `collectors/extractors.py`
 - `collectors/http.py`
+- `collectors/profile.py`
 - `collectors/raw.py`
 - `collectors/registry.py`
 - `collectors/storage.py`
@@ -297,6 +368,7 @@ payload는 모두 0건이었다. 두 source runtime 경로도 Git ignore임을 �
 - `scripts/validate_docs.py`
 - `tests/test_collectors_cli.py`
 - `tests/test_collectors_http.py`
+- `tests/test_extractors.py`
 - `tests/test_raw_storage.py`
 - `tests/test_source_collectors.py`
 - `tests/test_validate_docs.py`
@@ -374,6 +446,20 @@ factory는 합의된 환경변수만 사용하고 `.env` 자동 로딩이나 로
 `HttpClient`의 HTTP 오류 분류만으로 성공을 판단하지 않고 source Collector가
 온통청년 `resultCode`와 복지로 XML `resultCode`를 확인한 뒤에만 Raw를 만든다.
 
+### 공통 필드 null과 source 원문의 빈 상태를 분리한다
+
+Normalizer가 소스 필드명을 알지 않도록 공통 선택 필드는 값 없음과 빈 문자열을
+null로 전달한다. 동시에 `extra.source_fields`에는 필드 부재, 빈 string과
+반복 배열을 그대로 남겨 source 구조와 원문 상태를 잃지 않는다. 매핑된 필드도
+전체 source 필드 집합에 포함해 추출 규칙 변경 시 다시 확인할 수 있게 한다.
+
+### Extracted provenance는 결과 하나에 기여한 모든 Raw를 가리킨다
+
+목록 항목만 가리키면 HTTP 원문인 부모 목록 전체를 놓치고, 복지로 상세만
+가리키면 목록에서만 제공되는 값을 놓친다. 따라서 목록 전체·항목과 선택적인
+상세의 ID·역할·hash·시각·endpoint를 모두 보존하고 Extracted 수집 시각은
+그중 가장 최근 시각으로 정한다.
+
 ## 검증 결과
 
 - 복지로 최소 실호출: 목록 1회, 상세 1회 성공
@@ -381,7 +467,7 @@ factory는 합의된 환경변수만 사용하고 `.env` 자동 로딩이나 로
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
 - 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  Data 0~3 전체 52건 통과
+  Data 0~4 전체 58건 통과
 - Raw 계약 테스트: JSON·XML Schema 사례, Python·Schema 필드 일치, byte
   왕복, Hash 결정성·변조 탐지, 역할 연결, URL·저장 경로·덮어쓰기 경계 11건
   통과
@@ -390,8 +476,13 @@ factory는 합의된 환경변수만 사용하고 `.env` 자동 로딩이나 로
 - Source Collector Mock 테스트: 환경변수, page·limit, JSON·XML 정상,
   빈 목록, 인증·할당량·application 오류, 형식 오류, 키 반사, 상세 ID 불일치,
   복지로 key encoding과 상세 limit 11건 통과
+- Extractor Mock 테스트: 공통 필드 매핑, 선택 필드 fallback, 신청기간 코드·
+  연령 text, 복지로 목록·상세 결합, 반복 XML 배열, 누락·빈 값 프로필,
+  external ID 불일치와 전체 source field·provenance 보존 6건 통과
 - 실제 호출 통합 검증: 온통청년 1회와 복지로 4회 성공, Raw 25개 재로드와
   관계·비밀·안전 URL·Git ignore 검증 통과
+- 실제 Raw 재처리: 추가 외부 호출 없이 두 소스 각 10건, 총 20건 추출,
+  복지로 상세 3건 결합, source field·provenance 보존과 JSON 직렬화 검증 통과
 - 문서 검증: `python scripts/validate_docs.py` 통과
 - diff 공백 오류 검사: `git diff --check` 통과
 - Git 상태: 두 비밀 파일 모두 추적 대상 아님, 두 경로 모두 ignore 확인

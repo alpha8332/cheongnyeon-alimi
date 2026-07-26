@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 공통 HTTP·Raw 기반과 두 공식 API Collector 구현
+- 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API Collector와 Extractor 구현
 
 이 문서는 외부 정책 데이터를 안전하고 재현 가능하게 수집하기 위한 공통
 원칙을 정의한다.
@@ -134,6 +134,20 @@ Hash는 다음을 위한 기반이다.
 `sha256:<64 lowercase hex>`를 계산한다. Hash와 byte 길이가 payload와
 일치하지 않으면 저장·로드하지 않는다. 변경 이력과 소스 간 중복 판정은
 후속 Forest 범위다.
+
+## Extracted 재처리
+
+Source Extractor는 외부 API를 다시 호출하지 않고 저장된 Raw 문서를 입력으로
+받는다. 목록 항목은 부모 목록 전체 Raw를 반드시 참조하며 복지로 상세는 같은
+`source_id + external_id`의 목록 항목에만 결합한다. 중복 external ID,
+부모가 없는 항목, 목록에 없는 상세와 payload·Raw metadata의 ID 불일치는
+추출 오류로 분리한다.
+
+공통 선택 필드는 빈 원문을 null로 전달하지만 `extra.source_fields`에는
+실제 source 필드 전체를 보존한다. JSON의 빈 문자열과 필드 누락, XML의 빈
+element와 누락, 반복 leaf 배열을 서로 같은 상태로 축약하지 않는다. 각 정책은
+기여 Raw의 ID, 역할, hash, 수집 시각과 안전한 endpoint를 provenance로
+유지한다. 자세한 필드 계약은 [데이터 Schema](data_schema.md)를 따른다.
 
 ## Git과 Runtime 데이터
 

@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: 논리적 기준선
-- 현재 구현 상태: Raw Python 모델·JSON Schema·runtime 저장 구현,
-  Extracted·Normalized Schema 미구현
+- 현재 구현 상태: Raw Python 모델·JSON Schema·runtime 저장과
+  Extracted Python 모델 구현, Normalized Schema 미구현
 
 이 문서는 `RawPolicyDocument`, `ExtractedPolicy`와
 `NormalizedProgram`의 역할과 필드 원칙을 정의한다. 실행 가능한 계약은
@@ -109,7 +109,8 @@ Source Extractor가 소스별 Raw에서 의미 있는 중간 필드를 추출한
 | 필드 | 논리 타입 |
 | --- | --- |
 | `source_id` | string |
-| `external_id` | string 또는 null |
+| `source_name` | string |
+| `external_id` | string |
 | `title` | string 또는 null |
 | `organization` | string 또는 null |
 | `category_text` | string 또는 null |
@@ -119,11 +120,46 @@ Source Extractor가 소스별 Raw에서 의미 있는 중간 필드를 추출한
 | `eligibility_text` | string 또는 null |
 | `support_content` | string 또는 null |
 | `application_method` | string 또는 null |
-| `source_url` | URI string |
+| `source_url` | HTTP(S) URI string |
+| `collected_at` | timezone 포함 date-time |
+| `provenance` | 기여 Raw 문서 배열 |
 | `extra` | object |
 
-소스별 추가 필드는 `extra`에 보존한다. `ExtractedPolicy`는 XML 태그나 CSS
-Selector를 공통 Normalizer로 노출하지 않기 위한 내부 경계다.
+현재 두 API의 목록 항목에는 source-scoped 외부 ID가 있으므로
+`ExtractedPolicy.external_id`는 필수 string이다. 선택 공통 필드의 원문이
+없거나 빈 문자열이면 해당 공통 필드는 null로 전달한다. 다만 누락과 빈
+문자열을 구분할 수 있도록 `extra.source_fields`에는 실제 필드 존재 여부와
+값을 그대로 보존한다.
+
+`extra.source_fields.list_item`에는 목록 항목의 모든 source 필드를 넣는다.
+복지로 상세가 결합되면 `detail_response`에도 모든 상세 leaf 값을 넣고 상세가
+없으면 null을 사용한다. XML에서 같은 이름의 leaf가 한 번이면 string, 반복되면
+원문 순서의 string 배열이다. 따라서 공통 필드로 매핑한 값, 코드, 미매핑
+필드와 빈 문자열을 Raw 재로드 없이도 확인할 수 있고 정확한 byte와 계층은
+provenance가 가리키는 Raw에서 재현한다.
+
+### Extracted provenance
+
+`provenance`의 각 항목은 다음 필드를 가진다.
+
+| 필드 | 논리 타입 | 기준 |
+| --- | --- | --- |
+| `raw_document_id` | string | 기여한 Raw의 `document_id` |
+| `document_role` | Raw role enum | 목록 전체·항목·상세 구분 |
+| `content_hash` | string | 기여 Raw의 SHA-256 |
+| `collected_at` | date-time | 기여 Raw의 timezone 포함 수집 시각 |
+| `source_url` | HTTP(S) URI | 기여 Raw의 query 없는 안전한 endpoint |
+
+온통청년 정책은 부모 `list_response`와 `list_item`, 복지로 정책은 두 문서에
+선택적인 `detail_response`를 더한다. 정책의 `collected_at`은 기여 Raw 중 가장
+최근 시각이다. `source_url`은 source가 제공한 공개 정책 URL이 안전하고
+유효하면 사용하고, 그렇지 않으면 해당 Raw의 안전한 API endpoint로
+fallback한다.
+
+`ExtractedPolicy`는 XML 태그와 JSON 필드명을 공통 Normalizer로 노출하지 않기
+위한 내부 경계다. 이번 구현은 Normalized Schema, Fixture, Seed, Backend API와
+Frontend 타입을 변경하지 않는다. 이 내부 계약이 서비스 소비자 계약으로
+승격되면 필수·null·배열 규칙을 Backend·Frontend와 공동 검토해야 한다.
 
 ## `NormalizedProgram`
 

@@ -21,8 +21,9 @@
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
 목록 항목과 상세 응답은 같은 `source_id + external_id`로 연결하고 목록
-항목은 부모 전체 응답의 `document_id`도 참조한다. Extracted 계약은 후속
-Slice에서 확정한다.
+항목은 부모 전체 응답의 `document_id`도 참조한다. Data 4에서 두
+Extractor가 공통 `ExtractedPolicy`와 기여 Raw provenance를 사용하도록
+확정했다.
 
 ## 온통청년 청년정책 API
 
@@ -146,6 +147,43 @@ srngMthdCn, zipCd
 대분류 5개, 중분류 17개와 키워드 17개도 로컬 정의서에 있다. 코드표 자체의
 변경 주기와 최신성은 Collector 이후 Extractor 구현 시 계속 검증한다.
 
+### Data 4 Extractor와 runtime Raw 프로필
+
+`YouthCenterExtractor`는 2026-07-26 Data 3의 목록 항목 Raw 10개를 외부 호출
+없이 재처리했다. 60개 필드는 모두 존재율 100%이고 모두 string이었으며
+null은 없었다. 빈 문자열 집계는 다음과 같다.
+
+```text
+addAplyQlfcCndCn 3
+aplyUrlAddr 3
+aplyYmd 8
+bizPrdBgngYmd 6
+bizPrdEndYmd 6
+bizPrdEtcCn 1
+earnEtcCn 7
+etcMttrCn 2
+operInstPicNm 1
+plcyAplyMthdCn 2
+ptcpPrpTrgtCn 3
+refUrlAddr1 1
+refUrlAddr2 10
+sbmsnDcmntCn 3
+sprvsnInstPicNm 1
+srngMthdCn 9
+```
+
+Source Preflight의 앞선 10건과 비교하면 `bizPrdBgngYmd`와 `bizPrdEndYmd`의
+빈 값은 각각 8건에서 6건으로 달랐다. 필드나 타입 변경은 아니며 두 시점의
+page 1 응답 내용이 달라진 것으로 관찰했다. 고정된 빈 값 비율을 소스 계약으로
+간주하지 않는다.
+
+공통 매핑은 `plcyNm`, 운영기관명, 대분류, 신청기간 원문, 지역 코드 원문,
+연령 제한 필드, 참여·추가 자격, 지원 내용과 신청 방법을 사용한다.
+`aplyYmd`가 비어 있으면 `aplyPrdSeCd`의 검증된 특정기간·상시·마감 의미를
+전달하고, 연령 최소·최대는 의미를 추가 추정하지 않는 표시 text로 만든다.
+대·중분류, 키워드, 자격 코드와 매핑 여부와 관계없이 전체 60개 필드를
+`extra.source_fields.list_item`에 보존한다.
+
 ### 호출 제한과 오류
 
 - 공식 공개 페이지에서 계정별 숫자 호출 한도를 확인하지 못했다.
@@ -208,22 +246,28 @@ Data 3 Collector는 목록 전체 1개, 항목 10개와 상세 3개의 Raw를
 `runtime/raw/`에 저장하고 다시 로드했다. 목록 항목과 상세의 `servId`
 연결 오류는 없었다.
 
-목록 leaf element:
+목록 응답 메타데이터 leaf:
 
 ```text
-numOfRows, pageNo, totalCount, resultCode, resultMessage,
-inqNum, intrsThemaArray, jurMnofNm, jurOrgNm, onapPsbltYn,
-rprsCtadr, servDgst, servDtlLink, servId, servNm, sprtCycNm,
-srvPvsnNm, svcfrstRegTs
+numOfRows, pageNo, totalCount, resultCode, resultMessage
+```
+
+목록 항목 leaf:
+
+```text
+inqNum, intrsThemaArray, jurMnofNm, jurOrgNm, lifeArray,
+onapPsbltYn, rprsCtadr, servDgst, servDtlLink, servId, servNm,
+sprtCycNm, srvPvsnNm, svcfrstRegTs, trgterIndvdlArray
 ```
 
 상세 leaf element:
 
 ```text
-servId, servNm, jurMnofNm, wlfareInfoOutlCn, crtrYr,
-rprsCtadr, tgtrDtlCn, slctCritCn, alwServCn,
-servSeCode, servSeDetailNm, servSeDetailLink,
-resultCode, resultMessage
+alwServCn, crtrYr, intrsThemaArray, jurMnofNm, lifeArray,
+resultCode, resultMessage, rprsCtadr, servId, servNm,
+servSeCode, servSeDetailLink, servSeDetailNm, slctCritCn,
+sprtCycNm, srvPvsnNm, tgtrDtlCn, trgterIndvdlArray,
+wlfareInfoOutlCn
 ```
 
 상세 한 건에서 `servSeCode`와 `servSeDetailNm`은 각각 9회,
@@ -231,6 +275,23 @@ resultCode, resultMessage
 관찰했고 빈 element는 없었다. 한 건의 결과이므로 선택 필드가 항상
 존재한다고 일반화하지 않는다. 숫자·날짜처럼 보이는 값도 Extractor와
 Normalizer가 명시적으로 변환하기 전에는 Raw string으로 보존한다.
+
+### Data 4 Extractor와 runtime Raw 프로필
+
+`BokjiroExtractor`는 목록 항목 10개와 상세 3개를 재처리해 정책 10개를
+만들었다. 상세 3개는 같은 `servId`의 목록과 결합했고 나머지 7개는 목록
+값만 유지했다.
+
+| 역할 | 문서 수 | 필드 수 | 존재율 예외 | 빈 값 | 반복 배열 |
+| --- | ---: | ---: | --- | --- | --- |
+| `list_item` | 10 | 15 | `intrsThemaArray` 90%, `lifeArray` 80%, `trgterIndvdlArray` 50% | 없음 | 없음 |
+| `detail_response` | 3 | 19 | 없음, 모두 100% | 없음 | `servSeCode`, `servSeDetailLink`, `servSeDetailNm` |
+
+상세가 있으면 제목·주관부처·대상·선정기준·급여 내용을 상세에서 우선하고,
+상세 값이 없으면 목록의 제목·부처·요약을 유지한다. 관심주제는 목록 원문을
+`category_text`로 전달한다. 목록과 상세의 전체 leaf 값은 역할별
+`extra.source_fields`에 보존해 `lifeArray`, `trgterIndvdlArray`,
+`servSeCode`를 포함한 코드·표시 문자열과 반복 순서를 유지한다.
 
 ### 코드와 오류 계약
 

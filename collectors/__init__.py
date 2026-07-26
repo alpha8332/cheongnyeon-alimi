@@ -10,7 +10,10 @@ from collectors.bokjiro import (
     SOURCE_ID as BOKJIRO_SOURCE_ID,
     create_bokjiro_collector,
 )
+from collectors.extracted import ExtractedPolicy, SourceProvenance
+from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.http import HttpClient, HttpClientConfig
+from collectors.profile import FieldStatistics, SourceFieldProfile
 from collectors.raw import (
     RawDocumentRole,
     RawFormat,
@@ -40,12 +43,18 @@ __all__ = [
     "Collector",
     "CollectorFactory",
     "CollectorRegistry",
+    "ExtractedPolicy",
+    "FieldStatistics",
     "HttpClient",
     "HttpClientConfig",
+    "BokjiroExtractor",
     "RawDocumentRole",
     "RawDocumentStore",
     "RawFormat",
     "RawPolicyDocument",
     "SourceType",
+    "SourceFieldProfile",
+    "SourceProvenance",
+    "YouthCenterExtractor",
     "default_registry",
 ]

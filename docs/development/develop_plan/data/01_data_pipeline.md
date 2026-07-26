@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 3 완료
+- 현재 Slice: Data 4 완료
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -337,7 +337,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 4 - 소스별 Extractor와 Source Profile
 
-- 상태: pending
+- 상태: completed
 - 목적: 두 API의 Raw를 공통 의미 단위로 추출한다.
 - 작업:
   - `YouthCenterExtractor`
@@ -349,6 +349,19 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - 두 소스가 같은 `ExtractedPolicy` 경계를 사용함
   - 선택 필드 누락 시에도 확인 가능한 값이 유지됨
   - 원문 값과 source provenance가 손실되지 않음
+- 진행 결과:
+  - `source_name`, 최신 `collected_at`과 기여 Raw별 ID·역할·hash·시각·안전
+    URL을 포함한 공통 `ExtractedPolicy` Python 모델을 구현함
+  - `YouthCenterExtractor`가 목록 JSON 필드와 신청기간 코드·연령 경계를
+    공통 text로 전달하고 전체 60개 source 필드를 `extra`에 보존함
+  - `BokjiroExtractor`가 같은 `servId`의 목록·상세를 결합하고 상세가 없는
+    7건은 목록의 확인 가능한 값을 유지함
+  - 복지로 반복 XML leaf는 배열로, 누락 필드는 부재로, 빈 element와 JSON
+    빈 문자열은 빈 값으로 서로 구분함
+  - 실제 runtime Raw를 추가 API 호출 없이 재처리해 소스별 10건씩 총 20건을
+    추출하고 상세 3건 결합, source field 보존·provenance 오류 0건을 확인함
+  - 온통청년 10건·60필드와 복지로 목록 10건·15필드, 상세 3건·19필드의
+    존재·누락·빈 값·반복 타입 프로필을 기준 문서에 반영함
 
 ### Data 5 - 정규화, Schema와 Validator
 
