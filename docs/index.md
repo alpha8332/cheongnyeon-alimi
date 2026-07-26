@@ -21,12 +21,20 @@
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
+- [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
+  실제 응답 구조와 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
   데이터 계약 원칙
+- [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
+  원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
+- [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
+  정규화 필드, provenance와 품질 분류의 실행 가능한 계약
 - [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
   변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
+- [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터
+  canonical Seed까지의 재생성·소비자 검토 기준
 - [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,
   Slice와 완료 기준
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
@@ -34,12 +42,29 @@
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
+- [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
+- [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
+  환경변수와 Runtime Raw 경계
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
+
+## 현재 FE·BE 인계 안내
+
+Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작할 수 있는
+상태다. 담당자와 AI Agent는 구현 전에 반드시
+[Fixture와 Seed 계약](data/fixture_seed_contract.md)의 검토 항목을 확인한다.
+
+- Backend는 Seed 적재, partial 처리, 식별 경계와 provenance 보존 방식을
+  검토한다.
+- Frontend는 nullable 필드, 배열, 일정·상태 구분과 partial 표시 방식을
+  검토한다.
+- 구현 또는 명시적 승인 결과를 계약 문서의 공동 검토 기록에 남긴다.
+- 두 영역의 검토 전에는 Normalized 1.0.0을 안정적인 영역 간 계약으로
+  확정하거나 임의로 변경하지 않는다.
 
 ## 문서 영역
 

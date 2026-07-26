@@ -9,6 +9,7 @@
 | Forest | 문서 | 관련 Slice | 내용 |
 | --- | --- | --- | --- |
 | Docs System | [개발 기록](integration/docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
+| Data Pipeline | [개발 기록](data/data_pipeline.md) | Data 0 | API Source Preflight와 비밀정보 경계 |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
 함께 갱신한다.

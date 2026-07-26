@@ -75,7 +75,7 @@ ALLOWED_OWNER_AREAS = {
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*]\(([^)]+)\)")
 SECRET_ASSIGNMENT = re.compile(
     r"(?im)\b("
-    r"YOUTHCENTER_API_KEY|API_KEY|SECRET_KEY|ACCESS_TOKEN|"
+    r"YOUTHCENTER_API_KEY|BOKJIRO_API_KEY|API_KEY|SECRET_KEY|ACCESS_TOKEN|"
     r"PRIVATE_KEY|PASSWORD"
     r")\s*[:=]\s*[\"']?([^\s`\"']+)"
 )
