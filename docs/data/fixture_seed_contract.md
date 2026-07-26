@@ -11,6 +11,20 @@
 Backend·Frontend 소비 규칙을 정의한다. 실제 API 응답을 배포하는 자료가
 아니며 모든 정책 내용과 식별자는 합성 데이터다.
 
+## 담당자 착수 안내
+
+Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 있다.
+다만 구현 시작 가능 상태와 공동 계약 승인 완료는 다르다.
+
+1. 담당 Agent는 이 문서의 소비 계약과 영역별 검토 항목을 먼저 읽는다.
+2. Backend는 importer·API 테스트, Frontend는 타입·Mock 소비 테스트로
+   실제 사용 가능성을 확인한다.
+3. 확인 결과와 변경 요청을 아래 공동 검토 기록에 남긴다.
+4. 두 영역이 승인한 뒤에만 Data 6와 Data Pipeline Forest를 완료 처리한다.
+
+계약 변경이 필요하면 Python 모델, JSON Schema, Fixture, Seed와 영향 문서를
+같은 변경에서 동기화한다.
+
 ## 산출물
 
 | 경로 | 역할 | 레코드 |

@@ -52,6 +52,20 @@
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
 
+## 현재 FE·BE 인계 안내
+
+Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작할 수 있는
+상태다. 담당자와 AI Agent는 구현 전에 반드시
+[Fixture와 Seed 계약](data/fixture_seed_contract.md)의 검토 항목을 확인한다.
+
+- Backend는 Seed 적재, partial 처리, 식별 경계와 provenance 보존 방식을
+  검토한다.
+- Frontend는 nullable 필드, 배열, 일정·상태 구분과 partial 표시 방식을
+  검토한다.
+- 구현 또는 명시적 승인 결과를 계약 문서의 공동 검토 기록에 남긴다.
+- 두 영역의 검토 전에는 Normalized 1.0.0을 안정적인 영역 간 계약으로
+  확정하거나 임의로 변경하지 않는다.
+
 ## 문서 영역
 
 | 영역 | 책임 |

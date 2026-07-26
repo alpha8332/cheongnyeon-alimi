@@ -490,6 +490,8 @@ Data 기술 검토와 자동 검증은 완료했다. 그러나 현재 저장소�
 모델·Importer, Frontend TypeScript 타입·Mock, 담당 Issue·PR이나 두 영역의
 승인 기록이 없다. Data 담당이 공동 승인을 대신 기록하지 않으며 실제 승인
 또는 소비 테스트가 생길 때까지 Data 6 상태를 `in-progress`로 유지한다.
+담당 Agent가 이 게이트를 놓치지 않도록 `docs/index.md`에 FE·BE 착수 가능
+범위와 계약 문서 검토·승인 기록 의무를 직접 안내한다.
 
 ### Data 7 - 커밋된 Fixture 종단 간 재생
 
