@@ -15,8 +15,8 @@
 
 | Source ID | 표시 이름 | 공식 요청 계약 | 실응답 |
 | --- | --- | --- | --- |
-| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 10건 확인 |
-| `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | 목록 1건과 상세 1건 확인 |
+| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 목록 10건 Raw 확인 |
+| `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 목록 10건·상세 3건 Raw 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
@@ -48,6 +48,9 @@ Fixture에 남기지 않는다.
 요청 예시와 동일한 `pageNum=1`, `pageSize=10`, `rtnType=json` 호출은
 HTTP 200과 `application/json`을 반환했고 정책 10건을 포함했다. 홈페이지
 로그인 세션이나 cookie는 사용하지 않았다.
+
+Data 3 Collector도 같은 요청을 1회 수행해 목록 전체 1개와 `plcyNo` 기반
+항목 10개의 Raw를 `runtime/raw/`에 저장하고 다시 로드했다.
 
 ### 공식 제공목록과의 차이
 
@@ -196,9 +199,14 @@ response: XML, UTF-8
 
 ### 2026-07-26 실응답 프로필
 
-목록 1건과 그 목록의 `servId`를 사용한 상세 1건을 호출했다. 두 응답 모두
+Source Preflight에서는 목록 1건과 그 목록의 `servId`를 사용한 상세 1건을
+호출했다. Data 3에서는 목록 10건 1회와 그중 첫 상세 3건을 호출했다. 응답은
 HTTP 200, `application/xml`, UTF-8이었고 namespace 없는 `wantedList`와
-`wantedDtl` root를 사용했다. 응답에 rate limit 관련 HTTP header는 없었다.
+`wantedDtl` 구조를 사용했다. 응답에 rate limit 관련 HTTP header는 없었다.
+
+Data 3 Collector는 목록 전체 1개, 항목 10개와 상세 3개의 Raw를
+`runtime/raw/`에 저장하고 다시 로드했다. 목록 항목과 상세의 `servId`
+연결 오류는 없었다.
 
 목록 leaf element:
 
@@ -282,6 +290,18 @@ Normalizer가 명시적으로 변환하기 전에는 Raw string으로 보존한�
 - 비밀이 포함된 로컬 키 파일과 참고 DOCX는 Git 추적에서 제외한다.
 - 과거 Git 이력에 비밀 파일이 존재하므로 현재 키는 노출된 것으로 간주하고
   폐기·재발급해야 한다. 인덱스 제외는 과거 이력을 제거하지 않는다.
+
+## Collector 실행 계약
+
+- 기본 Registry source ID:
+  `youthcenter-api`, `bokjiro-central-welfare-api`
+- 공통 옵션: `page` 1~1000, `limit` 1~500, `detail_limit` 0~5
+- CLI 기본값: page 1, limit 10, 복지로 상세 3건
+- 온통청년 요청 수: 목록 1회
+- 복지로 요청 수: 목록 1회와 선택한 상세 수
+- 테스트는 주입한 HTTP Client와 임시 Raw root를 사용하며 외부 호출하지 않음
+- 실제 호출은 환경변수를 주입한 명시적 CLI 실행으로만 수행
+- 응답 payload에서 요청 인증키가 발견되면 Raw 저장 전에 파싱 오류로 중단
 
 [youth-api-list]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiDoc/47
 [youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide

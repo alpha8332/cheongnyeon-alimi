@@ -65,3 +65,7 @@ class TransportError(HttpRequestError):
 
 class ResponseParseError(HttpRequestError):
     """The successful response body could not be parsed."""
+
+
+class EmptyResponseError(HttpRequestError):
+    """The source returned a valid envelope without collection items."""

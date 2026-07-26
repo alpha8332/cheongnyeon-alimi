@@ -10,8 +10,8 @@
 
 ### Added
 
-- source ID 기반 Collector Registry·CLI, 비밀정보 안전한 JSON·XML 공통 HTTP
-  Client와 원본 byte 보존 Raw Schema·runtime 저장 기반 추가
+- 온통청년·복지로 source Collector, 비밀정보 안전한 공통 HTTP·CLI와 원본
+  byte 보존 Raw Schema·runtime 저장 기반 추가
   ([개발 기록](docs/development/development_notes/data/data_pipeline.md))
 - 문서 탐색·라우팅, 협업·의존성·통합 배포 책임, Architecture·Data 기준선과
   Forest별 계획·개발 기록을 연결하는 Docs System 구축

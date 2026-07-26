@@ -3,21 +3,21 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: Collector 미구현
+- 현재 구현 상태: 온통청년·복지로 Collector 구현 및 제한 실호출 확인
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
 [Data Pipeline Forest 계획](../development/develop_plan/data/01_data_pipeline.md)에서
 관리한다.
-실제 엔드포인트, 응답 형식과 이용 조건은 Collector 구현 전에 공식 자료와
-실제 응답으로 다시 확인한다.
+실제 엔드포인트, 응답 형식과 이용 조건은 Collector 변경이나 운영 확대 전에
+공식 자료와 제한된 실제 응답으로 다시 확인한다.
 
 ## 현재 소스 후보
 
 | 소스 | 계획 식별자 | 유형 | 상태 |
 | --- | --- | --- | --- |
-| 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 최소 연동 확인 |
-| 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | 목록·상세 최소 연동 확인 |
+| 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 Raw 수집 확인 |
+| 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
 | 대표 HTTPS 정책 사이트 | `sample-web` | 공개 웹 | 후속 Forest 후보 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
@@ -74,7 +74,7 @@ HTTP 302로 외부에서 접근할 수 없는 HTTP 8080 포트에 redirect했다
 실제 동작이 확인된 `/go/ythip/getPlcy`를 사용하고 공식 제공목록의 다른
 endpoint는 새 키 또는 gateway 수정이 확인될 때 다시 검토한다.
 
-### 구현 전 확인 사항
+### 남은 확인 사항
 
 - 정책 상세 원문 URL의 안정성과 접근 조건
 - 오류 응답, 호출 제한과 재시도 가능 상태 코드
@@ -111,7 +111,8 @@ detail: /NationalWelfaredetailedV001
 계정의 현재 할당량과 응답 헤더를 연동 전에 다시 확인하고, 테스트마다
 호출하지 않는다.
 
-2026-07-26 목록 1건과 해당 `servId`의 상세 1건을 호출해 다음을 확인했다.
+2026-07-26 Source Preflight의 목록 1건·상세 1건과 Data 3의 목록 10건·상세
+3건을 호출해 다음을 확인했다.
 
 - 두 응답 모두 HTTP 200, `application/xml`, UTF-8
 - root element는 각각 `wantedList`, `wantedDtl`
@@ -121,10 +122,8 @@ detail: /NationalWelfaredetailedV001
 필드와 반복 element 프로필은
 [API Source Profile](source_profiles.md)에 기록한다.
 
-### 구현 전 확인 사항
+### 남은 확인 사항
 
-- 현재 계정에서 `serviceKey` encoding·decoding 값 중 어느 표현을 기준으로
-  사용할지
 - 선택 필드가 비어 있거나 element 자체가 없는 실제 경계 응답
 - 오류 payload와 할당량 초과의 실제 HTTP 상태
 - 2025년 API 변경 공지 이후 추가·삭제된 응답 필드
@@ -193,5 +192,5 @@ Collector 문서를 함께 갱신한다.
 - 각 소스의 공식 호출 제한과 재배포 조건
 - 온통청년의 숫자 호출 한도와 복지로 트래픽 기간 단위
 
-미확정 사항은 Source Preflight와 Collector 구현 Slice에서 공식 자료와 실제
+미확정 사항은 후속 Source Profile·Extractor Slice에서 공식 자료와 실제
 샘플 응답을 확인한 뒤 확정한다.

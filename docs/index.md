@@ -41,6 +41,8 @@
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
+- [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
+  환경변수와 Runtime Raw 경계
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나

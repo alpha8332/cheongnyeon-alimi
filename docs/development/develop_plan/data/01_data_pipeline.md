@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 2 완료
+- 현재 Slice: Data 3 완료
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -305,7 +305,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 3 - 온통청년과 복지로 Collector
 
-- 상태: pending
+- 상태: completed
 - 목적: 두 공식 API에서 제한된 데이터를 Raw 문서로 변환한다.
 - 작업:
   - 온통청년 목록 Collector
@@ -316,6 +316,24 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - 온통청년 10건 이상 Raw 수집
   - 복지로 목록 10건 이상과 상세 3~5건 Raw 수집
   - 실제 호출과 Mock 테스트가 분리됨
+- 진행 결과:
+  - 환경변수 기반 factory와 기본 Registry에 `youthcenter-api`,
+    `bokjiro-central-welfare-api`를 등록함
+  - 공통 CLI에 `--page`, `--limit`, `--detail-limit`과 요청·항목·상세·Raw
+    문서 수의 안전한 실행 요약을 추가함
+  - 온통청년 `pageNum`·`pageSize` JSON 목록과 `plcyNo` 항목 Raw 변환을
+    구현함
+  - 복지로 `pageNo`·`numOfRows` XML 목록, `servId` 항목과 최대 5건 상세
+    Raw 변환을 구현함
+  - 빈 목록, 형식 오류, external ID 불일치, HTTP와 소스 payload의
+    인증·할당량·일반 오류를 분류함
+  - 응답이 요청 인증키를 반사하면 Raw 저장 전에 중단하고 `source_url`에는
+    query를 포함하지 않음
+  - Mock 단위 테스트와 수동 opt-in 실제 호출을 분리함
+  - 2026-07-26 실제 호출에서 온통청년 목록 10건, 복지로 목록 10건과
+    상세 3건을 각각 Raw 11개와 14개로 저장·재로드함
+  - Data 3 실호출은 온통청년 1회, 복지로 목록 1회·상세 3회였으며 저장된
+    25개 Raw에서 인증키 일치, 불안전 URL과 관계 오류가 모두 0건이었음
 
 ### Data 4 - 소스별 Extractor와 Source Profile
 

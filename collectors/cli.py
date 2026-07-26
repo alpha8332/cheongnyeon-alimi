@@ -7,6 +7,7 @@ import sys
 from collections.abc import Sequence
 from typing import TextIO
 
+from collectors.base import CollectionOptions, CollectionResult
 from collectors.errors import CollectorError
 from collectors.registry import CollectorRegistry, default_registry
 
@@ -23,6 +24,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--list-sources",
         action="store_true",
         help="list registered source IDs",
+    )
+    parser.add_argument(
+        "--page",
+        type=int,
+        default=1,
+        help="source page number (default: 1)",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="maximum list items requested (default: 10)",
+    )
+    parser.add_argument(
+        "--detail-limit",
+        type=int,
+        default=3,
+        help="maximum detail requests, from 0 to 5 (default: 3)",
     )
     return parser
 
@@ -42,8 +61,13 @@ def main(
 
     source_id = args.source
     try:
+        options = CollectionOptions(
+            page=args.page,
+            limit=args.limit,
+            detail_limit=args.detail_limit,
+        )
         collector = registry.create(source_id)
-        collector.collect()
+        result = collector.collect(options)
     except CollectorError as error:
         print(f"collector failed: {error}", file=stderr)
         return 1
@@ -54,5 +78,16 @@ def main(
         )
         return 1
 
-    print(f"collector completed: source={source_id}", file=stdout)
+    if isinstance(result, CollectionResult):
+        print(
+            "collector completed: "
+            f"source={source_id} "
+            f"requests={result.request_count} "
+            f"items={result.item_count} "
+            f"details={result.detail_count} "
+            f"raw_documents={result.raw_document_count}",
+            file=stdout,
+        )
+    else:
+        print(f"collector completed: source={source_id}", file=stdout)
     return 0

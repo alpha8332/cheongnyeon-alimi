@@ -6,6 +6,7 @@ import sys
 import unittest
 from pathlib import Path
 
+from collectors.base import CollectionOptions, CollectionResult
 from collectors.cli import main
 from collectors.errors import CollectorConfigurationError
 from collectors.registry import CollectorRegistry
@@ -20,9 +21,18 @@ class FakeCollector:
     def __init__(self) -> None:
         self.was_called = False
 
-    def collect(self) -> object:
+    def collect(
+        self,
+        options: CollectionOptions | None = None,
+    ) -> CollectionResult:
         self.was_called = True
-        return None
+        return CollectionResult(
+            source_id=self.source_id,
+            request_count=1,
+            item_count=2,
+            detail_count=0,
+            stored_paths=(Path("first.json"), Path("second.json")),
+        )
 
 
 class CollectorCliTests(unittest.TestCase):
@@ -43,7 +53,8 @@ class CollectorCliTests(unittest.TestCase):
         self.assertEqual(0, result)
         self.assertTrue(collector.was_called)
         self.assertEqual(
-            "collector completed: source=fake-source\n",
+            "collector completed: source=fake-source "
+            "requests=1 items=2 details=0 raw_documents=2\n",
             stdout.getvalue(),
         )
         self.assertEqual("", stderr.getvalue())
@@ -78,7 +89,10 @@ class CollectorCliTests(unittest.TestCase):
         class FailingCollector:
             source_id = "failing-source"
 
-            def collect(self) -> object:
+            def collect(
+                self,
+                options: CollectionOptions | None = None,
+            ) -> CollectionResult:
                 raise RuntimeError("apiKeyNm=secret-value")
 
         registry = CollectorRegistry()
@@ -108,6 +122,10 @@ class CollectorCliTests(unittest.TestCase):
         )
 
         self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(
+            "bokjiro-central-welfare-api\nyouthcenter-api\n",
+            result.stdout,
+        )
         self.assertEqual("", result.stderr)
 
 

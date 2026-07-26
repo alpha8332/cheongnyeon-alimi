@@ -8,21 +8,21 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 2 완료
+- 현재 Slice: Data 3 완료
 
 ## 목적
 
 온통청년과 복지로 공식 API의 현재 요청 계약과 실제 응답 구조를 확인하고,
-두 소스 Collector가 공유할 안전한 실행·HTTP·Raw 저장 기반을 구축한다.
+두 공식 API의 source Collector와 공유 실행·HTTP·Raw 저장 기반을 구축한다.
 인증키와 운영 Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록
-저장소 기준선을 유지한다.
+저장소 기준선을 유지하면서 제한된 실제 수집을 검증한다.
 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0부터 Data 2까지 수행했다. 공통 Collector 실행 계약,
-HTTP 기반과 Raw 모델·Schema·runtime 저장을 구현했다. 실제 소스 Collector,
-Extractor, Normalized Schema, Fixture와 Seed는 시작하지 않았다.
+누적한다. 현재는 Data 0부터 Data 3까지 수행했다. 공통 실행·HTTP·Raw 기반과
+온통청년·복지로 source Collector를 구현했다. Extractor, Normalized Schema,
+Fixture와 Seed는 시작하지 않았다.
 
 ## Slice 진행 현황
 
@@ -31,7 +31,7 @@ Extractor, Normalized Schema, Fixture와 Seed는 시작하지 않았다.
 | Data 0 | completed | 두 API 실응답과 비밀정보 경계 확인 |
 | Data 1 | completed | 공통 Collector·Registry·CLI와 HTTP Client 구현 |
 | Data 2 | completed | 원본 byte 기반 Raw 계약·Schema·안전 저장 구현 |
-| Data 3 | pending | 미착수 |
+| Data 3 | completed | 두 공식 API 제한 수집과 Raw 변환 검증 |
 | Data 4 | pending | 미착수 |
 | Data 5 | pending | 미착수 |
 | Data 6 | pending | 미착수 |
@@ -135,10 +135,10 @@ data/runtime/raw/
 오류로 처리한다.
 
 `python -m collectors --source SOURCE_ID`는 Registry에서 선택한 Collector를
-실행한다. `--list-sources`도 제공한다. 이 Slice에는 실제 API Collector를
-등록하지 않았으므로 기본 Registry는 비어 있다. Mock Registry를 주입한 CLI
-테스트로 source 선택과 실행을 검증했으며 실제 `youthcenter-api`와
-`bokjiro-central-welfare-api` 등록은 Data 3·4에서 수행한다.
+실행한다. `--list-sources`도 제공한다. Data 1 완료 시점에는 실제 API
+Collector를 등록하지 않아 기본 Registry가 비어 있었고 Mock Registry로
+선택과 실행을 검증했다. Data 3에서 `youthcenter-api`와
+`bokjiro-central-welfare-api`를 등록했다.
 
 ### Data 1 - 공통 HTTP Client
 
@@ -155,10 +155,9 @@ data/runtime/raw/
 - 오류 응답 본문과 하위 전송·파싱 예외 원문을 공통 예외에 포함하지 않음
 - 주입한 sleep·monotonic clock으로 실제 대기 없이 간격과 backoff 검증
 
-복지로 XML의 애플리케이션 결과 코드는 공통 HTTP 상태가 아니므로 Data 4
-소스 Collector에서 분류한다. 환경변수 로딩도 각 소스 Collector가 실제
-인증 파라미터를 구성하는 Data 3·4 범위로 남겼다. 이 Slice에서는 외부 API를
-추가 호출하지 않았다.
+Data 1에서는 복지로 XML의 애플리케이션 결과 코드와 source 환경변수 로딩을
+후속 source Collector 범위로 남겼다. 두 항목은 Data 3에서 구현했다. Data 1
+자체에서는 외부 API를 추가 호출하지 않았다.
 
 ### Data 2 - Raw 모델과 실행 가능한 Schema
 
@@ -211,23 +210,95 @@ Data 2 테스트는 관찰된 구조를 축소한 JSON 목록 전체·항목과 
 사용했다. 검토된 배포 Fixture는 Data 6 범위이므로 만들지 않았고 외부 API도
 추가 호출하지 않았다.
 
+### Data 3 - Source Collector와 설정
+
+기본 Registry에 `youthcenter-api`와 `bokjiro-central-welfare-api` factory를
+등록했다. factory는 실제 키 파일을 읽지 않고 각각
+`YOUTHCENTER_API_KEY`, `BOKJIRO_API_KEY` 환경변수에서 인증키를 읽는다.
+Timeout, 재시도와 요청 간격도 기존 계획 환경변수를 적용한다.
+
+공통 `CollectionOptions`는 page 1~1000, 목록 limit 1~500, 상세 limit 0~5를
+검증한다. CLI 기본값은 page 1, 목록 10건과 상세 3건이다. 성공 출력은
+source ID, 요청·항목·상세·Raw 문서 수만 제공한다.
+
+`.env.example`에는 안전한 placeholder와 HTTP 기본값을 추가했다. 별도
+라이브러리를 추가하지 않았으므로 `.env` 파일을 자동 로드하지 않고 현재
+프로세스 환경 또는 비밀 관리 수단으로만 값을 주입한다.
+
+### Data 3 - 온통청년 Collector
+
+검증된 `/go/ythip/getPlcy` 계약에 `apiKeyNm`, `pageNum`, `pageSize`,
+`rtnType=json`을 전달한다. `resultCode=200`과 JSON 구조를 확인하고 목록이
+비었거나 항목 `plcyNo`가 유효하지 않으면 Raw 저장 전에 실패한다.
+
+목록 HTTP body 전체는 `list_response`, 최대 limit까지의 각 정책 객체는
+결정적 JSON byte의 `list_item`으로 저장한다. 모든 항목은 부모 목록
+`document_id`와 source-scoped `plcyNo`를 보존한다.
+
+### Data 3 - 복지로 Collector
+
+목록은 `callTp=L`, `pageNo`, `numOfRows`, `srchKeyCode=003`을 사용하고 상세는
+`callTp=D`, `servId`를 사용한다. Encoding key가 주입돼도 한 번 decode한 뒤
+공통 HTTP Client가 query를 한 번 encoding하도록 처리한다.
+
+XML `resultCode=0`을 성공으로 보고 `30`·`31`은 인증, `22`는 할당량,
+그 밖의 코드는 application 요청 오류로 분류한다. 목록의 직접 `servId`
+항목을 최대 limit까지 Raw로 만들고, 중복을 제거한 첫 ID 중 detail limit만
+상세 호출한다. 상세 응답 `servId`가 요청 ID와 다르면 저장하지 않는다.
+
+두 Collector 모두 HTTP 상태 분류와 별도로 source payload 결과 코드를
+확인한다. 응답 byte에서 요청 인증키의 원본·URL encoding·decoding 표현이
+발견되면 Raw 저장 전에 파싱 오류로 중단한다.
+
+### Data 3 - 실제 제한 수집
+
+로컬 키 파일은 구현 의존성으로 사용하지 않고 이번 검증 PowerShell
+프로세스에서 각 줄의 마지막 토큰만 해당 환경변수에 주입했다. 값은 출력하지
+않았고 프로세스 실행 직후 환경변수를 제거했다.
+
+| 시각(Asia/Seoul) | Source ID | 실제 요청 | 결과 |
+| --- | --- | --- | --- |
+| 2026-07-26 15:37:20 | `youthcenter-api` | 목록 1회, page 1, limit 10 | 항목 10건, Raw 11개 |
+| 2026-07-26 15:37:31 | `bokjiro-central-welfare-api` | 목록 1회, 상세 3회 | 목록 10건, 상세 3건, Raw 14개 |
+
+Data 3 실호출은 온통청년 1회와 복지로 4회다. Data 0부터 누적한 인증 API
+요청은 온통청년 6회, 복지로 6회다. 이번 실행은 추가 retry 없이 모두 첫
+시도에 성공했다.
+
+저장된 25개 envelope를 `RawDocumentStore`로 다시 로드해 payload Hash와 길이를
+검증했다. 역할별 결과는 온통청년 목록 전체 1·항목 10, 복지로 목록 전체
+1·항목 10·상세 3이다. 부모 문서와 `external_id` 연결 오류, query·fragment·
+user information이 있는 `source_url`, 실제 두 인증키와 일치하는 envelope·
+payload는 모두 0건이었다. 두 source runtime 경로도 Git ignore임을 확인했다.
+
+첫 일회성 관계 집계는 상세 문서를 항목 문서보다 먼저 순회하면서 아직 만들지
+않은 항목 ID 집합과 비교해 오류 3건으로 잘못 표시했다. 전체 항목 ID 집합을
+먼저 구성한 재검증에서는 관계 오류 0건이었다. 저장 문서나 Collector 관계
+계약의 오류는 아니며 해당 임시 집계 코드는 저장하지 않았다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
+- `.env.example`
 - `collectors/__init__.py`
 - `collectors/__main__.py`
 - `collectors/base.py`
+- `collectors/bokjiro.py`
 - `collectors/cli.py`
+- `collectors/config.py`
 - `collectors/errors.py`
 - `collectors/http.py`
 - `collectors/raw.py`
 - `collectors/registry.py`
 - `collectors/storage.py`
+- `collectors/source_common.py`
+- `collectors/youthcenter.py`
 - `data/schema/raw_policy_document.schema.json`
 - `scripts/validate_docs.py`
 - `tests/test_collectors_cli.py`
 - `tests/test_collectors_http.py`
 - `tests/test_raw_storage.py`
+- `tests/test_source_collectors.py`
 - `tests/test_validate_docs.py`
 - `tests/test_secret_boundaries.py`
 - `docs/data/source_profiles.md`
@@ -239,6 +310,9 @@ Data 2 테스트는 관찰된 구조를 축소한 JSON 목록 전체·항목과 
 - `docs/development/develop_plan/README.md`
 - `docs/development/development_notes/README.md`
 - `docs/index.md`
+- `docs/operations/collector.md`
+- `docs/operations/README.md`
+- `README.md`
 
 ## 설계 결정
 
@@ -288,6 +362,18 @@ JSON/XML 파싱 결과는 원문 의미를 보존해도 byte 표현을 보존하
 않았다. 향후 Backend가 Raw를 적재하거나 Frontend 관리자 기능이 Raw를
 소비하면 영향받는 계약을 공동 검토한다.
 
+### 실제 키 파일과 Collector 설정을 결합하지 않는다
+
+`APIkey.txt`는 현재 로컬 검증 자료일 뿐 배포 계약이 아니다. Collector
+factory는 합의된 환경변수만 사용하고 `.env` 자동 로딩이나 로컬 파일 parsing을
+구현하지 않는다. 이 경계로 키 파일 형식, 경로와 배포 환경을 분리한다.
+
+### HTTP 성공과 source payload 성공을 모두 요구한다
+
+두 API는 HTTP 200 안에서도 application 결과 코드를 제공한다. 공통
+`HttpClient`의 HTTP 오류 분류만으로 성공을 판단하지 않고 source Collector가
+온통청년 `resultCode`와 복지로 XML `resultCode`를 확인한 뒤에만 Raw를 만든다.
+
 ## 검증 결과
 
 - 복지로 최소 실호출: 목록 1회, 상세 1회 성공
@@ -295,12 +381,17 @@ JSON/XML 파싱 결과는 원문 의미를 보존해도 byte 표현을 보존하
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
 - 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  Data 0~2 전체 41건 통과
+  Data 0~3 전체 52건 통과
 - Raw 계약 테스트: JSON·XML Schema 사례, Python·Schema 필드 일치, byte
   왕복, Hash 결정성·변조 탐지, 역할 연결, URL·저장 경로·덮어쓰기 경계 11건
   통과
 - Raw 검증은 새 패키지 없이 표준 라이브러리와 Schema에서 사용하는
   Draft 2020-12 keyword 계약 assertion으로 수행
+- Source Collector Mock 테스트: 환경변수, page·limit, JSON·XML 정상,
+  빈 목록, 인증·할당량·application 오류, 형식 오류, 키 반사, 상세 ID 불일치,
+  복지로 key encoding과 상세 limit 11건 통과
+- 실제 호출 통합 검증: 온통청년 1회와 복지로 4회 성공, Raw 25개 재로드와
+  관계·비밀·안전 URL·Git ignore 검증 통과
 - 문서 검증: `python scripts/validate_docs.py` 통과
 - diff 공백 오류 검사: `git diff --check` 통과
 - Git 상태: 두 비밀 파일 모두 추적 대상 아님, 두 경로 모두 ignore 확인
@@ -315,10 +406,11 @@ JSON/XML 파싱 결과는 원문 의미를 보존해도 byte 표현을 보존하
 - 온통청년 계정별 공식 호출 한도 확인
 - 두 API 키 폐기·재발급
 - 필요하면 저장소 관리자와 과거 Git 이력 정리 방식 결정
-- Data 3·4에서 실제 source Collector 등록과 환경변수 로딩 구현
-- Data 3에서 실제 응답으로 Raw 역할·연결 생성 검증
 - Data 6에서 이용 조건과 비밀정보를 검토한 최소 Raw Fixture 결정
-- 현재 저장기는 같은 filesystem의 hard link를 지원하지 않으면 부분 저장
-  대신 안전하게 실패함. 실제 Runtime Volume에서 Data 3 통합 검증 필요
+- 현재 NTFS runtime 경로의 hard link 저장은 실호출 25개에서 성공함. 다른
+  운영 filesystem이 hard link를 지원하지 않으면 부분 저장 대신 안전하게
+  실패하므로 배포 환경에서 재검증 필요
 - 합의된 Python 의존성 manifest가 생기면 표준 Draft 2020-12 validator를
   추가해 현재 표준 라이브러리 keyword assertion과 교차 검증
+- 온통청년 계정별 숫자 호출 한도와 실제 오류 payload는 여전히 미확인
+- 복지로 실제 오류·빈 element 경계는 할당량 보호를 위해 Mock으로만 검증
