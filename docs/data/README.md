@@ -23,6 +23,8 @@
 
 - [RawPolicyDocument JSON Schema](../../data/schema/raw_policy_document.schema.json):
   원본 byte와 목록·항목·상세 연결 메타데이터 계약
+- [NormalizedProgram JSON Schema](../../data/schema/normalized_program.schema.json):
+  정규화 필드, null·배열·enum, provenance와 품질 상태 계약
 
 ## 포함하지 않는 내용
 

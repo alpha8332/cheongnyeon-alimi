@@ -8,22 +8,23 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 4 완료
+- 현재 Slice: Data 5 완료
 
 ## 목적
 
 온통청년과 복지로 공식 API의 현재 요청 계약과 실제 응답 구조를 확인하고,
 두 공식 API의 source Collector와 공유 실행·HTTP·Raw 저장 기반을 구축하고,
-저장된 Raw를 공통 `ExtractedPolicy`로 재처리한다. 인증키와 운영 Raw가 Git,
-로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 기준선을 유지하면서
-제한된 실제 수집과 소스별 추출을 검증한다.
+저장된 Raw를 공통 `ExtractedPolicy`와 `NormalizedProgram`으로 재처리하고
+품질을 분류한다. 인증키와 운영 Raw가 Git, 로그, 예외, URL 기록과 Fixture에
+남지 않도록 저장소 기준선을 유지하면서 제한된 실제 수집부터 Schema
+검증까지 확인한다.
 
 ## Forest 범위
 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
-누적한다. 현재는 Data 0부터 Data 4까지 수행했다. 공통 실행·HTTP·Raw 기반,
-온통청년·복지로 source Collector와 두 Source Extractor를 구현했다.
-Normalized Schema, Fixture와 Seed는 시작하지 않았다.
+누적한다. 현재는 Data 0부터 Data 5까지 수행했다. 공통 실행·HTTP·Raw 기반,
+두 source Collector·Extractor와 공통 Normalizer·Validator를 구현했다.
+배포 가능한 Fixture와 Seed는 시작하지 않았다.
 
 ## Slice 진행 현황
 
@@ -34,7 +35,7 @@ Normalized Schema, Fixture와 Seed는 시작하지 않았다.
 | Data 2 | completed | 원본 byte 기반 Raw 계약·Schema·안전 저장 구현 |
 | Data 3 | completed | 두 공식 API 제한 수집과 Raw 변환 검증 |
 | Data 4 | completed | 공통 Extracted 계약과 두 Source Extractor 구현 |
-| Data 5 | pending | 미착수 |
+| Data 5 | completed | Normalized Schema·Normalizer·품질 분류 구현 |
 | Data 6 | pending | 미착수 |
 | Data 7 | pending | 미착수 |
 
@@ -344,6 +345,88 @@ Source Preflight와 Data 3 Raw의 온통청년 빈 값 수를 비교하면
 변경은 아니므로 시점별 page 1 데이터 변화로 기록하고 빈 값 비율을 고정
 계약으로 사용하지 않는다.
 
+### Data 5 - NormalizedProgram 1.0.0
+
+`NormalizedProgram` Python 모델과 Draft 2020-12 JSON Schema는 31개 필드와
+Schema version `1.0.0`을 공유한다. 객체의 모든 key는 required이고 선택 단일
+값 없음은 null, 복수 값 없음은 빈 배열이다. source ID, 표시 이름, external
+ID와 기여 Raw provenance를 유지해 같은 external ID의 다른 소스와 원문을
+추적할 수 있게 했다.
+
+실제 복지로 관심주제가 여러 값을 가지므로 단일 `category` 후보를
+`categories` 배열로 바꿨다. 또한 `always`와 `open`의 의미 충돌을 해소하기
+위해 일정 유형 `application_schedule`과 수집 기준 상태
+`application_status`를 분리했다.
+
+### Data 5 - 공통 Normalizer
+
+Normalizer는 API 필드명과 XML 태그를 알지 않고 Extracted 공통 필드만
+사용한다.
+
+- HTML tag·Entity, 앞뒤·연속 공백과 줄바꿈을 정리하되 문장 의미를 재작성하지
+  않음
+- 점·slash·8자리 날짜와 날짜 범위를 `YYYY-MM-DD`로 변환
+- `상시`, `마감`, `예산 소진 시`의 일정·상태 의미를 분리
+- 수집 시각의 Asia/Seoul 날짜로 기간의 open·closed·scheduled 판정
+- 숫자가 명확한 연령 범위와 한쪽 경계만 0~150 안에서 구조화
+- 시·도 축약과 승인된 예시만 표준 지역명으로 변환
+- 다중 관심주제를 category enum 배열로 변환하고 중복 제거
+
+행정구역 5자리 코드는 승인된 code-to-name 기준표가 없어 추정하지 않는다.
+`region_text`는 유지하고 `regions=[]`과 `unmapped_region_code` 경고를 남긴다.
+매핑되지 않은 명시적 category는 원문을 보존하면서 `other`와 경고를 사용하고
+분류 자체가 없으면 빈 배열로 둔다.
+
+### Data 5 - Schema Validator와 품질 분류
+
+새 의존성을 추가하지 않고 표준 라이브러리 Validator로 현재 Schema가 사용하는
+required·additionalProperties·type·enum·pattern·format·배열·local `$ref`
+keyword를 검사한다. 날짜·연령 범위 순서와 선언한 품질 상태가 실제 판정과
+일치하는지도 확인한다.
+
+각 issue는 `$.title`, `$.regions`, `$.provenance[0]` 형태의 위치, 안정적인
+code, 안전한 message와 warning·error severity를 가진다.
+
+- `valid`: Schema와 주요 검색 필드가 모두 충족됨
+- `partial`: Schema-valid지만 category·지역·연령·신청기간 누락 또는 선택
+  파싱 경고가 있음
+- `invalid`: Schema·핵심 필드·범위 관계·품질 상태 계약 위반
+
+valid·partial은 `NormalizedProgram`을 유지하고 invalid는 candidate와 issue만
+남겨 정상 결과와 분리한다.
+
+개인정보·외부 원문이 없는 합성 valid·partial·invalid JSON Fixture 3개를
+`tests/fixtures/normalized/`에 두고 Schema와 품질 분기를 검증했다. 실제
+API 원문을 재배포하는 Data 6 Fixture와는 역할을 분리한다.
+
+### Data 5 - 실제 Raw 재처리
+
+외부 API를 추가 호출하지 않고 runtime Raw 25개를 다시 로드해
+Raw → Extracted → Normalized → Validated 흐름을 실행했다.
+
+| Source ID | Extracted | valid | partial | invalid |
+| --- | ---: | ---: | ---: | ---: |
+| `youthcenter-api` | 10 | 0 | 10 | 0 |
+| `bokjiro-central-welfare-api` | 10 | 0 | 10 | 0 |
+
+20건이 모두 partial인 주된 이유는 표준 지역명이 없기 때문이다. 온통청년
+10건은 지역 코드만 제공하고 복지로 10건은 공통 지역 정보가 없었다. 복지로는
+연령과 신청기간도 10건 모두 없었고 category 1건이 누락됐다. 온통청년의
+명시 상태는 closed 6건·open 4건으로 변환됐다.
+
+20건의 Python 모델과 JSON Schema 오류, Raw provenance ID·hash 연결 오류는
+모두 0건이었고 전체 결과는 JSON 직렬화 가능했다. partial을 valid로 가장하지
+않았으며 실제 수집 호출은 0회다.
+
+### Data 5 - Backend·Frontend 영향
+
+현재 저장소에는 Normalized를 소비하는 Backend 응답 모델·DB Schema와
+Frontend 타입·Mock이 없어 직접 변경할 파일은 없다. 다만 단일 category 대신
+배열, 신청 일정·상태 분리, 모든 key required, null·빈 배열과 provenance는
+향후 소비자 계약에 영향을 준다. Data 6의 Fixture·Seed를 소비 계약으로
+승인하기 전에 Backend·Frontend 담당과 공동 검토해야 한다. 승인 전
+Normalized 1.0.0은 Data 파이프라인 내부 기준안이다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
@@ -358,17 +441,25 @@ Source Preflight와 Data 3 Raw의 온통청년 빈 값 수를 비교하면
 - `collectors/extracted.py`
 - `collectors/extractors.py`
 - `collectors/http.py`
+- `collectors/normalized.py`
+- `collectors/normalizer.py`
 - `collectors/profile.py`
 - `collectors/raw.py`
 - `collectors/registry.py`
 - `collectors/storage.py`
 - `collectors/source_common.py`
 - `collectors/youthcenter.py`
+- `collectors/validation.py`
+- `data/schema/normalized_program.schema.json`
 - `data/schema/raw_policy_document.schema.json`
 - `scripts/validate_docs.py`
 - `tests/test_collectors_cli.py`
 - `tests/test_collectors_http.py`
 - `tests/test_extractors.py`
+- `tests/test_normalization.py`
+- `tests/fixtures/normalized/valid.json`
+- `tests/fixtures/normalized/partial.json`
+- `tests/fixtures/normalized/invalid.json`
 - `tests/test_raw_storage.py`
 - `tests/test_source_collectors.py`
 - `tests/test_validate_docs.py`
@@ -460,6 +551,27 @@ null로 전달한다. 동시에 `extra.source_fields`에는 필드 부재, 빈 s
 상세의 ID·역할·hash·시각·endpoint를 모두 보존하고 Extracted 수집 시각은
 그중 가장 최근 시각으로 정한다.
 
+### 다중 category를 단일 enum으로 축약하지 않는다
+
+복지로 실제 목록은 쉼표로 구분된 여러 관심주제를 제공하고 온통청년도
+금융·복지·문화가 결합된 분류를 가진다. 한 값만 고르는 우선순위는 검색 의미를
+잃으므로 `categories` 배열로 보존하고 미매핑 원문은 `other`와 warning으로
+표시한다.
+
+### 신청 일정 유형과 현재 상태를 분리한다
+
+`always`는 기간의 형태이고 `open`은 특정 기준일의 상태다. 두 의미를 한 enum에
+섞지 않고 schedule과 status로 나눈다. 상태 비교가 필요하면 실행 시각이 아닌
+입력의 `collected_at`을 Asia/Seoul 날짜로 바꿔 결정해 재실행 결과를
+결정적으로 유지한다.
+
+### 선택 필드 파싱 실패는 partial로 보존한다
+
+지역 코드표 부재나 유효하지 않은 선택 날짜 하나 때문에 정책 전체를
+invalid로 버리지 않는다. 원문 text와 위치가 있는 warning을 보존하고 null·빈
+배열로 표시한다. 제목·출처·provenance 또는 Schema 위반만 정상 결과에서
+완전히 분리한다.
+
 ## 검증 결과
 
 - 복지로 최소 실호출: 목록 1회, 상세 1회 성공
@@ -467,7 +579,7 @@ null로 전달한다. 동시에 `extra.source_fields`에는 필드 부재, 빈 s
 - Python: 로컬 `uv`가 관리하는 CPython 3.14.5 사용, 새 설치 없음
 - 단위·CLI 통합 테스트:
   `python -m unittest discover -s tests -p "test_*.py" -v`
-  Data 0~4 전체 58건 통과
+  Data 0~5 전체 71건 통과
 - Raw 계약 테스트: JSON·XML Schema 사례, Python·Schema 필드 일치, byte
   왕복, Hash 결정성·변조 탐지, 역할 연결, URL·저장 경로·덮어쓰기 경계 11건
   통과
@@ -479,14 +591,20 @@ null로 전달한다. 동시에 `extra.source_fields`에는 필드 부재, 빈 s
 - Extractor Mock 테스트: 공통 필드 매핑, 선택 필드 fallback, 신청기간 코드·
   연령 text, 복지로 목록·상세 결합, 반복 XML 배열, 누락·빈 값 프로필,
   external ID 불일치와 전체 source field·provenance 보존 6건 통과
+- Normalizer·Validator 테스트: HTML·Entity·공백, 실제 8자리 날짜, 일정·상태,
+  연령 경계, 지역 alias·미매핑 코드, 다중 category, null·빈 배열, Python·
+  Schema 왕복, 합성 JSON Fixture와 오류 위치, valid·partial·invalid 분리
+  13건 통과
 - 실제 호출 통합 검증: 온통청년 1회와 복지로 4회 성공, Raw 25개 재로드와
   관계·비밀·안전 URL·Git ignore 검증 통과
 - 실제 Raw 재처리: 추가 외부 호출 없이 두 소스 각 10건, 총 20건 추출,
   복지로 상세 3건 결합, source field·provenance 보존과 JSON 직렬화 검증 통과
+- 실제 전체 흐름: Raw 25개에서 Normalized 20건 생성, valid 0·partial 20·
+  invalid 0, Schema·provenance 오류 0건
 - 문서 검증: `python scripts/validate_docs.py` 통과
 - diff 공백 오류 검사: `git diff --check` 통과
 - Git 상태: 두 비밀 파일 모두 추적 대상 아님, 두 경로 모두 ignore 확인
-- 비밀값 검색: ignore 대상 비밀 파일을 제외한 Git 포함 후보 54개를 실제 두
+- 비밀값 검색: ignore 대상 비밀 파일을 제외한 Git 포함 후보 86개를 실제 두
   키 값과 대조했고 일치 파일 0개
 - 임시 산출물: Source Preflight 임시 스크립트와 테스트가 생성한 Python 3.14
   bytecode 제거
@@ -498,6 +616,10 @@ null로 전달한다. 동시에 `extra.source_fields`에는 필드 부재, 빈 s
 - 두 API 키 폐기·재발급
 - 필요하면 저장소 관리자와 과거 Git 이력 정리 방식 결정
 - Data 6에서 이용 조건과 비밀정보를 검토한 최소 Raw Fixture 결정
+- Data 6 Fixture·Seed 확정 전에 Normalized 1.0.0의 category 배열,
+  application schedule·status, required key·null·빈 배열·provenance를
+  Backend·Frontend와 공동 승인
+- 온통청년 지역 코드를 표준 이름으로 바꿀 공식·버전 고정 code table 결정
 - 현재 NTFS runtime 경로의 hard link 저장은 실호출 25개에서 성공함. 다른
   운영 filesystem이 hard link를 지원하지 않으면 부분 저장 대신 안전하게
   실패하므로 배포 환경에서 재검증 필요

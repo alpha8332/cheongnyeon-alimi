@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 4 완료
+- 현재 Slice: Data 5 완료
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -365,7 +365,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 5 - 정규화, Schema와 Validator
 
-- 상태: pending
+- 상태: completed
 - 목적: 공통 `NormalizedProgram` 변환과 품질 분류를 구현한다.
 - 작업:
   - 텍스트, 날짜, 연령, 지역과 카테고리 정규화
@@ -376,6 +376,23 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - 정상·경계·실패 Fixture를 검증함
   - 문서, Python 모델과 JSON Schema가 일치함
   - Schema 변경의 Backend·Frontend 영향을 기록함
+- 진행 결과:
+  - 텍스트의 HTML·Entity·공백 정리와 날짜·연령·지역·category 정규화를
+    구현하고 원문 text를 병행 보존함
+  - 실제 다중 관심주제를 근거로 단일 `category` 후보를 `categories` 배열로
+    바꾸고 일정 유형과 수집 기준 상태를 `application_schedule`과
+    `application_status`로 분리함
+  - `NormalizedProgram` Python 모델과 Draft 2020-12 JSON Schema 1.0.0의
+    31개 필드, null·빈 배열·enum·provenance 계약을 일치시킴
+  - 표준 라이브러리 Validator가 Schema, 날짜·연령 순서와 품질 상태 일치를
+    검사하고 JSON path issue로 valid·partial·invalid를 분리하도록 구현함
+  - 개인정보·외부 원문이 없는 합성 정상·경계·실패 JSON Fixture 3개와
+    Normalizer·Validator 사례 13건, Data 0~5 전체 회귀 71건을 통과함
+  - 실제 Raw 25개를 추가 외부 호출 없이 정책 20건으로 재처리해 partial
+    20건, invalid 0건과 Schema·provenance 오류 0건을 확인함
+  - 현재 Backend·Frontend 소비 구현은 없으며 Data 6 Fixture·Seed 승인 전에
+    배열 category, 신청 일정·상태, required key와 provenance를 공동 검토해야
+    함을 기준 문서에 기록함
 
 ### Data 6 - Fixture와 Seed 계약
 
@@ -439,7 +456,8 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 - 두 API 코드표의 변경과 빈 문자열 표현
 - 목록과 상세 Raw의 연결 필드 및 required 규칙
 - 소스 간 같은 정책 또는 유사 서비스의 중복 판정
-- `application_status`, category 다중값과 provenance 계약
+- Normalized 1.0.0의 category 배열, 신청 일정·상태와 provenance에 대한
+  Backend·Frontend 소비 계약 승인
 - canonical JSON을 DB Seed로 직접 사용할지 별도 importer를 둘지 여부
 - 실제 runtime Raw 저장 경로와 변경 감지 도입 시점
 

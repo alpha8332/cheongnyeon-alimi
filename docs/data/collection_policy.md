@@ -3,7 +3,8 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API Collector와 Extractor 구현
+- 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API Collector·Extractor와
+  공통 Normalizer·Validator 구현
 
 이 문서는 외부 정책 데이터를 안전하고 재현 가능하게 수집하기 위한 공통
 원칙을 정의한다.

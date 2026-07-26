@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: Normalizer 미구현
+- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.0.0 구현
 
 정규화는 `ExtractedPolicy`의 소스별 표현을 공통
 `NormalizedProgram`으로 변환한다. 원문에 없는 값을 추정해 정확한 값처럼
@@ -17,6 +17,7 @@
 - 필드 하나를 파싱하지 못해 전체 실행을 중단하지 않는다.
 - 필수 필드 누락과 Schema 위반은 Validator가 invalid로 분류한다.
 - 같은 입력과 규칙은 같은 결과를 생성해야 한다.
+- application 상태의 기준일은 입력 `collected_at`의 Asia/Seoul 날짜다.
 
 ## 텍스트
 
@@ -40,8 +41,10 @@
 2026.07.01
 2026. 7. 1.
 2026/07/01
+20260701
 2026-07-01 ~ 2026-07-31
 상시
+마감
 예산 소진 시
 ```
 
@@ -53,16 +56,16 @@
 - 종료일이 없거나 `예산 소진 시`이면 임의의 종료일을 만들지 않는다.
 - `상시`, `예산 소진 시` 같은 원문 의미는 구조화 결과와 별도로 보존한다.
 - 유효하지 않은 달력 날짜는 보정하지 않고 파싱 실패로 처리한다.
-
-### 미확정 사항
-
-계획 문서에서 `application_status` 값으로 `always`와 `open`이 혼용된다.
-따라서 현재 문서에서는 enum을 확정하지 않는다. JSON Schema 구현 전에 다음을
-결정해야 한다.
-
-- 상시 여부와 현재 신청 가능 상태를 하나의 enum으로 표현할지 여부
-- `open`, `closed`, `scheduled`, `unknown`과 `always`의 관계
-- 현재 날짜 기준 상태 계산을 수집 시점에 할지 API 응답 시점에 할지 여부
+- 두 날짜가 있으면 `application_schedule=fixed_period`로 두고 수집 기준일이
+  시작 전이면 `scheduled`, 기간 안이면 `open`, 종료 뒤면 `closed`다.
+- 시작일 하나만 있고 기준일보다 미래면 `scheduled`지만 시작 뒤 상태는
+  종료일 없이 추정하지 않아 null이다.
+- `상시`는 `application_schedule=always`,
+  `application_status=open`으로 전달한다.
+- `마감`은 명시된 상태이므로 `application_status=closed`다.
+- `예산 소진 시`는 `application_schedule=until_budget_exhausted`로 두고
+  실제 소진 여부를 알 수 없어 상태는 null이다.
+- 알 수 없는 상태를 `"unknown"`으로 만들지 않고 null로 둔다.
 
 ## 연령
 
@@ -82,6 +85,7 @@
 - 법령명이나 모호한 표현에서 숫자를 추정하지 않는다.
 - 원문은 `age_condition_text`에 보존한다.
 - 연령 제한 없음과 연령 정보 누락을 같은 의미로 취급하지 않는다.
+- 허용 범위는 0~150이고 최소 연령이 최대 연령보다 클 수 없다.
 
 예:
 
@@ -119,36 +123,67 @@
 - 동명이인 지역이나 불명확한 축약어는 추정하지 않는다.
 - 값이 없으면 `[]`을 사용한다.
 - 원문은 `region_text`에 보존한다.
+- 5자리 행정구역 코드 목록은 승인된 code-to-name 기준표가 아직 없으므로
+  추정하지 않고 `regions=[]`과 `unmapped_region_code` 경고를 남긴다.
+- 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
+  치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
 
 ## 카테고리
+
+Normalized 1.0.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
+`categories` 배열을 사용한다. 같은 enum은 중복하지 않고 원문 순서를
+유지한다.
 
 현재 기준 매핑:
 
 | 원문 | enum |
 | --- | --- |
 | 주거 | `housing` |
-| 금융·생활지원 | `finance` |
-| 복지·문화 | `welfare` |
+| 금융, 서민금융, 금융·생활지원 | `finance` |
+| 복지·문화, 생활지원, 건강, 보육, 보호·돌봄, 문화·여가, 안전·위기 | `welfare` |
 | 취업·일자리 | `employment` |
 | 창업 | `startup` |
 | 교육·직업훈련 | `education` |
 | 기타 또는 매핑 불가 | `other` |
 
-원문에 여러 카테고리가 있을 때 단일 `category`로 선택하는 우선순위는 아직
-확정되지 않았다. 실제 샘플을 확인한 뒤 단일 enum 유지 여부 또는 배열 전환을
-공동 검토한다.
+쉼표로 구분된 복지로 관심주제는 각각 매핑한다. 온통청년
+`금융･복지･문화`는 `finance`, `welfare` 두 값을 만든다. 매핑되지 않은
+명시적 분류는 `other`를 사용하되 `unmapped_category` 경고와
+`category_text` 원문을 함께 유지한다. 분류 자체가 없으면 `other`를 만들지
+않고 빈 배열을 사용한다.
 
 ## 누락과 오류
 
 - 선택 단일 값 없음: null
 - 배열 값 없음: `[]`
 - 필수 값 없음: invalid
-- 일부 검색 필드 누락: partial 검토
+- category·지역·연령·신청기간 검색 필드 일부 누락: partial
 - 파서 예외: 원문과 오류 이유를 보존하고 다음 문서 처리를 계속
 
 파싱 실패를 빈 문자열이나 `other`로 무조건 숨기지 않는다. `other`는
 카테고리 의미가 실제로 기타이거나 정의된 매핑에 속하지 않을 때만 사용하고,
 원문을 함께 보존한다.
+
+## Validator와 오류 위치
+
+Validator는
+[`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
+과 날짜·연령 범위, 품질 상태 일치 규칙을 함께 검사한다.
+
+- `ValidationIssue.path`: `$.title`, `$.regions`, `$.provenance[0]` 같은
+  JSON path
+- `code`: Schema keyword 또는 정규화·품질 규칙 식별자
+- `message`: 비밀값과 원문 전체를 포함하지 않는 설명
+- `severity`: `warning` 또는 `error`
+
+Schema 오류, 필수 필드 누락, 날짜·연령 역전과 잘못 선언한 품질 상태는
+invalid다. 선택 필드 파싱 경고와 주요 검색 필드 누락은 partial이다.
+valid·partial 결과는 Schema-valid Python 모델을 포함하고 invalid 결과는
+candidate와 오류만 남겨 정상 결과와 분리한다.
+
+Data 5의 정상·경계·실패 사례는 개인정보나 외부 원문이 없는 합성 테스트
+데이터를 사용한다. 재배포할 Raw·Extracted·Normalized Fixture와 canonical
+Seed는 Data 6에서 이용 조건과 소비자 계약을 검토한 뒤 만든다.
 
 ## 규칙 변경
 
@@ -161,5 +196,6 @@
 - 기존 Seed의 재생성 필요성
 - Backend 필터와 Frontend 표시 영향
 
-실제 Schema 파일이 생성되기 전까지 경로는 목표 위치이며 구현 완료를
-의미하지 않는다.
+현재 Backend·Frontend 소비 구현은 없지만 단일 category에서 배열로의 전환,
+신청 일정·상태 분리, null·빈 배열과 provenance 필드는 Data 6 전에 공동
+검토해야 한다.

@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: 논리적 기준선
-- 현재 구현 상태: Raw Python 모델·JSON Schema·runtime 저장과
-  Extracted Python 모델 구현, Normalized Schema 미구현
+- 현재 구현 상태: Raw·Extracted·Normalized Python 모델, Raw·Normalized
+  JSON Schema와 runtime Raw 저장 구현
 
 이 문서는 `RawPolicyDocument`, `ExtractedPolicy`와
 `NormalizedProgram`의 역할과 필드 원칙을 정의한다. 실행 가능한 계약은
@@ -163,61 +163,63 @@ Frontend 타입을 변경하지 않는다. 이 내부 계약이 서비스 소비
 
 ## `NormalizedProgram`
 
-### 필수 필드
+현재 실행 가능한 계약은
+[`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
+Schema version `1.0.0`이다. 객체의 필드는 모두 required로 고정하고 의미상
+선택 단일 값은 null, 복수 값은 빈 배열로 표현한다. 이 방식으로 필드 생략과
+값 없음이 섞이지 않게 한다.
 
-- `title`
-- `source_name`
-- `source_url`
-- `collected_at`
-- `data_quality_status`
+| 필드 | 논리 타입 | 기준 |
+| --- | --- | --- |
+| `schema_version` | string | 현재 계약 `1.0.0` |
+| `source_id` | string | 안정적인 내부 source ID |
+| `source_name` | string | 사용자에게 표시할 소스 이름 |
+| `external_id` | string 또는 null | source-scoped 외부 ID |
+| `title` | string | 필수, 정규화 후 빈 값 금지 |
+| `organization` | string 또는 null | 담당·운영 기관 |
+| `summary` | string 또는 null | 현재 두 Extractor에는 공통 입력 없음 |
+| `category_text` | string 또는 null | 분류 원문 text |
+| `categories` | category enum 배열 | 다중 분류, 없으면 `[]` |
+| `application_period_text` | string 또는 null | 신청기간 원문 text |
+| `application_start` | date 또는 null | `YYYY-MM-DD` |
+| `application_end` | date 또는 null | `YYYY-MM-DD` |
+| `application_schedule` | enum 또는 null | 일정 유형 |
+| `application_status` | enum 또는 null | 수집 기준 시점 상태 |
+| `region_text` | string 또는 null | 지역 원문 text·코드 |
+| `regions` | string 배열 | 표준화된 지역 이름 |
+| `age_min` | integer 또는 null | 0~150 |
+| `age_max` | integer 또는 null | 0~150 |
+| `age_condition_text` | string 또는 null | 연령 원문 text |
+| `eligibility_text` | string 또는 null | 자격 원문 |
+| `support_content` | string 또는 null | 지원 내용 |
+| `application_method` | string 또는 null | 신청 방법 |
+| `education_statuses` | string 배열 | 없으면 `[]` |
+| `employment_statuses` | string 배열 | 없으면 `[]` |
+| `required_conditions` | string 배열 | 없으면 `[]` |
+| `preferred_conditions` | string 배열 | 없으면 `[]` |
+| `excluded_conditions` | string 배열 | 없으면 `[]` |
+| `source_url` | HTTP(S) URI | user information 금지 |
+| `collected_at` | date-time | timezone 필수 |
+| `provenance` | Raw provenance 배열 | 최소 1개, 중복 금지 |
+| `data_quality_status` | 품질 enum | `valid`, `partial`, `invalid` |
 
-필수 필드가 없으면 단순 null로 정상 데이터처럼 통과시키지 않고 Validator가
-invalid로 분류한다.
-
-### 선택 단일 필드
-
-계획에서 확인된 선택 필드는 다음과 같다.
-
-- `external_id`
-- `organization`
-- `summary`
-- `category`
-- `application_start`
-- `application_end`
-- `application_status`
-- `age_min`
-- `age_max`
-- `age_condition_text`
-- `eligibility_text`
-- `support_content`
-- `application_method`
-
-값이 없는 선택 단일 필드는 `null`을 사용한다. 빈 문자열, `"unknown"`과
-임의의 기본값으로 누락을 숨기지 않는다.
-
-### 배열 필드
-
-다음 필드는 값이 하나이거나 없어도 항상 배열이다.
-
-- `regions`
-- `education_statuses`
-- `employment_statuses`
-- `required_conditions`
-- `preferred_conditions`
-- `excluded_conditions`
-
-값이 없으면 `[]`을 사용한다. 배열 필드를 `null`이나 단일 string으로
-바꾸지 않는다.
+`source_id`와 provenance를 Normalized에도 보존해 같은 external ID의 다른
+소스를 구분하고 Raw까지 재추적한다. provenance 항목은 Extracted 계약과 같은
+Raw document ID·역할·hash·수집 시각·안전 endpoint 구조를 사용한다.
 
 ### 날짜와 시간
 
 - 날짜는 `YYYY-MM-DD` 문자열 또는 null이다.
 - 수집 시각은 timezone을 포함한 ISO 8601 date-time 문자열이다.
 - 종료일을 알 수 없으면 임의 날짜를 생성하지 않고 null을 사용한다.
+- 시작일은 종료일보다 늦을 수 없다.
+- `application_status`의 기간 비교 기준일은 `collected_at`을
+  Asia/Seoul 날짜로 변환한 값이다.
 
 ### enum 기준
 
-현재 확정된 category 매핑:
+category는 실제 복지로의 다중 관심주제를 보존하기 위해 단일 `category`가
+아닌 `categories` 배열이다.
 
 ```text
 housing
@@ -229,17 +231,24 @@ education
 other
 ```
 
-현재 확정된 품질 상태:
+신청 일정 유형:
 
 ```text
-valid
-partial
-invalid
+fixed_period
+always
+until_budget_exhausted
 ```
 
-`application_status`는 계획 예시에서 `always`와 `open`이 혼용되어 최종 enum이
-확정되지 않았다. JSON Schema 구현 전에 상시 신청과 현재 신청 가능 상태를
-하나의 필드로 표현할지 별도 필드로 나눌지 공동 검토한다.
+신청 상태:
+
+```text
+open
+closed
+scheduled
+```
+
+`always`는 일정 유형이고 `open`은 수집 기준일의 상태이므로 같은 enum에 넣지
+않는다. 판단 근거가 없으면 `"unknown"` enum 대신 null을 사용한다.
 
 ## null과 빈 배열
 
@@ -254,12 +263,35 @@ invalid
 
 ## 품질 분류
 
-- `valid`: 필수 필드와 주요 검색 필드가 정상
-- `partial`: 필수 필드는 있으나 날짜, 지역, 연령 등 일부 값이 누락
-- `invalid`: 제목이나 출처 URL 등 핵심 필드가 없거나 Schema를 위반
+- `valid`: Schema를 통과하고 category·지역·연령·신청기간 검색 정보가 있음
+- `partial`: Schema를 통과하지만 해당 검색 정보가 일부 누락되거나 선택 필드
+  파싱 경고가 있음
+- `invalid`: 제목·출처·provenance 등 핵심 필드가 없거나 Schema, 날짜·연령
+  범위 관계를 위반하거나 선언한 품질 상태가 실제 판정과 다름
 
 invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하고 실패
-이유를 기록한다.
+이유를 기록한다. Validator issue는 JSON path, 코드, 메시지와
+`warning`·`error` severity를 가진다. partial은 Schema-valid
+`NormalizedProgram`을 유지하지만 invalid는 `program=null`인 rejected
+결과로 분리한다.
+
+### Backend·Frontend 영향과 승인 게이트
+
+Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
+버전이다. 현재 저장소에는 이를 소비하는 Backend 응답 모델, DB Schema,
+Frontend 타입, Fixture와 Seed가 없어 직접 동기화할 구현 파일은 없다.
+
+다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
+
+- 단일 `category` 후보 대신 `categories` 배열 사용
+- `application_schedule`과 `application_status` 분리
+- `source_id`, source 원문 text와 Raw provenance 포함
+- 선택 단일 값은 null, 복수 값은 빈 배열, 모든 필드 key는 required
+- invalid는 정상 API 응답·DB 적재·Frontend Mock에서 제외
+
+Data 6의 canonical Fixture와 Seed를 Backend·Frontend 소비 계약으로 승인하기
+전에 이 구조를 양쪽 담당자와 공동 검토한다. 승인 전까지 이번 Schema는 Data
+파이프라인 내부의 실행 가능한 기준안이다.
 
 ## JSON Schema 동기화 규칙
 
@@ -275,12 +307,16 @@ Schema 변경 PR은 다음을 포함한다.
 5. Backend 응답 Schema와 Frontend 타입 영향 검토
 6. 호환성이 깨지면 `CHANGELOG.md`와 전환 방법
 
+이번 첫 Normalized Schema는 합성 valid·partial·invalid JSON Fixture로
+계약을 검증했다. 실제 소스 기반 Fixture와 Seed는 Data 6 범위이며, 소비자
+공동 검토 없이 현재 runtime Raw를 배포 데이터로 복사하지 않는다.
+
 Raw Schema는 Semantic Versioning 문자열을 사용한다. required·타입·역할
 관계처럼 기존 문서를 무효화하는 변경은 major, 기존 문서를 계속 허용하는
 추가는 minor, 설명과 제약의 호환 가능한 수정은 patch를 올린다. 저장된
 문서의 `schema_version`과 Schema `$id`를 함께 변경한다.
 
-Raw Schema는 Collector 재처리와 provenance를 위한 내부 계약이다. 이번
-`1.0.0` 확정은 `NormalizedProgram`, Backend API 응답과 Frontend 타입을
-변경하지 않는다. 향후 Backend가 Raw를 직접 적재하거나 Frontend 관리자
-화면에 노출하면 해당 소비자 계약을 공동 검토한다.
+Raw Schema는 Collector 재처리와 provenance를 위한 내부 계약이다.
+Normalized Schema는 향후 Backend·Frontend 소비 계약의 기준안이지만 현재
+소비 구현은 없다. Data 6에서 Fixture·Seed를 확정할 때 소비자 검토 결과와
+함께 Schema 변경 필요성을 다시 확인한다.

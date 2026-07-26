@@ -27,6 +27,8 @@
   데이터 계약 원칙
 - [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
   원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
+- [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
+  정규화 필드, provenance와 품질 분류의 실행 가능한 계약
 - [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
   변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
