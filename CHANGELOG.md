@@ -10,7 +10,9 @@
 
 ### Added
 
+- `NormalizedProgram` 1.0.0 기반 PostgreSQL/SQLite ORM Policy 모델, Seed Upsert Importer CLI(`python -m app.cli.import_seed`) 및 정책 목록·상세 조회 API 추가 ([개발 기록](docs/development/development_notes/backend/policy_baseline.md))
 - 온통청년·복지로 source Collector·Extractor, 비밀정보 안전한 공통 HTTP·CLI,
+
   Raw 보존부터 provenance 기반 정규화·Schema 검증·품질 분류와 결정적
   Fixture·canonical Seed까지의 데이터 파이프라인 기반 추가
   ([개발 기록](docs/development/development_notes/data/data_pipeline.md))

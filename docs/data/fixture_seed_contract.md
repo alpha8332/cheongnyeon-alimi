@@ -137,8 +137,9 @@ uv run python -B scripts/build_data_fixtures.py --check
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
-| Backend | pending | 담당자 승인 또는 실제 importer 소비 테스트 필요 |
+| Backend | reviewed | 1-A~5-A 의사결정(CLI Importer, Upsert, valid 전용 필터링, JSONB provenance, Date+Text 보존) 승인 및 모델 반영 완료 |
 | Frontend | pending | 담당자 승인 또는 TypeScript·Mock 소비 테스트 필요 |
+
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
 안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest
