@@ -10,8 +10,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.config import settings
 from app.core.database import Base
+import app.models  # Register models with Base.metadata
 
 config = context.config
+
 
 if config.config_file_name:
     fileConfig(config.config_file_name)
