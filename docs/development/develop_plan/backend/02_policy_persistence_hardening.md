@@ -4,11 +4,11 @@
 
 - 번호: Backend 02
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: B5 완료, B6 대기
+- 현재 Slice: B6 완료
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -310,7 +310,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B6 - Backend PostgreSQL 검증
 
-- 상태: pending
+- 상태: completed
 - 목적: Backend 기준선을 실제 PostgreSQL에서 최종 확인한다.
 - 선행 조건:
   - B1~B5 완료
@@ -327,6 +327,17 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - Migration → Seed → Repository → API 흐름 통과
   - 중복, invalid 적재와 주요 필드 손실 0건
   - 실제 DB 종류와 실행 명령이 개발 기록에 남음
+- 완료 결과:
+  - PostgreSQL 18.4 전용 테스트 DB에서 Migration upgrade 후 canonical Seed
+    4건 적재와 동일 Seed 재실행 unchanged 4건을 확인함
+  - Normalized 31개 필드를 Seed와 ORM 조회 결과로 비교해 null·빈 배열·enum,
+    날짜·timezone instant와 provenance 손실 0건을 확인함
+  - Schema 위반 혼합 batch의 추가 DB 변경 0건을 확인함
+  - 실제 PostgreSQL Session을 FastAPI dependency에 주입해 valid 2건,
+    partial 포함 4건, JSONB category 2건과 목록·상세 품질 정책을 확인함
+  - 공개 API의 null·빈 배열·날짜 보존과 provenance 비노출을 확인함
+  - 닫힌 PostgreSQL 포트 연결 실패가 SQLite 성공으로 전환되지 않음을 확인함
+  - downgrade 후 Policy 테이블 제거를 확인함
 
 ## 검증 계획
 
@@ -356,8 +367,8 @@ Backend 의존성이 현재 환경에 없으면 새 패키지를 임의로 설�
 ## 위험과 미확정 사항
 
 - Backend 의존성은 저장소 `.venv`에서 재현했고 PostgreSQL 17.10 일회성
-  테스트 DB에서 B2 Migration을 검증했다. 지속적인 PostgreSQL 제공 방식과
-  컨테이너 구성은 Integration·Deploy에서 결정한다.
+  DB와 로컬 PostgreSQL 18.4 전용 테스트 DB에서 B2~B6을 검증했다. 지속적인
+  PostgreSQL 제공 방식과 컨테이너 구성은 Integration·Deploy에서 결정한다.
 - 배열과 provenance는 PostgreSQL JSONB와 SQLite JSON variant로 구현했으며
   JSONB 왕복과 GIN index 생성까지 검증했다. 실제 검색 쿼리의 GIN 사용 여부는
   B5 Repository와 B6 종단 간 검증에서 확인한다.

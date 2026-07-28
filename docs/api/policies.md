@@ -87,6 +87,11 @@ GET /api/v1/policies
 `total`은 pagination 적용 전 필터 결과 수다. 요청 page가 결과 범위를
 벗어나면 `total`은 유지되고 `items`는 빈 배열이다.
 
+`collected_at`, `created_at`, `updated_at`은 timezone-aware date-time이다.
+PostgreSQL Session timezone에 따라 같은 절대 시각이 `+00:00` 또는 `+09:00`
+등 다른 offset으로 표현될 수 있으므로 소비자는 offset 문자열이 아니라
+절대 시각으로 해석한다.
+
 ## 정책 상세
 
 ```http

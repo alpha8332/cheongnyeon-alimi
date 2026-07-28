@@ -3,12 +3,12 @@
 ## 작업 정보
 
 - 시작일: 2026-07-28
-- 상태: in-progress
+- 상태: completed
 - 영역: backend
 - 브랜치: `feature/backend/policy-baseline-v2`
 - 관련 계획:
   [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
-- 현재 Slice: B5 완료, B6 대기
+- 현재 Slice: B6 완료
 
 ## 목적
 
@@ -36,7 +36,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 | B3 | completed | source-scoped 식별자 admission·원자적 upsert·동시성 검증 |
 | B4 | completed | Validator 선검증·전체 transaction·dry-run·rollback |
 | B5 | completed | 계층 분리·정확한 JSONB 필터·품질 일관성·API 계약 |
-| B6 | pending | Backend PostgreSQL 검증 |
+| B6 | completed | Migration→Seed→Repository→API 종단·무손실 검증 |
 
 ## 구현 내용
 
@@ -184,6 +184,28 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - 실제 계약을 `docs/api/policies.md`에 작성하고 API README와 문서 색인에
   연결했다.
 
+### B6 - Backend PostgreSQL 종단 검증
+
+- 전용 PostgreSQL 테스트 DB에 실제 Migration을 적용하고 canonical Seed를
+  importer로 적재한 뒤 Repository와 FastAPI까지 같은 DB Session 경계로
+  연결하는 종단 테스트를 추가했다.
+- 최초 적재 4건과 동일 Seed 재실행 unchanged 4건, DB 총 4건과
+  `updated_at` 무변경을 한 흐름에서 확인했다.
+- NormalizedProgram의 31개 필드를 source-scoped identity별로 Seed JSON과
+  ORM 조회 결과에 대조했다. JSONB 배열·provenance, null, 빈 배열, enum,
+  날짜와 timezone-aware 수집 시각의 절대 시각을 비교했다.
+- 정상 항목과 필수 `regions` 누락 항목을 섞은 batch를 재입력해 rejected
+  1건, insert 0건, 기존 DB 4건 유지로 validation rollback을 확인했다.
+- PostgreSQL Session factory를 FastAPI `get_db` dependency에 주입해 기본
+  valid 목록 2건, partial opt-in 목록 4건, finance exact match 2건과 partial
+  상세 default 404·opt-in 200을 확인했다.
+- API 응답에서 null·빈 배열·date와 collected_at instant가 보존되고
+  provenance가 노출되지 않음을 확인했다.
+- 닫힌 loopback 포트의 PostgreSQL Engine 연결 실패가 false를 반환하고
+  SQLite로 전환되지 않는 별도 테스트를 추가했다.
+- 테스트 종료 시 Alembic downgrade로 Policy 테이블을 제거하고 Engine을
+  dispose한다.
+
 ## 주요 변경 파일
 
 - `backend/app/models/policy.py`
@@ -213,6 +235,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - `backend/tests/test_postgresql_seed_import.py`
 - `backend/tests/test_policy_api.py`
 - `backend/tests/test_postgresql_policy_repository.py`
+- `backend/tests/test_postgresql_end_to_end.py`
 - `docs/api/policies.md`
 - `docs/api/README.md`
 - `docs/data/data_schema.md`
@@ -323,6 +346,13 @@ text의 부분 문자열 검색과 합치면 `fin`/`finance` 같은 오탐과 �
 Python 측 comparator factory는 기반 JSON 동작을 유지할 수 있다. B5
 Repository는 dialect를 명시적으로 구분해 PostgreSQL에는 `@>`, SQLite에는
 `json_each`를 사용한다.
+
+### timezone 보존은 문자열 offset이 아니라 absolute instant 기준이다
+
+PostgreSQL `timestamptz`는 같은 instant를 Session timezone에 따라
+`06:00+00:00` 또는 `15:00+09:00`로 반환할 수 있다. B6 무손실 검증은 두
+표현을 UTC instant로 정규화해 비교한다. API는 timezone-aware 값을 유지하며
+Frontend가 표시 timezone을 결정한다.
 
 ## 검증 결과
 
@@ -519,6 +549,50 @@ Repository는 dialect를 명시적으로 구분해 PostgreSQL에는 `@>`, SQLite
   Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. B5 API 동작과
   무관해 수정하지 않았다.
 
+### B6 검증
+
+- PostgreSQL 미설정 Backend 전체 회귀:
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q`는 46건 통과,
+  명시적인 `TEST_DATABASE_URL`이 필요한 PostgreSQL 테스트 5건 skipped
+- PostgreSQL 미설정 B6 경계:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_postgresql_end_to_end.py -q`에서 실제 DB 종단 1건 skipped,
+  닫힌 PostgreSQL 포트 연결 실패·무 fallback 1건 통과
+- 최초 실제 PostgreSQL 종단 실행:
+  2건 중 연결 실패 검증 1건 통과, 종단 1건은 collected_at의
+  `06:00+00:00`과 `15:00+09:00` 문자열 표현 차이로 실패했다. 같은 absolute
+  instant임을 확인하고 UTC instant 비교로 수정했다.
+- 수정 후 실제 PostgreSQL 종단 실행:
+  로컬 PostgreSQL 18.4, `127.0.0.1:5432`,
+  `cheongnyeon_alimi_test`에서
+  `backend/tests/test_postgresql_end_to_end.py` 2건 통과
+- 실제 PostgreSQL Backend 전체 회귀:
+  PowerShell 자격증명과 `TEST_DATABASE_URL`을 설정해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q` 51건 통과,
+  Starlette TestClient deprecation 경고 1건
+- 종단 결과:
+  Migration upgrade, Seed 4건 insert, 재실행 unchanged 4건, 31필드 무손실,
+  Schema 위반 추가 적재 0건, Repository와 API 목록·상세, downgrade를
+  통과했다.
+- API 결과:
+  valid 2건, partial opt-in 4건, finance 2건, partial 상세 기본 404와
+  opt-in 200, null·빈 배열·날짜·timezone instant 보존과 provenance 비노출을
+  확인했다.
+- 연결 실패:
+  loopback port 1의 PostgreSQL 연결 실패가 false로 보고되고 Engine backend가
+  PostgreSQL로 유지돼 SQLite fallback 0건임을 확인했다.
+- 인증정보:
+  비밀번호는 PowerShell 자격증명과 실행 중 `PGPASSWORD`에만 두고
+  `finally`에서 제거했다. 코드·URL·문서·Fixture와 테스트 출력에는 남기지
+  않았다.
+- Schema·Fixture·Seed 영향:
+  계약 파일과 Seed 값은 변경하지 않았으며 B6은 검증 코드와 기록만 추가했다.
+- 경고:
+  Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. 종단 결과와
+  무관해 수정하지 않았다.
+
 ## 남은 작업
 
-- B6: 실제 PostgreSQL 통합 검증
+Backend 02의 B0~B6은 완료됐다. 다음 단계는 Integration 02에서 Data 파이프라인
+결과와 이 Forest의 import service·Repository·Policy API를 공동 통합하고
+Frontend 소비 승인을 기록하는 작업이다.

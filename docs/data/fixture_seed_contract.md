@@ -112,6 +112,9 @@ validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한�
 Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소로 검색하고
 목록·상세 모두 기본 valid, `include_partial=true`일 때 valid·partial을
 노출한다. provenance는 DB에 보존하되 공개 Policy DTO에는 포함하지 않는다.
+Backend 02 B6의 PostgreSQL 18.4 종단 검증에서 canonical Seed 4건의 31개
+필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone instant·provenance
+손실 0건을 확인했다.
 Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
 대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
 
