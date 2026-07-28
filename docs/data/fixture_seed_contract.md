@@ -95,9 +95,9 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - partial 표시 또는 누락 필드 fallback 정책 확인
 - provenance를 일반 화면에 노출할지 관리자 화면에만 사용할지 결정
 
-현재 저장소에는 Backend 모델·Importer와 Frontend TypeScript 타입·Mock
-소비 코드가 없다. 따라서 이 문서는 소비자 검토 입력이며 해당 구현을
-Data 영역에서 대신 만들지 않는다.
+Frontend는 2026-07-28 `feature/frontend/policy-discovery` Slice에서
+TypeScript 타입·Mock·와이어프레임 UI 소비를 구현했다. Backend 모델·Importer는
+아직 없다.
 
 ## 재생성과 검증
 
@@ -138,7 +138,67 @@ uv run python -B scripts/build_data_fixtures.py --check
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
 | Backend | pending | 담당자 승인 또는 실제 importer 소비 테스트 필요 |
-| Frontend | pending | 담당자 승인 또는 TypeScript·Mock 소비 테스트 필요 |
+| Frontend | reviewed | 2026-07-28 TypeScript 타입·Seed Mock·와이어프레임 UI 소비 검증 완료 ([개발 기록](../development/development_notes/frontend/policy_discovery.md)) |
+
+### Frontend 검토 결과 (2026-07-28)
+
+브랜치 `feature/frontend/policy-discovery`에서 `NormalizedProgram` 1.0.0
+Schema와 `initial_programs.json` Seed 4건을 TypeScript·Mock·와이어프레임
+UI로 소비했다. Schema·Fixture·Seed는 변경하지 않았다.
+
+#### null과 빈 배열([]) 처리
+
+- 선택 단일 필드(`organization`, `summary`, `application_start` 등)는 Seed·API
+  응답의 `null`을 그대로 유지하고 빈 문자열(`""`)로 치환하지 않는다.
+- UI fallback은 표시 시점에만 적용한다. 예: `organization ?? '기관 정보 없음'`.
+- 복수 값 필드(`categories`, `regions`, `education_statuses` 등)는 항상
+  배열로 취급하고 `null`을 기대하지 않는다. Seed 계약대로 값 없음은 `[]`이다.
+- 렌더링은 `array.length === 0`일 때 "분류 없음", "지역 미정" 등 안내 문구를
+  표시한다.
+
+#### categories 배열
+
+- 단일 `category` enum이 아닌 `categories: PolicyCategory[]` 배열을 수용한다.
+- 다중 값(예: `SYN-YOUTH-002`의 `finance`, `welfare`)은 태그 목록으로 표시한다.
+- `categories: []`이고 `category_text: null`인 partial(예: `SYN-BOK-002`)은
+  "분류 없음"으로 표시하고 `category_text` 원문이 있으면 보조 텍스트로 병행
+  표시한다.
+
+#### application_schedule과 application_status 구분
+
+- `application_schedule`은 일정 **유형**(`fixed_period`, `always`,
+  `until_budget_exhausted`)이며 "기간 한정", "상시", "예산 소진 시까지"로
+  표시한다.
+- `application_status`는 수집 기준 시점 **접수 상태**(`open`, `closed`,
+  `scheduled`)이며 "접수 중", "마감", "예정"으로 표시한다.
+- 두 필드는 같은 UI 라벨로 합치지 않는다. 예: `always`+`open`은 "상시 · 접수
+  중"처럼 별도 영역에 병기한다.
+- 판단 근거가 없으면 Schema대로 `null`을 유지하고 "일정 미확인", "상태
+  미확인"으로 표시한다. `"unknown"` enum은 사용하지 않는다.
+
+#### partial 데이터 처리
+
+- `data_quality_status: "partial"`은 invalid가 아니며 목록·상세에 정상 노출한다.
+- partial 항목에는 "정보 일부 누락" 와이어프레임 배지를 표시한다.
+- 구조화 필드가 `null`이면 원문 text(`region_text`, `age_condition_text`,
+  `application_period_text`, `category_text`)를 우선 표시하고, text도 `null`이면
+  필드별 fallback 문구를 사용한다.
+
+#### source_id + external_id 식별 경계
+
+- 정책 식별 키는 `source_id + external_id` 복합 경계를 사용한다.
+- 상세 라우트 ID는 `{source_id}--{external_id}` URL-safe 단일 파라미터로
+  인코딩한다(예: `youthcenter-api--SYN-YOUTH-001`).
+- Mock·향후 Backend API 모두 동일 lookup(`source_id`, `external_id`)으로
+  상세를 조회한다. DB primary key나 단일 numeric ID는 Frontend에서 사용하지
+  않는다.
+
+#### provenance 저장·노출 범위
+
+- `provenance` 배열은 타입·Mock·API 응답에 포함하되 일반 사용자
+  목록·상세·검색 UI에는 노출하지 않는다.
+- 관리자 `DataQualityPage`에서만 Raw document ID·역할·수집 시각 등
+  디버깅·품질 확인용으로 표시한다.
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
 안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest
