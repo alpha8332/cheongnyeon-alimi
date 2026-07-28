@@ -1,0 +1,114 @@
+# Backend Policy Persistence Hardening Forest 개발 기록
+
+## 작업 정보
+
+- 시작일: 2026-07-28
+- 상태: in-progress
+- 영역: backend
+- 브랜치: `feature/backend/policy-baseline-v2`
+- 관련 계획:
+  [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
+- 현재 Slice: B0 완료, B1 대기
+
+## 목적
+
+Backend Policy Baseline의 ORM, Seed importer와 정책 API를 실제 PostgreSQL
+기준으로 보강한다. 코드와 문서의 차이를 먼저 해소하고 Migration,
+transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
+
+## Forest 범위
+
+- Backend 기준선 정합성 복구
+- PostgreSQL 연결과 테스트 DB 경계
+- Policy ORM과 Alembic Migration
+- 식별자와 원자적 upsert
+- 검증 우선 Seed importer
+- Repository와 Policy API
+- Backend PostgreSQL 검증
+
+## Slice 진행 현황
+
+| Slice | 상태 | 결과 |
+| --- | --- | --- |
+| B0 | completed | Backend 01 문서·코드 정합성 복구와 공백 정리 |
+| B1 | pending | PostgreSQL 연결과 테스트 DB 경계 |
+| B2 | pending | Policy ORM과 Alembic Migration |
+| B3 | pending | 식별자와 upsert |
+| B4 | pending | 검증 우선 Seed importer |
+| B5 | pending | Repository와 Policy API |
+| B6 | pending | Backend PostgreSQL 검증 |
+
+## 구현 내용
+
+### B0 - Backend 기준선 정합성 복구
+
+- 실제 코드를 기준으로 Backend 01 계획과 개발 기록을 재검토했다.
+- 기존 모델은 범용 SQLAlchemy `JSON`을 사용하며 PostgreSQL `JSONB`는 아직
+  구현하지 않았음을 기록했다.
+- Alembic metadata 연결 환경은 있지만 `backend/alembic/versions/`에 실제
+  revision이 없음을 기록했다.
+- 기존 Seed importer는 PostgreSQL `ON CONFLICT`가 아니라
+  `(source_id, external_id)` 조회 후 insert·update 방식임을 기록했다.
+- CLI의 `Base.metadata.create_all()`과 PostgreSQL 실패 시 SQLite 자동
+  fallback을 후속 B1~B2 위험으로 이관했다.
+- 실제 필드명인 `application_start`, `application_end`,
+  `application_period_text`로 문서를 정정했다.
+- Fixture·Seed 계약에서 Backend 모델이 없다는 과거 설명과 JSONB 구현 완료
+  표현을 현재 상태로 갱신했다.
+- `backend/app/models/policy.py`의 trailing whitespace와
+  `backend/tests/conftest.py`의 불필요한 EOF 빈 줄을 제거했다.
+
+## 주요 변경 파일
+
+- `backend/app/models/policy.py`
+- `backend/tests/conftest.py`
+- `docs/data/fixture_seed_contract.md`
+- `docs/development/develop_plan/backend/01_policy_baseline.md`
+- `docs/development/develop_plan/backend/02_policy_persistence_hardening.md`
+- `docs/development/develop_plan/README.md`
+- `docs/development/development_notes/backend/policy_baseline.md`
+- `docs/development/development_notes/backend/policy_persistence_hardening.md`
+- `docs/development/development_notes/README.md`
+- `docs/index.md`
+
+## 설계 결정
+
+### 기존 Backend 01 완료 기록을 기초 구현으로 보존한다
+
+Backend 01은 ORM, Seed importer와 정책 목록·상세 API의 기초 구현 결과로
+유지한다. 실제 Migration, PostgreSQL JSONB, 원자적 upsert, transaction과
+PostgreSQL 통합 검증은 구현된 것처럼 소급 기록하지 않고 Backend 02에서
+완료한다.
+
+### 계약 승인과 PostgreSQL hardening을 구분한다
+
+Backend가 canonical Seed의 배열·null·날짜·품질·provenance 소비 방향을
+검토한 사실은 유지한다. 다만 범용 JSON 모델 반영과 실제 PostgreSQL 물리
+계약 완료를 같은 의미로 취급하지 않는다.
+
+## 검증 결과
+
+- Backend 의존성 확인:
+  `uv run python -B -c "import sqlalchemy, fastapi, pytest, pydantic"` 실패.
+  현재 `uv` CPython 3.14 환경에 `sqlalchemy`가 없음
+- Backend 테스트:
+  `uv run python -B -m pytest backend/tests -q` 미실행. 현재 환경에
+  `pytest`가 없어 명령이 종료 코드 1로 실패했으며 테스트 성공으로 기록하지
+  않음
+- Python 구문 검사:
+  `uv run python -B -m py_compile backend/app/models/policy.py
+  backend/tests/conftest.py` 통과
+- 문서 검증기 단위 테스트:
+  `uv run python -B -m unittest tests.test_validate_docs -v` 10건 통과
+- 문서 검증:
+  `uv run python -B scripts/validate_docs.py` 통과
+- 공백 검사: `git diff --check` 통과
+
+## 남은 작업
+
+- B1: PostgreSQL 연결 실패와 SQLite 테스트 경계 분리
+- B2: Policy ORM, JSONB, timezone, constraint와 Alembic revision
+- B3: 현재 두 API의 external ID admission과 PostgreSQL 원자적 upsert
+- B4: Schema 검증, transaction과 rollback을 적용한 Seed importer
+- B5: Repository와 Policy API 기준선
+- B6: 실제 PostgreSQL 통합 검증

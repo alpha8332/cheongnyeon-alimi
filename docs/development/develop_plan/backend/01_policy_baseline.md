@@ -13,15 +13,22 @@
 
 ## 목적
 
-Data Pipeline Forest에서 생성한 `NormalizedProgram` 1.0.0 기반의 canonical JSON Seed (`data/seeds/initial_programs.json`)를 수용하고, PostgreSQL DB 모델, Upsert Importer CLI 및 정책 목록·상세 조회 API를 구축한다. Frontend가 Mock 데이터를 대체하고 실제 백엔드 API 계약으로 연동할 수 있는 기본 백엔드 파이프라인을 완료한다.
+Data Pipeline Forest에서 생성한 `NormalizedProgram` 1.0.0 기반의 canonical
+JSON Seed (`data/seeds/initial_programs.json`)를 수용하는 SQLAlchemy 모델,
+Seed importer CLI와 정책 목록·상세 조회 API의 기초 구현을 제공한다.
+Migration과 실제 PostgreSQL 적재를 포함한 운영 저장 기준은 후속
+[Backend 02](02_policy_persistence_hardening.md)에서 완성한다.
 
 ## 범위
 
-- `NormalizedProgram` 1.0.0 31개 필드 준수 SQLAlchemy ORM `Policy` 모델 및 Alembic Migration
-- `(source_id, external_id)` 복합 유니크 인덱스 및 PostgreSQL `ON CONFLICT DO UPDATE` (Upsert) 적재 로직
+- `NormalizedProgram` 1.0.0 31개 필드에 대응하는 SQLAlchemy ORM `Policy`
+  모델과 Alembic 환경
+- `(source_id, external_id)` 복합 unique constraint와 조회 후 insert·update
+  방식의 Seed 재적재
 - `data/seeds/initial_programs.json` 적재용 Python CLI Importer (`python -m app.cli.import_seed`)
-- `JSONB` 기반 provenance 데이터 보존 및 일반 사용자 API 패킷 비노출
-- `start_date`, `end_date` (Date) 파싱 및 `raw_apply_period` (Text) 동시 보존
+- 범용 SQLAlchemy `JSON` 컬럼의 provenance 보존 및 일반 사용자 API 비노출
+- `application_start`, `application_end` Date 파싱과
+  `application_period_text` 원문 동시 보존
 - `GET /api/v1/policies` 목록 조회 (카테고리, 지역, 신청상태, valid 품질 기본 필터 및 페이징)
 - `GET /api/v1/policies/{policy_id}` 상세 조회
 - API 및 Importer 단위/통합 테스트 (`pytest backend/tests`)
@@ -35,29 +42,32 @@ Data Pipeline Forest에서 생성한 `NormalizedProgram` 1.0.0 기반의 canonic
 ## 선행 조건
 
 - Data 6 (`fixture_seed_contract.md`)의 `NormalizedProgram` 1.0.0 canonical Seed 준비 완료
-- Backend 1-A ~ 5-A 의사결정 승인 완료 (CLI Importer, Upsert, valid 전용 필터링, JSONB provenance, Date+Text 동시 보존)
+- Backend 1-A ~ 5-A 소비 방향 검토 완료. 실제 PostgreSQL upsert, JSONB,
+  Migration과 transaction 검증은 Backend 02에서 수행
 - 백엔드 실행 환경에 `pytest`, `sqlalchemy`, `alembic`, `pydantic` 패키지 준비
 
 ## 공통 설계 원칙
 
 - Seed 데이터는 `source_id + external_id`를 고유 식별 경계로 사용한다.
 - `data_quality_status`가 `valid` 및 `partial`인 모든 정규화 레코드를 DB에 보존하되, 사용자 API는 기본적으로 `valid` 레코드만 반환한다.
-- API 응답 스키마는 `JSONB` provenance를 노출하지 않으며, 관리자 전용 API가 필요한 시점에 분리한다.
-- 텍스트 정제 및 파싱 실패에 대비해 원문 기간 문자열(`raw_apply_period`)을 항상 보존한다.
+- API 응답 Schema는 DB에 저장한 provenance를 노출하지 않으며, 관리자 전용
+  API가 필요한 시점에 분리한다.
+- 날짜와 함께 원문 기간 문자열(`application_period_text`)을 보존한다.
 
 ## Slice 계획
 
-### Backend 0 - DB Model 및 Migration
+### Backend 0 - DB Model 및 Alembic 환경
 
 - 상태: completed
 - 목적: `NormalizedProgram` 1.0.0에 맞춘 DB Schema 및 ORM 모델을 정의한다.
 - 작업:
   - `backend/app/models/policy.py` ORM 작성
   - `(source_id, external_id)` 복합 유니크 인덱스 지정
-  - `provenance` (JSONB), `categories` (JSONB), `regions` (JSONB)
+  - `provenance`, `categories`, `regions` 범용 `JSON` 컬럼
   - Alembic Migration 환경 구성
 - 완료 기준:
   - SQLAlchemy 모델이 정상 로드되고 테이블 생성됨
+  - 실제 revision 생성과 PostgreSQL 적용은 Backend 02로 이관
 
 ### Backend 1 - Seed Importer CLI
 
@@ -66,7 +76,7 @@ Data Pipeline Forest에서 생성한 `NormalizedProgram` 1.0.0 기반의 canonic
 - 작업:
   - `backend/app/services/seed_importer.py` 로직 구현
   - `backend/app/cli/import_seed.py` CLI 명령어 추가
-  - `ON CONFLICT DO UPDATE` 로 최신화 검증
+  - `(source_id, external_id)` 조회 후 insert·update로 재적재 검증
 - 완료 기준:
   - `python -m app.cli.import_seed` 실행 시 initial_programs.json 4건(valid 2, partial 2)이 DB에 성공적으로 적재됨
 
@@ -96,13 +106,27 @@ Data Pipeline Forest에서 생성한 `NormalizedProgram` 1.0.0 기반의 canonic
 - 관련 단위 테스트 및 `validate_docs.py` 검증을 통과함
 - `docs/development/development_notes/backend/policy_baseline.md`에 최종 결과가 기록됨
 
+## 후속 이관
+
+다음 항목은 이 기초 Forest의 완료 결과가 아니며
+[Backend Policy Persistence Hardening](02_policy_persistence_hardening.md)에서
+구현·검증한다.
+
+- 실제 Alembic revision과 PostgreSQL upgrade·downgrade
+- PostgreSQL 연결 실패 시 SQLite 자동 fallback 제거
+- PostgreSQL JSONB와 원자적 `ON CONFLICT DO UPDATE`
+- Schema 위반 거부, transaction과 rollback
+- Repository 계층과 실제 PostgreSQL 통합 테스트
+
 ## 위험과 미확정 사항
 
-- PostgreSQL DB 연결 환경변수 (`DATABASE_URL`) 및 로컬 SQLite fallback 지원 필요성
-- array 타입 (categories, regions) DB 처리 방식: PostgreSQL native ARRAY vs JSONB 호환성 (SQLite fallback 지원 위해 JSONB 고려)
+- PostgreSQL DB 연결 환경변수와 명시적인 테스트 DB 경계
+- 배열과 provenance의 PostgreSQL 물리 저장 방식
+- nullable external ID와 DB uniqueness의 경계
 
 ## 관련 문서
 
 - [Fixture와 Seed 계약](../../../data/fixture_seed_contract.md)
 - [데이터 Schema 기준선](../../../data/data_schema.md)
 - [Backend Baseline Forest 개발 기록](../../development_notes/backend/policy_baseline.md)
+- [Backend Policy Persistence Hardening](02_policy_persistence_hardening.md)

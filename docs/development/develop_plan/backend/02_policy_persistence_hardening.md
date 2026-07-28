@@ -4,11 +4,11 @@
 
 - 번호: Backend 02
 - 담당 영역: Backend
-- 상태: approved
+- 상태: in-progress
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: 구현 시작 전
+- 현재 Slice: B0 완료, B1 대기
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -77,7 +77,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B0 - Backend 기준선 정합성 복구
 
-- 상태: pending
+- 상태: completed
 - 목적: 완료 선언, 개발 기록과 실제 코드를 같은 상태로 맞춘다.
 - 주요 작업:
   - 실제 Alembic revision 존재 여부 확인
@@ -90,6 +90,13 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 - 완료 기준:
   - 코드, 계획과 개발 기록의 DB 타입·upsert·Migration 설명 일치
   - `git diff --check` 통과
+- 완료 결과:
+  - Backend 01을 범용 `JSON`, 조회 후 update, Alembic 환경만 존재하는 실제
+    기준선으로 정정하고 PostgreSQL hardening을 Backend 02로 이관함
+  - Fixture·Seed 계약의 Backend 소비 상태와 현재 구현 설명을 동기화함
+  - ORM과 테스트 파일의 공백 오류를 제거함
+  - Backend 기능 테스트는 현재 사용 가능한 Python 환경에 SQLAlchemy가 없어
+    재실행하지 않았으며 B1 이후 합의된 Backend 환경에서 검증해야 함
 
 ### B1 - PostgreSQL 연결과 테스트 DB 경계
 

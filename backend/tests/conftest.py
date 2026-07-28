@@ -26,5 +26,3 @@ def client(db):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
-
-

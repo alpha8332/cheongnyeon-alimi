@@ -95,9 +95,11 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - partial 표시 또는 누락 필드 fallback 정책 확인
 - provenance를 일반 화면에 노출할지 관리자 화면에만 사용할지 결정
 
-현재 저장소에는 Backend 모델·Importer와 Frontend TypeScript 타입·Mock
-소비 코드가 없다. 따라서 이 문서는 소비자 검토 입력이며 해당 구현을
-Data 영역에서 대신 만들지 않는다.
+현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
+기준선이 있고 Backend 소비 검토는 완료됐다. 실제 Alembic revision,
+PostgreSQL JSONB·원자적 upsert·transaction 검증은 Backend 02에서 보강한다.
+Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
+대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
 
 ## 재생성과 검증
 
@@ -137,7 +139,7 @@ uv run python -B scripts/build_data_fixtures.py --check
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
-| Backend | reviewed | 1-A~5-A 의사결정(CLI Importer, Upsert, valid 전용 필터링, JSONB provenance, Date+Text 보존) 승인 및 모델 반영 완료 |
+| Backend | reviewed | CLI importer, 조회 후 재적재, valid 기본 필터, 범용 JSON provenance 비노출과 Date+Text 보존을 기준선에 반영. PostgreSQL hardening은 Backend 02에서 진행 |
 | Frontend | pending | 담당자 승인 또는 TypeScript·Mock 소비 테스트 필요 |
 
 
