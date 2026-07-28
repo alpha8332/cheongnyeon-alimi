@@ -23,6 +23,11 @@ def main():
         default=str(default_seed),
         help="Path to initial_programs.json seed file",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and project database changes, then roll them back",
+    )
     args = parser.parse_args()
 
     seed_path = Path(args.file)
@@ -30,21 +35,32 @@ def main():
 
     db = SessionLocal()
     try:
-        result = import_seed_data(db, seed_path)
+        result = import_seed_data(db, seed_path, dry_run=args.dry_run)
         summary = (
-            f"Total: {result.total}, Inserted: {result.inserted}, "
+            f"Total: {result.total}, Validated: {result.validated}, "
+            f"Inserted: {result.inserted}, "
             f"Updated: {result.updated}, Unchanged: {result.unchanged}, "
-            f"Skipped: {result.skipped}, Failed: {result.failed}"
+            f"Skipped: {result.skipped}, Rejected: {result.rejected}, "
+            f"Failed: {result.failed}"
         )
-        logger.info("Seed ingestion completed. %s", summary)
-        print(f"[SUCCESS] Seed ingestion completed. {summary}")
+        has_errors = bool(
+            result.skipped or result.rejected or result.failed
+        )
+        status = "failed" if has_errors else "completed"
+        logger.info("Seed ingestion %s. %s", status, summary)
+        label = "ERROR" if has_errors else "SUCCESS"
+        action = "dry run" if result.dry_run else "ingestion"
+        print(f"[{label}] Seed {action} {status}. {summary}")
         for issue in result.issues:
             print(
                 "[ISSUE] "
                 f"index={issue.index} source_id={issue.source_id} "
                 f"external_id={issue.external_id} code={issue.code} "
+                f"path={issue.path} "
                 f"error_type={issue.error_type}"
             )
+        if has_errors:
+            sys.exit(1)
     except Exception as exc:
         error_type = type(exc).__name__
         logger.error("Seed ingestion failed. error_type=%s", error_type)

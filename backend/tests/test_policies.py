@@ -1,8 +1,10 @@
-import pytest
 import json
 from pathlib import Path
+from unittest.mock import patch
 
+import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.policy import Policy
 from app.services.seed_importer import import_programs, import_seed_data
@@ -24,11 +26,13 @@ def test_import_seed_and_upsert(db):
     assert first.skipped == 0
     assert first.failed == 0
     assert db.query(Policy).count() == 4
+    db.commit()
 
     timestamps = {
         (policy.source_id, policy.external_id): policy.updated_at
         for policy in db.scalars(select(Policy)).all()
     }
+    db.commit()
     second = import_seed_data(db, SEED_FILE_PATH)
     assert second.total == 4
     assert second.inserted == 0
@@ -82,10 +86,13 @@ def test_current_api_sources_reject_null_external_id(db):
     result = import_programs(db, programs)
 
     assert result.total == 2
-    assert result.skipped == 2
+    assert result.skipped == 1
+    assert result.rejected == 1
     assert result.inserted == 0
     assert result.failed == 0
-    assert {issue.code for issue in result.issues} == {"missing_external_id"}
+    assert "missing_external_id" in {
+        issue.code for issue in result.issues
+    }
     assert db.query(Policy).count() == 0
 
 
@@ -95,10 +102,99 @@ def test_database_write_failure_is_counted_without_payload_exposure(db):
 
     result = import_programs(db, [program])
 
-    assert result.failed == 1
+    assert result.rejected == 1
+    assert result.failed == 0
     assert result.inserted == 0
+    assert result.issues[0].code == "schema_enum"
+    assert result.issues[0].path == "$[0].data_quality_status"
+    assert db.query(Policy).count() == 0
+
+
+def test_schema_failure_rejects_the_whole_batch_without_coercion(db):
+    programs = seed_programs()[:2]
+    programs[1].pop("application_start")
+
+    result = import_programs(db, programs)
+
+    assert result.total == 2
+    assert result.validated == 2
+    assert result.rejected == 1
+    assert result.inserted == 0
+    assert result.committed is False
+    assert any(
+        issue.code == "schema_required"
+        and issue.path == "$[1].application_start"
+        for issue in result.issues
+    )
+    assert db.query(Policy).count() == 0
+
+
+def test_invalid_quality_status_is_rejected_with_no_partial_write(db):
+    programs = seed_programs()[:2]
+    programs[1]["data_quality_status"] = "invalid"
+
+    result = import_programs(db, programs)
+
+    assert result.rejected == 1
+    assert result.inserted == 0
+    assert result.committed is False
+    assert db.query(Policy).count() == 0
+
+
+def test_dry_run_projects_results_and_rolls_back(db):
+    result = import_programs(db, seed_programs(), dry_run=True)
+
+    assert result.validated == 4
+    assert result.inserted == 4
+    assert result.rejected == 0
+    assert result.failed == 0
+    assert result.dry_run is True
+    assert result.committed is False
+    assert db.query(Policy).count() == 0
+
+
+def test_database_failure_rolls_back_prior_batch_writes(db):
+    programs = seed_programs()[:2]
+    from app.services import seed_importer
+
+    portable_upsert = seed_importer._portable_upsert
+    calls = 0
+
+    def fail_second_write(session, values):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise SQLAlchemyError(
+                "postgresql://user:do-not-print@example.invalid/db"
+            )
+        return portable_upsert(session, values)
+
+    with patch(
+        "app.services.seed_importer._portable_upsert",
+        side_effect=fail_second_write,
+    ):
+        result = import_programs(db, programs)
+
+    assert result.inserted == 0
+    assert result.updated == 0
+    assert result.failed == 1
+    assert result.committed is False
     assert result.issues[0].code == "database_write_failed"
-    assert result.issues[0].error_type == "StatementError"
+    assert result.issues[0].error_type == "SQLAlchemyError"
+    assert "do-not-print" not in repr(result)
+    assert db.query(Policy).count() == 0
+
+
+def test_seed_root_must_be_an_array(db, tmp_path):
+    seed_path = tmp_path / "invalid-root.json"
+    seed_path.write_text("{}", encoding="utf-8")
+
+    result = import_seed_data(db, seed_path)
+
+    assert result.total == 0
+    assert result.rejected == 1
+    assert result.issues[0].code == "seed_root_not_array"
+    assert result.issues[0].path == "$"
     assert db.query(Policy).count() == 0
 
 

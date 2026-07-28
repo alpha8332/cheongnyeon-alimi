@@ -11,6 +11,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.policy import Policy
+from collectors.normalized import DataQualityStatus
+from collectors.validation import NormalizedProgramValidator
 
 
 EXTERNAL_ID_REQUIRED_SOURCES = frozenset(
@@ -40,36 +42,40 @@ class ImportIssue:
     source_id: str | None
     external_id: str | None
     code: str
+    path: str | None = None
     error_type: str | None = None
 
 
 @dataclass(frozen=True)
 class ImportResult:
     total: int
-    inserted: int
-    updated: int
-    unchanged: int
-    skipped: int
-    failed: int
+    validated: int = 0
+    inserted: int = 0
+    updated: int = 0
+    unchanged: int = 0
+    skipped: int = 0
+    rejected: int = 0
+    failed: int = 0
+    committed: bool = False
+    dry_run: bool = False
     issues: tuple[ImportIssue, ...] = ()
 
 
 def parse_date(date_str: Any) -> date | None:
-    if not date_str or not isinstance(date_str, str):
+    if date_str is None:
         return None
-    try:
-        return datetime.strptime(date_str.strip(), "%Y-%m-%d").date()
-    except ValueError:
-        return None
+    if not isinstance(date_str, str):
+        raise TypeError("date value must be a string or null")
+    return date.fromisoformat(date_str)
 
 
 def parse_datetime(dt_str: Any) -> datetime:
-    if not dt_str or not isinstance(dt_str, str):
-        return datetime.now(timezone.utc)
-    try:
-        return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
-    except ValueError:
-        return datetime.now(timezone.utc)
+    if not isinstance(dt_str, str):
+        raise TypeError("datetime value must be a string")
+    parsed = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("datetime value must include a timezone")
+    return parsed
 
 
 def _nonempty_string(value: Any) -> str | None:
@@ -91,6 +97,7 @@ def _identity_issue(
             source_id=None,
             external_id=external_id,
             code="missing_source_id",
+            path=f"$[{index}].source_id",
         )
     if external_id is None and source_id in EXTERNAL_ID_REQUIRED_SOURCES:
         return ImportIssue(
@@ -98,6 +105,7 @@ def _identity_issue(
             source_id=source_id,
             external_id=None,
             code="missing_external_id",
+            path=f"$[{index}].external_id",
         )
     if external_id is None:
         return ImportIssue(
@@ -105,43 +113,44 @@ def _identity_issue(
             source_id=source_id,
             external_id=None,
             code="unsupported_null_external_id",
+            path=f"$[{index}].external_id",
         )
     return None
 
 
 def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
     return {
-        "schema_version": item.get("schema_version", "1.0.0"),
+        "schema_version": item["schema_version"],
         "source_id": _nonempty_string(item.get("source_id")),
-        "source_name": item.get("source_name", ""),
+        "source_name": item["source_name"],
         "external_id": _nonempty_string(item.get("external_id")),
-        "title": item.get("title", ""),
+        "title": item["title"],
         "organization": item.get("organization"),
         "summary": item.get("summary"),
         "category_text": item.get("category_text"),
-        "categories": item.get("categories", []),
+        "categories": item["categories"],
         "application_period_text": item.get("application_period_text"),
         "application_start": parse_date(item.get("application_start")),
         "application_end": parse_date(item.get("application_end")),
         "application_schedule": item.get("application_schedule"),
         "application_status": item.get("application_status"),
         "region_text": item.get("region_text"),
-        "regions": item.get("regions", []),
+        "regions": item["regions"],
         "age_min": item.get("age_min"),
         "age_max": item.get("age_max"),
         "age_condition_text": item.get("age_condition_text"),
         "eligibility_text": item.get("eligibility_text"),
         "support_content": item.get("support_content"),
         "application_method": item.get("application_method"),
-        "education_statuses": item.get("education_statuses", []),
-        "employment_statuses": item.get("employment_statuses", []),
-        "required_conditions": item.get("required_conditions", []),
-        "preferred_conditions": item.get("preferred_conditions", []),
-        "excluded_conditions": item.get("excluded_conditions", []),
-        "source_url": item.get("source_url", ""),
-        "collected_at": parse_datetime(item.get("collected_at")),
-        "provenance": item.get("provenance", []),
-        "data_quality_status": item.get("data_quality_status", "valid"),
+        "education_statuses": item["education_statuses"],
+        "employment_statuses": item["employment_statuses"],
+        "required_conditions": item["required_conditions"],
+        "preferred_conditions": item["preferred_conditions"],
+        "excluded_conditions": item["excluded_conditions"],
+        "source_url": item["source_url"],
+        "collected_at": parse_datetime(item["collected_at"]),
+        "provenance": item["provenance"],
+        "data_quality_status": item["data_quality_status"],
         "updated_at": datetime.now(timezone.utc),
     }
 
@@ -216,51 +225,163 @@ def _portable_upsert(db: Session, values: Mapping[str, Any]) -> str:
     return "updated"
 
 
-def import_programs(
-    db: Session,
-    programs: Iterable[Mapping[str, Any]],
-) -> ImportResult:
-    items = list(programs)
-    counts = {
-        "inserted": 0,
-        "updated": 0,
-        "unchanged": 0,
-        "skipped": 0,
-        "failed": 0,
-    }
+class _DryRunRollback(Exception):
+    """Internal control flow used to roll back a successful dry run."""
+
+
+def _item_path(index: int, path: str) -> str:
+    if path == "$":
+        return f"$[{index}]"
+    if path.startswith("$."):
+        return f"$[{index}]{path[1:]}"
+    return f"$[{index}].{path}"
+
+
+def _preflight_programs(
+    items: list[Any],
+    validator: NormalizedProgramValidator,
+) -> tuple[list[tuple[int, Mapping[str, Any]]], int, int, int, list[ImportIssue]]:
+    accepted: list[tuple[int, Mapping[str, Any]]] = []
     issues: list[ImportIssue] = []
-    use_postgresql = db.get_bind().dialect.name == "postgresql"
+    validated = 0
+    skipped = 0
+    rejected = 0
 
     for index, item in enumerate(items):
-        identity_issue = _identity_issue(item, index)
-        if identity_issue is not None:
-            counts["skipped"] += 1
-            issues.append(identity_issue)
-            continue
-
-        values = _policy_values(item)
-        try:
-            with db.begin_nested():
-                if use_postgresql:
-                    outcome = _postgresql_upsert(db, values)
-                else:
-                    outcome = _portable_upsert(db, values)
-            counts[outcome] += 1
-        except SQLAlchemyError as exc:
-            counts["failed"] += 1
+        if not isinstance(item, Mapping):
+            rejected += 1
             issues.append(
                 ImportIssue(
                     index=index,
-                    source_id=values["source_id"],
-                    external_id=values["external_id"],
-                    code="database_write_failed",
-                    error_type=type(exc).__name__,
+                    source_id=None,
+                    external_id=None,
+                    code="item_not_object",
+                    path=f"$[{index}]",
                 )
             )
+            continue
 
-    db.commit()
+        validated += 1
+        validation = validator.validate(item)
+        if (
+            validation.status is DataQualityStatus.INVALID
+            or validation.program is None
+        ):
+            rejected += 1
+            error_issues = tuple(
+                issue
+                for issue in validation.issues
+                if issue.severity == "error"
+            )
+            for issue in error_issues:
+                issues.append(
+                    ImportIssue(
+                        index=index,
+                        source_id=_nonempty_string(item.get("source_id")),
+                        external_id=_nonempty_string(
+                            item.get("external_id")
+                        ),
+                        code=issue.code,
+                        path=_item_path(index, issue.path),
+                    )
+                )
+            if not error_issues:
+                issues.append(
+                    ImportIssue(
+                        index=index,
+                        source_id=_nonempty_string(item.get("source_id")),
+                        external_id=_nonempty_string(
+                            item.get("external_id")
+                        ),
+                        code="normalized_program_invalid",
+                        path=f"$[{index}]",
+                    )
+                )
+            continue
+
+        candidate = validation.program.to_dict()
+        identity_issue = _identity_issue(candidate, index)
+        if identity_issue is not None:
+            skipped += 1
+            issues.append(identity_issue)
+            continue
+        accepted.append((index, candidate))
+
+    return accepted, validated, skipped, rejected, issues
+
+
+def import_programs(
+    db: Session,
+    programs: Iterable[Any],
+    *,
+    dry_run: bool = False,
+    validator: NormalizedProgramValidator | None = None,
+) -> ImportResult:
+    items = list(programs)
+    selected_validator = validator or NormalizedProgramValidator()
+    accepted, validated, skipped, rejected, issues = _preflight_programs(
+        items,
+        selected_validator,
+    )
+    if skipped or rejected:
+        return ImportResult(
+            total=len(items),
+            validated=validated,
+            skipped=skipped,
+            rejected=rejected,
+            dry_run=dry_run,
+            issues=tuple(issues),
+        )
+
+    counts = {"inserted": 0, "updated": 0, "unchanged": 0}
+    use_postgresql = db.get_bind().dialect.name == "postgresql"
+    current_index = -1
+    current_values: Mapping[str, Any] = {}
+    try:
+        with db.begin():
+            for current_index, item in accepted:
+                current_values = _policy_values(item)
+                if use_postgresql:
+                    outcome = _postgresql_upsert(db, current_values)
+                else:
+                    outcome = _portable_upsert(db, current_values)
+                db.flush()
+                counts[outcome] += 1
+            if dry_run:
+                raise _DryRunRollback
+    except _DryRunRollback:
+        pass
+    except SQLAlchemyError as exc:
+        return ImportResult(
+            total=len(items),
+            validated=validated,
+            failed=1,
+            dry_run=dry_run,
+            issues=(
+                ImportIssue(
+                    index=current_index,
+                    source_id=_nonempty_string(
+                        current_values.get("source_id")
+                    ),
+                    external_id=_nonempty_string(
+                        current_values.get("external_id")
+                    ),
+                    code="database_write_failed",
+                    path=(
+                        f"$[{current_index}]"
+                        if current_index >= 0
+                        else "$"
+                    ),
+                    error_type=type(exc).__name__,
+                ),
+            ),
+        )
+
     return ImportResult(
         total=len(items),
+        validated=validated,
+        committed=not dry_run,
+        dry_run=dry_run,
         issues=tuple(issues),
         **counts,
     )
@@ -269,6 +390,9 @@ def import_programs(
 def import_seed_data(
     db: Session,
     seed_file_path: Path,
+    *,
+    dry_run: bool = False,
+    validator: NormalizedProgramValidator | None = None,
 ) -> ImportResult:
     if not seed_file_path.exists():
         raise FileNotFoundError(f"Seed file not found at: {seed_file_path}")
@@ -276,5 +400,23 @@ def import_seed_data(
     with seed_file_path.open("r", encoding="utf-8") as seed_file:
         seed_data = json.load(seed_file)
     if not isinstance(seed_data, list):
-        raise ValueError("Seed root must be a JSON array")
-    return import_programs(db, seed_data)
+        return ImportResult(
+            total=0,
+            rejected=1,
+            dry_run=dry_run,
+            issues=(
+                ImportIssue(
+                    index=-1,
+                    source_id=None,
+                    external_id=None,
+                    code="seed_root_not_array",
+                    path="$",
+                ),
+            ),
+        )
+    return import_programs(
+        db,
+        seed_data,
+        dry_run=dry_run,
+        validator=validator,
+    )

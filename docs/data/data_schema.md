@@ -293,8 +293,12 @@ timezone 왕복, constraint와 downgrade를 검증했다. Backend 02 B3에서 �
 `(source_id, external_id)` PostgreSQL 원자적 upsert를 검증했다. 동일 입력은
 unchanged로 분류되어 `updated_at`을 바꾸지 않고, null ID는 적재하지 않는다.
 이는 Normalized Schema의 nullable 계약을 바꾸지 않으며 향후 Source의 대체
-ID를 일반화하지 않는다. Schema 선검증과 canonical Seed 전체 transaction은
-Backend 02 B4에서 보강한다.
+ID를 일반화하지 않는다. Backend 02 B4 importer는 이 문서와 실행 Schema를
+구현하는 기존 `NormalizedProgramValidator`로 전체 입력을 DB 접근 전에
+검증한다. valid·partial만 허용하며 invalid·Schema 위반·DB admission
+거부·DB write 실패가 있으면 같은 canonical batch의 DB 변경은 0건이다.
+날짜·null·빈 배열·enum에 importer 기본값을 적용하지 않으며 dry-run도 실제
+upsert 후 rollback한다.
 
 다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
 

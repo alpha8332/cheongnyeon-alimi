@@ -91,9 +91,9 @@ def test_postgresql_atomic_upsert_identity_and_outcomes():
         with session_factory() as db:
             failed = import_programs(db, [invalid_age])
 
-        assert failed.failed == 1
-        assert failed.issues[0].code == "database_write_failed"
-        assert failed.issues[0].error_type == "IntegrityError"
+        assert failed.rejected == 1
+        assert failed.failed == 0
+        assert failed.issues[0].code == "schema_maximum"
 
         concurrent_program = copy.deepcopy(programs[0])
         concurrent_program["external_id"] = "PG-B3-CONCURRENT"

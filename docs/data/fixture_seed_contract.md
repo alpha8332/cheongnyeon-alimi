@@ -104,8 +104,11 @@ revision과 PostgreSQL JSONB·enum·timezone 물리 매핑을 추가했으며 SQ
 upsert를 구현했다. 같은 Seed의 반복·동시 입력은 중복 없이 unchanged로
 분류하며 null ID는 확인 가능한 사유와 함께 적재하지 않는다. Normalized
 Schema의 nullable 계약은 유지하고 향후 Source의 대체 ID는 별도로 결정한다.
-Schema 선검증과 canonical Seed 전체 transaction은 Backend 02 B4에서
-보강한다.
+Backend 02 B4에서는 기존 `NormalizedProgramValidator`로 전체 입력을 먼저
+검증하고 `valid`·`partial`만 허용한다. invalid·Schema 위반·DB admission
+거부·DB write 실패가 하나라도 있으면 canonical batch의 DB 변경은 0건이다.
+`--dry-run`도 실제 upsert 경로를 실행한 뒤 rollback하며 결과는
+validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한다.
 Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
 대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
 

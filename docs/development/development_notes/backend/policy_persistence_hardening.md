@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-baseline-v2`
 - 관련 계획:
   [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
-- 현재 Slice: B3 완료, B4 대기
+- 현재 Slice: B4 완료, B5 대기
 
 ## 목적
 
@@ -34,7 +34,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 | B1 | completed | 명시적 DB 선택·테스트 주입·비밀 마스킹과 health 검증 |
 | B2 | completed | ORM·초기 revision·PostgreSQL 17.10 실제 Migration 검증 |
 | B3 | completed | source-scoped 식별자 admission·원자적 upsert·동시성 검증 |
-| B4 | pending | 검증 우선 Seed importer |
+| B4 | completed | Validator 선검증·전체 transaction·dry-run·rollback |
 | B5 | pending | Repository와 Policy API |
 | B6 | pending | Backend PostgreSQL 검증 |
 
@@ -131,6 +131,32 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - 동일 Seed 반복, 변경 1건, 현재 두 API의 null ID, constraint 실패와 두
   세션이 같은 식별자를 동시에 쓰는 PostgreSQL 경계를 테스트했다.
 
+### B4 - 검증 우선 Seed importer
+
+- Data 영역의 기존 `NormalizedProgramValidator`를 Backend importer에
+  주입 가능한 기본 Validator로 연결했다. 별도 Schema 라이브러리나 중복
+  검증 구현은 추가하지 않았다.
+- JSON root 배열과 항목 객체 여부를 먼저 확인하고, 모든 객체를 DB 접근 전에
+  Normalized JSON Schema·의미 규칙·Python 모델로 검증한다.
+- `valid`와 `partial`만 허용한다. `invalid`, Schema 위반, Python 모델
+  불일치는 rejected로 분류하며 각 issue에 `$[index].field` 형태의 위치와
+  안전한 code를 기록한다.
+- Schema-valid `external_id=null`은 현재 두 공식 API의 DB admission에서
+  skipped로 분류한다. 빈 문자열은 Normalized Schema/Python 모델 위반이므로
+  rejected로 구분한다. 둘 중 하나라도 있으면 같은 batch의 정상 항목도
+  저장하지 않는다.
+- 검증된 `NormalizedProgram.to_dict()` 값만 ORM 변환에 사용하고, 날짜·시각,
+  필수 문자열, 배열과 enum을 importer 기본값으로 보정하지 않는다.
+- B3의 건별 savepoint·commit 경계를 전체 batch 단일 transaction으로
+  교체했다. 한 DB write가 실패하면 앞서 flush된 insert·update도 rollback하고
+  저장 결과 수치는 0으로 반환한다.
+- `--dry-run`은 동일한 PostgreSQL 또는 SQLite upsert 경로를 실행해 예상
+  inserted·updated·unchanged를 계산한 뒤 transaction을 rollback한다.
+- 결과 모델과 CLI에 validated·rejected·committed·dry_run을 추가했다.
+  CLI는 skipped·rejected·failed가 있으면 종료 코드 1을 반환한다.
+- CLI와 issue 출력은 payload, Validator 메시지와 DB 원문 예외를 포함하지
+  않고 index·source ID·external ID·path·code·예외 종류로 제한한다.
+
 ## 주요 변경 파일
 
 - `backend/app/models/policy.py`
@@ -152,6 +178,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - `backend/tests/test_import_seed_cli.py`
 - `backend/tests/test_postgresql_migration.py`
 - `backend/tests/test_postgresql_upsert.py`
+- `backend/tests/test_postgresql_seed_import.py`
 - `docs/data/data_schema.md`
 - `docs/data/fixture_seed_contract.md`
 - `docs/development/develop_plan/backend/01_policy_baseline.md`
@@ -219,10 +246,28 @@ SQLite 경로는 빠른 단위 테스트와 기존 API fixture를 위한 호환 
 
 ### B3 결과 집계와 B4 transaction 책임을 분리한다
 
-B3는 건별 결과와 실패 사유를 관찰하기 위해 savepoint를 사용한다. 이 동작은
-Schema 위반이 포함된 canonical Seed 전체를 부분 적재한다는 최종 계약이
-아니다. B4에서 전체 입력을 먼저 검증하고 all-or-nothing transaction과
-`--dry-run`을 적용한다.
+B3는 건별 결과와 실패 사유를 관찰하기 위해 savepoint를 사용했다. B4에서
+이를 전체 입력 선검증과 all-or-nothing transaction으로 교체했다.
+
+### Validator를 Backend에 복제하지 않는다
+
+`data/schema/normalized_program.schema.json`, Python 모델과 품질 분류를 이미
+동기화하는 Data `NormalizedProgramValidator`를 직접 사용한다. Backend는
+검증 결과의 admission과 transaction을 책임지고 정규화 규칙을 별도로
+재구현하지 않는다.
+
+### rejected, skipped와 failed를 구분한다
+
+Schema·Python 모델·품질 위반은 rejected, Schema가 허용하지만 현재 Source의
+DB 식별 조건을 충족하지 못한 값은 skipped, 실제 DB write 오류는 failed다.
+세 결과 모두 canonical batch의 DB 변경을 0건으로 유지한다.
+
+### dry-run은 검증 전용 단축 경로가 아니다
+
+dry-run도 실제 DB dialect의 upsert와 flush를 수행해야 constraint와
+inserted·updated·unchanged 예측이 실제 실행과 같아진다. 성공 직전에 내부
+rollback 신호를 사용해 transaction만 되돌리며 payload나 SQL을 출력하지
+않는다.
 
 ## 검증 결과
 
@@ -347,8 +392,43 @@ Schema 위반이 포함된 canonical Seed 전체를 부분 적재한다는 최�
   변경은 없으며 현재 두 API의 external ID 필수성은 Backend DB admission
   규칙으로만 추가됐다.
 
+### B4 검증
+
+- B4 importer·CLI·기존 Policy API 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policies.py backend/tests/test_import_seed_cli.py -q`
+  16건 통과
+- Data Validator 회귀 테스트:
+  `.venv\Scripts\python.exe -B -m pytest tests/test_normalization.py -q`
+  13건 통과
+- PostgreSQL 없이 Backend 전체 테스트:
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q`는 39건 통과,
+  명시적인 `TEST_DATABASE_URL`이 필요한 PostgreSQL 테스트 3건 skipped
+- 실제 PostgreSQL 통합 테스트:
+  로컬 PostgreSQL 18.4의 `127.0.0.1:5432`와 전용
+  `cheongnyeon_alimi_test` DB에서 Migration, B3 upsert, B4 Seed transaction
+  테스트 3건 통과
+- canonical Seed와 dry-run:
+  정상 Seed 4건의 validation·적재를 확인했고 dry-run 신규 입력은 inserted
+  1건으로 예측되지만 DB 행은 0건임을 확인했다.
+- validation rollback:
+  정상 항목과 필수 필드 누락 항목을 섞은 batch, `invalid` 품질 상태와
+  non-array root의 적재가 모두 0건임을 확인했다.
+- DB failure rollback:
+  PostgreSQL 테스트 trigger로 두 번째 write를 강제 실패시켜 첫 번째 insert도
+  rollback되고 두 external ID의 행이 모두 0건임을 확인했다. issue에는
+  `InternalError` 종류만 남고 원문 DB 메시지는 노출하지 않았다.
+- 인증정보 경계:
+  PostgreSQL 비밀번호는 코드·URL·문서·명령 인자에 넣지 않고 PowerShell
+  자격증명과 일시적인 `PGPASSWORD`로만 전달한 뒤 `finally`에서 제거했다.
+- Schema·Fixture·Seed 영향:
+  Normalized Schema, Python 모델, Fixture와 Seed 값은 변경하지 않았다.
+  Frontend 계약 변경은 없으며 Backend 소비 경계만 강화됐다.
+- 테스트 경고:
+  Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. B4 importer와
+  무관해 수정하지 않았다.
+
 ## 남은 작업
 
-- B4: Schema 검증, transaction과 rollback을 적용한 Seed importer
 - B5: Repository와 Policy API 기준선
 - B6: 실제 PostgreSQL 통합 검증

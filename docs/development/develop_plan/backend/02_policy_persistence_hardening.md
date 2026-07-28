@@ -8,7 +8,7 @@
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: B3 완료, B4 대기
+- 현재 Slice: B4 완료, B5 대기
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -222,7 +222,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B4 - 검증 우선 Seed importer
 
-- 상태: pending
+- 상태: completed
 - 목적: Schema 위반 데이터를 DB에 넣지 않고 적재 실패를 원자적으로 처리한다.
 - 선행 조건:
   - B3 완료
@@ -242,6 +242,27 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - invalid와 Schema 위반 적재 0건
   - 실패 시 DB 변경 0건
   - payload와 비밀정보 로그 노출 0건
+- 구현 결과:
+  - Data 영역의 `NormalizedProgramValidator`로 모든 항목을 DB 접근 전에
+    검증하고 `valid`·`partial`만 쓰기 대상으로 허용함
+  - root가 배열이 아니거나 항목이 객체가 아닌 경우, Schema·Python 모델
+    위반과 `invalid` 품질 상태를 path·code와 함께 rejected로 분류함
+  - Schema-valid null external ID는 현재 두 API의 DB admission에서 skipped,
+    빈 문자열은 Schema 위반으로 rejected 처리하며 어느 경우든 전체 batch를
+    저장하지 않음
+  - 날짜·시각·필수값·배열·enum에 importer 기본값이나 파싱 fallback을
+    적용하지 않음
+  - 사전 검증을 통과한 전체 batch를 단일 transaction으로 실행하고 한 건의
+    DB 실패에도 전체 rollback함
+  - `--dry-run`은 실제 upsert 경로의 예상 결과를 집계한 뒤 rollback함
+  - CLI가 validated·inserted·updated·unchanged·skipped·rejected·failed를
+    출력하고 issue는 index·path·code·예외 종류만 노출함
+- 실행 검증:
+  - canonical Seed 4건의 정상 적재와 dry-run DB 변경 0건 검증
+  - valid와 Schema 위반 혼합 batch, invalid 품질, 강제 DB 실패의 적재 0건
+    검증
+  - PostgreSQL 18.4 실제 테스트 DB에서 Migration·upsert·dry-run·rollback
+    통합 테스트 3건 통과
 
 ### B5 - Repository와 Policy API 기준선
 
