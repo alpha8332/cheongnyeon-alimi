@@ -39,10 +39,22 @@
   Slice와 완료 기준
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
+- [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
+- [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
+  기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
+  기준으로 완성하는 Backend 후속 계획
+- [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
+  Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
+  결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
+- [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
+- [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
+- [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
+  category·region·status 필터와 partial 노출 규칙
+
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
 - [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,

@@ -95,9 +95,28 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - partial 표시 또는 누락 필드 fallback 정책 확인
 - provenance를 일반 화면에 노출할지 관리자 화면에만 사용할지 결정
 
-현재 저장소에는 Backend 모델·Importer와 Frontend TypeScript 타입·Mock
-소비 코드가 없다. 따라서 이 문서는 소비자 검토 입력이며 해당 구현을
-Data 영역에서 대신 만들지 않는다.
+현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
+기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
+revision과 PostgreSQL JSONB·enum·timezone 물리 매핑을 추가했으며 SQLite
+단위 테스트, PostgreSQL offline SQL과 PostgreSQL 17.10 실제 Migration·왕복
+검증을 완료했다. Backend 02 B3에서는 현재 두 공식 API의 비어 있지 않은
+`external_id` admission과 `(source_id, external_id)` PostgreSQL 원자적
+upsert를 구현했다. 같은 Seed의 반복·동시 입력은 중복 없이 unchanged로
+분류하며 null ID는 확인 가능한 사유와 함께 적재하지 않는다. Normalized
+Schema의 nullable 계약은 유지하고 향후 Source의 대체 ID는 별도로 결정한다.
+Backend 02 B4에서는 기존 `NormalizedProgramValidator`로 전체 입력을 먼저
+검증하고 `valid`·`partial`만 허용한다. invalid·Schema 위반·DB admission
+거부·DB write 실패가 하나라도 있으면 canonical batch의 DB 변경은 0건이다.
+`--dry-run`도 실제 upsert 경로를 실행한 뒤 rollback하며 결과는
+validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한다.
+Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소로 검색하고
+목록·상세 모두 기본 valid, `include_partial=true`일 때 valid·partial을
+노출한다. provenance는 DB에 보존하되 공개 Policy DTO에는 포함하지 않는다.
+Backend 02 B6의 PostgreSQL 18.4 종단 검증에서 canonical Seed 4건의 31개
+필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone instant·provenance
+손실 0건을 확인했다.
+Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
+대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
 
 ## 재생성과 검증
 
@@ -137,8 +156,9 @@ uv run python -B scripts/build_data_fixtures.py --check
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
-| Backend | pending | 담당자 승인 또는 실제 importer 소비 테스트 필요 |
+| Backend | reviewed | CLI importer, 조회 후 재적재, valid 기본 필터, 범용 JSON provenance 비노출과 Date+Text 보존을 기준선에 반영. PostgreSQL hardening은 Backend 02에서 진행 |
 | Frontend | pending | 담당자 승인 또는 TypeScript·Mock 소비 테스트 필요 |
+
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
 안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest
