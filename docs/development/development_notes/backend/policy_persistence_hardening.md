@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-baseline-v2`
 - 관련 계획:
   [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
-- 현재 Slice: B0 완료, B1 대기
+- 현재 Slice: B1 완료, B2 대기
 
 ## 목적
 
@@ -31,7 +31,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | B0 | completed | Backend 01 문서·코드 정합성 복구와 공백 정리 |
-| B1 | pending | PostgreSQL 연결과 테스트 DB 경계 |
+| B1 | completed | 명시적 DB 선택·테스트 주입·비밀 마스킹과 health 검증 |
 | B2 | pending | Policy ORM과 Alembic Migration |
 | B3 | pending | 식별자와 upsert |
 | B4 | pending | 검증 우선 Seed importer |
@@ -58,10 +58,37 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - `backend/app/models/policy.py`의 trailing whitespace와
   `backend/tests/conftest.py`의 불필요한 EOF 빈 줄을 제거했다.
 
+### B1 - PostgreSQL 연결과 테스트 DB 경계
+
+- PostgreSQL 연결 실패 시 `sqlite:///./cheongnyeon_alimi.db`로 자동 전환하던
+  fallback을 제거했다.
+- `create_db_engine()`은 전달받은 URL로만 Engine을 만들며 생성 시 실제 연결을
+  시도하지 않는다. 잘못된 URL이나 드라이버 설정은
+  `DatabaseConfigurationError`로 명확하게 실패한다.
+- Engine 구성 오류는 비밀번호가 마스킹된 URL과 예외 종류만 제공하며, 원본
+  예외 메시지와 전체 인증정보는 전달하지 않는다.
+- `create_session_factory()`와 Engine을 선택적으로 받는
+  `check_db_connection()`을 추가해 운영 전역 객체 없이 DB 동작을 검증할 수
+  있게 했다.
+- health check는 선택된 실제 Engine의 `SELECT 1` 결과에 따라 200 또는 503을
+  유지한다. 연결 실패를 다른 DB의 성공으로 바꾸지 않는다.
+- 설정에 선택적인 `TEST_DATABASE_URL`을 추가했다. 이는 향후 PostgreSQL 통합
+  테스트가 명시적으로 선택할 URL이며, 단위 테스트는 별도의 인메모리 SQLite
+  Engine을 직접 생성한다.
+- Backend 테스트 fixture는 운영 Engine과 Session을 재사용하지 않고
+  `sqlite+pysqlite:///:memory:`와 `StaticPool`을 명시적으로 사용한다.
+- DB URL 선택, SQLite 명시 사용, 비밀번호 마스킹, Session 주입, 연결
+  성공·실패를 검증하는 단위 테스트를 추가했다.
+
 ## 주요 변경 파일
 
 - `backend/app/models/policy.py`
+- `backend/.env.example`
+- `backend/app/api/v1/endpoints/health.py`
+- `backend/app/core/config.py`
+- `backend/app/core/database.py`
 - `backend/tests/conftest.py`
+- `backend/tests/test_database.py`
 - `docs/data/fixture_seed_contract.md`
 - `docs/development/develop_plan/backend/01_policy_baseline.md`
 - `docs/development/develop_plan/backend/02_policy_persistence_hardening.md`
@@ -86,7 +113,22 @@ Backend가 canonical Seed의 배열·null·날짜·품질·provenance 소비 방
 검토한 사실은 유지한다. 다만 범용 JSON 모델 반영과 실제 PostgreSQL 물리
 계약 완료를 같은 의미로 취급하지 않는다.
 
+### DB 선택은 설정과 테스트 코드에서 명시한다
+
+운영 기본값은 PostgreSQL `DATABASE_URL`이며 연결 실패를 SQLite로 대체하지
+않는다. 단위 테스트의 SQLite는 테스트 fixture가 URL과 Engine을 직접
+선택한다. `TEST_DATABASE_URL`은 실제 PostgreSQL 통합 테스트가 필요할 때만
+명시적으로 소비하며, 값이 없다는 이유로 SQLite를 자동 선택하지 않는다.
+
+### 연결 오류에는 인증정보를 포함하지 않는다
+
+Engine 구성 단계의 오류는 비밀번호를 마스킹한 URL과 예외 종류로 제한한다.
+실제 연결 상태 확인은 상세 드라이버 예외를 응답에 포함하지 않고 boolean으로
+health endpoint에 전달한다.
+
 ## 검증 결과
+
+### B0 검증 (Backend 환경 구성 전)
 
 - Backend 의존성 확인:
   `uv run python -B -c "import sqlalchemy, fastapi, pytest, pydantic"` 실패.
@@ -104,9 +146,36 @@ Backend가 canonical Seed의 배열·null·날짜·품질·provenance 소비 방
   `uv run python -B scripts/validate_docs.py` 통과
 - 공백 검사: `git diff --check` 통과
 
+### B1 검증
+
+- Backend 환경:
+  `uv venv .venv`와
+  `uv pip install --python .venv\Scripts\python.exe
+  -r backend\requirements.txt`로 저장소 전용 환경을 구성함.
+  CPython 3.14.5, SQLAlchemy 2.0.51, pytest 9.1.1 사용
+- Backend B1 단위·health 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_database.py backend/tests/test_health.py -q` 10건 통과
+- Backend 전체 테스트:
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q` 14건 통과
+- Python 구문 검사:
+  `uv run python -B -m py_compile backend/app/core/config.py
+  backend/app/core/database.py backend/app/api/v1/endpoints/health.py
+  backend/tests/conftest.py backend/tests/test_database.py` 통과
+- 문서 검증기 단위 테스트:
+  `uv run python -B -m unittest tests.test_validate_docs -v` 10건 통과
+- 문서 검증:
+  `uv run python -B scripts/validate_docs.py` 통과
+- 실제 PostgreSQL 연결 검증: B1에서는 실행하지 않음. B6 범위에서 별도
+  검증하며 SQLite 결과를 PostgreSQL 성공으로 기록하지 않음
+- 경고:
+  - Starlette TestClient의 `httpx` 사용 방식 deprecation 1건
+  - `seed_importer.py`와 SQLAlchemy default의 `datetime.utcnow()` 관련
+    deprecation 36건. timezone-aware 저장을 다루는 B2에서 검토함
+- 공백 검사: `git diff --check` 통과
+
 ## 남은 작업
 
-- B1: PostgreSQL 연결 실패와 SQLite 테스트 경계 분리
 - B2: Policy ORM, JSONB, timezone, constraint와 Alembic revision
 - B3: 현재 두 API의 external ID admission과 PostgreSQL 원자적 upsert
 - B4: Schema 검증, transaction과 rollback을 적용한 Seed importer

@@ -8,7 +8,7 @@
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: B0 완료, B1 대기
+- 현재 Slice: B1 완료, B2 대기
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -100,7 +100,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B1 - PostgreSQL 연결과 테스트 DB 경계
 
-- 상태: pending
+- 상태: completed
 - 목적: 실행 환경의 DB 선택과 연결 실패를 명시적으로 처리한다.
 - 선행 조건:
   - B0 완료
@@ -116,6 +116,24 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - 잘못된 PostgreSQL 설정이 명확하게 실패
   - SQLite는 명시적인 테스트 설정에서만 사용
   - 비밀정보 노출 0건
+- 구현 결과:
+  - PostgreSQL 연결 확인 실패를 로컬 SQLite 파일로 숨기던 자동 fallback을
+    제거함
+  - URL을 명시적으로 받는 Engine 생성 함수와 Engine을 받는 Session factory,
+    연결 확인 함수로 테스트 주입 경계를 분리함
+  - `DATABASE_URL`과 선택적 `TEST_DATABASE_URL` 설정 계약을 추가함
+  - Engine 구성 오류에는 비밀번호를 마스킹한 URL과 예외 종류만 남기고 원본
+    예외 메시지는 노출하지 않음
+  - Backend 단위 테스트는 명시적인 인메모리 SQLite Engine을 사용하며 운영
+    Engine을 재사용하지 않음
+  - health check는 선택된 Engine에 `SELECT 1`을 실행하고 실패 시 기존 503
+    응답을 유지함
+- 검증 결과:
+  - 저장소 전용 `.venv`에 `backend/requirements.txt` 의존성을 설치함
+  - DB 경계·마스킹·health 테스트 10건 통과
+  - Backend 전체 테스트 14건 통과
+  - 테스트 SQLite는 명시적인 인메모리 Engine만 사용하며 PostgreSQL 성공으로
+    기록하지 않음
 
 ### B2 - Policy ORM과 Alembic Migration
 
