@@ -99,7 +99,12 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
 revision과 PostgreSQL JSONB·enum·timezone 물리 매핑을 추가했으며 SQLite
 단위 테스트, PostgreSQL offline SQL과 PostgreSQL 17.10 실제 Migration·왕복
-검증을 완료했다. 원자적 upsert·transaction은 Backend 02의 후속 Slice에서
+검증을 완료했다. Backend 02 B3에서는 현재 두 공식 API의 비어 있지 않은
+`external_id` admission과 `(source_id, external_id)` PostgreSQL 원자적
+upsert를 구현했다. 같은 Seed의 반복·동시 입력은 중복 없이 unchanged로
+분류하며 null ID는 확인 가능한 사유와 함께 적재하지 않는다. Normalized
+Schema의 nullable 계약은 유지하고 향후 Source의 대체 ID는 별도로 결정한다.
+Schema 선검증과 canonical Seed 전체 transaction은 Backend 02 B4에서
 보강한다.
 Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
 대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.

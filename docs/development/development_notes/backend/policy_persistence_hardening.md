@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-baseline-v2`
 - 관련 계획:
   [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
-- 현재 Slice: B2 완료, B3 대기
+- 현재 Slice: B3 완료, B4 대기
 
 ## 목적
 
@@ -33,7 +33,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 | B0 | completed | Backend 01 문서·코드 정합성 복구와 공백 정리 |
 | B1 | completed | 명시적 DB 선택·테스트 주입·비밀 마스킹과 health 검증 |
 | B2 | completed | ORM·초기 revision·PostgreSQL 17.10 실제 Migration 검증 |
-| B3 | pending | 식별자와 upsert |
+| B3 | completed | source-scoped 식별자 admission·원자적 upsert·동시성 검증 |
 | B4 | pending | 검증 우선 Seed importer |
 | B5 | pending | Repository와 Policy API |
 | B6 | pending | Backend PostgreSQL 검증 |
@@ -104,6 +104,33 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - Alembic 비교 설정에 type과 server default 비교를 활성화했다.
 - Normalized JSON Schema, Fixture와 Seed 값은 바꾸지 않았다.
 
+### B3 - 식별자와 upsert 규칙
+
+- 현재 공식 API Source인 `youthcenter-api`와
+  `bokjiro-central-welfare-api`는 비어 있지 않은 `external_id`를 DB
+  admission 조건으로 사용한다. 누락 값은 `missing_external_id`로
+  건너뛰며 DB에 넣지 않는다.
+- 다른 Source의 null 식별자는 임의 hash나 대체 ID로 일반화하지 않고
+  `unsupported_null_external_id`로 분리해 향후 Source 계약 결정과
+  분리했다.
+- PostgreSQL importer는 `uq_policies_source_external` constraint를 대상으로
+  `INSERT ... ON CONFLICT DO UPDATE`를 실행한다. 변경 대상 컬럼의
+  `IS DISTINCT FROM` 조건을 사용해 같은 입력은 update하지 않고 unchanged로
+  집계하며 `updated_at`도 유지한다.
+- PostgreSQL `RETURNING` 결과로 inserted와 updated를 구분하고, 반환 행이
+  없는 conflict는 unchanged로 분류한다. SQLite의 조회 후 insert·update
+  경로는 명시적인 단위 테스트용 이식성 경계이며 운영 원자성 구현이 아니다.
+- import 결과는 total·inserted·updated·unchanged·skipped·failed와 안전한
+  issue 목록으로 반환한다. SQLAlchemy 오류는 payload와 원문 예외 메시지를
+  기록하지 않고 예외 종류만 노출한다.
+- 각 입력을 savepoint로 격리해 실패한 한 건과 성공 건의 결과를 구분한다.
+  canonical Seed 전체의 Schema 선검증과 all-or-nothing transaction은 B4에서
+  구현한다.
+- CLI의 `Base.metadata.create_all()`을 제거했다. importer 실행 전 Schema는
+  Alembic Migration으로 준비해야 한다.
+- 동일 Seed 반복, 변경 1건, 현재 두 API의 null ID, constraint 실패와 두
+  세션이 같은 식별자를 동시에 쓰는 PostgreSQL 경계를 테스트했다.
+
 ## 주요 변경 파일
 
 - `backend/app/models/policy.py`
@@ -116,11 +143,15 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - `backend/app/core/database.py`
 - `backend/app/models/policy.py`
 - `backend/app/services/seed_importer.py`
+- `backend/app/cli/import_seed.py`
 - `backend/tests/conftest.py`
 - `backend/tests/test_database.py`
 - `backend/tests/test_migrations.py`
 - `backend/tests/test_policy_model.py`
+- `backend/tests/test_policies.py`
+- `backend/tests/test_import_seed_cli.py`
 - `backend/tests/test_postgresql_migration.py`
+- `backend/tests/test_postgresql_upsert.py`
 - `docs/data/data_schema.md`
 - `docs/data/fixture_seed_contract.md`
 - `docs/development/develop_plan/backend/01_policy_baseline.md`
@@ -173,11 +204,25 @@ DB에는 연령 범위·순서, 신청일 순서와 enum처럼 저장 후 깨지
 중복과 품질 admission은 Normalized Validator와 후속 B4 importer가
 담당한다.
 
-### source-scoped nullable 식별자는 이번 Slice에서 유지한다
+### 논리 nullable 계약과 현재 Source의 DB admission을 분리한다
 
 Normalized Schema가 허용하는 `external_id=null`과 기존 unique constraint를
-그대로 유지한다. 현재 두 API의 null external ID 거부와 PostgreSQL 원자적
-upsert는 B3에서 구현한다.
+그대로 유지한다. 현재 두 API에는 external ID가 존재하므로 B3 importer가
+비어 있지 않은 값을 요구한다. 향후 Source의 대체 ID는 임의 생성하지 않고
+별도 계약 결정으로 남긴다.
+
+### PostgreSQL만 원자적 upsert의 운영 경계다
+
+PostgreSQL은 unique constraint와 `ON CONFLICT`를 한 statement에서 사용한다.
+SQLite 경로는 빠른 단위 테스트와 기존 API fixture를 위한 호환 경계다.
+동시 입력 안전성은 PostgreSQL 17.10에서 별도로 검증했다.
+
+### B3 결과 집계와 B4 transaction 책임을 분리한다
+
+B3는 건별 결과와 실패 사유를 관찰하기 위해 savepoint를 사용한다. 이 동작은
+Schema 위반이 포함된 canonical Seed 전체를 부분 적재한다는 최종 계약이
+아니다. B4에서 전체 입력을 먼저 검증하고 all-or-nothing transaction과
+`--dry-run`을 적용한다.
 
 ## 검증 결과
 
@@ -271,9 +316,39 @@ upsert는 B3에서 구현한다.
   27자라 문제가 없으며, 논리 Schema 상한 추가는 Data·Backend 공동 결정이
   필요하므로 B2에서 변경하지 않음
 
+### B3 검증
+
+- B3 importer·CLI 단위/API 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policies.py backend/tests/test_import_seed_cli.py -q`
+  10건 통과
+- 실제 PostgreSQL upsert·동시성 테스트:
+  PostgreSQL 17.10 공식 Windows portable 바이너리로 일회성 cluster를
+  `127.0.0.1:55434`에 실행하고 빈 `cheongnyeon_alimi_test` DB에서
+  `backend/tests/test_postgresql_upsert.py` 1건 통과
+- 실제 PostgreSQL Backend 전체 테스트:
+  `TEST_DATABASE_URL`을 설정한
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q` 35건 통과,
+  Starlette TestClient의 `httpx` 사용 방식 deprecation 경고 1건
+- 반복·동시성 결과:
+  최초 canonical Seed 4건 inserted, 동일 Seed 재실행 4건 unchanged,
+  변경 입력 1건 updated·3건 unchanged를 확인했다. 두 동시 Session의 같은
+  신규 식별자 입력은 inserted 1건·unchanged 1건이며 중복 행은 0건이다.
+- admission·실패 결과:
+  현재 두 API의 null external ID는 적재 0건과
+  `missing_external_id`를 반환했다. DB constraint 위반은 failed 1건과
+  `IntegrityError` 종류만 반환하고 원문 payload·예외 메시지는 노출하지
+  않았다.
+- 테스트 환경 정리:
+  검증 후 서버를 중지하고 저장소 밖 임시 ZIP·바이너리·cluster를 제거했다.
+  PostgreSQL Windows 서비스나 Docker·WSL 구성은 설치하지 않았다.
+- Schema·Fixture·Seed 영향:
+  논리 Schema, Fixture와 Seed는 변경하지 않았다. 따라서 Frontend 계약
+  변경은 없으며 현재 두 API의 external ID 필수성은 Backend DB admission
+  규칙으로만 추가됐다.
+
 ## 남은 작업
 
-- B3: 현재 두 API의 external ID admission과 PostgreSQL 원자적 upsert
 - B4: Schema 검증, transaction과 rollback을 적용한 Seed importer
 - B5: Repository와 Policy API 기준선
 - B6: 실제 PostgreSQL 통합 검증

@@ -8,7 +8,7 @@
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: B2 완료, B3 대기
+- 현재 Slice: B3 완료, B4 대기
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -183,7 +183,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B3 - 식별자와 upsert 규칙
 
-- 상태: pending
+- 상태: completed
 - 목적: Seed와 이후 재수집 결과의 중복 생성을 막는다.
 - 선행 조건:
   - B2 완료
@@ -199,6 +199,26 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - 동일 Seed 재실행 후 중복 0건
   - 현재 두 API의 null external ID 적재 0건과 확인 가능한 거부 사유
   - 동시 또는 반복 실행 경계가 명시됨
+- 구현 결과:
+  - 온통청년·복지로 입력은 비어 있지 않은 `external_id`를 DB admission에서
+    요구하고, 누락 입력은 `missing_external_id` 사유로 건너뜀
+  - 향후 Source의 null 식별자는 임의 대체 ID를 만들지 않고
+    `unsupported_null_external_id`로 분리함
+  - PostgreSQL에서는 `uq_policies_source_external` constraint를 대상으로
+    `INSERT ... ON CONFLICT DO UPDATE`를 사용하고, `IS DISTINCT FROM` 조건으로
+    실제 값이 달라질 때만 update함
+  - 결과를 inserted·updated·unchanged·skipped·failed로 집계하고 오류에는
+    payload나 DB 예외 메시지 대신 안전한 코드와 예외 종류만 기록함
+  - 동일 Seed 재실행, 현재 두 API의 null ID, DB constraint 실패와 두 세션의
+    동시 upsert를 PostgreSQL 17.10에서 검증함
+  - SQLite 경로는 단위 테스트용 이식성 경계로 유지하며 운영 원자성의
+    증거로 사용하지 않음
+  - CLI의 `Base.metadata.create_all()`을 제거해 Schema 생성 권한을 Alembic
+    Migration으로 한정함
+- 실행 검증:
+  - 실제 PostgreSQL에서 동일 Seed 재실행과 동시 입력 모두 중복 0건
+  - `TEST_DATABASE_URL`을 사용한 Backend 전체 테스트 35건 통과
+  - 검증 후 일회성 PostgreSQL 서버·cluster·바이너리를 제거함
 
 ### B4 - 검증 우선 Seed importer
 
@@ -303,7 +323,7 @@ Backend 의존성이 현재 환경에 없으면 새 패키지를 임의로 설�
 - Normalized Schema의 `source_id`에는 최대 길이가 없지만 PostgreSQL에서는
   unique·B-tree index key 크기 제한을 받는다. 현재 source ID는 짧지만
   논리 계약에 상한을 둘지는 Data·Backend 공동 결정이 필요하다.
-- 현재 두 API의 external ID admission은 이 Forest에서 확정하되,
+- 현재 두 API의 external ID admission과 원자적 upsert는 B3에서 검증했으며,
   Normalized Schema의 nullable 계약과 향후 HTML Source의 대체 ID까지
   일반화하지 않는다.
 - 자유 키워드 검색과 인덱스 최적화는 이 Forest 범위가 아니다.

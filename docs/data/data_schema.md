@@ -288,8 +288,13 @@ Seed를 구현했다. Backend에는 31개 필드를 소비하는 Policy ORM·응
 
 이 DB 매핑은 논리 Schema의 required·null·빈 배열·enum 규칙을 변경하지
 않는다. PostgreSQL 17.10의 빈 테스트 DB에서 Migration upgrade, JSONB와
-timezone 왕복, constraint와 downgrade를 검증했다. Seed admission과 원자적
-upsert는 Backend 02의 후속 Slice에서 보강한다.
+timezone 왕복, constraint와 downgrade를 검증했다. Backend 02 B3에서 현재
+두 공식 API 입력에는 비어 있지 않은 `external_id`를 요구하는 DB admission과
+`(source_id, external_id)` PostgreSQL 원자적 upsert를 검증했다. 동일 입력은
+unchanged로 분류되어 `updated_at`을 바꾸지 않고, null ID는 적재하지 않는다.
+이는 Normalized Schema의 nullable 계약을 바꾸지 않으며 향후 Source의 대체
+ID를 일반화하지 않는다. Schema 선검증과 canonical Seed 전체 transaction은
+Backend 02 B4에서 보강한다.
 
 다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
 
