@@ -279,8 +279,17 @@ invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하�
 
 Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
 버전이다. Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical
-Seed를 구현했다. 현재 저장소에는 이를 소비하는 Backend 응답 모델, DB
-Schema와 Frontend 타입이 없어 직접 동기화할 구현 파일은 없다.
+Seed를 구현했다. Backend에는 31개 필드를 소비하는 Policy ORM·응답 모델과
+최초 Alembic revision이 있다. 배열·조건·provenance는 PostgreSQL `JSONB`,
+수집 시각은 timezone-aware timestamp, 일정·상태·품질은 DB enum으로
+매핑한다. SQLite `JSON`과 CHECK constraint는 명시적인 단위 테스트
+대체 경계이며 PostgreSQL 검증 결과를 대신하지 않는다. Frontend 타입은 아직
+없다.
+
+이 DB 매핑은 논리 Schema의 required·null·빈 배열·enum 규칙을 변경하지
+않는다. PostgreSQL 17.10의 빈 테스트 DB에서 Migration upgrade, JSONB와
+timezone 왕복, constraint와 downgrade를 검증했다. Seed admission과 원자적
+upsert는 Backend 02의 후속 Slice에서 보강한다.
 
 다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
 

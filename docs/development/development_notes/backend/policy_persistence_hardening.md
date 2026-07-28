@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-baseline-v2`
 - 관련 계획:
   [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
-- 현재 Slice: B1 완료, B2 대기
+- 현재 Slice: B2 완료, B3 대기
 
 ## 목적
 
@@ -32,7 +32,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 | --- | --- | --- |
 | B0 | completed | Backend 01 문서·코드 정합성 복구와 공백 정리 |
 | B1 | completed | 명시적 DB 선택·테스트 주입·비밀 마스킹과 health 검증 |
-| B2 | pending | Policy ORM과 Alembic Migration |
+| B2 | completed | ORM·초기 revision·PostgreSQL 17.10 실제 Migration 검증 |
 | B3 | pending | 식별자와 upsert |
 | B4 | pending | 검증 우선 Seed importer |
 | B5 | pending | Repository와 Policy API |
@@ -80,15 +80,48 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - DB URL 선택, SQLite 명시 사용, 비밀번호 마스킹, Session 주입, 연결
   성공·실패를 검증하는 단위 테스트를 추가했다.
 
+### B2 - Policy ORM과 Alembic Migration
+
+- `NormalizedProgram`의 31개 필드와 Policy ORM 컬럼을 일대일로 대조했다.
+  기존 `source_id`, nullable text와 `source_url`의 추가 길이 제한은 논리
+  Schema에 없는 거부 조건이므로 PostgreSQL `TEXT`로 맞췄다.
+- categories·regions·조건 배열과 provenance 8개 컬럼은 PostgreSQL에서
+  `JSONB`를 사용한다. 동일 ORM을 사용하는 명시적 SQLite 단위 테스트에서는
+  SQLAlchemy type variant로 범용 `JSON`을 사용한다.
+- `application_schedule`, `application_status`, `data_quality_status`를
+  PostgreSQL named enum으로 고정했다. SQLite에서는 동일 SQLAlchemy Enum이
+  CHECK constraint를 생성한다.
+- `age_min`·`age_max`의 0~150 범위, 최소·최대 순서와 신청 시작·종료일 순서를
+  DB CHECK constraint로 보호한다.
+- `(source_id, external_id)` unique constraint와 source·external ID·품질
+  B-tree index를 유지하고 categories·regions에 PostgreSQL GIN index를
+  추가했다.
+- `collected_at`, `created_at`, `updated_at`을 timezone-aware 컬럼으로
+  변경했다. Python 기본값과 Seed importer가 만드는 수정 시각은 UTC aware
+  datetime을 사용한다.
+- 최초 Alembic revision `20260728_0001`을 추가했다. upgrade는 enum·Policy
+  테이블·index를 만들고 downgrade는 index·테이블·enum을 역순으로 제거한다.
+- Alembic 비교 설정에 type과 server default 비교를 활성화했다.
+- Normalized JSON Schema, Fixture와 Seed 값은 바꾸지 않았다.
+
 ## 주요 변경 파일
 
 - `backend/app/models/policy.py`
 - `backend/.env.example`
 - `backend/app/api/v1/endpoints/health.py`
+- `backend/alembic.ini`
+- `backend/alembic/env.py`
+- `backend/alembic/versions/20260728_0001_create_policies.py`
 - `backend/app/core/config.py`
 - `backend/app/core/database.py`
+- `backend/app/models/policy.py`
+- `backend/app/services/seed_importer.py`
 - `backend/tests/conftest.py`
 - `backend/tests/test_database.py`
+- `backend/tests/test_migrations.py`
+- `backend/tests/test_policy_model.py`
+- `backend/tests/test_postgresql_migration.py`
+- `docs/data/data_schema.md`
 - `docs/data/fixture_seed_contract.md`
 - `docs/development/develop_plan/backend/01_policy_baseline.md`
 - `docs/development/develop_plan/backend/02_policy_persistence_hardening.md`
@@ -125,6 +158,26 @@ Backend가 canonical Seed의 배열·null·날짜·품질·provenance 소비 방
 Engine 구성 단계의 오류는 비밀번호를 마스킹한 URL과 예외 종류로 제한한다.
 실제 연결 상태 확인은 상세 드라이버 예외를 응답에 포함하지 않고 boolean으로
 health endpoint에 전달한다.
+
+### 논리 Schema와 PostgreSQL 물리 타입을 분리한다
+
+Normalized JSON Schema의 배열·null·enum 계약은 유지하면서 PostgreSQL의 배열
+저장에는 JSONB를 사용한다. SQLite는 운영 대체 DB가 아니라 빠른 constraint와
+API 단위 테스트를 위한 명시적 variant다. GIN index와 named enum을 포함한
+실제 물리 계약은 Alembic revision이 권위를 가진다.
+
+### DB constraint와 Validator의 책임을 중복하되 범위를 제한한다
+
+DB에는 연령 범위·순서, 신청일 순서와 enum처럼 저장 후 깨지면 검색 의미가
+달라지는 불변 조건만 둔다. 문자열 패턴, provenance 내부 구조, 배열 원소
+중복과 품질 admission은 Normalized Validator와 후속 B4 importer가
+담당한다.
+
+### source-scoped nullable 식별자는 이번 Slice에서 유지한다
+
+Normalized Schema가 허용하는 `external_id=null`과 기존 unique constraint를
+그대로 유지한다. 현재 두 API의 null external ID 거부와 PostgreSQL 원자적
+upsert는 B3에서 구현한다.
 
 ## 검증 결과
 
@@ -174,9 +227,52 @@ health endpoint에 전달한다.
     deprecation 36건. timezone-aware 저장을 다루는 B2에서 검토함
 - 공백 검사: `git diff --check` 통과
 
+### B2 검증
+
+- B2 ORM·Migration 단위 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policy_model.py backend/tests/test_migrations.py -q`
+  13건 통과
+- Backend 전체 테스트:
+  `TEST_DATABASE_URL`을 설정한
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q` 28건 통과
+- PostgreSQL offline upgrade SQL:
+  `cd backend` 후
+  `..\.venv\Scripts\python.exe -B -m alembic upgrade head --sql` 통과.
+  JSONB 8개, timezone-aware timestamp, named enum 3개, GIN index 2개와
+  constraint 생성을 확인함
+- PostgreSQL offline downgrade SQL:
+  `cd backend` 후
+  `..\.venv\Scripts\python.exe -B -m alembic downgrade
+  20260728_0001:base --sql` 통과. index·테이블·enum 제거 SQL을 확인함
+- 실제 PostgreSQL upgrade·JSONB 왕복·downgrade:
+  PostgreSQL 17.10 공식 Windows portable 바이너리로 일회성 cluster를
+  `127.0.0.1:55432`에 실행하고 빈 `cheongnyeon_alimi_test` DB에서
+  `backend/tests/test_postgresql_migration.py` 1건 통과. 실제 upgrade,
+  JSONB 배열·provenance와 timezone 절대 시각 왕복, 연령 constraint 거부,
+  downgrade 후 Policy 테이블과 named enum 3개 제거를 확인함
+- 테스트 환경 정리:
+  PostgreSQL은 Windows 서비스로 설치하지 않았고 검증 후 서버를 중지한 뒤
+  저장소 밖 임시 ZIP·바이너리·cluster를 제거함. Docker·WSL·VS Code 확장은
+  B2 실행에 사용하지 않음
+- Normalized·Fixture 회귀 확인:
+  `.venv\Scripts\python.exe -B -m pytest tests/test_normalization.py
+  tests/test_data_fixtures.py -q`는 23건 중 22건 통과, 결정적 산출물 비교 1건
+  실패. B2는 Fixture·Seed를 변경하지 않았으며 Windows checkout의 committed
+  JSON은 CRLF, 생성기는 LF를 만들어 newline 정규화 후 byte가 일치함을
+  확인했다. `scripts/build_data_fixtures.py --check`도 같은 원인으로 12개
+  JSON을 outdated로 보고하며 범위 밖 Data 재현성 문제로 남김
+- 테스트 경고:
+  Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. B2 DB 계약과
+  무관해 수정하지 않음
+- 확인된 계약 위험:
+  Normalized `source_id`에는 최대 길이가 없지만 PostgreSQL의 source-scoped
+  unique·B-tree index는 key 크기 제한을 받는다. 현재 source ID는 최대
+  27자라 문제가 없으며, 논리 Schema 상한 추가는 Data·Backend 공동 결정이
+  필요하므로 B2에서 변경하지 않음
+
 ## 남은 작업
 
-- B2: Policy ORM, JSONB, timezone, constraint와 Alembic revision
 - B3: 현재 두 API의 external ID admission과 PostgreSQL 원자적 upsert
 - B4: Schema 검증, transaction과 rollback을 적용한 Seed importer
 - B5: Repository와 Policy API 기준선

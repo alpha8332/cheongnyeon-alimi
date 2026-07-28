@@ -96,8 +96,11 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - provenance를 일반 화면에 노출할지 관리자 화면에만 사용할지 결정
 
 현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
-기준선이 있고 Backend 소비 검토는 완료됐다. 실제 Alembic revision,
-PostgreSQL JSONB·원자적 upsert·transaction 검증은 Backend 02에서 보강한다.
+기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
+revision과 PostgreSQL JSONB·enum·timezone 물리 매핑을 추가했으며 SQLite
+단위 테스트, PostgreSQL offline SQL과 PostgreSQL 17.10 실제 Migration·왕복
+검증을 완료했다. 원자적 upsert·transaction은 Backend 02의 후속 Slice에서
+보강한다.
 Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
 대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
 

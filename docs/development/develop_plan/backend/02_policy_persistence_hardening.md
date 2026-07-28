@@ -8,7 +8,7 @@
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: B1 완료, B2 대기
+- 현재 Slice: B2 완료, B3 대기
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -137,7 +137,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B2 - Policy ORM과 Alembic Migration
 
-- 상태: pending
+- 상태: completed
 - 목적: Normalized 계약의 물리적 저장 구조를 Migration으로 고정한다.
 - 선행 조건:
   - B1 완료
@@ -158,6 +158,28 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - ORM metadata와 Migration Schema 일치
   - 배열과 provenance의 JSONB 왕복, timezone과 constraint 검증
   - downgrade 또는 깨끗한 DB 재구성 검증
+- 구현 결과:
+  - NormalizedProgram 31개 필드와 ORM 컬럼 집합의 일치 테스트를 추가함
+  - 배열·조건·provenance 8개 컬럼을 PostgreSQL `JSONB`, SQLite 단위
+    테스트에서는 범용 `JSON`으로 매핑함
+  - 신청 일정·상태·품질을 PostgreSQL enum으로 고정하고 SQLite에서는 같은
+    값 집합의 CHECK constraint로 검증함
+  - 연령 범위·순서와 신청일 순서 constraint, source-scoped unique,
+    기본 B-tree index와 categories·regions GIN index를 추가함
+  - 수집·생성·수정 시각을 timezone-aware 컬럼과 UTC Python 기본값으로
+    변경함
+  - 최초 revision `20260728_0001`과 enum을 포함한 명시적 downgrade를 추가함
+  - PostgreSQL offline upgrade·downgrade SQL과 SQLite constraint 테스트를
+    통과함
+  - 명시적 `TEST_DATABASE_URL`과 `_test` DB명에서만 실행되는 PostgreSQL
+    upgrade·JSONB 왕복·constraint·downgrade 통합 테스트를 추가함
+- 실행 검증:
+  - 일회성 PostgreSQL 17.10을 `127.0.0.1` 전용 포트에서 실행하고
+    `cheongnyeon_alimi_test` 빈 DB를 사용함
+  - 실제 upgrade, JSONB·timezone 왕복, 연령 constraint 거부와 downgrade 후
+    테이블·enum 제거를 통과함
+  - `TEST_DATABASE_URL`을 사용한 Backend 전체 테스트 28건 통과
+  - 검증 후 일회성 PostgreSQL 서버·cluster·바이너리를 제거함
 
 ### B3 - 식별자와 upsert 규칙
 
@@ -272,9 +294,15 @@ Backend 의존성이 현재 환경에 없으면 새 패키지를 임의로 설�
 
 ## 위험과 미확정 사항
 
-- Backend 의존성과 PostgreSQL 테스트 환경의 재현 방법이 확정돼야 한다.
-- 배열과 provenance의 물리적 저장 방식은 검색 요구와 SQLite 단위 테스트
-  필요성을 함께 검토해야 한다.
+- Backend 의존성은 저장소 `.venv`에서 재현했고 PostgreSQL 17.10 일회성
+  테스트 DB에서 B2 Migration을 검증했다. 지속적인 PostgreSQL 제공 방식과
+  컨테이너 구성은 Integration·Deploy에서 결정한다.
+- 배열과 provenance는 PostgreSQL JSONB와 SQLite JSON variant로 구현했으며
+  JSONB 왕복과 GIN index 생성까지 검증했다. 실제 검색 쿼리의 GIN 사용 여부는
+  B5 Repository와 B6 종단 간 검증에서 확인한다.
+- Normalized Schema의 `source_id`에는 최대 길이가 없지만 PostgreSQL에서는
+  unique·B-tree index key 크기 제한을 받는다. 현재 source ID는 짧지만
+  논리 계약에 상한을 둘지는 Data·Backend 공동 결정이 필요하다.
 - 현재 두 API의 external ID admission은 이 Forest에서 확정하되,
   Normalized Schema의 nullable 계약과 향후 HTML Source의 대체 ID까지
   일반화하지 않는다.

@@ -1,73 +1,164 @@
-from datetime import datetime, date
-from typing import Optional, List, Any, Dict
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, UniqueConstraint, Index, JSON
+from datetime import datetime, timezone
+
+from sqlalchemy import (
+    JSON,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+
 from app.core.database import Base
 
+
+APPLICATION_SCHEDULE_VALUES = (
+    "fixed_period",
+    "always",
+    "until_budget_exhausted",
+)
+APPLICATION_STATUS_VALUES = ("open", "closed", "scheduled")
+DATA_QUALITY_STATUS_VALUES = ("valid", "partial", "invalid")
+
+JSON_DOCUMENT = JSON().with_variant(JSONB(), "postgresql")
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 class Policy(Base):
-    """
-    청년 정책 ORM 모델 (NormalizedProgram 1.0.0 스키마 준수)
-    """
+    """Database representation of the NormalizedProgram 1.0.0 contract."""
+
     __tablename__ = "policies"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    # 식별 및 출처
-    schema_version = Column(String(32), nullable=False, default="1.0.0")
-    source_id = Column(String(128), nullable=False, index=True)
+    schema_version = Column(
+        String(32),
+        nullable=False,
+        default="1.0.0",
+        server_default="1.0.0",
+    )
+    source_id = Column(Text, nullable=False)
     source_name = Column(String(255), nullable=False)
-    external_id = Column(String(512), nullable=True, index=True)
+    external_id = Column(String(512), nullable=True)
 
-    # 핵심 기본 정보
     title = Column(String(1000), nullable=False)
-    organization = Column(String(255), nullable=True)
+    organization = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
 
-    # 카테고리
-    category_text = Column(String(255), nullable=True)
-    categories = Column(JSON, nullable=False, default=list)
+    category_text = Column(Text, nullable=True)
+    categories = Column(JSON_DOCUMENT, nullable=False, default=list)
 
-    # 신청 기간 및 일정
-    application_period_text = Column(String(512), nullable=True)  # raw_apply_period
+    application_period_text = Column(Text, nullable=True)
     application_start = Column(Date, nullable=True)
     application_end = Column(Date, nullable=True)
-    application_schedule = Column(String(64), nullable=True)  # fixed_period, always, until_budget_exhausted
-    application_status = Column(String(64), nullable=True)    # open, closed, scheduled
+    application_schedule = Column(
+        Enum(
+            *APPLICATION_SCHEDULE_VALUES,
+            name="policy_application_schedule",
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        nullable=True,
+    )
+    application_status = Column(
+        Enum(
+            *APPLICATION_STATUS_VALUES,
+            name="policy_application_status",
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        nullable=True,
+    )
 
-    # 지역
-    region_text = Column(String(255), nullable=True)
-    regions = Column(JSON, nullable=False, default=list)
+    region_text = Column(Text, nullable=True)
+    regions = Column(JSON_DOCUMENT, nullable=False, default=list)
 
-    # 자격 요건 (연령, 학력, 취업 등)
     age_min = Column(Integer, nullable=True)
     age_max = Column(Integer, nullable=True)
     age_condition_text = Column(Text, nullable=True)
     eligibility_text = Column(Text, nullable=True)
 
-    # 지원 내용 및 신청 방법
     support_content = Column(Text, nullable=True)
     application_method = Column(Text, nullable=True)
 
-    # 조건 세부 목록
-    education_statuses = Column(JSON, nullable=False, default=list)
-    employment_statuses = Column(JSON, nullable=False, default=list)
-    required_conditions = Column(JSON, nullable=False, default=list)
-    preferred_conditions = Column(JSON, nullable=False, default=list)
-    excluded_conditions = Column(JSON, nullable=False, default=list)
+    education_statuses = Column(JSON_DOCUMENT, nullable=False, default=list)
+    employment_statuses = Column(JSON_DOCUMENT, nullable=False, default=list)
+    required_conditions = Column(JSON_DOCUMENT, nullable=False, default=list)
+    preferred_conditions = Column(JSON_DOCUMENT, nullable=False, default=list)
+    excluded_conditions = Column(JSON_DOCUMENT, nullable=False, default=list)
 
-    # 수집 메타데이터 & Provenance (4-A)
-    source_url = Column(String(2048), nullable=False)
-    collected_at = Column(DateTime, nullable=False)
-    provenance = Column(JSON, nullable=False, default=list)
+    source_url = Column(Text, nullable=False)
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    provenance = Column(JSON_DOCUMENT, nullable=False, default=list)
 
-    # 품질 상태 (3-A: valid, partial, invalid)
-    data_quality_status = Column(String(32), nullable=False, index=True)
+    data_quality_status = Column(
+        Enum(
+            *DATA_QUALITY_STATUS_VALUES,
+            name="policy_data_quality_status",
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        nullable=False,
+    )
 
-    # DB 이력 시각
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utc_now,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utc_now,
+        onupdate=utc_now,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
 
     __table_args__ = (
-        # (source_id, external_id) 복합 고유 인덱스 (2-A)
-        UniqueConstraint("source_id", "external_id", name="uq_policy_source_external"),
-        Index("idx_policy_quality_status", "data_quality_status"),
+        UniqueConstraint(
+            "source_id",
+            "external_id",
+            name="uq_policies_source_external",
+        ),
+        CheckConstraint(
+            "age_min IS NULL OR (age_min >= 0 AND age_min <= 150)",
+            name="ck_policies_age_min_range",
+        ),
+        CheckConstraint(
+            "age_max IS NULL OR (age_max >= 0 AND age_max <= 150)",
+            name="ck_policies_age_max_range",
+        ),
+        CheckConstraint(
+            "age_min IS NULL OR age_max IS NULL OR age_min <= age_max",
+            name="ck_policies_age_order",
+        ),
+        CheckConstraint(
+            "application_start IS NULL OR application_end IS NULL "
+            "OR application_start <= application_end",
+            name="ck_policies_application_date_order",
+        ),
+        Index("ix_policies_source_id", "source_id"),
+        Index("ix_policies_external_id", "external_id"),
+        Index("ix_policies_data_quality_status", "data_quality_status"),
+        Index(
+            "ix_policies_categories_gin",
+            "categories",
+            postgresql_using="gin",
+        ),
+        Index(
+            "ix_policies_regions_gin",
+            "regions",
+            postgresql_using="gin",
+        ),
     )

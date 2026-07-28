@@ -1,9 +1,12 @@
 import json
-from datetime import datetime, date
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any, Dict, List, Tuple
+
 from sqlalchemy.orm import Session
+
 from app.models.policy import Policy
+
 
 def parse_date(date_str: Any) -> Any:
     if not date_str or not isinstance(date_str, str):
@@ -13,14 +16,16 @@ def parse_date(date_str: Any) -> Any:
     except ValueError:
         return None
 
+
 def parse_datetime(dt_str: Any) -> datetime:
     if not dt_str or not isinstance(dt_str, str):
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
     try:
         # ISO format datetime parsing
         return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
     except ValueError:
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
+
 
 def import_seed_data(db: Session, seed_file_path: Path) -> Tuple[int, int, int]:
     """
@@ -46,7 +51,7 @@ def import_seed_data(db: Session, seed_file_path: Path) -> Tuple[int, int, int]:
         # 기존 레코드 검색 (source_id + external_id 2-A Upsert)
         existing = db.query(Policy).filter(
             Policy.source_id == source_id,
-            Policy.external_id == external_id
+            Policy.external_id == external_id,
         ).first()
 
         policy_dict = {
@@ -59,8 +64,10 @@ def import_seed_data(db: Session, seed_file_path: Path) -> Tuple[int, int, int]:
             "summary": item.get("summary"),
             "category_text": item.get("category_text"),
             "categories": item.get("categories", []),
-            "application_period_text": item.get("application_period_text"),  # 5-A 원문 텍스트 보존
-            "application_start": parse_date(item.get("application_start")), # 5-A Date 객체 파싱
+            # 5-A 원문 텍스트 보존
+            "application_period_text": item.get("application_period_text"),
+            # 5-A Date 객체 파싱
+            "application_start": parse_date(item.get("application_start")),
             "application_end": parse_date(item.get("application_end")),
             "application_schedule": item.get("application_schedule"),
             "application_status": item.get("application_status"),
@@ -80,8 +87,8 @@ def import_seed_data(db: Session, seed_file_path: Path) -> Tuple[int, int, int]:
             "source_url": item.get("source_url", ""),
             "collected_at": parse_datetime(item.get("collected_at")),
             "provenance": item.get("provenance", []),  # 4-A DB 전량 보존
-            "data_quality_status": item.get("data_quality_status", "valid"), # 3-A
-            "updated_at": datetime.utcnow()
+            "data_quality_status": item.get("data_quality_status", "valid"),
+            "updated_at": datetime.now(timezone.utc),
         }
 
         if existing:
