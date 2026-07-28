@@ -8,6 +8,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@seed': path.resolve(__dirname, '../data/seeds'),
+    },
+  },
+  server: {
+    fs: {
+      allow: [path.resolve(__dirname, '..')],
     },
   },
 });

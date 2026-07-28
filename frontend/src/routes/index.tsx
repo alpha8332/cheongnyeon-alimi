@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import RootLayout from '@/layouts/RootLayout';
 import HomePage from '@/pages/user/HomePage';
-import ProgramListPage from '@/pages/user/ProgramListPage';
+import ProgramListPage from '@/pages/user/SearchPage';
 import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import NotFoundPage from '@/components/common/NotFoundPage';
 import RootErrorFallback from '@/components/common/RootErrorFallback';

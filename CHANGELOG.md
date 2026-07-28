@@ -10,6 +10,10 @@
 
 ### Added
 
+- Frontend Policy Discovery Slice: `NormalizedProgram` 1.0.0 TypeScript 타입,
+  canonical Seed Mock, 정책 목록·상세·필터 와이어프레임 UI와 Data 6 Frontend
+  공동 계약 검토 기록
+  ([개발 기록](docs/development/development_notes/frontend/policy_discovery.md))
 - 온통청년·복지로 source Collector·Extractor, 비밀정보 안전한 공통 HTTP·CLI,
   Raw 보존부터 provenance 기반 정규화·Schema 검증·품질 분류와 결정적
   Fixture·canonical Seed까지의 데이터 파이프라인 기반 추가
