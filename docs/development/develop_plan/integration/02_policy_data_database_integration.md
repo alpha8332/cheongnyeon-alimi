@@ -62,6 +62,8 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 - `NormalizedProgram` 1.0.0과 canonical Seed 4건을 입력 계약으로 사용한다.
 - Backend 검토 결과는 Fixture·Seed 계약에 기록돼 있어야 한다.
 - PostgreSQL 테스트 DB와 실행 방법이 제공돼야 한다.
+- Backend 의존성 manifest에 실제 사용 라이브러리와 테스트 의존성이 반영돼
+  있어야 한다.
 - 실제 Runtime Raw는 Git에 포함하지 않는다.
 - Frontend 승인이 없으면 Data 6를 완료 처리하지 않는다.
 
@@ -76,6 +78,8 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   제외한다.
 - null, 빈 배열, enum, 날짜, 원문 text와 provenance를 임의로 축약하지 않는다.
 - 자동 테스트는 Git에 포함된 합성 Fixture를 사용한다.
+- 합성 Raw Fixture → Extractor → Normalizer → Validator → importer 흐름을
+  CI에서 검증해 운영 Raw 없이 Runtime adapter를 재현한다.
 - Runtime Raw 검증은 추가 외부 호출이 없는 선택적인 로컬 smoke test로
   분리한다.
 - 최소 CollectionRun은 Seed 적재와 Runtime 연결이 완료된 뒤 구현 여부를
@@ -118,6 +122,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - 일정·상태, 날짜와 원문 기간 text 동시 보존
   - 조건 배열, 출처, 수집 시각, provenance와 품질 보존
   - source-scoped identity와 upsert 규칙 확인
+  - 현재 두 API의 external ID admission과 향후 Source 확장 경계 확인
 - 산출물:
   - DB 매핑표
   - Seed 원본과 DB 조회 결과 비교 기준
@@ -171,13 +176,16 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - pagination과 현재 합의된 기본 필터
   - Seed 값과 API 응답 비교
   - provenance 사용자 API 비노출 확인
+  - 상세 API의 partial 노출 정책 확인
+  - `docs/api/policies.md`에 query, pagination, DTO와 오류 계약 작성
 - 산출물:
   - Seed → DB → API 통합 테스트
-  - 요청·응답 예시
+  - `docs/api/policies.md` 요청·응답 계약과 합성 예시
 - 완료 기준:
   - 기본 조회 valid 2건
   - partial 포함 조회 4건
   - 상세 조회와 404 동작 확인
+  - nullable·배열·partial·422·500 계약 문서화
   - API 응답의 값 손실과 provenance 노출 0건
 
 ### D4 - Runtime Raw 재처리와 DB 적재
@@ -203,11 +211,13 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - source와 limit을 받는 명시적 CLI
   - dry-run, valid·partial·invalid 집계
   - source 단위 또는 합의된 batch transaction
+  - validation rejection은 DB transaction 전에 분리
+  - DB failure는 해당 batch rollback
   - 같은 Runtime 재실행 idempotency
   - Raw payload, 인증 파라미터와 키 로그 제외
 - 산출물:
   - Runtime import 진입점
-  - 합성 Fixture 기반 자동 테스트
+  - 합성 Raw Fixture 기반 전체 처리 자동 테스트
   - Runtime Raw가 있을 때 선택적인 로컬 smoke 기록
 - 완료 기준:
   - 자동 테스트는 외부 네트워크 없이 통과
@@ -223,7 +233,8 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 - 선행 조건:
   - D2와 D4 완료
 - 검토 필드:
-  - `run_id`, `source_id`, 시작·종료 시각과 상태
+  - `run_id`, `source_id`, `run_type`, `trigger_type`
+  - 시작·종료 UTC 시각과 상태
   - 요청·Raw·추출·accepted·partial·invalid 건수
   - inserted·updated·skipped·failed 건수
   - 안전한 `error_type`
@@ -231,6 +242,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - 최소 `collection_runs` DB 레코드
   - Backend DB 구조가 불안정하면 실행 결과 JSON
   - 후속 운영 Forest로 연기
+- enum 후보:
+  - `run_type`: `seed_import`, `runtime_import`, `collection`
+  - `trigger_type`: `cli`, `scheduler`, `admin`
 - 완료 기준:
   - 구현 여부, 책임 영역과 후속 완료 기준이 문서 또는 Issue에 기록
   - 구현하지 않아도 D0~D4와 D6 완료를 막지 않음
@@ -278,6 +292,7 @@ D0의 Frontend 검토 요청과 D1 매핑 초안은 Backend 02 후반에 병렬�
 - 전체 Data 회귀 테스트
 - canonical Seed와 rejected Fixture Schema 검증
 - `uv run python -B scripts/build_data_fixtures.py --check`
+- 합성 Raw Fixture → Extracted → Normalized → PostgreSQL 자동 테스트
 - Seed → PostgreSQL → Repository → API 통합 테스트
 - Runtime Raw → Normalized → PostgreSQL 통합 테스트
 - 동일 입력 재실행과 rollback
@@ -285,6 +300,7 @@ D0의 Frontend 검토 요청과 D1 매핑 초안은 Backend 02 후반에 병렬�
 - 비밀정보와 운영 Raw의 Git 제외
 - `uv run python -B scripts/validate_docs.py`
 - `git diff --check`
+- canonical JSON byte 결정성을 위한 line ending 검사
 
 실제 Runtime Raw와 PostgreSQL 환경이 없으면 해당 검증을 성공으로 기록하지
 않고 합성 Fixture 자동 테스트와 미실행 항목을 구분한다.
@@ -312,13 +328,19 @@ D5는 선택 사항이며 구현하지 않아도 Forest 완료를 막지 않는�
   병합 충돌이 생긴다.
 - PostgreSQL 테스트 DB 제공 방식은 별도 Integration·Deploy 결정이 필요할
   수 있다.
-- 배열의 물리적 저장 방식과 nullable external ID의 DB 처리 규칙은 Backend
-  02와 D1에서 공동 확정한다.
+- Backend 02에서 확정한 JSONB 물리 매핑과 현재 두 API의 external ID
+  admission이 Normalized 계약을 손실 없이 보존하는지 D1에서 확인한다.
+  향후 Source의 대체 ID 규칙은 이 Forest에서 일반화하지 않는다.
 - Windows line ending 설정은 canonical JSON의 byte 결정성 검사를 방해할 수
-  있으므로 필요하면 별도 repository 설정 변경으로 검토한다.
+  있다. `data/fixtures/**/*.json`, `data/seeds/*.json`,
+  `data/schema/*.json`의 LF를 `.gitattributes`로 고정하는 최소 변경을
+  우선 검토하고 저장소 전체 파일을 기계적으로 재작성하지 않는다.
 - Runtime Raw는 Git에 포함되지 않으므로 CI 완료 기준은 합성 Fixture에 둔다.
 - Frontend 승인이 없으면 기술 흐름이 동작해도 Data 6 공동 완료 기준은
   충족하지 않는다.
+- Data 코드가 Backend 실행 환경을 공유하면 새 Python 라이브러리를
+  Backend의 합의된 manifest에 반영하고 별도 root manifest를 임의로 만들지
+  않는다.
 
 ## 관련 문서
 

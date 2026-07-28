@@ -25,6 +25,7 @@ PostgreSQL 기준으로 검증 가능한 상태로 완성한다. 코드와 문�
 - PostgreSQL과 테스트 DB의 명시적인 실행 경계
 - Policy ORM과 실제 Alembic revision
 - source-scoped 식별자와 upsert 규칙
+- PostgreSQL JSONB, timezone과 핵심 DB constraint
 - Schema·품질 검증을 적용한 Seed importer
 - transaction, rollback과 적재 결과 집계
 - Policy Repository와 목록·상세 API 기본 경계
@@ -55,13 +56,21 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 - PostgreSQL 연결 실패를 SQLite 자동 fallback으로 숨기지 않는다.
 - SQLite는 명시적인 단위 테스트 환경에서만 사용할 수 있다.
 - Alembic Migration을 `Base.metadata.create_all()`로 대신하지 않는다.
+- ORM 변경과 Alembic revision은 같은 변경에서 동기화한다.
 - 잘못된 날짜·시각·필수값을 `null`, 현재 시각이나 빈 문자열로 보정하지
   않는다.
 - `valid`와 `partial`은 적재 가능하고 `invalid`와 Schema 위반은 거부한다.
-- Data Schema의 nullable 계약과 DB uniqueness가 충돌하면 Data와 공동
-  결정하고 한쪽에서 임의로 확정하지 않는다.
-- 배열과 provenance의 `JSON`, PostgreSQL `JSONB` 또는 별도 테이블 선택은
-  검색 요구, 호환성과 Migration을 검토한 뒤 코드·문서에 동일하게 반영한다.
+- Normalized Schema의 nullable `external_id` 계약은 유지한다. 현재
+  온통청년·복지로의 DB admission에서는 external ID를 요구하고, 값이 없는
+  입력은 확인 가능한 사유와 함께 적재하지 않는다. 향후 HTML Source의 대체
+  ID는 별도 Forest에서 결정한다.
+- `categories`, `regions`, 조건 배열과 provenance는 PostgreSQL `JSONB`를
+  우선안으로 사용한다. category·region의 기본 필터에 필요한 GIN index를
+  검토하고, 완전한 관계 정규화는 후속 DB 안정화 범위로 둔다.
+- 수집·생성·수정 시각은 UTC timezone-aware 값으로 저장하고 사용자 표시에서
+  Asia/Seoul로 변환한다.
+- 핵심 enum, 연령 범위와 날짜 순서처럼 DB에서도 보호할 불변 조건은
+  JSON Schema와 중복되더라도 최소 check constraint로 검토한다.
 - 실제 실행한 테스트와 DB 종류만 개발 기록에 남긴다.
 
 ## Slice 계획
@@ -110,7 +119,10 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - 배열과 provenance 저장 방식 공동 결정
 - 주요 작업:
   - 31개 필드의 컬럼 타입, null과 배열 보존 검토
-  - 날짜와 timezone-aware 수집 시각 저장
+  - 배열·조건과 provenance의 PostgreSQL `JSONB` 저장
+  - category·region 검색을 위한 GIN index 검토
+  - `collected_at`, `created_at`, `updated_at`의 UTC timezone-aware 저장
+  - quality·schedule·status enum, 연령 범위·순서의 check constraint
   - unique constraint와 필요한 기본 인덱스
   - 초기 Policy Alembic revision 생성
   - upgrade와 downgrade 검증
@@ -119,6 +131,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 - 완료 기준:
   - 빈 PostgreSQL에서 `alembic upgrade head` 성공
   - ORM metadata와 Migration Schema 일치
+  - 배열과 provenance의 JSONB 왕복, timezone과 constraint 검증
   - downgrade 또는 깨끗한 DB 재구성 검증
 
 ### B3 - 식별자와 upsert 규칙
@@ -129,15 +142,15 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - B2 완료
 - 주요 작업:
   - `(source_id, external_id)` uniqueness 검증
-  - nullable `external_id`의 DB 처리 방안 공동 결정
-  - 조회 후 update 또는 PostgreSQL 원자적 upsert 중 실제 방식 확정
+  - 온통청년·복지로의 null external ID를 DB admission에서 거부
+  - PostgreSQL `INSERT ... ON CONFLICT DO UPDATE` 기반 원자적 upsert
   - inserted, updated, unchanged, skipped와 failed 구분
   - 동일 Seed 재실행과 경계 사례 테스트
 - 산출물:
   - 식별·upsert 결정과 구현
 - 완료 기준:
   - 동일 Seed 재실행 후 중복 0건
-  - null external ID의 기대 동작이 테스트와 문서에 일치
+  - 현재 두 API의 null external ID 적재 0건과 확인 가능한 거부 사유
   - 동시 또는 반복 실행 경계가 명시됨
 
 ### B4 - 검증 우선 Seed importer
@@ -174,13 +187,16 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - `GET /api/v1/policies`
   - `GET /api/v1/policies/{policy_id}`
   - pagination과 기본 category·region·status 필터
+  - PostgreSQL JSONB 배열 연산과 합의된 기본 인덱스 사용
   - valid 기본 노출과 partial opt-in 정책
+  - 상세 API에서 partial을 조회할 수 있는지 명시적으로 결정
   - provenance 일반 사용자 API 비노출
   - 404와 query 오류 응답
 - 산출물:
   - Policy Repository, Service와 API 계약
 - 완료 기준:
   - 목록·상세·pagination·필터·404 테스트 통과
+  - category·region 배열 검색의 부분 문자열 오탐 0건
   - partial 노출 규칙이 목록과 상세에서 일관됨
   - provenance 사용자 응답 노출 0건
 
@@ -211,6 +227,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 - PostgreSQL 연결 성공·실패
 - Seed 정상·재실행·Schema 위반·rollback
 - null·빈 배열·날짜·provenance 보존
+- JSONB 배열 필터, timezone과 DB constraint
 - `uv run python -B scripts/validate_docs.py`
 - `git diff --check`
 
@@ -233,7 +250,9 @@ Backend 의존성이 현재 환경에 없으면 새 패키지를 임의로 설�
 - Backend 의존성과 PostgreSQL 테스트 환경의 재현 방법이 확정돼야 한다.
 - 배열과 provenance의 물리적 저장 방식은 검색 요구와 SQLite 단위 테스트
   필요성을 함께 검토해야 한다.
-- nullable external ID와 DB uniqueness의 최종 규칙은 Data와 공동 결정한다.
+- 현재 두 API의 external ID admission은 이 Forest에서 확정하되,
+  Normalized Schema의 nullable 계약과 향후 HTML Source의 대체 ID까지
+  일반화하지 않는다.
 - 자유 키워드 검색과 인덱스 최적화는 이 Forest 범위가 아니다.
 
 ## 관련 문서
