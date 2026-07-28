@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-baseline-v2`
 - 관련 계획:
   [`02_policy_persistence_hardening.md`](../../develop_plan/backend/02_policy_persistence_hardening.md)
-- 현재 Slice: B4 완료, B5 대기
+- 현재 Slice: B5 완료, B6 대기
 
 ## 목적
 
@@ -35,7 +35,7 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 | B2 | completed | ORM·초기 revision·PostgreSQL 17.10 실제 Migration 검증 |
 | B3 | completed | source-scoped 식별자 admission·원자적 upsert·동시성 검증 |
 | B4 | completed | Validator 선검증·전체 transaction·dry-run·rollback |
-| B5 | pending | Repository와 Policy API |
+| B5 | completed | 계층 분리·정확한 JSONB 필터·품질 일관성·API 계약 |
 | B6 | pending | Backend PostgreSQL 검증 |
 
 ## 구현 내용
@@ -157,6 +157,33 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - CLI와 issue 출력은 payload, Validator 메시지와 DB 원문 예외를 포함하지
   않고 index·source ID·external ID·path·code·예외 종류로 제한한다.
 
+### B5 - Repository와 Policy API 기준선
+
+- 기존 endpoint의 SQLAlchemy query 조립을 `PolicyRepository`로 옮기고,
+  valid·partial 공개 정책은 `PolicyService`, query·HTTP 응답은 Route가
+  담당하도록 분리했다.
+- 목록은 필터 후 total, `id` 오름차순, page·limit offset pagination을
+  제공한다. 범위를 벗어난 page는 total을 유지하고 빈 items를 반환한다.
+- category는 Normalized category enum query로 제한하고 category·region은
+  각각 `categories`·`regions` 배열의 정확한 원소만 찾는다. 원문 text의
+  부분 검색은 자유 검색 범위이므로 제외했다.
+- PostgreSQL은 GIN index가 지원하는 JSONB `@>`를 사용하고 SQLite 단위
+  테스트는 `json_each` correlated EXISTS로 동일한 exact membership 의미를
+  구현했다.
+- 최초 구현에서 `JSON().with_variant(JSONB())` 컬럼의 `.contains()`가 기반
+  JSON comparator를 선택해 PostgreSQL `LIKE`로 컴파일되는 오류를 실제 DB에서
+  확인했다. 명시적 `column @> CAST(value AS JSONB)`로 수정하고 컴파일 회귀
+  테스트를 추가했다.
+- 목록과 상세 모두 기본 valid만 허용하고 `include_partial=true`일 때
+  valid·partial을 허용한다. invalid는 항상 숨기며, 숨겨진 상세와 없는 ID는
+  모두 `{"detail":"Policy not found"}` 404로 응답한다.
+- category·status enum과 page·limit·region query 경계를 FastAPI validation에
+  반영했다. 잘못된 query는 422다.
+- 공개 Pydantic DTO의 category·일정·상태·품질 enum과 required 배열을
+  Normalized 계약에 맞추고 provenance는 계속 제외했다.
+- 실제 계약을 `docs/api/policies.md`에 작성하고 API README와 문서 색인에
+  연결했다.
+
 ## 주요 변경 파일
 
 - `backend/app/models/policy.py`
@@ -170,6 +197,11 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - `backend/app/models/policy.py`
 - `backend/app/services/seed_importer.py`
 - `backend/app/cli/import_seed.py`
+- `backend/app/repositories/__init__.py`
+- `backend/app/repositories/policy.py`
+- `backend/app/services/policy.py`
+- `backend/app/api/v1/endpoints/policies.py`
+- `backend/app/schemas/policy.py`
 - `backend/tests/conftest.py`
 - `backend/tests/test_database.py`
 - `backend/tests/test_migrations.py`
@@ -179,6 +211,10 @@ transaction, Repository와 PostgreSQL 검증을 순서대로 완료한다.
 - `backend/tests/test_postgresql_migration.py`
 - `backend/tests/test_postgresql_upsert.py`
 - `backend/tests/test_postgresql_seed_import.py`
+- `backend/tests/test_policy_api.py`
+- `backend/tests/test_postgresql_policy_repository.py`
+- `docs/api/policies.md`
+- `docs/api/README.md`
 - `docs/data/data_schema.md`
 - `docs/data/fixture_seed_contract.md`
 - `docs/development/develop_plan/backend/01_policy_baseline.md`
@@ -268,6 +304,25 @@ dry-run도 실제 DB dialect의 upsert와 flush를 수행해야 constraint와
 inserted·updated·unchanged 예측이 실제 실행과 같아진다. 성공 직전에 내부
 rollback 신호를 사용해 transaction만 되돌리며 payload나 SQL을 출력하지
 않는다.
+
+### partial 공개 정책은 목록과 상세에서 같다
+
+기본 공개 범위는 valid이며 `include_partial=true`일 때만 partial을 추가한다.
+목록에서 opt-in으로 발견한 partial 상세도 명시적인 opt-in이 필요하다.
+invalid와 품질로 숨겨진 ID의 존재 여부는 공개하지 않는다.
+
+### 정규화 배열 필터와 원문 검색을 분리한다
+
+category·region 기본 필터는 정규화 배열의 정확한 원소 검색이다. 이를 원문
+text의 부분 문자열 검색과 합치면 `fin`/`finance` 같은 오탐과 소스별 원문
+편차가 생기므로 자유 검색 Forest 전까지 별도 범위로 둔다.
+
+### JSONB variant는 comparator까지 바꾸지 않는다
+
+`JSON().with_variant(JSONB())`는 PostgreSQL 저장 타입을 JSONB로 만들지만
+Python 측 comparator factory는 기반 JSON 동작을 유지할 수 있다. B5
+Repository는 dialect를 명시적으로 구분해 PostgreSQL에는 `@>`, SQLite에는
+`json_each`를 사용한다.
 
 ## 검증 결과
 
@@ -428,7 +483,42 @@ rollback 신호를 사용해 transaction만 되돌리며 payload나 SQL을 출�
   Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. B4 importer와
   무관해 수정하지 않았다.
 
+### B5 검증
+
+- Repository·Service·Route와 기존 Policy 회귀:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policy_api.py backend/tests/test_policies.py -q`
+  19건 통과
+- PostgreSQL 없이 Backend 전체 테스트:
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q`는 45건 통과,
+  명시적인 `TEST_DATABASE_URL`이 필요한 PostgreSQL 테스트 4건 skipped
+- 최초 PostgreSQL 실행:
+  Migration·B3 upsert·B4 transaction 3건은 통과했고 B5 Repository 1건은
+  JSONB 컬럼이 `LIKE`로 컴파일되어 실패했다. 실행하지 않은 성공으로
+  기록하지 않고 명시적 `@>` 수정 근거로 사용했다.
+- 수정 후 실제 PostgreSQL Repository:
+  로컬 PostgreSQL 18.4의 `127.0.0.1:5432`와
+  `cheongnyeon_alimi_test` DB에서
+  `backend/tests/test_postgresql_policy_repository.py` 1건 통과
+- 검증 경계:
+  canonical Seed 4건을 적재해 기본 valid 2건, finance exact match 2건,
+  `fin` 오탐 0건, 서울특별시 exact match 1건, `서울` 오탐 0건을 확인했다.
+  pagination total·페이지 분리와 partial 상세 default 비노출·opt-in 노출도
+  확인했다.
+- 공개 DTO:
+  목록·상세의 null·배열·enum 직렬화와 provenance 비노출, 없는 ID·숨겨진
+  partial/invalid의 404, 잘못된 query의 422를 SQLite API 테스트로 확인했다.
+- 인증정보:
+  PostgreSQL 비밀번호는 코드·URL·문서에 기록하지 않고 PowerShell 자격증명과
+  일시적 `PGPASSWORD`로만 전달한 뒤 제거했다.
+- Schema·Fixture·Seed 영향:
+  JSON Schema, Python Normalized 모델, Fixture와 Seed 값은 변경하지 않았다.
+  API OpenAPI의 enum·query·partial 규칙이 구체화됐으므로 Frontend는
+  `docs/api/policies.md`를 소비 계약으로 확인해야 한다.
+- 테스트 경고:
+  Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. B5 API 동작과
+  무관해 수정하지 않았다.
+
 ## 남은 작업
 
-- B5: Repository와 Policy API 기준선
 - B6: 실제 PostgreSQL 통합 검증

@@ -8,7 +8,7 @@
 - 선행 Forest:
   [Backend Policy Baseline](01_policy_baseline.md)
 - 관련 브랜치: `feature/backend/policy-baseline-v2`
-- 현재 Slice: B4 완료, B5 대기
+- 현재 Slice: B5 완료, B6 대기
 - 후속 Forest:
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 
@@ -266,7 +266,7 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
 
 ### B5 - Repository와 Policy API 기준선
 
-- 상태: pending
+- 상태: completed
 - 목적: HTTP, 비즈니스 흐름과 DB 조회 책임을 분리한다.
 - 선행 조건:
   - B4 완료
@@ -287,6 +287,26 @@ Data Pipeline과 DB의 종단 간 연결은 후속 Integration 02에서 수행�
   - category·region 배열 검색의 부분 문자열 오탐 0건
   - partial 노출 규칙이 목록과 상세에서 일관됨
   - provenance 사용자 응답 노출 0건
+- 구현 결과:
+  - Route → `PolicyService` → `PolicyRepository`로 HTTP, 품질 정책과 DB
+    조회 책임을 분리함
+  - 목록은 `id` 오름차순 pagination과 category·region·status 필터를
+    제공하고 total은 pagination 전 필터 건수로 계산함
+  - PostgreSQL은 JSONB `@>`, SQLite 단위 테스트는 `json_each`로
+    category·region 배열의 정확한 원소만 검색함
+  - category와 status query는 enum, page·limit·region은 범위 검증을
+    적용해 잘못된 query를 422로 반환함
+  - 목록과 상세 모두 기본 valid만 노출하고 `include_partial=true`일 때
+    valid·partial을 허용하며 invalid는 항상 숨김
+  - 품질 범위에서 숨겨진 상세와 존재하지 않는 ID를 같은 404 응답으로 처리함
+  - 공개 DTO의 배열·null·enum 경계를 명시하고 provenance를 제외함
+  - `docs/api/policies.md`에 요청·응답·오류 계약을 기록함
+- 실행 검증:
+  - SQLite Repository·Service·API와 기존 Policy 회귀 테스트 19건 통과
+  - PostgreSQL 18.4에서 JSONB exact membership, pagination과 partial 상세
+    정책 테스트 1건 통과
+  - 초기 `.contains()`가 JSON 기반 `LIKE`로 컴파일되는 실제 오류를 확인하고
+    명시적 JSONB `@>` 연산자로 수정함
 
 ### B6 - Backend PostgreSQL 검증
 

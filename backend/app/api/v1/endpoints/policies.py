@@ -1,64 +1,95 @@
-from typing import Optional, List
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from typing import Annotated, Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from sqlalchemy import String
 
 from app.core.database import get_db
-from app.models.policy import Policy
-from app.schemas.policy import PolicyRead, PolicyListResponse
+from app.repositories.policy import PolicyRepository
+from app.schemas.policy import PolicyListResponse, PolicyRead
+from app.services.policy import PolicyListRequest, PolicyService
 
 router = APIRouter()
+
+
+CategoryQuery = Literal[
+    "housing",
+    "finance",
+    "welfare",
+    "employment",
+    "startup",
+    "education",
+    "other",
+]
+ApplicationStatusQuery = Literal["open", "closed", "scheduled"]
+
+
+def get_policy_service(
+    db: Session = Depends(get_db),
+) -> PolicyService:
+    return PolicyService(PolicyRepository(db))
+
 
 @router.get("", response_model=PolicyListResponse, summary="정책 목록 조회")
 def get_policies(
     page: int = Query(1, ge=1, description="페이지 번호"),
     limit: int = Query(10, ge=1, le=100, description="페이지 당 항목 수"),
-    category: Optional[str] = Query(None, description="카테고리 (e.g. housing, employment)"),
-    region: Optional[str] = Query(None, description="지역 (e.g. 서울, 전국)"),
-    status: Optional[str] = Query(None, description="신청 상태 (e.g. open, closed)"),
-    include_partial: bool = Query(False, description="품질 partial 데이터 포함 여부 (기본값: False, valid만)"),
-    db: Session = Depends(get_db)
-):
-    query = db.query(Policy)
-
-    # 3-A: 품질 필터링 (기본적으로 valid 데이터만 노출)
-    if not include_partial:
-        query = query.filter(Policy.data_quality_status == "valid")
-    else:
-        query = query.filter(Policy.data_quality_status.in_(["valid", "partial"]))
-
-    # 카테고리 필터
-    if category:
-        query = query.filter(Policy.categories.cast(String).like(f"%{category}%"))
-
-    # 지역 필터
-    if region:
-        query = query.filter(Policy.region_text.like(f"%{region}%") | Policy.regions.cast(String).like(f"%{region}%"))
-
-    # 신청 상태 필터
-    if status:
-        query = query.filter(Policy.application_status == status)
-
-    total = query.count()
-    offset = (page - 1) * limit
-    items = query.order_by(Policy.id.asc()).offset(offset).limit(limit).all()
+    category: Annotated[
+        CategoryQuery | None,
+        Query(description="정규화 카테고리의 정확한 배열 원소"),
+    ] = None,
+    region: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=100,
+            description="정규화 지역의 정확한 배열 원소",
+        ),
+    ] = None,
+    application_status: Annotated[
+        ApplicationStatusQuery | None,
+        Query(alias="status", description="신청 상태"),
+    ] = None,
+    include_partial: bool = Query(
+        False,
+        description="partial 정책 포함 여부; 기본값은 valid만",
+    ),
+    service: PolicyService = Depends(get_policy_service),
+) -> PolicyListResponse:
+    selected = service.list(
+        PolicyListRequest(
+            page=page,
+            limit=limit,
+            category=category,
+            region=region,
+            application_status=application_status,
+            include_partial=include_partial,
+        )
+    )
 
     return PolicyListResponse(
-        total=total,
+        total=selected.total,
         page=page,
         limit=limit,
-        items=items
+        items=list(selected.items),
     )
+
 
 @router.get("/{policy_id}", response_model=PolicyRead, summary="정책 상세 조회")
 def get_policy_detail(
     policy_id: int,
-    db: Session = Depends(get_db)
-):
-    policy = db.query(Policy).filter(Policy.id == policy_id).first()
-    if not policy:
+    include_partial: bool = Query(
+        False,
+        description="partial 정책 상세 조회 허용 여부; 기본값은 valid만",
+    ),
+    service: PolicyService = Depends(get_policy_service),
+) -> PolicyRead:
+    policy = service.get(
+        policy_id,
+        include_partial=include_partial,
+    )
+    if policy is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Policy with id {policy_id} not found."
+            detail="Policy not found",
         )
     return policy

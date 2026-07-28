@@ -52,6 +52,8 @@
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
+- [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
+  category·region·status 필터와 partial 노출 규칙
 
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준

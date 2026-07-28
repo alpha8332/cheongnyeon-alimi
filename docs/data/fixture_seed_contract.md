@@ -109,6 +109,9 @@ Backend 02 B4에서는 기존 `NormalizedProgramValidator`로 전체 입력을 �
 거부·DB write 실패가 하나라도 있으면 canonical batch의 DB 변경은 0건이다.
 `--dry-run`도 실제 upsert 경로를 실행한 뒤 rollback하며 결과는
 validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한다.
+Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소로 검색하고
+목록·상세 모두 기본 valid, `include_partial=true`일 때 valid·partial을
+노출한다. provenance는 DB에 보존하되 공개 Policy DTO에는 포함하지 않는다.
 Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
 대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
 
