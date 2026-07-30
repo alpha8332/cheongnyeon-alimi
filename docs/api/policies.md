@@ -118,6 +118,9 @@ GET /api/v1/policies/{policy_id}
 
 ## 저장·검색 경계
 
+- Normalized 31개 필드의 DB 저장과 공개 DTO 노출 관계는
+  [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
+  따른다.
 - PostgreSQL category·region 필터는 JSONB `@>` 연산자를 사용해 배열 원소를
   정확히 검색하고 기존 GIN index와 호환된다.
 - SQLite는 운영 대체 DB가 아니라 단위 테스트 경계이며 `json_each`로 같은

@@ -8,13 +8,14 @@
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D0 review-pending (기술 검토 완료, Frontend 승인 대기)
+- 현재 Slice: D1 completed (D0 Frontend review-pending)
 
 ## 목적
 
 Data 파이프라인의 `NormalizedProgram` 1.0.0과 canonical Seed를 Backend
 PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한다. D0에서는
-기존 Backend 검증 증거를 확인하고 Frontend 타입·Mock 인계 경계를 명시한다.
+기존 Backend 검증 증거를 확인하고 Frontend 타입·Mock 인계 경계를 명시하며,
+D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 확정한다.
 
 ## Forest 범위
 
@@ -29,7 +30,7 @@ PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한�
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | D0 | review-pending | Backend 소비 승인·Frontend 타입·Mock 인계 완료, Frontend 승인 대기 |
-| D1 | pending | D0 Backend 검토를 바탕으로 DB 매핑 검증 예정 |
+| D1 | completed | 31필드 JSON·Importer·ORM·PostgreSQL·API 매핑과 비교 기준 확정 |
 | D2 | pending | canonical Seed → PostgreSQL 통합 검증 예정 |
 | D3 | pending | Policy API 첫 통합 예정 |
 | D4 | pending | Runtime Raw 재처리와 DB 적재 예정 |
@@ -61,6 +62,29 @@ PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한�
   Schema JSON을 `text eol=lf`로 고정하고 공식 재생성 스크립트로 기존 산출물을
   LF byte로 정규화했다.
 
+### D1 - NormalizedProgram → DB 매핑 검증
+
+- Normalized 31개 필드의 JSON 타입, PostgreSQL 컬럼 타입, nullability,
+  importer 변환과 공개 API 노출 여부를
+  `docs/architecture/policy_database_mapping.md`에 확정했다.
+- Schema properties·required, `NormalizedProgram.FIELD_NAMES`, importer write
+  key와 ORM의 system field 제외 컬럼이 모두 같은 31개 집합임을 자동
+  검증한다.
+- 공개 `PolicyRead`는 Normalized 31개 중 `provenance`만 제외하고 DB 생성
+  필드 `id`·`created_at`·`updated_at`을 추가하는 집합임을 자동 검증한다.
+- nullable 단일 값 16개와 non-null JSONB 배열 8개를 명시하고 ORM
+  nullability·PostgreSQL dialect type과 대조했다.
+- canonical Seed 4건의 importer 변환에서 string·integer·enum·null·배열과
+  provenance는 exact equality, 날짜는 ISO date, 수집 시각은 UTC absolute
+  instant로 비교했다.
+- `category_text`·`categories`, `region_text`·`regions`, 원문 기간 text·날짜,
+  일정·상태를 각각 동시에 보존하는 매핑을 확인했다.
+- `(source_id, external_id)` unique constraint와 현재 두 Source의 비어 있지
+  않은 external ID admission을 고정했다. 다른 Source의 null ID는
+  `unsupported_null_external_id`로 유지하고 대체 ID를 일반화하지 않았다.
+- Schema, Fixture, Seed, ORM, Migration과 API 응답 계약의 변경이 필요한
+  충돌은 발견하지 않았다. 외부 API와 인증키는 사용하지 않았다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/02_policy_data_database_integration.md`
@@ -76,6 +100,11 @@ PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한�
 - `backend/.env.example`
 - `README.md`
 - `.gitattributes`
+- `backend/tests/test_policy_mapping_contract.py`
+- `docs/architecture/policy_database_mapping.md`
+- `docs/architecture/README.md`
+- `docs/data/data_schema.md`
+- `docs/api/policies.md`
 
 ## 설계 결정
 
@@ -97,6 +126,26 @@ Frontend Mock은 Seed 사례를 재사용할 수 있지만 이 노출 경계를 
 Schema, Fixture, Seed, Backend importer·ORM과 API 사이에서 D0가 해결해야 할
 필드 충돌을 발견하지 않았다. 따라서 소비 코드 부재만을 이유로 계약 버전을
 변경하지 않는다.
+
+### 물리 매핑표는 공통 Architecture 문서에 둔다
+
+`docs/data/`는 논리 Schema의 권위를 가지며 PostgreSQL Migration 상세를
+포함하지 않는다. 31개 필드 매핑은 Data·Backend·API가 함께 참조하므로
+`docs/architecture/policy_database_mapping.md`에 두고 Data와 API 기준
+문서에서 연결한다.
+
+### DB nullable과 importer admission을 같은 의미로 취급하지 않는다
+
+`external_id`는 Normalized Schema와 DB에서 nullable이지만 현재 importer는
+null identity를 적재하지 않는다. 현재 두 Source는 `missing_external_id`,
+아직 합의되지 않은 Source는 `unsupported_null_external_id`로 분리한다.
+향후 대체 ID 결정 없이 DB nullable을 제거하거나 임의 ID를 생성하지 않는다.
+
+### 무손실 비교는 타입별로 명시한다
+
+JSONB와 scalar는 exact equality, 날짜는 ISO date, timezone 시각은 UTC
+absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
+문자열로 반환하는 것을 손실이나 변경으로 오판하지 않는다.
 
 ## 검증 결과
 
@@ -144,6 +193,34 @@ Schema, Fixture, Seed, Backend importer·ORM과 API 사이에서 D0가 해결해
 - Backend 경고:
   Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. D0 계약과
   무관해 수정하지 않았다.
+- 최초 D1 구조 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policy_mapping_contract.py
+  backend/tests/test_policy_model.py backend/tests/test_migrations.py -q`에서
+  16건 통과, 1건 실패. SQLAlchemy `ColumnCollection`의 이름이 아니라
+  `Column` 객체를 비교한 새 테스트 오류였으며 생산 코드·계약 문제는 아니었다.
+- 수정 후 D1 구조·ORM·Migration 테스트:
+  같은 명령으로 17건 통과
+- D1 PostgreSQL 미설정 Backend 전체 회귀:
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q` 50건 통과,
+  PostgreSQL 5건 skipped
+- D1 실제 PostgreSQL Backend 전체 회귀:
+  로컬 PostgreSQL 18, `cheongnyeon_alimi_test`에서 비밀번호 없는
+  `TEST_DATABASE_URL`과 임시 `PGPASSFILE`을 사용해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests -q` 55건 통과
+- D1 PostgreSQL 결과:
+  Migration, canonical Seed 4건의 31필드 DB 왕복, JSONB 다중 category·빈
+  배열·provenance, null·enum·날짜·timezone instant, source-scoped upsert와
+  공개 API provenance 비노출을 확인했다.
+- D1 자격증명 정리:
+  PostgreSQL 검증 후 session 환경변수를 제거하고 임시 `pgpass` 파일이 삭제된
+  것을 확인했다.
+- D1 Data 회귀:
+  `.venv\Scripts\python.exe -B -m unittest
+  tests.test_normalization tests.test_data_fixtures -v` 23건 통과
+- D1 결정적 Fixture 검사:
+  `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
+  12개 파일 통과
 - Frontend:
   Node와 npm이 없어 빌드·타입 검사를 실행하지 못했다. Policy DTO 타입과 Mock
   소비 코드도 현재 저장소에 없다.
@@ -161,5 +238,5 @@ Schema, Fixture, Seed, Backend importer·ORM과 API 사이에서 D0가 해결해
 - Frontend `src/routes/index.tsx`는 현재 존재하지 않는
   `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
   수정하지 않았다.
-- D1에서 31개 필드의 JSON·DB·API 매핑표와 source-scoped identity를
-  구체적으로 검증한다.
+- D2에서 canonical Seed의 validation·거부·재실행·rollback과 DB 조회 비교를
+  Integration 전용 테스트 흐름으로 확정한다.

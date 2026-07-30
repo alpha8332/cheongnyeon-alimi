@@ -9,7 +9,7 @@
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D0 review-pending (기술 검토 완료, Frontend 승인 대기)
+- 현재 Slice: D1 completed (D0 Frontend review-pending)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -113,7 +113,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D1 - NormalizedProgram → DB 매핑 검증
 
-- 상태: pending
+- 상태: completed
 - 목적: JSON 계약과 관계형 DB 구조 사이의 손실 없는 매핑을 확정한다.
 - 선행 조건:
   - D0의 Backend 검토 완료

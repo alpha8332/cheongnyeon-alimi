@@ -18,6 +18,8 @@
   데이터 흐름
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
+- [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
+  NormalizedProgram 31개 필드의 PostgreSQL·Importer·공개 API 매핑
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
