@@ -28,7 +28,7 @@ F0에서는 공식 advisory와 package metadata, 현재 설치 트리와 Fronten
 | F0 | completed | high 2건 재현, package 경로와 현재 앱의 RSC 도달 불가 확인 |
 | F1 | completed | `react-router@8.3.0` package 교체와 공식 import migration 결정 |
 | F2 | completed | v8 의존성·imports·Node.js 실행 계약 반영, audit 0건 |
-| F3 | draft | 자동·브라우저 회귀와 최종 문서 동기화 예정 |
+| F3 | in-progress | clean install·자동 검증 통과, 데스크톱 Browser 회귀 대기 |
 
 ## 구현 내용
 
@@ -110,6 +110,18 @@ F1 결정은 `react-router@8.3.0`으로 upgrade하는 것이다. F2에서
 - Router 구성, route path, Policy API·DTO·Mock 계약과 화면 로직은 변경하지
   않았다.
 
+### F3 - VS Code 자동 회귀
+
+- `npm ci --ignore-scripts`로 lockfile 기반 clean install을 재현했다.
+- clean install 직후 설치 트리와 audit를 확인하고 test·lint·production
+  build를 다시 실행했다.
+- Vite Mock mode 개발 서버를 `http://localhost:3000`에 기동했다.
+- 홈, 정책 목록, 숫자 ID 상세와 partial opt-in 상세 route가 모두 HTTP
+  200으로 SPA entry를 반환하는 것을 확인했다.
+- VS Code Codex에서는 Browser를 사용할 수 없어 렌더링, 클릭과 browser
+  console 검증은 실행하지 않았다. ChatGPT 데스크톱 앱 Browser 검증을
+  성공으로 기록하기 전까지 F3는 `in-progress`다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/frontend/02_react_router_advisory.md`
@@ -170,6 +182,15 @@ F0~F1은 조사·결정만 기록했고 F2에서 위 Frontend 의존성·imports
 - F2 `npm test`: 소비 계약 테스트 7건 통과
 - F2 `npm run lint`: 오류·경고 없이 통과
 - F2 `npm run build`: TypeScript와 Vite production build 통과
+- F3 `npm ci --ignore-scripts`: 198 packages 설치, audit 0건
+- F3 `npm ls react-router react-router-dom --all`: 직접
+  `react-router@8.3.0`만 설치된 clean tree 확인
+- F3 `npm audit --json`: 취약점 0건
+- F3 `npm test`: 소비 계약 테스트 7건 통과
+- F3 `npm run lint`: 오류·경고 없이 통과
+- F3 `npm run build`: TypeScript와 Vite production build 통과
+- F3 HTTP route: `/`, `/programs`, `/programs/1`,
+  `/programs/3?include_partial=true` 모두 200
 - `npm test`: 소비 계약 테스트 7건 통과
 - `npm run lint`: 오류·경고 없이 통과
 - `npm run build`: TypeScript와 Vite production build 통과
@@ -182,13 +203,15 @@ F0~F1은 조사·결정만 기록했고 F2에서 위 Frontend 의존성·imports
 - `python scripts/validate_docs.py`: 통과
 - `git diff --check`: 통과
 
-F2 적용 상태에서 test·lint·build는 통과했다. F3에서는 clean install
-재현을 위해 `npm ci`부터 전체 검증을 다시 실행한 뒤 ChatGPT 데스크톱 앱의
-Browser에서 직접 회귀를 수행하고, 그 결과까지 기록한다.
+F3 clean install과 자동·HTTP 검증은 통과했다. ChatGPT 데스크톱 앱의
+Browser에서 직접 회귀를 수행하고 그 결과를 기록하는 단계만 남았다.
 
 ## 남은 작업
 
-- F3에서 `npm ci`, test, lint와 build를 먼저 수행한 뒤 ChatGPT 데스크톱
-  앱의 Browser에서 `http://localhost:3000` 주요 route 회귀를 수행한다.
+- ChatGPT 데스크톱 앱의 Browser에서 `http://localhost:3000`을 열고 홈,
+  정책 목록, `/programs/1`, `/programs/3?include_partial=true`의 렌더링과
+  탐색, browser console 오류 유무를 확인한다.
+- Browser 결과와 최종 문서 검증을 기록한 뒤 F3·Forest 상태와 인계 보드를
+  완료로 갱신한다.
 - RSC mode, RSC server entry 또는 server action 도입 시 현재 도달 불가
   판정을 즉시 재검토한다.

@@ -122,7 +122,7 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
 
 ### F3 - Frontend 회귀와 문서 동기화
 
-- 상태: draft
+- 상태: in-progress
 - 목적:
   의존성 결정이 기존 Policy Discovery 동작을 깨뜨리지 않았음을 확인한다.
 - 산출물:
@@ -137,6 +137,12 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
   - `npm ci`, `npm test`, `npm run lint`, `npm run build` 통과
   - ChatGPT 데스크톱 앱의 Browser에서 주요 라우팅 기본 회귀 확인
   - `python scripts/validate_docs.py` 통과
+
+2026-07-30 VS Code 단계에서 clean install, audit, test·lint·build와 주요
+route의 HTTP 200 진입을 확인했다. Vite Mock mode 개발 서버는
+`http://localhost:3000`에서 실행 중이다. ChatGPT 데스크톱 앱의 Browser로
+렌더링·탐색·console 상태를 직접 확인하고 결과를 기록하기 전까지 F3와
+Forest는 완료 처리하지 않는다.
 
 ## 검증 계획
 
