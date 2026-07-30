@@ -79,7 +79,7 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
 
 ### F1 - 호환 버전 결정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   기능 회귀 없이 적용 가능한 dependency 대응 방법을 결정한다.
 - 산출물:
@@ -89,6 +89,15 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
 - 완료 기준:
   - 강제 변경 여부와 Router API 호환성 검토 완료
 
+2026-07-30 공식 v8 migration guide와 npm metadata를 대조해
+`react-router@8.3.0` upgrade를 선택했다. v8에는
+`react-router-dom` package가 없으므로 F2에서 직접 의존성을
+`react-router`로 교체하고, 일반 API import는 `react-router`,
+`RouterProvider`는 `react-router/dom`으로 변경한다. 현재 Node.js
+24.18.0, React·React DOM 19.2.7과 Vite 8.x는 v8 최소 요건을 충족하며,
+앱이 사용하는 Router API는 v8에 유지된다. 7.11.0 downgrade와 현재
+구성의 한시적 위험 수용은 선택하지 않는다.
+
 ### F2 - 의존성 또는 보호 조치 반영
 
 - 상태: draft
@@ -96,11 +105,13 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
   F1 결정에 따라 manifest·lockfile 또는 위험 수용 기록을 반영한다.
 - 산출물:
   - 필요 시 갱신된 `package.json`과 lockfile
+  - v8 공식 package 경계에 맞춘 Router import와 Node.js 최소 버전 문서
   - 수정하지 않을 경우 적용 범위와 재검토 trigger
 - 선행 조건:
   - F1 완료
 - 완료 기준:
   - 설치 의존성과 결정 문서가 일치
+  - `react-router-dom` 의존성과 source import가 남아 있지 않음
   - 임의의 `--force` 변경 없음
 
 ### F3 - Frontend 회귀와 문서 동기화
