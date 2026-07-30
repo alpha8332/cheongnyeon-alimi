@@ -8,14 +8,16 @@
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D1 completed (D0 Frontend review-pending)
+- 현재 Slice: D2 completed (D0 Frontend review-pending)
 
 ## 목적
 
 Data 파이프라인의 `NormalizedProgram` 1.0.0과 canonical Seed를 Backend
 PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한다. D0에서는
 기존 Backend 검증 증거를 확인하고 Frontend 타입·Mock 인계 경계를 명시하며,
-D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 확정한다.
+D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 확정했다.
+D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조회까지
+통과하는 전용 통합 테스트 경계를 확정한다.
 
 ## Forest 범위
 
@@ -31,7 +33,7 @@ D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 �
 | --- | --- | --- |
 | D0 | review-pending | Backend 소비 승인·Frontend 타입·Mock 인계 완료, Frontend 승인 대기 |
 | D1 | completed | 31필드 JSON·Importer·ORM·PostgreSQL·API 매핑과 비교 기준 확정 |
-| D2 | pending | canonical Seed → PostgreSQL 통합 검증 예정 |
+| D2 | completed | canonical Seed 4건의 Schema → Importer → PostgreSQL → Repository 통합 검증 |
 | D3 | pending | Policy API 첫 통합 예정 |
 | D4 | pending | Runtime Raw 재처리와 DB 적재 예정 |
 | D5 | optional | 최소 실행 이력 구현 여부 협의 예정 |
@@ -85,6 +87,27 @@ D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 �
 - Schema, Fixture, Seed, ORM, Migration과 API 응답 계약의 변경이 필요한
   충돌은 발견하지 않았다. 외부 API와 인증키는 사용하지 않았다.
 
+### D2 - Seed → PostgreSQL 통합 테스트
+
+- Integration 소유 경계인
+  `tests/integration/test_seed_to_database.py`에 canonical Seed → Schema
+  Validator → Backend Import Service → PostgreSQL → Policy Repository 흐름을
+  한 테스트로 고정했다.
+- canonical Seed 4건이 `valid` 2건·`partial` 2건으로 검증되고 최초 적재,
+  DB 직접 조회와 Repository 조회에서 모두 4건인지 확인한다.
+- system field를 제외한 DB 31개 필드를 Seed 원본과 비교한다. scalar·null·
+  JSONB 배열·provenance는 exact equality, 날짜는 ISO date, `collected_at`은
+  UTC absolute instant 기준을 사용한다.
+- 같은 Seed 재실행은 4건 모두 `unchanged`이고 insert·update 및
+  `updated_at` 변경이 없음을 확인한다.
+- Schema required 필드가 없는 batch와 명시적인 `invalid` 품질 후보는
+  적재하지 않으며, batch 안의 정상 후보도 함께 쓰이지 않는 preflight
+  원자성을 확인한다.
+- PostgreSQL trigger로 두 번째 write를 강제 실패시켜 첫 번째 write까지
+  rollback되고 기존 canonical 4건만 남는지 확인한다.
+- 테스트 입력은 저장소의 합성 Seed만 사용하고 외부 API·인증키·네트워크를
+  사용하지 않는다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/02_policy_data_database_integration.md`
@@ -101,6 +124,7 @@ D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 �
 - `README.md`
 - `.gitattributes`
 - `backend/tests/test_policy_mapping_contract.py`
+- `tests/integration/test_seed_to_database.py`
 - `docs/architecture/policy_database_mapping.md`
 - `docs/architecture/README.md`
 - `docs/data/data_schema.md`
@@ -221,6 +245,39 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
 - D1 결정적 Fixture 검사:
   `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
   12개 파일 통과
+- D2 PostgreSQL 전용 통합 테스트:
+  로컬 PostgreSQL 18의 `cheongnyeon_alimi_test`에서
+  `.venv\Scripts\python.exe -B -m pytest
+  tests/integration/test_seed_to_database.py -q` 1건 통과
+- D2 실제 PostgreSQL 전체 회귀:
+  비밀번호 없는 `TEST_DATABASE_URL`과 임시 `PGPASSFILE`을 사용해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests tests/integration -q`
+  56건 통과, Starlette TestClient deprecation 경고 1건
+- D2 PostgreSQL 결과:
+  canonical Seed 4건의 valid·partial Schema 분기, 31필드 무손실 DB 왕복,
+  Repository 4건 조회, 같은 Seed 4건 unchanged, Schema·invalid 거부와
+  PostgreSQL write 실패 시 batch rollback을 확인했다.
+- D2 최초 실행 오류:
+  설치되지 않은 `psycopg` 드라이버명을 URL에 지정해 DB 접속 전에
+  `ModuleNotFoundError`가 발생했다. manifest의 `psycopg2-binary`와 기존
+  환경 문서에 맞게 `postgresql+psycopg2://`를 사용해 해결했으며 패키지는
+  추가·변경하지 않았다.
+- D2 자격증명 정리:
+  PostgreSQL 검증 후 임시 credential·`pgpass` 파일의 `Test-Path`가 모두
+  `False`임을 확인했다.
+- D2 Data 계약 회귀:
+  `.venv\Scripts\python.exe -B -m unittest
+  tests.test_normalization tests.test_data_fixtures -v` 23건 통과
+- D2 결정적 Fixture 검사:
+  `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
+  12개 파일 통과
+- D2 문서 검증기 단위 테스트:
+  `.venv\Scripts\python.exe -B -m unittest tests.test_validate_docs -v`
+  10건 통과
+- D2 문서 검증:
+  `.venv\Scripts\python.exe -B scripts/validate_docs.py` 통과
+- D2 공백 검사:
+  `git diff --check` 통과
 - Frontend:
   Node와 npm이 없어 빌드·타입 검사를 실행하지 못했다. Policy DTO 타입과 Mock
   소비 코드도 현재 저장소에 없다.
@@ -238,5 +295,4 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
 - Frontend `src/routes/index.tsx`는 현재 존재하지 않는
   `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
   수정하지 않았다.
-- D2에서 canonical Seed의 validation·거부·재실행·rollback과 DB 조회 비교를
-  Integration 전용 테스트 흐름으로 확정한다.
+- D3에서 D2의 PostgreSQL 상태를 공개 Policy 목록·상세 API 계약과 연결한다.

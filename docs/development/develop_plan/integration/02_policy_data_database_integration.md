@@ -9,7 +9,7 @@
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D1 completed (D0 Frontend review-pending)
+- 현재 Slice: D2 completed (D0 Frontend review-pending)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -135,7 +135,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D2 - Seed → PostgreSQL 통합 테스트
 
-- 상태: pending
+- 상태: completed
 - 목적: canonical Seed가 Schema 검증부터 DB 조회까지 통과하는지 확인한다.
 - 선행 조건:
   - D1 완료

@@ -141,4 +141,6 @@ canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 �
 
 구조적 집합과 변환은
 `backend/tests/test_policy_mapping_contract.py`, 실제 PostgreSQL 왕복은
-`backend/tests/test_postgresql_end_to_end.py`가 검증한다.
+`backend/tests/test_postgresql_end_to_end.py`가 검증한다. Integration 소유의
+canonical Seed 전체 흐름과 거부·재실행·rollback·Repository 조회는
+`tests/integration/test_seed_to_database.py`가 검증한다.
