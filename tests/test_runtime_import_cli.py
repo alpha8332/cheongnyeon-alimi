@@ -77,6 +77,10 @@ class RuntimeImportCliTests(unittest.TestCase):
                 "scripts.import_runtime_data.import_runtime_raw",
                 return_value=_result(),
             ),
+            patch(
+                "scripts.import_runtime_data.settings.SQL_ECHO",
+                False,
+            ),
         ):
             exit_code = main(
                 ["--source", "youthcenter-api"],
@@ -85,9 +89,8 @@ class RuntimeImportCliTests(unittest.TestCase):
 
         self.assertEqual(0, exit_code)
         create_engine.assert_called_once()
-        self.assertEqual(
-            "runtime-import",
-            create_engine.call_args.kwargs["environment"],
+        self.assertFalse(
+            create_engine.call_args.kwargs["sql_echo"],
         )
         db.close.assert_called_once_with()
         engine.dispose.assert_called_once_with()

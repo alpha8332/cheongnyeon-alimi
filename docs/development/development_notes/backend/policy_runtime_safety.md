@@ -8,7 +8,7 @@
 - 브랜치: `fix/backend/week2-hardening`
 - 관련 계획:
   [Backend Policy Runtime Safety Forest 개발 계획](../../develop_plan/backend/03_policy_runtime_safety.md)
-- 현재 Slice: R1 completed, R2 대기
+- 현재 Slice: R2 completed, R3 대기
 
 ## 목적
 
@@ -33,7 +33,7 @@ Schema·Fixture·Seed·공개 DTO와 Frontend 화면은 범위 밖이다.
 | --- | --- | --- |
 | R0 | completed | SQLite·PostgreSQL timestamp와 development logging 경계 확정 |
 | R1 | completed | timestamp 순서 구현과 SQLite·PostgreSQL 검증 완료 |
-| R2 | draft | SQL parameter logging 안전화 |
+| R2 | completed | SQL logging 안전화와 실제 PostgreSQL 검증 완료 |
 | R3 | draft | 통합 검증과 인계 종료 |
 
 ## 구현 내용
@@ -71,7 +71,7 @@ Schema·Fixture·Seed·공개 DTO와 Frontend 화면은 범위 밖이다.
   `created_at`으로 보정한다. downgrade는 constraint만 제거하며 이미 보정된
   과거 시각을 원래 역전 값으로 복구하지 않는다.
 
-### SQL logging 경계
+### R0 확인 당시 SQL logging 경계
 
 - non-SQLite engine은 `environment == "development"`이면 SQLAlchemy
   `echo=True`로 생성된다.
@@ -82,6 +82,22 @@ Schema·Fixture·Seed·공개 DTO와 Frontend 화면은 범위 밖이다.
 - SQLite engine은 environment와 무관하게 echo option을 전달하지 않는다.
 - `echo=True` 경계를 고정한 기존 단위 테스트는 있지만 parameter 비노출과
   Unicode logging stream 회귀 테스트는 없다.
+
+### R2 SQL logging 안전화
+
+- `ENVIRONMENT` 값과 SQL echo 활성화를 분리하고 명시적 boolean 설정
+  `SQL_ECHO`를 추가했다.
+- `SQL_ECHO` 기본값과 `.env.example` 예시는 `false`다.
+- Web·Seed 전역 engine과 Runtime importer 전용 engine이 모두 같은
+  `SQL_ECHO` 설정을 사용한다.
+- 모든 SQLAlchemy engine은 echo 활성화 여부와 무관하게
+  `hide_parameters=True`를 사용한다.
+- `SQL_ECHO=true`는 statement 진단만 허용하고 bound parameter 값은
+  노출하지 않는다.
+- FastAPI 미처리 예외 log는 예외 문자열과 traceback 대신 `error_type`만
+  기록해 DB URL·비밀번호가 포함된 예외 상세를 남기지 않는다.
+- 기존 `environment` 인자를 제거해 environment 이름으로 echo를 암묵적으로
+  활성화하거나 우회할 수 없게 했다.
 
 ## 검증 결과
 
@@ -140,6 +156,40 @@ Seed 통합 테스트 7건이 통과했다. 다음 경계를 실제 DB에서 확
 
 격리 DB는 테스트 후 삭제하고 존재하지 않음을 확인했다. Starlette
 TestClient deprecation 경고 1건은 기존 범위 밖 경고다.
+
+### R2 비-PostgreSQL 회귀
+
+합성 정책 본문·provenance·credential marker와 CP949에서 인코딩할 수 없는
+Unicode 문자를 SQLite parameter로 전달해 다음을 확인했다.
+
+- 기본 engine echo off
+- `SQL_ECHO=true`에서 statement log 생성
+- `hide_parameters=True` marker 출력
+- 합성 민감 marker 3종과 Unicode parameter 로그 노출 0건
+- CP949 strict stream `UnicodeEncodeError` 0건
+
+PostgreSQL URL을 설정하지 않은 전체 Backend·공통 테스트 154건과 subtest
+25건이 통과했다. PostgreSQL 전용 12건은
+skip됐다.
+
+PostgreSQL 18.4 격리 DB에서 `SQL_ECHO=true`와 CP949 strict stream을 사용해
+합성 Policy를 실제 insert했다.
+
+```text
+statement logging=true
+parameter hidden marker=true
+synthetic policy body 노출=false
+synthetic provenance marker 노출=false
+synthetic credential marker 노출=false
+Unicode parameter 노출=false
+stderr UnicodeEncodeError=false
+PostgreSQL insert=1
+```
+
+같은 격리 DB에서 PostgreSQL 전용 테스트를 포함한 Backend·공통 전체 회귀
+166건과 subtest 25건이 통과했다. 테스트 DB는 삭제 후 존재하지 않음을
+확인했으며 임시 pgpass도 제거했다. Starlette TestClient deprecation 경고
+1건은 기존 범위 밖 경고다.
 
 ### PostgreSQL 관련 통합 테스트
 
@@ -217,8 +267,8 @@ update의 시각 반환·precision 계약이 달라지고, 현재 Importer가 �
 
 ### SQL logging
 
-R2는 `ENVIRONMENT=development`가 SQL echo를 자동 활성화하지 않게 하고,
-별도의 명시적인 boolean 설정만 상세 SQL logging을 켜도록 하는 방식이다.
+`ENVIRONMENT=development`는 SQL echo를 자동 활성화하지 않으며, 별도의
+명시적인 boolean 설정만 상세 SQL logging을 켠다.
 상세 logging을 허용해도 engine에는 parameter를 숨기는 설정을 항상 적용한다.
 
 - 기본값: SQL echo off
@@ -236,6 +286,8 @@ R2는 `ENVIRONMENT=development`가 SQL echo를 자동 활성화하지 않게 하
 - Migration은 기존 역전 행의 `updated_at`을 `created_at`으로 보정하므로
   해당 행의 공개 `updated_at` 값은 한 번 변경될 수 있다.
 - R2 logging 변경은 API 응답과 Frontend 소비 계약에 영향이 없다.
+- R2는 `SQL_ECHO` 환경변수를 추가하지만 DB·Schema·Fixture·Seed와 공개
+  API 계약을 변경하지 않는다.
 
 ## 주요 변경 파일
 
@@ -249,9 +301,15 @@ R2는 `ENVIRONMENT=development`가 SQL echo를 자동 활성화하지 않게 하
 - `backend/app/models/policy.py`
 - `backend/app/services/seed_importer.py`
 - `backend/alembic/versions/20260730_0003_enforce_policy_timestamp_order.py`
+- `backend/app/core/config.py`
+- `backend/app/core/database.py`
+- `backend/app/main.py`
+- `backend/.env.example`
+- `scripts/import_runtime_data.py`
+- `docs/development/backend_local_setup.md`
+- `backend/tests/test_postgresql_logging.py`
 - 관련 Backend 단위·PostgreSQL 테스트
 
 ## 남은 작업
 
-- R2에서 명시적인 SQL echo 설정과 parameter 비노출 구현
 - R3에서 전체 Backend·PostgreSQL 회귀와 두 인계사항 종료

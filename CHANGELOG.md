@@ -14,6 +14,10 @@
   UTC write instant와 DB constraint로 바로잡고, 기존 역전 행 보정 및
   update 시각 비감소를 보장
   ([개발 기록](docs/development/development_notes/backend/policy_runtime_safety.md))
+- Backend SQL logging을 명시적 opt-in·parameter 비노출 방식으로 안전화하고
+  미처리 예외의 DB URL·비밀번호 상세 노출 가능성과 Unicode logging 오류를
+  제거
+  ([개발 기록](docs/development/development_notes/backend/policy_runtime_safety.md))
 
 ### Added
 

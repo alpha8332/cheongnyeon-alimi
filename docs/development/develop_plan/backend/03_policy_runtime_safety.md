@@ -5,7 +5,7 @@
 - 번호: Backend 03
 - 담당 영역: Backend
 - 상태: in-progress
-- 현재 Slice: R1 completed, R2 대기
+- 현재 Slice: R2 completed, R3 대기
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Frontend React Router Advisory Review](../frontend/02_react_router_advisory.md)
@@ -134,7 +134,7 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ### R2 - SQL parameter logging 안전화
 
-- 상태: draft
+- 상태: completed
 - 목적:
   Backend SQL logging의 안전한 기본값과 명시적인 디버그 경계를 구현한다.
 - 주요 작업:
@@ -152,6 +152,16 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - 기본 실행 로그의 정책 값·provenance·인증정보 노출 0건
   - Unicode 정책 값 write에서 logging encoding 오류 0건
   - 전체 DB URL과 비밀번호가 오류·로그에 노출되지 않음
+- 완료 결과:
+  - `SQL_ECHO=false` 기본값과 명시적 opt-in을 추가하고
+    `ENVIRONMENT` 기반 자동 echo를 제거함
+  - Web·Seed·Runtime engine 모두 `hide_parameters=True`를 적용함
+  - 미처리 예외 log는 상세 문자열·traceback 대신 예외 타입만 기록함
+  - 실제 PostgreSQL 18.4와 CP949 strict stream에서 합성 정책
+    본문·provenance·credential·Unicode parameter 비노출과 write 성공을
+    확인함
+  - 실제 PostgreSQL을 포함한 전체 Backend·공통 테스트 166건과 subtest
+    25건이 통과함
 
 ### R3 - 통합 검증과 인계 종료
 

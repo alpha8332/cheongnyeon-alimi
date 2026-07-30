@@ -82,7 +82,7 @@ def _assert_public_program(
 def test_canonical_seed_postgresql_policy_api_contract():
     database_url = _require_test_database_url()
     config = _migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     session_factory = sessionmaker(
         autocommit=False,
         autoflush=False,

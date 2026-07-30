@@ -96,7 +96,7 @@ def _count_external_ids(db, external_ids: list[str]) -> int:
 def test_canonical_seed_to_postgresql_repository_contract():
     database_url = _require_test_database_url()
     config = _migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     session_factory = sessionmaker(
         autocommit=False,
         autoflush=False,

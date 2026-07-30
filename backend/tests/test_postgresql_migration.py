@@ -43,7 +43,7 @@ def migration_config(database_url: str) -> Config:
 def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
     database_url = require_test_database_url()
     config = migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
 
     try:
         command.upgrade(config, "head")
@@ -156,7 +156,7 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
 def test_postgresql_timestamp_migration_repairs_existing_rows():
     database_url = require_test_database_url()
     config = migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     created_at = datetime(2026, 7, 30, 1, 0, tzinfo=timezone.utc)
     reversed_updated_at = datetime(
         2026,

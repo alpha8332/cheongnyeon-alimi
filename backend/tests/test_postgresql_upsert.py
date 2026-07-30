@@ -49,7 +49,7 @@ def migration_config(database_url: str) -> Config:
 def test_postgresql_atomic_upsert_identity_and_outcomes():
     database_url = require_test_database_url()
     config = migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     session_factory = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -137,7 +137,7 @@ def test_postgresql_atomic_upsert_identity_and_outcomes():
 def test_postgresql_timestamp_order_and_nondecreasing_updates():
     database_url = require_test_database_url()
     config = migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     session_factory = sessionmaker(
         autocommit=False,
         autoflush=False,
