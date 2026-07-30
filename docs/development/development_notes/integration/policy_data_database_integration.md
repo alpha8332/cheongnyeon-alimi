@@ -231,12 +231,9 @@ DTO·endpoint·Mock 전환 인계 기준과 Frontend 변경 요청을 확정한�
   `ProgramListPage`를 import한다. 원격 커밋에는 이 참조 수정이 있지만 현재
   Integration 브랜치에 merge되지 않았고 이 환경에는 Node·npm이 없어 build와
   타입 검사를 실행하지 못했다.
-- Backend OpenAPI의 Schema는 정상이나 endpoint 한글 summary·description은
-  Backend source 문자열부터 mojibake 상태임을 확인했다. 타입 생성은
-  가능하지만 문서 표시 품질은 Backend 후속 수정이 필요하다.
 - Data·Database 담당 범위를 넘어 Frontend 브랜치를 수정·merge하거나
-  Backend OpenAPI 문구를 변경하지 않았다. D0·D6와 Data 6는 Frontend 조치와
-  소비 테스트가 생길 때까지 `action-needed`로 유지한다.
+  Backend API를 변경하지 않았다. D0·D6와 Data 6는 Frontend 조치와 소비
+  테스트가 생길 때까지 `action-needed`로 유지한다.
 
 ## 주요 변경 파일
 
@@ -594,8 +591,9 @@ D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollb
   확인했다.
 - D6 실제 OpenAPI 검토:
   `.venv`의 `app.openapi()`에서 두 Policy path와 `PolicyRead`,
-  `PolicyListResponse`를 추출했다. Schema는 코드·API 문서와 일치했으나
-  route 한글 summary·description이 mojibake임을 확인했다.
+  `PolicyListResponse`를 추출했다. Schema는 코드·API 문서와 일치했고,
+  Unicode escape 확인에서 route 한글 summary·description도 정상 문자열임을
+  확인했다.
 - D6 PostgreSQL 전용 통합 테스트:
   로컬 PostgreSQL 18의 `cheongnyeon_alimi_test`에서
   `.venv\Scripts\python.exe -B -m pytest
@@ -639,10 +637,6 @@ D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollb
 - 관리자 실행 이력 조회·수동 실행 기능은 D5 DB 계약을 기반으로 별도
   Backend·Frontend 관리자 Forest에서 인증·권한·API·UI와 함께 구현해야 한다.
   현재 재개 조건은 `docs/index.md`의 `BE-ADMIN-RUN-HISTORY`에 기록했다.
-- Backend는 Policy route source의 mojibake 한글 summary·description을
-  정상화하고 생성 OpenAPI와 API 문서 표시를 검증해야 한다. Schema와 타입
-  생성에는 영향이 없지만 `BE-OPENAPI-KOREAN-TEXT` 완료 전에는 OpenAPI
-  설명문을 Frontend 표시 기준으로 사용하지 않는다.
 - Backend는 `BE-POLICY-TIMESTAMP-ORDER`에서 최초 insert의
   `created_at`·`updated_at` 순서 불변식과 생성 주체를 결정해야 한다. D3는
   현재 계약에 없는 순서를 임의로 강제하지 않는다.
