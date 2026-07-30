@@ -15,7 +15,7 @@
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
 | Backend 01 | Backend Baseline | [개발 계획](backend/01_policy_baseline.md) | completed |
 | Backend 02 | Policy Persistence Hardening | [개발 계획](backend/02_policy_persistence_hardening.md) | completed |
-| Backend 03 | Policy Runtime Safety | [개발 계획](backend/03_policy_runtime_safety.md) | in-progress |
+| Backend 03 | Policy Runtime Safety | [개발 계획](backend/03_policy_runtime_safety.md) | completed |
 | Backend 04 | Admin Access Control | [개발 계획](backend/04_admin_access_control.md) | draft |
 | Backend 05 | CollectionRun Admin API | [개발 계획](backend/05_collection_run_admin_api.md) | draft |
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |

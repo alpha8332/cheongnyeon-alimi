@@ -4,11 +4,11 @@
 
 - 기간: 2026-07-30
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `fix/backend/week2-hardening`
 - 관련 계획:
   [Backend Policy Runtime Safety Forest 개발 계획](../../develop_plan/backend/03_policy_runtime_safety.md)
-- 현재 Slice: R2 completed, R3 대기
+- 현재 Slice: R3 completed
 
 ## 목적
 
@@ -34,7 +34,7 @@ Schema·Fixture·Seed·공개 DTO와 Frontend 화면은 범위 밖이다.
 | R0 | completed | SQLite·PostgreSQL timestamp와 development logging 경계 확정 |
 | R1 | completed | timestamp 순서 구현과 SQLite·PostgreSQL 검증 완료 |
 | R2 | completed | SQL logging 안전화와 실제 PostgreSQL 검증 완료 |
-| R3 | draft | 통합 검증과 인계 종료 |
+| R3 | completed | 전체 회귀·문서 동기화와 Backend 인계 종료 |
 
 ## 구현 내용
 
@@ -191,6 +191,21 @@ PostgreSQL insert=1
 확인했으며 임시 pgpass도 제거했다. Starlette TestClient deprecation 경고
 1건은 기존 범위 밖 경고다.
 
+### R3 최종 통합 검증
+
+R2 커밋까지 반영된 깨끗한 작업 트리에서 R3 검증을 다시 수행했다.
+
+- PostgreSQL 미설정 전체 회귀: 154 passed, 12 skipped, subtest 25 passed
+- PostgreSQL 18.4 전체 회귀: 166 passed, subtest 25 passed
+- 문서 검증: 통과
+- 문서 검증 테스트: 10 passed
+- Fixture·Seed 결정성: 12개 파일 통과
+- `git diff --check`: 통과
+
+R3 격리 DB는 소유자를 확인한 뒤 삭제하고 존재하지 않음을 확인했으며 임시
+pgpass도 제거했다. 두 Backend 인계사항의 구현·계약·검증 증거가 모두
+완료돼 `docs/index.md` 인계 보드에서 제거했다.
+
 ### PostgreSQL 관련 통합 테스트
 
 별도 `cheongnyeon_alimi_r0_pytest_20260730_test` DB에서 다음 PostgreSQL
@@ -241,8 +256,9 @@ Unicode synthetic insert=1
 ```
 
 SQLAlchemy logging stream 오류와 DB transaction은 분리되어 Unicode log
-오류가 발생해도 insert는 성공했다. 따라서 현재 logging은 민감 parameter
-노출뿐 아니라 콘솔 오류가 실제 DB 결과를 오인하게 만드는 운영 위험이 있다.
+오류가 발생해도 insert는 성공했다. 따라서 R0 당시 logging은 민감 parameter
+노출뿐 아니라 콘솔 오류가 실제 DB 결과를 오인하게 만드는 운영 위험이
+있었다.
 
 ## 설계 결정
 
@@ -312,4 +328,6 @@ update의 시각 반환·precision 계약이 달라지고, 현재 Importer가 �
 
 ## 남은 작업
 
-- R3에서 전체 Backend·PostgreSQL 회귀와 두 인계사항 종료
+- Backend Policy Runtime Safety Forest 범위의 남은 작업 없음
+- 기존 Starlette TestClient deprecation 경고는 이 Forest 범위 밖이며 별도
+  의존성 검토가 필요함

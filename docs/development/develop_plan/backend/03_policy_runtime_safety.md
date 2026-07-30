@@ -4,8 +4,8 @@
 
 - 번호: Backend 03
 - 담당 영역: Backend
-- 상태: in-progress
-- 현재 Slice: R2 completed, R3 대기
+- 상태: completed
+- 현재 Slice: R3 completed
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Frontend React Router Advisory Review](../frontend/02_react_router_advisory.md)
@@ -165,7 +165,7 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ### R3 - 통합 검증과 인계 종료
 
-- 상태: draft
+- 상태: completed
 - 목적:
   timestamp·logging 변경의 전체 회귀와 문서 동기화를 완료한다.
 - 주요 작업:
@@ -184,6 +184,15 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - `python scripts/validate_docs.py` 통과
   - 문서와 실제 timestamp·logging 동작 일치
   - `BE-POLICY-TIMESTAMP-ORDER`, `BE-SQL-ECHO-LOGGING` 종료
+- 완료 결과:
+  - PostgreSQL 미설정 전체 회귀 154건과 subtest 25건이 통과하고
+    PostgreSQL 전용 12건은 명시적으로 skip됨
+  - PostgreSQL 18.4 격리 DB에서 전체 Backend·공통 테스트 166건과 subtest
+    25건이 통과함
+  - 문서 검증·문서 검증 테스트·Fixture 결정성·diff 검증을 통과함
+  - Schema·Fixture·Seed·공개 DTO·Frontend 소비 타입에 변경이 없음을
+    재확인함
+  - 권위 문서와 실제 동작을 동기화하고 두 Backend 인계사항을 종료함
 
 ## 검증 계획
 
@@ -209,14 +218,14 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ## 위험과 미확정 사항
 
-- DB server default와 application 시각을 혼용하면 DB별 precision과 transaction
-  timestamp 의미가 달라질 수 있다.
-- 시각 생성 주체를 바꾸면 기존 Migration과 API 소비자의 timestamp 해석에
-  영향이 생길 수 있다.
-- SQL 문장 자체와 parameter 값을 분리하지 못하는 logging 설정은 안전한
-  디버그 경계를 제공하기 어렵다.
-- 보안 기본값과 상세 debugging 편의 사이의 선택은 Backend·운영 문서에서
-  명시해야 한다.
+- timestamp 생성 경계는 Importer의 단일 UTC write instant로 확정했고 DB
+  constraint와 SQLite·PostgreSQL 회귀로 보호한다.
+- Migration downgrade는 constraint만 제거하며 이미 보정된 기존 역전
+  timestamp를 원래 값으로 되돌리지 않는다.
+- `SQL_ECHO=true`는 table·column을 포함한 statement 구조를 출력하지만 bound
+  parameter는 모든 환경에서 숨긴다.
+- 현재 Forest 범위에 남은 미확정 계약은 없다. Starlette TestClient
+  deprecation 경고는 별도 범위다.
 
 ## 관련 문서
 
