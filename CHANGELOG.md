@@ -10,6 +10,10 @@
 
 ### Added
 
+- 저장된 Runtime Raw의 무네트워크 PostgreSQL 재처리와 idempotent 적재,
+  향후 관리자 기능을 위한 안전한 Seed·Runtime `CollectionRun` 실행 이력 기반
+  추가
+  ([개발 기록](docs/development/development_notes/integration/policy_data_database_integration.md))
 - PostgreSQL Migration, 검증 우선·원자적 Seed importer, 정확한 JSONB 배열
   필터와 품질 일관성을 갖춘 Policy Repository·API 종단 기반 완성
   ([개발 기록](docs/development/development_notes/backend/policy_persistence_hardening.md))

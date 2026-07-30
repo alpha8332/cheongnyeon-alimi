@@ -40,3 +40,9 @@ integration/seed_api_contract_mismatch.md
 확정적으로 기록하지 않는다. 해결되지 않은 항목은 관련 Issue 또는
 `docs/development/develop_plan/`에서 확인된 사실과 시도한 방법을 구분해
 관리한다.
+
+## 현재 문서
+
+- [Windows PostgreSQL 테스트 환경 복구](backend/windows_postgresql_test_environment.md):
+  다른 PC의 Unix 가상환경, PostgreSQL 역할 인증과 전용 테스트 DB를 Windows
+  환경에서 복구한 실제 절차

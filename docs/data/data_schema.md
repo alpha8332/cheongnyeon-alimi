@@ -300,6 +300,10 @@ ID를 일반화하지 않는다. Backend 02 B4 importer는 이 문서와 실행 
 날짜·null·빈 배열·enum에 importer 기본값을 적용하지 않으며 dry-run도 실제
 upsert 후 rollback한다.
 
+31개 필드의 JSON 타입, PostgreSQL 컬럼, importer 변환과 공개 API 노출 여부는
+[Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
+따른다.
+
 다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
 
 - 단일 `category` 후보 대신 `categories` 배열 사용

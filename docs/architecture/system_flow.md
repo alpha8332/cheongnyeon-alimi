@@ -73,6 +73,19 @@ Collector는 서로 다른 원문을 다뤄도 같은 Raw 계약을 반환한다
 Raw는 정규화 규칙이 바뀌었을 때 외부 소스를 다시 호출하지 않고 재처리할 수
 있어야 한다. 개발용 최소 샘플과 실제 런타임 Raw의 저장 위치를 구분한다.
 
+현재 저장된 Runtime Raw 재처리는 source의 최신 `list_response`와 연결 item,
+같은 회차의 최신 detail을 선택해 Extractor·Normalizer·Validator를 거친 뒤
+valid·partial만 Backend Import Service의 source batch transaction으로
+전달한다. invalid는 DB 접근 전에 분리하며 같은 Raw 재실행은
+`(source_id, external_id)` upsert로 중복을 만들지 않는다. 실행 규칙은
+[Collector 실행](../operations/collector.md)을 따른다.
+
+실제 Seed 적재와 Runtime 재처리는 Policy transaction과 분리된
+`collection_runs`에 시작·종료 시각, 상태와 안전한 집계만 기록한다. 따라서
+Policy rollback 뒤에도 실패 이력을 확인할 수 있으며 Raw payload, URL,
+인증정보와 오류 메시지는 실행 이력에 저장하지 않는다. 필드와 상태 전이는
+[CollectionRun 데이터베이스 계약](collection_run_database.md)을 따른다.
+
 ## 3. 소스별 추출
 
 Source Extractor는 `RawPolicyDocument`에서 사람이 이해할 수 있는 중간 필드를

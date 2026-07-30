@@ -8,7 +8,7 @@
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 7 기술 검증 완료, Data 6 공동 검토 대기
+- 현재 Slice: Data 7 기술 검증 완료, Data 6 Frontend action-needed
 
 ## 목적
 
@@ -37,7 +37,7 @@ Fixture·Seed를 구현하고 최종 회귀를 통과했다. Data 6의 Backend·
 | Data 3 | completed | 두 공식 API 제한 수집과 Raw 변환 검증 |
 | Data 4 | completed | 공통 Extracted 계약과 두 Source Extractor 구현 |
 | Data 5 | completed | Normalized Schema·Normalizer·품질 분류 구현 |
-| Data 6 | in-progress | 합성 Fixture·Seed 완료, 소비자 공동 승인 대기 |
+| Data 6 | action-needed | 합성 Fixture·Seed·Backend 승인 완료, Frontend API 소비 수정 필요 |
 | Data 7 | completed | 전체 파이프라인·회귀·문서 최종 검증 완료 |
 
 ## 구현 내용
@@ -486,12 +486,17 @@ Data 6 테스트 9건은 다음을 확인한다.
 Frontend가 확인할 적재·Mock·nullable·배열·품질·provenance 항목을
 기록했다.
 
-Data 기술 검토와 자동 검증은 완료했다. 그러나 현재 저장소에는 Backend
-모델·Importer, Frontend TypeScript 타입·Mock, 담당 Issue·PR이나 두 영역의
-승인 기록이 없다. Data 담당이 공동 승인을 대신 기록하지 않으며 실제 승인
-또는 소비 테스트가 생길 때까지 Data 6 상태를 `in-progress`로 유지한다.
-담당 Agent가 이 게이트를 놓치지 않도록 `docs/index.md`에 FE·BE 착수 가능
-범위와 계약 문서 검토·승인 기록 의무를 직접 안내한다.
+Data 기술 검토와 자동 검증, Backend PostgreSQL·Policy API 소비 승인은
+완료했다. 원격 `feature/frontend/policy-discovery`의 `784a2a8`에는
+TypeScript 타입과 canonical Seed Mock UI가 있지만 사용자 타입에
+`provenance`·`invalid`를 포함하고 미구현 `/api/v1/programs`, 배열 목록과
+source/external ID 상세를 가정해 현재 공개 API와 일치하지 않는다.
+
+Data 담당이 Frontend 코드를 대신 수정하거나 공동 승인을 기록하지 않는다.
+`docs/api/policies.md`의 D6 공개 DTO·pagination·숫자 `id`·partial opt-in을
+반영한 Frontend 소비 테스트 또는 담당자 재검토가 생길 때까지 Data 6 상태를
+`action-needed`로 유지한다. 담당 Agent가 이 게이트를 놓치지 않도록
+`docs/index.md`에 구체적인 변경·완료 조건을 기록했다.
 
 ### Data 7 - 커밋된 Fixture 종단 간 재생
 

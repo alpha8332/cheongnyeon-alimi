@@ -50,6 +50,9 @@ class ImportIssue:
 class ImportResult:
     total: int
     validated: int = 0
+    accepted: int = 0
+    partial: int = 0
+    invalid: int = 0
     inserted: int = 0
     updated: int = 0
     unchanged: int = 0
@@ -240,10 +243,18 @@ def _item_path(index: int, path: str) -> str:
 def _preflight_programs(
     items: list[Any],
     validator: NormalizedProgramValidator,
-) -> tuple[list[tuple[int, Mapping[str, Any]]], int, int, int, list[ImportIssue]]:
+) -> tuple[
+    list[tuple[int, Mapping[str, Any]]],
+    int,
+    int,
+    int,
+    int,
+    list[ImportIssue],
+]:
     accepted: list[tuple[int, Mapping[str, Any]]] = []
     issues: list[ImportIssue] = []
     validated = 0
+    partial = 0
     skipped = 0
     rejected = 0
 
@@ -306,8 +317,10 @@ def _preflight_programs(
             issues.append(identity_issue)
             continue
         accepted.append((index, candidate))
+        if validation.status is DataQualityStatus.PARTIAL:
+            partial += 1
 
-    return accepted, validated, skipped, rejected, issues
+    return accepted, validated, partial, skipped, rejected, issues
 
 
 def import_programs(
@@ -319,14 +332,21 @@ def import_programs(
 ) -> ImportResult:
     items = list(programs)
     selected_validator = validator or NormalizedProgramValidator()
-    accepted, validated, skipped, rejected, issues = _preflight_programs(
-        items,
-        selected_validator,
-    )
+    (
+        accepted,
+        validated,
+        partial,
+        skipped,
+        rejected,
+        issues,
+    ) = _preflight_programs(items, selected_validator)
     if skipped or rejected:
         return ImportResult(
             total=len(items),
             validated=validated,
+            accepted=len(accepted),
+            partial=partial,
+            invalid=rejected,
             skipped=skipped,
             rejected=rejected,
             dry_run=dry_run,
@@ -355,6 +375,9 @@ def import_programs(
         return ImportResult(
             total=len(items),
             validated=validated,
+            accepted=len(accepted),
+            partial=partial,
+            invalid=rejected,
             failed=1,
             dry_run=dry_run,
             issues=(
@@ -380,6 +403,9 @@ def import_programs(
     return ImportResult(
         total=len(items),
         validated=validated,
+        accepted=len(accepted),
+        partial=partial,
+        invalid=rejected,
         committed=not dry_run,
         dry_run=dry_run,
         issues=tuple(issues),
@@ -402,6 +428,7 @@ def import_seed_data(
     if not isinstance(seed_data, list):
         return ImportResult(
             total=0,
+            invalid=1,
             rejected=1,
             dry_run=dry_run,
             issues=(

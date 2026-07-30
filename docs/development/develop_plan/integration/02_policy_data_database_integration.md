@@ -4,12 +4,12 @@
 
 - 번호: Integration 02
 - 담당 영역: Data·Backend 공동 통합
-- 상태: approved
+- 상태: in-progress
 - 대상 기간: 데이터 담당 2주차
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: 구현 시작 전
+- 현재 Slice: D6 action-needed (D0 Frontend action-needed)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -89,7 +89,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D0 - 데이터 계약 공동 확정
 
-- 상태: pending
+- 상태: action-needed
+- 기술 검토: completed
+- 외부 검토: Frontend changes requested
 - 목적: NormalizedProgram 1.0.0과 canonical Seed의 실제 소비 가능성을
   확인한다.
 - 선행 조건:
@@ -111,7 +113,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D1 - NormalizedProgram → DB 매핑 검증
 
-- 상태: pending
+- 상태: completed
 - 목적: JSON 계약과 관계형 DB 구조 사이의 손실 없는 매핑을 확정한다.
 - 선행 조건:
   - D0의 Backend 검토 완료
@@ -133,7 +135,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D2 - Seed → PostgreSQL 통합 테스트
 
-- 상태: pending
+- 상태: completed
 - 목적: canonical Seed가 Schema 검증부터 DB 조회까지 통과하는지 확인한다.
 - 선행 조건:
   - D1 완료
@@ -165,7 +167,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D3 - Policy API 첫 통합
 
-- 상태: pending
+- 상태: completed
 - 목적: DB에 적재된 정책을 합의된 API로 조회한다.
 - 선행 조건:
   - D2 완료
@@ -190,7 +192,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D4 - Runtime Raw 재처리와 DB 적재
 
-- 상태: pending
+- 상태: completed
 - 목적: 기존 Runtime Raw를 추가 API 호출 없이 같은 DB 경계로 적재한다.
 - 선행 조건:
   - D2 완료
@@ -225,9 +227,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - invalid 적재와 중복 0건
   - 실행 요약과 실제 DB 결과 일치
 
-### D5 - 최소 실행 이력 협의
+### D5 - 최소 실행 이력 구현
 
-- 상태: optional
+- 상태: completed
 - 목적: 향후 관리자 기능을 위한 최소 실행 이력의 필요성과 저장 위치를
   결정한다.
 - 선행 조건:
@@ -246,12 +248,28 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - `run_type`: `seed_import`, `runtime_import`, `collection`
   - `trigger_type`: `cli`, `scheduler`, `admin`
 - 완료 기준:
-  - 구현 여부, 책임 영역과 후속 완료 기준이 문서 또는 Issue에 기록
-  - 구현하지 않아도 D0~D4와 D6 완료를 막지 않음
+  - `collection_runs` ORM과 Alembic Migration 제공
+  - Seed·Runtime 실제 실행의 시작·종료·집계 이력 생성
+  - 성공·부분 실패·실패 상태와 별도 transaction 검증
+  - Raw payload, URL query, 인증정보와 오류 메시지 저장 0건
+  - 관리자 API·Scheduler·UI는 후속 범위로 명시
+- 완료 결과:
+  - 향후 관리자 기능의 기반이 필요하다는 결정에 따라 최소
+    `collection_runs` DB 레코드 선택지를 구현함
+  - Seed·Runtime CLI를 공통 writer에 연결하고 실제 실행만 이력화함
+  - 다중 source Seed의 `source_id`는 `null`, source Runtime은 실제 source
+    ID를 저장하는 규칙을 확정함
+  - `running`·`succeeded`·`partial_failure`·`failed` 상태와 안전한
+    `error_type`, 비음수 count·시각 constraint를 Migration으로 고정함
+  - Policy import와 이력 write를 별도 transaction으로 분리하고 dry-run은
+    DB 변경 없음 계약에 따라 이력을 생성하지 않음
+  - 관리자 조회·수동 실행 API와 대시보드는 후속 관리자 Forest로 유지함
 
 ### D6 - Frontend 인계와 Data 6 종료
 
-- 상태: pending
+- 상태: action-needed
+- 기술 인계: completed
+- 외부 소비: Frontend changes requested
 - 목적: Frontend가 Mock 또는 실제 API로 정책 기능을 구현할 계약을 제공한다.
 - 선행 조건:
   - D0와 D3 완료
@@ -271,6 +289,20 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - Backend·Frontend 공동 검토 완료
   - Data 6와 Data Pipeline Forest 완료
   - 승인 전에는 `기술 구현 완료 / Frontend 승인 대기`로 유지
+- 현재 결과:
+  - 실제 OpenAPI·Pydantic `PolicyRead`와 목록 envelope를 기준으로
+    TypeScript DTO, API Client, Mock → API 전환과 UI 상태 검증 기준을
+    `docs/api/policies.md`에 확정함
+  - 원격 Frontend `feature/frontend/policy-discovery`의 `784a2a8`을
+    읽기 전용으로 검토함
+  - 해당 구현이 `NormalizedProgram`·provenance·invalid를 사용자 타입으로
+    사용하고 미구현 `/api/v1/programs` endpoint, 배열 목록과 source/external
+    상세 ID를 가정해 현재 API와 다름을 확인함
+  - Frontend 브랜치를 임의 수정·merge하지 않고 D0·D6와 Data 6를
+    `action-needed`로 유지함
+  - Frontend가 공개 `PolicyDto`, `/api/v1/policies`, pagination envelope,
+    숫자 `id` 상세와 partial opt-in을 반영한 소비 테스트 또는 명시적
+    재검토 결과를 제공하면 완료 상태를 재평가함
 
 ## 의존 순서
 
@@ -319,8 +351,9 @@ D0의 Frontend 검토 요청과 D1 매핑 초안은 Backend 02 후반에 병렬�
 - API, Data와 Integration 문서 동기화
 - Frontend 승인 후 Data 6 완료
 
-D5는 선택 사항이며 구현하지 않아도 Forest 완료를 막지 않는다. 다만
-수집 실행 이력의 구현 또는 후속 Forest 여부는 기록해야 한다.
+D5는 선택 사항이었으나 향후 관리자 기능의 기반으로 구현했다. 관리자 조회와
+수동 실행 API, 인증·권한, Scheduler와 상세 대시보드는 이 Forest 완료 범위에
+포함하지 않는다.
 
 ## 위험과 미확정 사항
 

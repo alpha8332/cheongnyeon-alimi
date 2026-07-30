@@ -5,11 +5,13 @@ from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 
+from app.models.collection_run import CollectionRun
 from app.models.policy import Policy
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
-REVISION = "20260728_0001"
+INITIAL_REVISION = "20260728_0001"
+HEAD_REVISION = "20260730_0002"
 
 
 def alembic_config() -> Config:
@@ -36,16 +38,23 @@ def render_downgrade_sql() -> str:
     config = alembic_config()
     output = StringIO()
     config.output_buffer = output
-    command.downgrade(config, f"{REVISION}:base", sql=True)
+    command.downgrade(config, f"{HEAD_REVISION}:base", sql=True)
     return output.getvalue()
 
 
-def test_initial_revision_is_the_single_alembic_head():
+def test_collection_run_revision_is_the_single_alembic_head():
     scripts = ScriptDirectory.from_config(alembic_config())
     revision = scripts.get_current_head()
 
-    assert revision == REVISION
-    assert scripts.get_revision(revision).down_revision is None
+    assert revision == HEAD_REVISION
+    assert (
+        scripts.get_revision(revision).down_revision
+        == INITIAL_REVISION
+    )
+    assert (
+        scripts.get_revision(INITIAL_REVISION).down_revision
+        is None
+    )
 
 
 def test_upgrade_sql_matches_postgresql_policy_contract():
@@ -67,9 +76,29 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
         assert f"\n    {column.name} " in sql
 
 
+def test_upgrade_sql_matches_collection_run_contract():
+    sql = render_upgrade_sql()
+
+    assert "CREATE TABLE collection_runs" in sql
+    assert "CREATE TYPE collection_run_type AS ENUM" in sql
+    assert "CREATE TYPE collection_run_trigger_type AS ENUM" in sql
+    assert "CREATE TYPE collection_run_status AS ENUM" in sql
+    assert "UUID NOT NULL" in sql
+    assert "CONSTRAINT ck_collection_runs_counts_nonnegative CHECK" in sql
+    assert "CONSTRAINT ck_collection_runs_terminal_finished_at CHECK" in sql
+    assert "CREATE INDEX ix_collection_runs_started_at" in sql
+
+    for column in CollectionRun.__table__.columns:
+        assert f"\n    {column.name} " in sql
+
+
 def test_downgrade_sql_removes_table_indexes_and_enum_types():
     sql = render_downgrade_sql()
 
+    assert "DROP TABLE collection_runs" in sql
+    assert "DROP TYPE collection_run_status" in sql
+    assert "DROP TYPE collection_run_trigger_type" in sql
+    assert "DROP TYPE collection_run_type" in sql
     assert "DROP INDEX ix_policies_categories_gin" in sql
     assert "DROP INDEX ix_policies_regions_gin" in sql
     assert "DROP TABLE policies" in sql

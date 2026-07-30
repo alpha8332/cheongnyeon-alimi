@@ -18,6 +18,10 @@
   데이터 흐름
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
+- [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
+  NormalizedProgram 31개 필드의 PostgreSQL·Importer·공개 API 매핑
+- [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
+  Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
@@ -52,19 +56,25 @@
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
+- [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
+  Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
+- [Backend Windows 로컬 환경](development/backend_local_setup.md):
+  Windows `.venv`, PostgreSQL 테스트 DB와 Backend 전체 테스트 절차
 - [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
-  환경변수와 Runtime Raw 경계
+  환경변수, Runtime Raw 경계와 저장 Raw의 PostgreSQL 재처리
+- [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
+  다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
 
-## 현재 FE·BE 인계 안내
+## 공동 확인 및 인계 보드
 
 Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작할 수 있는
 상태다. 담당자와 AI Agent는 구현 전에 반드시
@@ -77,6 +87,37 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 - 구현 또는 명시적 승인 결과를 계약 문서의 공동 검토 기록에 남긴다.
 - 두 영역의 검토 전에는 Normalized 1.0.0을 안정적인 영역 간 계약으로
   확정하거나 임의로 변경하지 않는다.
+
+현재 다른 영역의 확인·결정·조치가 필요한 인계사항은 다음과 같다. 이 표는
+상세 계획이나 Issue를 대신하지 않고, 다음 담당자와 권위 문서로 연결하는
+진입점이다.
+
+| ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
+| --- | --- | --- | --- | --- | --- |
+| `INT-02-D0-FE` | canonical Seed Mock과 공개 Policy DTO의 Frontend 소비 승인 | `action-needed` | Frontend | 원격 `784a2a8`의 `NormalizedProgram`·provenance·invalid 사용자 타입을 공개 `PolicyDto` 경계로 수정하고 Mock 소비 테스트 또는 담당자 재검토 기록 | [Fixture·Seed 계약](data/fixture_seed_contract.md), [Policy API 계약](api/policies.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `INT-02-D3-FE` | 실제 PostgreSQL 기반 Policy 목록·상세 API의 Frontend 소비 | `action-needed` | Frontend | `/api/v1/policies`, 목록 envelope, 숫자 `id` 상세와 partial opt-in을 API Client·DTO 소비 테스트로 검증한 후 D6 기록 동기화 | [Policy API 계약](api/policies.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `FE-POLICY-ROUTE` | `src/routes/index.tsx`가 존재하지 않는 `ProgramListPage`를 import하는 문제 확인 | `action-needed` | Frontend | Frontend 빌드·라우트 기준에 맞는 구현 또는 참조 정정과 검증 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
+| `BE-POLICY-TIMESTAMP-ORDER` | 최초 insert에서 application `updated_at`이 DB default `created_at`보다 먼저 생성되는 순서의 허용 여부 결정 | `action-needed` | Backend, API 영향 검토 | 두 시각의 순서 불변식을 정하고 같은 DB 시각 사용 또는 순서 비보장 문서화 후 테스트 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `BE-SQL-ECHO-LOGGING` | Backend development engine의 SQL parameter echo가 정책 값·provenance를 출력하는 범위 검토 | `action-needed` | Backend, 보안·운영 영향 검토 | 개발 SQL 로깅 기본값과 민감 데이터 기준을 정하고 write 진입점의 parameter 비노출 테스트·문서 동기화 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md), [Backend 로컬 환경](development/backend_local_setup.md) |
+| `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | 관리자 Forest 착수 시 인증된 조회 API·DTO·pagination과 UI를 정의하고 `running` 중단 판정 및 권한 테스트 완료 | [CollectionRun DB 계약](architecture/collection_run_database.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+
+### FE·BE 담당자 인계 기록 방법
+
+Frontend와 Backend 담당자 또는 담당 AI Agent는 작업 중 다른 영역의 확인이
+필요한 계약, 소비 테스트, 차단 의존성이나 후속 조치를 발견하면 이 표에 새
+행을 추가하거나 기존 행을 갱신할 수 있다.
+
+- `ID`, 현재 상태, 다음 담당, 완료 또는 재개 조건과 권위 문서 링크를
+  반드시 기록한다.
+- `review-pending`은 소비자 검토 증거 대기,
+  `action-needed`는 담당 영역의 조치 필요,
+  `trigger-based`는 명시된 조건이 생길 때만 재개하는 항목에 사용한다.
+- 상세 구현 계획과 결과는 담당 Forest 계획·개발 기록·Issue에 남기고 이
+  표에는 요약과 링크만 둔다.
+- 확인이나 구현 증거 없이 다른 영역의 승인을 대신 기록하지 않는다.
+- 완료한 항목은 관련 기준 문서와 개발 기록을 먼저 갱신한 뒤 현재 보드에서
+  제거하거나 후속 항목으로 교체한다.
 
 ## 문서 영역
 

@@ -12,6 +12,7 @@
 | Data Pipeline | [개발 기록](data/data_pipeline.md) | Data 0 | API Source Preflight와 비밀정보 경계 |
 | Backend Baseline | [개발 기록](backend/policy_baseline.md) | Backend 0 | DB Schema, ORM 모델, Importer 및 Policy API 구축 |
 | Backend Policy Persistence Hardening | [개발 기록](backend/policy_persistence_hardening.md) | B0~B6 | PostgreSQL 저장·Importer·Repository·Policy API 종단 검증 |
+| Policy Data Database Integration | [개발 기록](integration/policy_data_database_integration.md) | D0 | Backend 계약 승인과 Frontend 타입·Mock 인계 |
 
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
