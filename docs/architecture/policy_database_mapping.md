@@ -22,8 +22,8 @@
 - 원문 text와 구조화 필드는 서로 대체하지 않고 모두 보존한다.
 - `provenance`는 DB에는 보존하지만 일반 사용자 Policy API에는 노출하지
   않는다.
-- DB가 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력 계약에는
-  없고 공개 Policy DTO에 추가된다.
+- 저장 계층이 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력
+  계약에는 없고 공개 Policy DTO에 추가된다.
 
 ## 31개 필드 매핑
 
@@ -96,13 +96,23 @@ Repository는 배열 원소의 exact membership으로 검색한다.
 
 `provenance`는 Raw 문서 ID·역할·hash·수집 시각·안전한 source URL의 object
 배열로 DB에 보존한다. 일반 사용자 `PolicyRead`에는 포함하지 않는다. 나머지
-Normalized 30개 필드는 공개 DTO에 있고 DB가 생성한 다음 필드가 추가된다.
+Normalized 30개 필드는 공개 DTO에 있고 저장 계층이 생성한 다음 필드가
+추가된다.
 
-| DB 생성 필드 | PostgreSQL 타입 | 공개 API |
-| --- | --- | --- |
-| `id` | auto-increment integer | 노출 |
-| `created_at` | `timestamptz` | 노출 |
-| `updated_at` | `timestamptz` | 노출 |
+| 저장 계층 생성 필드 | PostgreSQL 타입 | 현재 생성 경계 | 공개 API |
+| --- | --- | --- | --- |
+| `id` | auto-increment integer | DB identity | 노출 |
+| `created_at` | `timestamptz` | ORM Python default, DB server default fallback | 노출 |
+| `updated_at` | `timestamptz` | Importer write 시각, ORM·DB default fallback | 노출 |
+
+Backend 03 R0의 SQLite·PostgreSQL 재현에서 Importer가 `updated_at`을 먼저
+만들고 SQLAlchemy가 `created_at` Python default를 나중에 실행해 최초
+insert의 `updated_at < created_at`이 될 수 있음을 확인했다. Migration의
+두 `CURRENT_TIMESTAMP`는 이 Importer 경로에서는 사용되지 않는다. 현재
+제약과 후속 수정 계약은
+[Backend Policy Runtime Safety 계획](../development/develop_plan/backend/03_policy_runtime_safety.md)과
+[개발 기록](../development/development_notes/backend/policy_runtime_safety.md)에
+기록한다.
 
 invalid는 DB enum에는 존재하지만 importer admission에서 거부되므로 정상
 Policy API에 도달하지 않는다. partial은 저장하며

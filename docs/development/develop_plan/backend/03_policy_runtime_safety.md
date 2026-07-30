@@ -4,7 +4,8 @@
 
 - 번호: Backend 03
 - 담당 영역: Backend
-- 상태: draft
+- 상태: in-progress
+- 현재 Slice: R0 completed, R1 대기
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Frontend React Router Advisory Review](../frontend/02_react_router_advisory.md)
@@ -14,9 +15,7 @@
 - 대상 인계사항:
   `BE-POLICY-TIMESTAMP-ORDER`, `BE-SQL-ECHO-LOGGING`
 - 개발 기록:
-  구현을 시작해 `in-progress`로 전환할 때
-  `docs/development/development_notes/backend/policy_runtime_safety.md`를
-  생성한다.
+  [Backend Policy Runtime Safety 개발 기록](../../development_notes/backend/policy_runtime_safety.md)
 
 ## 목적
 
@@ -70,7 +69,7 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ### R0 - 현재 동작과 계약 확정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   timestamp와 SQL logging의 현재 생성·출력 경계를 실행 증거로 확정한다.
 - 주요 작업:
@@ -88,6 +87,17 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - SQLite·PostgreSQL의 현재 결과와 차이를 구분해 기록
   - `created_at`·`updated_at` 생성 주체와 허용 순서 합의
   - parameter logging 허용 범위와 기본값 합의
+- 완료 결과:
+  - SQLite와 PostgreSQL 18.4에서 최초 insert의
+    `updated_at < created_at`을 각각 재현함
+  - Importer `updated_at` 생성 뒤 SQLAlchemy ORM Python
+    `created_at` default가 별도로 실행되는 원인을 확정함
+  - unchanged 시각 보존과 실제 update의 `updated_at` 갱신을 확인함
+  - development echo에서 synthetic 정책 제목·provenance 노출과 CP949
+    `UnicodeEncodeError`를 재현했으며 DB insert 자체는 성공함
+  - R1은 단일 application write instant와 DB 순서 constraint, R2는
+    기본 echo off·명시적 opt-in·항상 parameter 비노출 계약을 적용하기로
+    결정함
 
 ### R1 - Policy timestamp 순서 보장
 
