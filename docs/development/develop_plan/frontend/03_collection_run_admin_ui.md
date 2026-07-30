@@ -5,7 +5,10 @@
 - 번호: Frontend 03
 - 담당 영역: Frontend
 - 상태: draft
-- 권장 브랜치: `feature/frontend/collection-run-admin-ui`
+- 작업 브랜치: `feature/backend/admin-run-management`
+- 공유 Forest:
+  [Backend Admin Access Control](../backend/04_admin_access_control.md),
+  [Backend CollectionRun Admin API](../backend/05_collection_run_admin_api.md)
 - 선행 Forest:
   [Backend Admin Access Control](../backend/04_admin_access_control.md),
   [Backend CollectionRun Admin API](../backend/05_collection_run_admin_api.md)

@@ -26,8 +26,9 @@
 ## 인계사항 후속 실행 순서
 
 Frontend Policy Discovery는 `develop`의 merge commit `7da97fa`에서 통합이
-끝났으므로 같은 Frontend 브랜치에 후속 작업을 누적하지 않는다. 다음 작업은
-최신 `develop`에서 독립적인 Forest 브랜치를 생성해 진행한다.
+끝났으므로 같은 Frontend 브랜치에 후속 작업을 누적하지 않는다. 후속
+Forest는 완료 기준을 각각 유지하되 실제 작업 브랜치는 통합 목표에 따라
+다음 두 개만 사용한다.
 
 저장소 정책상 `develop`에는 직접 커밋하지 않는다. 단순 문서 정정도 변경이
 필요하면 목적에 맞는 짧은 작업 브랜치와 리뷰를 거친다. `develop`에서는
@@ -35,24 +36,32 @@ Frontend Policy Discovery는 `develop`의 merge commit `7da97fa`에서 통합이
 
 | 우선순위 | 인계사항 또는 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
-| 1 | `BE-POLICY-TIMESTAMP-ORDER` | Backend 03에서 즉시 처리 | `fix/backend/policy-runtime-safety` |
-| 1 | `BE-SQL-ECHO-LOGGING` | Backend 03에서 함께 처리 | `fix/backend/policy-runtime-safety` |
-| 2 | React Router RSC advisory high 2건 | 영향·호환 버전 검토 후 수정 또는 위험 수용 결정 | `fix/frontend/react-router-advisory` |
-| 3 | `BE-ADMIN-RUN-HISTORY` | 인증 → Backend API → Frontend UI 순서로 진행 | 아래 의존 순서 참조 |
+| 1 | `BE-POLICY-TIMESTAMP-ORDER` | Backend 03에서 즉시 처리 | `fix/backend/week2-hardening` |
+| 1 | `BE-SQL-ECHO-LOGGING` | Backend 03에서 함께 처리 | `fix/backend/week2-hardening` |
+| 2 | React Router RSC advisory high 2건 | Frontend 02에서 영향·호환 버전 검토 후 수정 또는 위험 수용 결정 | `fix/backend/week2-hardening` |
+| 3 | `BE-ADMIN-RUN-HISTORY` | Backend 04 → Backend 05 → Frontend 03 순서로 진행 | `feature/backend/admin-run-management` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
-관리자 기능은 인증·권한 기반이 없으므로 다음 Forest를 순차적으로 병합한다.
+첫 번째 브랜치는 2주차에서 발견한 즉시 개선만 다룬다. Backend 03과
+Frontend 02의 구현·검증·문서는 Conventional Commit scope로 구분하고 두
+Forest가 모두 완료된 뒤 한 번만 `develop`에 병합한다.
 
 ```text
-Backend 04 Admin Access Control
-  feature/backend/admin-access-control
-    ↓ develop 병합
-Backend 05 CollectionRun Admin API
-  feature/backend/collection-run-admin-api
-    ↓ develop 병합
-Frontend 03 CollectionRun Admin UI
-  feature/frontend/collection-run-admin-ui
+fix/backend/week2-hardening
+  ├── Backend 03 Policy Runtime Safety
+  └── Frontend 02 React Router Advisory Review
+        ↓ develop 병합
+feature/backend/admin-run-management
+  ├── Backend 04 Admin Access Control
+  ├── Backend 05 CollectionRun Admin API
+  └── Frontend 03 CollectionRun Admin UI
+        ↓ develop 병합
+3주차 담당자에게 최종 develop commit SHA 인계
 ```
+
+관리자 기능은 하나의 브랜치 안에서도 인증·권한 → Backend API → Frontend
+UI 의존 순서를 지킨다. 각 Forest와 영역의 변경은 `feat(backend)`,
+`feat(frontend)`, `test(...)`, `docs(...)` commit으로 구분한다.
 
 `SOURCE-NULL-ID`는 실제 대상 Source가 없을 때 대체 identity 규칙을
 일반화하지 않고 `trigger-based` 상태를 유지한다.

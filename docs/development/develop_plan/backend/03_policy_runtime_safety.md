@@ -5,7 +5,9 @@
 - 번호: Backend 03
 - 담당 영역: Backend
 - 상태: draft
-- 권장 브랜치: `fix/backend/policy-runtime-safety`
+- 작업 브랜치: `fix/backend/week2-hardening`
+- 공유 Forest:
+  [Frontend React Router Advisory Review](../frontend/02_react_router_advisory.md)
 - 선행 Forest:
   [Backend Policy Persistence Hardening](02_policy_persistence_hardening.md),
   [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)

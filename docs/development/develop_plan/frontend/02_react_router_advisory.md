@@ -5,7 +5,9 @@
 - 번호: Frontend 02
 - 담당 영역: Frontend
 - 상태: draft
-- 권장 브랜치: `fix/frontend/react-router-advisory`
+- 작업 브랜치: `fix/backend/week2-hardening`
+- 공유 Forest:
+  [Backend Policy Runtime Safety](../backend/03_policy_runtime_safety.md)
 - 선행 Forest:
   [Frontend Policy Discovery](01_policy_discovery.md)
 - 대상 사항: `npm audit`의 React Router RSC 관련 high 2건
