@@ -4,11 +4,11 @@
 
 - 기간: 2026-07-28
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/frontend/policy-discovery`
 - 관련 계획:
   [Policy Discovery Forest 개발 계획](../../develop_plan/frontend/01_policy_discovery.md)
-- 현재 Slice: FE 2A Policy API contract alignment
+- 현재 Slice: FE 1~2A completed
 
 ## 목적
 
@@ -29,8 +29,8 @@ provenance 조회는 공개 API 범위 밖이다.
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | FE 1 | completed | 라우터, 레이아웃, 기본 UI 컴포넌트 |
-| FE 2 | in-progress | 타입·Mock·정책 목록·상세·필터·예외 UI 구현 |
-| FE 2A | in-progress | 공개 Policy API 계약 반영 완료, build·lint·소비 테스트 실행 대기 |
+| FE 2 | completed | 타입·Mock·정책 목록·상세·필터·예외 UI 구현 |
+| FE 2A | completed | 공개 Policy API 계약·자동·실제 API·브라우저 렌더링 검증 완료 |
 
 ## 구현 내용
 
@@ -123,15 +123,27 @@ source_id+external_id, provenance)을 기록하고 Frontend 상태를 `reviewed`
 - `python3 scripts/validate_docs.py`: 통과 (2026-07-28)
 - `npm run build` (frontend): 통과 (2026-07-28)
 - `npm run lint` (frontend): 통과 (2026-07-28)
-- 브라우저 수동 UI 테스트: 미실행
-- FE 2A `npm test`, `npm run lint`, `npm run build`: 이 PC에 Node·npm이
-  없어 미실행 (2026-07-30)
-- FE 2A `python scripts/validate_docs.py`: 작업 완료 후 결과 기록 예정
+- FE 2A 로컬 환경: Node.js 24.18.0, npm 11.16.0과 `npm ci` 구성 완료
+- FE 2A `npm test`: 소비 계약 테스트 7건 통과 (2026-07-30)
+- FE 2A `npm run lint`: 오류·경고 0건 통과 (2026-07-30)
+- FE 2A `npm run build`: TypeScript와 Vite production build 통과
+  (2026-07-30)
+- 실제 PostgreSQL 18.4 `cheongnyeon_alimi_test`에 Migration head와
+  canonical Seed 4건(valid 2·partial 2)을 적재함
+- 실제 API HTTP: 기본 목록 2건, partial opt-in 4건, 숫자 ID 상세,
+  partial 기본 404·opt-in 200, path 422와 provenance 비노출 확인
+- `http://127.0.0.1:3000` Frontend와 `:8000` Backend CORS 응답 확인
+- 사용자 제공 실제 API 모드 브라우저 캡처에서 홈과 정책 목록에 기본 valid
+  2건, 공개 제목·기관·지역·카테고리·마감 상태가 렌더링되고
+  provenance·invalid가 노출되지 않음을 확인
+- `npm audit`: React Router RSC mode 관련 high 2건. 현재 client-only
+  Vite 앱은 RSC action을 사용하지 않으며 자동 강제 수정은 적용하지 않음
+- FE 2A 최종 `python scripts/validate_docs.py`: 통과 (2026-07-30)
+- FE 2A 최종 Fixture·Seed 결정성 검사: 12개 파일 통과 (2026-07-30)
+- FE 2A 최종 문서 검증기 단위 테스트: 10건 통과 (2026-07-30)
 
 ## 남은 작업
 
-- Node.js 환경에서 FE 2A 소비 테스트·lint·build 실행
-- 검증 증거 확인 후 `INT-02-D0-FE`·`INT-02-D3-FE` 인계와 Data 6
-  Frontend 상태 완료 처리
+- React Router RSC advisory의 client-only 적용 가능성과 호환 버전 결정
 - 인증된 관리자 provenance API와 화면은 별도 관리자 Forest에서 결정
 - 즐겨찾기, 알림, 캘린더 등 후속 Frontend Slice

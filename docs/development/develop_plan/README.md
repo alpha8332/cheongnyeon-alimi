@@ -9,11 +9,11 @@
 | 번호 | Forest | 계획 | 상태 |
 | --- | --- | --- | --- |
 | Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
-| Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | in-progress |
-| Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | in-progress |
+| Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | completed |
+| Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Backend 01 | Backend Baseline | [개발 계획](backend/01_policy_baseline.md) | completed |
 | Backend 02 | Policy Persistence Hardening | [개발 계획](backend/02_policy_persistence_hardening.md) | completed |
-| Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | in-progress |
+| Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.

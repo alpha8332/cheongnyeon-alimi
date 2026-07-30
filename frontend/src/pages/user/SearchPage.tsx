@@ -6,12 +6,15 @@ import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
 import PolicyFilters from '@/components/policy/PolicyFilters';
 import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
+import type { PolicyDto } from '@/types/policy';
 import {
   collectRegionOptions,
   EMPTY_PROGRAM_FILTERS,
   filterPrograms,
   type ProgramFilterState,
 } from '@/utils/policyFilters';
+
+const EMPTY_POLICIES: PolicyDto[] = [];
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -30,7 +33,7 @@ export default function SearchPage() {
     limit: 100,
     include_partial: filters.includePartial,
   });
-  const policies = policyList?.items ?? [];
+  const policies = policyList?.items ?? EMPTY_POLICIES;
 
   const effectiveFilters = useMemo(
     () => ({

@@ -4,11 +4,11 @@
 
 - 기간: 2026-07-26
 - 담당 영역: Data
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/data/pipeline-foundation`
 - 관련 계획:
   [Data Pipeline Forest 개발 계획](../../develop_plan/data/01_data_pipeline.md)
-- 현재 Slice: Data 7 기술 검증 완료, Data 6 Frontend review-pending
+- 현재 Slice: Data 0~7 completed
 
 ## 목적
 
@@ -24,8 +24,8 @@ Raw가 Git, 로그, 예외, URL 기록과 Fixture에 남지 않도록 저장소 
 이 기록은 Data Pipeline Forest 전체의 실제 구현과 검증 결과를 Slice별로
 누적한다. Data 0부터 Data 7의 기술 범위를 수행했다. 공통 실행·HTTP·Raw
 기반, 두 source Collector·Extractor, 공통 Normalizer·Validator와 합성
-Fixture·Seed를 구현하고 최종 회귀를 통과했다. Data 6의 Backend·Frontend
-공동 승인은 대기 중이다.
+Fixture·Seed를 구현하고 최종 회귀와 Data 6의 Backend·Frontend 공동
+승인을 완료했다.
 
 ## Slice 진행 현황
 
@@ -37,7 +37,7 @@ Fixture·Seed를 구현하고 최종 회귀를 통과했다. Data 6의 Backend·
 | Data 3 | completed | 두 공식 API 제한 수집과 Raw 변환 검증 |
 | Data 4 | completed | 공통 Extracted 계약과 두 Source Extractor 구현 |
 | Data 5 | completed | Normalized Schema·Normalizer·품질 분류 구현 |
-| Data 6 | review-pending | 합성 Fixture·Seed·Backend 승인과 Frontend API 소비 수정 완료, FE 실행 검증 대기 |
+| Data 6 | completed | 합성 Fixture·Seed와 Backend·Frontend 소비 승인 완료 |
 | Data 7 | completed | 전체 파이프라인·회귀·문서 최종 검증 완료 |
 
 ## 구현 내용
@@ -494,10 +494,9 @@ source/external ID 상세를 가정해 현재 공개 API와 일치하지 않는�
 
 2026-07-30 Frontend FE 2A에서 `docs/api/policies.md`의 공개
 DTO·pagination·숫자 `id`·partial opt-in을 타입·Mock·API Client·화면과
-소비 테스트 코드에 반영했다. 이 PC에는 Node·npm이 없어 test·lint·build
-실행 증거가 아직 없으므로 Data 6 상태는 `review-pending`으로 유지한다.
-담당 Agent가 이 게이트를 놓치지 않도록 `docs/index.md`에 구체적인
-완료 조건을 기록했다.
+소비 테스트 코드에 반영했다. Node.js 24.18.0에서 test 7건·lint·build와
+실제 PostgreSQL API HTTP 검증과 브라우저 렌더링 확인까지 통과해 Data 6
+Frontend 소비 승인을 완료했다.
 
 ### Data 7 - 커밋된 Fixture 종단 간 재생
 
@@ -530,11 +529,8 @@ Data 7의 기술 완료 기준은 모두 충족했다. canonical Fixture·Seed�
 제공하는 결과는 팀에 의미가 있으므로 기존 `CHANGELOG.md` Data 항목을
 확장했다.
 
-Forest 전체는 완료 처리하지 않는다. Data 6의 Backend·Frontend 공동 승인과
-그에 따른 importer·Mock 또는 명시적 승인 기록이 아직 없기 때문이다.
-Data 7 이후 남은 첫 완료 게이트는
-[Fixture와 Seed 계약](../../../data/fixture_seed_contract.md)의 두 pending
-행을 실제 검토 결과로 갱신하는 것이다.
+Data 6의 Backend·Frontend 공동 승인과 Data 7 최종 회귀를 모두 확인해
+Forest 전체 완료 기준을 충족했다.
 
 ## 주요 변경 파일
 

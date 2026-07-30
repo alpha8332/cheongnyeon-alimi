@@ -284,9 +284,11 @@ Frontend 소비 테스트는 최소한 다음 상태를 확인한다.
 - 목록·상세가 같은 partial opt-in을 사용하도록 상세 링크 query 유지
 - TypeScript 컴파일러와 Node 내장 테스트 러너 기반 소비 계약 테스트 추가
 
-현재 PC에는 Node·npm이 없어 추가한 테스트·lint·build는 아직 실행하지
-못했다. 실행 증거가 생길 때까지 D0·D6 Frontend 상태는
-`review-pending`으로 유지한다.
+Node.js 24.18.0 환경에서 소비 테스트 7건, lint와 production build가
+통과했다. PostgreSQL canonical Seed의 실제 API도 기본 2건·partial opt-in
+4건, 숫자 ID 상세, partial 기본 404와 provenance 비노출을 확인했다. 실제
+API 모드 브라우저 캡처에서 홈·목록의 기본 valid 2건과 공개 필드 렌더링을
+확인해 D0·D6 Frontend 소비 검토를 완료했다.
 
 ## 통합 검증
 

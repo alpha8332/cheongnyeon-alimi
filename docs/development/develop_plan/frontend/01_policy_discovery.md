@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress
+- 상태: completed
 - 담당 영역: Frontend
 - Forest: Policy Discovery
 - 브랜치: `feature/frontend/policy-discovery`
@@ -46,8 +46,8 @@ Data Pipeline Forest가 제공한 canonical Seed와 Backend의 공개 `PolicyDto
 | Slice | 상태 | 내용 |
 | --- | --- | --- |
 | FE 1 | completed | Frontend Foundation: 라우터, 레이아웃, 기본 UI |
-| FE 2 | in-progress | Policy Discovery: 타입, Mock, 목록·상세·필터 UI |
-| FE 2A | in-progress | 공개 Policy API 계약 정합화와 소비 테스트 |
+| FE 2 | completed | Policy Discovery: 타입, Mock, 목록·상세·필터 UI |
+| FE 2A | completed | 공개 Policy API 계약 정합화와 소비 테스트 |
 
 ## 검증 계획
 
@@ -66,10 +66,12 @@ Data Pipeline Forest가 제공한 canonical Seed와 Backend의 공개 `PolicyDto
 
 ## 위험과 미확정 사항
 
-- 이 PC에는 Node·npm이 없어 FE 2A build·lint·소비 테스트 실행 증거가
-  생길 때까지 Frontend 공동 승인을 완료 처리하지 않음
+- Node 기반 FE 2A build·lint·소비 테스트, 실제 PostgreSQL Policy API
+  HTTP 검증과 실제 API 모드 홈·목록 브라우저 렌더링을 완료함
 - 관리자 provenance 조회는 공개 Policy API 범위 밖이며 별도 인증·관리자
   API 계약이 필요
+- `npm audit`이 client-only 앱에서 사용하지 않는 React Router RSC mode
+  취약점 high 2건을 보고하며 호환 가능한 의존성 조정 여부를 별도로 검토
 
 ## 관련 문서
 

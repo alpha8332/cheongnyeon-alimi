@@ -5,7 +5,7 @@
 - 상태: 기술 기준선
 - Data 검증: 완료
 - Backend 승인: 완료
-- Frontend 승인: review-pending
+- Frontend 승인: 완료
 - 기준 Schema: `NormalizedProgram` 1.0.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
@@ -115,8 +115,9 @@ Frontend가 타입과 Mock을 구현할 때 canonical Seed를 공개 API DTO로 
 Frontend 승인 증거는 위 경계를 반영한 TypeScript 타입·Mock 소비 테스트 또는
 담당자 명시적 검토 기록이다. `feature/frontend/policy-discovery`의 FE 2A에서
 공개 DTO·endpoint, pagination, partial 기본 노출과 상세 ID 계약을 코드와
-소비 테스트에 반영했다. 이 PC에는 Node·npm이 없어 테스트·lint·build 실행
-증거가 아직 없으므로 D0의 Frontend 승인은 검토 대기 상태다.
+소비 테스트에 반영했다. 테스트 7건·lint·build와 실제 PostgreSQL API HTTP
+검증을 통과했고, 실제 API 모드 브라우저 캡처에서 기본 valid 2건과 공개
+필드 렌더링을 확인해 D0의 Frontend 승인을 완료했다.
 
 현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
 기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
@@ -183,7 +184,7 @@ uv run python -B scripts/build_data_fixtures.py --check
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
 | Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
-| Frontend | review-pending | FE 2A에서 공개 `PolicyDto`, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in과 소비 테스트를 반영했으며 Node 환경에서 test·lint·build 실행 증거 필요 |
+| Frontend | approved | FE 2A 공개 `PolicyDto`, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in의 test·lint·build, 실제 API HTTP와 브라우저 렌더링 검증 통과 |
 
 ### Frontend 초기 Mock 검토 결과 (2026-07-28)
 
@@ -208,12 +209,11 @@ FE 2A는 위 변경 요청을 타입·Mock·API Client와 화면에 반영했다
 Seed의 provenance·invalid 입력 경계는 Mock adapter 내부에만 두고 공개
 `PolicyDto`에서는 제거한다. 기본 valid 2건과 partial opt-in 4건,
 pagination envelope와 숫자 `id` 목록·상세 경계를 같은 Mock contract로
-구현했다. 추가한 소비 테스트의 실행과 build·lint가 남아 Frontend 상태는
-`review-pending`이다.
+구현했다. 소비 테스트 7건·lint·build, PostgreSQL 실제 API HTTP와 실제
+API 모드 브라우저 렌더링을 확인해 Frontend 소비 승인을 완료했다.
 
-Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
-안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest
-계획·개발 기록을 갱신하고 Data 6를 `completed`로 전환한다.
+Backend와 Frontend의 승인 증거가 모두 확인되어 Data 6의 기술 산출물을
+안정적인 영역 간 계약으로 확정했다.
 
 [bokjiro-api]: https://www.data.go.kr/data/15090532/openapi.do
 [youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide

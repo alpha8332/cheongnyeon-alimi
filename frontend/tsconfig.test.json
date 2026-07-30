@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "rootDir": ".",
-    "outDir": "node_modules/.tmp/policy-contract-tests"
+    "outDir": ".test-dist"
   },
   "include": [
     "src/api/policyRequest.ts",
