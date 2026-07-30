@@ -23,5 +23,5 @@
 
 ## 현재 문서
 
-- [Collector 실행](collector.md): 지원 source, 환경변수, 제한 수집과 Raw
-  저장 확인
+- [Collector 실행](collector.md): 지원 source, 환경변수, 제한 수집, Raw
+  저장과 저장된 Runtime Raw의 PostgreSQL 재처리

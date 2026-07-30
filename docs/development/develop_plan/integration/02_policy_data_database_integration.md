@@ -9,7 +9,7 @@
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D3 completed (D0 Frontend review-pending)
+- 현재 Slice: D4 completed (D0 Frontend review-pending)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -192,7 +192,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D4 - Runtime Raw 재처리와 DB 적재
 
-- 상태: pending
+- 상태: completed
 - 목적: 기존 Runtime Raw를 추가 API 호출 없이 같은 DB 경계로 적재한다.
 - 선행 조건:
   - D2 완료

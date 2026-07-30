@@ -8,7 +8,7 @@
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D3 completed (D0 Frontend review-pending)
+- 현재 Slice: D4 completed (D0 Frontend review-pending)
 
 ## 목적
 
@@ -18,7 +18,9 @@ PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한�
 D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 확정했다.
 D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조회까지
 통과하는 전용 통합 테스트 경계를 확정했다. D3에서는 실제 PostgreSQL에
-적재된 Seed를 Policy 목록·상세 API로 조회하고 공개 응답 계약을 확정한다.
+적재된 Seed를 Policy 목록·상세 API로 조회하고 공개 응답 계약을 확정했다.
+D4에서는 저장된 Runtime Raw를 외부 재호출 없이 재처리해 같은 Backend
+Importer와 PostgreSQL source batch transaction으로 연결한다.
 
 ## Forest 범위
 
@@ -36,7 +38,7 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
 | D1 | completed | 31필드 JSON·Importer·ORM·PostgreSQL·API 매핑과 비교 기준 확정 |
 | D2 | completed | canonical Seed 4건의 Schema → Importer → PostgreSQL → Repository 통합 검증 |
 | D3 | completed | 실제 PostgreSQL 기반 목록·상세·필터·오류 API 계약 검증 |
-| D4 | pending | Runtime Raw 재처리와 DB 적재 예정 |
+| D4 | completed | 최신 source Raw 회차의 재처리·품질 분리·원자적 DB 적재와 재실행 검증 |
 | D5 | optional | 최소 실행 이력 구현 여부 협의 예정 |
 | D6 | pending | Frontend 최종 인계와 Data 6 종료 예정 |
 
@@ -135,6 +137,42 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
   완료 조건이므로 `docs/index.md` 인계 보드에 `INT-02-D3-FE`를
   `review-pending`으로 등록했다.
 
+### D4 - Runtime Raw 재처리와 DB 적재
+
+- `collectors/runtime.py`에 Git 제외 `runtime/raw` 또는 주입한 합성 Raw
+  root를 안전하게 탐색하고 `RawDocumentStore.load` → source Extractor →
+  Normalizer·Validator로 재처리하는 adapter를 구현했다.
+- source의 가장 최신 `list_response`를 회차 경계로 선택하고 그
+  `document_id`를 부모로 참조하는 list item만 처리한다. detail은 선택 item과
+  external ID가 같고 목록 수집 시각 이후인 문서 중 최신 한 건만 결합한다.
+- `--limit`은 list item에만 적용하며 부모 response와 연결 detail은 처리
+  문서 수에 포함하되 제한 수에는 포함하지 않는다. 최신 response에 item이
+  없으면 과거 회차로 조용히 후퇴하지 않는다.
+- Normalizer 결과의 valid·partial program만 기존 Backend
+  `import_programs`에 전달하고 invalid는 transaction 전에 분리한다. invalid
+  issue에는 오류 코드·JSON path와 기여 Raw document ID만 보존한다.
+- `backend/app/services/runtime_importer.py`는 Data adapter의 accepted
+  program dict를 기존 Backend importer에 전달할 뿐 Collector가 ORM이나
+  SQLAlchemy Session을 알게 하지 않는다.
+- `scripts/import_runtime_data.py`에 `--source`, `--raw-root`, `--limit`,
+  `--dry-run` CLI를 추가했다. 출력은 처리·DB 집계와 안전한 issue metadata만
+  포함하고 Raw payload, source URL query, 인증키를 출력하지 않는다.
+- CLI는 Backend 전역 development engine을 재사용하지 않고 `echo=False`인
+  전용 engine·session factory를 생성한다. DB URL·비밀번호와 SQL parameter가
+  출력되지 않도록 하고 종료 시 session과 engine을 정리한다.
+- source별 accepted batch는 한 DB transaction으로 처리한다. DB write 하나가
+  실패하면 accepted batch 전체를 rollback하고 validation invalid와 DB
+  failure를 별도 수치로 유지한다.
+- 같은 Runtime Raw 재실행은 `(source_id, external_id)` 경계에서
+  `unchanged`로 집계하며 중복 row를 만들지 않는다.
+- `opensource_plan` 원안은 진입점과 idempotency를 D3·D4로 나누고
+  `--include-partial`을 제안한다. 현재 Forest는 이를 D4로 통합하고 공통
+  계약에서 valid·partial을 모두 소비 가능 데이터로 확정했으므로, 현재
+  코드·API와 충돌하는 선택 옵션을 추가하지 않고 partial을 항상 적재한다.
+- 실제 `runtime/raw`는 이 PC에 없어 운영 Raw 성공 smoke는 실행하지 않았다.
+  저장 경로 부재가 DB 변경 없이 명확한 종료 코드 1을 반환하는지만 확인했다.
+  자동·PostgreSQL 검증은 외부 네트워크 없이 합성 Raw Fixture로 수행했다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/02_policy_data_database_integration.md`
@@ -153,10 +191,18 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
 - `backend/tests/test_policy_mapping_contract.py`
 - `tests/integration/test_seed_to_database.py`
 - `tests/integration/test_seed_to_policy_api.py`
+- `collectors/runtime.py`
+- `backend/app/services/runtime_importer.py`
+- `scripts/import_runtime_data.py`
+- `tests/test_runtime_replay.py`
+- `tests/test_runtime_import_cli.py`
+- `tests/integration/test_runtime_to_database.py`
 - `docs/architecture/policy_database_mapping.md`
 - `docs/architecture/README.md`
 - `docs/data/data_schema.md`
 - `docs/api/policies.md`
+- `docs/operations/collector.md`
+- `docs/operations/README.md`
 
 ## 설계 결정
 
@@ -347,6 +393,66 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
   `.venv\Scripts\python.exe -B scripts/validate_docs.py` 통과
 - D3 공백 검사:
   `git diff --check` 통과
+- D4 Runtime adapter·CLI 단위 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  tests/test_runtime_replay.py tests/test_runtime_import_cli.py -q`
+  8건 통과. 합성 Raw 재처리 중 외부 network 연결 0회와 CLI 전용
+  non-echo engine 생성을 함께 검증했다.
+- D4 실제 Runtime Raw smoke:
+  `.venv\Scripts\python.exe -B scripts/import_runtime_data.py
+  --source youthcenter-api --raw-root runtime/raw --dry-run`은
+  `runtime/raw`가 없어 명확한 오류와 종료 코드 1을 반환했다. 실제 Runtime
+  적재 성공으로 기록하지 않는다.
+- D4 PostgreSQL 전용 통합 테스트:
+  로컬 PostgreSQL 18의 `cheongnyeon_alimi_test`에서
+  `.venv\Scripts\python.exe -B -m pytest
+  tests/integration/test_runtime_to_database.py -q` 1건 통과
+- D4 실제 PostgreSQL Backend·Integration 회귀:
+  비밀번호 없는 `TEST_DATABASE_URL`과 임시 `PGPASSFILE`을 사용해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests tests/integration -q`
+  58건 통과, Starlette TestClient deprecation 경고 1건
+- D4 전체 Data·Integration 회귀:
+  같은 PostgreSQL 환경에서
+  `.venv\Scripts\python.exe -B -m pytest tests -q` 91건과 subtest 25건
+  통과, Starlette TestClient deprecation 경고 1건
+- D4 PostgreSQL 결과:
+  youthcenter Raw 4건 → extracted 3건 → valid 2건·invalid 1건,
+  Bokjiro Raw 4건 → extracted 2건 → partial 2건으로 집계했다. dry-run
+  rollback 0건, 강제 DB failure 시 source accepted batch 0건, 정상 최초
+  적재 4건, 같은 Raw 재실행 unchanged 4건과 invalid 적재 0건을 확인했다.
+  최종 DB 31개 필드는 canonical Seed와 일치했다.
+- D4 최초 실제 CLI 로깅 검사:
+  명령은 성공했지만 기존 전역 development `SessionLocal`의 SQLAlchemy
+  `echo=True`가 SQL parameter의 정규화 데이터·provenance를 출력하고
+  Windows CP949 encoding 오류를 냈다. 원본 Raw byte와 인증키는 출력되지
+  않았지만 D4 로그 최소화 기준 실패로 판정했다.
+- D4 CLI 로깅 수정:
+  Runtime CLI가 `echo=False` 전용 engine을 만들도록 분리했다. 수정 후 실제
+  CLI의 dry-run은 inserted 2·invalid 1·DB 변경 0, 최초 youthcenter 적재는
+  inserted 2, 재실행은 unchanged 2, Bokjiro 적재는 partial·inserted 2로
+  통과했고 SQL·parameter·provenance echo는 0건이었다.
+- D4 검증 중 자격증명 정리 경합:
+  추가 CLI 검증과 pgpass 삭제 시점이 겹쳐 Alembic upgrade 후 CLI와
+  downgrade가 `OperationalError: no password supplied`로 실패했다.
+  pgpass를 재생성해 남은 `20260728_0001 (head)`를 `base`로 복구하고
+  `to_regclass('public.policies') IS NULL`을 확인한 뒤 전체 CLI 흐름을 다시
+  통과시켰다. 운영 DB와 실제 데이터에는 영향이 없었다.
+- D4 자격증명·DB 정리:
+  최종 CLI 검증 종료 시 Alembic `base` downgrade와 `policies` 테이블 부재를
+  확인했고, 이후 임시 `pgpass` 파일의 `Test-Path`가 `False`임을 확인했다.
+- D4 Data 계약 회귀:
+  `.venv\Scripts\python.exe -B -m unittest
+  tests.test_normalization tests.test_data_fixtures -v` 23건 통과
+- D4 결정적 Fixture 검사:
+  `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
+  12개 파일 통과
+- D4 문서 검증기 단위 테스트:
+  `.venv\Scripts\python.exe -B -m unittest tests.test_validate_docs -v`
+  10건 통과
+- D4 문서 검증:
+  `.venv\Scripts\python.exe -B scripts/validate_docs.py` 통과
+- D4 공백 검사:
+  `git diff --check` 통과
 - Frontend:
   Node와 npm이 없어 빌드·타입 검사를 실행하지 못했다. Policy DTO 타입과 Mock
   소비 코드도 현재 저장소에 없다.
@@ -364,10 +470,14 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
 - Frontend `src/routes/index.tsx`는 현재 존재하지 않는
   `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
   수정하지 않았다.
-- D4에서 저장된 Runtime Raw를 추가 외부 호출 없이 같은 importer·DB 경계로
-  연결한다.
+- D5에서 최소 CollectionRun을 이번 Forest에 구현할지 후속 운영 Forest로
+  넘길지 결정한다. D5는 선택 사항이지만 결정과 책임 경계는 기록해야 한다.
 - D6에서 D3의 실제 API 계약을 Frontend 타입·소비 테스트 또는 명시적 승인과
   연결한다.
 - Backend는 `BE-POLICY-TIMESTAMP-ORDER`에서 최초 insert의
   `created_at`·`updated_at` 순서 불변식과 생성 주체를 결정해야 한다. D3는
   현재 계약에 없는 순서를 임의로 강제하지 않는다.
+- D4 Runtime CLI는 non-echo engine으로 분리했지만 Backend 전역 development
+  engine의 `echo=True` 정책은 범위 밖이라 변경하지 않았다. 다른 write
+  진입점의 정책 값·provenance 로그 가능성은 `BE-SQL-ECHO-LOGGING`에서
+  Backend·보안·운영 영향과 함께 결정해야 한다.

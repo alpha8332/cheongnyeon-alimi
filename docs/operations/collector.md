@@ -7,8 +7,9 @@ youthcenter-api
 bokjiro-central-welfare-api
 ```
 
-현재 Collector는 명시적 CLI 실행만 지원한다. Scheduler, 전체 수집과 운영 DB
-적재는 구현하지 않았다.
+현재 Collector는 명시적 CLI 실행만 지원한다. 저장된 Runtime Raw는 별도
+재처리 CLI로 추가 외부 호출 없이 PostgreSQL에 적재할 수 있다. Scheduler,
+전체 수집과 자동 주기 적재는 구현하지 않았다.
 
 ## 실행 환경
 
@@ -84,6 +85,73 @@ runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
 Collector는 비밀값을 제외한 오류 분류만 출력하고 종료 코드 1을 반환한다.
 429 또는 복지로 결과 코드 `22`는 재시도하지 않는다.
 
+## 저장된 Runtime Raw 재처리
+
+재처리는 Collector를 호출하지 않고 저장된 envelope만 다음 경계로 통과시킨다.
+
+```text
+runtime/raw
+→ RawPolicyDocument load
+→ source Extractor
+→ Normalizer·Validator
+→ valid·partial batch
+→ Backend Import Service
+→ PostgreSQL
+```
+
+전제 조건:
+
+- Backend 의존성을 설치한 저장소 `.venv`를 사용한다.
+- `DATABASE_URL` 대상 DB에 `alembic upgrade head`를 먼저 적용한다.
+- URL이나 문서에 비밀번호를 넣지 않고 PostgreSQL pgpass 등 로컬 비밀 주입
+  수단을 사용한다.
+- 저장소 루트에서 명령을 실행한다.
+
+온통청년 최신 Raw 회차를 검증만 하고 rollback:
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
+  --source youthcenter-api `
+  --raw-root runtime/raw `
+  --limit 100 `
+  --dry-run
+```
+
+실제 적재는 같은 명령에서 `--dry-run`만 제거한다. 복지로는 source를
+`bokjiro-central-welfare-api`로 지정한다.
+
+| 옵션 | 기본값 | 규칙 |
+| --- | --- | --- |
+| `--source` | 필수 | 현재 지원하는 두 source ID 중 하나 |
+| `--raw-root` | `runtime/raw` | Git 제외 Runtime Raw root |
+| `--limit` | `100` | 최신 회차에서 처리할 list item 수, 1~500 |
+| `--dry-run` | 꺼짐 | 실제 transaction을 수행한 뒤 rollback |
+
+### 회차와 품질 처리
+
+- source별 가장 최신 `list_response` 한 건을 회차 경계로 사용한다.
+- 해당 response를 `parent_document_id`로 참조하는 `list_item`만 처리한다.
+- detail은 선택된 item과 external ID가 같고 목록 수집 시각 이후인 문서 중
+  최신 한 건만 결합한다.
+- `--limit`은 item에 적용하며 부모 response와 연결된 detail은 제한 수에
+  포함하지 않는다.
+- 최신 response에 item이 없으면 과거 회차로 후퇴하지 않고 실패한다.
+- valid·partial은 같은 source batch transaction으로 importer에 전달하고
+  invalid는 DB transaction 전에 분리한다.
+- DB write 하나가 실패하면 해당 accepted batch 전체를 rollback한다.
+- 같은 Raw를 재실행하면 같은 `(source_id, external_id)`를 사용해
+  `unchanged` 또는 명시적인 `updated`로 집계하며 중복 row를 만들지 않는다.
+
+성공 요약은 source, Raw·추출·valid·partial·invalid·accepted 수와
+inserted·updated·unchanged·skipped·rejected·failed 수만 출력한다. 실패
+항목은 source ID, external ID, 안전한 오류 코드·경로·오류 타입과 기여 Raw
+document ID만 출력하며 Raw payload, source URL query와 인증키를 출력하지
+않는다.
+
+`runtime/raw`가 없거나 선택한 source에 Raw가 없으면 DB를 변경하지 않고
+명확한 오류와 종료 코드 1을 반환한다. `--dry-run`도 실제 DB upsert 결과를
+계산하므로 연결 가능한 Migration 적용 DB가 필요하다.
+
 ## 테스트와 실제 호출 분리
 
 ```powershell
@@ -93,3 +161,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 위 테스트는 Mock HTTP Client와 임시 Raw root를 사용하며 외부 API를 호출하지
 않는다. 실제 호출은 환경변수가 준비된 상태에서 `--source`를 지정한 CLI
 명령을 별도로 실행할 때만 발생한다.
+
+Runtime 재처리 자동 테스트는 `data/fixtures/raw`의 합성 Raw를 사용하고 외부
+API를 호출하지 않는다. 운영 `runtime/raw`는 Git에 포함하지 않으며, 경로가
+없는 환경의 smoke 결과를 성공적인 Runtime 적재로 기록하지 않는다.

@@ -64,7 +64,7 @@
 - [Backend Windows 로컬 환경](development/backend_local_setup.md):
   Windows `.venv`, PostgreSQL 테스트 DB와 Backend 전체 테스트 절차
 - [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
-  환경변수와 Runtime Raw 경계
+  환경변수, Runtime Raw 경계와 저장 Raw의 PostgreSQL 재처리
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
@@ -97,6 +97,7 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 | `FE-POLICY-ROUTE` | `src/routes/index.tsx`가 존재하지 않는 `ProgramListPage`를 import하는 문제 확인 | `action-needed` | Frontend | Frontend 빌드·라우트 기준에 맞는 구현 또는 참조 정정과 검증 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
 | `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
 | `BE-POLICY-TIMESTAMP-ORDER` | 최초 insert에서 application `updated_at`이 DB default `created_at`보다 먼저 생성되는 순서의 허용 여부 결정 | `action-needed` | Backend, API 영향 검토 | 두 시각의 순서 불변식을 정하고 같은 DB 시각 사용 또는 순서 비보장 문서화 후 테스트 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `BE-SQL-ECHO-LOGGING` | Backend development engine의 SQL parameter echo가 정책 값·provenance를 출력하는 범위 검토 | `action-needed` | Backend, 보안·운영 영향 검토 | 개발 SQL 로깅 기본값과 민감 데이터 기준을 정하고 write 진입점의 parameter 비노출 테스트·문서 동기화 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md), [Backend 로컬 환경](development/backend_local_setup.md) |
 
 ### FE·BE 담당자 인계 기록 방법
 
