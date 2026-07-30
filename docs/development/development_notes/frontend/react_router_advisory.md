@@ -4,22 +4,23 @@
 
 - 작업 일자: 2026-07-30
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `fix/backend/week2-hardening`
 - 관련 계획:
   [React Router Advisory Review Forest 개발 계획](../../develop_plan/frontend/02_react_router_advisory.md)
-- 현재 Slice: F0 completed
+- 현재 Slice: F3 completed
 
 ## 목적
 
-현재 lockfile에서 보고되는 React Router RSC advisory를 재현하고, 취약
-package 경로와 현재 client-only 앱의 실제 실행 경로를 구분한다.
+현재 lockfile에서 보고된 React Router RSC advisory를 재현하고, 취약
+package 경로와 현재 client-only 앱의 실제 실행 경로를 구분한 뒤 호환
+수정과 Frontend 회귀를 완료한다.
 
 ## Forest 범위
 
-F0에서는 공식 advisory와 package metadata, 현재 설치 트리와 Frontend
-소스를 확인한다. 호환 버전 결정, manifest·lockfile 변경과 회귀 검증은
-각각 후속 F1~F3 범위다.
+공식 advisory와 package metadata, 현재 설치 트리와 Frontend 소스를
+확인하고, 호환 버전 결정, manifest·lockfile 변경과 자동·Browser 회귀를
+F0~F3에서 수행했다.
 
 ## Slice 진행 현황
 
@@ -28,7 +29,7 @@ F0에서는 공식 advisory와 package metadata, 현재 설치 트리와 Fronten
 | F0 | completed | high 2건 재현, package 경로와 현재 앱의 RSC 도달 불가 확인 |
 | F1 | completed | `react-router@8.3.0` package 교체와 공식 import migration 결정 |
 | F2 | completed | v8 의존성·imports·Node.js 실행 계약 반영, audit 0건 |
-| F3 | in-progress | clean install·자동 검증 통과, 데스크톱 Browser 회귀 대기 |
+| F3 | completed | clean install·자동·HTTP·데스크톱 Browser 회귀 통과 |
 
 ## 구현 내용
 
@@ -110,7 +111,7 @@ F1 결정은 `react-router@8.3.0`으로 upgrade하는 것이다. F2에서
 - Router 구성, route path, Policy API·DTO·Mock 계약과 화면 로직은 변경하지
   않았다.
 
-### F3 - VS Code 자동 회귀
+### F3 - 자동·Browser 회귀
 
 - `npm ci --ignore-scripts`로 lockfile 기반 clean install을 재현했다.
 - clean install 직후 설치 트리와 audit를 확인하고 test·lint·production
@@ -118,9 +119,17 @@ F1 결정은 `react-router@8.3.0`으로 upgrade하는 것이다. F2에서
 - Vite Mock mode 개발 서버를 `http://localhost:3000`에 기동했다.
 - 홈, 정책 목록, 숫자 ID 상세와 partial opt-in 상세 route가 모두 HTTP
   200으로 SPA entry를 반환하는 것을 확인했다.
-- VS Code Codex에서는 Browser를 사용할 수 없어 렌더링, 클릭과 browser
-  console 검증은 실행하지 않았다. ChatGPT 데스크톱 앱 Browser 검증을
-  성공으로 기록하기 전까지 F3는 `in-progress`다.
+- ChatGPT 데스크톱 앱의 Browser에서 `http://localhost:3000`을 열어 홈의
+  주요 정책 미리보기, `/programs`의 검색·필터와 정책 카드,
+  `/programs/1` 숫자 ID 상세가 실제 콘텐츠로 렌더링되는지 확인했다.
+- 정책 목록의 `정보가 일부 누락된 정책 포함`을 선택하면 partial 정책
+  카드가 나타났고, 카드의 Link를 통해
+  `/programs/3?include_partial=true` 상세로 이동해 누락 정보 대체 문구를
+  포함한 상세 콘텐츠가 렌더링되는지 확인했다.
+- 헤더의 `정책 목록`·`홈`, 정책 카드, 상세의 `← 목록으로`, 홈 미리보기
+  카드 Link 이동이 모두 정상 동작했다.
+- 확인한 모든 화면에서 오류 화면이나 빈 화면이 발생하지 않았고 browser
+  console warning·error는 0건이었다.
 
 ## 주요 변경 파일
 
@@ -191,27 +200,25 @@ F0~F1은 조사·결정만 기록했고 F2에서 위 Frontend 의존성·imports
 - F3 `npm run build`: TypeScript와 Vite production build 통과
 - F3 HTTP route: `/`, `/programs`, `/programs/1`,
   `/programs/3?include_partial=true` 모두 200
-- `npm test`: 소비 계약 테스트 7건 통과
-- `npm run lint`: 오류·경고 없이 통과
-- `npm run build`: TypeScript와 Vite production build 통과
-- Vite 개발 서버 `http://127.0.0.1:3000/`: HTTP 200과 client entry HTML
-  응답 확인
-- 브라우저 직접 회귀: 현재 실행 환경에 제어 가능한 브라우저가 없어 미실행.
-  공식 제품 경계상 Codex CLI·VS Code Codex에서는 Browser를 사용할 수
-  없고, 현재 브라우저 런타임의 사용 가능 목록도 비어 있음을 확인했다.
-  성공으로 처리하지 않는다.
+- F3 Browser 홈: 제목, 검색, 주요 정책 2건과 목록 이동 UI 정상 렌더링
+- F3 Browser 정책 목록: 검색·지역·카테고리·연령 필터, 기본 정책 2건과
+  partial opt-in 후 partial 정책 2건 정상 렌더링
+- F3 Browser 숫자 ID 상세: `/programs/1`의 기관·지역·연령·지원·일정
+  콘텐츠 정상 렌더링
+- F3 Browser partial 상세: `/programs/3?include_partial=true`의 partial
+  표기와 지역·연령·신청 방법·일정 대체 문구 정상 렌더링
+- F3 Browser Link 이동: 헤더 홈·정책 목록, 기본·partial 정책 카드,
+  상세의 목록 복귀, 홈 미리보기 카드 이동 통과
+- F3 Browser 오류 상태: 확인한 route에서 오류·빈 화면 없음, console
+  warning·error 0건
 - `python scripts/validate_docs.py`: 통과
 - `git diff --check`: 통과
 
-F3 clean install과 자동·HTTP 검증은 통과했다. ChatGPT 데스크톱 앱의
-Browser에서 직접 회귀를 수행하고 그 결과를 기록하는 단계만 남았다.
+F3 clean install과 자동·HTTP·Browser 회귀를 모두 통과해 Forest 완료
+기준을 충족했다.
 
 ## 남은 작업
 
-- ChatGPT 데스크톱 앱의 Browser에서 `http://localhost:3000`을 열고 홈,
-  정책 목록, `/programs/1`, `/programs/3?include_partial=true`의 렌더링과
-  탐색, browser console 오류 유무를 확인한다.
-- Browser 결과와 최종 문서 검증을 기록한 뒤 F3·Forest 상태와 인계 보드를
-  완료로 갱신한다.
+- 현재 Forest 완료 범위에서 남은 작업은 없다.
 - RSC mode, RSC server entry 또는 server action 도입 시 현재 도달 불가
   판정을 즉시 재검토한다.

@@ -4,7 +4,7 @@
 
 - 번호: Frontend 02
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Backend Policy Runtime Safety](../backend/03_policy_runtime_safety.md)
@@ -122,7 +122,7 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
 
 ### F3 - Frontend 회귀와 문서 동기화
 
-- 상태: in-progress
+- 상태: completed
 - 목적:
   의존성 결정이 기존 Policy Discovery 동작을 깨뜨리지 않았음을 확인한다.
 - 산출물:
@@ -139,10 +139,11 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
   - `python scripts/validate_docs.py` 통과
 
 2026-07-30 VS Code 단계에서 clean install, audit, test·lint·build와 주요
-route의 HTTP 200 진입을 확인했다. Vite Mock mode 개발 서버는
-`http://localhost:3000`에서 실행 중이다. ChatGPT 데스크톱 앱의 Browser로
-렌더링·탐색·console 상태를 직접 확인하고 결과를 기록하기 전까지 F3와
-Forest는 완료 처리하지 않는다.
+route의 HTTP 200 진입을 확인했다. 이어 ChatGPT 데스크톱 앱의 Browser에서
+홈, 정책 목록, 숫자 ID 상세와 partial opt-in 상세가 실제 콘텐츠로
+렌더링되는지 확인했다. 헤더, 정책 카드와 목록 복귀 Link 기반 이동이
+정상이고 오류·빈 화면이나 browser console warning·error가 없어 F3와
+Forest를 완료했다.
 
 ## 검증 계획
 

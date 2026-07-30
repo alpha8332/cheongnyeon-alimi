@@ -11,7 +11,7 @@
 | Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
 | Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | completed |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
-| Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | in-progress |
+| Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
 | Backend 01 | Backend Baseline | [개발 계획](backend/01_policy_baseline.md) | completed |
 | Backend 02 | Policy Persistence Hardening | [개발 계획](backend/02_policy_persistence_hardening.md) | completed |
@@ -38,7 +38,7 @@ Forest는 완료 기준을 각각 유지하되 실제 작업 브랜치는 통합
 | ---: | --- | --- | --- |
 | 1 | `BE-POLICY-TIMESTAMP-ORDER` | Backend 03에서 즉시 처리 | `fix/backend/week2-hardening` |
 | 1 | `BE-SQL-ECHO-LOGGING` | Backend 03에서 함께 처리 | `fix/backend/week2-hardening` |
-| 2 | React Router RSC advisory high 2건 | Frontend 02에서 영향·호환 버전 검토 후 수정 또는 위험 수용 결정 | `fix/backend/week2-hardening` |
+| 2 | React Router RSC advisory high 2건 | Frontend 02에서 `react-router@8.3.0` 전환과 회귀 검증 완료 | `fix/backend/week2-hardening` |
 | 3 | `BE-ADMIN-RUN-HISTORY` | Backend 04 → Backend 05 → Frontend 03 순서로 진행 | `feature/backend/admin-run-management` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 

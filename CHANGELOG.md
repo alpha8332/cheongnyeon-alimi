@@ -10,6 +10,10 @@
 
 ### Fixed
 
+- React Router RSC advisory high 2건에 대응해 client-only Frontend를
+  `react-router@8.3.0`으로 전환하고 자동·HTTP·Browser 라우팅 회귀로
+  기존 Policy Discovery 동작을 확인
+  ([개발 기록](docs/development/development_notes/frontend/react_router_advisory.md))
 - Policy 최초 적재 시 `updated_at < created_at`이 될 수 있던 순서를 단일
   UTC write instant와 DB constraint로 바로잡고, 기존 역전 행 보정 및
   update 시각 비감소를 보장
