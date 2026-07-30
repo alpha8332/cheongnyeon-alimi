@@ -1,5 +1,5 @@
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -134,6 +134,7 @@ def test_policy_constraint_and_index_names_are_stable():
         "ck_policies_age_max_range",
         "ck_policies_age_order",
         "ck_policies_application_date_order",
+        "ck_policies_timestamp_order",
         "policy_application_schedule",
         "policy_application_status",
         "policy_data_quality_status",
@@ -161,6 +162,38 @@ def test_policy_constraint_and_index_names_are_stable():
 )
 def test_sqlite_unit_boundary_enforces_portable_checks(db, invalid_values):
     db.add(Policy(**policy_values(**invalid_values)))
+
+    with pytest.raises(IntegrityError):
+        db.flush()
+
+    db.rollback()
+
+
+def test_sqlite_unit_boundary_enforces_timestamp_order(db):
+    db.add(
+        Policy(
+            **policy_values(
+                created_at=datetime(
+                    2026,
+                    7,
+                    30,
+                    0,
+                    0,
+                    1,
+                    tzinfo=timezone.utc,
+                ),
+                updated_at=datetime(
+                    2026,
+                    7,
+                    30,
+                    0,
+                    0,
+                    0,
+                    tzinfo=timezone.utc,
+                ),
+            )
+        )
+    )
 
     with pytest.raises(IntegrityError):
         db.flush()

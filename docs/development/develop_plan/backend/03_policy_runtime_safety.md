@@ -5,7 +5,7 @@
 - 번호: Backend 03
 - 담당 영역: Backend
 - 상태: in-progress
-- 현재 Slice: R0 completed, R1 대기
+- 현재 Slice: R1 completed, R2 대기
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Frontend React Router Advisory Review](../frontend/02_react_router_advisory.md)
@@ -101,7 +101,7 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ### R1 - Policy timestamp 순서 보장
 
-- 상태: draft
+- 상태: completed
 - 목적:
   최초 insert와 후속 upsert에서 합의한 시각 불변식을 구현한다.
 - 주요 작업:
@@ -120,6 +120,17 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - unchanged 재실행에서 두 시각의 불필요한 변경 없음
   - 실제 update에서 `updated_at` 감소 없음
   - SQLite와 실제 PostgreSQL 검증 결과 기록
+- 완료 결과:
+  - Importer가 하나의 UTC write instant를 최초 insert의
+    `created_at`·`updated_at`에 함께 전달함
+  - unchanged는 두 시각을 보존하고 update는 기존·incoming 시각 중 늦은
+    값을 사용하도록 SQLite·PostgreSQL 경계를 구현함
+  - 기존 역전 행을 보정한 뒤 `ck_policies_timestamp_order`를 추가하는
+    Alembic Migration과 downgrade를 구현함
+  - SQLite 관련 테스트 33건, Backend 비-PostgreSQL 회귀 59건과 실제
+    PostgreSQL Migration·upsert·API 종단 테스트 7건이 통과함
+  - 공개 DTO 타입·shape와 Schema·Fixture·Seed 계약은 유지하고 timestamp
+    의미만 DB 매핑·API 문서에 동기화함
 
 ### R2 - SQL parameter logging 안전화
 

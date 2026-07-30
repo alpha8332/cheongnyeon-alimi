@@ -8,6 +8,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Policy 최초 적재 시 `updated_at < created_at`이 될 수 있던 순서를 단일
+  UTC write instant와 DB constraint로 바로잡고, 기존 역전 행 보정 및
+  update 시각 비감소를 보장
+  ([개발 기록](docs/development/development_notes/backend/policy_runtime_safety.md))
+
 ### Added
 
 - Frontend Policy Discovery Slice: 공개 `PolicyDto`, canonical Seed Mock

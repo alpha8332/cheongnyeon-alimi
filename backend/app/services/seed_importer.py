@@ -5,12 +5,12 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import Boolean, literal_column, or_, select
+from sqlalchemy import Boolean, func, literal_column, or_, select
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.models.policy import Policy
+from app.models.policy import Policy, utc_now
 from collectors.normalized import DataQualityStatus
 from collectors.validation import NormalizedProgramValidator
 
@@ -122,6 +122,7 @@ def _identity_issue(
 
 
 def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
+    write_instant = utc_now()
     return {
         "schema_version": item["schema_version"],
         "source_id": _nonempty_string(item.get("source_id")),
@@ -154,7 +155,8 @@ def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
         "collected_at": parse_datetime(item["collected_at"]),
         "provenance": item["provenance"],
         "data_quality_status": item["data_quality_status"],
-        "updated_at": datetime.now(timezone.utc),
+        "created_at": write_instant,
+        "updated_at": write_instant,
     }
 
 
@@ -172,7 +174,10 @@ def _postgresql_upsert(db: Session, values: Mapping[str, Any]) -> str:
         field: getattr(statement.excluded, field)
         for field in MUTABLE_FIELDS
     }
-    update_values["updated_at"] = values["updated_at"]
+    update_values["updated_at"] = func.greatest(
+        Policy.updated_at,
+        statement.excluded.updated_at,
+    )
 
     statement = (
         statement.on_conflict_do_update(
@@ -205,6 +210,15 @@ def _values_equal(current: Any, incoming: Any) -> bool:
     return current == incoming
 
 
+def _nondecreasing_datetime(
+    current: datetime,
+    incoming: datetime,
+) -> datetime:
+    if _normalized_datetime(incoming) < _normalized_datetime(current):
+        return current
+    return incoming
+
+
 def _portable_upsert(db: Session, values: Mapping[str, Any]) -> str:
     existing = db.execute(
         select(Policy).where(
@@ -224,7 +238,10 @@ def _portable_upsert(db: Session, values: Mapping[str, Any]) -> str:
 
     for field in MUTABLE_FIELDS:
         setattr(existing, field, values[field])
-    existing.updated_at = values["updated_at"]
+    existing.updated_at = _nondecreasing_datetime(
+        existing.updated_at,
+        values["updated_at"],
+    )
     return "updated"
 
 

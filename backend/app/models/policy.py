@@ -121,7 +121,6 @@ class Policy(Base):
         DateTime(timezone=True),
         nullable=False,
         default=utc_now,
-        onupdate=utc_now,
         server_default=text("CURRENT_TIMESTAMP"),
     )
 
@@ -147,6 +146,10 @@ class Policy(Base):
             "application_start IS NULL OR application_end IS NULL "
             "OR application_start <= application_end",
             name="ck_policies_application_date_order",
+        ),
+        CheckConstraint(
+            "updated_at >= created_at",
+            name="ck_policies_timestamp_order",
         ),
         Index("ix_policies_source_id", "source_id"),
         Index("ix_policies_external_id", "external_id"),

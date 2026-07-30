@@ -8,14 +8,13 @@
 - 브랜치: `fix/backend/week2-hardening`
 - 관련 계획:
   [Backend Policy Runtime Safety Forest 개발 계획](../../develop_plan/backend/03_policy_runtime_safety.md)
-- 현재 Slice: R0 completed, R1 대기
+- 현재 Slice: R1 completed, R2 대기
 
 ## 목적
 
-Policy 최초 insert와 후속 upsert의 `created_at`·`updated_at` 생성 순서를
-SQLite와 실제 PostgreSQL에서 재현하고, Backend development SQL logging의
-statement·parameter 출력 경계를 확인한다. R0에서는 구현을 변경하지 않고
-R1·R2가 적용할 timestamp 불변식과 안전한 logging 기본값을 결정한다.
+Policy 최초 insert와 후속 upsert의 `created_at`·`updated_at` 순서 불변식을
+구현하고, Backend development SQL logging의 statement·parameter 출력
+경계를 안전화한다.
 
 ## Forest 범위
 
@@ -26,21 +25,20 @@ R1·R2가 적용할 timestamp 불변식과 안전한 logging 기본값을 결정
 - R1 timestamp와 R2 logging 구현 계약
 - 관련 계획·DB 매핑·인계 문서 동기화
 
-R0에서는 Backend 코드를 변경하지 않으며 Schema·Fixture·Seed·공개 DTO와
-Frontend 화면은 범위 밖이다.
+Schema·Fixture·Seed·공개 DTO와 Frontend 화면은 범위 밖이다.
 
 ## Slice 진행 현황
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | R0 | completed | SQLite·PostgreSQL timestamp와 development logging 경계 확정 |
-| R1 | draft | timestamp 순서 보장 |
+| R1 | completed | timestamp 순서 구현과 SQLite·PostgreSQL 검증 완료 |
 | R2 | draft | SQL parameter logging 안전화 |
 | R3 | draft | 통합 검증과 인계 종료 |
 
 ## 구현 내용
 
-### timestamp 생성 주체
+### R0 확인 당시 timestamp 생성 주체
 
 - Policy ORM의 `created_at`과 `updated_at`에는 Python `utc_now` default와
   DB `CURRENT_TIMESTAMP` server default가 모두 있다.
@@ -57,6 +55,21 @@ Frontend 화면은 범위 밖이다.
 - unchanged upsert는 두 시각을 보존한다.
 - 실제 update는 `created_at`을 보존하고 새 application `updated_at`을
   저장하지만 시스템 시각 역행에 대한 별도 nondecreasing 보호는 없다.
+
+### R1 timestamp 순서 구현
+
+- Importer가 Policy write마다 `utc_now()`를 한 번만 호출하고 최초 insert의
+  `created_at`·`updated_at`에 같은 UTC aware instant를 전달한다.
+- unchanged upsert는 기존 두 시각을 그대로 보존한다.
+- PostgreSQL upsert는 기존 값과 incoming 값의 `GREATEST`를 저장하고,
+  portable SQLite 경계는 UTC로 정규화한 두 값 중 늦은 값을 저장한다.
+- Importer의 명시적인 write instant를 ORM `onupdate`가 덮어쓰지 않도록
+  `updated_at`의 암묵적 Python `onupdate`를 제거했다. 현재 Policy 변경
+  writer는 Importer 하나이며 향후 writer도 `updated_at`을 명시해야 한다.
+- ORM과 새 Migration에 `updated_at >= created_at` constraint를 추가했다.
+- Migration은 constraint 추가 전에 기존 역전 행의 `updated_at`을
+  `created_at`으로 보정한다. downgrade는 constraint만 제거하며 이미 보정된
+  과거 시각을 원래 역전 값으로 복구하지 않는다.
 
 ### SQL logging 경계
 
@@ -107,6 +120,26 @@ Starlette TestClient의 `httpx` 사용 방식 deprecation 경고 1건은 R0 범�
 기존 경고다. 최초 진단 명령은 저장소 root `PYTHONPATH` 누락과 존재하지 않는
 `test_seed_importer.py` 경로 지정으로 각각 중단됐고, 경계를 수정한 위 명령만
 성공 결과로 기록한다.
+
+### R1 timestamp 회귀
+
+SQLite timestamp·constraint, Importer 매핑, Migration SQL을 포함한 R1 관련
+테스트 33건이 통과했다. 전체 Backend 테스트에서는 PostgreSQL URL 없이
+59건이 통과했고 PostgreSQL 전용 7건은 skip됐다.
+
+PostgreSQL 18.4의 격리 DB에서 Migration 보정·constraint
+upgrade/downgrade, PostgreSQL atomic upsert, Policy API 종단과 canonical
+Seed 통합 테스트 7건이 통과했다. 다음 경계를 실제 DB에서 확인했다.
+
+- 기존 `updated_at < created_at` 행을 `updated_at = created_at`으로 보정
+- constraint 적용 후 역전 update 거부
+- 최초 Importer insert의 `created_at == updated_at`
+- 시스템 시각 역행 중 변경 update의 기존 `updated_at` 보존
+- 시각 정상화 뒤 변경 update의 `updated_at` 증가
+- Migration downgrade에서 constraint 제거
+
+격리 DB는 테스트 후 삭제하고 존재하지 않음을 확인했다. Starlette
+TestClient deprecation 경고 1건은 기존 범위 밖 경고다.
 
 ### PostgreSQL 관련 통합 테스트
 
@@ -198,8 +231,10 @@ R2는 `ENVIRONMENT=development`가 SQL echo를 자동 활성화하지 않게 하
 
 - Normalized Schema, Fixture, Seed, null·빈 배열·enum 규칙은 변경하지 않는다.
 - 공개 Policy DTO의 필드 집합과 타입은 변경하지 않는다.
-- R1이 timestamp 불변식을 적용하면 공개 필드의 의미만 더 엄격해지므로
-  Policy DB 매핑과 API 문서를 함께 확인한다.
+- R1은 공개 필드의 타입·shape를 바꾸지 않고 timestamp 의미만 엄격하게
+  만든다. Frontend는 기존 timezone-aware string을 그대로 소비할 수 있다.
+- Migration은 기존 역전 행의 `updated_at`을 `created_at`으로 보정하므로
+  해당 행의 공개 `updated_at` 값은 한 번 변경될 수 있다.
 - R2 logging 변경은 API 응답과 Frontend 소비 계약에 영향이 없다.
 
 ## 주요 변경 파일
@@ -209,10 +244,14 @@ R2는 `ENVIRONMENT=development`가 SQL echo를 자동 활성화하지 않게 하
 - `docs/development/development_notes/README.md`
 - `docs/development/development_notes/backend/policy_runtime_safety.md`
 - `docs/architecture/policy_database_mapping.md`
+- `docs/api/policies.md`
 - `docs/index.md`
+- `backend/app/models/policy.py`
+- `backend/app/services/seed_importer.py`
+- `backend/alembic/versions/20260730_0003_enforce_policy_timestamp_order.py`
+- 관련 Backend 단위·PostgreSQL 테스트
 
 ## 남은 작업
 
-- R1에서 단일 write instant, nondecreasing update와 DB constraint 구현
 - R2에서 명시적인 SQL echo 설정과 parameter 비노출 구현
 - R3에서 전체 Backend·PostgreSQL 회귀와 두 인계사항 종료

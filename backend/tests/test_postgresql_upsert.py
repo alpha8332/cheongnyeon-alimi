@@ -2,8 +2,10 @@ import copy
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Barrier
+from unittest.mock import patch
 
 import pytest
 import sqlalchemy as sa
@@ -124,6 +126,91 @@ def test_postgresql_atomic_upsert_identity_and_outcomes():
 
         assert total == 5
         assert concurrent_count == 1
+    finally:
+        try:
+            command.downgrade(config, "base")
+            assert not sa.inspect(db_engine).has_table("policies")
+        finally:
+            db_engine.dispose()
+
+
+def test_postgresql_timestamp_order_and_nondecreasing_updates():
+    database_url = require_test_database_url()
+    config = migration_config(database_url)
+    db_engine = create_db_engine(database_url, environment="test")
+    session_factory = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=db_engine,
+    )
+    program = json.loads(SEED_PATH.read_text(encoding="utf-8"))[0]
+    first_instant = datetime(2026, 7, 30, 1, 0, tzinfo=timezone.utc)
+
+    try:
+        command.upgrade(config, "head")
+
+        with patch(
+            "app.services.seed_importer.utc_now",
+            return_value=first_instant,
+        ):
+            with session_factory() as db:
+                first = import_programs(db, [program])
+
+        with session_factory() as db:
+            policy = db.scalar(sa.select(Policy))
+            assert first.inserted == 1
+            assert policy.created_at == first_instant
+            assert policy.updated_at == first_instant
+
+        changed_program = copy.deepcopy(program)
+        changed_program["title"] = "시계 역행 중 변경된 PostgreSQL 정책"
+        with patch(
+            "app.services.seed_importer.utc_now",
+            return_value=datetime(
+                2026,
+                7,
+                30,
+                0,
+                0,
+                tzinfo=timezone.utc,
+            ),
+        ):
+            with session_factory() as db:
+                changed_during_clock_rollback = import_programs(
+                    db,
+                    [changed_program],
+                )
+
+        with session_factory() as db:
+            policy = db.scalar(sa.select(Policy))
+            assert changed_during_clock_rollback.updated == 1
+            assert policy.created_at == first_instant
+            assert policy.updated_at == first_instant
+
+        changed_program["title"] = "시계 정상화 후 변경된 PostgreSQL 정책"
+        recovered_instant = datetime(
+            2026,
+            7,
+            30,
+            2,
+            0,
+            tzinfo=timezone.utc,
+        )
+        with patch(
+            "app.services.seed_importer.utc_now",
+            return_value=recovered_instant,
+        ):
+            with session_factory() as db:
+                changed_after_clock_recovery = import_programs(
+                    db,
+                    [changed_program],
+                )
+
+        with session_factory() as db:
+            policy = db.scalar(sa.select(Policy))
+            assert changed_after_clock_recovery.updated == 1
+            assert policy.created_at == first_instant
+            assert policy.updated_at == recovered_instant
     finally:
         try:
             command.downgrade(config, "base")

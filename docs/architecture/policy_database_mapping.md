@@ -102,14 +102,16 @@ Normalized 30개 필드는 공개 DTO에 있고 저장 계층이 생성한 다�
 | 저장 계층 생성 필드 | PostgreSQL 타입 | 현재 생성 경계 | 공개 API |
 | --- | --- | --- | --- |
 | `id` | auto-increment integer | DB identity | 노출 |
-| `created_at` | `timestamptz` | ORM Python default, DB server default fallback | 노출 |
-| `updated_at` | `timestamptz` | Importer write 시각, ORM·DB default fallback | 노출 |
+| `created_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
+| `updated_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
 
-Backend 03 R0의 SQLite·PostgreSQL 재현에서 Importer가 `updated_at`을 먼저
-만들고 SQLAlchemy가 `created_at` Python default를 나중에 실행해 최초
-insert의 `updated_at < created_at`이 될 수 있음을 확인했다. Migration의
-두 `CURRENT_TIMESTAMP`는 이 Importer 경로에서는 사용되지 않는다. 현재
-제약과 후속 수정 계약은
+Importer는 최초 insert에 하나의 UTC aware write instant를 생성해 두 필드에
+같이 전달한다. ORM과 Migration의 `ck_policies_timestamp_order`는
+`updated_at >= created_at`을 강제한다. Migration은 이 constraint를 추가하기
+전에 기존 역전 행의 `updated_at`을 `created_at`으로 보정한다. Importer 밖의
+insert에서는 ORM Python default와 DB `CURRENT_TIMESTAMP` server default가
+방어적 fallback이며, Policy를 변경하는 writer는 `updated_at`을 명시해야
+한다. 상세 결정과 검증은
 [Backend Policy Runtime Safety 계획](../development/develop_plan/backend/03_policy_runtime_safety.md)과
 [개발 기록](../development/development_notes/backend/policy_runtime_safety.md)에
 기록한다.
@@ -129,7 +131,8 @@ Policy API에 도달하지 않는다. partial은 저장하며
   위한 것이며 현재 importer가 null identity를 허용한다는 뜻이 아니다.
 - 같은 identity의 같은 값은 `unchanged`이고 `updated_at`을 바꾸지 않는다.
 - 같은 identity의 변경 값은 identity를 제외한 Normalized 필드를 원자적으로
-  update하고 `updated_at`을 갱신한다.
+  update한다. `updated_at`은 기존 시각과 새 write instant 중 늦은 값이므로
+  시스템 시각이 역행해도 감소하지 않는다.
 - 향후 Source의 대체 ID 생성 규칙은 이 매핑에서 일반화하지 않는다.
 
 ## Seed와 DB 조회 비교 기준
