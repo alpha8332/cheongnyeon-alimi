@@ -44,10 +44,20 @@
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Policy Discovery Forest 계획](development/develop_plan/frontend/01_policy_discovery.md)
+- [React Router Advisory Review Forest 계획](development/develop_plan/frontend/02_react_router_advisory.md):
+  현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
+- [CollectionRun Admin UI Forest 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md):
+  관리자 실행 이력·수동 실행의 Frontend 소비 계획
 - [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
   기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
   기준으로 완성하는 Backend 후속 계획
+- [Backend Policy Runtime Safety Forest 계획](development/develop_plan/backend/03_policy_runtime_safety.md):
+  Policy timestamp 순서와 SQL parameter logging 안전화 계획
+- [Backend Admin Access Control Forest 계획](development/develop_plan/backend/04_admin_access_control.md):
+  관리자 API 공통 인증·권한 기준선 계획
+- [Backend CollectionRun Admin API Forest 계획](development/develop_plan/backend/05_collection_run_admin_api.md):
+  실행 이력 조회·수동 실행의 관리자 API 계획
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
@@ -96,9 +106,10 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 | ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
 | --- | --- | --- | --- | --- | --- |
 | `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
-| `BE-POLICY-TIMESTAMP-ORDER` | 최초 insert에서 application `updated_at`이 DB default `created_at`보다 먼저 생성되는 순서의 허용 여부 결정 | `action-needed` | Backend, API 영향 검토 | 두 시각의 순서 불변식을 정하고 같은 DB 시각 사용 또는 순서 비보장 문서화 후 테스트 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
-| `BE-SQL-ECHO-LOGGING` | Backend development engine의 SQL parameter echo가 정책 값·provenance를 출력하는 범위 검토 | `action-needed` | Backend, 보안·운영 영향 검토 | 개발 SQL 로깅 기본값과 민감 데이터 기준을 정하고 write 진입점의 parameter 비노출 테스트·문서 동기화 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md), [Backend 로컬 환경](development/backend_local_setup.md) |
-| `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | 관리자 Forest 착수 시 인증된 조회 API·DTO·pagination과 UI를 정의하고 `running` 중단 판정 및 권한 테스트 완료 | [CollectionRun DB 계약](architecture/collection_run_database.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `BE-POLICY-TIMESTAMP-ORDER` | 최초 insert에서 application `updated_at`이 DB default `created_at`보다 먼저 생성되는 순서의 허용 여부 결정 | `action-needed` | Backend, API 영향 검토 | Backend 03에서 두 시각의 생성 주체와 순서 불변식을 정하고 SQLite·PostgreSQL 회귀 및 문서 동기화 | [Policy Runtime Safety 계획](development/develop_plan/backend/03_policy_runtime_safety.md), [Policy DB 매핑](architecture/policy_database_mapping.md) |
+| `BE-SQL-ECHO-LOGGING` | Backend development engine의 SQL parameter echo가 정책 값·provenance를 출력하는 범위 검토 | `action-needed` | Backend, 보안·운영 영향 검토 | Backend 03에서 기본 logging 경계와 민감 parameter 비노출·Unicode 회귀를 검증하고 문서 동기화 | [Policy Runtime Safety 계획](development/develop_plan/backend/03_policy_runtime_safety.md), [Backend 로컬 환경](development/backend_local_setup.md) |
+| `FE-ROUTER-RSC-ADVISORY` | 현재 client-only Frontend가 보고하는 React Router RSC advisory high 2건 검토 | `action-needed` | Frontend, 보안 영향 검토 | 공식 advisory와 실제 도달 가능성을 확인하고 호환 수정 또는 위험 수용·재검토 조건을 기록한 뒤 test·lint·build 통과 | [React Router Advisory 계획](development/develop_plan/frontend/02_react_router_advisory.md), [Frontend 개발 기록](development/development_notes/frontend/policy_discovery.md) |
+| `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | Admin Access Control → CollectionRun Admin API → Admin UI를 순서대로 완료하고 `running` 중단 판정·권한·실제 API UI 검증 | [Admin Access Control 계획](development/develop_plan/backend/04_admin_access_control.md), [CollectionRun Admin API 계획](development/develop_plan/backend/05_collection_run_admin_api.md), [CollectionRun Admin UI 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md) |
 
 ### FE·BE 담당자 인계 기록 방법
 
