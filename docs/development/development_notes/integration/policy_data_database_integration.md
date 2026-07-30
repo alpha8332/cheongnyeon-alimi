@@ -67,8 +67,14 @@ PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한�
 - `docs/development/develop_plan/README.md`
 - `docs/development/development_notes/integration/policy_data_database_integration.md`
 - `docs/development/development_notes/README.md`
+- `docs/development/backend_local_setup.md`
+- `docs/troubleshooting/backend/windows_postgresql_test_environment.md`
+- `docs/troubleshooting/README.md`
+- `docs/development/README.md`
 - `docs/data/fixture_seed_contract.md`
 - `docs/index.md`
+- `backend/.env.example`
+- `README.md`
 - `.gitattributes`
 
 ## 설계 결정
@@ -131,6 +137,10 @@ Schema, Fixture, Seed, Backend importer·ORM과 API 사이에서 D0가 해결해
   테이블만 남아 다음 Migration에 재사용할 수 있다.
 - 자격증명 정리:
   검증 후 임시 credential·`pgpass` 파일이 모두 삭제된 것을 확인했다.
+- 환경 복구 기록:
+  다른 PC의 Unix 가상환경, PostgreSQL 역할 인증과 테스트 DB 생성 과정은
+  [Windows PostgreSQL 테스트 환경 복구](../../../troubleshooting/backend/windows_postgresql_test_environment.md)에
+  재사용 가능한 해결 절차로 분리했다.
 - Backend 경고:
   Starlette TestClient의 `httpx` 사용 방식 deprecation 1건. D0 계약과
   무관해 수정하지 않았다.

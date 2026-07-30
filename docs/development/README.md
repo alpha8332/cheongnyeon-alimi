@@ -18,6 +18,8 @@
 - [개발 기록](development_notes/README.md): Forest에서 실제로 구현하고
   검증한 상세 결과
 - [문서 품질 검증](documentation_validation.md): 문서 검증 명령과 검사 규칙
+- [Backend Windows 로컬 환경](backend_local_setup.md): Windows `.venv`,
+  PostgreSQL 테스트 역할·DB와 전체 Backend 테스트 절차
 
 계획과 개발 기록은 담당 영역이 명확할 때 `data/`, `backend/`, `frontend/`,
 `integration/`으로 구분한다. 둘 이상의 영역에 걸친 공통 기반과 연결 작업은

@@ -59,8 +59,12 @@
 
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
+- [Backend Windows 로컬 환경](development/backend_local_setup.md):
+  Windows `.venv`, PostgreSQL 테스트 DB와 Backend 전체 테스트 절차
 - [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
   환경변수와 Runtime Raw 경계
+- [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
+  다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나

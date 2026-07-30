@@ -12,3 +12,7 @@
 안전한 실행 범위는 [Collector 실행 문서](docs/operations/collector.md)를
 따른다. 구현되지 않은 전체 수집, Scheduler와 서비스 기능은 완료된 것으로
 안내하지 않는다.
+
+Windows에서 Backend와 PostgreSQL 통합 테스트를 실행하는 절차는
+[Backend Windows 로컬 환경](docs/development/backend_local_setup.md)을
+따른다.
