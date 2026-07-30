@@ -4,7 +4,7 @@
 
 - 번호: Frontend 02
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: in-progress
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Backend Policy Runtime Safety](../backend/03_policy_runtime_safety.md)
@@ -56,7 +56,7 @@
 
 ### F0 - Advisory 재현과 도달 가능성 검토
 
-- 상태: draft
+- 상태: completed
 - 목적:
   현재 의존성 트리와 앱 실행 경로에서 advisory의 실제 영향을 확정한다.
 - 산출물:
@@ -66,6 +66,16 @@
   - 공식 advisory와 package metadata 접근 가능
 - 완료 기준:
   - 취약 package·버전과 현재 앱의 도달 가능성을 구분해 기록
+
+2026-07-30 현재 lockfile과 공식 advisory를 다시 확인했다. npm은
+`react-router-dom@7.18.1`에서 전이되는 `react-router@7.18.1` 때문에 high
+2건을 보고하며, 두 항목은 하나의 RSC CSRF advisory
+`GHSA-qwww-vcr4-c8h2`에서 파생된다. 공식 영향 조건은 unstable RSC API
+사용이다. 현재 앱은 Vite client-only `createBrowserRouter` 구성이고
+RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도달할 수
+없다. 재현 명령과 상세 근거는
+[개발 기록](../../development_notes/frontend/react_router_advisory.md)에
+남겼다.
 
 ### F1 - 호환 버전 결정
 
@@ -103,9 +113,12 @@
   - Frontend 개발 기록과 필요한 인계사항 갱신
 - 선행 조건:
   - F2 완료
+  - Codex CLI·VS Code Codex에서는 브라우저 제어를 지원하지 않으므로,
+    자동 검증과 빌드가 끝난 뒤 ChatGPT 데스크톱 앱의 Browser에서
+    `http://localhost:3000`을 확인할 수 있는 환경 준비
 - 완료 기준:
   - `npm ci`, `npm test`, `npm run lint`, `npm run build` 통과
-  - 주요 라우팅의 브라우저 기본 회귀 확인
+  - ChatGPT 데스크톱 앱의 Browser에서 주요 라우팅 기본 회귀 확인
   - `python scripts/validate_docs.py` 통과
 
 ## 검증 계획
@@ -115,7 +128,8 @@
 - `npm test`
 - `npm run lint`
 - `npm run build`
-- 홈·목록·숫자 ID 상세·partial opt-in route 브라우저 확인
+- ChatGPT 데스크톱 앱의 Browser에서 홈·목록·숫자 ID 상세·partial opt-in
+  route 확인
 - `python scripts/validate_docs.py`
 - `git diff --check`
 

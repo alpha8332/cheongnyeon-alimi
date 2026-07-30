@@ -66,6 +66,8 @@
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
+- [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
+  advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
 - [Backend Policy Runtime Safety Forest 개발 기록](development/development_notes/backend/policy_runtime_safety.md):
@@ -108,7 +110,7 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 | ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
 | --- | --- | --- | --- | --- | --- |
 | `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
-| `FE-ROUTER-RSC-ADVISORY` | 현재 client-only Frontend가 보고하는 React Router RSC advisory high 2건 검토 | `action-needed` | Frontend, 보안 영향 검토 | 공식 advisory와 실제 도달 가능성을 확인하고 호환 수정 또는 위험 수용·재검토 조건을 기록한 뒤 test·lint·build 통과 | [React Router Advisory 계획](development/develop_plan/frontend/02_react_router_advisory.md), [Frontend 개발 기록](development/development_notes/frontend/policy_discovery.md) |
+| `FE-ROUTER-RSC-ADVISORY` | 현재 client-only Frontend가 보고하는 React Router RSC advisory high 2건 검토 | `action-needed` | Frontend, F1 호환 대응 결정 | F0에서 현재 RSC 실행 경로는 도달 불가로 확인함. 호환 수정 또는 위험 수용·재검토 조건을 기록한 뒤 test·lint·build 통과 | [React Router Advisory 계획](development/develop_plan/frontend/02_react_router_advisory.md), [React Router Advisory 개발 기록](development/development_notes/frontend/react_router_advisory.md) |
 | `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | Admin Access Control → CollectionRun Admin API → Admin UI를 순서대로 완료하고 `running` 중단 판정·권한·실제 API UI 검증 | [Admin Access Control 계획](development/develop_plan/backend/04_admin_access_control.md), [CollectionRun Admin API 계획](development/develop_plan/backend/05_collection_run_admin_api.md), [CollectionRun Admin UI 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md) |
 
 ### FE·BE 담당자 인계 기록 방법
