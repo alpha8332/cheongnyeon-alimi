@@ -115,6 +115,20 @@ GET /api/v1/policies/{policy_id}
 | `500` | 처리되지 않은 서버 오류 | 내부 상세를 제외한 공통 오류 응답 |
 
 404는 실제 ID 부재와 품질 정책에 따른 비노출을 구분하지 않는다.
+422는 query뿐 아니라 `policy_id` path 타입 위반에도 같은 FastAPI validation
+오류 형식을 사용하며 최상위 `detail`은 오류 object의 배열이다.
+
+처리되지 않은 서버 오류의 공개 응답은 다음과 같다. 예외 메시지, DB 정보와
+내부 stack trace는 응답에 포함하지 않는다.
+
+```json
+{
+  "error": {
+    "message": "Internal Server Error",
+    "details": {}
+  }
+}
+```
 
 ## 저장·검색 경계
 
@@ -127,3 +141,16 @@ GET /api/v1/policies/{policy_id}
   원소 일치 의미를 검증한다.
 - 자유 키워드, 원문 부분 문자열, 정렬 선택과 추천은 이 계약 범위가 아니다.
 - `provenance`는 DB에 보존하지만 목록·상세 공개 DTO에서 제외한다.
+
+## 통합 검증
+
+`tests/integration/test_seed_to_policy_api.py`는 canonical Seed 4건을 실제
+PostgreSQL에 적재하고 목록·상세 API를 호출해 다음 계약을 검증한다.
+
+- 기본 valid 2건과 `include_partial=true`의 4건
+- pagination과 category·region·status의 exact filter
+- 공개 30개 Normalized 필드의 Seed 값 보존과 provenance 비노출
+- partial 상세 opt-in, 404, query·path 422와 내부 상세가 없는 500 응답
+
+테스트는 저장소의 합성 Seed와 로컬 테스트 DB만 사용하며 외부 API를 호출하지
+않는다.

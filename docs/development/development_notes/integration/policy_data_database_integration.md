@@ -8,7 +8,7 @@
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D2 completed (D0 Frontend review-pending)
+- 현재 Slice: D3 completed (D0 Frontend review-pending)
 
 ## 목적
 
@@ -17,7 +17,8 @@ PostgreSQL 저장·조회 경계 및 Frontend 소비 계약과 공동 확정한�
 기존 Backend 검증 증거를 확인하고 Frontend 타입·Mock 인계 경계를 명시하며,
 D1에서는 31개 필드의 JSON·DB·API 매핑과 무손실 비교 기준을 확정했다.
 D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조회까지
-통과하는 전용 통합 테스트 경계를 확정한다.
+통과하는 전용 통합 테스트 경계를 확정했다. D3에서는 실제 PostgreSQL에
+적재된 Seed를 Policy 목록·상세 API로 조회하고 공개 응답 계약을 확정한다.
 
 ## Forest 범위
 
@@ -34,7 +35,7 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
 | D0 | review-pending | Backend 소비 승인·Frontend 타입·Mock 인계 완료, Frontend 승인 대기 |
 | D1 | completed | 31필드 JSON·Importer·ORM·PostgreSQL·API 매핑과 비교 기준 확정 |
 | D2 | completed | canonical Seed 4건의 Schema → Importer → PostgreSQL → Repository 통합 검증 |
-| D3 | pending | Policy API 첫 통합 예정 |
+| D3 | completed | 실제 PostgreSQL 기반 목록·상세·필터·오류 API 계약 검증 |
 | D4 | pending | Runtime Raw 재처리와 DB 적재 예정 |
 | D5 | optional | 최소 실행 이력 구현 여부 협의 예정 |
 | D6 | pending | Frontend 최종 인계와 Data 6 종료 예정 |
@@ -108,6 +109,32 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
 - 테스트 입력은 저장소의 합성 Seed만 사용하고 외부 API·인증키·네트워크를
   사용하지 않는다.
 
+### D3 - Policy API 첫 통합
+
+- `tests/integration/test_seed_to_policy_api.py`에서 Alembic Migration으로
+  실제 PostgreSQL 테스트 DB를 구성하고 canonical Seed 4건을 Backend
+  Import Service로 적재한 뒤 FastAPI 목록·상세 endpoint를 호출한다.
+- 기본 목록은 `valid` 2건, `include_partial=true` 목록은 valid·partial
+  전체 4건이며 응답의 `total`, `page`, `limit`과 page 범위 밖 빈
+  `items`를 검증한다.
+- category·region은 배열 원소 완전 일치, status는 enum 일치로 필터링하고
+  partial 포함 범위와 결합한 실제 PostgreSQL JSONB 조회 결과를 확인한다.
+- 공개 응답은 canonical Seed의 31개 필드 중 `provenance`만 제외한 30개
+  필드를 보존하며 DB 생성 필드 `id`·`created_at`·`updated_at`을 추가한다.
+  nullable·빈 배열·다중 category·날짜·timezone 시각을 Seed와 비교한다.
+- valid 상세는 기본 공개하고 partial 상세는 기본 404,
+  `include_partial=true`에서만 200으로 공개한다. 존재하지 않는 ID도 같은
+  404 응답으로 처리해 품질 비노출 원인을 구분하지 않는다.
+- page·limit·category·status·region·boolean query와 `policy_id` path 타입
+  위반의 422 구조를 검증한다.
+- 강제로 발생시킨 처리되지 않은 오류의 500 응답이 고정된 공통 메시지만
+  반환하고 내부 예외 메시지를 노출하지 않는지 확인한다.
+- 생산 API·Schema·Fixture·Seed·DB Migration은 변경하지 않았으며 외부
+  API와 인증키를 사용하지 않았다.
+- D3 기술 구현은 완료로 유지하되 실제 API의 Frontend 소비 검토는 D6
+  완료 조건이므로 `docs/index.md` 인계 보드에 `INT-02-D3-FE`를
+  `review-pending`으로 등록했다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/02_policy_data_database_integration.md`
@@ -125,6 +152,7 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
 - `.gitattributes`
 - `backend/tests/test_policy_mapping_contract.py`
 - `tests/integration/test_seed_to_database.py`
+- `tests/integration/test_seed_to_policy_api.py`
 - `docs/architecture/policy_database_mapping.md`
 - `docs/architecture/README.md`
 - `docs/data/data_schema.md`
@@ -278,6 +306,47 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
   `.venv\Scripts\python.exe -B scripts/validate_docs.py` 통과
 - D2 공백 검사:
   `git diff --check` 통과
+- D3 API·매핑 단위 테스트:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policy_api.py
+  backend/tests/test_policy_mapping_contract.py -q` 10건 통과
+- D3 PostgreSQL 전용 통합 테스트:
+  로컬 PostgreSQL 18의 `cheongnyeon_alimi_test`에서
+  `.venv\Scripts\python.exe -B -m pytest
+  tests/integration/test_seed_to_policy_api.py -q` 1건 통과,
+  Starlette TestClient deprecation 경고 1건
+- D3 실제 PostgreSQL 전체 회귀:
+  비밀번호 없는 `TEST_DATABASE_URL`과 임시 `PGPASSFILE`을 사용해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests tests/integration -q`
+  57건 통과, Starlette TestClient deprecation 경고 1건
+- D3 자격증명 정리:
+  PostgreSQL 검증 후 임시 `pgpass` 파일의 `Test-Path`가 `False`임을
+  확인했다. 이번 방식은 credential XML을 생성하지 않았다.
+- D3 PostgreSQL 결과:
+  기본 valid 2건·partial 포함 4건, pagination·JSONB 배열 필터·status,
+  공개 DTO 30개 Seed 필드 보존·provenance 비노출, 상세 opt-in,
+  404·422·500 응답을 확인했다.
+- D3 timestamp 순서 확인:
+  추가 자체 검토에서 순서 assertion을 넣은 D3 전용 테스트가 1건 실패했다.
+  최초 insert의 application `updated_at`이 PostgreSQL default
+  `created_at`보다 약간 먼저 생성되어 `created_at <= updated_at` 가정이
+  성립하지 않았기 때문이다. 현재 API 계약은 timezone-aware만 보장하므로
+  근거 없는 순서 assertion을 제거한 뒤 D3 전용 1건과 전체 57건이
+  통과했다. Backend가 순서 불변식과 생성 주체를 결정하도록
+  `docs/index.md` 인계 보드에 `BE-POLICY-TIMESTAMP-ORDER`를 기록했다.
+- D3 Data 계약 회귀:
+  `.venv\Scripts\python.exe -B -m unittest
+  tests.test_normalization tests.test_data_fixtures -v` 23건 통과
+- D3 결정적 Fixture 검사:
+  `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
+  12개 파일 통과
+- D3 문서 검증기 단위 테스트:
+  `.venv\Scripts\python.exe -B -m unittest tests.test_validate_docs -v`
+  10건 통과
+- D3 문서 검증:
+  `.venv\Scripts\python.exe -B scripts/validate_docs.py` 통과
+- D3 공백 검사:
+  `git diff --check` 통과
 - Frontend:
   Node와 npm이 없어 빌드·타입 검사를 실행하지 못했다. Policy DTO 타입과 Mock
   소비 코드도 현재 저장소에 없다.
@@ -295,4 +364,10 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
 - Frontend `src/routes/index.tsx`는 현재 존재하지 않는
   `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
   수정하지 않았다.
-- D3에서 D2의 PostgreSQL 상태를 공개 Policy 목록·상세 API 계약과 연결한다.
+- D4에서 저장된 Runtime Raw를 추가 외부 호출 없이 같은 importer·DB 경계로
+  연결한다.
+- D6에서 D3의 실제 API 계약을 Frontend 타입·소비 테스트 또는 명시적 승인과
+  연결한다.
+- Backend는 `BE-POLICY-TIMESTAMP-ORDER`에서 최초 insert의
+  `created_at`·`updated_at` 순서 불변식과 생성 주체를 결정해야 한다. D3는
+  현재 계약에 없는 순서를 임의로 강제하지 않는다.

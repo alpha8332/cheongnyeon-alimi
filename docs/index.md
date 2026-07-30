@@ -93,8 +93,10 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 | ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
 | --- | --- | --- | --- | --- | --- |
 | `INT-02-D0-FE` | NormalizedProgram·canonical Seed의 Frontend 타입·Mock 소비 승인 | `review-pending` | Frontend | TypeScript·Mock 소비 테스트 또는 담당자 명시적 승인 | [Fixture·Seed 계약](data/fixture_seed_contract.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `INT-02-D3-FE` | 실제 PostgreSQL 기반 Policy 목록·상세 API의 Frontend 소비 검토 | `review-pending` | Frontend | API Client·DTO 소비 테스트 또는 담당자 명시적 승인 후 D6 기록 동기화 | [Policy API 계약](api/policies.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
 | `FE-POLICY-ROUTE` | `src/routes/index.tsx`가 존재하지 않는 `ProgramListPage`를 import하는 문제 확인 | `action-needed` | Frontend | Frontend 빌드·라우트 기준에 맞는 구현 또는 참조 정정과 검증 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
 | `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
+| `BE-POLICY-TIMESTAMP-ORDER` | 최초 insert에서 application `updated_at`이 DB default `created_at`보다 먼저 생성되는 순서의 허용 여부 결정 | `action-needed` | Backend, API 영향 검토 | 두 시각의 순서 불변식을 정하고 같은 DB 시각 사용 또는 순서 비보장 문서화 후 테스트 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
 
 ### FE·BE 담당자 인계 기록 방법
 
