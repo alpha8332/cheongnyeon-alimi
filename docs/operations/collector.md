@@ -106,6 +106,8 @@ runtime/raw
 - URL이나 문서에 비밀번호를 넣지 않고 PostgreSQL pgpass 등 로컬 비밀 주입
   수단을 사용한다.
 - 저장소 루트에서 명령을 실행한다.
+- 실제 적재는 `collection_runs` Migration과 실행 이력을 사용하므로 반드시
+  최신 Alembic head를 적용한다.
 
 온통청년 최신 Raw 회차를 검증만 하고 rollback:
 
@@ -147,6 +149,15 @@ inserted·updated·unchanged·skipped·rejected·failed 수만 출력한다. 실
 항목은 source ID, external ID, 안전한 오류 코드·경로·오류 타입과 기여 Raw
 document ID만 출력하며 Raw payload, source URL query와 인증키를 출력하지
 않는다.
+
+실제 실행은 별도 `collection_runs` transaction에 `run_id`, source, 시작·종료
+시각, 상태와 위 집계를 기록하고 CLI 요약에 `run_id`를 출력한다. 일부 invalid를
+제외하고 accepted batch를 적재한 실행은 `partial_failure`, DB·검증·실행
+실패는 `failed`다. 오류에는 예외 class 이름만 저장한다. `--dry-run`은 Policy와
+실행 이력을 포함해 DB row를 남기지 않으며 요약의 `run_id`는 `None`이다.
+필드 계약은
+[CollectionRun 데이터베이스 계약](../architecture/collection_run_database.md)을
+따른다.
 
 `runtime/raw`가 없거나 선택한 source에 Raw가 없으면 DB를 변경하지 않고
 명확한 오류와 종료 코드 1을 반환한다. `--dry-run`도 실제 DB upsert 결과를

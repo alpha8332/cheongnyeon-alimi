@@ -7,6 +7,7 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, TextIO
+from uuid import UUID
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,10 @@ from app.core.database import (  # noqa: E402
 from app.services.runtime_importer import (  # noqa: E402
     RuntimeImportResult,
     import_runtime_raw,
+)
+from app.services.collection_runs import (  # noqa: E402
+    CollectionRunCounts,
+    CollectionRunWriter,
 )
 from collectors.runtime import (  # noqa: E402
     SUPPORTED_SOURCE_IDS,
@@ -66,6 +71,9 @@ def main(
     argv: Sequence[str] | None = None,
     *,
     session_factory: Callable[[], Any] | None = None,
+    run_writer_factory: Callable[
+        [Callable[[], Any]], CollectionRunWriter
+    ] = CollectionRunWriter,
     stdout: TextIO = sys.stdout,
     stderr: TextIO = sys.stderr,
 ) -> int:
@@ -79,6 +87,8 @@ def main(
 
     owned_engine = None
     db = None
+    run_writer = None
+    run_id = None
     try:
         selected_session_factory = session_factory
         if selected_session_factory is None:
@@ -87,6 +97,14 @@ def main(
                 environment="runtime-import",
             )
             selected_session_factory = create_session_factory(owned_engine)
+        if not args.dry_run:
+            run_writer = run_writer_factory(selected_session_factory)
+            run_id = run_writer.start(
+                source_id=args.source,
+                run_type="runtime_import",
+                trigger_type="cli",
+                requested_count=args.limit,
+            )
         db = selected_session_factory()
         result = import_runtime_raw(
             db,
@@ -95,10 +113,18 @@ def main(
             limit=args.limit,
             dry_run=args.dry_run,
         )
+        if run_writer is not None and run_id is not None:
+            run_writer.finish(
+                run_id,
+                status=_runtime_run_status(result),
+                counts=_runtime_run_counts(result, args.limit),
+            )
     except RuntimeReplayError as exc:
+        _finish_failed_run(run_writer, run_id, args.limit, type(exc).__name__)
         print(f"runtime import failed: {exc}", file=stderr)
         return 1
     except Exception as exc:
+        _finish_failed_run(run_writer, run_id, args.limit, type(exc).__name__)
         print(
             "runtime import failed unexpectedly: "
             f"source={args.source} error_type={type(exc).__name__}",
@@ -111,7 +137,7 @@ def main(
         if owned_engine is not None:
             owned_engine.dispose()
 
-    _print_summary(result, stdout=stdout)
+    _print_summary(result, run_id=run_id, stdout=stdout)
     _print_issues(result, stdout=stdout)
     if (
         result.database.skipped
@@ -125,6 +151,7 @@ def main(
 def _print_summary(
     result: RuntimeImportResult,
     *,
+    run_id: UUID | None,
     stdout: TextIO,
 ) -> None:
     replay = result.replay
@@ -145,7 +172,8 @@ def _print_summary(
         f"unchanged={database.unchanged} "
         f"skipped={database.skipped} "
         f"rejected={database.rejected} "
-        f"failed={database.failed}",
+        f"failed={database.failed} "
+        f"run_id={run_id}",
         file=stdout,
     )
 
@@ -199,6 +227,62 @@ def _program_raw_document_ids(
         item["raw_document_id"]
         for item in program["provenance"]
     )
+
+
+def _runtime_run_status(result: RuntimeImportResult) -> str:
+    database = result.database
+    if database.skipped or database.rejected or database.failed:
+        return "failed"
+    if result.replay.invalid_count:
+        if result.replay.accepted_count:
+            return "partial_failure"
+        return "failed"
+    return "succeeded"
+
+
+def _runtime_run_counts(
+    result: RuntimeImportResult,
+    requested_count: int,
+) -> CollectionRunCounts:
+    replay = result.replay
+    database = result.database
+    return CollectionRunCounts(
+        requested_count=requested_count,
+        raw_document_count=replay.raw_document_count,
+        extracted_count=replay.extracted_count,
+        accepted_count=replay.accepted_count,
+        partial_count=replay.partial_count,
+        invalid_count=replay.invalid_count,
+        inserted_count=database.inserted,
+        updated_count=database.updated,
+        unchanged_count=database.unchanged,
+        skipped_count=database.skipped,
+        failed_count=database.failed,
+    )
+
+
+def _finish_failed_run(
+    run_writer: CollectionRunWriter | None,
+    run_id: UUID | None,
+    requested_count: int,
+    error_type: str,
+) -> None:
+    if run_writer is None or run_id is None:
+        return
+    try:
+        run_writer.finish(
+            run_id,
+            status="failed",
+            counts=CollectionRunCounts(
+                requested_count=requested_count,
+                failed_count=1,
+            ),
+            error_type=error_type,
+        )
+    except Exception:
+        # The original safe failure remains authoritative. A persisted running
+        # row makes interrupted/finalization failures visible to operations.
+        pass
 
 
 if __name__ == "__main__":

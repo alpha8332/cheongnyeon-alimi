@@ -9,7 +9,7 @@
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D4 completed (D0 Frontend review-pending)
+- 현재 Slice: D5 completed (D0 Frontend review-pending)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -227,9 +227,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - invalid 적재와 중복 0건
   - 실행 요약과 실제 DB 결과 일치
 
-### D5 - 최소 실행 이력 협의
+### D5 - 최소 실행 이력 구현
 
-- 상태: optional
+- 상태: completed
 - 목적: 향후 관리자 기능을 위한 최소 실행 이력의 필요성과 저장 위치를
   결정한다.
 - 선행 조건:
@@ -248,8 +248,22 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - `run_type`: `seed_import`, `runtime_import`, `collection`
   - `trigger_type`: `cli`, `scheduler`, `admin`
 - 완료 기준:
-  - 구현 여부, 책임 영역과 후속 완료 기준이 문서 또는 Issue에 기록
-  - 구현하지 않아도 D0~D4와 D6 완료를 막지 않음
+  - `collection_runs` ORM과 Alembic Migration 제공
+  - Seed·Runtime 실제 실행의 시작·종료·집계 이력 생성
+  - 성공·부분 실패·실패 상태와 별도 transaction 검증
+  - Raw payload, URL query, 인증정보와 오류 메시지 저장 0건
+  - 관리자 API·Scheduler·UI는 후속 범위로 명시
+- 완료 결과:
+  - 향후 관리자 기능의 기반이 필요하다는 결정에 따라 최소
+    `collection_runs` DB 레코드 선택지를 구현함
+  - Seed·Runtime CLI를 공통 writer에 연결하고 실제 실행만 이력화함
+  - 다중 source Seed의 `source_id`는 `null`, source Runtime은 실제 source
+    ID를 저장하는 규칙을 확정함
+  - `running`·`succeeded`·`partial_failure`·`failed` 상태와 안전한
+    `error_type`, 비음수 count·시각 constraint를 Migration으로 고정함
+  - Policy import와 이력 write를 별도 transaction으로 분리하고 dry-run은
+    DB 변경 없음 계약에 따라 이력을 생성하지 않음
+  - 관리자 조회·수동 실행 API와 대시보드는 후속 관리자 Forest로 유지함
 
 ### D6 - Frontend 인계와 Data 6 종료
 
@@ -321,8 +335,9 @@ D0의 Frontend 검토 요청과 D1 매핑 초안은 Backend 02 후반에 병렬�
 - API, Data와 Integration 문서 동기화
 - Frontend 승인 후 Data 6 완료
 
-D5는 선택 사항이며 구현하지 않아도 Forest 완료를 막지 않는다. 다만
-수집 실행 이력의 구현 또는 후속 Forest 여부는 기록해야 한다.
+D5는 선택 사항이었으나 향후 관리자 기능의 기반으로 구현했다. 관리자 조회와
+수동 실행 API, 인증·권한, Scheduler와 상세 대시보드는 이 Forest 완료 범위에
+포함하지 않는다.
 
 ## 위험과 미확정 사항
 

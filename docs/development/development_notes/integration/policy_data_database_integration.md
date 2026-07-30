@@ -8,7 +8,7 @@
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D4 completed (D0 Frontend review-pending)
+- 현재 Slice: D5 completed (D0 Frontend review-pending)
 
 ## 목적
 
@@ -20,7 +20,9 @@ D2에서는 canonical Seed가 Schema 검증부터 PostgreSQL과 Repository 조�
 통과하는 전용 통합 테스트 경계를 확정했다. D3에서는 실제 PostgreSQL에
 적재된 Seed를 Policy 목록·상세 API로 조회하고 공개 응답 계약을 확정했다.
 D4에서는 저장된 Runtime Raw를 외부 재호출 없이 재처리해 같은 Backend
-Importer와 PostgreSQL source batch transaction으로 연결한다.
+Importer와 PostgreSQL source batch transaction으로 연결했다. D5에서는
+향후 관리자 기능이 사용할 Seed·Runtime 최소 실행 이력을 별도 PostgreSQL
+transaction으로 저장한다.
 
 ## Forest 범위
 
@@ -39,7 +41,7 @@ Importer와 PostgreSQL source batch transaction으로 연결한다.
 | D2 | completed | canonical Seed 4건의 Schema → Importer → PostgreSQL → Repository 통합 검증 |
 | D3 | completed | 실제 PostgreSQL 기반 목록·상세·필터·오류 API 계약 검증 |
 | D4 | completed | 최신 source Raw 회차의 재처리·품질 분리·원자적 DB 적재와 재실행 검증 |
-| D5 | optional | 최소 실행 이력 구현 여부 협의 예정 |
+| D5 | completed | Seed·Runtime CollectionRun 모델·Migration·상태·집계 이력 구현 |
 | D6 | pending | Frontend 최종 인계와 Data 6 종료 예정 |
 
 ## 구현 내용
@@ -173,6 +175,36 @@ Importer와 PostgreSQL source batch transaction으로 연결한다.
   저장 경로 부재가 DB 변경 없이 명확한 종료 코드 1을 반환하는지만 확인했다.
   자동·PostgreSQL 검증은 외부 네트워크 없이 합성 Raw Fixture로 수행했다.
 
+### D5 - 최소 CollectionRun 실행 이력
+
+- 향후 관리자 기능의 기반이 필요하다는 사용자 결정을 근거로 D5의 세 선택지
+  중 PostgreSQL `collection_runs` 레코드를 구현했다. 실행 결과 JSON이나
+  후속 운영 Forest 연기안은 선택하지 않았다.
+- `CollectionRun` ORM과 `20260730_0002` Alembic revision에 UUID `run_id`,
+  nullable `source_id`, 실행·trigger·상태 enum, UTC 시작·종료 시각,
+  D4 처리·DB count와 안전한 `error_type`을 추가했다.
+- source별 Runtime은 실제 `source_id`, 두 source가 섞인 canonical Seed는
+  `null`을 저장한다. 이는 NormalizedProgram의 null 계약을 바꾸지 않는 운영
+  이력 규칙이다.
+- 상태는 시작 시 `running`, 전체 성공 시 `succeeded`, Runtime invalid 일부를
+  제외하고 accepted batch를 적재하면 `partial_failure`, 검증·DB·실행 실패는
+  `failed`로 확정했다. 품질 `partial`은 허용된 데이터이므로 그 자체로 실행
+  실패가 아니다.
+- 모든 count의 비음수, terminal 상태의 종료 시각 필수, 종료 시각 순서와
+  빈 source ID 금지를 DB constraint로 고정했다. 향후 관리자 조회를 위해
+  source·시작 시각·상태 index를 추가했다.
+- 공통 `CollectionRunWriter`가 실행 이력을 Policy import와 별도
+  session/transaction으로 기록한다. 따라서 Policy rollback 후에도 실패
+  이력이 남고, 종료 write 실패 시 `running` row가 운영 확인 지점으로 남는다.
+- Seed와 Runtime CLI 실제 실행을 writer에 연결하고 출력에 `run_id`를
+  포함했다. D4의 DB 변경 없음 계약을 유지하기 위해 `--dry-run`은 실행
+  이력을 만들지 않는다.
+- Raw payload, 정책 원문, URL·query, 인증정보, DB 예외 메시지와 상세 실패
+  목록은 저장하지 않는다. 실패에는 최대 255자의 예외 class 이름만 저장한다.
+- 관리자 조회·수동 실행 API, 인증·권한, Scheduler와 대시보드는 현재 Forest
+  범위 밖이다. 후속 착수 조건을 `BE-ADMIN-RUN-HISTORY`로 인계 보드에
+  기록했다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/02_policy_data_database_integration.md`
@@ -197,6 +229,15 @@ Importer와 PostgreSQL source batch transaction으로 연결한다.
 - `tests/test_runtime_replay.py`
 - `tests/test_runtime_import_cli.py`
 - `tests/integration/test_runtime_to_database.py`
+- `backend/app/models/collection_run.py`
+- `backend/app/services/collection_runs.py`
+- `backend/alembic/versions/20260730_0002_create_collection_runs.py`
+- `backend/app/cli/import_seed.py`
+- `backend/app/services/seed_importer.py`
+- `backend/tests/test_collection_runs.py`
+- `tests/integration/test_collection_run_history.py`
+- `docs/architecture/collection_run_database.md`
+- `CHANGELOG.md`
 - `docs/architecture/policy_database_mapping.md`
 - `docs/architecture/README.md`
 - `docs/data/data_schema.md`
@@ -244,6 +285,20 @@ null identity를 적재하지 않는다. 현재 두 Source는 `missing_external_
 JSONB와 scalar는 exact equality, 날짜는 ISO date, timezone 시각은 UTC
 absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
 문자열로 반환하는 것을 손실이나 변경으로 오판하지 않는다.
+
+### 실행 이력은 Policy transaction과 분리한다
+
+정책 write와 같은 transaction에 실행 이력을 넣으면 rollback 시 실패 증거도
+사라진다. D5 writer는 별도 session에서 시작 row를 먼저 commit하고 terminal
+결과를 다시 commit한다. 이 때문에 Policy commit 후 이력 종료가 실패할 수
+있으며, CLI는 이를 성공으로 숨기지 않고 남은 `running` row를 운영 확인
+대상으로 둔다.
+
+### dry-run은 실행 이력을 만들지 않는다
+
+D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollback하는
+계약이다. D5 이력만 commit하면 기존 계약과 충돌하므로 dry-run에는 writer를
+생성하지 않는다. 실제 Seed·Runtime 실행만 관리자 조회 대상이 된다.
 
 ## 검증 결과
 
@@ -453,6 +508,50 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
   `.venv\Scripts\python.exe -B scripts/validate_docs.py` 통과
 - D4 공백 검사:
   `git diff --check` 통과
+- D5 ORM·writer·Migration·CLI 단위 검증:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_collection_runs.py backend/tests/test_migrations.py
+  backend/tests/test_import_seed_cli.py tests/test_runtime_import_cli.py -q`로
+  상태 전이, count·시각 constraint, 안전한 error type, Alembic offline SQL,
+  Seed·Runtime CLI 이력 연결과 dry-run 비기록 18건을 검증했다.
+- D5 PostgreSQL 전용 검증:
+  로컬 PostgreSQL 18의 `cheongnyeon_alimi_test`에서
+  `backend/tests/test_postgresql_migration.py`와
+  `tests/integration/test_collection_run_history.py` 2건이 통과했다. UUID,
+  enum, timezone, Seed 성공·Runtime 부분 실패·관리자 trigger 실패 lifecycle와
+  downgrade를 확인했다.
+- D5 실제 CLI 최초 실패:
+  Migration을 head까지 적용한 뒤 Backend 작업 디렉터리에서
+  `python -m app.cli.import_seed`를 실행했을 때 저장소 루트의 `collectors`가
+  import path에 없어 `ModuleNotFoundError`가 발생했다. Seed와 실행 이력 row가
+  생성되기 전 실패했으며 DB는 head에 남았다.
+- D5 Seed CLI 실행 경계 수정:
+  CLI가 저장소 루트와 Backend root를 모두 import path에 등록하게 수정하고,
+  Backend 작업 디렉터리에서 `--help` module 실행을 확인하는 회귀 테스트를
+  추가했다. 새 패키지나 실행 방법 변경은 없다.
+- D5 실제 CLI 재검증:
+  `ENVIRONMENT=test`로 SQL echo를 끈 뒤 canonical Seed 4건을 적재해
+  `seed_import`, nullable source, `succeeded`, accepted 4·partial 2·inserted
+  4를 확인했다. `runtime/raw`가 없는 Runtime 실행은 종료 코드 1과 함께
+  `runtime_import`, `failed`, failed 1, `RuntimeReplayError`를 기록했다.
+  두 이력 모두 URL·payload·오류 메시지 없이 안전한 집계만 포함했다.
+- D5 실제 PostgreSQL 전체 회귀:
+  비밀번호 없는 `TEST_DATABASE_URL`과 임시 `PGPASSFILE`을 사용해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests tests -q` 결과
+  156건과 subtest 25건이 통과했고 Starlette TestClient deprecation 경고
+  1건이 남았다.
+- D5 DB 정리:
+  실제 CLI와 전체 회귀 후 Alembic `base`, `policies`·`collection_runs`
+  테이블 부재와 CollectionRun enum 0개를 확인했다.
+- D5 Data 계약·결정성 회귀:
+  `.venv\Scripts\python.exe -B -m unittest
+  tests.test_normalization tests.test_data_fixtures -v` 23건과
+  `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
+  12개 파일이 통과했다.
+- D5 문서 검증:
+  문서 검증기 단위 테스트 10건과
+  `.venv\Scripts\python.exe -B scripts/validate_docs.py`,
+  `git diff --check`가 통과했다.
 - Frontend:
   Node와 npm이 없어 빌드·타입 검사를 실행하지 못했다. Policy DTO 타입과 Mock
   소비 코드도 현재 저장소에 없다.
@@ -470,8 +569,9 @@ absolute instant로 비교한다. PostgreSQL이 같은 instant를 다른 offset
 - Frontend `src/routes/index.tsx`는 현재 존재하지 않는
   `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
   수정하지 않았다.
-- D5에서 최소 CollectionRun을 이번 Forest에 구현할지 후속 운영 Forest로
-  넘길지 결정한다. D5는 선택 사항이지만 결정과 책임 경계는 기록해야 한다.
+- 관리자 실행 이력 조회·수동 실행 기능은 D5 DB 계약을 기반으로 별도
+  Backend·Frontend 관리자 Forest에서 인증·권한·API·UI와 함께 구현해야 한다.
+  현재 재개 조건은 `docs/index.md`의 `BE-ADMIN-RUN-HISTORY`에 기록했다.
 - D6에서 D3의 실제 API 계약을 Frontend 타입·소비 테스트 또는 명시적 승인과
   연결한다.
 - Backend는 `BE-POLICY-TIMESTAMP-ORDER`에서 최초 insert의

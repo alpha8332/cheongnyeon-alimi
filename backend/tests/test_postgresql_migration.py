@@ -49,9 +49,16 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
 
         metadata = sa.MetaData()
         policies = sa.Table("policies", metadata, autoload_with=db_engine)
+        collection_runs = sa.Table(
+            "collection_runs",
+            metadata,
+            autoload_with=db_engine,
+        )
         assert isinstance(policies.c.categories.type, JSONB)
         assert isinstance(policies.c.provenance.type, JSONB)
         assert policies.c.collected_at.type.timezone is True
+        assert collection_runs.c.started_at.type.timezone is True
+        assert collection_runs.c.finished_at.type.timezone is True
 
         collected_at = datetime(2026, 7, 28, tzinfo=timezone.utc)
         provenance = [
@@ -125,6 +132,7 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
         try:
             command.downgrade(config, "base")
             assert not sa.inspect(db_engine).has_table("policies")
+            assert not sa.inspect(db_engine).has_table("collection_runs")
             with db_engine.connect() as connection:
                 enum_count = connection.execute(
                     sa.text(
@@ -132,7 +140,10 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
                         "WHERE typname IN ("
                         "'policy_application_schedule', "
                         "'policy_application_status', "
-                        "'policy_data_quality_status'"
+                        "'policy_data_quality_status', "
+                        "'collection_run_type', "
+                        "'collection_run_trigger_type', "
+                        "'collection_run_status'"
                         ")"
                     )
                 ).scalar_one()

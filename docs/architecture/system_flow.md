@@ -80,6 +80,12 @@ valid·partial만 Backend Import Service의 source batch transaction으로
 `(source_id, external_id)` upsert로 중복을 만들지 않는다. 실행 규칙은
 [Collector 실행](../operations/collector.md)을 따른다.
 
+실제 Seed 적재와 Runtime 재처리는 Policy transaction과 분리된
+`collection_runs`에 시작·종료 시각, 상태와 안전한 집계만 기록한다. 따라서
+Policy rollback 뒤에도 실패 이력을 확인할 수 있으며 Raw payload, URL,
+인증정보와 오류 메시지는 실행 이력에 저장하지 않는다. 필드와 상태 전이는
+[CollectionRun 데이터베이스 계약](collection_run_database.md)을 따른다.
+
 ## 3. 소스별 추출
 
 Source Extractor는 `RawPolicyDocument`에서 사람이 이해할 수 있는 중간 필드를

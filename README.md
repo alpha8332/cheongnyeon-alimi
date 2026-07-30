@@ -9,7 +9,8 @@
 [docs/index.md](docs/index.md)에서 확인한다.
 
 현재 온통청년·복지로의 제한 수집과 Raw 저장, 저장된 Runtime Raw의
-PostgreSQL 재처리 기반이 구현되어 있다. 환경변수와 안전한 실행 범위는
+PostgreSQL 재처리, Seed·Runtime 최소 실행 이력 기반이 구현되어 있다.
+환경변수와 안전한 실행 범위는
 [Collector 실행 문서](docs/operations/collector.md)를 따른다. 구현되지 않은
 전체 수집, Scheduler와 자동 주기 적재는 완료된 것으로 안내하지 않는다.
 
