@@ -1,62 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import Button from '@/components/common/Button';
-import Card from '@/components/common/Card';
-import Input from '@/components/common/Input';
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import EmptyState from '@/components/common/EmptyState';
+import ErrorState from '@/components/common/ErrorState';
+import LoadingState from '@/components/common/LoadingState';
+import PolicyCard from '@/components/policy/PolicyCard';
+import PolicyFilters from '@/components/policy/PolicyFilters';
+import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
+import type { PolicyDto } from '@/types/policy';
+import {
+  collectRegionOptions,
+  EMPTY_PROGRAM_FILTERS,
+  filterPrograms,
+  type ProgramFilterState,
+} from '@/utils/policyFilters';
+
+const EMPTY_POLICIES: PolicyDto[] = [];
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const querySearch = searchParams.get('search') || '';
+  const urlSearch = searchParams.get('search') ?? '';
+  const [filters, setFilters] = useState<ProgramFilterState>(() => ({
+    ...EMPTY_PROGRAM_FILTERS,
+    search: urlSearch,
+  }));
+  const {
+    data: policyList,
+    isLoading,
+    isError,
+    refetch,
+  } = usePoliciesQuery({
+    page: 1,
+    limit: 100,
+    include_partial: filters.includePartial,
+  });
+  const policies = policyList?.items ?? EMPTY_POLICIES;
 
-  const [searchTerm, setSearchTerm] = useState(querySearch);
+  const effectiveFilters = useMemo(
+    () => ({
+      ...filters,
+      search: urlSearch || filters.search,
+    }),
+    [filters, urlSearch],
+  );
 
-  useEffect(() => {
-    setSearchTerm(querySearch);
-  }, [querySearch]);
+  const regionOptions = useMemo(
+    () => collectRegionOptions(policies),
+    [policies],
+  );
 
-  const handleSearch = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!searchTerm.trim()) {
-      navigate('/programs');
-    } else {
-      navigate(`/programs?search=${encodeURIComponent(searchTerm)}`);
-    }
-  };
+  const filteredPolicies = useMemo(
+    () => filterPrograms(policies, effectiveFilters),
+    [policies, effectiveFilters],
+  );
 
   return (
     <div>
       <h2>정책 검색 및 목록</h2>
 
-      {/* 상단 통합 검색 영역 */}
-      <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
-        <Input
-          placeholder="정책명, 키워드 검색 (예: 월세, 취업)"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Button onClick={() => handleSearch()}>검색</Button>
-      </form>
+      <PolicyFilters
+        filters={effectiveFilters}
+        regionOptions={regionOptions}
+        onChange={setFilters}
+      />
 
-      {/* 검색어 상태 표시 */}
-      {querySearch && (
+      {effectiveFilters.search ? (
         <p style={{ fontWeight: 'bold' }}>
-          '{querySearch}' 검색 결과 목록입니다.
+          &apos;{effectiveFilters.search}&apos; 검색 결과 목록입니다.
         </p>
-      )}
+      ) : null}
 
-      {/* 정책 목록 영역 */}
-      <div>
-        <h3>검색 결과 / 정책 목록 (와이어프레임)</h3>
-        <Card>
-          <h4>정책 항목 1</h4>
-          <p>카테고리 / 간단한 설명 영역</p>
-        </Card>
-        <Card>
-          <h4>정책 항목 2</h4>
-          <p>카테고리 / 간단한 설명 영역</p>
-        </Card>
-      </div>
+      {isLoading ? <LoadingState message="정책 목록을 불러오는 중입니다." /> : null}
+
+      {!isLoading && isError ? (
+        <ErrorState
+          message="정책 목록을 불러오지 못했습니다."
+          onRetry={() => void refetch()}
+        />
+      ) : null}
+
+      {!isLoading && !isError && filteredPolicies.length === 0 ? (
+        <EmptyState message="조건에 맞는 정책이 없습니다." />
+      ) : null}
+
+      {!isLoading && !isError && filteredPolicies.length > 0 ? (
+        <div
+          style={{
+            display: 'grid',
+            gap: '12px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          }}
+        >
+          {filteredPolicies.map((policy) => (
+            <PolicyCard key={policy.id} policy={policy} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

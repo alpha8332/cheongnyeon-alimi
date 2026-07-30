@@ -8,6 +8,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@seed': path.resolve(__dirname, '../data/seeds'),
+    },
+  },
+  server: {
+    port: 3000,
+    strictPort: true,
+    fs: {
+      allow: [path.resolve(__dirname, '..')],
     },
   },
 });

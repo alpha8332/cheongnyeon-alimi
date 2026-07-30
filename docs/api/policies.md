@@ -274,19 +274,21 @@ Frontend 소비 테스트는 최소한 다음 상태를 확인한다.
 
 ### 현재 Frontend branch 검토 결과
 
-2026-07-30 기준 원격 `feature/frontend/policy-discovery`의
-`784a2a8` 커밋은 canonical Seed를 소비하는 Mock UI를 구현했지만 현재 공개
-API 전환 계약과 일치하지 않는다.
+2026-07-30 `feature/frontend/policy-discovery`의 FE 2A는 공개 `PolicyDto`,
+`/api/v1/policies`, pagination envelope, 숫자 `id`와 partial opt-in을
+타입·Mock·API Client·화면에 반영했다.
 
-- `NormalizedProgram`과 `provenance`, `invalid`를 사용자 화면 타입으로 사용
-- `/api/v1/programs`와 source/external ID 상세 endpoint 호출
-- 목록을 pagination envelope가 아닌 배열로 해석
-- Seed 4건을 기본 목록에 모두 포함
-- API 소비 계약 테스트 부재
+- 사용자 DTO에서 `provenance`와 `invalid` 제거
+- canonical Seed를 공개 DTO로 변환하면서 양의 `id`와 DB 시각 추가
+- 기본 valid 2건, `include_partial=true`에서 valid·partial 4건 반환
+- 목록·상세가 같은 partial opt-in을 사용하도록 상세 링크 query 유지
+- TypeScript 컴파일러와 Node 내장 테스트 러너 기반 소비 계약 테스트 추가
 
-따라서 이 커밋은 D0·D6 Frontend 승인 증거가 아니라 변경 요청 대상이다.
-Frontend가 위 DTO·endpoint·품질 경계를 반영한 타입·API Client·Mock 소비
-테스트 또는 명시적 재검토 결과를 제공해야 승인을 기록한다.
+Node.js 24.18.0 환경에서 소비 테스트 7건, lint와 production build가
+통과했다. PostgreSQL canonical Seed의 실제 API도 기본 2건·partial opt-in
+4건, 숫자 ID 상세, partial 기본 404와 provenance 비노출을 확인했다. 실제
+API 모드 브라우저 캡처에서 홈·목록의 기본 valid 2건과 공개 필드 렌더링을
+확인해 D0·D6 Frontend 소비 검토를 완료했다.
 
 ## 통합 검증
 

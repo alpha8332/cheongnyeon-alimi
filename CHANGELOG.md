@@ -10,6 +10,10 @@
 
 ### Added
 
+- Frontend Policy Discovery Slice: 공개 `PolicyDto`, canonical Seed Mock
+  adapter, `/api/v1/policies` 목록·상세 Client와 partial opt-in 정책
+  목록·상세·필터 UI 기반 추가
+  ([개발 기록](docs/development/development_notes/frontend/policy_discovery.md))
 - 저장된 Runtime Raw의 무네트워크 PostgreSQL 재처리와 idempotent 적재,
   향후 관리자 기능을 위한 안전한 Seed·Runtime `CollectionRun` 실행 이력 기반
   추가

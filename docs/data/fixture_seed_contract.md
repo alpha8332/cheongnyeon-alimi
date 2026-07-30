@@ -5,7 +5,7 @@
 - 상태: 기술 기준선
 - Data 검증: 완료
 - Backend 승인: 완료
-- Frontend 승인: action-needed
+- Frontend 승인: 완료
 - 기준 Schema: `NormalizedProgram` 1.0.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
@@ -113,10 +113,11 @@ Frontend가 타입과 Mock을 구현할 때 canonical Seed를 공개 API DTO로 
 | Mock | canonical Seed의 4개 대표 사례를 사용하되 공개 DTO에 없는 `provenance`는 제거하고 DB 생성 필드를 API 예시에 맞게 추가 |
 
 Frontend 승인 증거는 위 경계를 반영한 TypeScript 타입·Mock 소비 테스트 또는
-담당자 명시적 검토 기록이다. 원격 `feature/frontend/policy-discovery`의
-`784a2a8`에는 canonical Seed 타입과 Mock UI가 있지만 공개 API DTO·endpoint,
-pagination, partial 기본 노출과 상세 ID 계약이 현재 Backend API와 다르다.
-따라서 D0의 Frontend 승인은 완료가 아니라 변경 조치 대기 상태다.
+담당자 명시적 검토 기록이다. `feature/frontend/policy-discovery`의 FE 2A에서
+공개 DTO·endpoint, pagination, partial 기본 노출과 상세 ID 계약을 코드와
+소비 테스트에 반영했다. 테스트 7건·lint·build와 실제 PostgreSQL API HTTP
+검증을 통과했고, 실제 API 모드 브라우저 캡처에서 기본 valid 2건과 공개
+필드 렌더링을 확인해 D0의 Frontend 승인을 완료했다.
 
 현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
 기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
@@ -183,12 +184,36 @@ uv run python -B scripts/build_data_fixtures.py --check
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
 | Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
-| Frontend | action-needed | 원격 `784a2a8`의 타입·Mock UI는 확인했으나 공개 DTO, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in 경계가 달라 수정과 소비 테스트 필요 |
+| Frontend | approved | FE 2A 공개 `PolicyDto`, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in의 test·lint·build, 실제 API HTTP와 브라우저 렌더링 검증 통과 |
 
+### Frontend 초기 Mock 검토 결과 (2026-07-28)
 
-Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
-안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest
-계획·개발 기록을 갱신하고 Data 6를 `completed`로 전환한다.
+`feature/frontend/policy-discovery`의 `784a2a8`은 canonical Seed 4건을
+TypeScript·Mock·와이어프레임 UI로 소비했다. 다음 표현 동작은 확인했다.
+
+- nullable 단일 값은 표시 시점에만 fallback을 적용한다.
+- 복수 값 필드는 배열로 처리하고 빈 배열의 안내 문구를 표시한다.
+- 다중 `categories`를 태그 목록으로 표시한다.
+- `application_schedule`과 `application_status`를 별도 의미로 표시한다.
+- partial 배지와 구조화 값 누락 시 원문 text fallback을 제공한다.
+
+다만 이 결과만으로 공개 API 소비를 승인하지 않는다. Frontend는 사용자
+타입에서 `provenance`·`invalid`를 제외하고 `/api/v1/policies`의 pagination
+envelope와 숫자 `id` 상세 경로를 사용해야 한다. 기본 조회에서는 valid만,
+명시적인 `include_partial=true` 요청에서만 partial을 노출하도록 Mock과
+API Client를 맞춘 뒤 소비 테스트 또는 담당자 재검토 기록을 남긴다.
+
+### Frontend API 계약 반영 (2026-07-30)
+
+FE 2A는 위 변경 요청을 타입·Mock·API Client와 화면에 반영했다. canonical
+Seed의 provenance·invalid 입력 경계는 Mock adapter 내부에만 두고 공개
+`PolicyDto`에서는 제거한다. 기본 valid 2건과 partial opt-in 4건,
+pagination envelope와 숫자 `id` 목록·상세 경계를 같은 Mock contract로
+구현했다. 소비 테스트 7건·lint·build, PostgreSQL 실제 API HTTP와 실제
+API 모드 브라우저 렌더링을 확인해 Frontend 소비 승인을 완료했다.
+
+Backend와 Frontend의 승인 증거가 모두 확인되어 Data 6의 기술 산출물을
+안정적인 영역 간 계약으로 확정했다.
 
 [bokjiro-api]: https://www.data.go.kr/data/15090532/openapi.do
 [youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide

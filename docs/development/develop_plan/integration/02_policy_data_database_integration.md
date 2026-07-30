@@ -4,12 +4,12 @@
 
 - 번호: Integration 02
 - 담당 영역: Data·Backend 공동 통합
-- 상태: in-progress
+- 상태: completed
 - 대상 기간: 데이터 담당 2주차
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D6 action-needed (D0 Frontend action-needed)
+- 현재 Slice: D0~D6 completed
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -89,9 +89,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D0 - 데이터 계약 공동 확정
 
-- 상태: action-needed
+- 상태: completed
 - 기술 검토: completed
-- 외부 검토: Frontend changes requested
+- 외부 검토: Frontend approved
 - 목적: NormalizedProgram 1.0.0과 canonical Seed의 실제 소비 가능성을
   확인한다.
 - 선행 조건:
@@ -267,9 +267,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D6 - Frontend 인계와 Data 6 종료
 
-- 상태: action-needed
+- 상태: completed
 - 기술 인계: completed
-- 외부 소비: Frontend changes requested
+- 외부 소비: Frontend approved
 - 목적: Frontend가 Mock 또는 실제 API로 정책 기능을 구현할 계약을 제공한다.
 - 선행 조건:
   - D0와 D3 완료
@@ -303,6 +303,11 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - Frontend가 공개 `PolicyDto`, `/api/v1/policies`, pagination envelope,
     숫자 `id` 상세와 partial opt-in을 반영한 소비 테스트 또는 명시적
     재검토 결과를 제공하면 완료 상태를 재평가함
+  - 2026-07-30 FE 2A에서 위 변경 요청을 타입·Mock·API Client·화면과
+    소비 테스트 코드에 반영함
+  - Node.js 24.18.0 환경의 test 7건·lint·build와 실제 PostgreSQL API
+    HTTP 검증을 통과했고 실제 API 모드 홈·목록 브라우저 렌더링도 확인해
+    D0·D6와 Data 6를 완료함
 
 ## 의존 순서
 

@@ -3,12 +3,12 @@
 ## 작업 정보
 
 - 시작일: 2026-07-29
-- 상태: in-progress
+- 상태: completed
 - 영역: Data·Backend 공동 통합
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D6 action-needed (D0 Frontend action-needed)
+- 현재 Slice: D0~D6 completed
 
 ## 목적
 
@@ -38,13 +38,13 @@ DTO·endpoint·Mock 전환 인계 기준과 Frontend 변경 요청을 확정한�
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
-| D0 | action-needed | Backend 승인 완료, 원격 Frontend 타입·Mock의 공개 API 계약 수정 필요 |
+| D0 | completed | Backend·Frontend 데이터 계약 공동 승인 완료 |
 | D1 | completed | 31필드 JSON·Importer·ORM·PostgreSQL·API 매핑과 비교 기준 확정 |
 | D2 | completed | canonical Seed 4건의 Schema → Importer → PostgreSQL → Repository 통합 검증 |
 | D3 | completed | 실제 PostgreSQL 기반 목록·상세·필터·오류 API 계약 검증 |
 | D4 | completed | 최신 source Raw 회차의 재처리·품질 분리·원자적 DB 적재와 재실행 검증 |
 | D5 | completed | Seed·Runtime CollectionRun 모델·Migration·상태·집계 이력 구현 |
-| D6 | action-needed | 기술 인계 완료, Frontend API 소비 수정·검증 후 Data 6 종료 |
+| D6 | completed | Frontend API 소비·자동·실제 API·브라우저 렌더링 검증 후 Data 6 종료 |
 
 ## 구현 내용
 
@@ -227,10 +227,10 @@ DTO·endpoint·Mock 전환 인계 기준과 Frontend 변경 요청을 확정한�
   - 목록 pagination envelope와 DB 숫자 `id` 상세 route를 소비하지 않음
   - 기본 valid 2건과 partial opt-in 대신 Seed 4건을 기본 반환함
   - API 소비 계약을 검증하는 Frontend 테스트가 없음
-- 현재 브랜치의 `src/routes/index.tsx`는 여전히 존재하지 않는
-  `ProgramListPage`를 import한다. 원격 커밋에는 이 참조 수정이 있지만 현재
-  Integration 브랜치에 merge되지 않았고 이 환경에는 Node·npm이 없어 build와
-  타입 검사를 실행하지 못했다.
+- 당시 Integration 브랜치에는 `ProgramListPage` 파일이 없었으나 원격
+  Frontend 커밋은 `SearchPage`의 default export를 `ProgramListPage`라는
+  유효한 별칭으로 import하고 있었다. 이를 존재하지 않는 import 문제로 본
+  기록은 잘못된 판단이며 FE 2A 후속 검토에서 정정했다.
 - Data·Database 담당 범위를 넘어 Frontend 브랜치를 수정·merge하거나
   Backend API를 변경하지 않았다. D0·D6와 Data 6는 Frontend 조치와 소비
   테스트가 생길 때까지 `action-needed`로 유지한다.
@@ -614,10 +614,16 @@ D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollb
   통합·전체 회귀 후 Alembic `base`, `policies`·`collection_runs` 테이블
   부재와 Policy·CollectionRun enum 0개를 확인했다.
 - Frontend:
-  이 PC에 Node와 npm이 없어 build·lint·타입 검사를 실행하지 못했다.
-  현재 Integration 브랜치에는 Policy DTO·Mock 소비 구현이 없고 원격
+  D6 당시 이 PC에 Node와 npm이 없어 build·lint·타입 검사를 실행하지
+  못했다. 당시 Integration 브랜치에는 Policy DTO·Mock 소비 구현이 없고 원격
   `784a2a8`은 읽기 전용 정적 검토만 수행했다. 따라서 Frontend 테스트 성공
   또는 승인으로 기록하지 않는다.
+- Frontend FE 2A 후속 검증:
+  Node.js 24.18.0에서 소비 테스트 7건·lint·production build가 통과했다.
+  PostgreSQL canonical Seed 실제 API도 기본 2건·partial 4건, 숫자 ID
+  상세·404·422·provenance 비노출과 CORS를 확인했다. 사용자 제공 실제 API
+  모드 브라우저 캡처로 홈·목록의 기본 valid 2건과 공개 필드 렌더링을
+  확인했다.
 - 문서 검증기 단위 테스트:
   `python -B -m unittest tests.test_validate_docs -v` 10건 통과
 - 문서 검증:
@@ -627,13 +633,6 @@ D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollb
 
 ## 남은 작업
 
-- Frontend 담당자가 원격 `784a2a8`의 사용자 타입·API Client·Mock 경계를
-  공개 `PolicyDto`, `/api/v1/policies`, pagination envelope, 숫자 `id` 상세와
-  partial opt-in에 맞게 수정하고 소비 테스트 또는 재검토 기록을 제공해야
-  D0·D6를 완료할 수 있다.
-- Frontend `src/routes/index.tsx`는 현재 존재하지 않는
-  `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
-  수정하지 않았다.
 - 관리자 실행 이력 조회·수동 실행 기능은 D5 DB 계약을 기반으로 별도
   Backend·Frontend 관리자 Forest에서 인증·권한·API·UI와 함께 구현해야 한다.
   현재 재개 조건은 `docs/index.md`의 `BE-ADMIN-RUN-HISTORY`에 기록했다.

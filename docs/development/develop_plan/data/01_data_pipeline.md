@@ -3,10 +3,10 @@
 ## 계획 정보
 
 - 담당 영역: Data
-- 상태: in-progress
+- 상태: completed
 - 대상 기간: 데이터 파이프라인 기반 구축 Forest
 - 관련 브랜치: `feature/data/pipeline-foundation`
-- 현재 Slice: Data 7 기술 검증 완료, Data 6 Frontend action-needed
+- 현재 Slice: Data 0~7 completed
 - 개발 기록:
   [Data Pipeline Forest 개발 기록](../../development_notes/data/data_pipeline.md)
 
@@ -396,7 +396,7 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
 
 ### Data 6 - Fixture와 Seed 계약
 
-- 상태: action-needed
+- 상태: completed
 - 목적: Backend와 Frontend가 사용할 재현 가능한 샘플 데이터를 제공한다.
 - 작업:
   - 검토된 Raw·Extracted·Normalized Fixture
@@ -425,6 +425,9 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
   - 원격 Frontend `784a2a8`의 Seed Mock UI는 확인했으나 공개 Policy DTO,
     `/api/v1/policies`, pagination, 숫자 `id` 상세와 partial opt-in 계약이
     현재 Backend API와 달라 Frontend 공동 검토 완료 기준은 충족하지 못함
+  - 2026-07-30 FE 2A에서 위 계약 차이를 코드와 소비 테스트에 반영했으며
+    test·lint·build, 실제 API HTTP와 브라우저 렌더링 검증을 통과해
+    Frontend 공동 승인을 완료함
   - `docs/index.md`에서 FE·BE 담당 Agent가 계약 문서와 검토 기록을 먼저
     확인하도록 영역 간 인계 안내를 연결함
 
@@ -450,8 +453,8 @@ Seed 구성은 소스별 건수만 채우는 방식이 아니라 다음 대표 �
     개발 기록에서 재확인함
   - canonical Fixture·Seed까지 제공하는 의미 있는 Forest 결과를 기존
     `CHANGELOG.md` Data 항목에 합쳐 기록함
-  - Data 7 기술 검증은 완료했지만 Data 6의 Backend·Frontend 공동 승인
-    기준이 남아 Forest 전체 상태는 `in-progress`로 유지함
+  - Data 6의 Backend·Frontend 공동 승인까지 확인해 Forest 전체 완료
+    기준을 충족함
 
 ## 검증 계획
 
