@@ -4,12 +4,12 @@
 
 - 번호: Integration 02
 - 담당 영역: Data·Backend 공동 통합
-- 상태: approved
+- 상태: in-progress
 - 대상 기간: 데이터 담당 2주차
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: 구현 시작 전
+- 현재 Slice: D0 review-pending (기술 검토 완료, Frontend 승인 대기)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -89,7 +89,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D0 - 데이터 계약 공동 확정
 
-- 상태: pending
+- 상태: review-pending
+- 기술 검토: completed
+- 외부 검토: Frontend pending
 - 목적: NormalizedProgram 1.0.0과 canonical Seed의 실제 소비 가능성을
   확인한다.
 - 선행 조건:

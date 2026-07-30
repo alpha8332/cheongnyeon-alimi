@@ -4,7 +4,8 @@
 
 - 상태: 기술 기준선
 - Data 검증: 완료
-- Backend·Frontend 공동 승인: 대기
+- Backend 승인: 완료
+- Frontend 승인: 대기
 - 기준 Schema: `NormalizedProgram` 1.0.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
@@ -95,6 +96,26 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - partial 표시 또는 누락 필드 fallback 정책 확인
 - provenance를 일반 화면에 노출할지 관리자 화면에만 사용할지 결정
 
+### Frontend D0 인계 항목
+
+Frontend가 타입과 Mock을 구현할 때 canonical Seed를 공개 API DTO로 그대로
+간주하지 않는다. 다음 경계를 기준으로 실제 소비 가능 여부를 확인한다.
+
+| 항목 | 소비 계약 |
+| --- | --- |
+| 타입 기준 | 목록의 `items` 원소와 상세 응답은 `docs/api/policies.md`의 동일한 Policy DTO를 사용 |
+| nullable | 선택 단일 값과 `application_schedule`·`application_status`는 `null`을 허용하고 빈 문자열로 바꾸지 않음 |
+| 배열 | `categories`, `regions`와 5개 조건 배열은 값이 없어도 `[]`이며 nullable로 만들지 않음 |
+| 일정·상태 | 신청 방식인 `application_schedule`과 현재 상태인 `application_status`를 별도 필드와 의미로 표시 |
+| partial | 기본 목록·상세에서는 제외하고 명시적인 `include_partial=true` 요청에서만 소비 |
+| provenance | canonical Seed와 DB에는 보존하지만 일반 사용자 Policy DTO에는 포함하지 않음 |
+| 시각 | `collected_at`, `created_at`, `updated_at`의 offset 표현이 아니라 절대 시각으로 해석 |
+| Mock | canonical Seed의 4개 대표 사례를 사용하되 공개 DTO에 없는 `provenance`는 제거하고 DB 생성 필드를 API 예시에 맞게 추가 |
+
+Frontend 승인 증거는 위 경계를 반영한 TypeScript 타입·Mock 소비 테스트 또는
+담당자 명시적 검토 기록이다. 현재 Frontend에는 해당 타입과 Mock 소비 코드가
+없으므로 D0의 Frontend 승인은 대기 상태다.
+
 현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
 기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
 revision과 PostgreSQL JSONB·enum·timezone 물리 매핑을 추가했으며 SQLite
@@ -156,8 +177,8 @@ uv run python -B scripts/build_data_fixtures.py --check
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
-| Backend | reviewed | CLI importer, 조회 후 재적재, valid 기본 필터, 범용 JSON provenance 비노출과 Date+Text 보존을 기준선에 반영. PostgreSQL hardening은 Backend 02에서 진행 |
-| Frontend | pending | 담당자 승인 또는 TypeScript·Mock 소비 테스트 필요 |
+| Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
+| Frontend | pending | D0 인계 항목을 반영한 TypeScript 타입·Mock 소비 테스트 또는 담당자 명시적 승인 필요 |
 
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을

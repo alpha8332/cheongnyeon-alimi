@@ -52,6 +52,8 @@
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
+- [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
+  Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 
