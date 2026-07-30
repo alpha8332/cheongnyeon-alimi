@@ -72,7 +72,7 @@
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
 
-## 현재 FE·BE 인계 안내
+## 공동 확인 및 인계 보드
 
 Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작할 수 있는
 상태다. 담당자와 AI Agent는 구현 전에 반드시
@@ -85,6 +85,33 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 - 구현 또는 명시적 승인 결과를 계약 문서의 공동 검토 기록에 남긴다.
 - 두 영역의 검토 전에는 Normalized 1.0.0을 안정적인 영역 간 계약으로
   확정하거나 임의로 변경하지 않는다.
+
+현재 다른 영역의 확인·결정·조치가 필요한 인계사항은 다음과 같다. 이 표는
+상세 계획이나 Issue를 대신하지 않고, 다음 담당자와 권위 문서로 연결하는
+진입점이다.
+
+| ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
+| --- | --- | --- | --- | --- | --- |
+| `INT-02-D0-FE` | NormalizedProgram·canonical Seed의 Frontend 타입·Mock 소비 승인 | `review-pending` | Frontend | TypeScript·Mock 소비 테스트 또는 담당자 명시적 승인 | [Fixture·Seed 계약](data/fixture_seed_contract.md), [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `FE-POLICY-ROUTE` | `src/routes/index.tsx`가 존재하지 않는 `ProgramListPage`를 import하는 문제 확인 | `action-needed` | Frontend | Frontend 빌드·라우트 기준에 맞는 구현 또는 참조 정정과 검증 | [Integration 개발 기록](development/development_notes/integration/policy_data_database_integration.md) |
+| `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
+
+### FE·BE 담당자 인계 기록 방법
+
+Frontend와 Backend 담당자 또는 담당 AI Agent는 작업 중 다른 영역의 확인이
+필요한 계약, 소비 테스트, 차단 의존성이나 후속 조치를 발견하면 이 표에 새
+행을 추가하거나 기존 행을 갱신할 수 있다.
+
+- `ID`, 현재 상태, 다음 담당, 완료 또는 재개 조건과 권위 문서 링크를
+  반드시 기록한다.
+- `review-pending`은 소비자 검토 증거 대기,
+  `action-needed`는 담당 영역의 조치 필요,
+  `trigger-based`는 명시된 조건이 생길 때만 재개하는 항목에 사용한다.
+- 상세 구현 계획과 결과는 담당 Forest 계획·개발 기록·Issue에 남기고 이
+  표에는 요약과 링크만 둔다.
+- 확인이나 구현 증거 없이 다른 영역의 승인을 대신 기록하지 않는다.
+- 완료한 항목은 관련 기준 문서와 개발 기록을 먼저 갱신한 뒤 현재 보드에서
+  제거하거나 후속 항목으로 교체한다.
 
 ## 문서 영역
 
