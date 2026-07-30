@@ -27,7 +27,7 @@ F0에서는 공식 advisory와 package metadata, 현재 설치 트리와 Fronten
 | --- | --- | --- |
 | F0 | completed | high 2건 재현, package 경로와 현재 앱의 RSC 도달 불가 확인 |
 | F1 | completed | `react-router@8.3.0` package 교체와 공식 import migration 결정 |
-| F2 | draft | 의존성 또는 보호 조치 반영 예정 |
+| F2 | completed | v8 의존성·imports·Node.js 실행 계약 반영, audit 0건 |
 | F3 | draft | 자동·브라우저 회귀와 최종 문서 동기화 예정 |
 
 ## 구현 내용
@@ -94,6 +94,22 @@ F1 결정은 `react-router@8.3.0`으로 upgrade하는 것이다. F2에서
 - 한시적 위험 수용: 현재 RSC 경로는 도달 불가지만 audit high를 계속
   유지하며 안전한 공식 upgrade 경로가 존재하므로 선택하지 않음
 
+### F2 - v8 migration 반영
+
+- `frontend/package.json`에서 `react-router-dom`을 제거하고
+  `react-router@^8.3.0`을 직접 의존성으로 추가했다.
+- npm 11.16.0으로 lockfile과 설치 트리를 갱신했다. 고정 버전은
+  `react-router@8.3.0`이며 기존 `react-router-dom`, `cookie`,
+  `set-cookie-parser`가 제거되고 v8 전이 의존성 `cookie-es@3.1.1`이
+  추가됐다.
+- `createBrowserRouter`, `Link`, `Outlet`, Router hooks는
+  `react-router`에서 import하고 DOM 전용 `RouterProvider`는
+  `react-router/dom`에서 import하도록 source 10개를 변경했다.
+- `frontend/package.json`의 Node.js engine과 `frontend/README.md`의 로컬
+  실행 기준을 `>=22.22.0`으로 동기화했다.
+- Router 구성, route path, Policy API·DTO·Mock 계약과 화면 로직은 변경하지
+  않았다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/frontend/02_react_router_advisory.md`
@@ -101,9 +117,22 @@ F1 결정은 `react-router@8.3.0`으로 upgrade하는 것이다. F2에서
 - `docs/development/develop_plan/README.md`
 - `docs/development/development_notes/README.md`
 - `docs/index.md`
+- `frontend/package.json`
+- `frontend/package-lock.json`
+- `frontend/README.md`
+- `frontend/src/App.tsx`
+- `frontend/src/main.tsx`
+- `frontend/src/layouts/RootLayout.tsx`
+- `frontend/src/components/common/Header.tsx`
+- `frontend/src/components/common/NotFoundPage.tsx`
+- `frontend/src/components/common/RootErrorFallback.tsx`
+- `frontend/src/components/policy/PolicyCard.tsx`
+- `frontend/src/pages/user/HomePage.tsx`
+- `frontend/src/pages/user/ProgramDetailPage.tsx`
+- `frontend/src/pages/user/SearchPage.tsx`
 
-F0는 조사·문서화 Slice이므로 Frontend 코드, `package.json`과 lockfile은
-변경하지 않았다.
+F0~F1은 조사·결정만 기록했고 F2에서 위 Frontend 의존성·imports·실행
+문서를 변경했다.
 
 ## 설계 결정
 
@@ -132,6 +161,15 @@ F0는 조사·문서화 Slice이므로 Frontend 코드, `package.json`과 lockfi
   `react-router-dom@8.3.0` 미배포, 최신 v7 dist-tag 7.18.2 확인
 - F1 source 정적 검색: Router import 10개와 v8의 다른 breaking API
   미사용 확인
+- F2 `npm install --ignore-scripts`: 1 package 추가, 3 package 제거,
+  1 package 변경, audit 0건
+- F2 `npm ls react-router react-router-dom --all`: 직접
+  `react-router@8.3.0`만 설치되고 `react-router-dom`이 없음을 확인
+- F2 `npm audit --json`: 취약점 0건
+- F2 source·manifest 검색: `react-router-dom` 참조 없음
+- F2 `npm test`: 소비 계약 테스트 7건 통과
+- F2 `npm run lint`: 오류·경고 없이 통과
+- F2 `npm run build`: TypeScript와 Vite production build 통과
 - `npm test`: 소비 계약 테스트 7건 통과
 - `npm run lint`: 오류·경고 없이 통과
 - `npm run build`: TypeScript와 Vite production build 통과
@@ -144,15 +182,12 @@ F0는 조사·문서화 Slice이므로 Frontend 코드, `package.json`과 lockfi
 - `python scripts/validate_docs.py`: 통과
 - `git diff --check`: 통과
 
-F0 상태에서 자동 테스트·lint·build는 기준선으로 통과했지만, F2에서
-의존성이나 보호 조치를 반영한 뒤 F3에서 다시 실행해야 한다. F3의 자동
-검증과 빌드가 끝나면 ChatGPT 데스크톱 앱의 Browser에서 직접 회귀를
-수행하고, 그 결과까지 기록한 뒤 F3를 완료 처리한다.
+F2 적용 상태에서 test·lint·build는 통과했다. F3에서는 clean install
+재현을 위해 `npm ci`부터 전체 검증을 다시 실행한 뒤 ChatGPT 데스크톱 앱의
+Browser에서 직접 회귀를 수행하고, 그 결과까지 기록한다.
 
 ## 남은 작업
 
-- F2에서 `react-router-dom`을 `react-router@8.3.0`으로 교체하고
-  manifest·lockfile·source import·Node.js 최소 버전 문서를 동기화한다.
 - F3에서 `npm ci`, test, lint와 build를 먼저 수행한 뒤 ChatGPT 데스크톱
   앱의 Browser에서 `http://localhost:3000` 주요 route 회귀를 수행한다.
 - RSC mode, RSC server entry 또는 server action 도입 시 현재 도달 불가

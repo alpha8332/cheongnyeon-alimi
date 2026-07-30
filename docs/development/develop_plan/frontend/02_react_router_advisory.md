@@ -100,7 +100,7 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
 
 ### F2 - 의존성 또는 보호 조치 반영
 
-- 상태: draft
+- 상태: completed
 - 목적:
   F1 결정에 따라 manifest·lockfile 또는 위험 수용 기록을 반영한다.
 - 산출물:
@@ -113,6 +113,12 @@ RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도�
   - 설치 의존성과 결정 문서가 일치
   - `react-router-dom` 의존성과 source import가 남아 있지 않음
   - 임의의 `--force` 변경 없음
+
+2026-07-30 `react-router-dom`을 제거하고 `react-router@8.3.0`을 직접
+의존성으로 반영했다. 일반 API와 `RouterProvider` import를 각각
+`react-router`, `react-router/dom`으로 변경하고 Node.js 최소 버전을
+22.22로 동기화했다. 설치 트리와 audit, test·lint·build에서 변경 결과를
+확인했으며 강제 수정은 사용하지 않았다.
 
 ### F3 - Frontend 회귀와 문서 동기화
 
