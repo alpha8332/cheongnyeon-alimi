@@ -5,7 +5,7 @@
 - 상태: 기술 기준선
 - Data 검증: 완료
 - Backend 승인: 완료
-- Frontend 승인: 대기
+- Frontend 승인: action-needed
 - 기준 Schema: `NormalizedProgram` 1.0.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
@@ -113,8 +113,10 @@ Frontend가 타입과 Mock을 구현할 때 canonical Seed를 공개 API DTO로 
 | Mock | canonical Seed의 4개 대표 사례를 사용하되 공개 DTO에 없는 `provenance`는 제거하고 DB 생성 필드를 API 예시에 맞게 추가 |
 
 Frontend 승인 증거는 위 경계를 반영한 TypeScript 타입·Mock 소비 테스트 또는
-담당자 명시적 검토 기록이다. 현재 Frontend에는 해당 타입과 Mock 소비 코드가
-없으므로 D0의 Frontend 승인은 대기 상태다.
+담당자 명시적 검토 기록이다. 원격 `feature/frontend/policy-discovery`의
+`784a2a8`에는 canonical Seed 타입과 Mock UI가 있지만 공개 API DTO·endpoint,
+pagination, partial 기본 노출과 상세 ID 계약이 현재 Backend API와 다르다.
+따라서 D0의 Frontend 승인은 완료가 아니라 변경 조치 대기 상태다.
 
 현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
 기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
@@ -136,8 +138,11 @@ Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소�
 Backend 02 B6의 PostgreSQL 18.4 종단 검증에서 canonical Seed 4건의 31개
 필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone instant·provenance
 손실 0건을 확인했다.
-Frontend TypeScript 타입·Mock 소비 코드는 아직 없어 Frontend 검토는
-대기 상태다. Data 영역은 Backend ORM과 Frontend 타입을 대신 구현하지 않는다.
+Frontend TypeScript 타입·Mock 소비 코드는 별도 원격 브랜치에 있으나 D6
+검토에서 현재 Policy API와의 계약 차이를 확인했다. Data 영역은 해당
+Frontend 코드를 대신 수정하거나 승인하지 않으며,
+[`Policy API 계약`](../api/policies.md)의 D6 인계 기준을 반영한 소비 테스트를
+요구한다.
 
 ## 재생성과 검증
 
@@ -178,7 +183,7 @@ uv run python -B scripts/build_data_fixtures.py --check
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
 | Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
-| Frontend | pending | D0 인계 항목을 반영한 TypeScript 타입·Mock 소비 테스트 또는 담당자 명시적 승인 필요 |
+| Frontend | action-needed | 원격 `784a2a8`의 타입·Mock UI는 확인했으나 공개 DTO, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in 경계가 달라 수정과 소비 테스트 필요 |
 
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을

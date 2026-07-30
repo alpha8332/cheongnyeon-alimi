@@ -142,6 +142,152 @@ GET /api/v1/policies/{policy_id}
 - 자유 키워드, 원문 부분 문자열, 정렬 선택과 추천은 이 계약 범위가 아니다.
 - `provenance`는 DB에 보존하지만 목록·상세 공개 DTO에서 제외한다.
 
+## Frontend D6 인계
+
+### TypeScript 기준
+
+Frontend의 사용자 정책 화면은 canonical Seed의 `NormalizedProgram`이 아니라
+아래 공개 API DTO를 기준으로 타입을 정의한다. 모든 key는 응답에 존재하며
+선택 단일 값만 `null`일 수 있다. 배열은 값이 없어도 `[]`다.
+
+```typescript
+export type PolicyCategory =
+  | 'housing'
+  | 'finance'
+  | 'welfare'
+  | 'employment'
+  | 'startup'
+  | 'education'
+  | 'other';
+
+export type ApplicationSchedule =
+  | 'fixed_period'
+  | 'always'
+  | 'until_budget_exhausted';
+
+export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
+export type PublicDataQualityStatus = 'valid' | 'partial';
+
+export interface PolicyDto {
+  schema_version: '1.0.0';
+  source_id: string;
+  source_name: string;
+  external_id: string | null;
+  title: string;
+  organization: string | null;
+  summary: string | null;
+  category_text: string | null;
+  categories: PolicyCategory[];
+  application_period_text: string | null;
+  application_start: string | null;
+  application_end: string | null;
+  application_schedule: ApplicationSchedule | null;
+  application_status: ApplicationStatus | null;
+  region_text: string | null;
+  regions: string[];
+  age_min: number | null;
+  age_max: number | null;
+  age_condition_text: string | null;
+  eligibility_text: string | null;
+  support_content: string | null;
+  application_method: string | null;
+  education_statuses: string[];
+  employment_statuses: string[];
+  required_conditions: string[];
+  preferred_conditions: string[];
+  excluded_conditions: string[];
+  source_url: string;
+  collected_at: string;
+  data_quality_status: PublicDataQualityStatus;
+  id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PolicyListResponse {
+  total: number;
+  page: number;
+  limit: number;
+  items: PolicyDto[];
+}
+```
+
+`PolicyDto`에는 `provenance`와 `invalid` 품질 상태가 없다. 상세 route와
+React key는 nullable `external_id`나 source 조합이 아니라 API가 반환한 숫자
+`id`를 사용한다.
+
+### API Client 전환 기준
+
+```typescript
+const list = await apiClient.get<PolicyListResponse>(
+  '/api/v1/policies',
+  {
+    params: {
+      page: 1,
+      limit: 10,
+      include_partial: false,
+    },
+  },
+);
+
+const detail = await apiClient.get<PolicyDto>(
+  `/api/v1/policies/${policyId}`,
+  {
+    params: {
+      include_partial: false,
+    },
+  },
+);
+```
+
+- 목록 응답은 배열이 아니라 `total`, `page`, `limit`, `items` envelope다.
+- 상세 endpoint는 `/api/v1/policies/{policy_id}`이며 `policy_id`는 DB 숫자
+  ID다.
+- `/api/v1/programs`와 source/external ID 조합 상세 endpoint는 구현돼 있지
+  않다.
+- `include_partial`의 기본값은 `false`다. partial 화면을 제공할 때 목록과
+  상세 요청에 같은 값을 전달한다.
+- 현재 API에는 자유 키워드·연령 query가 없다. Mock 전용 로컬 검색을 실제
+  API 필터처럼 간주하지 않는다.
+
+### Mock → API 전환
+
+canonical Seed 4건을 Mock 사례로 사용할 수 있지만 다음 변환이 필요하다.
+
+1. 일반 사용자 DTO에 없는 `provenance`를 제거한다.
+2. 각 객체에 안정적인 양의 `id`와 timezone-aware `created_at`,
+   `updated_at`을 추가한다.
+3. 기본 목록은 `data_quality_status === "valid"`인 2건만 반환한다.
+4. `include_partial=true`에서만 valid·partial 4건을 반환한다.
+5. 목록은 `PolicyListResponse` envelope로 감싼다.
+6. 상세는 숫자 `id`로 찾고 partial 기본 요청은 404와 같은 비노출 상태로
+   처리한다.
+
+Frontend 소비 테스트는 최소한 다음 상태를 확인한다.
+
+- loading, 빈 `items`, 404, 422와 500
+- nullable 값의 명시적인 fallback과 빈 배열 렌더링
+- `application_schedule`과 `application_status`의 구분
+- partial 표시와 목록·상세 opt-in 일관성
+- timezone offset 문자열이 달라도 같은 instant로 해석
+- 공개 응답과 화면 상태에 provenance가 포함되지 않음
+
+### 현재 Frontend branch 검토 결과
+
+2026-07-30 기준 원격 `feature/frontend/policy-discovery`의
+`784a2a8` 커밋은 canonical Seed를 소비하는 Mock UI를 구현했지만 현재 공개
+API 전환 계약과 일치하지 않는다.
+
+- `NormalizedProgram`과 `provenance`, `invalid`를 사용자 화면 타입으로 사용
+- `/api/v1/programs`와 source/external ID 상세 endpoint 호출
+- 목록을 pagination envelope가 아닌 배열로 해석
+- Seed 4건을 기본 목록에 모두 포함
+- API 소비 계약 테스트 부재
+
+따라서 이 커밋은 D0·D6 Frontend 승인 증거가 아니라 변경 요청 대상이다.
+Frontend가 위 DTO·endpoint·품질 경계를 반영한 타입·API Client·Mock 소비
+테스트 또는 명시적 재검토 결과를 제공해야 승인을 기록한다.
+
 ## 통합 검증
 
 `tests/integration/test_seed_to_policy_api.py`는 canonical Seed 4건을 실제

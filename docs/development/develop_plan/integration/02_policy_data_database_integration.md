@@ -9,7 +9,7 @@
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D5 completed (D0 Frontend review-pending)
+- 현재 Slice: D6 action-needed (D0 Frontend action-needed)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -89,9 +89,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D0 - 데이터 계약 공동 확정
 
-- 상태: review-pending
+- 상태: action-needed
 - 기술 검토: completed
-- 외부 검토: Frontend pending
+- 외부 검토: Frontend changes requested
 - 목적: NormalizedProgram 1.0.0과 canonical Seed의 실제 소비 가능성을
   확인한다.
 - 선행 조건:
@@ -267,7 +267,9 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D6 - Frontend 인계와 Data 6 종료
 
-- 상태: pending
+- 상태: action-needed
+- 기술 인계: completed
+- 외부 소비: Frontend changes requested
 - 목적: Frontend가 Mock 또는 실제 API로 정책 기능을 구현할 계약을 제공한다.
 - 선행 조건:
   - D0와 D3 완료
@@ -287,6 +289,20 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - Backend·Frontend 공동 검토 완료
   - Data 6와 Data Pipeline Forest 완료
   - 승인 전에는 `기술 구현 완료 / Frontend 승인 대기`로 유지
+- 현재 결과:
+  - 실제 OpenAPI·Pydantic `PolicyRead`와 목록 envelope를 기준으로
+    TypeScript DTO, API Client, Mock → API 전환과 UI 상태 검증 기준을
+    `docs/api/policies.md`에 확정함
+  - 원격 Frontend `feature/frontend/policy-discovery`의 `784a2a8`을
+    읽기 전용으로 검토함
+  - 해당 구현이 `NormalizedProgram`·provenance·invalid를 사용자 타입으로
+    사용하고 미구현 `/api/v1/programs` endpoint, 배열 목록과 source/external
+    상세 ID를 가정해 현재 API와 다름을 확인함
+  - Frontend 브랜치를 임의 수정·merge하지 않고 D0·D6와 Data 6를
+    `action-needed`로 유지함
+  - Frontend가 공개 `PolicyDto`, `/api/v1/policies`, pagination envelope,
+    숫자 `id` 상세와 partial opt-in을 반영한 소비 테스트 또는 명시적
+    재검토 결과를 제공하면 완료 상태를 재평가함
 
 ## 의존 순서
 

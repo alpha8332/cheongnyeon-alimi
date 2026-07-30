@@ -8,7 +8,7 @@
 - 브랜치: `feature/database/pipeline-integration`
 - 관련 계획:
   [`02_policy_data_database_integration.md`](../../develop_plan/integration/02_policy_data_database_integration.md)
-- 현재 Slice: D5 completed (D0 Frontend review-pending)
+- 현재 Slice: D6 action-needed (D0 Frontend action-needed)
 
 ## 목적
 
@@ -23,6 +23,8 @@ D4에서는 저장된 Runtime Raw를 외부 재호출 없이 재처리해 같은
 Importer와 PostgreSQL source batch transaction으로 연결했다. D5에서는
 향후 관리자 기능이 사용할 Seed·Runtime 최소 실행 이력을 별도 PostgreSQL
 transaction으로 저장한다.
+D6에서는 실제 Backend OpenAPI와 원격 Frontend 구현을 대조해 사용자 Policy
+DTO·endpoint·Mock 전환 인계 기준과 Frontend 변경 요청을 확정한다.
 
 ## Forest 범위
 
@@ -36,13 +38,13 @@ transaction으로 저장한다.
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
-| D0 | review-pending | Backend 소비 승인·Frontend 타입·Mock 인계 완료, Frontend 승인 대기 |
+| D0 | action-needed | Backend 승인 완료, 원격 Frontend 타입·Mock의 공개 API 계약 수정 필요 |
 | D1 | completed | 31필드 JSON·Importer·ORM·PostgreSQL·API 매핑과 비교 기준 확정 |
 | D2 | completed | canonical Seed 4건의 Schema → Importer → PostgreSQL → Repository 통합 검증 |
 | D3 | completed | 실제 PostgreSQL 기반 목록·상세·필터·오류 API 계약 검증 |
 | D4 | completed | 최신 source Raw 회차의 재처리·품질 분리·원자적 DB 적재와 재실행 검증 |
 | D5 | completed | Seed·Runtime CollectionRun 모델·Migration·상태·집계 이력 구현 |
-| D6 | pending | Frontend 최종 인계와 Data 6 종료 예정 |
+| D6 | action-needed | 기술 인계 완료, Frontend API 소비 수정·검증 후 Data 6 종료 |
 
 ## 구현 내용
 
@@ -61,8 +63,9 @@ transaction으로 저장한다.
 - Frontend가 Policy DTO 타입과 Mock 소비 테스트를 작성할 때 확인할 nullable,
   배열, 일정·상태, partial, provenance와 timezone 경계를
   `fixture_seed_contract.md`에 명시했다.
-- 현재 Frontend에는 Policy DTO 타입과 Mock 소비 코드가 없으므로 Data
-  담당이 이를 대신 구현하거나 승인으로 간주하지 않았다.
+- 현재 브랜치에는 Policy DTO 타입과 Mock 소비 코드가 없고, 원격 Frontend
+  브랜치의 구현은 공개 API 계약과 달라 Data 담당이 이를 대신 수정하거나
+  승인으로 간주하지 않았다.
 - D0는 저장된 합성 Seed와 기존 Backend 증거를 검토하는 단계이므로 외부 API를
   호출하거나 인증키를 사용하지 않았다.
 - canonical JSON의 byte 결정성을 위해 `.gitattributes`에서 Fixture, Seed와
@@ -205,6 +208,36 @@ transaction으로 저장한다.
   범위 밖이다. 후속 착수 조건을 `BE-ADMIN-RUN-HISTORY`로 인계 보드에
   기록했다.
 
+### D6 - Frontend 인계와 Data 6 종료 게이트
+
+- `.venv`의 실제 FastAPI `app.openapi()`에서 `/api/v1/policies`,
+  `/api/v1/policies/{policy_id}`, `PolicyRead`와 `PolicyListResponse`를
+  추출해 D3 문서와 비교했다. 경로, query, 공개 필드, nullable·배열·enum과
+  pagination 계약은 일치했다.
+- `docs/api/policies.md`에 정확한 `PolicyDto`·`PolicyListResponse`
+  TypeScript 기준, 목록·상세 API Client 예시, Mock → API 변환과
+  loading·empty·404·422·500·partial 검증 항목을 추가했다.
+- 원격 `feature/frontend/policy-discovery`의 `784a2a8`을 merge 없이
+  읽기 전용으로 검토했다. 이 커밋은 canonical Seed 기반 타입·Mock UI를
+  구현했지만 현재 공개 API와 다음 차이가 있다.
+  - 사용자 타입에 `provenance`와 `invalid`를 포함한
+    `NormalizedProgram`을 사용함
+  - 존재하지 않는 `/api/v1/programs` 목록·source/external 상세 endpoint를
+    호출함
+  - 목록 pagination envelope와 DB 숫자 `id` 상세 route를 소비하지 않음
+  - 기본 valid 2건과 partial opt-in 대신 Seed 4건을 기본 반환함
+  - API 소비 계약을 검증하는 Frontend 테스트가 없음
+- 현재 브랜치의 `src/routes/index.tsx`는 여전히 존재하지 않는
+  `ProgramListPage`를 import한다. 원격 커밋에는 이 참조 수정이 있지만 현재
+  Integration 브랜치에 merge되지 않았고 이 환경에는 Node·npm이 없어 build와
+  타입 검사를 실행하지 못했다.
+- Backend OpenAPI의 Schema는 정상이나 endpoint 한글 summary·description은
+  Backend source 문자열부터 mojibake 상태임을 확인했다. 타입 생성은
+  가능하지만 문서 표시 품질은 Backend 후속 수정이 필요하다.
+- Data·Database 담당 범위를 넘어 Frontend 브랜치를 수정·merge하거나
+  Backend OpenAPI 문구를 변경하지 않았다. D0·D6와 Data 6는 Frontend 조치와
+  소비 테스트가 생길 때까지 `action-needed`로 유지한다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/02_policy_data_database_integration.md`
@@ -250,9 +283,9 @@ transaction으로 저장한다.
 ### Backend 검증 증거와 Frontend 승인을 분리한다
 
 Backend 02의 실제 PostgreSQL 종단 검증은 Backend 소비 가능성을 승인하기에
-충분하다. 그러나 Frontend 담당자 승인이나 타입·Mock 소비 테스트가 없으므로
-공동 승인을 완료로 기록하지 않는다. D0와 Forest는 Frontend 증거가 생길
-때까지 `in-progress`로 유지한다.
+충분하다. 원격 Frontend 타입·Mock UI가 존재하더라도 공개 API 계약과 다른
+상태이므로 소비 승인으로 간주하지 않는다. D0와 Forest는 Frontend 수정과
+소비 테스트 또는 명시적 재검토가 생길 때까지 완료하지 않는다.
 
 ### canonical Seed와 공개 Policy DTO를 같은 타입으로 취급하지 않는다
 
@@ -552,9 +585,41 @@ D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollb
   문서 검증기 단위 테스트 10건과
   `.venv\Scripts\python.exe -B scripts/validate_docs.py`,
   `git diff --check`가 통과했다.
+- D6 Policy DTO·API 단위 검증:
+  `.venv\Scripts\python.exe -B -m pytest
+  backend/tests/test_policy_api.py
+  backend/tests/test_policy_mapping_contract.py
+  backend/tests/test_policies.py -q` 23건이 통과했다. 공개 필드,
+  nullable·배열·enum, pagination, partial 품질 범위와 provenance 비노출을
+  확인했다.
+- D6 실제 OpenAPI 검토:
+  `.venv`의 `app.openapi()`에서 두 Policy path와 `PolicyRead`,
+  `PolicyListResponse`를 추출했다. Schema는 코드·API 문서와 일치했으나
+  route 한글 summary·description이 mojibake임을 확인했다.
+- D6 PostgreSQL 전용 통합 테스트:
+  로컬 PostgreSQL 18의 `cheongnyeon_alimi_test`에서
+  `.venv\Scripts\python.exe -B -m pytest
+  tests/integration/test_seed_to_policy_api.py -q` 1건이 통과했다. 기본 valid
+  2건, partial 포함 4건, 목록 envelope, 필터, 숫자 ID 상세, 404·422·500과
+  provenance 비노출을 실제 API 응답으로 재검증했다.
+- D6 실제 PostgreSQL 전체 회귀:
+  비밀번호 없는 `TEST_DATABASE_URL`과 임시 `PGPASSFILE`을 사용해
+  `.venv\Scripts\python.exe -B -m pytest backend/tests tests -q` 결과
+  156건과 subtest 25건이 통과했다. Starlette TestClient deprecation 경고
+  1건이 남았다.
+- D6 Data 계약·결정성 회귀:
+  `.venv\Scripts\python.exe -B -m unittest
+  tests.test_normalization tests.test_data_fixtures -v` 23건과
+  `.venv\Scripts\python.exe -B scripts/build_data_fixtures.py --check`
+  12개 파일이 통과했다.
+- D6 DB 정리:
+  통합·전체 회귀 후 Alembic `base`, `policies`·`collection_runs` 테이블
+  부재와 Policy·CollectionRun enum 0개를 확인했다.
 - Frontend:
-  Node와 npm이 없어 빌드·타입 검사를 실행하지 못했다. Policy DTO 타입과 Mock
-  소비 코드도 현재 저장소에 없다.
+  이 PC에 Node와 npm이 없어 build·lint·타입 검사를 실행하지 못했다.
+  현재 Integration 브랜치에는 Policy DTO·Mock 소비 구현이 없고 원격
+  `784a2a8`은 읽기 전용 정적 검토만 수행했다. 따라서 Frontend 테스트 성공
+  또는 승인으로 기록하지 않는다.
 - 문서 검증기 단위 테스트:
   `python -B -m unittest tests.test_validate_docs -v` 10건 통과
 - 문서 검증:
@@ -564,16 +629,20 @@ D4에서 `--dry-run`은 실제 upsert를 수행한 뒤 모든 DB 변경을 rollb
 
 ## 남은 작업
 
-- Frontend 담당자가 D0 인계 항목을 반영한 TypeScript 타입·Mock 소비 테스트
-  또는 명시적 승인 기록을 제공해야 D0를 완료할 수 있다.
+- Frontend 담당자가 원격 `784a2a8`의 사용자 타입·API Client·Mock 경계를
+  공개 `PolicyDto`, `/api/v1/policies`, pagination envelope, 숫자 `id` 상세와
+  partial opt-in에 맞게 수정하고 소비 테스트 또는 재검토 기록을 제공해야
+  D0·D6를 완료할 수 있다.
 - Frontend `src/routes/index.tsx`는 현재 존재하지 않는
   `pages/user/ProgramListPage`를 import한다. D0 범위 밖 Frontend 빌드 문제로
   수정하지 않았다.
 - 관리자 실행 이력 조회·수동 실행 기능은 D5 DB 계약을 기반으로 별도
   Backend·Frontend 관리자 Forest에서 인증·권한·API·UI와 함께 구현해야 한다.
   현재 재개 조건은 `docs/index.md`의 `BE-ADMIN-RUN-HISTORY`에 기록했다.
-- D6에서 D3의 실제 API 계약을 Frontend 타입·소비 테스트 또는 명시적 승인과
-  연결한다.
+- Backend는 Policy route source의 mojibake 한글 summary·description을
+  정상화하고 생성 OpenAPI와 API 문서 표시를 검증해야 한다. Schema와 타입
+  생성에는 영향이 없지만 `BE-OPENAPI-KOREAN-TEXT` 완료 전에는 OpenAPI
+  설명문을 Frontend 표시 기준으로 사용하지 않는다.
 - Backend는 `BE-POLICY-TIMESTAMP-ORDER`에서 최초 insert의
   `created_at`·`updated_at` 순서 불변식과 생성 주체를 결정해야 한다. D3는
   현재 계약에 없는 순서를 임의로 강제하지 않는다.
