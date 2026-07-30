@@ -98,6 +98,17 @@ export default function PolicyFilters({
           style={{ display: 'block', width: '100%', marginTop: '4px' }}
         />
       </label>
+
+      <label>
+        <input
+          type="checkbox"
+          checked={filters.includePartial}
+          onChange={(event) =>
+            onChange({ ...filters, includePartial: event.target.checked })
+          }
+        />{' '}
+        정보가 일부 누락된 정책 포함
+      </label>
     </div>
   );
 }

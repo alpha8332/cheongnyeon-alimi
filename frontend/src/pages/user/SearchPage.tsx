@@ -5,7 +5,7 @@ import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
 import PolicyFilters from '@/components/policy/PolicyFilters';
-import { useProgramsQuery } from '@/hooks/useProgramsQuery';
+import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
 import {
   collectRegionOptions,
   EMPTY_PROGRAM_FILTERS,
@@ -20,7 +20,17 @@ export default function SearchPage() {
     ...EMPTY_PROGRAM_FILTERS,
     search: urlSearch,
   }));
-  const { data: programs = [], isLoading, isError, refetch } = useProgramsQuery();
+  const {
+    data: policyList,
+    isLoading,
+    isError,
+    refetch,
+  } = usePoliciesQuery({
+    page: 1,
+    limit: 100,
+    include_partial: filters.includePartial,
+  });
+  const policies = policyList?.items ?? [];
 
   const effectiveFilters = useMemo(
     () => ({
@@ -31,13 +41,13 @@ export default function SearchPage() {
   );
 
   const regionOptions = useMemo(
-    () => collectRegionOptions(programs),
-    [programs],
+    () => collectRegionOptions(policies),
+    [policies],
   );
 
-  const filteredPrograms = useMemo(
-    () => filterPrograms(programs, effectiveFilters),
-    [programs, effectiveFilters],
+  const filteredPolicies = useMemo(
+    () => filterPrograms(policies, effectiveFilters),
+    [policies, effectiveFilters],
   );
 
   return (
@@ -65,11 +75,11 @@ export default function SearchPage() {
         />
       ) : null}
 
-      {!isLoading && !isError && filteredPrograms.length === 0 ? (
+      {!isLoading && !isError && filteredPolicies.length === 0 ? (
         <EmptyState message="조건에 맞는 정책이 없습니다." />
       ) : null}
 
-      {!isLoading && !isError && filteredPrograms.length > 0 ? (
+      {!isLoading && !isError && filteredPolicies.length > 0 ? (
         <div
           style={{
             display: 'grid',
@@ -77,11 +87,8 @@ export default function SearchPage() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
           }}
         >
-          {filteredPrograms.map((program) => (
-            <PolicyCard
-              key={`${program.source_id}-${program.external_id}`}
-              program={program}
-            />
+          {filteredPolicies.map((policy) => (
+            <PolicyCard key={policy.id} policy={policy} />
           ))}
         </div>
       ) : null}

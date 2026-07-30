@@ -9,7 +9,7 @@
 - 선행 Forest:
   [Backend Policy Persistence Hardening](../backend/02_policy_persistence_hardening.md)
 - 권장 브랜치: `feature/database/pipeline-integration`
-- 현재 Slice: D6 action-needed (D0 Frontend action-needed)
+- 현재 Slice: D6 review-pending (D0 Frontend review-pending)
 - 참고 계획:
   `opensource_plan/주차별 개발 목표_데이터담당/2주차 개발 목표.docx`
 
@@ -89,7 +89,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D0 - 데이터 계약 공동 확정
 
-- 상태: action-needed
+- 상태: review-pending
 - 기술 검토: completed
 - 외부 검토: Frontend changes requested
 - 목적: NormalizedProgram 1.0.0과 canonical Seed의 실제 소비 가능성을
@@ -267,7 +267,7 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
 
 ### D6 - Frontend 인계와 Data 6 종료
 
-- 상태: action-needed
+- 상태: review-pending
 - 기술 인계: completed
 - 외부 소비: Frontend changes requested
 - 목적: Frontend가 Mock 또는 실제 API로 정책 기능을 구현할 계약을 제공한다.
@@ -303,6 +303,10 @@ Migration과 importer 자체의 완성은 Backend 02가 담당하고, 이 Forest
   - Frontend가 공개 `PolicyDto`, `/api/v1/policies`, pagination envelope,
     숫자 `id` 상세와 partial opt-in을 반영한 소비 테스트 또는 명시적
     재검토 결과를 제공하면 완료 상태를 재평가함
+  - 2026-07-30 FE 2A에서 위 변경 요청을 타입·Mock·API Client·화면과
+    소비 테스트 코드에 반영함
+  - 현재 PC에 Node·npm이 없어 test·lint·build 실행 증거가 남아 있으므로
+    D0·D6를 `review-pending`으로 전환하고 완료 처리하지 않음
 
 ## 의존 순서
 

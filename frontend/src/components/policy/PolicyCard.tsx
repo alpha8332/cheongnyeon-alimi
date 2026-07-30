@@ -1,21 +1,24 @@
 import { Link } from 'react-router-dom';
 import Card from '@/components/common/Card';
 import PartialBadge from '@/components/policy/PartialBadge';
-import type { NormalizedProgram } from '@/types/policy';
+import type { PolicyDto } from '@/types/policy';
 import {
   formatCategoryTags,
   formatOrganization,
   formatRegion,
   getDDayLabel,
 } from '@/utils/policyDisplay';
-import { encodeProgramRouteId } from '@/utils/programId';
 
 interface PolicyCardProps {
-  program: NormalizedProgram;
+  policy: PolicyDto;
 }
 
-export default function PolicyCard({ program }: PolicyCardProps) {
-  const categoryTags = formatCategoryTags(program);
+export default function PolicyCard({ policy }: PolicyCardProps) {
+  const categoryTags = formatCategoryTags(policy);
+  const detailPath =
+    policy.data_quality_status === 'partial'
+      ? `/programs/${policy.id}?include_partial=true`
+      : `/programs/${policy.id}`;
 
   return (
     <Card>
@@ -29,13 +32,13 @@ export default function PolicyCard({ program }: PolicyCardProps) {
               whiteSpace: 'nowrap',
             }}
           >
-            <Link to={`/programs/${encodeProgramRouteId(program)}`}>
-              {program.title}
+            <Link to={detailPath}>
+              {policy.title}
             </Link>
-            <PartialBadge program={program} />
+            <PartialBadge policy={policy} />
           </h4>
-          <p style={{ margin: '8px 0 0' }}>{formatOrganization(program)}</p>
-          <p style={{ margin: '4px 0 0' }}>{formatRegion(program)}</p>
+          <p style={{ margin: '8px 0 0' }}>{formatOrganization(policy)}</p>
+          <p style={{ margin: '4px 0 0' }}>{formatRegion(policy)}</p>
           <div style={{ marginTop: '8px' }}>
             {categoryTags.map((tag) => (
               <span
@@ -62,7 +65,7 @@ export default function PolicyCard({ program }: PolicyCardProps) {
             alignSelf: 'flex-start',
           }}
         >
-          {getDDayLabel(program)}
+          {getDDayLabel(policy)}
         </div>
       </div>
     </Card>

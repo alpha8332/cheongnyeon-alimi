@@ -14,22 +14,9 @@ export type ApplicationSchedule =
 
 export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 
-export type DataQualityStatus = 'valid' | 'partial' | 'invalid';
+export type PublicDataQualityStatus = 'valid' | 'partial';
 
-export type DocumentRole =
-  | 'list_response'
-  | 'list_item'
-  | 'detail_response';
-
-export interface RawProvenance {
-  raw_document_id: string;
-  document_role: DocumentRole;
-  content_hash: string;
-  collected_at: string;
-  source_url: string;
-}
-
-export interface NormalizedProgram {
+export interface PolicyDto {
   schema_version: '1.0.0';
   source_id: string;
   source_name: string;
@@ -59,6 +46,24 @@ export interface NormalizedProgram {
   excluded_conditions: string[];
   source_url: string;
   collected_at: string;
-  provenance: RawProvenance[];
-  data_quality_status: DataQualityStatus;
+  data_quality_status: PublicDataQualityStatus;
+  id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PolicyListResponse {
+  total: number;
+  page: number;
+  limit: number;
+  items: PolicyDto[];
+}
+
+export interface PolicyListQuery {
+  page?: number;
+  limit?: number;
+  category?: PolicyCategory;
+  region?: string;
+  status?: ApplicationStatus;
+  include_partial?: boolean;
 }

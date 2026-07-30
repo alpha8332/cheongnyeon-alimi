@@ -5,7 +5,7 @@
 - 상태: 기술 기준선
 - Data 검증: 완료
 - Backend 승인: 완료
-- Frontend 승인: action-needed
+- Frontend 승인: review-pending
 - 기준 Schema: `NormalizedProgram` 1.0.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
@@ -113,10 +113,10 @@ Frontend가 타입과 Mock을 구현할 때 canonical Seed를 공개 API DTO로 
 | Mock | canonical Seed의 4개 대표 사례를 사용하되 공개 DTO에 없는 `provenance`는 제거하고 DB 생성 필드를 API 예시에 맞게 추가 |
 
 Frontend 승인 증거는 위 경계를 반영한 TypeScript 타입·Mock 소비 테스트 또는
-담당자 명시적 검토 기록이다. 원격 `feature/frontend/policy-discovery`의
-`784a2a8`에는 canonical Seed 타입과 Mock UI가 있지만 공개 API DTO·endpoint,
-pagination, partial 기본 노출과 상세 ID 계약이 현재 Backend API와 다르다.
-따라서 D0의 Frontend 승인은 완료가 아니라 변경 조치 대기 상태다.
+담당자 명시적 검토 기록이다. `feature/frontend/policy-discovery`의 FE 2A에서
+공개 DTO·endpoint, pagination, partial 기본 노출과 상세 ID 계약을 코드와
+소비 테스트에 반영했다. 이 PC에는 Node·npm이 없어 테스트·lint·build 실행
+증거가 아직 없으므로 D0의 Frontend 승인은 검토 대기 상태다.
 
 현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
 기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
@@ -183,7 +183,7 @@ uv run python -B scripts/build_data_fixtures.py --check
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
 | Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
-| Frontend | action-needed | 원격 `784a2a8`의 타입·Mock UI는 확인했으나 공개 DTO, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in 경계가 달라 수정과 소비 테스트 필요 |
+| Frontend | review-pending | FE 2A에서 공개 `PolicyDto`, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in과 소비 테스트를 반영했으며 Node 환경에서 test·lint·build 실행 증거 필요 |
 
 ### Frontend 초기 Mock 검토 결과 (2026-07-28)
 
@@ -201,6 +201,15 @@ TypeScript·Mock·와이어프레임 UI로 소비했다. 다음 표현 동작은
 envelope와 숫자 `id` 상세 경로를 사용해야 한다. 기본 조회에서는 valid만,
 명시적인 `include_partial=true` 요청에서만 partial을 노출하도록 Mock과
 API Client를 맞춘 뒤 소비 테스트 또는 담당자 재검토 기록을 남긴다.
+
+### Frontend API 계약 반영 (2026-07-30)
+
+FE 2A는 위 변경 요청을 타입·Mock·API Client와 화면에 반영했다. canonical
+Seed의 provenance·invalid 입력 경계는 Mock adapter 내부에만 두고 공개
+`PolicyDto`에서는 제거한다. 기본 valid 2건과 partial opt-in 4건,
+pagination envelope와 숫자 `id` 목록·상세 경계를 같은 Mock contract로
+구현했다. 추가한 소비 테스트의 실행과 build·lint가 남아 Frontend 상태는
+`review-pending`이다.
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
 안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest

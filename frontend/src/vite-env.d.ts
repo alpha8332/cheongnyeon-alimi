@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
 declare module '@seed/initial_programs.json' {
-  import type { NormalizedProgram } from '@/types/policy';
+  import type { SeedPolicyProgram } from '@/mocks/policyContract';
 
-  const value: NormalizedProgram[];
+  const value: SeedPolicyProgram[];
   export default value;
 }

@@ -5,13 +5,17 @@ import Card from '@/components/common/Card';
 import Input from '@/components/common/Input';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
-import { useProgramsQuery } from '@/hooks/useProgramsQuery';
+import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const { data: programs = [], isLoading } = useProgramsQuery();
-  const featuredPrograms = programs.slice(0, 2);
+  const { data: policyList, isLoading } = usePoliciesQuery({
+    page: 1,
+    limit: 2,
+    include_partial: false,
+  });
+  const featuredPolicies = policyList?.items ?? [];
 
   const handleSearch = (event?: FormEvent) => {
     if (event) {
@@ -45,11 +49,8 @@ export default function HomePage() {
           <LoadingState message="주요 정책을 불러오는 중입니다." />
         ) : (
           <div style={{ display: 'grid', gap: '12px' }}>
-            {featuredPrograms.map((program) => (
-              <PolicyCard
-                key={`${program.source_id}-${program.external_id}`}
-                program={program}
-              />
+            {featuredPolicies.map((policy) => (
+              <PolicyCard key={policy.id} policy={policy} />
             ))}
           </div>
         )}

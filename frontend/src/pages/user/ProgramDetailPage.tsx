@@ -1,11 +1,11 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PartialBadge from '@/components/policy/PartialBadge';
-import { useProgramQuery } from '@/hooks/useProgramsQuery';
+import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
 import {
   formatAge,
   formatApplicationPeriod,
@@ -17,7 +17,7 @@ import {
   formatRegion,
   getDDayLabel,
 } from '@/utils/policyDisplay';
-import { decodeProgramRouteId } from '@/utils/programId';
+import { parsePolicyId } from '@/utils/policyId';
 
 function DetailField({
   label,
@@ -46,15 +46,17 @@ function DetailField({
 
 export default function ProgramDetailPage() {
   const { id } = useParams();
-  const identity = id ? decodeProgramRouteId(id) : null;
+  const [searchParams] = useSearchParams();
+  const policyId = parsePolicyId(id);
+  const includePartial = searchParams.get('include_partial') === 'true';
   const {
-    data: program,
+    data: policy,
     isLoading,
     isError,
     refetch,
-  } = useProgramQuery(identity?.sourceId ?? null, identity?.externalId ?? null);
+  } = usePolicyQuery(policyId, includePartial);
 
-  if (!id || !identity) {
+  if (policyId === null) {
     return (
       <div>
         <h2>정책 상세</h2>
@@ -90,7 +92,7 @@ export default function ProgramDetailPage() {
     );
   }
 
-  if (!program) {
+  if (!policy) {
     return (
       <div>
         <h2>정책 상세</h2>
@@ -102,7 +104,7 @@ export default function ProgramDetailPage() {
     );
   }
 
-  const categoryTags = formatCategoryTags(program);
+  const categoryTags = formatCategoryTags(policy);
 
   return (
     <div>
@@ -111,14 +113,14 @@ export default function ProgramDetailPage() {
       </p>
 
       <h2>
-        {program.title}
-        <PartialBadge program={program} />
+        {policy.title}
+        <PartialBadge policy={policy} />
       </h2>
 
       <Card>
-        <DetailField label="기관" value={formatOrganization(program)} />
-        <DetailField label="지역" value={formatRegion(program)} />
-        <DetailField label="연령" value={formatAge(program)} />
+        <DetailField label="기관" value={formatOrganization(policy)} />
+        <DetailField label="지역" value={formatRegion(policy)} />
+        <DetailField label="연령" value={formatAge(policy)} />
 
         <div style={{ marginBottom: '12px' }}>
           <strong>카테고리</strong>
@@ -142,38 +144,38 @@ export default function ProgramDetailPage() {
 
         <DetailField
           label="지원 내용"
-          value={formatNullableText(program.support_content, '지원 내용 없음')}
+          value={formatNullableText(policy.support_content, '지원 내용 없음')}
         />
         <DetailField
           label="자격 요건"
-          value={formatNullableText(program.eligibility_text, '자격 정보 없음')}
+          value={formatNullableText(policy.eligibility_text, '자격 정보 없음')}
         />
         <DetailField
           label="신청 방법"
-          value={formatNullableText(program.application_method, '신청 방법 없음')}
+          value={formatNullableText(policy.application_method, '신청 방법 없음')}
         />
 
         <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: '1fr 1fr' }}>
           <DetailField
             label="일정 유형"
-            value={formatApplicationSchedule(program.application_schedule)}
+            value={formatApplicationSchedule(policy.application_schedule)}
           />
           <DetailField
             label="접수 상태"
-            value={formatApplicationStatus(program.application_status)}
+            value={formatApplicationStatus(policy.application_status)}
           />
         </div>
 
         <DetailField
           label="신청 기간"
-          value={formatApplicationPeriod(program)}
+          value={formatApplicationPeriod(policy)}
         />
-        <DetailField label="D-Day" value={getDDayLabel(program)} />
+        <DetailField label="D-Day" value={getDDayLabel(policy)} />
 
         <div style={{ marginTop: '12px' }}>
           <Button
             onClick={() => {
-              window.open(program.source_url, '_blank', 'noopener,noreferrer');
+              window.open(policy.source_url, '_blank', 'noopener,noreferrer');
             }}
           >
             원문 링크 열기

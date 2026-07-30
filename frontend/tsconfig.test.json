@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "rootDir": ".",
+    "outDir": "node_modules/.tmp/policy-contract-tests"
+  },
+  "include": [
+    "src/api/policyRequest.ts",
+    "src/mocks/policyContract.ts",
+    "src/types/policy.ts",
+    "src/utils/policyId.ts",
+    "tests/**/*.ts"
+  ]
+}

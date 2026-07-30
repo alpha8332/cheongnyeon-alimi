@@ -1,11 +1,11 @@
-import type { NormalizedProgram } from '@/types/policy';
+import type { PolicyDto } from '@/types/policy';
 
 interface PartialBadgeProps {
-  program: NormalizedProgram;
+  policy: PolicyDto;
 }
 
-export default function PartialBadge({ program }: PartialBadgeProps) {
-  if (program.data_quality_status !== 'partial') {
+export default function PartialBadge({ policy }: PartialBadgeProps) {
+  if (policy.data_quality_status !== 'partial') {
     return null;
   }
 
