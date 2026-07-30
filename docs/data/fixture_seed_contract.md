@@ -4,7 +4,8 @@
 
 - 상태: 기술 기준선
 - Data 검증: 완료
-- Backend·Frontend 공동 승인: 대기
+- Backend 승인: 완료
+- Frontend 승인: action-needed
 - 기준 Schema: `NormalizedProgram` 1.0.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
@@ -95,9 +96,53 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - partial 표시 또는 누락 필드 fallback 정책 확인
 - provenance를 일반 화면에 노출할지 관리자 화면에만 사용할지 결정
 
-Frontend는 2026-07-28 `feature/frontend/policy-discovery` Slice에서
-TypeScript 타입·Mock·와이어프레임 UI 소비를 구현했다. Backend 모델·Importer는
-아직 없다.
+### Frontend D0 인계 항목
+
+Frontend가 타입과 Mock을 구현할 때 canonical Seed를 공개 API DTO로 그대로
+간주하지 않는다. 다음 경계를 기준으로 실제 소비 가능 여부를 확인한다.
+
+| 항목 | 소비 계약 |
+| --- | --- |
+| 타입 기준 | 목록의 `items` 원소와 상세 응답은 `docs/api/policies.md`의 동일한 Policy DTO를 사용 |
+| nullable | 선택 단일 값과 `application_schedule`·`application_status`는 `null`을 허용하고 빈 문자열로 바꾸지 않음 |
+| 배열 | `categories`, `regions`와 5개 조건 배열은 값이 없어도 `[]`이며 nullable로 만들지 않음 |
+| 일정·상태 | 신청 방식인 `application_schedule`과 현재 상태인 `application_status`를 별도 필드와 의미로 표시 |
+| partial | 기본 목록·상세에서는 제외하고 명시적인 `include_partial=true` 요청에서만 소비 |
+| provenance | canonical Seed와 DB에는 보존하지만 일반 사용자 Policy DTO에는 포함하지 않음 |
+| 시각 | `collected_at`, `created_at`, `updated_at`의 offset 표현이 아니라 절대 시각으로 해석 |
+| Mock | canonical Seed의 4개 대표 사례를 사용하되 공개 DTO에 없는 `provenance`는 제거하고 DB 생성 필드를 API 예시에 맞게 추가 |
+
+Frontend 승인 증거는 위 경계를 반영한 TypeScript 타입·Mock 소비 테스트 또는
+담당자 명시적 검토 기록이다. 원격 `feature/frontend/policy-discovery`의
+`784a2a8`에는 canonical Seed 타입과 Mock UI가 있지만 공개 API DTO·endpoint,
+pagination, partial 기본 노출과 상세 ID 계약이 현재 Backend API와 다르다.
+따라서 D0의 Frontend 승인은 완료가 아니라 변경 조치 대기 상태다.
+
+현재 저장소에는 Backend `Policy` 모델, Seed importer와 정책 목록·상세 API
+기준선이 있고 Backend 소비 검토는 완료됐다. Backend 02 B2에서 최초 Alembic
+revision과 PostgreSQL JSONB·enum·timezone 물리 매핑을 추가했으며 SQLite
+단위 테스트, PostgreSQL offline SQL과 PostgreSQL 17.10 실제 Migration·왕복
+검증을 완료했다. Backend 02 B3에서는 현재 두 공식 API의 비어 있지 않은
+`external_id` admission과 `(source_id, external_id)` PostgreSQL 원자적
+upsert를 구현했다. 같은 Seed의 반복·동시 입력은 중복 없이 unchanged로
+분류하며 null ID는 확인 가능한 사유와 함께 적재하지 않는다. Normalized
+Schema의 nullable 계약은 유지하고 향후 Source의 대체 ID는 별도로 결정한다.
+Backend 02 B4에서는 기존 `NormalizedProgramValidator`로 전체 입력을 먼저
+검증하고 `valid`·`partial`만 허용한다. invalid·Schema 위반·DB admission
+거부·DB write 실패가 하나라도 있으면 canonical batch의 DB 변경은 0건이다.
+`--dry-run`도 실제 upsert 경로를 실행한 뒤 rollback하며 결과는
+validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한다.
+Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소로 검색하고
+목록·상세 모두 기본 valid, `include_partial=true`일 때 valid·partial을
+노출한다. provenance는 DB에 보존하되 공개 Policy DTO에는 포함하지 않는다.
+Backend 02 B6의 PostgreSQL 18.4 종단 검증에서 canonical Seed 4건의 31개
+필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone instant·provenance
+손실 0건을 확인했다.
+Frontend TypeScript 타입·Mock 소비 코드는 별도 원격 브랜치에 있으나 D6
+검토에서 현재 Policy API와의 계약 차이를 확인했다. Data 영역은 해당
+Frontend 코드를 대신 수정하거나 승인하지 않으며,
+[`Policy API 계약`](../api/policies.md)의 D6 인계 기준을 반영한 소비 테스트를
+요구한다.
 
 ## 재생성과 검증
 
@@ -137,68 +182,25 @@ uv run python -B scripts/build_data_fixtures.py --check
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
-| Backend | pending | 담당자 승인 또는 실제 importer 소비 테스트 필요 |
-| Frontend | reviewed | 2026-07-28 TypeScript 타입·Seed Mock·와이어프레임 UI 소비 검증 완료 ([개발 기록](../development/development_notes/frontend/policy_discovery.md)) |
+| Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
+| Frontend | action-needed | 원격 `784a2a8`의 타입·Mock UI는 확인했으나 공개 DTO, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in 경계가 달라 수정과 소비 테스트 필요 |
 
-### Frontend 검토 결과 (2026-07-28)
+### Frontend 초기 Mock 검토 결과 (2026-07-28)
 
-브랜치 `feature/frontend/policy-discovery`에서 `NormalizedProgram` 1.0.0
-Schema와 `initial_programs.json` Seed 4건을 TypeScript·Mock·와이어프레임
-UI로 소비했다. Schema·Fixture·Seed는 변경하지 않았다.
+`feature/frontend/policy-discovery`의 `784a2a8`은 canonical Seed 4건을
+TypeScript·Mock·와이어프레임 UI로 소비했다. 다음 표현 동작은 확인했다.
 
-#### null과 빈 배열([]) 처리
+- nullable 단일 값은 표시 시점에만 fallback을 적용한다.
+- 복수 값 필드는 배열로 처리하고 빈 배열의 안내 문구를 표시한다.
+- 다중 `categories`를 태그 목록으로 표시한다.
+- `application_schedule`과 `application_status`를 별도 의미로 표시한다.
+- partial 배지와 구조화 값 누락 시 원문 text fallback을 제공한다.
 
-- 선택 단일 필드(`organization`, `summary`, `application_start` 등)는 Seed·API
-  응답의 `null`을 그대로 유지하고 빈 문자열(`""`)로 치환하지 않는다.
-- UI fallback은 표시 시점에만 적용한다. 예: `organization ?? '기관 정보 없음'`.
-- 복수 값 필드(`categories`, `regions`, `education_statuses` 등)는 항상
-  배열로 취급하고 `null`을 기대하지 않는다. Seed 계약대로 값 없음은 `[]`이다.
-- 렌더링은 `array.length === 0`일 때 "분류 없음", "지역 미정" 등 안내 문구를
-  표시한다.
-
-#### categories 배열
-
-- 단일 `category` enum이 아닌 `categories: PolicyCategory[]` 배열을 수용한다.
-- 다중 값(예: `SYN-YOUTH-002`의 `finance`, `welfare`)은 태그 목록으로 표시한다.
-- `categories: []`이고 `category_text: null`인 partial(예: `SYN-BOK-002`)은
-  "분류 없음"으로 표시하고 `category_text` 원문이 있으면 보조 텍스트로 병행
-  표시한다.
-
-#### application_schedule과 application_status 구분
-
-- `application_schedule`은 일정 **유형**(`fixed_period`, `always`,
-  `until_budget_exhausted`)이며 "기간 한정", "상시", "예산 소진 시까지"로
-  표시한다.
-- `application_status`는 수집 기준 시점 **접수 상태**(`open`, `closed`,
-  `scheduled`)이며 "접수 중", "마감", "예정"으로 표시한다.
-- 두 필드는 같은 UI 라벨로 합치지 않는다. 예: `always`+`open`은 "상시 · 접수
-  중"처럼 별도 영역에 병기한다.
-- 판단 근거가 없으면 Schema대로 `null`을 유지하고 "일정 미확인", "상태
-  미확인"으로 표시한다. `"unknown"` enum은 사용하지 않는다.
-
-#### partial 데이터 처리
-
-- `data_quality_status: "partial"`은 invalid가 아니며 목록·상세에 정상 노출한다.
-- partial 항목에는 "정보 일부 누락" 와이어프레임 배지를 표시한다.
-- 구조화 필드가 `null`이면 원문 text(`region_text`, `age_condition_text`,
-  `application_period_text`, `category_text`)를 우선 표시하고, text도 `null`이면
-  필드별 fallback 문구를 사용한다.
-
-#### source_id + external_id 식별 경계
-
-- 정책 식별 키는 `source_id + external_id` 복합 경계를 사용한다.
-- 상세 라우트 ID는 `{source_id}--{external_id}` URL-safe 단일 파라미터로
-  인코딩한다(예: `youthcenter-api--SYN-YOUTH-001`).
-- Mock·향후 Backend API 모두 동일 lookup(`source_id`, `external_id`)으로
-  상세를 조회한다. DB primary key나 단일 numeric ID는 Frontend에서 사용하지
-  않는다.
-
-#### provenance 저장·노출 범위
-
-- `provenance` 배열은 타입·Mock·API 응답에 포함하되 일반 사용자
-  목록·상세·검색 UI에는 노출하지 않는다.
-- 관리자 `DataQualityPage`에서만 Raw document ID·역할·수집 시각 등
-  디버깅·품질 확인용으로 표시한다.
+다만 이 결과만으로 공개 API 소비를 승인하지 않는다. Frontend는 사용자
+타입에서 `provenance`·`invalid`를 제외하고 `/api/v1/policies`의 pagination
+envelope와 숫자 `id` 상세 경로를 사용해야 한다. 기본 조회에서는 valid만,
+명시적인 `include_partial=true` 요청에서만 partial을 노출하도록 Mock과
+API Client를 맞춘 뒤 소비 테스트 또는 담당자 재검토 기록을 남긴다.
 
 Backend와 Frontend의 승인 증거가 생기기 전에는 Data 6의 기술 산출물을
 안정적인 영역 간 계약으로 확정하지 않는다. 두 영역 검토 후 이 표와 Forest

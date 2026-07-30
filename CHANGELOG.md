@@ -11,10 +11,18 @@
 ### Added
 
 - Frontend Policy Discovery Slice: `NormalizedProgram` 1.0.0 TypeScript 타입,
-  canonical Seed Mock, 정책 목록·상세·필터 와이어프레임 UI와 Data 6 Frontend
-  공동 계약 검토 기록
+  canonical Seed Mock과 정책 목록·상세·필터 와이어프레임 UI 기반 추가
   ([개발 기록](docs/development/development_notes/frontend/policy_discovery.md))
+- 저장된 Runtime Raw의 무네트워크 PostgreSQL 재처리와 idempotent 적재,
+  향후 관리자 기능을 위한 안전한 Seed·Runtime `CollectionRun` 실행 이력 기반
+  추가
+  ([개발 기록](docs/development/development_notes/integration/policy_data_database_integration.md))
+- PostgreSQL Migration, 검증 우선·원자적 Seed importer, 정확한 JSONB 배열
+  필터와 품질 일관성을 갖춘 Policy Repository·API 종단 기반 완성
+  ([개발 기록](docs/development/development_notes/backend/policy_persistence_hardening.md))
+- `NormalizedProgram` 1.0.0 기반 PostgreSQL/SQLite ORM Policy 모델, Seed Upsert Importer CLI(`python -m app.cli.import_seed`) 및 정책 목록·상세 조회 API 추가 ([개발 기록](docs/development/development_notes/backend/policy_baseline.md))
 - 온통청년·복지로 source Collector·Extractor, 비밀정보 안전한 공통 HTTP·CLI,
+
   Raw 보존부터 provenance 기반 정규화·Schema 검증·품질 분류와 결정적
   Fixture·canonical Seed까지의 데이터 파이프라인 기반 추가
   ([개발 기록](docs/development/development_notes/data/data_pipeline.md))
