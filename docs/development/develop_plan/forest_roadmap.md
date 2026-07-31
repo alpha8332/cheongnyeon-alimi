@@ -1,0 +1,149 @@
+# 전체 Forest 로드맵
+
+## 문서 정보
+
+- 상태: approved
+- 기준일: 2026-07-31
+- 역할: 완료 Forest와 릴리스별 후속 Forest의 순서·의존성 조정
+
+이 문서는 포트폴리오 수준의 순서를 정한다. `draft`, `approved`,
+`in-progress`, `completed`, `superseded` 상태는 개별 Forest 계획 문서에서만
+확정한다. 아래에서 `계획 필요`로 표시한 항목은 구현 전에 담당 영역에 독립
+Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한다.
+
+## 완료된 기반
+
+| Forest | 상태 | 제공 기준선 |
+| --- | --- | --- |
+| Integration 01 Docs System | completed | 문서·거버넌스·검증 체계 |
+| Data 01 Data Pipeline | completed | 두 Source 제한 수집, Schema·Fixture·Seed |
+| Backend 01 Policy Baseline | completed | FastAPI와 기본 Policy 계약 |
+| Frontend 01 Policy Discovery | completed | 사용자 목록·상세·필터 UI |
+| Backend 02 Policy Persistence Hardening | completed | Migration·PostgreSQL·Importer·API |
+| Integration 02 Policy Data Database Integration | completed | Seed·Runtime 적재 경계와 실제 API 연결 |
+| Backend 03 Policy Runtime Safety | completed | timestamp와 SQL logging 안전화 |
+| Frontend 02 React Router Advisory Review | completed | Router v8 전환과 Browser 회귀 |
+
+완료는 각 Forest가 정의한 합성 Seed, 제한 수집 또는 안전성 범위의 완료를
+뜻한다. 실데이터 릴리스 snapshot, 서버 keyword·age 검색과 자동 Scheduler가
+완료됐다는 의미는 아니다.
+
+## `v0.1.0` Forest
+
+| 순서 | Forest | 영역 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | Data 02 Release Dataset Bootstrap | Data | 계획 필요 | 두 Source 릴리스 범위 순회, 실제 Raw·정규화·DB 초기 적재, 재실행·품질 보고 | Data 01, Integration 02 |
+| 2 | Backend 06 Policy Search | Backend | 계획 필요 | `keyword`·region·age·category·status 서버 검색, 정렬·pagination·인덱스와 API 계약 | Data 02의 실제 분포 확인 |
+| 3 | Frontend 04 Policy Search | Frontend | 계획 필요 | 자연어 조건 추출, Backend query 연결, 조건 표시·빈 결과·pagination | Backend 06 계약 승인 |
+| 4 | Integration 03 Release 1 Acceptance | Integration | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Backend 06, Frontend 04 |
+
+Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
+API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.
+그 범위 안에서는 첫 페이지만 임의로 적재하지 않고 재현 가능한 순회를
+제공해야 한다.
+
+Backend 06은 기존 Backend 04·05 번호를 관리자 Forest가 이미 사용하므로
+번호를 바꾸지 않고 다음 번호를 사용한다. Frontend도 기존 Frontend 03을
+보존한다.
+
+### `v0.1.0` 의존 흐름
+
+```text
+Data 02 실제 데이터 기준선
+  → Backend 06 서버 검색 계약
+  → Frontend 04 검색 UI 연결
+  → Integration 03 실데이터 인수 검증
+  → v0.1.0
+```
+
+Data 02의 샘플 분포 조사는 Backend 06의 query·index 설계와 병행할 수 있다.
+하지만 실제 데이터 필드와 지역 표현을 확인하기 전에 검색 의미를 확정하지
+않는다.
+
+## `v0.5.0` Forest
+
+기존 관리자 계획은 폐기하지 않고 `v0.1.0` 이후에 실행한다.
+
+| 순서 | Forest | 영역 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | Backend 04 Admin Access Control | Backend | draft | 관리자 인증·권한 기준선 | v0.1.0 계약 동결 |
+| 2 | Backend 05 CollectionRun Admin API | Backend | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
+| 3 | Frontend 03 CollectionRun Admin UI | Frontend | draft | 이력·실패·수동 실행 UI | Backend 05 |
+| 4 | Recommendation | Backend·Frontend | 계획 필요 | 조건 기반 추천, 점수·추천 이유와 정확도 검증 | v0.1.0 검색 |
+| 5 | User Service Features | Backend·Frontend | 계획 필요 | 사용자 조건, 즐겨찾기, D-Day, 웹 알림, `.ics` | 인증·저장 경계 결정 |
+| 6 | Data Quality Operations | Data·Backend·Frontend | 계획 필요 | 실패·partial·invalid·중복 후보 확인과 운영 처리 | 관리자 기준선 |
+| 7 | Release 2 Reviewer Hardening | Integration | 계획 필요 | 외부 리뷰어 테스트, 결함 수정, 전체 회귀 | 모든 v0.5.0 기능 |
+
+Recommendation, User Service Features와 Data Quality Operations는 구현 전에
+영역별로 분리할지 Integration Forest 하나로 묶을지 확정한다. 다음 조건을
+따른다.
+
+- API·DB·UI가 하나의 완료 시나리오로 함께 바뀌면 Integration Forest로 묶는다.
+- 한 영역의 독립 산출물과 완료 기준이 명확하면 영역별 Forest로 나눈다.
+- 사용자 계정과 즐겨찾기 저장 위치, 알림 생성 주체는 구현 전에 공동 계약으로
+  확정한다.
+- Schema, `null`, 빈 배열 또는 enum을 변경하면 Data·Backend·Frontend
+  소비 검토와 기준 문서를 같은 Forest에서 갱신한다.
+
+### `v0.5.0` 의존 흐름
+
+```text
+v0.1.0
+  ├→ 관리자 인증 → 실행 API → 관리자 UI ─┐
+  ├→ 추천 ────────────────────────────────┤
+  ├→ 사용자 부가 기능 ───────────────────┤
+  └→ 데이터 품질 운영 ───────────────────┘
+                  → 리뷰어 검증·수정 → v0.5.0
+```
+
+## `v1.0.0` Forest
+
+| 순서 | Forest | 영역 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | Open-source Deployment Pipeline | Integration·Deploy | 계획 필요 | Dockerfile, Compose, Nginx, Volume, health check, CI | v0.5.0 기능 동결 |
+| 2 | Clean-room Distribution Verification | Integration | 계획 필요 | 새 환경 clone-to-run, migration·bootstrap·전체 시나리오 | 배포 파이프라인 |
+| 3 | Final Documentation and Submission | Integration·Contest | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | clean-room 검증 |
+
+Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockfile과 실행
+방법이 준비된 뒤 통합 담당이 구성한다. Kubernetes는 현재 완료 조건이 아니다.
+
+## 브랜치 계획
+
+현재 `fix/backend/week2-hardening`은 2주차 안전성 Forest를 위한 브랜치다.
+이 로드맵 문서 변경은 독립적인 계획 단위이므로 최신 `develop`에서
+`docs/docs/release-roadmap` 브랜치로 분리하는 것을 권장한다. 이 문서 작업에서
+브랜치를 직접 생성하거나 커밋하지 않는다.
+
+구현 브랜치는 Forest 단위로 만든다. 권장 예시는 다음과 같다.
+
+```text
+feature/collector/release-dataset
+feature/backend/policy-search
+feature/frontend/policy-search
+feature/backend/admin-run-management
+feature/deploy/open-source-runtime
+```
+
+Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표나 독립 완료
+기준을 한 브랜치에 장기간 누적하지 않는다.
+
+## 범위 변경 규칙
+
+- 릴리스 완료 조건을 만족하지 못하면 다음 릴리스 기능을 끌어와 완료처럼
+  보이지 않고 해당 릴리스 일정을 조정한다.
+- 실제 Source 구조가 Schema와 충돌하면 Source 값을 억지로 맞추지 않고
+  Data·Backend·Frontend 영향과 선택지를 공동 검토한다.
+- 지원 Source에 golden query에 맞는 정책이 없다면 검색 결과를 조작하지
+  않고 Source 추가 또는 릴리스 범위 변경을 결정한다.
+- Scheduler·worker 분리는 동시성·안정성 조건이 확인될 때 ADR로 결정한다.
+- 상세 Forest가 승인되면 이 로드맵의 상태·링크·순서를 갱신한다.
+
+## 관련 문서
+
+- [Release와 Milestone 계획](release_roadmap.md)
+- [주차별 실행 계획](weekly_delivery_plan.md)
+- [Backend Admin Access Control](backend/04_admin_access_control.md)
+- [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
+- [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)
+- [역할과 책임](../../governance/role_assignment.md)
+

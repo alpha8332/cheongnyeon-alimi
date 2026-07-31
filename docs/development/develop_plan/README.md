@@ -23,45 +23,50 @@
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.
 
+## Release·Forest·주차 로드맵
+
+다음 문서는 개별 Forest 계획을 대신하지 않고 여러 Forest의 릴리스 목표와
+실행 순서를 동기화한다.
+
+- [Release와 Milestone 계획](release_roadmap.md): `v0.1.0`, `v0.5.0`,
+  `v1.0.0` 목표와 통합 완료 조건
+- [전체 Forest 로드맵](forest_roadmap.md): 완료 기반, 후속 Forest,
+  의존성과 권장 브랜치 단위
+- [주차별 실행 계획](weekly_delivery_plan.md): 1~6주차 인계 순서와
+  릴리스별 검증 게이트
+
 ## 인계사항 후속 실행 순서
 
-Frontend Policy Discovery는 `develop`의 merge commit `7da97fa`에서 통합이
-끝났으므로 같은 Frontend 브랜치에 후속 작업을 누적하지 않는다. 후속
-Forest는 완료 기준을 각각 유지하되 실제 작업 브랜치는 통합 목표에 따라
-다음 두 개만 사용한다.
-
-저장소 정책상 `develop`에는 직접 커밋하지 않는다. 단순 문서 정정도 변경이
-필요하면 목적에 맞는 짧은 작업 브랜치와 리뷰를 거친다. `develop`에서는
-병합된 상태 확인과 다음 작업의 분류만 수행한다.
+2주차 안전성 작업 뒤에는 관리자 기능보다 `v0.1.0`의 실데이터 검색 차단
+조건을 먼저 처리한다. 상세 범위와 완료 조건은 Release·Forest 로드맵을
+따른다.
 
 | 우선순위 | 인계사항 또는 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
-| 1 | `BE-POLICY-TIMESTAMP-ORDER` | Backend 03에서 즉시 처리 | `fix/backend/week2-hardening` |
-| 1 | `BE-SQL-ECHO-LOGGING` | Backend 03에서 함께 처리 | `fix/backend/week2-hardening` |
-| 2 | React Router RSC advisory high 2건 | Frontend 02에서 `react-router@8.3.0` 전환과 회귀 검증 완료 | `fix/backend/week2-hardening` |
-| 3 | `BE-ADMIN-RUN-HISTORY` | Backend 04 → Backend 05 → Frontend 03 순서로 진행 | `feature/backend/admin-run-management` |
+| 완료 | 2주차 Backend 안전성·Router advisory | Backend 03과 Frontend 02 완료 | `fix/backend/week2-hardening` |
+| 1 | `R1-REAL-DATA-BOOTSTRAP` | 실제 Source 릴리스 범위 수집·DB 초기 적재 | `feature/collector/release-dataset` |
+| 2 | `R1-POLICY-SEARCH` | Backend 서버 검색 → Frontend 자연어 조건 연결 | `feature/backend/policy-search`, `feature/frontend/policy-search` |
+| 3 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수 검증 | 상세 Forest 계획에서 확정 |
+| 4 | `BE-ADMIN-RUN-HISTORY` | `v0.1.0` 뒤 Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
-
-첫 번째 브랜치는 2주차에서 발견한 즉시 개선만 다룬다. Backend 03과
-Frontend 02의 구현·검증·문서는 Conventional Commit scope로 구분하고 두
-Forest가 모두 완료된 뒤 한 번만 `develop`에 병합한다.
 
 ```text
 fix/backend/week2-hardening
-  ├── Backend 03 Policy Runtime Safety
-  └── Frontend 02 React Router Advisory Review
-        ↓ develop 병합
-feature/backend/admin-run-management
-  ├── Backend 04 Admin Access Control
-  ├── Backend 05 CollectionRun Admin API
-  └── Frontend 03 CollectionRun Admin UI
-        ↓ develop 병합
-3주차 담당자에게 최종 develop commit SHA 인계
+  → develop 병합
+  → Data 02 실제 데이터 기준선
+  → Backend 06·Frontend 04 검색
+  → Integration 03 실데이터 인수
+  → v0.1.0
+  → Backend 04·05와 Frontend 03 관리자 기능
+  → 나머지 v0.5.0 사용자·품질 Forest
 ```
 
-관리자 기능은 하나의 브랜치 안에서도 인증·권한 → Backend API → Frontend
-UI 의존 순서를 지킨다. 각 Forest와 영역의 변경은 `feat(backend)`,
-`feat(frontend)`, `test(...)`, `docs(...)` commit으로 구분한다.
+현재 `runtime/raw`가 없고 공개 API에는 자유 키워드·연령 query가 없다.
+Frontend의 client-only 전체 문장 포함 검색을 실제 정책 검색 완료로 간주하지
+않는다.
+
+관리자 기능은 `v0.5.0` 범위에서 인증·권한 → Backend API → Frontend UI
+의존 순서를 지킨다.
 
 `SOURCE-NULL-ID`는 실제 대상 Source가 없을 때 대체 identity 규칙을
 일반화하지 않고 `trigger-based` 상태를 유지한다.

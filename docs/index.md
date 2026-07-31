@@ -41,6 +41,12 @@
   canonical Seed까지의 재생성·소비자 검토 기준
 - [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,
   Slice와 완료 기준
+- [Release와 Milestone 계획](development/develop_plan/release_roadmap.md):
+  `v0.1.0`, `v0.5.0`, `v1.0.0` 목표와 릴리스 완료 조건
+- [전체 Forest 로드맵](development/develop_plan/forest_roadmap.md):
+  완료 기반과 릴리스별 후속 Forest·의존 순서
+- [주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md):
+  1~6주차 인계 순서와 릴리스 검증 게이트
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Policy Discovery Forest 계획](development/develop_plan/frontend/01_policy_discovery.md)
@@ -109,8 +115,11 @@ Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작�
 
 | ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
 | --- | --- | --- | --- | --- | --- |
+| `R1-REAL-DATA-BOOTSTRAP` | `v0.1.0` 실제 정책 snapshot 수집·정규화·PostgreSQL 초기 적재 | `action-needed` | Data·Backend, 운영·보안 검토 | 두 지원 Source의 릴리스 범위·할당량을 확정하고 재현 가능한 적재·재실행·품질 보고 검증 | [Release 계획](development/develop_plan/release_roadmap.md), [Forest 로드맵](development/develop_plan/forest_roadmap.md) |
+| `R1-POLICY-SEARCH` | 자연어 조건을 실제 DB의 서버 검색으로 연결 | `action-needed` | Backend·Frontend, Data 지역·연령 검토 | keyword·region·age·status 계약과 실제 데이터 검색·pagination·UI 소비 검증 | [Release 계획](development/develop_plan/release_roadmap.md), [Policy API](api/policies.md) |
+| `R1-REAL-DATA-ACCEPTANCE` | golden query를 포함한 실제 DB → API → Browser 인수 검증 | `action-needed` | Integration | 실제 기대 정책을 snapshot에 고정하고 단위·통합·Browser 검증 후 `v0.1.0` 게이트 충족 | [주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md) |
 | `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
-| `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | Admin Access Control → CollectionRun Admin API → Admin UI를 순서대로 완료하고 `running` 중단 판정·권한·실제 API UI 검증 | [Admin Access Control 계획](development/develop_plan/backend/04_admin_access_control.md), [CollectionRun Admin API 계획](development/develop_plan/backend/05_collection_run_admin_api.md), [CollectionRun Admin UI 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md) |
+| `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | `v0.1.0` 뒤 Admin Access Control → CollectionRun Admin API → Admin UI를 순서대로 완료하고 `running` 중단 판정·권한·실제 API UI 검증 | [Admin Access Control 계획](development/develop_plan/backend/04_admin_access_control.md), [CollectionRun Admin API 계획](development/develop_plan/backend/05_collection_run_admin_api.md), [CollectionRun Admin UI 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md) |
 
 ### FE·BE 담당자 인계 기록 방법
 
