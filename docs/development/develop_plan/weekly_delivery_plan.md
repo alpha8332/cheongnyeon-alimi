@@ -11,6 +11,29 @@
 충족하지 못하면 tag를 미루고 해당 주차의 검증을 이어간다. 실행하지 않은
 항목을 일정상 완료로 처리하지 않는다.
 
+## 역할 기준
+
+- Data, Backend와 Frontend 담당은 각 영역 구현과 계약·테스트를 책임진다.
+- Team Leader는 Integration과 Deploy를 담당하고 릴리스 게이트를 관리한다.
+- 보고서 담당은 주차별 근거를 누적해 최종보고서와 제출 자료로 연결한다.
+- 사용성 리뷰어는 팀 외 사용자 관점의 이해도와 불편을 검증한다.
+- QA 담당은 `v0.5.0` 기능·회귀와 `v1.0.0` 설치·배포·복구 검증을 주도한다.
+
+역할은 인원 수와 같지 않다. 한 사람이 여러 역할을 맡을 수 있지만 자기
+구현만으로 사용성·QA·릴리스 통과를 모두 승인하지 않는다. 상세 원칙은
+[역할과 책임](../../governance/role_assignment.md)을 따른다.
+
+## 주차별 역할 배정
+
+| 주차 | Data | Backend | Frontend | Team Leader - Integration·Deploy | 보고서 | 사용성 리뷰어 | QA |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1주차 | Source·Schema·Fixture·Seed 기준선 | FastAPI·DB 기반과 Policy 계약 | React·TypeScript·Mock UI 기반 | 공통 계약·문서 체계와 병렬 개발 조정 | 목표·구조·초기 근거 정리 | 미배정, 사용자 시나리오 후보 검토 | 미배정, 테스트 가능성 검토 |
+| 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
+| 3주차 | 실데이터 릴리스 범위 수집·DB bootstrap·품질 보고 | 서버 keyword·region·age 검색과 성능 | 자연어 조건 추출·검색 UI·pagination | 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
+| 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 기능별 설계 결정·화면·테스트 근거 정리 | 5주차 사용자 시나리오와 평가 항목 준비 | `v0.5.0` 테스트 계획·데이터·환경 준비 |
+| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 동결, 결함 triage와 `v0.5.0` 결정 | 리뷰·QA 결과와 수정 근거를 Release 2 자료에 반영 | 실제 사용자 시나리오 수행·재확인 | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
+| 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
+
 ## 전체 흐름
 
 ```text
@@ -97,7 +120,7 @@ completed
 - Backend 검색 query, pagination과 정렬 결과를 사용한다.
 - 실제 데이터의 목록·상세, 빈 결과, 오류와 partial 상태를 검증한다.
 
-### Integration
+### Team Leader - Integration
 
 - 실제 DB → FastAPI → React 흐름을 로컬 HTTP와 Browser로 검증한다.
 - 다음 golden query의 실제 기대 정책과 이유를 snapshot 기준으로 기록한다.
@@ -108,6 +131,15 @@ completed
 
 - 지원 Source에 기대 정책이 없으면 Source 추가 또는 릴리스 범위를 결정한다.
 - 단위·통합·Browser 테스트와 `python scripts/validate_docs.py`를 실행한다.
+
+### 보고서·리뷰어·QA
+
+- 보고서 담당은 실제 데이터 건수·품질 분포, golden query 기대 결과와
+  실행한 검증을 Release 1 근거로 정리한다.
+- 사용성 리뷰어는 검색 문장, 추출 조건과 결과 이유가 이해되는지 사전
+  확인한다.
+- QA는 검색 정상·빈 결과·경계값·API 실패 smoke를 수행하고 재현 가능한
+  결함만 기록한다.
 
 ### 완료
 
@@ -148,6 +180,14 @@ completed
 - 사용자 조건 → 검색·추천 → 이유 → 즐겨찾기·알림·캘린더
 - 관리자 인증 → 실행 이력 → 수동 실행 → 상태·오류 확인
 
+### Team Leader·보고서·리뷰어·QA
+
+- Team Leader는 사용자 인증·저장 경계와 관리자 권한 계약을 조정하고 중간
+  E2E를 확인한다.
+- 보고서 담당은 기능별 결정, 화면과 실제 테스트 근거를 누적한다.
+- 사용성 리뷰어는 5주차에 수행할 독립 시나리오와 질문을 준비한다.
+- QA는 요구사항별 테스트 항목, 실제·경계 데이터와 지원 환경을 준비한다.
+
 ## 5주차 - 전체 기능 통합, 리뷰어 테스트와 Release 2
 
 ### 기능 동결
@@ -168,6 +208,20 @@ completed
 팀 외 리뷰어가 검색, 상세, 추천 이유, 즐겨찾기, 알림, 캘린더와 관리자
 시나리오를 수행한다. 관찰 결과를 재현 조건·심각도·기대 결과와 함께 기록하고,
 승인한 문제를 수정한 뒤 재검증한다.
+
+### QA 테스트
+
+- 사용자·관리자 전체 기능, API·DB 통합과 기존 검색 회귀를 검증한다.
+- 실제 데이터의 마감, 지역, 연령, partial·invalid와 중복 경계를 확인한다.
+- 권한, 오류 응답, transaction, migration과 데이터 유지 실패를 탐색한다.
+- Browser·접근성·반응형과 주요 지원 환경을 확인한다.
+- 결함은 재현 절차, 심각도, 기대 결과와 증거를 남기고 수정본을 재검증한다.
+
+### Team Leader와 보고서
+
+- Team Leader는 리뷰어 의견과 QA 결함을 triage하고 릴리스 차단 여부를
+  결정한다.
+- 보고서 담당은 리뷰·QA·수정·재검증 근거를 Release 2 결과로 정리한다.
 
 ### 완료
 
@@ -206,6 +260,16 @@ completed
 - LICENSE, SBOM과 CHANGELOG
 - 최종보고서, 시연 스크립트·영상과 제출 체크리스트
 
+### 역할별 최종 검증
+
+- Team Leader는 Integration·Deploy 담당으로 전체 배포 구성, CI,
+  clean-room 결과와 남은 위험을 확인한다.
+- 보고서 담당은 코드·문서·테스트 결과와 최종 제출 자료의 버전을 대조한다.
+- 사용성 리뷰어는 새 환경에서 핵심 사용자 흐름과 실행 안내의 이해도를
+  확인한다.
+- QA는 설치, build, migration, bootstrap, 컨테이너 재시작, Volume, 로그,
+  권한·비밀, 실패 복구와 전체 회귀를 검증한다.
+
 ### 완료
 
 [Final Release 완료 조건](release_roadmap.md#릴리스-완료-조건-2)을 모두
@@ -228,4 +292,3 @@ completed
 - [전체 Forest 로드맵](forest_roadmap.md)
 - [개발 계획 안내](README.md)
 - [문서화 정책](../../governance/documentation_policy.md)
-

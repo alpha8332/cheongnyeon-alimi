@@ -35,13 +35,13 @@
 - [주차별 실행 계획](weekly_delivery_plan.md): 1~6주차 인계 순서와
   릴리스별 검증 게이트
 
-## 인계사항 후속 실행 순서
+## 다음 Forest 실행 순서
 
 2주차 안전성 작업 뒤에는 관리자 기능보다 `v0.1.0`의 실데이터 검색 차단
 조건을 먼저 처리한다. 상세 범위와 완료 조건은 Release·Forest 로드맵을
 따른다.
 
-| 우선순위 | 인계사항 또는 위험 | 결정 | 권장 브랜치 |
+| 우선순위 | 작업 또는 조건부 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
 | 완료 | 2주차 Backend 안전성·Router advisory | Backend 03과 Frontend 02 완료 | `fix/backend/week2-hardening` |
 | 1 | `R1-REAL-DATA-BOOTSTRAP` | 실제 Source 릴리스 범위 수집·DB 초기 적재 | `feature/collector/release-dataset` |
@@ -66,7 +66,8 @@ Frontend의 client-only 전체 문장 포함 검색을 실제 정책 검색 완�
 않는다.
 
 관리자 기능은 `v0.5.0` 범위에서 인증·권한 → Backend API → Frontend UI
-의존 순서를 지킨다.
+의존 순서를 지킨다. 이 표의 미래 작업은 `docs/index.md`의 활성 인계사항이
+아니며, 구현 중 실제 영역 간 차단 조건이 생길 때만 인계 보드에 기록한다.
 
 `SOURCE-NULL-ID`는 실제 대상 Source가 없을 때 대체 identity 규칙을
 일반화하지 않고 `trigger-based` 상태를 유지한다.

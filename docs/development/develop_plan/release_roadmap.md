@@ -37,6 +37,21 @@
 한 정책 문자열에 포함되는지 검사한다. 따라서 합성 Seed 통합 완료만으로는
 `v0.1.0`을 릴리스할 수 없다.
 
+## 릴리스 역할과 승인 증거
+
+| 역할 | `v0.1.0` | `v0.5.0` | `v1.0.0` |
+| --- | --- | --- | --- |
+| Data | 실제 정책 bootstrap·품질 기준 | 반복 수집·중복·품질 운영 | 초기 적재·복구·Source 라이선스 |
+| Backend | 서버 검색 API | 추천·사용자·관리자 API 안정화 | Production image·migration·health·로그 |
+| Frontend | 자연어 검색·실데이터 UI | 전체 사용자·관리자 UI·접근성 | Production build·배포 UI 회귀 |
+| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·결함 triage와 Release 2 결정 | 배포 파이프라인·clean-room과 Final 결정 |
+| 보고서 | 데이터·검색·검증 근거 | 기능·리뷰·QA·수정 결과 | 최종보고서·README·LICENSE·SBOM·제출 |
+| 사용성 리뷰어 | golden query 이해도 사전 확인 | 독립 사용자 시나리오와 수정본 확인 | 새 환경 실행 안내·최종 사용성 확인 |
+| QA | 핵심 검색 smoke | 전체 기능·통합·회귀·탐색 테스트 | 설치·배포·재시작·데이터 유지·복구 테스트 |
+
+역할이 늘어난다고 반드시 별도 인원이 늘어나는 것은 아니다. 겸임할 수 있지만
+PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 다른 증거로 남긴다.
+
 ## Release 1 - 실제 정책 검색 MVP
 
 ### 버전
@@ -172,6 +187,8 @@
 - 승인된 사용자·관리자 기능이 실제 API와 DB로 동작한다.
 - 주요 데이터 오류, migration과 transaction 문제가 해결됐다.
 - 리뷰어 시나리오를 통과하고 승인된 피드백이 반영됐다.
+- QA가 전체 기능·통합·회귀 테스트를 수행하고 릴리스 차단 결함의 수정본을
+  재검증했다.
 - 핵심 단위·통합·Browser 테스트와 문서 검증이 통과한다.
 - 알려진 제약과 미해결 낮은 위험 문제가 릴리스 노트에 기록됐다.
 
@@ -205,6 +222,7 @@
 - 깨끗한 환경에서 README만 따라 build·migration·초기 적재·실행이 성공한다.
 - 컨테이너 재시작 후 DB와 필요한 Runtime 데이터가 유지된다.
 - 사용자 검색·추천·부가 기능과 관리자 시나리오가 배포 구성에서 통과한다.
+- QA가 clean-room 설치, 배포, 재시작, 로그와 복구 시나리오를 재검증했다.
 - CI와 릴리스 문서가 실제 명령 및 산출물과 일치한다.
 - `main`의 릴리스 커밋에 `v1.0.0` 태그를 만들 준비가 끝난다.
 
@@ -226,4 +244,4 @@
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)
 - [Collector 실행](../../operations/collector.md)
-
+- [역할과 책임](../../governance/role_assignment.md)

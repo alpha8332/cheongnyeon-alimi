@@ -11,8 +11,8 @@
 - [커밋 작성 규칙](governance/commit_convention.md): Conventional Commits
   형식과 커밋 구성 기준
 - [코드 리뷰 정책](governance/code_review.md): PR 작성, 리뷰와 병합 기준
-- [역할과 책임](governance/role_assignment.md): 영역별 책임, 의존성 산출물과
-  공동 통합·배포 지점
+- [역할과 책임](governance/role_assignment.md): Data·Backend·Frontend,
+  Team Leader의 Integration·Deploy, 보고서·사용성 리뷰·QA 책임
 - [시스템 아키텍처 개요](architecture/overview.md): 목표 구조와 계층별 책임
 - [시스템 흐름](architecture/system_flow.md): 외부 소스부터 Web UI까지의
   데이터 흐름
@@ -97,35 +97,27 @@
 
 ## 공동 확인 및 인계 보드
 
-Data 파이프라인의 Schema와 합성 Seed는 FE·BE 기능 구현을 시작할 수 있는
-상태다. 담당자와 AI Agent는 구현 전에 반드시
-[Fixture와 Seed 계약](data/fixture_seed_contract.md)의 검토 항목을 확인한다.
+Normalized 1.0.0 Schema와 canonical Seed의 Data·Backend·Frontend 소비 검토는
+2주차 Integration 02에서 완료됐다. 검토 증거와 현재 규칙은
+[Fixture와 Seed 계약](data/fixture_seed_contract.md),
+[Policy DB 매핑](architecture/policy_database_mapping.md)과
+[Policy API 계약](api/policies.md)을 따른다.
 
-- Backend는 Seed 적재, partial 처리, 식별 경계와 provenance 보존 방식을
-  검토한다.
-- Frontend는 nullable 필드, 배열, 일정·상태 구분과 partial 표시 방식을
-  검토한다.
-- 구현 또는 명시적 승인 결과를 계약 문서의 공동 검토 기록에 남긴다.
-- 두 영역의 검토 전에는 Normalized 1.0.0을 안정적인 영역 간 계약으로
-  확정하거나 임의로 변경하지 않는다.
+앞으로 Schema, Fixture, Seed, 필수·선택 여부, `null`, 빈 배열 또는 enum을
+변경하면 Data 담당이 단독으로 확정하지 않고 Backend·Frontend 영향과 소비
+테스트를 같은 Forest에서 다시 확인한다.
 
-현재 다른 영역의 확인·결정·조치가 필요한 인계사항은 다음과 같다. 이 표는
-상세 계획이나 Issue를 대신하지 않고, 다음 담당자와 권위 문서로 연결하는
-진입점이다.
+2주차 완료 시점에 다른 영역으로 넘겨야 할 활성 인계사항은 없다. 다음
+작업은 [전체 Forest 로드맵](development/develop_plan/forest_roadmap.md)과
+[주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md)에 따라
+새 Forest로 시작한다. 미래 계획 자체나 아직 발생하지 않은 위험을 인계사항으로
+등록하지 않는다.
 
-| ID | 인계 또는 공동 확인 사항 | 상태 | 다음 담당 | 완료·재개 조건 | 기준 문서 |
-| --- | --- | --- | --- | --- | --- |
-| `R1-REAL-DATA-BOOTSTRAP` | `v0.1.0` 실제 정책 snapshot 수집·정규화·PostgreSQL 초기 적재 | `action-needed` | Data·Backend, 운영·보안 검토 | 두 지원 Source의 릴리스 범위·할당량을 확정하고 재현 가능한 적재·재실행·품질 보고 검증 | [Release 계획](development/develop_plan/release_roadmap.md), [Forest 로드맵](development/develop_plan/forest_roadmap.md) |
-| `R1-POLICY-SEARCH` | 자연어 조건을 실제 DB의 서버 검색으로 연결 | `action-needed` | Backend·Frontend, Data 지역·연령 검토 | keyword·region·age·status 계약과 실제 데이터 검색·pagination·UI 소비 검증 | [Release 계획](development/develop_plan/release_roadmap.md), [Policy API](api/policies.md) |
-| `R1-REAL-DATA-ACCEPTANCE` | golden query를 포함한 실제 DB → API → Browser 인수 검증 | `action-needed` | Integration | 실제 기대 정책을 snapshot에 고정하고 단위·통합·Browser 검증 후 `v0.1.0` 게이트 충족 | [주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md) |
-| `SOURCE-NULL-ID` | external ID가 없는 새 Source의 적재 identity 규칙 결정 | `trigger-based` | Data·Backend, API·Frontend 영향 검토 | 실제 해당 Source 도입 시 거부·natural key·deterministic ID 중 규칙 확정 및 계약 동기화 | [Policy DB 매핑](architecture/policy_database_mapping.md) |
-| `BE-ADMIN-RUN-HISTORY` | CollectionRun 기반 관리자 실행 이력 조회·수동 실행 기능 | `trigger-based` | Backend·Frontend, 인증·운영 공동 검토 | `v0.1.0` 뒤 Admin Access Control → CollectionRun Admin API → Admin UI를 순서대로 완료하고 `running` 중단 판정·권한·실제 API UI 검증 | [Admin Access Control 계획](development/develop_plan/backend/04_admin_access_control.md), [CollectionRun Admin API 계획](development/develop_plan/backend/05_collection_run_admin_api.md), [CollectionRun Admin UI 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md) |
+### 인계사항 발생 시 기록 방법
 
-### FE·BE 담당자 인계 기록 방법
-
-Frontend와 Backend 담당자 또는 담당 AI Agent는 작업 중 다른 영역의 확인이
-필요한 계약, 소비 테스트, 차단 의존성이나 후속 조치를 발견하면 이 표에 새
-행을 추가하거나 기존 행을 갱신할 수 있다.
+각 담당자 또는 담당 AI Agent는 다음 Forest 작업 중 다른 영역의 확인이
+필요한 계약, 소비 테스트, 차단 의존성이나 후속 조치를 실제로 발견하면 이
+절에 표를 추가한다.
 
 - `ID`, 현재 상태, 다음 담당, 완료 또는 재개 조건과 권위 문서 링크를
   반드시 기록한다.

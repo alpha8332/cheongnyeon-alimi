@@ -30,12 +30,12 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 
 ## `v0.1.0` Forest
 
-| 순서 | Forest | 영역 | 상태 | 핵심 산출물 | 선행 조건 |
-| ---: | --- | --- | --- | --- | --- |
-| 1 | Data 02 Release Dataset Bootstrap | Data | 계획 필요 | 두 Source 릴리스 범위 순회, 실제 Raw·정규화·DB 초기 적재, 재실행·품질 보고 | Data 01, Integration 02 |
-| 2 | Backend 06 Policy Search | Backend | 계획 필요 | `keyword`·region·age·category·status 서버 검색, 정렬·pagination·인덱스와 API 계약 | Data 02의 실제 분포 확인 |
-| 3 | Frontend 04 Policy Search | Frontend | 계획 필요 | 자연어 조건 추출, Backend query 연결, 조건 표시·빈 결과·pagination | Backend 06 계약 승인 |
-| 4 | Integration 03 Release 1 Acceptance | Integration | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Backend 06, Frontend 04 |
+| 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | Data 02 Release Dataset Bootstrap | Data | Backend 소비 검토 | 계획 필요 | 두 Source 릴리스 범위 순회, 실제 Raw·정규화·DB 초기 적재, 재실행·품질 보고 | Data 01, Integration 02 |
+| 2 | Backend 06 Policy Search | Backend | Data 계약·Frontend 소비 검토 | 계획 필요 | `keyword`·region·age·category·status 서버 검색, 정렬·pagination·인덱스와 API 계약 | Data 02의 실제 분포 확인 |
+| 3 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 조건 추출, Backend query 연결, 조건 표시·빈 결과·pagination | Backend 06 계약 승인 |
+| 4 | Integration 03 Release 1 Acceptance | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Backend 06, Frontend 04 |
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
 API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.
@@ -64,15 +64,15 @@ Data 02의 샘플 분포 조사는 Backend 06의 query·index 설계와 병행�
 
 기존 관리자 계획은 폐기하지 않고 `v0.1.0` 이후에 실행한다.
 
-| 순서 | Forest | 영역 | 상태 | 핵심 산출물 | 선행 조건 |
-| ---: | --- | --- | --- | --- | --- |
-| 1 | Backend 04 Admin Access Control | Backend | draft | 관리자 인증·권한 기준선 | v0.1.0 계약 동결 |
-| 2 | Backend 05 CollectionRun Admin API | Backend | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
-| 3 | Frontend 03 CollectionRun Admin UI | Frontend | draft | 이력·실패·수동 실행 UI | Backend 05 |
-| 4 | Recommendation | Backend·Frontend | 계획 필요 | 조건 기반 추천, 점수·추천 이유와 정확도 검증 | v0.1.0 검색 |
-| 5 | User Service Features | Backend·Frontend | 계획 필요 | 사용자 조건, 즐겨찾기, D-Day, 웹 알림, `.ics` | 인증·저장 경계 결정 |
-| 6 | Data Quality Operations | Data·Backend·Frontend | 계획 필요 | 실패·partial·invalid·중복 후보 확인과 운영 처리 | 관리자 기준선 |
-| 7 | Release 2 Reviewer Hardening | Integration | 계획 필요 | 외부 리뷰어 테스트, 결함 수정, 전체 회귀 | 모든 v0.5.0 기능 |
+| 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | Backend 04 Admin Access Control | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | v0.1.0 계약 동결 |
+| 2 | Backend 05 CollectionRun Admin API | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
+| 3 | Frontend 03 CollectionRun Admin UI | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
+| 4 | Recommendation | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | 계획 필요 | 조건 기반 추천, 점수·추천 이유와 정확도 검증 | v0.1.0 검색 |
+| 5 | User Service Features | Backend·Frontend | Team Leader 계약 조정, 리뷰어·QA 검증 | 계획 필요 | 사용자 조건, 즐겨찾기, D-Day, 웹 알림, `.ics` | 인증·저장 경계 결정 |
+| 6 | Data Quality Operations | Data·Backend·Frontend | Team Leader 통합, QA 검증 | 계획 필요 | 실패·partial·invalid·중복 후보 확인과 운영 처리 | 관리자 기준선 |
+| 7 | Release 2 Reviewer Hardening | Team Leader - Integration | 사용성 리뷰어·QA, 보고서 담당 | 계획 필요 | 외부 리뷰어 테스트, 결함 수정, 전체 회귀와 Release 2 근거 | 모든 v0.5.0 기능 |
 
 Recommendation, User Service Features와 Data Quality Operations는 구현 전에
 영역별로 분리할지 Integration Forest 하나로 묶을지 확정한다. 다음 조건을
@@ -98,11 +98,11 @@ v0.1.0
 
 ## `v1.0.0` Forest
 
-| 순서 | Forest | 영역 | 상태 | 핵심 산출물 | 선행 조건 |
-| ---: | --- | --- | --- | --- | --- |
-| 1 | Open-source Deployment Pipeline | Integration·Deploy | 계획 필요 | Dockerfile, Compose, Nginx, Volume, health check, CI | v0.5.0 기능 동결 |
-| 2 | Clean-room Distribution Verification | Integration | 계획 필요 | 새 환경 clone-to-run, migration·bootstrap·전체 시나리오 | 배포 파이프라인 |
-| 3 | Final Documentation and Submission | Integration·Contest | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | clean-room 검증 |
+| 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | Open-source Deployment Pipeline | Team Leader - Integration·Deploy | Data·Backend·Frontend 지원, QA 검증 | 계획 필요 | Dockerfile, Compose, Nginx, Volume, health check, CI | v0.5.0 기능 동결 |
+| 2 | Clean-room Distribution Verification | Team Leader - Integration·Deploy | QA 주 검증, 리뷰어 사용성 확인 | 계획 필요 | 새 환경 clone-to-run, migration·bootstrap·전체 시나리오 | 배포 파이프라인 |
+| 3 | Final Documentation and Submission | 보고서 담당 | Team Leader 최종 확인, 전 담당 근거 제공 | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | clean-room 검증 |
 
 Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockfile과 실행
 방법이 준비된 뒤 통합 담당이 구성한다. Kubernetes는 현재 완료 조건이 아니다.
@@ -146,4 +146,3 @@ Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
 - [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)
 - [역할과 책임](../../governance/role_assignment.md)
-
