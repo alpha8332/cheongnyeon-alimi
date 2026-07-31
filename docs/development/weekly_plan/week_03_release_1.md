@@ -14,6 +14,10 @@
 계획을 대신하지 않는다. 각 Forest 구현 전에는 담당 계획을 생성·승인하고
 `develop_plan/README.md`와 `docs/index.md`에 색인을 추가한다.
 
+Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 대기 중
+가능한 작업은
+[3주차 Data·Team Leader 실행 계획](week_03_data_team_leader.md)을 따른다.
+
 ## 목표
 
 실제로 진행 중인 정책 데이터를 PostgreSQL에 적재하고, 사용자가 일반적인
@@ -66,17 +70,19 @@
 
 ### Backend
 
+- 한국어 자연어 원문을 결정적인 규칙으로 지역·연령·카테고리·핵심어로 해석
 - `keyword`, `region`, `age`, `category`, `status`, pagination과 정렬 계약
 - PostgreSQL 기반 서버 검색 Repository·Service·API
+- 구조화된 해석 조건·관련도·검색 이유·미확인 조건 응답
 - 전국·상위 지역·시군구, 연령 조건 미상과 partial 노출 의미
 - 실제 데이터 기준 query plan·index 검토
 - 단위·PostgreSQL·API 통합 테스트
 
 ### Frontend
 
-- 한국어 자연어에서 지역·연령·카테고리·핵심어를 결정적으로 추출
-- 추출 조건 표시와 사용자 수정
-- Backend 검색 query·pagination·정렬 연결
+- 한국어 자연어 원문을 `q`로 Backend에 전달
+- Backend 해석 조건 표시와 사용자 수정
+- Backend 검색 이유·미확인 조건·pagination·정렬 연결
 - loading, empty, error, partial과 상세 화면 유지
 - Mock 계약 테스트와 실제 API Browser 검증
 
@@ -132,7 +138,7 @@ W3-D0 실제 데이터 표본·분포 확인
 
 | Data | Backend | Frontend | Team Leader·지원 |
 | --- | --- | --- | --- |
-| Source pagination·할당량 조사 | 현재 Repository·API 변경 지점 조사 | 자연어 parser·조건 UI prototype | 인수 기준·golden query·QA 항목 준비 |
+| Source pagination·할당량 조사 | 현재 Repository·API·자연어 해석 변경 지점 조사 | 해석 조건·검색 이유 UI prototype | 인수 기준·golden query·QA 항목 준비 |
 | 대표 실제 표본 수집 | query DTO·테스트 골격 초안 | Mock query state·pagination UI | 보고서 증빙 양식 준비 |
 | 필드·품질 분포 분석 | index 후보와 실패 경계 조사 | loading·empty·error 회귀 준비 | 역할·브랜치·통합 환경 확인 |
 
@@ -157,9 +163,9 @@ W3-D0 실제 데이터 표본·분포 확인
   Release 1 체크리스트 확인
 - `W3-D0` Data: 두 Source preflight, pagination·할당량 확인, 최소 대표 표본
   수집과 필드·품질 분포 작성
-- `W3-B0` Backend: 현재 Policy Repository·Service·API 분석, query 계약과
-  테스트 골격 초안
-- `W3-F0` Frontend: 자연어 조건 추출 순수 함수와 조건 표시 UI prototype
+- `W3-B0` Backend: 현재 Policy Repository·Service·API 분석, 자연어 해석과
+  query·응답 계약 및 테스트 골격 초안
+- `W3-F0` Frontend: 해석 조건·검색 이유·미확인 조건 표시 UI prototype
 - `W3-R0` 보고서: 데이터 건수, 품질, 검색 결과, 테스트와 화면 증빙 양식 준비
 - `W3-U0` 사용성 리뷰어: golden query와 변형 사용자 문장 준비
 - `W3-Q0` QA: 정상·빈 결과·경계값·API 오류 smoke 목록 준비
@@ -180,7 +186,8 @@ Data 표본을 바탕으로 Data·Backend·Frontend와 Team Leader가 다음을 
 - 연령 조건 미상 정책의 포함·표시 규칙
 - 기본 `status`, partial 노출과 마감·예정 표시
 - 기본 정렬과 pagination
-- 자연어 추출 결과와 Backend query parameter 이름
+- Backend 자연어 해석 결과와 구조화 조건 수정 요청 방식
+- 검색 이유와 미확인 조건의 응답 구조
 - 결과 없음 사유와 조건 수정 방식
 
 #### Gate G1 - 검색 계약 승인
@@ -204,13 +211,14 @@ G1 전에도 prototype과 테스트 골격은 만들 수 있지만 실제 계약
 
 #### Backend
 
-- `W3-B1`: 검색 request·service·repository 계약 구현
-- `W3-B2`: keyword·region·age·category·status·정렬·pagination API 구현
+- `W3-B1`: 자연어 해석과 검색 request·service·repository 계약 구현
+- `W3-B2`: `q` 해석, keyword·region·age·category·status·관련도·정렬·pagination,
+  검색 이유·미확인 조건 API 구현
 - `W3-B3`: 단위·PostgreSQL·API 테스트와 실제 분포 기반 성능·index 검토
 
 #### Frontend
 
-- `W3-F1`: 자연어 조건 추출, 조건 표시·수정과 query state 구현
+- `W3-F1`: 자연어 원문 전달, Backend 해석 조건 표시·수정과 query state 구현
 - `W3-F2A`: 승인된 Mock 계약으로 pagination·상태·회귀 테스트
 - `W3-F2`: Backend endpoint 준비 후 실제 API Client 연결
 
@@ -284,7 +292,7 @@ Team Leader가 다음 증거를 확인한다.
 | --- | --- |
 | Data | 릴리스 수집 범위, 실제 snapshot, 품질 분포, bootstrap·재실행 절차와 검증 |
 | Backend | 승인된 검색 API 계약, 구현, Migration·index 필요 시 변경과 자동 테스트 |
-| Frontend | 자연어 조건 추출·수정 UI, 실제 API 검색·pagination과 UI 회귀 테스트 |
+| Frontend | 자연어 전달·Backend 해석 조건 수정 UI, 검색 이유·미확인 조건·pagination과 UI 회귀 테스트 |
 | Team Leader | Gate 판정, 통합·Browser 결과와 Release 1 결정 |
 | 보고서 | 실제 건수·품질·검색·화면·테스트 근거와 계획 변경 내역 |
 | 사용성 리뷰어 | golden query와 변형 문장 사용성 관찰·재확인 |
@@ -352,7 +360,8 @@ git status --short
   있다.
 - golden query에 맞는 정책이 지원 Source에 없으면 Source 범위 결정이
   Release 1을 막는다.
-- 자연어 조건 추출은 결정적 규칙을 기준으로 하며 LLM 정확도로 해결하지 않는다.
+- Backend 자연어 해석은 결정적 규칙을 기준으로 하며 LLM 정확도로 해결하지
+  않는다.
 
 ## 인계사항 발생 조건
 
@@ -375,7 +384,7 @@ git status --short
 - [ ] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
 - [ ] 재수집·재처리 idempotency와 품질 보고 검증
 - [ ] Backend 서버 검색과 실제 PostgreSQL 테스트
-- [ ] Frontend 자연어 조건·실제 API·pagination 연결
+- [ ] Frontend 자연어 전달·Backend 해석 결과·실제 API·pagination 연결
 - [ ] 실제 DB → FastAPI → React E2E
 - [ ] golden query와 변형·빈 결과·실패 시나리오
 - [ ] Browser·console 확인
@@ -388,6 +397,7 @@ git status --short
 ## 관련 문서
 
 - [주차별 상세 실행 계획 안내](README.md)
+- [Data·Team Leader 실행 계획](week_03_data_team_leader.md)
 - [주차별 실행 계획 요약](../develop_plan/weekly_delivery_plan.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)

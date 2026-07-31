@@ -20,6 +20,12 @@
 | --- | --- | --- | --- |
 | 3주차 | 실데이터 정책 검색과 `v0.1.0` | approved | [3주차 상세 계획](week_03_release_1.md) |
 
+## 현재 역할별 실행 계획
+
+| 주차 | 역할 | 문서 상태 | 실행 계획 |
+| --- | --- | --- | --- |
+| 3주차 | Data·Team Leader | approved | [Data·Team Leader 계획](week_03_data_team_leader.md) |
+
 1·2주차는 완료된 Forest 계획과 개발 기록이 권위 자료이므로 별도 주차 파일을
 소급 생성하지 않았다. 4~6주차는 해당 주차의 선행 Release 결과와 상세 Forest
 범위가 확인된 뒤 생성한다.

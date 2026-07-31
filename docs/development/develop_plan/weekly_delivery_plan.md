@@ -29,7 +29,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1주차 | Source·Schema·Fixture·Seed 기준선 | FastAPI·DB 기반과 Policy 계약 | React·TypeScript·Mock UI 기반 | 공통 계약·문서 체계와 병렬 개발 조정 | 목표·구조·초기 근거 정리 | 미배정, 사용자 시나리오 후보 검토 | 미배정, 테스트 가능성 검토 |
 | 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
-| 3주차 | 실데이터 릴리스 범위 수집·DB bootstrap·품질 보고 | 서버 keyword·region·age 검색과 성능 | 자연어 조건 추출·검색 UI·pagination | 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
+| 3주차 | 실데이터 릴리스 범위 수집·DB bootstrap·품질 보고 | 자연어 해석·구조화 조건·서버 검색·관련도와 성능 | 자연어 전달·해석 조건·검색 이유·미확인 조건 UI와 pagination | 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
 | 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 기능별 설계 결정·화면·테스트 근거 정리 | 5주차 사용자 시나리오와 평가 항목 준비 | `v0.5.0` 테스트 계획·데이터·환경 준비 |
 | 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 동결, 결함 triage와 `v0.5.0` 결정 | 리뷰·QA 결과와 수정 근거를 Release 2 자료에 반영 | 실제 사용자 시나리오 수행·재확인 | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
 | 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
@@ -109,18 +109,23 @@ completed
 
 ### Backend
 
+- 자연어 원문 `q`를 결정적인 한국어 규칙으로 해석해 지역, 나이,
+  주거·월세 등 카테고리와 핵심어를 구조화한다.
 - `keyword`, region, age, category, status, pagination과 기본 정렬 계약을
-  확정하고 구현한다.
+  확정하고 PostgreSQL 검색으로 구현한다.
 - 전국·상위 지역·시군구와 연령 조건 미상 정책의 검색 의미를 결정한다.
 - 진행 중 정책 우선 노출과 마감·예정 표시를 구분한다.
+- 구조화된 해석 조건, 관련도순 결과, 검색 이유와 데이터만으로 판정할 수 없는
+  미확인 조건을 응답한다.
 - 실제 데이터 분포를 기준으로 query plan과 필요한 index를 검토한다.
 - API·DB 단위 및 통합 테스트를 추가한다.
 
 ### Frontend
 
-- 자연어에서 지역, 나이, 주거·월세 등 기본 조건을 결정적으로 추출한다.
-- 추출 조건을 사용자에게 표시하고 수정 가능하게 한다.
-- Backend 검색 query, pagination과 정렬 결과를 사용한다.
+- 자연어 원문을 `q`로 Backend에 전달하고 별도 자연어 parser를 두지 않는다.
+- Backend가 반환한 해석 조건을 표시하고 수정 가능하게 한다.
+- Backend 검색 결과, 검색 이유, 미확인 조건, pagination과 정렬 결과를
+  표시한다.
 - 실제 데이터의 목록·상세, 빈 결과, 오류와 partial 상태를 검증한다.
 
 ### Team Leader - Integration
@@ -139,7 +144,7 @@ completed
 
 - 보고서 담당은 실제 데이터 건수·품질 분포, golden query 기대 결과와
   실행한 검증을 Release 1 근거로 정리한다.
-- 사용성 리뷰어는 검색 문장, 추출 조건과 결과 이유가 이해되는지 사전
+- 사용성 리뷰어는 검색 문장, Backend 해석 조건과 결과 이유가 이해되는지 사전
   확인한다.
 - QA는 검색 정상·빈 결과·경계값·API 실패 smoke를 수행하고 재현 가능한
   결함만 기록한다.
