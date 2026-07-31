@@ -11,7 +11,8 @@ from app.models.policy import Policy
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 INITIAL_REVISION = "20260728_0001"
-HEAD_REVISION = "20260730_0002"
+COLLECTION_RUN_REVISION = "20260730_0002"
+HEAD_REVISION = "20260730_0003"
 
 
 def alembic_config() -> Config:
@@ -42,13 +43,17 @@ def render_downgrade_sql() -> str:
     return output.getvalue()
 
 
-def test_collection_run_revision_is_the_single_alembic_head():
+def test_policy_timestamp_revision_is_the_single_alembic_head():
     scripts = ScriptDirectory.from_config(alembic_config())
     revision = scripts.get_current_head()
 
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == COLLECTION_RUN_REVISION
+    )
+    assert (
+        scripts.get_revision(COLLECTION_RUN_REVISION).down_revision
         == INITIAL_REVISION
     )
     assert (
@@ -71,6 +76,11 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
     assert "CONSTRAINT uq_policies_source_external UNIQUE" in sql
     assert "CONSTRAINT ck_policies_age_order CHECK" in sql
     assert "CONSTRAINT ck_policies_application_date_order CHECK" in sql
+    assert (
+        "UPDATE policies SET updated_at = created_at "
+        "WHERE updated_at < created_at"
+    ) in sql
+    assert "CONSTRAINT ck_policies_timestamp_order CHECK" in sql
 
     for column in Policy.__table__.columns:
         assert f"\n    {column.name} " in sql
@@ -96,6 +106,7 @@ def test_downgrade_sql_removes_table_indexes_and_enum_types():
     sql = render_downgrade_sql()
 
     assert "DROP TABLE collection_runs" in sql
+    assert "DROP CONSTRAINT ck_policies_timestamp_order" in sql
     assert "DROP TYPE collection_run_status" in sql
     assert "DROP TYPE collection_run_trigger_type" in sql
     assert "DROP TYPE collection_run_type" in sql

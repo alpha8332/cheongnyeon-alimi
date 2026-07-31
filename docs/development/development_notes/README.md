@@ -11,8 +11,10 @@
 | Docs System | [개발 기록](integration/docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
 | Data Pipeline | [개발 기록](data/data_pipeline.md) | Data 0 | API Source Preflight와 비밀정보 경계 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
+| React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |
 | Backend Baseline | [개발 기록](backend/policy_baseline.md) | Backend 0 | DB Schema, ORM 모델, Importer 및 Policy API 구축 |
 | Backend Policy Persistence Hardening | [개발 기록](backend/policy_persistence_hardening.md) | B0~B6 | PostgreSQL 저장·Importer·Repository·Policy API 종단 검증 |
+| Backend Policy Runtime Safety | [개발 기록](backend/policy_runtime_safety.md) | R0~R3 | Policy timestamp 순서와 SQL parameter logging 안전화 |
 | Policy Data Database Integration | [개발 기록](integration/policy_data_database_integration.md) | D0~D6 | Seed·Runtime의 PostgreSQL 적재와 Policy API 통합 검증·Frontend 인계 |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를

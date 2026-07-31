@@ -35,6 +35,28 @@ python -m venv .venv
 
 의존성 파일을 바꾸지 않고 로컬에만 추가 설치하지 않는다.
 
+## SQL statement 진단
+
+Backend SQL logging은 환경 이름과 분리돼 있으며 기본적으로 꺼져 있다.
+`ENVIRONMENT=development`만으로 SQL statement가 출력되지 않는다.
+
+일시적으로 statement를 확인해야 할 때만 로컬 `.env` 또는 현재 process에
+다음을 명시한다.
+
+```powershell
+$env:SQL_ECHO = 'true'
+```
+
+`SQL_ECHO=true`여도 SQLAlchemy bound parameter는 항상 숨긴다. 정책 본문,
+provenance, API key, DB password와 URL credential은 로그에 출력하지 않는다.
+미처리 Backend 예외도 상세 문자열이나 traceback 대신 예외 타입만 기록한다.
+설정은 process 시작 시 읽으므로 실행 중인 Backend·Seed·Runtime importer를
+재시작해야 반영된다. 진단 후에는 변수를 제거한다.
+
+```powershell
+Remove-Item Env:SQL_ECHO -ErrorAction SilentlyContinue
+```
+
 ## PostgreSQL 없이 Backend 확인
 
 ```powershell

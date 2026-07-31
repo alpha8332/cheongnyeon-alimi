@@ -1,9 +1,11 @@
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
+import pytest
 from sqlalchemy import select
 from sqlalchemy.dialects import postgresql
 
+from app.main import unhandled_exception_handler
 from app.models.policy import Policy
 from app.repositories.policy import (
     PolicyPage,
@@ -43,6 +45,27 @@ def test_service_applies_consistent_public_quality_policy():
     assert repository.get_by_id.call_args.kwargs[
         "quality_statuses"
     ] == ("valid", "partial")
+
+
+@pytest.mark.asyncio
+async def test_unhandled_exception_log_does_not_expose_details():
+    secret_url = (
+        "postgresql://service:R2_DB_PASSWORD@database:5432/policies"
+    )
+
+    with patch("app.main.logger.critical") as critical:
+        response = await unhandled_exception_handler(
+            Mock(),
+            RuntimeError(secret_url),
+        )
+
+    assert response.status_code == 500
+    critical.assert_called_once_with(
+        "Unhandled exception. error_type=%s",
+        "RuntimeError",
+    )
+    assert "R2_DB_PASSWORD" not in repr(critical.call_args)
+    assert secret_url not in repr(critical.call_args)
 
 
 def test_repository_uses_exact_array_membership(db):

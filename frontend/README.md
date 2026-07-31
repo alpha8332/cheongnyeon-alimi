@@ -6,7 +6,7 @@ React·TypeScript·Vite 기반 사용자 및 관리자 화면이다. 정책 화�
 
 ## 로컬 실행
 
-Node.js는 Vite가 요구하는 `^20.19.0 || >=22.12.0` 범위를 사용한다.
+Node.js는 React Router v8이 요구하는 `>=22.22.0` 범위를 사용한다.
 
 ```powershell
 cd frontend

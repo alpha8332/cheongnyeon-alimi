@@ -4,7 +4,7 @@
 
 - 번호: Frontend 02
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Backend Policy Runtime Safety](../backend/03_policy_runtime_safety.md)
@@ -56,7 +56,7 @@
 
 ### F0 - Advisory 재현과 도달 가능성 검토
 
-- 상태: draft
+- 상태: completed
 - 목적:
   현재 의존성 트리와 앱 실행 경로에서 advisory의 실제 영향을 확정한다.
 - 산출물:
@@ -67,9 +67,19 @@
 - 완료 기준:
   - 취약 package·버전과 현재 앱의 도달 가능성을 구분해 기록
 
+2026-07-30 현재 lockfile과 공식 advisory를 다시 확인했다. npm은
+`react-router-dom@7.18.1`에서 전이되는 `react-router@7.18.1` 때문에 high
+2건을 보고하며, 두 항목은 하나의 RSC CSRF advisory
+`GHSA-qwww-vcr4-c8h2`에서 파생된다. 공식 영향 조건은 unstable RSC API
+사용이다. 현재 앱은 Vite client-only `createBrowserRouter` 구성이고
+RSC·server action API를 사용하지 않아 현재 실행 경로에서는 도달할 수
+없다. 재현 명령과 상세 근거는
+[개발 기록](../../development_notes/frontend/react_router_advisory.md)에
+남겼다.
+
 ### F1 - 호환 버전 결정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   기능 회귀 없이 적용 가능한 dependency 대응 방법을 결정한다.
 - 산출물:
@@ -79,23 +89,40 @@
 - 완료 기준:
   - 강제 변경 여부와 Router API 호환성 검토 완료
 
+2026-07-30 공식 v8 migration guide와 npm metadata를 대조해
+`react-router@8.3.0` upgrade를 선택했다. v8에는
+`react-router-dom` package가 없으므로 F2에서 직접 의존성을
+`react-router`로 교체하고, 일반 API import는 `react-router`,
+`RouterProvider`는 `react-router/dom`으로 변경한다. 현재 Node.js
+24.18.0, React·React DOM 19.2.7과 Vite 8.x는 v8 최소 요건을 충족하며,
+앱이 사용하는 Router API는 v8에 유지된다. 7.11.0 downgrade와 현재
+구성의 한시적 위험 수용은 선택하지 않는다.
+
 ### F2 - 의존성 또는 보호 조치 반영
 
-- 상태: draft
+- 상태: completed
 - 목적:
   F1 결정에 따라 manifest·lockfile 또는 위험 수용 기록을 반영한다.
 - 산출물:
   - 필요 시 갱신된 `package.json`과 lockfile
+  - v8 공식 package 경계에 맞춘 Router import와 Node.js 최소 버전 문서
   - 수정하지 않을 경우 적용 범위와 재검토 trigger
 - 선행 조건:
   - F1 완료
 - 완료 기준:
   - 설치 의존성과 결정 문서가 일치
+  - `react-router-dom` 의존성과 source import가 남아 있지 않음
   - 임의의 `--force` 변경 없음
+
+2026-07-30 `react-router-dom`을 제거하고 `react-router@8.3.0`을 직접
+의존성으로 반영했다. 일반 API와 `RouterProvider` import를 각각
+`react-router`, `react-router/dom`으로 변경하고 Node.js 최소 버전을
+22.22로 동기화했다. 설치 트리와 audit, test·lint·build에서 변경 결과를
+확인했으며 강제 수정은 사용하지 않았다.
 
 ### F3 - Frontend 회귀와 문서 동기화
 
-- 상태: draft
+- 상태: completed
 - 목적:
   의존성 결정이 기존 Policy Discovery 동작을 깨뜨리지 않았음을 확인한다.
 - 산출물:
@@ -103,10 +130,20 @@
   - Frontend 개발 기록과 필요한 인계사항 갱신
 - 선행 조건:
   - F2 완료
+  - Codex CLI·VS Code Codex에서는 브라우저 제어를 지원하지 않으므로,
+    자동 검증과 빌드가 끝난 뒤 ChatGPT 데스크톱 앱의 Browser에서
+    `http://localhost:3000`을 확인할 수 있는 환경 준비
 - 완료 기준:
   - `npm ci`, `npm test`, `npm run lint`, `npm run build` 통과
-  - 주요 라우팅의 브라우저 기본 회귀 확인
+  - ChatGPT 데스크톱 앱의 Browser에서 주요 라우팅 기본 회귀 확인
   - `python scripts/validate_docs.py` 통과
+
+2026-07-30 VS Code 단계에서 clean install, audit, test·lint·build와 주요
+route의 HTTP 200 진입을 확인했다. 이어 ChatGPT 데스크톱 앱의 Browser에서
+홈, 정책 목록, 숫자 ID 상세와 partial opt-in 상세가 실제 콘텐츠로
+렌더링되는지 확인했다. 헤더, 정책 카드와 목록 복귀 Link 기반 이동이
+정상이고 오류·빈 화면이나 browser console warning·error가 없어 F3와
+Forest를 완료했다.
 
 ## 검증 계획
 
@@ -115,7 +152,8 @@
 - `npm test`
 - `npm run lint`
 - `npm run build`
-- 홈·목록·숫자 ID 상세·partial opt-in route 브라우저 확인
+- ChatGPT 데스크톱 앱의 Browser에서 홈·목록·숫자 ID 상세·partial opt-in
+  route 확인
 - `python scripts/validate_docs.py`
 - `git diff --check`
 

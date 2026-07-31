@@ -68,7 +68,7 @@ def serialized_policy(policy: Policy) -> dict[str, Any]:
 def test_postgresql_seed_repository_api_end_to_end():
     database_url = require_test_database_url()
     config = migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     session_factory = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -200,7 +200,6 @@ def test_postgresql_connection_failure_does_not_fallback():
     unavailable_engine = create_db_engine(
         "postgresql://postgres@127.0.0.1:1/"
         "cheongnyeon_alimi_test?connect_timeout=1",
-        environment="test",
     )
     try:
         assert check_db_connection(unavailable_engine) is False

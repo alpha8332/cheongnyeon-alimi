@@ -22,8 +22,8 @@
 - 원문 text와 구조화 필드는 서로 대체하지 않고 모두 보존한다.
 - `provenance`는 DB에는 보존하지만 일반 사용자 Policy API에는 노출하지
   않는다.
-- DB가 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력 계약에는
-  없고 공개 Policy DTO에 추가된다.
+- 저장 계층이 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력
+  계약에는 없고 공개 Policy DTO에 추가된다.
 
 ## 31개 필드 매핑
 
@@ -96,13 +96,25 @@ Repository는 배열 원소의 exact membership으로 검색한다.
 
 `provenance`는 Raw 문서 ID·역할·hash·수집 시각·안전한 source URL의 object
 배열로 DB에 보존한다. 일반 사용자 `PolicyRead`에는 포함하지 않는다. 나머지
-Normalized 30개 필드는 공개 DTO에 있고 DB가 생성한 다음 필드가 추가된다.
+Normalized 30개 필드는 공개 DTO에 있고 저장 계층이 생성한 다음 필드가
+추가된다.
 
-| DB 생성 필드 | PostgreSQL 타입 | 공개 API |
-| --- | --- | --- |
-| `id` | auto-increment integer | 노출 |
-| `created_at` | `timestamptz` | 노출 |
-| `updated_at` | `timestamptz` | 노출 |
+| 저장 계층 생성 필드 | PostgreSQL 타입 | 현재 생성 경계 | 공개 API |
+| --- | --- | --- | --- |
+| `id` | auto-increment integer | DB identity | 노출 |
+| `created_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
+| `updated_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
+
+Importer는 최초 insert에 하나의 UTC aware write instant를 생성해 두 필드에
+같이 전달한다. ORM과 Migration의 `ck_policies_timestamp_order`는
+`updated_at >= created_at`을 강제한다. Migration은 이 constraint를 추가하기
+전에 기존 역전 행의 `updated_at`을 `created_at`으로 보정한다. Importer 밖의
+insert에서는 ORM Python default와 DB `CURRENT_TIMESTAMP` server default가
+방어적 fallback이며, Policy를 변경하는 writer는 `updated_at`을 명시해야
+한다. 상세 결정과 검증은
+[Backend Policy Runtime Safety 계획](../development/develop_plan/backend/03_policy_runtime_safety.md)과
+[개발 기록](../development/development_notes/backend/policy_runtime_safety.md)에
+기록한다.
 
 invalid는 DB enum에는 존재하지만 importer admission에서 거부되므로 정상
 Policy API에 도달하지 않는다. partial은 저장하며
@@ -119,7 +131,8 @@ Policy API에 도달하지 않는다. partial은 저장하며
   위한 것이며 현재 importer가 null identity를 허용한다는 뜻이 아니다.
 - 같은 identity의 같은 값은 `unchanged`이고 `updated_at`을 바꾸지 않는다.
 - 같은 identity의 변경 값은 identity를 제외한 Normalized 필드를 원자적으로
-  update하고 `updated_at`을 갱신한다.
+  update한다. `updated_at`은 기존 시각과 새 write instant 중 늦은 값이므로
+  시스템 시각이 역행해도 감소하지 않는다.
 - 향후 Source의 대체 ID 생성 규칙은 이 매핑에서 일반화하지 않는다.
 
 ## Seed와 DB 조회 비교 기준

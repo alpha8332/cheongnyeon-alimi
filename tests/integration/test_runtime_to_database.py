@@ -88,7 +88,7 @@ def _policy_count(db) -> int:
 def test_runtime_raw_replay_to_postgresql_is_atomic_and_idempotent():
     database_url = _require_test_database_url()
     config = _migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
     session_factory = sessionmaker(
         autocommit=False,
         autoflush=False,

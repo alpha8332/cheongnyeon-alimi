@@ -55,7 +55,10 @@ async def app_exception_handler(request: Request, exc: AppException):
 # Unhandled Exception Handler
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    logger.critical(f"Unhandled Exception: {str(exc)}", exc_info=True)
+    logger.critical(
+        "Unhandled exception. error_type=%s",
+        type(exc).__name__,
+    )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

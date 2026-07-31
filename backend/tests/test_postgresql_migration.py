@@ -14,6 +14,7 @@ from app.core.database import create_db_engine
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
+PRE_TIMESTAMP_CONSTRAINT_REVISION = "20260730_0002"
 
 
 def require_test_database_url() -> str:
@@ -42,7 +43,7 @@ def migration_config(database_url: str) -> Config:
 def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
     database_url = require_test_database_url()
     config = migration_config(database_url)
-    db_engine = create_db_engine(database_url, environment="test")
+    db_engine = create_db_engine(database_url)
 
     try:
         command.upgrade(config, "head")
@@ -148,5 +149,98 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
                     )
                 ).scalar_one()
             assert enum_count == 0
+        finally:
+            db_engine.dispose()
+
+
+def test_postgresql_timestamp_migration_repairs_existing_rows():
+    database_url = require_test_database_url()
+    config = migration_config(database_url)
+    db_engine = create_db_engine(database_url)
+    created_at = datetime(2026, 7, 30, 1, 0, tzinfo=timezone.utc)
+    reversed_updated_at = datetime(
+        2026,
+        7,
+        30,
+        0,
+        0,
+        tzinfo=timezone.utc,
+    )
+
+    try:
+        command.upgrade(config, PRE_TIMESTAMP_CONSTRAINT_REVISION)
+        metadata = sa.MetaData()
+        policies = sa.Table("policies", metadata, autoload_with=db_engine)
+
+        with db_engine.begin() as connection:
+            policy_id = connection.execute(
+                policies.insert()
+                .values(
+                    source_id="postgresql-migration",
+                    source_name="PostgreSQL Migration 테스트",
+                    external_id="PG-R1-REPAIR",
+                    title="역전 시각 보정 정책",
+                    categories=[],
+                    regions=[],
+                    education_statuses=[],
+                    employment_statuses=[],
+                    required_conditions=[],
+                    preferred_conditions=[],
+                    excluded_conditions=[],
+                    source_url=(
+                        "https://fixture.invalid/policies/PG-R1-REPAIR"
+                    ),
+                    collected_at=created_at,
+                    provenance=[],
+                    data_quality_status="valid",
+                    created_at=created_at,
+                    updated_at=reversed_updated_at,
+                )
+                .returning(policies.c.id)
+            ).scalar_one()
+
+        command.upgrade(config, "head")
+
+        constraint_names = {
+            constraint["name"]
+            for constraint in sa.inspect(db_engine).get_check_constraints(
+                "policies"
+            )
+        }
+        assert "ck_policies_timestamp_order" in constraint_names
+
+        with db_engine.connect() as connection:
+            repaired = connection.execute(
+                sa.select(
+                    policies.c.created_at,
+                    policies.c.updated_at,
+                ).where(policies.c.id == policy_id)
+            ).one()
+        assert repaired.updated_at == repaired.created_at
+
+        with pytest.raises(IntegrityError):
+            with db_engine.begin() as connection:
+                connection.execute(
+                    policies.update()
+                    .where(policies.c.id == policy_id)
+                    .values(updated_at=reversed_updated_at)
+                )
+
+        command.downgrade(config, PRE_TIMESTAMP_CONSTRAINT_REVISION)
+        downgraded_constraint_names = {
+            constraint["name"]
+            for constraint in sa.inspect(db_engine).get_check_constraints(
+                "policies"
+            )
+        }
+        assert (
+            "ck_policies_timestamp_order"
+            not in downgraded_constraint_names
+        )
+    finally:
+        try:
+            command.downgrade(config, "base")
+            assert not sa.inspect(db_engine).has_table("policies")
+            assert not sa.inspect(db_engine).has_table("collection_runs")
         finally:
             db_engine.dispose()

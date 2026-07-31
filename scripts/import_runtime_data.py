@@ -94,7 +94,7 @@ def main(
         if selected_session_factory is None:
             owned_engine = create_db_engine(
                 settings.DATABASE_URL,
-                environment="runtime-import",
+                sql_echo=settings.SQL_ECHO,
             )
             selected_session_factory = create_session_factory(owned_engine)
         if not args.dry_run:

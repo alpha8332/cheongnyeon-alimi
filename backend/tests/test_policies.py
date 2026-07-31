@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -63,6 +64,70 @@ def test_import_programs_distinguishes_updated_from_unchanged(db):
             Policy.external_id == programs[0]["external_id"],
         )
     ) == "변경된 합성 정책명"
+
+
+def test_import_programs_enforces_timestamp_order_and_nondecreasing_updates(
+    db,
+):
+    program = seed_programs()[0]
+    first_instant = datetime(2026, 7, 30, 1, 0, tzinfo=timezone.utc)
+
+    with patch(
+        "app.services.seed_importer.utc_now",
+        return_value=first_instant,
+    ):
+        first = import_programs(db, [program])
+
+    policy = db.scalar(select(Policy))
+    assert first.inserted == 1
+    assert policy.created_at == policy.updated_at
+    created_at = policy.created_at
+    updated_at = policy.updated_at
+    db.commit()
+
+    with patch(
+        "app.services.seed_importer.utc_now",
+        return_value=datetime(2026, 7, 30, 2, 0, tzinfo=timezone.utc),
+    ):
+        unchanged = import_programs(db, [program])
+
+    policy = db.scalar(select(Policy))
+    assert unchanged.unchanged == 1
+    assert policy.created_at == created_at
+    assert policy.updated_at == updated_at
+    db.commit()
+
+    changed_program = dict(program)
+    changed_program["title"] = "시계 역행 중 변경된 합성 정책명"
+    with patch(
+        "app.services.seed_importer.utc_now",
+        return_value=datetime(2026, 7, 30, 0, 0, tzinfo=timezone.utc),
+    ):
+        changed_during_clock_rollback = import_programs(
+            db,
+            [changed_program],
+        )
+
+    policy = db.scalar(select(Policy))
+    assert changed_during_clock_rollback.updated == 1
+    assert policy.created_at == created_at
+    assert policy.updated_at == updated_at
+    db.commit()
+
+    changed_program["title"] = "시계 정상화 후 변경된 합성 정책명"
+    with patch(
+        "app.services.seed_importer.utc_now",
+        return_value=datetime(2026, 7, 30, 3, 0, tzinfo=timezone.utc),
+    ):
+        changed_after_clock_recovery = import_programs(
+            db,
+            [changed_program],
+        )
+
+    policy = db.scalar(select(Policy))
+    assert changed_after_clock_recovery.updated == 1
+    assert policy.created_at == created_at
+    assert policy.updated_at > updated_at
 
 
 def test_import_programs_preserves_source_scoped_identity(db):

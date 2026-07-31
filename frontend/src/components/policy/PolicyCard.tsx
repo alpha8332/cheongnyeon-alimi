@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Card from '@/components/common/Card';
 import PartialBadge from '@/components/policy/PartialBadge';
 import type { PolicyDto } from '@/types/policy';

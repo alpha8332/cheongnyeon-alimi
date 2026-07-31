@@ -4,7 +4,8 @@
 
 - 번호: Backend 03
 - 담당 영역: Backend
-- 상태: draft
+- 상태: completed
+- 현재 Slice: R3 completed
 - 작업 브랜치: `fix/backend/week2-hardening`
 - 공유 Forest:
   [Frontend React Router Advisory Review](../frontend/02_react_router_advisory.md)
@@ -14,9 +15,7 @@
 - 대상 인계사항:
   `BE-POLICY-TIMESTAMP-ORDER`, `BE-SQL-ECHO-LOGGING`
 - 개발 기록:
-  구현을 시작해 `in-progress`로 전환할 때
-  `docs/development/development_notes/backend/policy_runtime_safety.md`를
-  생성한다.
+  [Backend Policy Runtime Safety 개발 기록](../../development_notes/backend/policy_runtime_safety.md)
 
 ## 목적
 
@@ -70,7 +69,7 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ### R0 - 현재 동작과 계약 확정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   timestamp와 SQL logging의 현재 생성·출력 경계를 실행 증거로 확정한다.
 - 주요 작업:
@@ -88,10 +87,21 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - SQLite·PostgreSQL의 현재 결과와 차이를 구분해 기록
   - `created_at`·`updated_at` 생성 주체와 허용 순서 합의
   - parameter logging 허용 범위와 기본값 합의
+- 완료 결과:
+  - SQLite와 PostgreSQL 18.4에서 최초 insert의
+    `updated_at < created_at`을 각각 재현함
+  - Importer `updated_at` 생성 뒤 SQLAlchemy ORM Python
+    `created_at` default가 별도로 실행되는 원인을 확정함
+  - unchanged 시각 보존과 실제 update의 `updated_at` 갱신을 확인함
+  - development echo에서 synthetic 정책 제목·provenance 노출과 CP949
+    `UnicodeEncodeError`를 재현했으며 DB insert 자체는 성공함
+  - R1은 단일 application write instant와 DB 순서 constraint, R2는
+    기본 echo off·명시적 opt-in·항상 parameter 비노출 계약을 적용하기로
+    결정함
 
 ### R1 - Policy timestamp 순서 보장
 
-- 상태: draft
+- 상태: completed
 - 목적:
   최초 insert와 후속 upsert에서 합의한 시각 불변식을 구현한다.
 - 주요 작업:
@@ -110,10 +120,21 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - unchanged 재실행에서 두 시각의 불필요한 변경 없음
   - 실제 update에서 `updated_at` 감소 없음
   - SQLite와 실제 PostgreSQL 검증 결과 기록
+- 완료 결과:
+  - Importer가 하나의 UTC write instant를 최초 insert의
+    `created_at`·`updated_at`에 함께 전달함
+  - unchanged는 두 시각을 보존하고 update는 기존·incoming 시각 중 늦은
+    값을 사용하도록 SQLite·PostgreSQL 경계를 구현함
+  - 기존 역전 행을 보정한 뒤 `ck_policies_timestamp_order`를 추가하는
+    Alembic Migration과 downgrade를 구현함
+  - SQLite 관련 테스트 33건, Backend 비-PostgreSQL 회귀 59건과 실제
+    PostgreSQL Migration·upsert·API 종단 테스트 7건이 통과함
+  - 공개 DTO 타입·shape와 Schema·Fixture·Seed 계약은 유지하고 timestamp
+    의미만 DB 매핑·API 문서에 동기화함
 
 ### R2 - SQL parameter logging 안전화
 
-- 상태: draft
+- 상태: completed
 - 목적:
   Backend SQL logging의 안전한 기본값과 명시적인 디버그 경계를 구현한다.
 - 주요 작업:
@@ -131,10 +152,20 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - 기본 실행 로그의 정책 값·provenance·인증정보 노출 0건
   - Unicode 정책 값 write에서 logging encoding 오류 0건
   - 전체 DB URL과 비밀번호가 오류·로그에 노출되지 않음
+- 완료 결과:
+  - `SQL_ECHO=false` 기본값과 명시적 opt-in을 추가하고
+    `ENVIRONMENT` 기반 자동 echo를 제거함
+  - Web·Seed·Runtime engine 모두 `hide_parameters=True`를 적용함
+  - 미처리 예외 log는 상세 문자열·traceback 대신 예외 타입만 기록함
+  - 실제 PostgreSQL 18.4와 CP949 strict stream에서 합성 정책
+    본문·provenance·credential·Unicode parameter 비노출과 write 성공을
+    확인함
+  - 실제 PostgreSQL을 포함한 전체 Backend·공통 테스트 166건과 subtest
+    25건이 통과함
 
 ### R3 - 통합 검증과 인계 종료
 
-- 상태: draft
+- 상태: completed
 - 목적:
   timestamp·logging 변경의 전체 회귀와 문서 동기화를 완료한다.
 - 주요 작업:
@@ -153,6 +184,15 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
   - `python scripts/validate_docs.py` 통과
   - 문서와 실제 timestamp·logging 동작 일치
   - `BE-POLICY-TIMESTAMP-ORDER`, `BE-SQL-ECHO-LOGGING` 종료
+- 완료 결과:
+  - PostgreSQL 미설정 전체 회귀 154건과 subtest 25건이 통과하고
+    PostgreSQL 전용 12건은 명시적으로 skip됨
+  - PostgreSQL 18.4 격리 DB에서 전체 Backend·공통 테스트 166건과 subtest
+    25건이 통과함
+  - 문서 검증·문서 검증 테스트·Fixture 결정성·diff 검증을 통과함
+  - Schema·Fixture·Seed·공개 DTO·Frontend 소비 타입에 변경이 없음을
+    재확인함
+  - 권위 문서와 실제 동작을 동기화하고 두 Backend 인계사항을 종료함
 
 ## 검증 계획
 
@@ -178,14 +218,14 @@ Policy 최초 적재와 갱신 시각의 순서 불변식을 확정하고, Backe
 
 ## 위험과 미확정 사항
 
-- DB server default와 application 시각을 혼용하면 DB별 precision과 transaction
-  timestamp 의미가 달라질 수 있다.
-- 시각 생성 주체를 바꾸면 기존 Migration과 API 소비자의 timestamp 해석에
-  영향이 생길 수 있다.
-- SQL 문장 자체와 parameter 값을 분리하지 못하는 logging 설정은 안전한
-  디버그 경계를 제공하기 어렵다.
-- 보안 기본값과 상세 debugging 편의 사이의 선택은 Backend·운영 문서에서
-  명시해야 한다.
+- timestamp 생성 경계는 Importer의 단일 UTC write instant로 확정했고 DB
+  constraint와 SQLite·PostgreSQL 회귀로 보호한다.
+- Migration downgrade는 constraint만 제거하며 이미 보정된 기존 역전
+  timestamp를 원래 값으로 되돌리지 않는다.
+- `SQL_ECHO=true`는 table·column을 포함한 statement 구조를 출력하지만 bound
+  parameter는 모든 환경에서 숨긴다.
+- 현재 Forest 범위에 남은 미확정 계약은 없다. Starlette TestClient
+  deprecation 경고는 별도 범위다.
 
 ## 관련 문서
 

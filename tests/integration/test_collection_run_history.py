@@ -51,7 +51,7 @@ def _migration_config(database_url: str) -> Config:
 def test_postgresql_seed_and_runtime_run_history_lifecycle():
     database_url = _test_database_url()
     config = _migration_config(database_url)
-    engine = create_db_engine(database_url, environment="test")
+    engine = create_db_engine(database_url)
     session_factory = create_session_factory(engine)
 
     try:

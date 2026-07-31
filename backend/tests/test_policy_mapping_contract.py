@@ -68,9 +68,9 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     orm_fields = (
         frozenset(Policy.__table__.columns.keys()) - SYSTEM_FIELDS
     )
-    importer_fields = frozenset(_policy_values(load_seed()[0])) - {
-        "updated_at"
-    }
+    importer_fields = (
+        frozenset(_policy_values(load_seed()[0])) - SYSTEM_FIELDS
+    )
     public_api_fields = frozenset(PolicyRead.model_fields)
 
     assert len(normalized_fields) == 31
@@ -124,7 +124,9 @@ def test_importer_conversion_preserves_every_seed_field():
             else:
                 assert actual == expected
 
+        assert values["created_at"].tzinfo is not None
         assert values["updated_at"].tzinfo is not None
+        assert values["created_at"] == values["updated_at"]
 
 
 def test_source_scoped_identity_and_current_source_admission_are_stable():

@@ -90,7 +90,11 @@ GET /api/v1/policies
 `collected_at`, `created_at`, `updated_at`은 timezone-aware date-time이다.
 PostgreSQL Session timezone에 따라 같은 절대 시각이 `+00:00` 또는 `+09:00`
 등 다른 offset으로 표현될 수 있으므로 소비자는 offset 문자열이 아니라
-절대 시각으로 해석한다.
+절대 시각으로 해석한다. 최초 Importer insert에서는 `created_at`과
+`updated_at`이 같은 logical write instant이고, unchanged import는 두 값을
+보존한다. 실제 update에서도 `updated_at`은 이전 값보다 감소하지 않지만
+시스템 시각 역행을 보정한 경우 이전 값과 같을 수 있으므로 strict 증가를
+가정하지 않는다.
 
 ## 정책 상세
 

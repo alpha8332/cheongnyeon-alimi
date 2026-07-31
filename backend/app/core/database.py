@@ -17,14 +17,20 @@ def redact_database_url(database_url: str) -> str:
         return "<invalid-database-url>"
 
 
-def create_db_engine(database_url: str, environment: str = "production") -> Engine:
+def create_db_engine(
+    database_url: str,
+    *,
+    sql_echo: bool = False,
+) -> Engine:
     """Construct an engine for the explicitly supplied URL without probing it."""
-    engine_options = {"pool_pre_ping": True}
+    engine_options = {
+        "pool_pre_ping": True,
+        "echo": sql_echo,
+        "hide_parameters": True,
+    }
 
     if database_url.startswith("sqlite"):
         engine_options["connect_args"] = {"check_same_thread": False}
-    else:
-        engine_options["echo"] = environment == "development"
 
     try:
         return create_engine(database_url, **engine_options)
@@ -42,7 +48,10 @@ def create_session_factory(db_engine: Engine):
 
 
 def _create_db_engine() -> Engine:
-    return create_db_engine(settings.DATABASE_URL, settings.ENVIRONMENT)
+    return create_db_engine(
+        settings.DATABASE_URL,
+        sql_echo=settings.SQL_ECHO,
+    )
 
 
 engine = _create_db_engine()
