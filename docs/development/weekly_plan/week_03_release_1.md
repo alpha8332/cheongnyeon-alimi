@@ -10,7 +10,8 @@
 - 지원 역할: 보고서 담당, 사용성 리뷰어, QA
 - 권위 범위: 3주차 실행 순서, 병렬 작업과 통합 Gate
 
-이 문서는 Data 02, Backend 06, Frontend 04와 Integration 03의 상세 Forest
+이 문서는 Data 02, Integration 03 Policy Search Data Foundation,
+Backend 06, Frontend 04와 Integration 04 Release 1 Acceptance의 상세 Forest
 계획을 대신하지 않는다. 각 Forest 구현 전에는 담당 계획을 생성·승인하고
 `develop_plan/README.md`와 `docs/index.md`에 색인을 추가한다.
 
@@ -36,7 +37,8 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 - `NormalizedProgram` 1.0.0, Policy DB 매핑과 공개 Policy API 현재 계약 확인
 - 온통청년·복지로 API 키를 로그·문서·명령 인자에 노출하지 않는 주입 방법 확인
 - PostgreSQL Migration 적용 환경과 실제 데이터용 Runtime 경로 준비
-- Data 02, Backend 06, Frontend 04, Integration 03의 담당자와 상세 계획 확정
+- Data 02, Integration 03, Backend 06, Frontend 04, Integration 04의
+  담당자와 상세 계획 확정
 
 현재 브랜치가 `fix/backend/week2-hardening`이면 새 3주차 구현을 누적하지
 않는다. 2주차 결과를 `develop`에 병합한 뒤 최신 `develop`에서 Forest 단위
@@ -49,11 +51,13 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 - 두 Source의 제한 수집, Raw 저장, 정규화와 검증이 구현돼 있다.
 - 저장된 Runtime Raw를 PostgreSQL로 재처리하는 CLI가 구현돼 있다.
 - canonical Seed → PostgreSQL → Policy API → React UI 통합은 검증됐다.
-- 현재 환경에는 `runtime/raw`가 없어 실제 Runtime DB 적재 smoke는 완료되지
-  않았다.
+- Data 02 DT1에서 Git 제외 `runtime/raw`에 실제 표본 25개를 저장했지만
+  Runtime DB 적재 smoke는 완료되지 않았다.
 - 전체 또는 릴리스 범위 pagination과 자동 주기 적재는 구현하지 않았다.
 - 공개 Policy API에는 자유 `keyword`와 `age` query가 없다.
 - Frontend 검색은 최대 100건을 받은 뒤 문장 전체 포함 여부를 검사한다.
+- 현재 `regions` JSONB exact match는 상위 지역·전국·미확인·제외와
+  행정구역 개편을 표현하지 못하고 일부 Source 검색 key는 Raw에만 남는다.
 
 따라서 합성 Seed 통합이나 기존 client-only 검색을 Release 1 완료 증거로
 사용하지 않는다.
@@ -62,6 +66,8 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 
 ### Data
 
+- Source 검색 key를 Source 중립 summary·keywords·대상·지역 계약으로 변환
+- 행정구역 기준정보와 지역 code mapping
 - Source별 pagination·호출 한도·이용 조건과 릴리스 수집 범위 확정
 - 실제 정책 Raw 수집, 정규화·검증과 PostgreSQL 초기 적재
 - 재수집·재처리의 idempotency, 중단·실패와 upsert 검증
@@ -70,6 +76,7 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 
 ### Backend
 
+- 행정구역·정책 관계, search projection, Migration과 3값 판정 primitive
 - 한국어 자연어 원문을 결정적인 규칙으로 지역·연령·카테고리·핵심어로 해석
 - `keyword`, `region`, `age`, `category`, `status`, pagination과 정렬 계약
 - PostgreSQL 기반 서버 검색 Repository·Service·API
@@ -123,6 +130,7 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 
 ```text
 W3-D0 실제 데이터 표본·분포 확인
+  → W3-PF 검색 데이터 기반·Migration Gate
   → W3-G1 검색 의미·API 계약 승인
   → W3-B2 Backend 검색 API 완료
   → W3-F2 Frontend 실제 API 연결
@@ -139,16 +147,16 @@ W3-D0 실제 데이터 표본·분포 확인
 | Data | Backend | Frontend | Team Leader·지원 |
 | --- | --- | --- | --- |
 | Source pagination·할당량 조사 | 현재 Repository·API·자연어 해석 변경 지점 조사 | 해석 조건·검색 이유 UI prototype | 인수 기준·golden query·QA 항목 준비 |
-| 대표 실제 표본 수집 | query DTO·테스트 골격 초안 | Mock query state·pagination UI | 보고서 증빙 양식 준비 |
-| 필드·품질 분포 분석 | index 후보와 실패 경계 조사 | loading·empty·error 회귀 준비 | 역할·브랜치·통합 환경 확인 |
+| 대표 실제 표본·Source key lineage | 지역 DB·search projection 후보 | Mock query state·pagination UI | ADR·Schema 소비 Gate 준비 |
+| 필드·품질 분포·지역 기준정보 조사 | Migration·index와 실패 경계 조사 | loading·empty·error 회귀 준비 | 역할·브랜치·통합 환경 확인 |
 
 ### 선행 결과를 기다려야 하는 작업
 
 | 후속 작업 | 필요한 선행 결과 |
 | --- | --- |
-| 지역 계층·전국 포함 규칙 확정 | Data 실제 지역 표현과 코드 분포 |
+| 지역 계층·전국 포함 규칙 확정 | Integration 03 region reference·coverage 계약 |
 | 연령 조건 미상 정책 포함 규칙 | 실제 `age_min`·`age_max`·원문 누락 분포 |
-| Backend 검색 의미와 index 확정 | 대표 표본, 예상 전체 건수와 검색 계약 |
+| Backend 검색 의미와 index 확정 | Integration 03 판정 primitive·projection, 대표 표본과 예상 전체 건수 |
 | Frontend 실제 API 연결 | Backend query·응답 계약 승인과 endpoint 준비 |
 | golden query 기대 정책 고정 | 실제 DB의 진행 중 정책과 출처 확인 |
 | Release 1 Browser·E2E | Data 적재, Backend 검색, Frontend 연결 완료 |
@@ -176,12 +184,36 @@ W3-D0 실제 데이터 표본·분포 확인
 - 비밀 주입, PostgreSQL과 Runtime 경로가 준비됨
 - 각 작업의 담당과 완료 증거 위치가 정해짐
 
+### Phase 0.5 - 검색 데이터 기반
+
+[Integration 03 계획](../develop_plan/integration/03_policy_search_data_foundation.md)의
+PSF0~PSF8을 수행한다.
+
+- Source key → 공통 검색 필드 lineage와 `summary`·keywords·대상 mapping
+- `nationwide|regional|unknown`과 include·exclude 지역 불변식
+- versioned 행정구역 code·parent·alias 기준정보
+- Policy·지역 관계와 Korean search projection Migration
+- Importer transaction·idempotency와 3값 판정 primitive
+- 기존 목록·상세 DTO, Fixture·Seed와 Frontend 소비 호환
+
+#### Gate GF - 검색 데이터 기반 승인
+
+- Schema·`null`·빈 배열·enum과 공개 API 영향이 세 영역에서 확인됨
+- 빈 DB·기존 데이터 DB Migration과 downgrade가 통과함
+- 천안·충남·전국·미확인·타 지역·exclude 판정 테스트가 통과함
+- 실제 DT1 Raw 재생에서 검색 key 유실과 추정값 생성이 없음
+- Backend 06과 Data 02가 같은 DB·projection 계약을 소비할 수 있음
+
+Gate GF 전에는 최종 지역 query와 실제 snapshot 적재를 완료로 처리하지
+않는다.
+
 ### Phase 1 - 검색 계약 공동 확정
 
 Data 표본을 바탕으로 Data·Backend·Frontend와 Team Leader가 다음을 결정한다.
 
 - 검색 대상 필드와 `keyword` 결합 방식
 - 지역 표준 값, 시·도/시·군·구와 전국 정책 포함 관계
+- 지역 미상의 3값 판정과 사용자 미확인 조건
 - `age`와 `age_min`·`age_max` 비교
 - 연령 조건 미상 정책의 포함·표시 규칙
 - 기본 `status`, partial 노출과 마감·예정 표시
@@ -205,7 +237,7 @@ G1 전에도 prototype과 테스트 골격은 만들 수 있지만 실제 계약
 
 #### Data
 
-- `W3-D1`: 승인된 릴리스 범위 pagination·중단·재시도 구현
+- `W3-D1`: Integration 03 계약을 사용한 릴리스 범위 pagination·중단·재시도 구현
 - `W3-D2`: 실제 Raw 수집·정규화·검증과 PostgreSQL bootstrap
 - `W3-D3`: 재실행 idempotency, 중복·수정과 품질 보고 검증
 
@@ -352,7 +384,8 @@ git status --short
 ## 위험과 결정 필요 사항
 
 - 온통청년 공식 호출 한도와 오류 payload가 아직 확인되지 않았다.
-- 온통청년 지역 코드를 표준 이름으로 바꿀 고정 code table이 필요할 수 있다.
+- 온통청년 지역 코드를 표준 이름으로 바꿀 권위 있는 versioned code table이
+  필요하다.
 - 기존 실제 수집 20건은 모두 partial이었으므로 사용자 기본 노출 가능한 실제
   정책 수가 부족할 수 있다.
 - API 할당량에 따라 릴리스 수집 범위를 조정해야 할 수 있다.
@@ -365,8 +398,9 @@ git status --short
 
 ## 인계사항 발생 조건
 
-현재 3주차 시작 전 활성 인계사항은 없다. 다음 중 하나가 실제로 발생하면
-요청 범위를 넘어 임의 수정하지 않고 `docs/index.md` 인계 보드에 기록한다.
+DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03 구현이 필요한
+활성 인계사항이다. 다음 중 추가 차단이 실제로 발생하면 요청 범위를 넘어
+임의 수정하지 않고 `docs/index.md` 인계 보드에 기록한다.
 
 - 실제 Source 필드와 Schema·DB·API 계약 충돌
 - `null`, 빈 배열, enum 또는 지역·연령 규칙 변경 필요
@@ -380,6 +414,7 @@ git status --short
 
 - [ ] 2주차 결과가 `develop`에 병합되고 3주차 Forest 계획이 승인됨
 - [ ] 대표 실제 표본과 데이터 분포 확인
+- [ ] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [ ] Gate G1 검색 계약 공동 승인
 - [ ] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
 - [ ] 재수집·재처리 idempotency와 품질 보고 검증
@@ -402,6 +437,7 @@ git status --short
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
 - [Policy Data Database Integration](../develop_plan/integration/02_policy_data_database_integration.md)
+- [Policy Search Data Foundation](../develop_plan/integration/03_policy_search_data_foundation.md)
 - [Policy API 계약](../../api/policies.md)
 - [Policy DB 매핑](../../architecture/policy_database_mapping.md)
 - [Fixture와 Seed 계약](../../data/fixture_seed_contract.md)

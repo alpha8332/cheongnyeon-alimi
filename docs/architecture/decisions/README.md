@@ -3,6 +3,11 @@
 이 디렉터리는 시스템의 구조, 책임 경계와 운영 방식에 장기적인 영향을 주는
 결정을 Architecture Decision Record(ADR)로 관리한다.
 
+## 현재 ADR
+
+- [ADR 0001 정책 검색 데이터 기반](0001-policy-search-data-foundation.md):
+  `proposed`, Source 중립 검색 필드와 행정구역·정책 관계·projection
+
 ## ADR이 필요한 변경
 
 - 데이터 파이프라인 계층 또는 공통 계약 변경

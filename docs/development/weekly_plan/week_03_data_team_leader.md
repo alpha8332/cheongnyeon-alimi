@@ -29,6 +29,8 @@ DT0 시작 기준·담당·Forest 확인
   ↓
 DT1 Source preflight·대표 표본·릴리스 범위
   ↓
+PSF0~PSF8 검색 데이터·지역·DB 기반
+  ↓
 DT2 검색 계약 공동 승인
   ├──────────────┬──────────────┐
   ↓              ↓              ↓
@@ -44,8 +46,10 @@ DT6 golden query·Release 1 판정
 
 DT1을 수행하는 동안 Backend의 자연어 해석 코드 조사·테스트 골격과
 Frontend의 해석 조건·검색 이유 UI prototype은 병렬로 진행할 수 있다.
-DT2 검색 계약이 승인된
-뒤에는 세 영역이 본 구현을 병렬로 진행한다.
+DT1에서 현재 지역·검색 필드 구조의 실제 충돌이 확인됐으므로
+[Integration 03 검색 데이터 기반](../develop_plan/integration/03_policy_search_data_foundation.md)을
+먼저 수행한다. 이 기반과 DT2 검색 계약이 승인된 뒤 세 영역이 본 구현을
+병렬로 진행한다.
 
 ## Slice DT0 - 시작 기준과 실행 경계 확정
 
@@ -73,7 +77,8 @@ DT2 검색 계약이 승인된
 
 #### Team Leader 역할
 
-- Data 02, Backend 06, Frontend 04, Integration 03 상세 Forest 계획 작성
+- Data 02, Integration 03, Backend 06, Frontend 04, Integration 04 상세
+  Forest 계획 작성
   필요 여부와 담당자를 확인한다.
 - Backend·Frontend 담당자에게 3주차 시작 기준과 Critical Path를 공유한다.
 - 보고서 담당, 사용성 리뷰어와 QA가 사용할 증빙·결함 기록 위치를 정한다.
@@ -178,6 +183,41 @@ DT1 전체가 끝나기 전에 Backend와 Frontend는 다음을 진행할 수 �
 - Backend의 지역·연령 검색 의미와 index 설계
 - golden query에 맞는 실제 정책 후보 조사
 
+## 독립 Forest PSF0~PSF8 - 검색 데이터 기반
+
+### 목적
+
+DT1에서 확인한 Source 검색 key 유실, 온통청년 지역 code 미매핑, 복지로
+지역·연령·기간 미상과 현재 JSONB exact region 구조를 해결한다. 상세 Slice,
+Gate와 검증은
+[Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
+따른다.
+
+### 내가 수행할 역할
+
+#### Data
+
+- Source key lineage와 summary·keywords·생애주기·대상자 mapping
+- 권위 있는 행정구역 code·계층·별칭·유효기간 기준정보
+- coverage와 포함·제외 지역의 Schema·Fixture·Seed
+- 실제 DT1 Raw 오프라인 재생과 품질 분포
+
+#### Team Leader
+
+- Data·Backend·Frontend의 Schema·DB·API 소비 Gate
+- Backend의 Migration·관계 모델·search projection 결과 확인
+- `nationwide|regional|unknown`과 `match|mismatch|unknown` 의미 승인
+- stacked 브랜치의 기반·merge target·검증 범위 관리
+
+### 선행·후속
+
+- 선행: DT1 completed
+- 병렬 가능: PSF2 지역 기준정보와 PSF4 Source mapping, Backend 테스트 골격,
+  Frontend 검색 이유·미확인 조건 prototype
+- 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
+  Backend 06 최종 query
+- 후속: PSF8 완료·기반 브랜치 병합 후 DT2 재개
+
 ## Slice DT2 - 검색 계약 공동 결정과 Gate G1 주관
 
 ### 목적
@@ -188,6 +228,7 @@ Data 표본, Backend 자연어 해석 초안과 Frontend 표시 prototype을 하
 ### 선행 조건
 
 - DT1의 대표 표본·분포와 릴리스 범위 초안
+- Integration 03 PSF0~PSF8 검색 데이터 기반 완료
 - Backend `W3-B0`의 API·Repository 초안
 - Frontend `W3-F0`의 해석 조건 표시·query state 초안
 
@@ -500,7 +541,8 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 
 | 내가 수행할 작업 | 기다려야 하는 다른 담당 결과 | 기다리는 동안 가능한 내 작업 |
 | --- | --- | --- |
-| DT2 검색 계약 승인 | Backend `W3-B0` API 초안, Frontend `W3-F0` query·UI 초안 | DT3 pagination·호출 제어 준비 |
+| PSF0~PSF8 검색 데이터 기반 | Backend Migration·projection, Frontend 소비 검토 | Data Schema·지역 기준정보·Source mapping |
+| DT2 검색 계약 승인 | Integration 03 완료, Backend `W3-B0` API 초안, Frontend `W3-F0` query·UI 초안 | DT3 pagination·호출 제어 준비 |
 | Backend 실제 분포·index 인계 | Backend 담당이 소비할 query 설계 질문 | Data 분포·cardinality와 경계 사례 정리 |
 | DT5 실제 검색 HTTP | Backend `W3-B2` endpoint·테스트 | Data 품질 수정·재적재·문서화 |
 | DT5 Frontend Browser | Frontend `W3-F2` 실제 API 연결 | Backend HTTP 결과와 golden 후보 검증 |
@@ -511,11 +553,13 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 Backend·Frontend가 기다리지 않게 다음 순서로 공유한다.
 
 1. 대표 데이터의 지역·연령·상태·품질 분포
-2. 릴리스 수집 범위와 예상 데이터 규모
-3. 검색 계약 결정 질문과 Data 권고안
-4. 실제 snapshot DB 준비 여부
-5. 경계 사례와 golden query 후보
-6. 통합 중 Data 결함 수정 결과
+2. Source key lineage와 검색 데이터 기반 계약
+3. 행정구역 기준정보·coverage·지역 판정 사례
+4. 릴리스 수집 범위와 예상 데이터 규모
+5. 검색 계약 결정 질문과 Data 권고안
+6. 실제 snapshot DB 준비 여부
+7. 경계 사례와 golden query 후보
+8. 통합 중 Data 결함 수정 결과
 
 ## 테스트와 검증
 
@@ -570,6 +614,7 @@ git status --short
 
 - [ ] Source preflight·호출 예산·릴리스 범위 승인
 - [x] 대표 실데이터 분포와 검색 계약 질문 공유
+- [ ] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [ ] Gate G1 Data 계약 공동 승인
 - [ ] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
 - [ ] 재실행 idempotency·transaction·중복 방지 검증
@@ -581,6 +626,7 @@ git status --short
 
 - [x] 2주차 병합 기준과 3주차 Forest·담당 확인
 - [x] Gate G0 시작 승인
+- [ ] Integration 03 PSF0~PSF8 완료·병합 승인
 - [ ] Gate G1 검색 계약 승인
 - [ ] Gate G2 세 영역 준비 증거 확인
 - [ ] Gate G3 실제 DB → API → UI 통합 확인
@@ -593,6 +639,7 @@ git status --short
 - [3주차 전체 상세 계획](week_03_release_1.md)
 - [주차별 상세 실행 계획 안내](README.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
+- [Policy Search Data Foundation](../develop_plan/integration/03_policy_search_data_foundation.md)
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
 - [Data Pipeline 개발 기록](../development_notes/data/data_pipeline.md)
 - [Policy Data Database Integration 개발 기록](../development_notes/integration/policy_data_database_integration.md)

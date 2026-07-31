@@ -18,6 +18,8 @@
 - [Policy 데이터베이스 매핑](policy_database_mapping.md)
 - [CollectionRun 데이터베이스 계약](collection_run_database.md)
 - [아키텍처 결정 기록](decisions/README.md)
+- [ADR 0001 정책 검색 데이터 기반](decisions/0001-policy-search-data-foundation.md):
+  Source 중립 검색 필드, 행정구역 계층·적용 관계와 search projection 제안
 
 ## 문서 분류 기준
 

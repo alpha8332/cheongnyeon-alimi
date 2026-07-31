@@ -75,6 +75,11 @@
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
+- [Policy Search Data Foundation Forest 계획](development/develop_plan/integration/03_policy_search_data_foundation.md):
+  Source 중립 검색 필드, 행정구역 계층·적용 관계, search projection과
+  Migration의 Release 1 공통 기반
+- [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
+  장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
@@ -122,7 +127,7 @@ preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-DATA-SEMANTICS` | review-pending | Data·Backend·Frontend | DT2·Gate G1에서 온통청년 지역 코드, 복지로 누락 지역·연령·기간, 신청 상태와 `partial` 노출 의미를 공동 승인 | [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md), [Data 02 계획](development/develop_plan/data/02_release_dataset_bootstrap.md) |
+| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Data·Backend·Frontend | Integration 03 PSF0~PSF8에서 Source 중립 검색 필드·지역 계층·DB 관계·projection을 구현·검증한 뒤 Data 02 DT2·Gate G1에서 노출 의미 승인 | [검색 데이터 기반 계획](development/develop_plan/integration/03_policy_search_data_foundation.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

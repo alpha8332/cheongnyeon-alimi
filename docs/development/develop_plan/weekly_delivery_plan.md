@@ -29,7 +29,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1주차 | Source·Schema·Fixture·Seed 기준선 | FastAPI·DB 기반과 Policy 계약 | React·TypeScript·Mock UI 기반 | 공통 계약·문서 체계와 병렬 개발 조정 | 목표·구조·초기 근거 정리 | 미배정, 사용자 시나리오 후보 검토 | 미배정, 테스트 가능성 검토 |
 | 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
-| 3주차 | 실데이터 릴리스 범위 수집·DB bootstrap·품질 보고 | 자연어 해석·구조화 조건·서버 검색·관련도와 성능 | 자연어 전달·해석 조건·검색 이유·미확인 조건 UI와 pagination | 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
+| 3주차 | 실데이터 근거·Source 검색 필드·지역 정규화·DB bootstrap·품질 보고 | 지역 관계·search projection 공동 기반, 자연어 해석·서버 검색·성능 | 데이터·API 소비 검토, 자연어 조건·검색 이유·미확인 조건 UI | 검색 데이터 기반 Gate, 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
 | 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 기능별 설계 결정·화면·테스트 근거 정리 | 5주차 사용자 시나리오와 평가 항목 준비 | `v0.5.0` 테스트 계획·데이터·환경 준비 |
 | 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 동결, 결함 triage와 `v0.5.0` 결정 | 리뷰·QA 결과와 수정 근거를 Release 2 자료에 반영 | 실제 사용자 시나리오 수행·재확인 | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
 | 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
@@ -39,7 +39,7 @@
 ```text
 1주차 기반 계약
   → 2주차 DB·API·UI 통합과 안전성
-  → 3주차 실데이터 검색 MVP
+  → 3주차 검색 데이터 기반·실데이터 검색 MVP
   → v0.1.0
   → 4주차 사용자·관리자 기능
   → 5주차 전체 기능 통합·리뷰어 안정화
@@ -83,8 +83,8 @@ completed
 
 ### 남은 차이
 
-- 이 PC에는 운영 `runtime/raw`가 없어 실제 Runtime DB 적재 smoke를 성공으로
-  기록하지 않았다.
+- Data 02 DT1에서 `runtime/raw` 실제 표본 25개를 수집했지만 Runtime DB에는
+  아직 적재하지 않았다.
 - 전체 또는 릴리스 범위 수집과 자동 주기 적재는 미구현이다.
 - Backend keyword·age 검색은 미구현이며 Frontend 검색은 client-only다.
 
@@ -101,6 +101,8 @@ completed
 
 ### Data
 
+- DT1 실제 표본을 근거로 Integration 03 검색 데이터 기반의 Source mapping과
+  지역 계약을 공동 구현한다.
 - Source별 pagination, 할당량과 릴리스 수집 범위를 확정한다.
 - 실제 정책 Raw를 수집하고 정규화·검증·PostgreSQL에 초기 적재한다.
 - 수동 재수집·재처리의 idempotency와 실패 복구를 검증한다.
@@ -109,6 +111,8 @@ completed
 
 ### Backend
 
+- Data와 함께 Source 중립 search projection, 행정구역·정책 관계,
+  Migration과 3값 판정 primitive를 먼저 구현한다.
 - 자연어 원문 `q`를 결정적인 한국어 규칙으로 해석해 지역, 나이,
   주거·월세 등 카테고리와 핵심어를 구조화한다.
 - `keyword`, region, age, category, status, pagination과 기본 정렬 계약을
@@ -130,6 +134,8 @@ completed
 
 ### Team Leader - Integration
 
+- [Policy Search Data Foundation](integration/03_policy_search_data_foundation.md)의
+  ADR·Schema·Migration·소비 호환 Gate를 먼저 주관한다.
 - 실제 DB → FastAPI → React 흐름을 로컬 HTTP와 Browser로 검증한다.
 - 다음 golden query의 실제 기대 정책과 이유를 snapshot 기준으로 기록한다.
 
