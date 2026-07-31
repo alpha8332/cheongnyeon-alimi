@@ -579,8 +579,8 @@ git status --short
 
 ### Team Leader
 
-- [ ] 2주차 병합 기준과 3주차 Forest·담당 확인
-- [ ] Gate G0 시작 승인
+- [x] 2주차 병합 기준과 3주차 Forest·담당 확인
+- [x] Gate G0 시작 승인
 - [ ] Gate G1 검색 계약 승인
 - [ ] Gate G2 세 영역 준비 증거 확인
 - [ ] Gate G3 실제 DB → API → UI 통합 확인

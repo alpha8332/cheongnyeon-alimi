@@ -73,11 +73,12 @@ main
 
 | Domain | 범위 |
 | --- | --- |
-| `collector` | 외부 데이터 수집과 공통 정제 파이프라인 |
+| `collector` | 외부 Source 연동, HTTP 호출과 Raw 수집 실행 |
+| `data` | 추출·정규화·검증, 실데이터 bootstrap과 품질 관리 |
 | `backend` | FastAPI와 서버 비즈니스 로직 |
 | `frontend` | React 사용자·관리자 UI |
 | `schema` | Raw, 정규화와 API 데이터 계약 |
-| `database` | PostgreSQL, ERD, Seed와 Migration |
+| `database` | PostgreSQL 구조, ERD, 저장 계층과 Migration |
 | `deploy` | Docker, Nginx, 환경 설정과 배포 |
 | `governance` | 협업과 오픈소스 운영 정책 |
 | `docs` | 여러 영역에 걸친 문서 시스템 |

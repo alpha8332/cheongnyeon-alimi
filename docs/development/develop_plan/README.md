@@ -10,6 +10,7 @@
 | --- | --- | --- | --- |
 | Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
 | Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | completed |
+| Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | in-progress |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
@@ -46,7 +47,7 @@
 | 우선순위 | 작업 또는 조건부 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
 | 완료 | 2주차 Backend 안전성·Router advisory | Backend 03과 Frontend 02 완료 | `fix/backend/week2-hardening` |
-| 1 | `R1-REAL-DATA-BOOTSTRAP` | 실제 Source 릴리스 범위 수집·DB 초기 적재 | `feature/collector/release-dataset` |
+| 1 | `R1-REAL-DATA-BOOTSTRAP` | 실제 Source 릴리스 범위 수집·DB 초기 적재 | `feature/data/release-dataset-bootstrap` |
 | 2 | `R1-POLICY-SEARCH` | Backend 서버 검색 → Frontend 자연어 조건 연결 | `feature/backend/policy-search`, `feature/frontend/policy-search` |
 | 3 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수 검증 | 상세 Forest 계획에서 확정 |
 | 4 | `BE-ADMIN-RUN-HISTORY` | `v0.1.0` 뒤 Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |

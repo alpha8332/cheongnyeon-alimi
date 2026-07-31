@@ -55,6 +55,8 @@
   실데이터 수집·적재와 통합·릴리스 판정 Slice
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
+- [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
+  Release 1 실제 정책 수집·PostgreSQL 적재와 품질 기준선
 - [Policy Discovery Forest 계획](development/develop_plan/frontend/01_policy_discovery.md)
 - [React Router Advisory Review Forest 계획](development/develop_plan/frontend/02_react_router_advisory.md):
   현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
@@ -77,6 +79,8 @@
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
+- [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):
+  DT0 실행 환경과 실데이터 수집·적재 검증 결과
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성

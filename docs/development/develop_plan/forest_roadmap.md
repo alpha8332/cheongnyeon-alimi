@@ -32,7 +32,7 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | Data 02 Release Dataset Bootstrap | Data | Backend 소비 검토 | 계획 필요 | 두 Source 릴리스 범위 순회, 실제 Raw·정규화·DB 초기 적재, 재실행·품질 보고 | Data 01, Integration 02 |
+| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend 소비 검토 | in-progress | 두 Source 릴리스 범위 순회, 실제 Raw·정규화·DB 초기 적재, 재실행·품질 보고 | Data 01, Integration 02 |
 | 2 | Backend 06 Policy Search | Backend | Data 계약·Frontend 소비 검토 | 계획 필요 | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Data 02의 실제 분포 확인 |
 | 3 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Backend 06 계약 승인 |
 | 4 | Integration 03 Release 1 Acceptance | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Backend 06, Frontend 04 |
@@ -117,7 +117,7 @@ Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockf
 구현 브랜치는 Forest 단위로 만든다. 권장 예시는 다음과 같다.
 
 ```text
-feature/collector/release-dataset
+feature/data/release-dataset-bootstrap
 feature/backend/policy-search
 feature/frontend/policy-search
 feature/backend/admin-run-management
