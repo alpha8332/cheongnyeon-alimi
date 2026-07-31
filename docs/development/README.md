@@ -15,6 +15,8 @@
 
 - [개발 계획](develop_plan/README.md): 아직 완료하지 않은 Forest의 범위,
   Slice와 완료 기준, 여러 Forest의 Release·주차별 조정 로드맵
+- [주차별 상세 실행 계획](weekly_plan/README.md): 해당 주차의 선행 관계,
+  병렬 작업, 역할별 책임과 통합 Gate
 - [개발 기록](development_notes/README.md): Forest에서 실제로 구현하고
   검증한 상세 결과
 - [문서 품질 검증](documentation_validation.md): 문서 검증 명령과 검사 규칙

@@ -34,6 +34,8 @@
   의존성과 권장 브랜치 단위
 - [주차별 실행 계획](weekly_delivery_plan.md): 1~6주차 인계 순서와
   릴리스별 검증 게이트
+- [주차별 상세 실행 계획](../weekly_plan/README.md): 실제 주차의 병렬 작업,
+  역할별 책임과 단계별 Gate
 
 ## 다음 Forest 실행 순서
 

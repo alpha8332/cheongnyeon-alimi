@@ -1,0 +1,400 @@
+# 3주차 - 실데이터 정책 검색과 Release 1
+
+## 계획 정보
+
+- 상태: approved
+- 대상 Release: `v0.1.0`
+- 실행 주차: 3주차
+- 주 담당: Data, Backend, Frontend
+- 통합·릴리스 담당: Team Leader
+- 지원 역할: 보고서 담당, 사용성 리뷰어, QA
+- 권위 범위: 3주차 실행 순서, 병렬 작업과 통합 Gate
+
+이 문서는 Data 02, Backend 06, Frontend 04와 Integration 03의 상세 Forest
+계획을 대신하지 않는다. 각 Forest 구현 전에는 담당 계획을 생성·승인하고
+`develop_plan/README.md`와 `docs/index.md`에 색인을 추가한다.
+
+## 목표
+
+실제로 진행 중인 정책 데이터를 PostgreSQL에 적재하고, 사용자가 일반적인
+한국어 문장이나 명시적 조건으로 검색했을 때 관련 정책 목록과 상세를 확인할
+수 있는 `v0.1.0` 후보를 만든다.
+
+사용자 검색 요청은 PostgreSQL만 조회한다. 온통청년·복지로 API 호출은 별도
+수집·적재 과정에서만 수행하며 검색 요청마다 외부 API를 호출하지 않는다.
+
+## 시작 조건
+
+다음 조건을 확인한 뒤 3주차 구현을 시작한다.
+
+- Backend 03과 Frontend 02를 포함한 2주차 결과가 `develop`에 병합됨
+- Data 01과 Integration 02의 완료 계약·개발 기록 확인
+- `NormalizedProgram` 1.0.0, Policy DB 매핑과 공개 Policy API 현재 계약 확인
+- 온통청년·복지로 API 키를 로그·문서·명령 인자에 노출하지 않는 주입 방법 확인
+- PostgreSQL Migration 적용 환경과 실제 데이터용 Runtime 경로 준비
+- Data 02, Backend 06, Frontend 04, Integration 03의 담당자와 상세 계획 확정
+
+현재 브랜치가 `fix/backend/week2-hardening`이면 새 3주차 구현을 누적하지
+않는다. 2주차 결과를 `develop`에 병합한 뒤 최신 `develop`에서 Forest 단위
+작업 브랜치를 시작한다.
+
+## 현재 기준선
+
+3주차 시작 전 확인된 사실은 다음과 같다.
+
+- 두 Source의 제한 수집, Raw 저장, 정규화와 검증이 구현돼 있다.
+- 저장된 Runtime Raw를 PostgreSQL로 재처리하는 CLI가 구현돼 있다.
+- canonical Seed → PostgreSQL → Policy API → React UI 통합은 검증됐다.
+- 현재 환경에는 `runtime/raw`가 없어 실제 Runtime DB 적재 smoke는 완료되지
+  않았다.
+- 전체 또는 릴리스 범위 pagination과 자동 주기 적재는 구현하지 않았다.
+- 공개 Policy API에는 자유 `keyword`와 `age` query가 없다.
+- Frontend 검색은 최대 100건을 받은 뒤 문장 전체 포함 여부를 검사한다.
+
+따라서 합성 Seed 통합이나 기존 client-only 검색을 Release 1 완료 증거로
+사용하지 않는다.
+
+## 범위
+
+### Data
+
+- Source별 pagination·호출 한도·이용 조건과 릴리스 수집 범위 확정
+- 실제 정책 Raw 수집, 정규화·검증과 PostgreSQL 초기 적재
+- 재수집·재처리의 idempotency, 중단·실패와 upsert 검증
+- 실제 데이터의 지역·연령·카테고리·신청 상태와 품질 분포 보고
+- golden query 관련 실제 정책 존재 여부와 출처 확인
+
+### Backend
+
+- `keyword`, `region`, `age`, `category`, `status`, pagination과 정렬 계약
+- PostgreSQL 기반 서버 검색 Repository·Service·API
+- 전국·상위 지역·시군구, 연령 조건 미상과 partial 노출 의미
+- 실제 데이터 기준 query plan·index 검토
+- 단위·PostgreSQL·API 통합 테스트
+
+### Frontend
+
+- 한국어 자연어에서 지역·연령·카테고리·핵심어를 결정적으로 추출
+- 추출 조건 표시와 사용자 수정
+- Backend 검색 query·pagination·정렬 연결
+- loading, empty, error, partial과 상세 화면 유지
+- Mock 계약 테스트와 실제 API Browser 검증
+
+### Integration·지원 역할
+
+- 실제 DB → FastAPI → React E2E
+- golden query 기대 결과와 Release 1 판정
+- 검증·화면·데이터 품질 근거 정리
+- 사용성 사전 확인과 검색 smoke
+
+## 범위 밖
+
+- 개인화 추천 점수와 추천 이유
+- 즐겨찾기, 알림과 캘린더
+- 관리자 인증·실행 이력·수동 실행 UI
+- 자동 Scheduler와 별도 worker 플랫폼
+- LLM·벡터 검색
+- Production Docker·Nginx·CI/CD
+
+범위 밖 기능이 없어도 `v0.1.0`의 실데이터 검색 완료 조건은 낮추지 않는다.
+
+## 실행 원칙
+
+- 실제 Source 필드를 확인하기 전에 지역·연령 검색 의미를 임의로 고정하지
+  않는다.
+- 전체 적재가 끝날 때까지 Backend·Frontend 준비 작업을 멈추지 않는다.
+- 대표 실데이터 표본과 분포가 확인되면 공동 검색 계약을 확정하고 병렬
+  구현한다.
+- Backend와 Frontend는 승인된 API 계약을 사용하고 서로 다른 임시 parameter를
+  만들지 않는다.
+- 실제 정책이 없으면 검색 결과를 만들거나 적용 가능성을 단정하지 않는다.
+- Schema, Fixture, Seed, `null`, 빈 배열 또는 enum 변경이 필요하면 현재
+  주차 범위를 자동 확장하지 않고 Data·Backend·Frontend 영향을 공동 검토한다.
+
+## 선행 관계와 Critical Path
+
+### Critical Path
+
+```text
+W3-D0 실제 데이터 표본·분포 확인
+  → W3-G1 검색 의미·API 계약 승인
+  → W3-B2 Backend 검색 API 완료
+  → W3-F2 Frontend 실제 API 연결
+  → W3-I1 실제 데이터 E2E
+  → W3-I2 golden query·Browser 검증
+  → W3-G4 v0.1.0 판정
+```
+
+이 경로가 지연되면 Data 전체 적재나 UI 골격이 완료돼도 Release 1을 완료할
+수 없다.
+
+### 처음부터 병렬 가능한 작업
+
+| Data | Backend | Frontend | Team Leader·지원 |
+| --- | --- | --- | --- |
+| Source pagination·할당량 조사 | 현재 Repository·API 변경 지점 조사 | 자연어 parser·조건 UI prototype | 인수 기준·golden query·QA 항목 준비 |
+| 대표 실제 표본 수집 | query DTO·테스트 골격 초안 | Mock query state·pagination UI | 보고서 증빙 양식 준비 |
+| 필드·품질 분포 분석 | index 후보와 실패 경계 조사 | loading·empty·error 회귀 준비 | 역할·브랜치·통합 환경 확인 |
+
+### 선행 결과를 기다려야 하는 작업
+
+| 후속 작업 | 필요한 선행 결과 |
+| --- | --- |
+| 지역 계층·전국 포함 규칙 확정 | Data 실제 지역 표현과 코드 분포 |
+| 연령 조건 미상 정책 포함 규칙 | 실제 `age_min`·`age_max`·원문 누락 분포 |
+| Backend 검색 의미와 index 확정 | 대표 표본, 예상 전체 건수와 검색 계약 |
+| Frontend 실제 API 연결 | Backend query·응답 계약 승인과 endpoint 준비 |
+| golden query 기대 정책 고정 | 실제 DB의 진행 중 정책과 출처 확인 |
+| Release 1 Browser·E2E | Data 적재, Backend 검색, Frontend 연결 완료 |
+
+## 단계별 실행과 Gate
+
+### Phase 0 - 시작 준비와 대표 표본
+
+#### 병렬 작업
+
+- `W3-T0` Team Leader: 2주차 `develop` 병합 SHA, 담당자, Forest 계획과
+  Release 1 체크리스트 확인
+- `W3-D0` Data: 두 Source preflight, pagination·할당량 확인, 최소 대표 표본
+  수집과 필드·품질 분포 작성
+- `W3-B0` Backend: 현재 Policy Repository·Service·API 분석, query 계약과
+  테스트 골격 초안
+- `W3-F0` Frontend: 자연어 조건 추출 순수 함수와 조건 표시 UI prototype
+- `W3-R0` 보고서: 데이터 건수, 품질, 검색 결과, 테스트와 화면 증빙 양식 준비
+- `W3-U0` 사용성 리뷰어: golden query와 변형 사용자 문장 준비
+- `W3-Q0` QA: 정상·빈 결과·경계값·API 오류 smoke 목록 준비
+
+#### Gate G0 - 시작 확인
+
+- 2주차 병합 기준과 3주차 작업 브랜치 범위가 명확함
+- 비밀 주입, PostgreSQL과 Runtime 경로가 준비됨
+- 각 작업의 담당과 완료 증거 위치가 정해짐
+
+### Phase 1 - 검색 계약 공동 확정
+
+Data 표본을 바탕으로 Data·Backend·Frontend와 Team Leader가 다음을 결정한다.
+
+- 검색 대상 필드와 `keyword` 결합 방식
+- 지역 표준 값, 시·도/시·군·구와 전국 정책 포함 관계
+- `age`와 `age_min`·`age_max` 비교
+- 연령 조건 미상 정책의 포함·표시 규칙
+- 기본 `status`, partial 노출과 마감·예정 표시
+- 기본 정렬과 pagination
+- 자연어 추출 결과와 Backend query parameter 이름
+- 결과 없음 사유와 조건 수정 방식
+
+#### Gate G1 - 검색 계약 승인
+
+- Data 실제 표본과 분포가 근거로 연결됨
+- Backend API query·응답·오류 계약이 문서화됨
+- Frontend TypeScript query 타입과 UI 의미가 같은 계약을 사용함
+- Schema나 enum 변경 여부와 세 영역 영향이 확인됨
+- 미확정 항목은 구현을 막는지 또는 후속으로 가능한지 분류됨
+
+G1 전에도 prototype과 테스트 골격은 만들 수 있지만 실제 계약 구현을 완료로
+처리하지 않는다.
+
+### Phase 2 - 세 영역 병렬 구현
+
+#### Data
+
+- `W3-D1`: 승인된 릴리스 범위 pagination·중단·재시도 구현
+- `W3-D2`: 실제 Raw 수집·정규화·검증과 PostgreSQL bootstrap
+- `W3-D3`: 재실행 idempotency, 중복·수정과 품질 보고 검증
+
+#### Backend
+
+- `W3-B1`: 검색 request·service·repository 계약 구현
+- `W3-B2`: keyword·region·age·category·status·정렬·pagination API 구현
+- `W3-B3`: 단위·PostgreSQL·API 테스트와 실제 분포 기반 성능·index 검토
+
+#### Frontend
+
+- `W3-F1`: 자연어 조건 추출, 조건 표시·수정과 query state 구현
+- `W3-F2A`: 승인된 Mock 계약으로 pagination·상태·회귀 테스트
+- `W3-F2`: Backend endpoint 준비 후 실제 API Client 연결
+
+#### 지원
+
+- `W3-R1`: 결정·구현·검증 근거를 역할별로 수집
+- `W3-U1`: 검색 조건과 결과 이유의 이해 가능성 사전 확인
+- `W3-Q1`: 구현 중 독립 smoke와 결함 재현
+
+#### Gate G2 - 영역별 준비
+
+- Data: 실제 릴리스 범위 적재와 재실행 결과를 제시할 수 있음
+- Backend: 승인된 검색 계약의 자동 테스트와 실제 PostgreSQL 조회가 통과함
+- Frontend: Mock 소비 테스트가 통과하고 실제 API 연결 준비가 됨
+- 비밀키, Runtime Raw와 DB 파일이 Git 추적 대상에 없음
+
+### Phase 3 - 실제 데이터 연결
+
+- `W3-I0`: Migration 적용 DB에 실제 snapshot 적재
+- `W3-I1`: 실제 DB를 대상으로 Backend 검색 HTTP 검증
+- `W3-I2`: Frontend 실제 API 모드에서 검색·상세 Browser 검증
+- `W3-D4`: 통합 중 발견한 정규화·품질 문제 수정
+- `W3-B4`: 실제 query·응답·성능 문제 수정
+- `W3-F3`: 조건 전달·표시·빈 결과·오류 UI 문제 수정
+
+#### Gate G3 - Release 1 후보
+
+- 검색 요청 중 외부 Source API 호출이 발생하지 않음
+- 실제 진행 중 정책 snapshot이 PostgreSQL에 존재함
+- 실제 DB → FastAPI → React 목록·상세가 동작함
+- loading, empty, 404, 422, 500과 partial 상태가 검증됨
+- 실제 데이터 양에서 pagination과 응답 시간이 검토됨
+
+### Phase 4 - golden query와 릴리스 판정
+
+필수 golden query:
+
+```text
+천안 사는 27살 청년 월세 지원 받을 수 있나?
+```
+
+검증 항목:
+
+- `천안`이 승인된 지역 규칙으로 해석됨
+- `27살`이 연령 조건으로 전달됨
+- `월세`가 주거·월세 검색 의미로 반영됨
+- 진행 중이고 실제 적용 지역·연령에 맞는 정책이 우선됨
+- 결과 카드와 상세에서 자격·신청 기간·출처를 확인할 수 있음
+- 결과가 없으면 적용 정책을 생성하지 않고 조건과 데이터 범위 제약을 설명함
+
+지원 Source에 실제로 맞는 정책이 있는데 결과에 나타나지 않으면 릴리스 차단
+결함이다. 두 Source에 맞는 정책이 없다면 Source 추가 또는 릴리스 데이터
+범위 결정을 완료하기 전까지 golden query Gate를 통과시키지 않는다.
+
+#### Gate G4 - `v0.1.0` 판정
+
+Team Leader가 다음 증거를 확인한다.
+
+- Data, Backend, Frontend 담당 테스트 결과
+- 실제 데이터 E2E와 Browser 검증
+- QA smoke와 릴리스 차단 결함 재검증
+- 사용성 리뷰어의 조건·결과 이해도 확인
+- 보고서 담당의 데이터·검색·검증 근거
+- 문서 검증, 비밀·Runtime 산출물과 Git 상태
+
+모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
+
+## 역할별 산출물
+
+| 역할 | 필수 산출물 |
+| --- | --- |
+| Data | 릴리스 수집 범위, 실제 snapshot, 품질 분포, bootstrap·재실행 절차와 검증 |
+| Backend | 승인된 검색 API 계약, 구현, Migration·index 필요 시 변경과 자동 테스트 |
+| Frontend | 자연어 조건 추출·수정 UI, 실제 API 검색·pagination과 UI 회귀 테스트 |
+| Team Leader | Gate 판정, 통합·Browser 결과와 Release 1 결정 |
+| 보고서 | 실제 건수·품질·검색·화면·테스트 근거와 계획 변경 내역 |
+| 사용성 리뷰어 | golden query와 변형 문장 사용성 관찰·재확인 |
+| QA | 검색 정상·빈 결과·경계·실패 smoke, 결함과 수정본 재검증 |
+
+## 테스트와 검증
+
+Forest 구현 중 세부 테스트 명령이 달라지면 해당 계획과 개발 기록에 실제
+명령을 갱신한다. 현재 저장소 기준 전체 검증 후보는 다음과 같다.
+
+### Data
+
+```powershell
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py" -v
+```
+
+외부 API 호출이 없는 자동 테스트와 명시적 실제 수집을 분리한다. 실제 호출
+횟수, 성공·실패와 적재 결과는 Data 개발 기록에 남긴다.
+
+### Backend와 Integration
+
+```powershell
+.\.venv\Scripts\python.exe -B -m pytest backend/tests tests/integration -q
+```
+
+실제 PostgreSQL 통합 테스트는
+[Backend Windows 로컬 환경](../backend_local_setup.md)의 테스트 DB 경계를
+따른다.
+
+### Frontend
+
+```powershell
+Set-Location frontend
+npm test
+npm run lint
+npm run build
+```
+
+### 실제 HTTP·Browser
+
+- 실제 snapshot 기반 검색 HTTP
+- 홈 → 자연어 검색 → 결과 → 상세
+- 조건 수정과 pagination
+- 결과 없음, API 오류와 partial 표시
+- Browser console 오류와 빈 화면
+
+### 문서와 Git
+
+```powershell
+python scripts/validate_docs.py
+git diff --check
+git status --short
+```
+
+실행하지 못한 검증은 성공으로 기록하지 않고 원인과 Release 영향에 남긴다.
+
+## 위험과 결정 필요 사항
+
+- 온통청년 공식 호출 한도와 오류 payload가 아직 확인되지 않았다.
+- 온통청년 지역 코드를 표준 이름으로 바꿀 고정 code table이 필요할 수 있다.
+- 기존 실제 수집 20건은 모두 partial이었으므로 사용자 기본 노출 가능한 실제
+  정책 수가 부족할 수 있다.
+- API 할당량에 따라 릴리스 수집 범위를 조정해야 할 수 있다.
+- 실제 데이터 분포에 따라 PostgreSQL index 또는 검색 방식 변경이 필요할 수
+  있다.
+- golden query에 맞는 정책이 지원 Source에 없으면 Source 범위 결정이
+  Release 1을 막는다.
+- 자연어 조건 추출은 결정적 규칙을 기준으로 하며 LLM 정확도로 해결하지 않는다.
+
+## 인계사항 발생 조건
+
+현재 3주차 시작 전 활성 인계사항은 없다. 다음 중 하나가 실제로 발생하면
+요청 범위를 넘어 임의 수정하지 않고 `docs/index.md` 인계 보드에 기록한다.
+
+- 실제 Source 필드와 Schema·DB·API 계약 충돌
+- `null`, 빈 배열, enum 또는 지역·연령 규칙 변경 필요
+- Data 변경이 Backend·Frontend 소비를 막음
+- Backend API 계약 변경이 Frontend 구현을 막음
+- 실제 정책 부재로 Source 추가 결정 필요
+- 별도 Scheduler·worker·배포 구조가 선행돼야 하는 문제
+- 다른 담당 Forest의 변경 없이는 해결할 수 없는 릴리스 차단 결함
+
+## 완료 체크리스트
+
+- [ ] 2주차 결과가 `develop`에 병합되고 3주차 Forest 계획이 승인됨
+- [ ] 대표 실제 표본과 데이터 분포 확인
+- [ ] Gate G1 검색 계약 공동 승인
+- [ ] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
+- [ ] 재수집·재처리 idempotency와 품질 보고 검증
+- [ ] Backend 서버 검색과 실제 PostgreSQL 테스트
+- [ ] Frontend 자연어 조건·실제 API·pagination 연결
+- [ ] 실제 DB → FastAPI → React E2E
+- [ ] golden query와 변형·빈 결과·실패 시나리오
+- [ ] Browser·console 확인
+- [ ] 관련 단위·통합·Frontend 테스트 통과
+- [ ] 문서 검증과 `git diff --check` 통과
+- [ ] 비밀키·Runtime Raw·DB 파일 Git 비추적 확인
+- [ ] 보고서·사용성 리뷰·QA 근거 확인
+- [ ] Team Leader의 Gate G4 Release 1 판정
+
+## 관련 문서
+
+- [주차별 상세 실행 계획 안내](README.md)
+- [주차별 실행 계획 요약](../develop_plan/weekly_delivery_plan.md)
+- [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
+- [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
+- [Policy Data Database Integration](../develop_plan/integration/02_policy_data_database_integration.md)
+- [Policy API 계약](../../api/policies.md)
+- [Policy DB 매핑](../../architecture/policy_database_mapping.md)
+- [Fixture와 Seed 계약](../../data/fixture_seed_contract.md)
+- [Collector 실행](../../operations/collector.md)
+- [역할과 책임](../../governance/role_assignment.md)
+

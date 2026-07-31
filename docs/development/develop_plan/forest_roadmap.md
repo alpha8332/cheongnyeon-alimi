@@ -142,6 +142,7 @@ Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표
 
 - [Release와 Milestone 계획](release_roadmap.md)
 - [주차별 실행 계획](weekly_delivery_plan.md)
+- [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
 - [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)

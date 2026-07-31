@@ -240,6 +240,7 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 
 - [Forest 로드맵](forest_roadmap.md)
 - [주차별 실행 계획](weekly_delivery_plan.md)
+- [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
 - [시스템 흐름](../../architecture/system_flow.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)

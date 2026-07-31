@@ -47,6 +47,10 @@
   완료 기반과 릴리스별 후속 Forest·의존 순서
 - [주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md):
   1~6주차 인계 순서와 릴리스 검증 게이트
+- [주차별 상세 실행 계획](development/weekly_plan/README.md): 주차별 선행
+  관계, 병렬 작업, 역할과 검증 Gate
+- [3주차 상세 실행 계획](development/weekly_plan/week_03_release_1.md):
+  실데이터 정책 검색과 `v0.1.0` 실행 순서
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Policy Discovery Forest 계획](development/develop_plan/frontend/01_policy_discovery.md)

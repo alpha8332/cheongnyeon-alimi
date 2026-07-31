@@ -52,6 +52,17 @@ Forest 문서 내부의 섹션과 진행 현황으로 구분한다. Slice마다 
 모든 Forest를 하나의 파일에 누적하지 않는다. 예정 사항은 기록하지 않으며,
 남은 작업은 대응하는 Forest 계획이나 Issue로 연결한다.
 
+### `docs/development/weekly_plan/`
+
+Release와 여러 Forest를 한 주에 실행하는 순서, 병렬 작업, 역할별 책임과
+통합 Gate를 관리한다. 주차 문서는 Forest 계획이나 개발 기록을 대신하지
+않으며 실제 구현 결과와 테스트 수치는 대응하는 `development_notes/`에
+기록한다.
+
+완료된 주차를 계획대로 수행한 것처럼 소급 작성하지 않는다. 이미 완료된
+작업은 기존 Forest 계획과 개발 기록을 연결하고, 상세 조정이 필요한 현재
+또는 다음 주차 문서만 생성한다.
+
 ### `CHANGELOG.md`
 
 사용자와 팀이 알아야 할 의미 있는 변경을 요약한다. 개발 중 변경은
@@ -93,14 +104,16 @@ CHANGELOG는 만들지 않고 루트 파일 하나를 릴리스 기준으로 유
 
 ### 문서 위치 결정 순서
 
-1. 아직 구현하지 않은 범위와 완료 기준이면 `develop_plan/<owner>/`를
+1. 아직 구현하지 않은 Forest 범위와 완료 기준이면
+   `develop_plan/<owner>/`를 선택한다.
+2. 여러 Forest의 주차별 순서·병렬 작업·역할 조정이면 `weekly_plan/`을
    선택한다.
-2. 실제 구현 내용과 검증 결과이면 `development_notes/<owner>/`를 선택한다.
-3. 실제 발생했고 해결된 문제이면 `troubleshooting/<owner>/`를 선택한다.
-4. 현재 시스템이 따라야 하는 계약이면 담당 영역 폴더가 아니라 `docs/data/`,
+3. 실제 구현 내용과 검증 결과이면 `development_notes/<owner>/`를 선택한다.
+4. 실제 발생했고 해결된 문제이면 `troubleshooting/<owner>/`를 선택한다.
+5. 현재 시스템이 따라야 하는 계약이면 담당 영역 폴더가 아니라 `docs/data/`,
    `docs/api/`, `docs/architecture/`, `docs/operations/`의 기준 문서를
    갱신한다.
-5. `<owner>`는 `data`, `backend`, `frontend`, `integration` 중에서 작업
+6. `<owner>`는 `data`, `backend`, `frontend`, `integration` 중에서 작업
    책임을 기준으로 고른다. 둘 이상의 영역이 공동 책임을 가지면
    `integration`을 사용한다.
 
