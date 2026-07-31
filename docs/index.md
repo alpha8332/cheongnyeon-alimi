@@ -117,11 +117,14 @@ Normalized 1.0.0 Schema와 canonical Seed의 Data·Backend·Frontend 소비 검�
 변경하면 Data 담당이 단독으로 확정하지 않고 Backend·Frontend 영향과 소비
 테스트를 같은 Forest에서 다시 확인한다.
 
-2주차 완료 시점에 다른 영역으로 넘겨야 할 활성 인계사항은 없다. 다음
-작업은 [전체 Forest 로드맵](development/develop_plan/forest_roadmap.md)과
-[주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md)에 따라
-새 Forest로 시작한다. 미래 계획 자체나 아직 발생하지 않은 위험을 인계사항으로
-등록하지 않는다.
+2주차 완료 시점에는 활성 인계사항이 없었다. 3주차 Data 02 DT1 실데이터
+preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
+
+| ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
+| --- | --- | --- | --- | --- |
+| `R1-SEARCH-DATA-SEMANTICS` | review-pending | Data·Backend·Frontend | DT2·Gate G1에서 온통청년 지역 코드, 복지로 누락 지역·연령·기간, 신청 상태와 `partial` 노출 의미를 공동 승인 | [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md), [Data 02 계획](development/develop_plan/data/02_release_dataset_bootstrap.md) |
+
+미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 
 ### 인계사항 발생 시 기록 방법
 

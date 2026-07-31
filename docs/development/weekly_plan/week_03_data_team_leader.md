@@ -569,7 +569,7 @@ git status --short
 ### Data
 
 - [ ] Source preflight·호출 예산·릴리스 범위 승인
-- [ ] 대표 실데이터 분포와 검색 계약 질문 공유
+- [x] 대표 실데이터 분포와 검색 계약 질문 공유
 - [ ] Gate G1 Data 계약 공동 승인
 - [ ] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
 - [ ] 재실행 idempotency·transaction·중복 방지 검증

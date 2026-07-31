@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import socket
+import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
@@ -75,15 +76,16 @@ class RuntimeReplayTests(unittest.TestCase):
         self.assertEqual(3, len(replay.programs[0]["provenance"]))
 
     def test_missing_source_raw_fails_safely(self) -> None:
-        with self.assertRaisesRegex(
-            RuntimeReplayError,
-            "no stored Raw documents",
-        ):
-            replay_runtime_raw(
-                raw_root=ROOT / "runtime" / "raw",
-                source_id="youthcenter-api",
-                limit=10,
-            )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaisesRegex(
+                RuntimeReplayError,
+                "no stored Raw documents",
+            ):
+                replay_runtime_raw(
+                    raw_root=Path(temp_dir),
+                    source_id="youthcenter-api",
+                    limit=10,
+                )
 
     def test_latest_batch_does_not_mix_older_details(self) -> None:
         existing = tuple(

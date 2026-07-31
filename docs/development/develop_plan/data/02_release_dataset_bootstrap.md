@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT0 completed, next DT1
+- 현재 Slice: DT1 completed, next DT2
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -87,6 +87,13 @@ Backend·Frontend 구현은 각각 Backend 06과 Frontend 04가 담당한다.
 - 선행 조건: DT0 완료와 Source별 호출 예산 승인
 - 산출물: Source별 preflight, 대표 표본 분포, 릴리스 범위·호출 예산 초안
 - 완료 기준: 두 Source의 종료 조건과 검색 계약 결정에 필요한 실제 근거 확보
+- 완료 결과:
+  - 온통청년 목록 10건 1회와 복지로 목록 10건·상세 3건을 실제 수집함
+  - 두 Source 모두 10건 전부 `partial`인 원인과 검색 필드 누락 비율을 확인함
+  - 전체 목록을 기준으로 한 종료 조건과 호출량 보호가 포함된 릴리스 범위
+    초안을 작성함
+  - 지역 코드, 복지로 상세 범위와 partial 노출 의미는 DT2·Gate G1 승인
+    전까지 구현하지 않음
 
 ### DT2 - 검색 계약 Data 근거와 Gate G1 지원
 
@@ -141,8 +148,18 @@ PostgreSQL 통합 테스트는 `TEST_DATABASE_URL`이 `_test` DB를 가리킬 �
 
 - DT0에서 Runtime DB를 Alembic head까지 준비했지만 실제 정책은 아직 0건이다.
   실제 snapshot은 DT3 전까지 존재하지 않는다.
-- `runtime/raw`는 Git 제외 대상이지만 현재 디렉터리는 아직 없다.
-- Source pagination과 호출 한도는 DT1 실제 preflight 전에 다시 확인한다.
+- DT1 대표 표본 Raw 25개는 Git 제외 `runtime/raw`에만 있으며 아직 DB에
+  적재하지 않았다.
+- 온통청년은 2,696건을 보고했지만 계정별 숫자 호출 한도와 `pageSize=500`
+  수용 여부가 공개 자료에서 확인되지 않았다. DT3 전체 순회 전에 큰
+  page size 1회 확인과 호출 예산 승인이 필요하다.
+- 복지로는 목록 전체 461건이 명세상 한 요청에 들어가지만, 공개 페이지의
+  개발계정 트래픽 100은 기간 단위가 불명확하다. 전체 461건 상세 호출은
+  릴리스 범위로 승인하지 않았다.
+- 온통청년 `zipCd`는 실제 응답에 있으나 보유 코드 정의서에는 행정구역
+  code-to-name 표가 없어 정규화 지역이 0건이다.
+- 복지로 목록·상세 계약에는 현재 지역·연령·신청기간을 직접 정규화할
+  근거가 없어 해당 필드가 모두 누락된다.
 - 실제 Source에 golden query에 맞는 진행 중 정책이 없을 수 있다.
 - 검색 의미에 필요한 Schema 변경이 발견되면 DT2에서 세 영역 영향을
   검토하기 전까지 구현하지 않는다.
