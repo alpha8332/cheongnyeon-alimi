@@ -19,7 +19,7 @@
 | Backend 03 | Policy Runtime Safety | [개발 계획](backend/03_policy_runtime_safety.md) | completed |
 | Backend 04 | Admin Access Control | [개발 계획](backend/04_admin_access_control.md) | draft |
 | Backend 05 | CollectionRun Admin API | [개발 계획](backend/05_collection_run_admin_api.md) | draft |
-| Backend 06 | Policy Search | [개발 계획](backend/06_policy_search.md) | in-progress |
+| Backend 06 | Policy Search | [개발 계획](backend/06_policy_search.md) | draft |
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 | Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 
