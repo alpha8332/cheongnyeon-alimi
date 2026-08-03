@@ -29,7 +29,7 @@
   공식 법정동 기반 versioned 지역·계층·별칭 Seed, 지역 적용 관계 경계
   Fixture, PostgreSQL 지역 관계·검색 projection Migration, 온통청년·복지로
   Source 검색 필드·exact 지역 Adapter와 Policy·지역 규칙·versioned projection
-  원자적·멱등 importer 추가
+  원자적·멱등 importer, 지역·연령·신청 상태 3값 판정 primitive 추가
   ([개발 기록](docs/development/development_notes/integration/policy_search_data_foundation.md))
 - Frontend Policy Discovery Slice: 공개 `PolicyDto`, canonical Seed Mock
   adapter, `/api/v1/policies` 목록·상세 Client와 partial opt-in 정책

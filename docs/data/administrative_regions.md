@@ -106,5 +106,8 @@ PSF4는 온통청년 DT1 표본의 고유 `zipCd` 260개가 모두 이 crosswalk
 - 미매핑 code는 자동 보정하지 않고 `unmapped`로 전달해 Source 근거를
   보존한다.
 - 폐지 code는 조회할 수 있지만 기본 resolver 후보는 active만 사용한다.
+- 검색 query alias는 active 후보 0·1·다수에 따라 `unmapped`·`matched`·
+  `ambiguous`로 판정한다. 계층 탐색은 `aggregate_parent_code`를 우선하고
+  `parent_code`로 이어가며 cycle·누락 parent를 조용히 무시하지 않는다.
 - 지역 데이터 version을 바꾸면 scheme, Seed, Fixture, DB Migration과
   Backend·Frontend 소비 영향을 함께 검토한다.

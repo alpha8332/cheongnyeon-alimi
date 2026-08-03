@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF5 completed, PSF6 next
+- 현재 Slice: PSF6 completed, PSF7 next
 
 ## 목적
 
@@ -40,7 +40,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | PSF3 | completed | 검색 컬럼·지역 관계·projection Migration, 제약과 지역 Seed 적재 |
 | PSF4 | completed | 두 Source 검색 field mapping, exact 지역 증거 resolver와 actual Raw 재생 |
 | PSF5 | completed | Policy·지역 규칙·versioned projection 원자적 적재와 Runtime warning lineage 보존 |
-| PSF6 | pending | 지역·조건 판정 primitive |
+| PSF6 | completed | 지역·연령·신청 상태 3값 판정, alias 모호성·projection field별 근거 |
 | PSF7 | pending | 소비 호환·성능·actual Raw 재생 |
 | PSF8 | pending | Forest Gate와 Data 02 인계 |
 
@@ -233,6 +233,29 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
   FK·constraint·projection write까지 수행한 뒤 rollback했으며 Policy·rule·
   projection·CollectionRun은 모두 0건으로 유지됐다.
 
+### PSF6 - 지역·조건 판정 primitive
+
+- `PolicySearchEvaluationService`와 순수 판정 함수를 추가해 Backend 06이 DB
+  조회와 판정 의미를 재구현하지 않고 조합할 수 있게 했다. 모든 조건 결과는
+  `match|mismatch|unknown`과 기계 판독 가능한 reason을 가진다.
+- query 지역 alias는 NFKC·공백 정규화 뒤 현재 scheme의 active 후보를 exact
+  조회한다. 후보 없음·한 건·여러 건을 `unmapped|matched|ambiguous`로 분리하고
+  모호한 경우 canonical 후보 목록을 버리지 않는다.
+- regional policy는 query 지역에서 `aggregate_parent_code`를 우선해 상위
+  경로를 만든다. 정확 지역과 상위 include를 구분하고, 같은 경로의 exclude는
+  include보다 먼저 mismatch로 판정한다. 다른 active include는 mismatch,
+  unresolved·retired rule 또는 coverage unknown은 unknown이다.
+- 나이는 확인된 최소·최대 범위와 명시적 `연령 제한 없음`만 match로 처리한다.
+  신청 상태는 `open|closed|scheduled` exact 비교이며 저장 상태 null은
+  unknown이다. 입력 범위를 벗어난 나이와 지원하지 않는 요청 상태는 오류로
+  거부한다.
+- projection은 미리 해석된 검색어를 title·keyword·summary·eligibility·
+  support 각 필드에 대조해 일치어와 미일치어를 근거로 반환한다. 이 단계는
+  동의어를 만들거나 점수를 계산하지 않아 자연어 parser·가중치 책임을
+  Backend 06에 남긴다.
+- 기존 Policy 목록·상세 Repository와 API, DB Schema·Migration, Fixture·Seed,
+  Frontend 타입과 UI는 변경하지 않았다.
+
 ## 주요 변경 파일
 
 - `collectors/normalized.py`
@@ -247,6 +270,7 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `backend/app/services/seed_importer.py`
 - `backend/app/services/runtime_importer.py`
 - `backend/app/services/policy_search_projection.py`
+- `backend/app/services/policy_search_evaluation.py`
 - `backend/app/repositories/policy_search.py`
 - `collectors/runtime.py`
 - `frontend/src/types/policy.ts`
@@ -276,6 +300,8 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `backend/app/models/administrative_region.py`
 - `backend/tests/test_policy_search_projection.py`
 - `backend/tests/test_postgresql_policy_search_import.py`
+- `backend/tests/test_policy_search_evaluation.py`
+- `backend/tests/test_postgresql_policy_search_evaluation.py`
 - `backend/app/models/policy_search.py`
 - `backend/app/models/policy.py`
 - `backend/app/services/region_reference_importer.py`
@@ -305,6 +331,13 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
   후보에서 모두 사라지는 회귀를 막는다.
 - `region_rules`는 매핑된 canonical 관계뿐 아니라 unmapped·ambiguous Source
   evidence도 보존해 향후 기준정보 갱신 뒤 재처리할 수 있게 한다.
+- 지역 query가 모호하거나 미매핑이면 regional policy를 임의 일치시키지
+  않고 unknown으로 남긴다. nationwide는 지역 query 상태와 무관하게 match다.
+- active canonical include가 다른 지역만 가리킬 때만 mismatch이며 unresolved
+  rule이 있으면 오탐 방지를 위해 unknown을 우선한다. 일치 exclude는 가장
+  가까운 include보다도 우선한다.
+- projection primitive는 field evidence만 제공한다. 검색어 추출·동의어와
+  최종 순위 규칙은 Backend 06 계약 없이 이 Forest에서 고정하지 않는다.
 
 ## 검증 결과
 
@@ -423,13 +456,36 @@ actual Raw 검증은 저장된 Runtime Raw만 사용했고 외부 API를 호출�
 DB Migration과 공개 Policy API·Frontend DTO는 바꾸지 않았으므로 새 Migration과
 Browser UI 검증은 수행하지 않았다.
 
+### PSF6 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| PSF6 SQLite 판정 집중 테스트 | 3건 통과 |
+| PSF6 PostgreSQL 종단 테스트 | 1건 통과, 공식 지역 538건·별칭 1,080건 적재 후 downgrade |
+| Data 전체 단위 테스트 | 102건 통과 |
+| 관련 검색 저장·projection 회귀 | 13건 통과, 기존 warning 1건 |
+| Backend·Integration 전체 pytest | 99건 통과, 기존 CollectionRun 순서 테스트 1건 실패 |
+| 실패 항목 단독 재실행 | 1건 통과 |
+| Python compileall | 통과 |
+| Ruff | 저장소 환경에 모듈이 없어 미실행, 성공으로 간주하지 않음 |
+| `scripts/validate_docs.py` | 통과 |
+| `git diff --check` | 통과, line-ending 안내만 발생 |
+| PostgreSQL 테스트 DB 정리 | downgrade 후 `policies` 테이블 없음 확인 |
+
+전체 pytest의 실패는 세 CollectionRun을 매우 빠르게 만들 때 같은
+`started_at` 값이 생기면 `run_id` 정렬이 호출 순서를 보장하지 않는데 테스트가
+그 순서를 기대하는 기존 비결정성이다. 같은 테스트 단독 실행은 통과했지만
+전체 회귀를 통과로 기록하지 않는다. PSF6는 해당 코드와 테스트를 수정하지
+않았으며 별도 담당 범위에서 안정적인 정렬 기준 또는 assertion을 결정해야
+한다. 공개 API·Frontend UI 변경이 없어 Browser 검증은 수행하지 않았다.
+
 ## 남은 작업
 
 - 온통청년이 공개 `zipCd` code-to-name 표를 제공하지 않는 권위 공백은 남아
   있다. 전체 pagination에서 새 code가 나오면 exact crosswalk 외 값은
   `unmapped`로 보존하고 Source 문서가 확보되기 전 추정하지 않는다.
-- PSF6에서 exact·ancestor·nationwide·unknown·exclude 지역 판정과 연령·상태
-  3값 primitive를 구현해야 한다.
+- PSF7에서 기존 API·Frontend 소비 회귀, 실제 규모 query plan과 actual DT1
+  Raw 재생 결과를 함께 검증해야 한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
   PSF8 전체 Gate와 Data 02 DT2 소비 승인이 완료되어야 제거할 수 있다.
 - Source 간 canonical deduplication, Backend 최종 가중치와 지역 crawler는

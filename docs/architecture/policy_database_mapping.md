@@ -192,6 +192,25 @@ transaction을 소유한다. 값과 version이 같으면 행과 `updated_at`을 
 않는다. 최종 점수는 Backend 06에서 확정한다. downgrade는 공용일 수 있는
 extension은 제거하지 않고 PSF3가 만든 index·table·enum·trigger만 제거한다.
 
+### query별 판정 primitive
+
+PSF6의 `PolicySearchEvaluationService`는 저장 계약을 바꾸지 않고 검색 요청별
+판정 근거를 만든다. 결과는 공통 `match|mismatch|unknown`이며 정책 원본이나
+projection에 다시 저장하지 않는다.
+
+- 지역 alias는 active canonical 후보만 조회하며 0건은 `unmapped`, 1건은
+  `matched`, 여러 건은 후보 목록을 가진 `ambiguous`다.
+- regional 판정은 query 지역에서 `aggregate_parent_code` 우선으로 루트까지
+  탐색한다. 정확 code는 `exact`, 상위 include는 `ancestor`, 다른 active
+  include만 있으면 `other_region`이며 일치하는 exclude가 include보다 앞선다.
+- nationwide는 지역 query 해석 여부와 무관하게 match, coverage unknown과
+  unresolved·retired rule은 근거를 보존한 unknown이다.
+- 나이는 확인된 최소·최대 범위와 명시적 `연령 제한 없음`만 match로 삼고,
+  경계가 없거나 모호한 원문은 unknown이다. 신청 상태가 null이면 unknown이다.
+- projection match는 입력받은 검색어의 NFKC·공백 정규화와 공백 제거 비교만
+  수행해 field별 일치어와 미일치어를 반환한다. 동의어·축약 확장, parser와
+  최종 관련도 점수는 Backend 06 책임이다.
+
 ## 식별자와 upsert
 
 - DB identity는 `(source_id, external_id)` unique constraint다.

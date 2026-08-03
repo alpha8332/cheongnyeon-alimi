@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF5 completed, PSF6 next
+- 현재 Slice: PSF6 completed, PSF7 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -403,6 +403,7 @@ Raw는 API 재호출 없이 Runtime DB `--dry-run`으로 온통청년 10건과 �
 
 ### PSF6 - 지역·조건 판정 primitive
 
+- 상태: completed (`2026-08-03`)
 - 목적: Backend 06이 사용할 결정적이고 테스트 가능한 판정 기반을 제공한다.
 - 선행 조건: PSF2·PSF3·PSF5
 - 수행:
@@ -417,6 +418,14 @@ Raw는 API 재호출 없이 Runtime DB `--dry-run`으로 온통청년 10건과 �
   - 아산 regional policy mismatch
   - 지역 미상 중앙정부 policy unknown
   - 명시적 exclude가 ancestor include보다 우선
+
+PSF6는 DB 별칭을 active canonical 후보로 해석하고 `matched|unmapped|ambiguous`를
+후보와 함께 반환한다. 지역 판정은 versioned 계층의 `aggregate_parent_code`를
+우선해 exact·ancestor를 구분하며 nationwide·unknown과 명시적 exclude 우선을
+결정적인 `match|mismatch|unknown` 결과로 제공한다. 나이와 신청 상태도 같은
+3값 의미를 사용하고, projection 검색어는 title·keyword·summary·eligibility·
+support별 근거와 미일치어를 보존한다. 동의어 확장, 자연어 조건 추출과 최종
+가중치는 Backend 06 범위로 남긴다.
 
 ### PSF7 - 소비 호환·성능·실데이터 재생
 

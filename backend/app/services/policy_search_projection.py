@@ -33,7 +33,8 @@ class ProjectionRebuildResult:
     unchanged: int
 
 
-def _normalized_fragment(value: Any) -> str | None:
+def normalize_search_text(value: Any) -> str | None:
+    """Apply the projection's stable Unicode and whitespace normalization."""
     if not isinstance(value, str):
         return None
     normalized = _WHITESPACE.sub(
@@ -49,7 +50,7 @@ def _joined_text(*values: Any) -> str:
 
     def append(candidate: Any) -> None:
         if isinstance(candidate, str):
-            normalized = _normalized_fragment(candidate)
+            normalized = normalize_search_text(candidate)
             if normalized is not None and normalized not in seen:
                 seen.add(normalized)
                 fragments.append(normalized)

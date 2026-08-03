@@ -131,6 +131,11 @@ trigger로 transaction 최종 상태에서 검증한다.
   승인된 region rule에서 값이 채워질 수 있다.
 - 검색의 `matched_conditions`, `unverified_conditions`, 점수와 검색 이유는
   정책 원본이나 기존 `PolicyRead`에 저장하지 않고 query별 응답으로 만든다.
+- PSF6 판정 primitive는 `match|mismatch|unknown`과 reason·evidence를 함께
+  반환한다. 지역은 exact·ancestor·nationwide·exclude를 구분하고 exclude를
+  우선하며, alias 다중 후보와 미매핑·정책 coverage 미상은 unknown 근거로
+  보존한다. 자연어 parser와 최종 가중치는 Backend 06에서 이 primitive를
+  조합한다.
 
 ## 필드 lineage 감사
 
@@ -177,7 +182,7 @@ PSF4 adapter는 위 채택 경로를 구현했으며 공통 필드로 명시적�
 | PostgreSQL | 네 정책 컬럼, 세 지역 테이블, projection 테이블과 index 추가 | PSF3 additive Migration·backfill·downgrade |
 | Importer | Policy·region rule·projection의 단일 transaction 필요 | PSF5 rollback·idempotency·projection version 검증 |
 | 기존 Policy API | endpoint·field set·partial opt-in 유지, schema version 값과 표시 값은 확장 | PSF1 Frontend version union, PSF7 목록·상세 회귀 |
-| Backend 검색 | 기존 exact repository와 분리된 3값 primitive 필요 | PSF6 인계 후 Backend 06 query·정렬 구현 |
+| Backend 검색 | 기존 exact repository와 분리된 3값 primitive 필요 | PSF6 primitive 완료, Backend 06 query·정렬 구현으로 인계 |
 | Frontend 검색 | 기존 `PolicyDto`만으로 검색 이유를 만들 수 없음 | Frontend 04가 별도 검색 응답의 조건·이유·미확인을 표시 |
 
 PSF5는 Importer 조치를 projection version `1.0.0`, 호출자 소유 rebuild service와

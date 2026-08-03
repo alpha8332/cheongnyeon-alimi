@@ -5,6 +5,10 @@ from typing import Any
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from app.models.administrative_region import (
+    AdministrativeRegion,
+    AdministrativeRegionAlias,
+)
 from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
 
 
@@ -60,6 +64,74 @@ class PolicySearchRepository:
                 for rule in rules
             )
         )
+
+    def policy_region_rules(
+        self,
+        policy_id: int,
+    ) -> tuple[PolicyRegionRule, ...]:
+        return tuple(
+            self.db.scalars(
+                select(PolicyRegionRule)
+                .where(PolicyRegionRule.policy_id == policy_id)
+                .order_by(PolicyRegionRule.id)
+            ).all()
+        )
+
+    def alias_candidates(
+        self,
+        *,
+        scheme: str,
+        alias: str,
+        active_only: bool = True,
+    ) -> tuple[AdministrativeRegion, ...]:
+        statement = (
+            select(AdministrativeRegion)
+            .join(
+                AdministrativeRegionAlias,
+                (
+                    AdministrativeRegionAlias.scheme
+                    == AdministrativeRegion.scheme
+                )
+                & (
+                    AdministrativeRegionAlias.region_code
+                    == AdministrativeRegion.code
+                ),
+            )
+            .where(
+                AdministrativeRegionAlias.scheme == scheme,
+                AdministrativeRegionAlias.alias == alias,
+            )
+            .order_by(AdministrativeRegion.code)
+        )
+        if active_only:
+            statement = statement.where(
+                AdministrativeRegion.status == "active"
+            )
+        return tuple(self.db.scalars(statement).unique().all())
+
+    def regions_for_schemes(
+        self,
+        schemes: Sequence[str],
+    ) -> tuple[AdministrativeRegion, ...]:
+        selected_schemes = tuple(sorted(set(schemes)))
+        if not selected_schemes:
+            return ()
+        return tuple(
+            self.db.scalars(
+                select(AdministrativeRegion)
+                .where(AdministrativeRegion.scheme.in_(selected_schemes))
+                .order_by(
+                    AdministrativeRegion.scheme,
+                    AdministrativeRegion.code,
+                )
+            ).all()
+        )
+
+    def search_document(
+        self,
+        policy_id: int,
+    ) -> PolicySearchDocument | None:
+        return self.db.get(PolicySearchDocument, policy_id)
 
     def replace_region_rules(
         self,
