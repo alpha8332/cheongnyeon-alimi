@@ -8,7 +8,6 @@ from app.models.administrative_region import AdministrativeRegion
 from app.models.policy import APPLICATION_STATUS_VALUES, Policy
 from app.repositories.policy_search import PolicySearchRepository
 from app.services.policy_search_projection import normalize_search_text
-from collectors.regions import normalize_region_key
 
 
 DEFAULT_REGION_SCHEME = "kr-bjd-20260803"
@@ -394,8 +393,10 @@ class PolicySearchEvaluationService:
         self.repository = PolicySearchRepository(db)
 
     def resolve_region_alias(self, alias: str) -> RegionQueryResolution:
-        normalized = normalize_region_key(alias)
-        if not normalized:
+        if not isinstance(alias, str):
+            raise TypeError("region alias must be a string")
+        normalized = normalize_search_text(alias)
+        if normalized is None:
             raise ValueError("region alias must be nonempty")
         candidates = tuple(
             _candidate(region)

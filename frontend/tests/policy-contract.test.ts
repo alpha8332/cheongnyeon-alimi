@@ -92,9 +92,10 @@ test('partial opt-in과 필터·pagination을 Mock에서도 API와 동일하게 
       include_partial: true,
     }),
   );
-  assert.equal(filteredResponse.total, 2);
+  assert.equal(filteredResponse.total, 1);
   assert.equal(filteredResponse.items.length, 1);
   assert.ok(filteredResponse.items[0]?.categories.includes('welfare'));
+  assert.equal(filteredResponse.items[0]?.external_id, 'SYN-YOUTH-002');
 
   const emptyPage = createMockPolicyListResponse(
     policies,

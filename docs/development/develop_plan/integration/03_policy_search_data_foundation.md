@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF6 completed, PSF7 next
+- 현재 Slice: PSF7 completed, PSF8 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -429,6 +429,7 @@ support별 근거와 미일치어를 보존한다. 동의어 확장, 자연어 �
 
 ### PSF7 - 소비 호환·성능·실데이터 재생
 
+- 상태: completed (`2026-08-03`)
 - 목적: 새 기반이 기존 API와 실제 Runtime 흐름을 깨뜨리지 않는지 검증한다.
 - 선행 조건: PSF1~PSF6
 - 수행:
@@ -443,6 +444,13 @@ support별 근거와 미일치어를 보존한다. 동의어 확장, 자연어 �
   - 새 검색 primitive가 Source key를 직접 참조하지 않음
   - 성능 결과와 남은 index 위험 기록
   - actual Raw 재생에서 추정값 생성 없음
+
+PSF7은 Backend 독립 실행 경계, 기존 33-field `PolicyRead`, Frontend 타입·Mock
+소비를 검증하고 canonical Seed와 달라진 welfare 테스트 기대값을 바로잡았다.
+합성 projection 20,000건의 200건 일치 query에서 기본 `ILIKE` sequential scan,
+`LIKE` sequential scan과 강제 trigram GIN plan을 비교해 planner 선택 위험을
+Backend 06으로 인계했다. actual DT1 Raw 20건은 외부 API 호출 없이 재생·DB
+dry-run했으며 Source 근거가 없는 지역·연령·상태를 계속 unknown으로 보존했다.
 
 ### PSF8 - Gate와 Data 02 인계
 

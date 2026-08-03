@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF6 completed, PSF7 next
+- 현재 Slice: PSF7 completed, PSF8 next
 
 ## 목적
 
@@ -41,7 +41,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | PSF4 | completed | 두 Source 검색 field mapping, exact 지역 증거 resolver와 actual Raw 재생 |
 | PSF5 | completed | Policy·지역 규칙·versioned projection 원자적 적재와 Runtime warning lineage 보존 |
 | PSF6 | completed | 지역·연령·신청 상태 3값 판정, alias 모호성·projection field별 근거 |
-| PSF7 | pending | 소비 호환·성능·actual Raw 재생 |
+| PSF7 | completed | 기존 소비·Backend 실행 호환, 합성 query plan, actual Raw 재생·DB dry-run |
 | PSF8 | pending | Forest Gate와 Data 02 인계 |
 
 ## 구현 내용
@@ -256,6 +256,39 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - 기존 Policy 목록·상세 Repository와 API, DB Schema·Migration, Fixture·Seed,
   Frontend 타입과 UI는 변경하지 않았다.
 
+### PSF7 - 소비 호환·성능·실데이터 재생
+
+- 기존 Backend mapping 테스트와 Frontend `PolicyDto`를 다시 대조해 공개
+  `PolicyRead` 33개 필드와 1.0.0·1.1.0 version union을 유지했다. keywords·
+  life stages·target groups·coverage·region rules와 projection은 기존 목록·
+  상세 OpenAPI에 노출하지 않는다.
+- Frontend 계약 테스트가 welfare 2건을 기대했지만 PSF4 canonical Seed의 실제
+  welfare는 `SYN-YOUTH-002` 1건임을 확인했다. Mock 필터나 Seed를 바꾸지 않고
+  테스트를 1건과 정확한 identity 검증으로 동기화했다.
+- `backend` 디렉터리에서 Uvicorn을 실행하면 PSF6 판정 service의
+  `collectors.regions` import 때문에 시작하지 못하는 회귀를 발견했다. alias
+  정규화를 이미 Backend projection이 제공하는 동일한 NFKC·공백 함수로
+  연결해 저장소 루트가 `PYTHONPATH`에 없어도 실행되게 했고 subprocess import
+  회귀 테스트를 추가했다.
+- Backend 06에는 지역 해석 후보, 지역·연령·신청 상태의 state·reason·evidence,
+  projection field별 일치·미일치어를 내부 입력으로 인계한다. 공개 검색 응답
+  이름, parser·동의어·점수와 pagination은 여기서 확정하지 않았다.
+- 전용 PostgreSQL에 합성 policy·projection 20,000건을 만들고 200건 일치
+  `EXPLAIN (ANALYZE, BUFFERS)`를 실행했다. 기본 `ILIKE`는 Sequential Scan
+  19.258ms, 기본 `LIKE`는 Sequential Scan 2.597ms, 강제 trigram GIN
+  `ILIKE`는 Bitmap Scan 2.030ms였다. index는 정상 사용 가능하지만 기본
+  planner가 선택하지 않는 위험을 Backend 06 실제 query plan으로 인계했다.
+- 저장된 DT1 Raw를 API 재호출 없이 다시 재생했다. 온통청년은 10건 accepted,
+  valid 8·partial 2, regional 10, matched rule 373, 연령 범위 9·미상 1,
+  open 6·closed 3·scheduled 1이었다. projection 5개 field군의 빈 값은 없었다.
+- 복지로는 10건 accepted·partial 10, coverage·연령·신청 상태 unknown 10이었다.
+  지역 rule은 0건이고 eligibility projection 2건·keyword projection 1건이
+  비어 있다. Source 근거가 없는 값을 전국·특정 지역·연령·open으로 만들지
+  않았음을 확인했다.
+- Runtime DB에서 두 Source 각 10건을 실제 FK·constraint·projection write까지
+  dry-run한 뒤 rollback했다. 전후 Policy·rule·projection·CollectionRun은
+  모두 0건이고 지역 538건·별칭 1,080건은 유지됐다.
+
 ## 주요 변경 파일
 
 - `collectors/normalized.py`
@@ -302,6 +335,8 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `backend/tests/test_postgresql_policy_search_import.py`
 - `backend/tests/test_policy_search_evaluation.py`
 - `backend/tests/test_postgresql_policy_search_evaluation.py`
+- `backend/tests/test_postgresql_policy_search_performance.py`
+- `backend/tests/test_app_import_boundary.py`
 - `backend/app/models/policy_search.py`
 - `backend/app/models/policy.py`
 - `backend/app/services/region_reference_importer.py`
@@ -318,6 +353,7 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `tests/test_data_fixtures.py`
 - `docs/data/source_profiles.md`
 - `docs/operations/collector.md`
+- `frontend/tests/policy-contract.test.ts`
 
 ## 설계 결정
 
@@ -338,6 +374,12 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
   가까운 include보다도 우선한다.
 - projection primitive는 field evidence만 제공한다. 검색어 추출·동의어와
   최종 순위 규칙은 Backend 06 계약 없이 이 Forest에서 고정하지 않는다.
+- Backend 실행 계층은 저장소 루트 `collectors` 패키지 경로에 의존하지 않는다.
+  공통 저장 계약은 공유하되 Uvicorn의 문서화된 작업 디렉터리에서 독립적으로
+  import 가능해야 한다.
+- 합성 plan에서 GIN이 강제 사용 가능하다는 사실만으로 운영 기본 plan을
+  보장하지 않는다. 최종 query 형태와 실제 분포 없이 DB 비용 설정이나 index를
+  변경하지 않는다.
 
 ## 검증 결과
 
@@ -479,13 +521,40 @@ Browser UI 검증은 수행하지 않았다.
 않았으며 별도 담당 범위에서 안정적인 정렬 기준 또는 assertion을 결정해야
 한다. 공개 API·Frontend UI 변경이 없어 Browser 검증은 수행하지 않았다.
 
+### PSF7 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Data 전체 단위 테스트 | 102건 통과 |
+| Backend·Integration 전체 pytest | PostgreSQL·신규 성능 테스트 포함 102건 통과, 기존 warning 1건 |
+| Backend 실행 경계 집중 테스트 | subprocess import·판정 4건 통과 |
+| 실제 FastAPI HTTP | 임시 8001번에서 health·목록 200, `PolicyRead` 33 fields·검색 내부 field 0 |
+| Frontend 계약 테스트 | 최초 6/7, stale welfare 기대 수정 후 7/7 통과 |
+| Frontend lint·production build | 통과, Vite 8.1.5·210 modules |
+| Vite HTTP | 임시 `127.0.0.1:3000` root·`/programs` 200 |
+| Browser UI | 인앱 Browser 연결 목록이 비어 있어 미실행, 성공으로 간주하지 않음 |
+| 합성 PostgreSQL plan | 20,000건·200 matches, 기본 ILIKE 19.258ms·LIKE 2.597ms·강제 GIN 2.030ms |
+| actual Raw 오프라인 재생 | 온통청년 10·복지로 10 accepted, 추정 지역·조건 생성 없음 |
+| actual Raw Runtime DB dry-run | 각 10건 insert 후보, rollback 후 검색·실행 row 0 |
+| Source key 직접 참조 검사 | Backend 판정·projection·repository 0건 |
+
+PostgreSQL plan은 18.4, `Korean_Korea.949`, `random_page_cost=4`,
+`seq_page_cost=1`, `effective_cache_size=4GB`인 현재 로컬 전용 테스트 DB의 단일
+측정이다. 응답 시간 보장이나 운영 index 사용 증거로 일반화하지 않는다.
+기존 Starlette `httpx` deprecation warning 1건은 유지하며 PSF7 범위에서
+패키지를 변경하지 않았다.
+
 ## 남은 작업
 
 - 온통청년이 공개 `zipCd` code-to-name 표를 제공하지 않는 권위 공백은 남아
   있다. 전체 pagination에서 새 code가 나오면 exact crosswalk 외 값은
   `unmapped`로 보존하고 Source 문서가 확보되기 전 추정하지 않는다.
-- PSF7에서 기존 API·Frontend 소비 회귀, 실제 규모 query plan과 actual DT1
-  Raw 재생 결과를 함께 검증해야 한다.
+- PSF8에서 전체 Forest Gate, Git·비밀·Runtime 경계와 Data 02 DT2 인계를
+  최종 검토해야 한다.
+- Backend 06은 실제 snapshot과 최종 filter·정렬·pagination을 포함한 plan에서
+  기본 `ILIKE` Sequential Scan과 trigram GIN 미선택 위험을 다시 평가해야 한다.
+- 인앱 Browser 연결이 가능한 세션에서 기존 사용자 목록·상세 화면 회귀를
+  PSF8 또는 Release 1 Acceptance 전에 직접 확인해야 한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
   PSF8 전체 Gate와 Data 02 DT2 소비 승인이 완료되어야 제거할 수 있다.
 - Source 간 canonical deduplication, Backend 최종 가중치와 지역 crawler는

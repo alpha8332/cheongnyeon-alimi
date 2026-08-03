@@ -10,6 +10,10 @@
 
 ### Fixed
 
+- Backend를 문서화된 `backend` 작업 디렉터리에서 실행할 때 검색 판정
+  서비스가 저장소 루트 Data 패키지를 요구하던 import 회귀를 제거하고,
+  Frontend Mock의 welfare 기대값을 현재 canonical Seed와 동기화
+  ([개발 기록](docs/development/development_notes/integration/policy_search_data_foundation.md))
 - React Router RSC advisory high 2건에 대응해 client-only Frontend를
   `react-router@8.3.0`으로 전환하고 자동·HTTP·Browser 라우팅 회귀로
   기존 Policy Discovery 동작을 확인

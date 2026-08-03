@@ -211,6 +211,37 @@ projection에 다시 저장하지 않는다.
   수행해 field별 일치어와 미일치어를 반환한다. 동의어·축약 확장, parser와
   최종 관련도 점수는 Backend 06 책임이다.
 
+### Backend 06 소비와 성능 경계
+
+Backend 06은 자연어를 구조화한 뒤 다음 PSF6 내부 값을 조합한다. 이 값은
+아직 공개 검색 API 응답 이름을 확정한 것이 아니다.
+
+| 내부 값 | Backend 06 소비 목적 |
+| --- | --- |
+| `RegionQueryResolution` | alias 해석 상태와 canonical 후보·모호성 표시 |
+| `RegionDecision` | 지역 3값, exact·ancestor·exclude 등 reason과 rule evidence |
+| `AgeDecision` | 범위·제한 없음·미상 reason |
+| `ApplicationStatusDecision` | 신청 상태 일치·불일치·미상 reason |
+| `ProjectionMatchEvidence` | field별 일치어와 미일치어, 검색 이유·점수 입력 |
+
+PSF7 로컬 PostgreSQL 18.4, `Korean_Korea.949`, 기본 `random_page_cost=4`에서
+합성 policy와 projection 20,000건 중 200건이 일치하는 query를 측정했다.
+기본 `ILIKE '%청년 월세%'`는 Sequential Scan 19.258ms, 기본 `LIKE`는
+Sequential Scan 2.597ms, `enable_seqscan=off`의 `ILIKE`는 trigram GIN
+Bitmap Scan 2.030ms였다. 이는 단일 로컬 실행 결과이며 Release 성능 보장이
+아니다.
+
+현재 GIN index는 사용 가능하지만 planner가 기본 선택하지 않고 `ILIKE`의
+case-insensitive 비교 비용도 관찰됐다. Backend 06은 실제 snapshot과 최종
+query·정렬·pagination을 대상으로 다음을 다시 확인한다.
+
+- 한국어와 이미 정규화된 field에 `LIKE`를 사용할 수 있는 범위
+- 영문 case-insensitive 요구와 `lower(...)` projection·expression index 필요성
+- 실제 match 비율에서 기본 planner 선택과 통계 정확도
+- 지역·연령·상태 join 및 정렬을 포함한 전체 plan과 batch 조회
+
+PSF7은 이 측정만으로 index, locale 또는 DB 설정을 바꾸지 않는다.
+
 ## 식별자와 upsert
 
 - DB identity는 `(source_id, external_id)` unique constraint다.

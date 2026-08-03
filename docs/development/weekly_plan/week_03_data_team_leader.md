@@ -193,10 +193,10 @@ Gate와 검증은
 [Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
 따른다.
 
-현재 PSF0~PSF6의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
+현재 PSF0~PSF7의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
 공식 행정구역 기준정보, 두 Source mapping과 Policy·관계·projection 원자적
-적재, 지역·조건 판정 primitive가 완료됐다. 기존 소비 호환·성능·실데이터
-재생을 검증하는 PSF7이 다음 Slice다.
+적재, 지역·조건 판정 primitive와 기존 소비 호환·성능·실데이터 재생 검증이
+완료됐다. Forest Gate와 Data 02 인계를 수행하는 PSF8이 다음 Slice다.
 
 ### 내가 수행할 역할
 
@@ -217,7 +217,7 @@ Gate와 검증은
 ### 선행·후속
 
 - 선행: DT1 completed
-- 완료: PSF6 지역·연령·신청 상태 3값 판정과 projection field별 근거
+- 완료: PSF7 기존 소비 호환, 합성 query plan과 actual Raw DB dry-run
 - 병렬 가능: Backend 테스트 골격, Frontend 검색 이유·미확인 조건 prototype
 - 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
   Backend 06 최종 query

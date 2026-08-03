@@ -189,6 +189,12 @@ PSF5는 Importer 조치를 projection version `1.0.0`, 호출자 소유 rebuild 
 단일 transaction 관계 교체로 구현했다. Runtime Normalizer warning도 accepted
 program과 함께 전달해 partial 분류 근거를 보존한다.
 
+PSF7은 기존 공개 `PolicyRead` 33개 field와 Frontend version union·Mock 소비를
+유지하고 Backend 판정 계층의 Source 패키지 실행 의존을 제거했다. 합성 20,000건
+plan에서는 trigram GIN이 강제 사용 가능하지만 기본 planner가 `ILIKE`에
+Sequential Scan을 선택했다. 최종 query·실데이터 분포 없이 index나 DB 비용
+설정을 바꾸지 않고 Backend 06의 plan 검증 항목으로 인계한다.
+
 Migration은 기존 row에 배열 `[]`, `coverage_scope=unknown`과 빈 projection을
 안전하게 준비하되 Source 근거를 생성하지 않는다. projection은 명시적인
 backfill/rebuild 절차로 채우고, downgrade는 새 테이블·컬럼을 제거하되 기존
