@@ -3,13 +3,13 @@
 ## 작업 정보
 
 - 시작일: 2026-08-03
-- 상태: in-progress
+- 상태: completed
 - 영역: Data·Backend 공동 통합, Frontend 소비 검토, Team Leader Gate
 - 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF7 completed, PSF8 next
+- 현재 Slice: PSF8 completed
 
 ## 목적
 
@@ -42,7 +42,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | PSF5 | completed | Policy·지역 규칙·versioned projection 원자적 적재와 Runtime warning lineage 보존 |
 | PSF6 | completed | 지역·연령·신청 상태 3값 판정, alias 모호성·projection field별 근거 |
 | PSF7 | completed | 기존 소비·Backend 실행 호환, 합성 query plan, actual Raw 재생·DB dry-run |
-| PSF8 | pending | Forest Gate와 Data 02 인계 |
+| PSF8 | completed | 전체 Gate, Git·비밀·Runtime 경계와 Data 02 DT2 인계 |
 
 ## 구현 내용
 
@@ -552,18 +552,47 @@ PostgreSQL plan은 18.4, `Korean_Korea.949`, `random_page_cost=4`,
 기존 Starlette `httpx` deprecation warning 1건은 유지하며 PSF7 범위에서
 패키지를 변경하지 않았다.
 
+### PSF8 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Data 전체 단위 테스트 | 102건 통과 |
+| Fixture·Seed 결정적 검사 | 13개 파일 일치 |
+| 행정구역 결정적 검사 | 지역 538건·별칭 1,080건 일치 |
+| Backend·Integration 전체 pytest | PostgreSQL 포함 102건 통과, 기존 warning 1건 |
+| Frontend 계약 테스트 | 7건 통과 |
+| Frontend lint·production build | 통과, Vite 8.1.5·210 modules |
+| Runtime DB | Alembic `20260803_0004`, Policy·rule·projection·CollectionRun 0건, 지역 538건·별칭 1,080건 |
+| 테스트 DB 정리 | 전체 테스트 후 `alembic_version` 외 public table 없음 |
+| Runtime·비밀 Git 경계 | `runtime/raw` ignore, DB·pgpass 추적 없음, 외부 키 2개와 tracked file exact 일치 0건 |
+| Source key 직접 참조 | Backend 판정·projection·repository 0건 |
+| 브랜치 병합 가능성 | 기반 브랜치 대비 0 behind·10 ahead, `develop` 대비 0 behind·12 ahead, 두 기준 모두 ancestor |
+| staged diff | 없음 |
+
+PowerShell 실행 정책이 `npm.ps1`을 차단한 최초 Frontend 명령은 검증 실패로
+숨기지 않았다. 설치나 정책을 바꾸지 않고 동일한 저장소 의존성을 사용하는
+`npm.cmd`로 다시 실행해 test·lint·build가 모두 통과했다. 행정구역 결정적
+검사의 최초 명령도 실제 CLI가 요구하는 `--snapshot-date`가 빠져 실패했으며,
+문서화된 `--snapshot-date 2026-08-03 --check`로 다시 실행해 통과했다.
+
+PSF8은 Schema·Fixture·Seed·DB·API 코드를 변경하지 않았다. PSF1~PSF7에서
+변경한 계약과 구현의 동기화, 기존 소비 회귀 및 실제 Raw 재생 증거를 전체
+Gate에서 재확인했다. `R1-SEARCH-DATA-SEMANTICS`의 기반 구현 책임은 종료됐지만
+인계 보드는 Data 02 DT2/G1의 세 영역 노출 의미 승인까지 유지한다.
+
 ## 남은 작업
 
 - 온통청년이 공개 `zipCd` code-to-name 표를 제공하지 않는 권위 공백은 남아
   있다. 전체 pagination에서 새 code가 나오면 exact crosswalk 외 값은
   `unmapped`로 보존하고 Source 문서가 확보되기 전 추정하지 않는다.
-- PSF8에서 전체 Forest Gate, Git·비밀·Runtime 경계와 Data 02 DT2 인계를
-  최종 검토해야 한다.
+- 사용자가 이 브랜치를 `feature/data/release-dataset-bootstrap`에 병합한 뒤
+  DT2의 Data 근거 준비를 재개한다. DT2/G1 공동 승인은 Backend 06·Frontend 04
+  초안이 준비된 뒤 수행한다.
 - Frontend 최종 디자인 또는 Integration 04에서 partial 배지를 제목 overflow
   밖에 배치하고 1280×720 목록·상세 Browser 시나리오를 다시 확인해야 한다.
 - Backend 06은 실제 snapshot과 최종 filter·정렬·pagination을 포함한 plan에서
   기본 `ILIKE` Sequential Scan과 trigram GIN 미선택 위험을 다시 평가해야 한다.
-- 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
-  PSF8 전체 Gate와 Data 02 DT2 소비 승인이 완료되어야 제거할 수 있다.
+- 기존 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03 기반 구현 완료를 표시하되,
+  Data 02 DT2/G1 소비 승인이 완료될 때까지 인계 보드에서 유지한다.
 - Source 간 canonical deduplication, Backend 최종 가중치와 지역 crawler는
   Forest 범위 밖이며 변경하지 않는다.

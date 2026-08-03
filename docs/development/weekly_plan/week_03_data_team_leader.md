@@ -193,11 +193,11 @@ Gate와 검증은
 [Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
 따른다.
 
-현재 PSF0~PSF7의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
+현재 PSF0~PSF8의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
 공식 행정구역 기준정보, 두 Source mapping과 Policy·관계·projection 원자적
 적재, 지역·조건 판정 primitive와 기존 소비 호환·성능·실데이터 재생 검증이
 완료됐다. Mock UI partial 배지 표시 문제는 Frontend·Integration 04에 인계하고
-Forest Gate와 Data 02 인계를 수행하는 PSF8이 다음 Slice다.
+Forest 전체 Gate와 Data 02 인계를 완료했다.
 
 ### 내가 수행할 역할
 
@@ -219,10 +219,12 @@ Forest Gate와 Data 02 인계를 수행하는 PSF8이 다음 Slice다.
 
 - 선행: DT1 completed
 - 완료: PSF7 기존 소비 호환, 합성 query plan과 actual Raw DB dry-run
+- 완료: PSF8 전체 Gate, Git·비밀·Runtime 경계와 Data 02 인계
 - 병렬 가능: Backend 테스트 골격, Frontend 검색 이유·미확인 조건 prototype
 - 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
   Backend 06 최종 query
-- 후속: PSF8 완료·기반 브랜치 병합 후 DT2 재개
+- 후속: 기반 브랜치 병합 후 DT2 Data 근거 준비 재개, 공동 G1은 Backend 06·
+  Frontend 04 초안 대기
 
 ## Slice DT2 - 검색 계약 공동 결정과 Gate G1 주관
 
@@ -632,7 +634,8 @@ git status --short
 
 - [x] 2주차 병합 기준과 3주차 Forest·담당 확인
 - [x] Gate G0 시작 승인
-- [ ] Integration 03 PSF0~PSF8 완료·병합 승인
+- [x] Integration 03 PSF0~PSF8 완료
+- [ ] Integration 03 기반 브랜치 병합 승인
 - [ ] Gate G1 검색 계약 승인
 - [ ] Gate G2 세 영역 준비 증거 확인
 - [ ] Gate G3 실제 DB → API → UI 통합 확인

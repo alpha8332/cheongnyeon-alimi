@@ -53,11 +53,12 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 - canonical Seed → PostgreSQL → Policy API → React UI 통합은 검증됐다.
 - Data 02 DT1에서 Git 제외 `runtime/raw`에 실제 표본 25개를 저장했지만
   Runtime DB 적재 smoke는 완료되지 않았다.
-- Integration 03 PSF0~PSF7에서 검색 데이터 ADR, Normalized 1.1.0 실행 계약,
+- Integration 03 PSF0~PSF8에서 검색 데이터 ADR, Normalized 1.1.0 실행 계약,
   `kr-bjd-20260803` 행정구역 기준정보, PostgreSQL 저장 기반과 두 Source
   mapping·원자적 관계·projection 적재, 지역·조건 3값 판정 primitive를
   완료하고 소비 호환·성능·실데이터 재생까지 검증했다. Mock UI partial 배지
-  표시 문제는 Frontend 최종 디자인·Integration 04 인계사항이며 PSF8이 다음이다.
+  표시 문제는 Frontend 최종 디자인·Integration 04 인계사항이다. 전체 Gate와
+  Data 02 인계를 마쳤으며 기반 브랜치 병합 후 DT2 Data 준비를 재개한다.
 - 전체 또는 릴리스 범위 pagination과 자동 주기 적재는 구현하지 않았다.
 - 공개 Policy API에는 자유 `keyword`와 `age` query가 없다.
 - Frontend 검색은 최대 100건을 받은 뒤 문장 전체 포함 여부를 검사한다.

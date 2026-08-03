@@ -20,7 +20,7 @@
 | Backend 04 | Admin Access Control | [개발 계획](backend/04_admin_access_control.md) | draft |
 | Backend 05 | CollectionRun Admin API | [개발 계획](backend/05_collection_run_admin_api.md) | draft |
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
-| Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | in-progress |
+| Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.

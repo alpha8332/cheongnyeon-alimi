@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT1 completed, Integration 03 foundation next, then DT2
+- 현재 Slice: Integration 03 completed, base merge pending, then DT2
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 

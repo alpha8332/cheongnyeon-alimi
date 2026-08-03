@@ -4,11 +4,11 @@
 
 - 번호: Integration 03
 - 담당 영역: Data·Backend 공동 통합
-- 상태: in-progress
+- 상태: completed
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF7 completed, PSF8 next
+- 현재 Slice: PSF8 completed
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -458,6 +458,7 @@ PSF7의 데이터·API·소비 계약에는 영향을 주지 않는다. 이 항�
 
 ### PSF8 - Gate와 Data 02 인계
 
+- 상태: completed (`2026-08-03`)
 - 목적: 새 기반을 현재 Data Forest에 병합 가능한 상태로 만든다.
 - 선행 조건: PSF0~PSF7
 - 수행:
@@ -471,6 +472,14 @@ PSF7의 데이터·API·소비 계약에는 영향을 주지 않는다. 이 항�
   - Forest 완료 기준 전부 충족
   - `R1-SEARCH-DATA-SEMANTICS` 공동 확인 종료 가능
   - `feature/data/release-dataset-bootstrap` 병합 후 DT2 재개 가능
+
+전체 Data 102건, Backend·Integration PostgreSQL 102건, Frontend 계약 7건과
+lint·production build, 결정적 Fixture 13개 및 지역 538건·별칭 1,080건 검증이
+통과했다. Runtime DB는 Alembic `20260803_0004`와 정책 0건을 유지했고 비밀키,
+Runtime Raw와 DB 파일은 Git에서 추적되지 않는다. 기반 브랜치와 `develop`은
+모두 현재 브랜치의 ancestor이므로 기반 브랜치에는 fast-forward 병합할 수
+있다. 실제 병합은 수행하지 않았으며 병합 후 Data 02 DT2의 Data 근거 준비를
+재개한다. DT2/G1 공동 승인은 Backend 06·Frontend 04 초안을 기다린다.
 
 ## Gate와 의존 순서
 
@@ -572,8 +581,8 @@ git status --short
 - Source 간 같은 정책의 canonical 병합은 이 Forest에서 해결하지 않는다.
 - “완벽한 미래 예측”보다 검증된 Source 근거·version·Migration 가능성을
   우선한다. 알 수 없는 값은 `unknown`으로 보존한다.
-- 이 stacked 브랜치가 장기화되면 `develop`과 충돌할 수 있으므로 PSF8 전에
-  기반 브랜치와 `develop` 차이를 검토한다.
+- PSF8에서 기반 브랜치와 `develop`이 모두 현재 브랜치의 ancestor임을
+  확인했다. 실제 병합 전 새 커밋이 생기면 ancestry와 충돌 여부를 다시 본다.
 
 ## 관련 문서
 
