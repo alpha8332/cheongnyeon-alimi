@@ -89,8 +89,18 @@ match는 하지 않는다.
 
 ## 소비 경계
 
-- PSF2는 파일 기반 기준정보와 resolver만 제공하며 PostgreSQL 테이블은
-  PSF3에서 Migration한다.
+- PSF3는 파일 기준정보와 같은 필드의 PostgreSQL 지역·별칭 테이블과
+  무변조·idempotent importer를 제공한다. Migration 적용 후 다음 명령으로
+  적재한다.
+
+  ```powershell
+  Set-Location backend
+  ..\.venv\Scripts\python.exe -B -m app.cli.import_regions
+  ```
+
+  `--dry-run`은 전체 지역·별칭을 검증하고 DB 변경을 rollback한다. 같은
+  versioned scheme의 저장 값이 Seed와 다르거나 예상 밖 code·alias가 있으면
+  덮어쓰지 않고 실패한다.
 - 미매핑 code는 자동 보정하지 않고 `unmapped`로 전달해 Source 근거를
   보존한다.
 - 폐지 code는 조회할 수 있지만 기본 resolver 후보는 active만 사용한다.

@@ -193,9 +193,9 @@ Gate와 검증은
 [Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
 따른다.
 
-현재 PSF0~PSF2의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture와
-공식 행정구역 기준정보가 완료됐고 PSF3 Migration이 다음 Slice다. PSF3 전에는 의미 있는 새
-검색 필드를 기존 31개 ORM에 적재하지 않는다.
+현재 PSF0~PSF3의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
+공식 행정구역 기준정보와 PostgreSQL 저장 기반이 완료됐고 PSF4 Source
+mapping이 다음 Slice다. 관계·projection의 원자적 적재는 PSF5에서 완성한다.
 
 ### 내가 수행할 역할
 

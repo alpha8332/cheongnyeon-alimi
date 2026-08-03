@@ -29,12 +29,9 @@ JSON_COLUMNS = {
     "provenance",
 }
 PENDING_SEARCH_STORAGE_FIELDS = {
-    "keywords",
-    "life_stages",
-    "target_groups",
-    "coverage_scope",
     "region_rules",
 }
+JSON_COLUMNS.update({"keywords", "life_stages", "target_groups"})
 
 
 def policy_values(**overrides):
@@ -145,6 +142,7 @@ def test_policy_constraint_and_index_names_are_stable():
         "policy_application_schedule",
         "policy_application_status",
         "policy_data_quality_status",
+        "policy_coverage_scope",
     }
     assert index_names == {
         "ix_policies_source_id",
@@ -152,6 +150,10 @@ def test_policy_constraint_and_index_names_are_stable():
         "ix_policies_data_quality_status",
         "ix_policies_categories_gin",
         "ix_policies_regions_gin",
+        "ix_policies_keywords_gin",
+        "ix_policies_life_stages_gin",
+        "ix_policies_target_groups_gin",
+        "ix_policies_coverage_scope",
     }
 
 

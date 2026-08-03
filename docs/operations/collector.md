@@ -109,6 +109,19 @@ runtime/raw
 - 실제 적재는 `collection_runs` Migration과 실행 이력을 사용하므로 반드시
   최신 Alembic head를 적용한다.
 
+PSF3 이후 지역 code를 사용하는 Source를 적재하기 전에는 versioned 지역
+기준정보도 같은 DB에 준비한다.
+
+```powershell
+Set-Location backend
+..\.venv\Scripts\python.exe -B -m app.cli.import_regions
+Set-Location ..
+```
+
+반복 실행은 같은 값이면 unchanged이며, 같은 scheme의 DB 값이 잠긴 Seed와
+다르면 덮어쓰지 않고 실패한다. 현재 Source별 지역 매핑은 PSF4 전까지
+활성화하지 않는다.
+
 온통청년 최신 Raw 회차를 검증만 하고 rollback:
 
 ```powershell

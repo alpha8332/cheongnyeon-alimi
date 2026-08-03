@@ -3,9 +3,9 @@
 ## 문서 상태
 
 - 상태: 현재 구현 기준
-- 입력 계약: `NormalizedProgram` 1.0.0 또는 기본 검색값만 가진 1.1.0
-- 저장 모델: Backend `Policy`
-- Migration: `20260728_0001`
+- 입력 계약: `NormalizedProgram` 1.0.0·1.1.0
+- 저장 모델: Backend `Policy`, 행정구역·정책 지역 관계·검색 projection 모델
+- Migration head: `20260803_0004`
 
 이 문서는 Data의 canonical JSON, Backend importer, PostgreSQL `policies`
 테이블과 공개 Policy API 사이의 현재 필드 매핑을 정의한다. 논리 필드의 의미와
@@ -14,8 +14,8 @@
 
 ## 매핑 원칙
 
-- 현재 저장되는 기존 Normalized 31개 필드는 이름을 바꾸지 않고 같은 이름의
-  DB 컬럼에 저장한다.
+- `region_rules`를 제외한 Normalized 35개 필드는 이름을 바꾸지 않고 같은
+  이름의 DB 컬럼에 저장한다. `region_rules`는 관계형 테이블에 저장한다.
 - 선택 단일 값은 nullable 컬럼에 `NULL`, 복수 값은 non-null JSONB에 JSON
   배열로 저장한다.
 - 날짜는 PostgreSQL `date`, 수집 시각은 timezone-aware `timestamptz`로
@@ -26,7 +26,7 @@
 - 저장 계층이 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력
   계약에는 없고 공개 Policy DTO에 추가된다.
 
-## 31개 필드 매핑
+## 36개 필드 매핑
 
 `직접`은 JSON 값과 DB 조회 값이 같은 의미와 값을 유지한다는 뜻이다. 날짜와
 시각만 Python·PostgreSQL 타입으로 변환한 뒤 아래 비교 기준을 적용한다.
@@ -42,6 +42,9 @@
 | `summary` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `category_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `categories` | category string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `keywords` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 기존 DTO 비노출 |
+| `life_stages` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 기존 DTO 비노출 |
+| `target_groups` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 기존 DTO 비노출 |
 | `application_period_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `application_start` | date string 또는 null | `date` | 예 | Python `date` | ISO date 노출 |
 | `application_end` | date string 또는 null | `date` | 예 | Python `date` | ISO date 노출 |
@@ -49,6 +52,8 @@
 | `application_status` | enum 또는 null | `policy_application_status` | 예 | 직접 | 노출 |
 | `region_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `regions` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `coverage_scope` | coverage enum | `policy_coverage_scope` | 아니요 | 직접 | 기존 DTO 비노출 |
+| `region_rules` | rule object 배열 | `policy_region_rules` 행 | 해당 없음 | PSF5에서 관계 행 변환 | 기존 DTO 비노출 |
 | `age_min` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
 | `age_max` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
 | `age_condition_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
@@ -67,10 +72,13 @@
 
 ### JSONB 배열
 
-다음 8개 필드는 PostgreSQL JSONB에 원소 순서와 값을 그대로 저장한다.
+다음 11개 필드는 PostgreSQL JSONB에 원소 순서와 값을 그대로 저장한다.
 
 ```text
 categories
+keywords
+life_stages
+target_groups
 regions
 education_statuses
 employment_statuses
@@ -82,8 +90,9 @@ provenance
 
 `category_text`·`categories`와 `region_text`·`regions`는 원문과 정규화 결과를
 동시에 보존한다. 배열이 비어 있으면 `[]`이며 `NULL`, 빈 문자열 또는 단일
-string으로 바꾸지 않는다. `categories`와 `regions`에는 GIN index가 있고
-Repository는 배열 원소의 exact membership으로 검색한다.
+string으로 바꾸지 않는다. `categories`, `regions`와 세 검색 배열에는 GIN
+index가 있다. 기존 Repository는 categories·regions의 exact membership
+의미를 유지한다.
 
 ### 일정·상태와 기간
 
@@ -96,9 +105,9 @@ Repository는 배열 원소의 exact membership으로 검색한다.
 ### provenance와 공개 API
 
 `provenance`는 Raw 문서 ID·역할·hash·수집 시각·안전한 source URL의 object
-배열로 DB에 보존한다. 일반 사용자 `PolicyRead`에는 포함하지 않는다. 나머지
-Normalized 30개 필드는 공개 DTO에 있고 저장 계층이 생성한 다음 필드가
-추가된다.
+배열로 DB에 보존한다. 일반 사용자 `PolicyRead`에는 포함하지 않는다. 검색
+전용 5개 필드도 기존 목록·상세 DTO에 추가하지 않는다. 기존 공개 필드와
+저장 계층이 생성한 다음 필드만 기존 API에 유지된다.
 
 | 저장 계층 생성 필드 | PostgreSQL 타입 | 현재 생성 경계 | 공개 API |
 | --- | --- | --- | --- |
@@ -121,29 +130,51 @@ invalid는 DB enum에는 존재하지만 importer admission에서 거부되므�
 Policy API에 도달하지 않는다. partial은 저장하며
 `include_partial=true`일 때만 공개한다.
 
-## Normalized 1.1.0 전환 경계
+## Normalized 1.1.0 저장 경계
 
 PSF1에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
 `target_groups`, `coverage_scope`, `region_rules`를 더한 36개 필드가 됐다.
-현재 Migration `20260728_0001`과 Policy ORM은 기존 31개만 저장한다.
+Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저장한다.
 
-- 세 검색 배열이 `[]`, coverage가 `unknown`, rules가 `[]`인 1.1.0 입력은
-  기존 저장 계약으로 호환된다.
-- 이 기본값 중 하나라도 의미 있는 값이면 importer가
-  `search_storage_not_ready`로 거부한다.
-- 따라서 PSF3 전에는 새 검색 값을 조용히 버린 채 적재하지 않는다.
+- 기존 row는 배열 `[]`, coverage `unknown`으로 backfill하지만 실제
+  `schema_version` 값은 바꾸지 않는다.
+- 신규 ORM·DB default는 1.1.0이며 importer는 입력 version을 그대로 쓴다.
+- 현재 importer는 `keywords`, `life_stages`, `target_groups`,
+  `coverage_scope`를 저장한다.
+- `region_rules` 관계 교체와 projection 동기화는 PSF5의 단일 transaction
+  책임이다. PSF5 전 비어 있지 않은 rules는
+  `search_relation_storage_not_ready`로 거부해 조용한 손실을 막는다.
 - 1.0.0 입력은 Normalized compatibility adapter에서만 1.1.0 안전 기본값으로
   확장하며 지역·전국 여부를 추정하지 않는다.
-- 새 5개 필드의 PostgreSQL 컬럼·관계 저장과 전체 36개 왕복 검증은 PSF3
-  Migration에서 이 문서를 갱신한 뒤 활성화한다.
 
 PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 identity로
-사용한다. PostgreSQL에는 아직 적재하지 않았으며 PSF3의
-`administrative_regions`는 공식 `parent_code`와 별도로 nullable
+사용한다. `administrative_regions`는 공식 `parent_code`와 별도로 nullable
 `aggregate_parent_code`를 저장해야 한다. 비자치구의 원천 parent를 집계 시로
 덮어쓰지 않으며 alias 다중 후보, active·retired와 유효기간을 보존한다.
 구체적인 생성·해석 계약은
 [행정구역 기준정보](../data/administrative_regions.md)를 따른다.
+
+### 관계 테이블과 DB 불변식
+
+- `administrative_region_aliases`는 동일 별칭의 여러 canonical 후보를
+  허용하고 동일 region·kind 중복은 금지한다.
+- `policy_region_rules`는 matched일 때 canonical FK가 필요하고,
+  unmapped·ambiguous일 때 canonical FK를 금지하면서 Source 근거를 요구한다.
+- 같은 정책·canonical 지역의 중복과 include·exclude 충돌은 unique
+  constraint로 금지한다.
+- 지연 constraint trigger는 transaction 최종 상태에서 `nationwide`의 rule
+  금지, `regional`의 matched include 필수, `unknown`의 matched rule 금지를
+  검사한다.
+- 지역 parent·aggregate parent는 복합 FK와 지연 cycle trigger로 검사한다.
+
+### 검색 projection
+
+`policy_search_documents`는 정책당 한 행이며 title·keyword·summary·eligibility·
+support와 합성 `search_text`, `projection_version`, timezone `updated_at`을
+저장한다. Migration은 `pg_trgm` extension과 `search_text`의
+`gin_trgm_ops` GIN index를 준비한다. projection 생성·교체는 PSF5 책임이며
+최종 점수는 Backend 06에서 확정한다. downgrade는 공용일 수 있는 extension은
+제거하지 않고 PSF3가 만든 index·table·enum·trigger만 제거한다.
 
 ## 식별자와 upsert
 
@@ -165,9 +196,8 @@ PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 iden
 canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 다음처럼
 비교한다.
 
-1. Seed 객체와 `NormalizedProgram.FIELD_NAMES`는 36개로 같고, PSF3 전
-   importer write key와 ORM의 system field 제외 컬럼 집합은 검색 5개 필드를
-   제외한 기존 31개로 같다.
+1. Seed 객체와 `NormalizedProgram.FIELD_NAMES`는 36개로 같고 Policy ORM의
+   system field 제외 컬럼은 `region_rules`를 제외한 35개다.
 2. string, integer, enum, null과 JSONB 배열·object는 값과 배열 순서를 exact
    equality로 비교한다.
 3. `application_start`·`application_end`는 DB `date.isoformat()`과 Seed의
@@ -175,7 +205,7 @@ canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 �
 4. `collected_at`은 문자열 offset이 아니라 UTC absolute instant를 비교한다.
 5. 빈 배열은 DB에서도 `[]`, null은 DB에서도 `NULL`이어야 한다.
 6. 다중 category와 provenance object의 누락·병합·축약이 없어야 한다.
-7. 기존 공개 API 필드 집합은 기존 저장 31개에서 `provenance`만 제외하고
+7. 기존 공개 API 필드 집합은 기존 31개에서 `provenance`만 제외하고
    `id`·`created_at`·`updated_at`을 더한 집합이다. 검색 5개 필드는 기존
    목록·상세 DTO에 노출하지 않는다.
 

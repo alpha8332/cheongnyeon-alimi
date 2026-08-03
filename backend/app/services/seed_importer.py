@@ -22,13 +22,7 @@ EXTERNAL_ID_REQUIRED_SOURCES = frozenset(
     }
 )
 PENDING_SEARCH_STORAGE_FIELDS = frozenset(
-    {
-        "keywords",
-        "life_stages",
-        "target_groups",
-        "coverage_scope",
-        "region_rules",
-    }
+    {"region_rules"}
 )
 
 IDENTITY_FIELDS = frozenset({"source_id", "external_id"})
@@ -134,23 +128,14 @@ def _search_storage_issue(
     item: Mapping[str, Any],
     index: int,
 ) -> ImportIssue | None:
-    has_meaningful_search_data = any(
-        (
-            bool(item.get("keywords")),
-            bool(item.get("life_stages")),
-            bool(item.get("target_groups")),
-            item.get("coverage_scope") != "unknown",
-            bool(item.get("region_rules")),
-        )
-    )
-    if not has_meaningful_search_data:
+    if not item.get("region_rules"):
         return None
     return ImportIssue(
         index=index,
         source_id=_nonempty_string(item.get("source_id")),
         external_id=_nonempty_string(item.get("external_id")),
-        code="search_storage_not_ready",
-        path=f"$[{index}]",
+        code="search_relation_storage_not_ready",
+        path=f"$[{index}].region_rules",
     )
 
 
@@ -166,6 +151,9 @@ def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
         "summary": item.get("summary"),
         "category_text": item.get("category_text"),
         "categories": item["categories"],
+        "keywords": item["keywords"],
+        "life_stages": item["life_stages"],
+        "target_groups": item["target_groups"],
         "application_period_text": item.get("application_period_text"),
         "application_start": parse_date(item.get("application_start")),
         "application_end": parse_date(item.get("application_end")),
@@ -173,6 +161,7 @@ def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
         "application_status": item.get("application_status"),
         "region_text": item.get("region_text"),
         "regions": item["regions"],
+        "coverage_scope": item["coverage_scope"],
         "age_min": item.get("age_min"),
         "age_max": item.get("age_max"),
         "age_condition_text": item.get("age_condition_text"),

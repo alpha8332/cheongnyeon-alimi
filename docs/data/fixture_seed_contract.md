@@ -92,9 +92,9 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 
 PSF1 canonical Seed의 새 검색 필드는 Source 매핑 전이므로 모두 위 안전한
 기본값이다. 기존 1.0.0 입력은 compatibility adapter가 이 기본값만 보완하며
-지역이나 검색 조건을 추정하지 않는다. PSF3 Migration 전 Backend importer는
-기본값만 저장 경계로 통과시키고 의미 있는 검색 값은
-`search_storage_not_ready`로 거부한다.
+지역이나 검색 조건을 추정하지 않는다. PSF3 Backend importer는 검색 배열과
+coverage를 저장하지만, PSF5 관계 transaction 전 비어 있지 않은
+`region_rules`는 `search_relation_storage_not_ready`로 거부한다.
 
 ### Backend 검토 항목
 
@@ -155,8 +155,9 @@ Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소�
 Backend 02 B6의 PostgreSQL 18.4 종단 검증은 당시 canonical Seed 4건의 기존
 31개 필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone
 instant·provenance 손실 0건을 확인했다. PSF1의 1.1.0 canonical Seed는 새
-검색 필드가 안전한 기본값일 때 같은 31개 저장 필드로 호환되며, 36개 전체
-필드의 PostgreSQL 왕복 검증은 PSF3 Migration 이후 수행한다.
+검색 필드가 안전한 기본값일 때 호환된다. PSF3는 정책 검색 컬럼과 지역·규칙·
+projection 구조의 PostgreSQL 왕복을 검증하며, 실제 36개 입력의 관계형
+transaction 검증은 PSF5에서 수행한다.
 Frontend TypeScript 타입·Mock 소비 코드는 별도 원격 브랜치에 있으나 D6
 검토에서 현재 Policy API와의 계약 차이를 확인했다. Data 영역은 해당
 Frontend 코드를 대신 수정하거나 승인하지 않으며,
@@ -207,7 +208,7 @@ Fixture 12개와 `initial_programs.json`의 누락·추가·byte 차이가 있�
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | 1.1.0 Schema·legacy adapter·결정적 재생성·검색 지역 경계 Fixture 테스트 완료 |
-| Backend | transitional | 기존 31개 저장 필드는 유지하고 1.1.0 기본값 입력만 허용하며 의미 있는 검색 필드는 PSF3 전 명시적으로 거부 |
+| Backend | transitional | 검색 배열·coverage와 지역·규칙·projection DB 구조 구현, 비어 있지 않은 region rules의 importer transaction은 PSF5 대기 |
 | Frontend | transitional | FE 2A 공개 `PolicyDto` 계약을 유지하고 `schema_version`만 1.0.0·1.1.0 union으로 소비하며 검색 5개 필드는 공개 DTO에서 제외 |
 
 ### Frontend 초기 Mock 검토 결과 (2026-07-28)

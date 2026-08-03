@@ -75,8 +75,7 @@ def _serialized_policy(policy: Policy) -> dict[str, Any]:
 
 def _normalized_seed(program: dict[str, Any]) -> dict[str, Any]:
     selected = copy.deepcopy(program)
-    for field in NormalizedProgram.SEARCH_FIELD_NAMES:
-        selected.pop(field)
+    selected.pop("region_rules")
     selected["collected_at"] = (
         datetime.fromisoformat(
             selected["collected_at"].replace("Z", "+00:00")

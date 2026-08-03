@@ -19,8 +19,8 @@
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
 - [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
-  NormalizedProgram 1.1.0의 36개 논리 필드와 현재 31개
-  PostgreSQL·Importer·공개 API 전환 매핑
+  NormalizedProgram 1.1.0의 36개 논리 필드, 행정구역·검색 projection
+  PostgreSQL·Importer·공개 API 경계
 - [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
   Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경

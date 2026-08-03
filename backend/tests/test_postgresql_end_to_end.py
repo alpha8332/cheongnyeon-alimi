@@ -68,8 +68,7 @@ def serialized_policy(policy: Policy) -> dict[str, Any]:
 
 def current_storage_program(program: dict[str, Any]) -> dict[str, Any]:
     selected = copy.deepcopy(program)
-    for field in NormalizedProgram.SEARCH_FIELD_NAMES:
-        selected.pop(field)
+    selected.pop("region_rules")
     return selected
 
 

@@ -328,8 +328,9 @@ invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하�
 Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
 버전이고 1.1.0은 PSF1에서 검색 데이터 5개 필드를 추가한 minor version이다.
 Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical Seed를
-구현했다. Backend에는 기존 31개 필드를 소비하는 Policy ORM·응답 모델과
-최초 Alembic revision이 있다. 배열·조건·provenance는 PostgreSQL `JSONB`,
+구현했다. Backend Policy ORM은 PSF3에서 `region_rules`를 제외한 35개 필드와
+관계형 지역·검색 projection 모델로 확장됐다. 배열·조건·provenance는
+PostgreSQL `JSONB`,
 수집 시각은 timezone-aware timestamp, 일정·상태·품질은 DB enum으로
 매핑한다. SQLite `JSON`과 CHECK constraint는 명시적인 단위 테스트
 대체 경계이며 PostgreSQL 검증 결과를 대신하지 않는다. Frontend 공개
@@ -349,23 +350,22 @@ ID를 일반화하지 않는다. Backend 02 B4 importer는 이 문서와 실행 
 날짜·null·빈 배열·enum에 importer 기본값을 적용하지 않으며 dry-run도 실제
 upsert 후 rollback한다.
 
-PSF1 시점의 canonical Seed는 1.1.0이지만 PSF3 Migration 전 Policy ORM은
-새 검색 5개 필드를 아직 저장하지 않는다. 이 전환 중 importer는 검색 배열이
-모두 `[]`, coverage가 `unknown`, rules가 `[]`인 안전한 기본값만 기존 31개
-저장 경계에 허용한다. 하나라도 의미 있는 검색 값이 있으면
-`search_storage_not_ready`로 batch를 쓰지 않아 조용한 손실을 막는다.
+PSF3 Migration은 세 검색 배열과 coverage를 Policy에 저장하고 기존 row를
+`[]`·`unknown`으로 backfill한다. 실제 `schema_version`은 바꾸지 않는다.
+`region_rules` 관계 교체와 projection 동기화는 PSF5 책임이므로, 현재
+importer는 비어 있지 않은 rule을 `search_relation_storage_not_ready`로
+거부해 조용한 손실을 막는다.
 Frontend는 1.0.0·1.1.0 `schema_version`을 모두 허용하되 새 검색 5개 필드를
 기존 `PolicyDto`에 포함하지 않는다.
 
-현재 1.1.0의 36개 필드 중 기존 31개 필드의 PostgreSQL 매핑과 새 5개 필드의
-PSF1→PSF3 전환 경계는
+현재 1.1.0의 36개 필드와 PostgreSQL 컬럼·관계 매핑은
 [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
 따른다.
 
 [Fixture와 Seed 계약](fixture_seed_contract.md)은 1.1.0의 Backend 저장 후보,
 Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 실제
-PostgreSQL 저장은 PSF3, Source 값 채움은 PSF4, transaction은 PSF5에서
-완성한다.
+PostgreSQL 구조는 PSF3, Source 값 채움은 PSF4, 관계·projection의 원자적
+transaction은 PSF5에서 완성한다.
 
 ## JSON Schema 동기화 규칙
 

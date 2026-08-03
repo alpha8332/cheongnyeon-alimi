@@ -24,6 +24,9 @@ DATE_FIELDS = frozenset({"application_start", "application_end"})
 JSON_ARRAY_FIELDS = frozenset(
     {
         "categories",
+        "keywords",
+        "life_stages",
+        "target_groups",
         "regions",
         "education_statuses",
         "employment_statuses",
@@ -74,20 +77,19 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     )
     public_api_fields = frozenset(PolicyRead.model_fields)
 
-    storage_candidate_fields = (
-        normalized_fields - NormalizedProgram.SEARCH_FIELD_NAMES
-    )
+    storage_candidate_fields = normalized_fields - {"region_rules"}
 
     assert len(normalized_fields) == 36
     assert frozenset(schema["required"]) == normalized_fields
     assert NormalizedProgram.FIELD_NAMES == normalized_fields
-    assert PENDING_SEARCH_STORAGE_FIELDS == (
-        NormalizedProgram.SEARCH_FIELD_NAMES
-    )
+    assert PENDING_SEARCH_STORAGE_FIELDS == {"region_rules"}
     assert orm_fields == storage_candidate_fields
     assert importer_fields == storage_candidate_fields
     assert public_api_fields == (
-        storage_candidate_fields - {"provenance"} | SYSTEM_FIELDS
+        normalized_fields
+        - NormalizedProgram.SEARCH_FIELD_NAMES
+        - {"provenance"}
+        | SYSTEM_FIELDS
     )
 
 
@@ -116,8 +118,7 @@ def test_importer_conversion_preserves_every_seed_field():
         values = _policy_values(item)
 
         for field in (
-            NormalizedProgram.FIELD_NAMES
-            - NormalizedProgram.SEARCH_FIELD_NAMES
+            NormalizedProgram.FIELD_NAMES - {"region_rules"}
         ):
             actual = values[field]
             expected = item[field]

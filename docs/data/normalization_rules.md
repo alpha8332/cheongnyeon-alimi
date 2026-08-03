@@ -232,9 +232,9 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 - 기존 Seed의 재생성 필요성
 - Backend 필터와 Frontend 표시 영향
 
-현재 Backend는 기존 31개 저장 필드만 보존하므로 PSF3 Migration 전에는 새
-검색 필드가 모두 안전한 기본값인 1.1.0 입력만 적재한다. 의미 있는 검색 값이
-있으면 `search_storage_not_ready`로 거부해 조용한 데이터 손실을 막는다.
+현재 Backend는 검색 배열과 coverage를 Policy 컬럼에 저장한다. PSF5 전에는
+비어 있지 않은 `region_rules`를
+`search_relation_storage_not_ready`로 거부해 관계 손실을 막는다.
 Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
 공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
 Slice에서 별도로 연결한다.

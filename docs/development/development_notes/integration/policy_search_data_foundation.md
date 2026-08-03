@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF2 completed, PSF3 next
+- 현재 Slice: PSF3 completed, PSF4 next
 
 ## 목적
 
@@ -37,7 +37,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | PSF0 | completed | 현재 lineage·손실·partial 영향 감사, ADR 0001 승인, version·DB·API 경계 확정 |
 | PSF1 | completed | Normalized 1.1.0 실행 계약·legacy adapter·지역 경계 Fixture·소비 전환 검증 |
 | PSF2 | completed | 공식 법정동 snapshot, versioned 지역·별칭 Seed와 exact resolver |
-| PSF3 | pending | PostgreSQL Migration·ORM |
+| PSF3 | completed | 검색 컬럼·지역 관계·projection Migration, 제약과 지역 Seed 적재 |
 | PSF4 | pending | Source Adapter·정규화 |
 | PSF5 | pending | Import transaction·projection 동기화 |
 | PSF6 | pending | 지역·조건 판정 primitive |
@@ -149,6 +149,32 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
   아산·폐지 천안군 code로 교체했다. Source 응답과 정책 내용은 계속 합성이며
   온통청년 `zipCd`의 의미 확정은 PSF4에 남겼다.
 
+### PSF3 - PostgreSQL Migration과 ORM
+
+- Alembic head `20260803_0004`를 추가해 Policy에 `keywords`, `life_stages`,
+  `target_groups` JSONB와 `coverage_scope` enum을 저장한다. 기존 row에는
+  `[]`·`unknown`을 backfill하지만 실제 `schema_version`은 변경하지 않는다.
+- `administrative_regions`, `administrative_region_aliases`,
+  `policy_region_rules`, `policy_search_documents` ORM과 테이블을 구현했다.
+  공식 parent와 aggregate parent, 유효기간, 다중 별칭, Source 근거와
+  matched·unmapped·ambiguous를 관계형으로 보존한다.
+- 지역 parent는 composite FK와 deferred cycle trigger로 검사한다. 정책
+  coverage는 transaction 최종 상태에서 nationwide rule 금지, regional
+  matched include 필수, unknown matched rule 금지를 검사한다.
+- 같은 정책·canonical 지역의 중복과 include·exclude 충돌을 unique
+  constraint로 차단하고 unresolved rule은 canonical FK를 금지하면서 Source
+  근거를 요구한다.
+- `policy_search_documents.search_text`에 `pg_trgm`의 `gin_trgm_ops` GIN
+  index를 추가했다. 이 Migration이 설치한 것인지 구분할 수 없는 공용
+  extension은 downgrade에서 제거하지 않는다.
+- 지역 Seed importer와 `python -m app.cli.import_regions`를 추가했다. 같은
+  versioned scheme을 반복 적재하면 unchanged이고, DB 값이 Seed와 다르거나
+  예상 밖 code·alias가 있으면 덮어쓰지 않고 transaction을 실패시킨다.
+- 기존 Policy importer는 검색 배열·coverage를 저장하도록 확장했다.
+  `region_rules` 관계·projection의 원자적 교체는 PSF5 책임이므로 비어 있지
+  않은 rules는 `search_relation_storage_not_ready`로 명시적으로 거부한다.
+- 기존 Policy 목록·상세 API와 Frontend DTO 필드 집합은 변경하지 않았다.
+
 ## 주요 변경 파일
 
 - `collectors/normalized.py`
@@ -184,6 +210,16 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `scripts/build_administrative_regions.py`
 - `tests/test_administrative_regions.py`
 - `docs/data/administrative_regions.md`
+- `backend/alembic/versions/20260803_0004_policy_search_storage.py`
+- `backend/app/models/administrative_region.py`
+- `backend/app/models/policy_search.py`
+- `backend/app/models/policy.py`
+- `backend/app/services/region_reference_importer.py`
+- `backend/app/services/seed_importer.py`
+- `backend/app/cli/import_regions.py`
+- `backend/tests/test_policy_search_models.py`
+- `backend/tests/test_region_reference_importer.py`
+- `backend/tests/test_postgresql_policy_search_migration.py`
 
 ## 설계 결정
 
@@ -259,14 +295,36 @@ PSF2는 DB Schema나 공개 API·Frontend UI를 변경하지 않는다. PostgreS
 기존 Starlette `httpx` deprecation warning 1건은 그대로 발생했으며 PSF2
 범위에서 의존성을 바꾸지 않았다.
 
+### PSF3 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Data 단위 테스트 | 100건 통과 |
+| Backend·Integration 전체 pytest | PostgreSQL 포함 91건 통과 |
+| 신규 PostgreSQL Migration 종단 | 빈·populated upgrade, downgrade→upgrade와 constraint 통과 |
+| 지역 Seed PostgreSQL 적재 | 지역 538건·별칭 1,080건, 반복 적재 unchanged |
+| Runtime DB Migration | `20260730_0003` → `20260803_0004` 적용 |
+| Runtime DB 상태 | Policy·CollectionRun·rule·projection 0건 유지, 지역 538건·별칭 1,080건 |
+| `pg_trgm` | Runtime·`_test` DB 설치 및 trgm GIN index 확인 |
+
+전용 `_test` DB에서 기존 1.0.0 row를 먼저 만든 뒤 head로 upgrade해 version을
+그대로 유지하면서 새 기본값만 채우는 것을 확인했다. 지역 parent·aggregate
+parent, matched·unmapped rule, coverage 불변식, canonical 충돌, cycle,
+projection timezone 왕복을 검사했다. downgrade 후 기존 Policy row·31개
+계약이 남고 재-upgrade되는 것도 확인했다.
+
+Runtime DB는 적용 전 Policy·CollectionRun이 모두 0건이었다. head 적용과 지역
+기준정보 적재 뒤에도 두 테이블은 0건이고 검색 rule·projection도 0건이다.
+기존 Starlette `httpx` deprecation warning 1건은 유지하며 PSF3 범위에서
+의존성을 변경하지 않았다. Frontend/API 계약 변경이 없어 Browser UI 검증은
+수행하지 않았다.
+
 ## 남은 작업
 
-- PSF3에서 `aggregate_parent_code`를 원천 parent와 분리해 저장하고 Seed를
-  PostgreSQL에 적재하는 Migration·constraint를 검증해야 한다.
 - PSF4에서 온통청년 `zipCd`가 `kr-bjd-prefix5`와 같은 의미인지 실제 Source
   근거로 확정해야 한다. PSF2 기준표만으로 Source 의미를 추정하지 않는다.
-- PSF3에서 `pg_trgm` 사용 가능 여부와 cross-row 지역 불변식의 PostgreSQL
-  구현 방식을 실제 `_test` DB에서 검증한다.
+- PSF5에서 `region_rules`와 search projection을 Policy upsert와 같은
+  transaction으로 교체하고 rollback·idempotency를 검증해야 한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
   PSF8 전체 Gate와 Data 02 DT2 소비 승인이 완료되어야 제거할 수 있다.
 - Source 간 canonical deduplication, Backend 최종 가중치와 지역 crawler는

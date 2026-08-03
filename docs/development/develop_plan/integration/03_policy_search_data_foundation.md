@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF2 completed, PSF3 next
+- 현재 Slice: PSF3 completed, PSF4 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -90,8 +90,9 @@ Backend 자연어 해석·최종 정렬은 Backend 06, Frontend 표시는 Fronte
 
 ### 현재 계약과 미래 계약 구분
 
-- `NormalizedProgram` 1.1.0 Schema·모델·Fixture는 PSF1의 현재 실행
-  계약이고, DB·기존 API는 PSF3 전환 전까지 기존 31개 저장 필드를 유지한다.
+- `NormalizedProgram` 1.1.0 Schema·모델·Fixture는 현재 실행 계약이고,
+  PSF3 DB는 `region_rules`를 제외한 35개 Policy 컬럼과 관계형 저장 구조를
+  제공한다. 기존 API 필드 집합은 유지한다.
 - accepted ADR과 PSF1 완료는 데이터 계약을 확정한 것이며 PSF2 이후의
   지역 기준정보·DB·검색 구현 완료를 뜻하지 않는다.
 - 새 계약은 additive Migration과 명시적 version 변경을 우선하며, 기존
@@ -315,6 +316,7 @@ crosswalk와 미매핑 경계를 검증했다. Source별 code 의미는 PSF4 전
 
 ### PSF3 - PostgreSQL Migration과 ORM
 
+- 상태: completed (`2026-08-03`)
 - 목적: 공통 정책, 지역 관계와 search projection을 손실 없이 저장한다.
 - 선행 조건: PSF1·PSF2
 - 수행:
@@ -329,6 +331,15 @@ crosswalk와 미매핑 경계를 검증했다. Source별 code 의미는 PSF4 전
   - downgrade 후 기존 계약 복구
   - PostgreSQL constraint·JSON/관계·timezone 왕복 통과
   - Runtime DB와 `_test` DB 경계 유지
+
+PSF3는 `20260803_0004` Migration으로 정책 검색 배열·coverage, 행정구역·
+별칭·정책 지역 규칙·검색 projection을 추가했다. 기존 row의 version은
+유지하고 배열 `[]`·coverage `unknown`만 backfill한다. 지역 cycle과 coverage
+cross-row 불변식은 지연 constraint trigger로 transaction 최종 상태를
+검사한다. `_test` DB에서 빈·populated upgrade, downgrade→upgrade, FK·unique·
+JSONB·timezone·`pg_trgm`을 검증했고 Runtime DB에도 head와 지역 538건·별칭
+1,080건을 적용했다. `region_rules` importer transaction과 projection 생성은
+PSF5 범위로 유지한다.
 
 ### PSF4 - Source Adapter와 정규화
 
@@ -503,8 +514,8 @@ git status --short
 - 최신 법정동 code 기준표는 PSF2에서 확보했다. 다만 온통청년 `zipCd`가
   같은 5자리 scheme을 사용한다는 Source 계약은 PSF4에서 확인해야 한다.
 - 지역 code의 집계·폐지·분할 관계를 잘못 일반화하면 검색 오탐이 생긴다.
-- PostgreSQL `pg_trgm` extension 사용 가능 여부를 로컬·배포 환경에서
-  확인해야 한다.
+- PostgreSQL `pg_trgm`은 로컬 Runtime·`_test` DB에서 확인했다. 배포 환경의
+  extension 생성 권한은 배포 Forest에서 다시 확인해야 한다.
 - 기존 공개 DTO의 필드 집합은 유지한다. 전환 기간의 `schema_version`은
   1.0.0·1.1.0을 모두 허용하고 새 검색 전용 필드는 Backend 06 응답과
   Frontend 04 소비 계약으로 분리하기로 PSF0에서 결정했다.

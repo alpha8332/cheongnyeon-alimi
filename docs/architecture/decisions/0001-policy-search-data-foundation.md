@@ -114,8 +114,8 @@ PSF2에서 공식 상위지역코드가 비자치구의 집계 시를 표현하�
 `policy_region_rules`는 unresolved evidence를 보존하기 위해 canonical region
 참조를 nullable로 두되, resolution 상태와 canonical reference 조합은 DB
 constraint와 importer 검증을 함께 사용한다. `regional`의 matched include
-존재처럼 다른 행을 함께 보는 불변식은 PostgreSQL deferred constraint
-trigger 후보를 PSF3에서 검증한다.
+존재처럼 다른 행을 함께 보는 불변식은 PSF3의 PostgreSQL deferred constraint
+trigger로 transaction 최종 상태에서 검증한다.
 
 ### 검색과 공개 API 경계
 

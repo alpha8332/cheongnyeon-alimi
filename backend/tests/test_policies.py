@@ -168,22 +168,9 @@ def test_current_api_sources_reject_null_external_id(db):
         ("life_stages", ["청년"]),
         ("target_groups", ["청년가구"]),
         ("coverage_scope", "nationwide"),
-        (
-            "region_rules",
-            [
-                {
-                    "relation": "include",
-                    "resolution_status": "ambiguous",
-                    "region_scheme": None,
-                    "region_code": None,
-                    "source_code": None,
-                    "source_text": "광주",
-                }
-            ],
-        ),
     ),
 )
-def test_search_fields_are_not_silently_dropped_before_psf3(
+def test_policy_search_columns_are_stored_after_psf3(
     db,
     field,
     value,
@@ -193,12 +180,35 @@ def test_search_fields_are_not_silently_dropped_before_psf3(
 
     result = import_programs(db, [program])
 
+    assert result.accepted == 1
+    assert result.skipped == 0
+    assert result.inserted == 1
+    assert result.committed is True
+    stored = db.query(Policy).one()
+    assert getattr(stored, field) == value
+
+
+def test_region_rules_are_not_silently_dropped_before_psf5(db):
+    program = seed_programs()[0]
+    program["region_rules"] = [
+        {
+            "relation": "include",
+            "resolution_status": "ambiguous",
+            "region_scheme": None,
+            "region_code": None,
+            "source_code": None,
+            "source_text": "광주",
+        }
+    ]
+
+    result = import_programs(db, [program])
+
     assert result.accepted == 0
     assert result.skipped == 1
     assert result.inserted == 0
     assert result.committed is False
-    assert result.issues[0].code == "search_storage_not_ready"
-    assert result.issues[0].path == "$[0]"
+    assert result.issues[0].code == "search_relation_storage_not_ready"
+    assert result.issues[0].path == "$[0].region_rules"
     assert db.query(Policy).count() == 0
 
 
