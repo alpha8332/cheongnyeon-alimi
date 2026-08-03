@@ -67,6 +67,8 @@
   현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
 - [CollectionRun Admin UI Forest 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md):
   관리자 실행 이력·수동 실행의 Frontend 소비 계획
+- [Policy Search Forest 계획](development/develop_plan/frontend/04_policy_search.md):
+  자연어 `q` 검색 API 소비, 해석 조건·검색 이유 UI (Gate G1 초안)
 - [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
   기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
