@@ -4,11 +4,11 @@
 
 - 번호: Integration 03
 - 담당 영역: Data·Backend 공동 통합
-- 상태: approved
+- 상태: in-progress
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF0 pending
+- 현재 Slice: PSF0 completed, PSF1 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -90,9 +90,10 @@ Backend 자연어 해석·최종 정렬은 Backend 06, Frontend 표시는 Fronte
 
 ### 현재 계약과 미래 계약 구분
 
-- `NormalizedProgram` 1.0.0과 현재 DB·API는 새 계약이 Gate를 통과할 때까지
-  현재 구현 기준이다.
-- 이 계획과 proposed ADR을 구현 완료 상태로 표현하지 않는다.
+- `NormalizedProgram` 1.0.0과 현재 DB·API는 새 1.1.0 계약이 PSF1 이후
+  구현될 때까지 현재 실행 기준이다.
+- accepted ADR은 구현 방향을 승인한 것이며 PSF1 이후의 Schema·DB·검색
+  구현 완료를 뜻하지 않는다.
 - 새 계약은 additive Migration과 명시적 version 변경을 우선하며, 기존
   실데이터를 추정값으로 채우지 않는다.
 
@@ -150,12 +151,12 @@ unknown
 - 정책, 지역 관계와 search projection은 한 Import transaction에서
   일관되게 갱신한다.
 
-## 목표 계약 초안
+## PSF0 승인 목표 계약
 
 ### 공통 정책 필드
 
-현재 계약의 `summary`를 실제로 채우고, 다음 검색 의미를 additive 계약
-후보로 검토한다.
+현재 계약의 `summary`를 실제로 채우고, 다음 검색 의미를
+`NormalizedProgram` 1.1.0의 필수 필드로 구현한다.
 
 | 필드 | 타입 | 누락 | 목적 |
 | --- | --- | --- | --- |
@@ -163,14 +164,16 @@ unknown
 | `life_stages` | string 배열 | `[]` | 청년 등 생애주기 |
 | `target_groups` | string 배열 | `[]` | 대상자 특성 |
 | `coverage_scope` | enum | 필수 `unknown` | 전국·지역·미확인 구분 |
-| `region_codes` | string 배열 | `[]` | 포함 행정구역 |
-| `excluded_region_codes` | string 배열 | `[]` | 명시적 제외 행정구역 |
+| `region_rules` | object 배열 | `[]` | 포함·제외 canonical 지역과 Source 근거·해석 상태 |
 
-최종 필드 이름과 Normalized version은 PSF1 소비 검토에서 확정한다.
+필드 이름과 1.1.0 version은 PSF0에서 승인했다. `region_rules` 원소의
+`relation`, `resolution_status`, canonical scheme·code와 Source code·text
+불변식은 ADR 0001을 따른다. PSF1은 이 결정을 실행 가능한 Schema·모델과
+Fixture로 구현한다.
 Frontend 표시가 필요 없는 내부 검색 필드는 공개 Policy DTO에 무조건
 추가하지 않고 Backend 06 검색 응답 계약과 분리한다.
 
-### Source 매핑 후보
+### 승인 Source 매핑
 
 | Source | Raw key | 공통 의미 |
 | --- | --- | --- |
@@ -190,7 +193,7 @@ Frontend 표시가 필요 없는 내부 검색 필드는 공개 Policy DTO에 �
 
 ### 행정구역 기준정보
 
-최소 테이블 후보:
+승인 테이블:
 
 ```text
 administrative_regions
@@ -229,18 +232,33 @@ Source별 핵심 text가 projection에서 유실되지 않고 transaction 안에
 
 ### PSF0 - 현재 계약 감사와 ADR Gate
 
+- 상태: completed (`2026-08-03`)
 - 목적: 구현 전에 현재 손실·호환성·책임 경계를 확정한다.
 - 선행 조건: Data 02 DT1 완료
 - 수행:
   - Raw key → Extracted → Normalized → DB → API 필드 lineage 작성
   - 현재 `regions` JSONB exact match와 partial 비노출 영향 확인
   - Normalized version, 공개 DTO와 내부 projection 경계 결정
-  - proposed ADR의 Data·Backend·Frontend 검토
+  - ADR의 Data·Backend·Frontend 소비 계약 검토
 - 산출물: 승인 ADR, 필드 lineage, 호환성·Migration 영향표
 - 완료 기준:
   - 추정값 금지와 `nationwide|regional|unknown` 의미 승인
   - 새 필드·테이블·공개 API 영향 분류
   - 구현을 막는 미확정 항목 0건
+
+감사 결과와 확정 lineage·호환성·Migration 영향은
+[ADR 0001](../../../architecture/decisions/0001-policy-search-data-foundation.md)과
+[개발 기록](../../development_notes/integration/policy_search_data_foundation.md)에
+기록한다. PSF0는 기존 계약을 구현 변경하지 않고 다음을 확정했다.
+
+- `NormalizedProgram` 1.1.0의 새 필드는 `keywords`, `life_stages`,
+  `target_groups`, `coverage_scope`, `region_rules`다.
+- 1.0.0은 명시적 compatibility adapter로 안전한 빈 값·`unknown`만 보완하며
+  기존 DB row의 version을 Migration만으로 바꾸지 않는다.
+- 기존 목록·상세 DTO의 필드 집합과 partial opt-in은 유지하고 새 검색
+  projection·3값 판정·검색 이유는 별도 내부 및 검색 응답 계약으로 둔다.
+- `partial`은 검색 부적합과 동의어가 아니다. 새 검색은 valid·partial을
+  후보로 삼고 `mismatch`와 `unknown`을 구분한다.
 
 ### PSF1 - 검색 데이터 계약과 Fixture
 
@@ -466,7 +484,9 @@ git status --short
 - 지역 code의 집계·폐지·분할 관계를 잘못 일반화하면 검색 오탐이 생긴다.
 - PostgreSQL `pg_trgm` extension 사용 가능 여부를 로컬·배포 환경에서
   확인해야 한다.
-- 새 Normalized version의 공개 DTO 포함 범위는 PSF0에서 공동 결정해야 한다.
+- 기존 공개 DTO의 필드 집합은 유지한다. 전환 기간의 `schema_version`은
+  1.0.0·1.1.0을 모두 허용하고 새 검색 전용 필드는 Backend 06 응답과
+  Frontend 04 소비 계약으로 분리하기로 PSF0에서 결정했다.
 - Source 간 같은 정책의 canonical 병합은 이 Forest에서 해결하지 않는다.
 - “완벽한 미래 예측”보다 검증된 Source 근거·version·Migration 가능성을
   우선한다. 알 수 없는 값은 `unknown`으로 보존한다.
@@ -486,4 +506,3 @@ git status --short
 - [Policy DB 매핑](../../../architecture/policy_database_mapping.md)
 - [Policy API](../../../api/policies.md)
 - [브랜치 전략](../../../governance/branch_strategy.md)
-

@@ -6,7 +6,7 @@
 ## 현재 ADR
 
 - [ADR 0001 정책 검색 데이터 기반](0001-policy-search-data-foundation.md):
-  `proposed`, Source 중립 검색 필드와 행정구역·정책 관계·projection
+  `accepted`, Source 중립 검색 필드와 행정구역·정책 관계·projection
 
 ## ADR이 필요한 변경
 
