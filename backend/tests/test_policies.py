@@ -161,6 +161,47 @@ def test_current_api_sources_reject_null_external_id(db):
     assert db.query(Policy).count() == 0
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("keywords", ["월세"]),
+        ("life_stages", ["청년"]),
+        ("target_groups", ["청년가구"]),
+        ("coverage_scope", "nationwide"),
+        (
+            "region_rules",
+            [
+                {
+                    "relation": "include",
+                    "resolution_status": "ambiguous",
+                    "region_scheme": None,
+                    "region_code": None,
+                    "source_code": None,
+                    "source_text": "광주",
+                }
+            ],
+        ),
+    ),
+)
+def test_search_fields_are_not_silently_dropped_before_psf3(
+    db,
+    field,
+    value,
+):
+    program = seed_programs()[0]
+    program[field] = value
+
+    result = import_programs(db, [program])
+
+    assert result.accepted == 0
+    assert result.skipped == 1
+    assert result.inserted == 0
+    assert result.committed is False
+    assert result.issues[0].code == "search_storage_not_ready"
+    assert result.issues[0].path == "$[0]"
+    assert db.query(Policy).count() == 0
+
+
 def test_database_write_failure_is_counted_without_payload_exposure(db):
     program = seed_programs()[0]
     program["data_quality_status"] = "unknown"

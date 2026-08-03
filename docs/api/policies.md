@@ -6,7 +6,7 @@
 - 인증: 현재 없음
 - 응답 형식: JSON
 - 정렬: `id` 오름차순
-- 데이터 기준: `NormalizedProgram` 1.0.0
+- 데이터 기준: `NormalizedProgram` 1.0.0·1.1.0 전환 호환
 
 일반 사용자 Policy API는 Raw provenance를 반환하지 않는다. 목록과 상세는
 기본적으로 `valid` 정책만 노출하며 `include_partial=true`일 때
@@ -46,7 +46,7 @@ GET /api/v1/policies
   "limit": 10,
   "items": [
     {
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "external_id": "SYN-YOUTH-001",
@@ -136,7 +136,7 @@ GET /api/v1/policies/{policy_id}
 
 ## 저장·검색 경계
 
-- Normalized 31개 필드의 DB 저장과 공개 DTO 노출 관계는
+- Normalized 1.1.0의 36개 논리 필드와 현재 31개 DB 저장 필드의 전환 관계는
   [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
   따른다.
 - PostgreSQL category·region 필터는 JSONB `@>` 연산자를 사용해 배열 원소를
@@ -145,6 +145,8 @@ GET /api/v1/policies/{policy_id}
   원소 일치 의미를 검증한다.
 - 자유 키워드, 원문 부분 문자열, 정렬 선택과 추천은 이 계약 범위가 아니다.
 - `provenance`는 DB에 보존하지만 목록·상세 공개 DTO에서 제외한다.
+- `keywords`, `life_stages`, `target_groups`, `coverage_scope`, `region_rules`는
+  검색 내부 계약이며 이 기존 목록·상세 DTO에는 추가하지 않는다.
 
 ## Frontend D6 인계
 
@@ -173,7 +175,7 @@ export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 export type PublicDataQualityStatus = 'valid' | 'partial';
 
 export interface PolicyDto {
-  schema_version: '1.0.0';
+  schema_version: '1.0.0' | '1.1.0';
   source_id: string;
   source_name: string;
   external_id: string | null;

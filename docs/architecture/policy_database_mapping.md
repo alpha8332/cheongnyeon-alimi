@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 현재 구현 기준
-- 입력 계약: `NormalizedProgram` 1.0.0
+- 입력 계약: `NormalizedProgram` 1.0.0 또는 기본 검색값만 가진 1.1.0
 - 저장 모델: Backend `Policy`
 - Migration: `20260728_0001`
 
@@ -14,7 +14,8 @@
 
 ## 매핑 원칙
 
-- Normalized 31개 필드는 이름을 바꾸지 않고 같은 이름의 DB 컬럼에 저장한다.
+- 현재 저장되는 기존 Normalized 31개 필드는 이름을 바꾸지 않고 같은 이름의
+  DB 컬럼에 저장한다.
 - 선택 단일 값은 nullable 컬럼에 `NULL`, 복수 값은 non-null JSONB에 JSON
   배열로 저장한다.
 - 날짜는 PostgreSQL `date`, 수집 시각은 timezone-aware `timestamptz`로
@@ -32,7 +33,7 @@
 
 | Normalized 필드 | JSON 타입 | PostgreSQL 컬럼 타입 | DB null | Importer 변환 | 공개 API |
 | --- | --- | --- | --- | --- | --- |
-| `schema_version` | string const `1.0.0` | `varchar(32)` | 아니요 | 직접 | 노출 |
+| `schema_version` | string `1.0.0` 또는 `1.1.0` | `varchar(32)` | 아니요 | 직접 | 노출 |
 | `source_id` | string | `text` | 아니요 | 비어 있지 않은 string | 노출 |
 | `source_name` | string | `varchar(255)` | 아니요 | 직접 | 노출 |
 | `external_id` | string 또는 null | `varchar(512)` | 예 | 현재 admission 후 string | 노출 |
@@ -120,6 +121,22 @@ invalid는 DB enum에는 존재하지만 importer admission에서 거부되므�
 Policy API에 도달하지 않는다. partial은 저장하며
 `include_partial=true`일 때만 공개한다.
 
+## Normalized 1.1.0 전환 경계
+
+PSF1에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
+`target_groups`, `coverage_scope`, `region_rules`를 더한 36개 필드가 됐다.
+현재 Migration `20260728_0001`과 Policy ORM은 기존 31개만 저장한다.
+
+- 세 검색 배열이 `[]`, coverage가 `unknown`, rules가 `[]`인 1.1.0 입력은
+  기존 저장 계약으로 호환된다.
+- 이 기본값 중 하나라도 의미 있는 값이면 importer가
+  `search_storage_not_ready`로 거부한다.
+- 따라서 PSF3 전에는 새 검색 값을 조용히 버린 채 적재하지 않는다.
+- 1.0.0 입력은 Normalized compatibility adapter에서만 1.1.0 안전 기본값으로
+  확장하며 지역·전국 여부를 추정하지 않는다.
+- 새 5개 필드의 PostgreSQL 컬럼·관계 저장과 전체 36개 왕복 검증은 PSF3
+  Migration에서 이 문서를 갱신한 뒤 활성화한다.
+
 ## 식별자와 upsert
 
 - DB identity는 `(source_id, external_id)` unique constraint다.
@@ -140,8 +157,9 @@ Policy API에 도달하지 않는다. partial은 저장하며
 canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 다음처럼
 비교한다.
 
-1. Seed 객체, `NormalizedProgram.FIELD_NAMES`, importer write key와 ORM의
-   system field 제외 컬럼 집합이 정확히 31개로 같다.
+1. Seed 객체와 `NormalizedProgram.FIELD_NAMES`는 36개로 같고, PSF3 전
+   importer write key와 ORM의 system field 제외 컬럼 집합은 검색 5개 필드를
+   제외한 기존 31개로 같다.
 2. string, integer, enum, null과 JSONB 배열·object는 값과 배열 순서를 exact
    equality로 비교한다.
 3. `application_start`·`application_end`는 DB `date.isoformat()`과 Seed의
@@ -149,8 +167,9 @@ canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 �
 4. `collected_at`은 문자열 offset이 아니라 UTC absolute instant를 비교한다.
 5. 빈 배열은 DB에서도 `[]`, null은 DB에서도 `NULL`이어야 한다.
 6. 다중 category와 provenance object의 누락·병합·축약이 없어야 한다.
-7. 공개 API 필드 집합은 Normalized 31개에서 `provenance`만 제외하고
-   `id`·`created_at`·`updated_at`을 더한 집합이어야 한다.
+7. 기존 공개 API 필드 집합은 기존 저장 31개에서 `provenance`만 제외하고
+   `id`·`created_at`·`updated_at`을 더한 집합이다. 검색 5개 필드는 기존
+   목록·상세 DTO에 노출하지 않는다.
 
 구조적 집합과 변환은
 `backend/tests/test_policy_mapping_contract.py`, 실제 PostgreSQL 왕복은

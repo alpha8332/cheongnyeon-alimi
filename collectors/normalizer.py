@@ -150,6 +150,9 @@ class Normalizer:
             "summary": None,
             "category_text": category_text,
             "categories": [item.value for item in categories],
+            "keywords": [],
+            "life_stages": [],
+            "target_groups": [],
             "application_period_text": application_period_text,
             "application_start": (
                 application_start.isoformat()
@@ -173,6 +176,8 @@ class Normalizer:
             ),
             "region_text": region_text,
             "regions": list(regions),
+            "coverage_scope": "unknown",
+            "region_rules": [],
             "age_min": age_min,
             "age_max": age_max,
             "age_condition_text": age_condition_text,

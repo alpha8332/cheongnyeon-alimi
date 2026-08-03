@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF0 completed, PSF1 next
+- 현재 Slice: PSF1 completed, PSF2 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -90,10 +90,10 @@ Backend 자연어 해석·최종 정렬은 Backend 06, Frontend 표시는 Fronte
 
 ### 현재 계약과 미래 계약 구분
 
-- `NormalizedProgram` 1.0.0과 현재 DB·API는 새 1.1.0 계약이 PSF1 이후
-  구현될 때까지 현재 실행 기준이다.
-- accepted ADR은 구현 방향을 승인한 것이며 PSF1 이후의 Schema·DB·검색
-  구현 완료를 뜻하지 않는다.
+- `NormalizedProgram` 1.1.0 Schema·모델·Fixture는 PSF1의 현재 실행
+  계약이고, DB·기존 API는 PSF3 전환 전까지 기존 31개 저장 필드를 유지한다.
+- accepted ADR과 PSF1 완료는 데이터 계약을 확정한 것이며 PSF2 이후의
+  지역 기준정보·DB·검색 구현 완료를 뜻하지 않는다.
 - 새 계약은 additive Migration과 명시적 version 변경을 우선하며, 기존
   실데이터를 추정값으로 채우지 않는다.
 
@@ -262,6 +262,7 @@ Source별 핵심 text가 projection에서 유실되지 않고 transaction 안에
 
 ### PSF1 - 검색 데이터 계약과 Fixture
 
+- 상태: completed (`2026-08-03`)
 - 목적: Source와 DB가 공유할 실행 가능한 계약을 고정한다.
 - 선행 조건: PSF0 Gate
 - 수행:
@@ -275,6 +276,14 @@ Source별 핵심 text가 projection에서 유실되지 않고 transaction 안에
   - Schema·모델·Fixture 필드 집합과 품질 판정 일치
   - Backend 저장 후보와 Frontend 소비 영향 공동 확인
   - 기존 1.0.0 입력 호환 또는 명시적 migration 경계 검증
+
+PSF1은 1.1.0의 36개 필드 Schema·Python 모델과 exact 1.0.0 compatibility
+adapter를 구현했다. 전국·지역·미확인·상위·정확·제외·동명이인·폐지 code
+경계를 합성 Fixture로 고정하고 canonical Seed를 1.1.0으로 재생성했다.
+PSF3 Migration 전에는 새 검색 값이 모두 안전한 기본값인 입력만 기존 31개
+ORM에 저장하며, 의미 있는 검색 값은 `search_storage_not_ready`로 거부한다.
+Frontend는 기존 목록·상세 DTO의 필드 집합을 유지하고 version union만
+소비한다.
 
 ### PSF2 - 행정구역 기준정보
 

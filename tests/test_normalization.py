@@ -10,9 +10,12 @@ from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
     Category,
+    CoverageScope,
     DataQualityStatus,
     NormalizedProgram,
     NormalizedProgramValidationError,
+    RegionRelation,
+    RegionResolutionStatus,
 )
 from collectors.normalizer import Normalizer, normalize_text
 from collectors.raw import RawDocumentRole
@@ -113,6 +116,12 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
             program.regions,
         )
         self.assertEqual(2, len(program.provenance))
+        self.assertEqual("1.1.0", program.SCHEMA_VERSION)
+        self.assertEqual((), program.keywords)
+        self.assertEqual((), program.life_stages)
+        self.assertEqual((), program.target_groups)
+        self.assertEqual(CoverageScope.UNKNOWN, program.coverage_scope)
+        self.assertEqual((), program.region_rules)
 
     def test_actual_compact_date_and_multiple_category_are_supported(
         self,
@@ -138,6 +147,7 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
         self.assertIsNone(program.age_min)
         self.assertIsNone(program.age_max)
         self.assertEqual(("전국",), program.regions)
+        self.assertEqual(CoverageScope.UNKNOWN, program.coverage_scope)
 
     def test_schedule_and_status_have_separate_meanings(self) -> None:
         always = self.normalizer.normalize(
@@ -286,6 +296,31 @@ class SchemaAndValidatorTests(unittest.TestCase):
             NormalizedProgram.from_dict(serialized),
         )
 
+    def test_legacy_1_0_input_is_upgraded_without_region_inference(
+        self,
+    ) -> None:
+        program = self.valid_result.program
+        assert program is not None
+        legacy = program.to_dict()
+        legacy["schema_version"] = "1.0.0"
+        for field in NormalizedProgram.SEARCH_FIELD_NAMES:
+            legacy.pop(field)
+
+        result = self.validator.validate(legacy)
+
+        self.assertEqual(DataQualityStatus.VALID, result.status)
+        self.assertIsNotNone(result.program)
+        self.assertEqual("1.1.0", result.candidate["schema_version"])
+        self.assertEqual([], result.candidate["keywords"])
+        self.assertEqual([], result.candidate["life_stages"])
+        self.assertEqual([], result.candidate["target_groups"])
+        self.assertEqual("unknown", result.candidate["coverage_scope"])
+        self.assertEqual([], result.candidate["region_rules"])
+        upgraded = result.program
+        assert upgraded is not None
+        self.assertEqual(CoverageScope.UNKNOWN, upgraded.coverage_scope)
+        self.assertEqual((), upgraded.region_rules)
+
     def test_valid_partial_invalid_json_fixtures_are_classified(
         self,
     ) -> None:
@@ -322,7 +357,9 @@ class SchemaAndValidatorTests(unittest.TestCase):
         assert program is not None
         invalid = program.to_dict()
         invalid["categories"] = None
+        invalid["keywords"] = None
         invalid["application_status"] = "always"
+        invalid["coverage_scope"] = "everywhere"
         invalid["data_quality_status"] = "invalid"
 
         result = self.validator.validate(invalid)
@@ -331,12 +368,73 @@ class SchemaAndValidatorTests(unittest.TestCase):
         self.assertIsNone(result.program)
         errors = {(issue.path, issue.code) for issue in result.issues}
         self.assertIn(("$.categories", "schema_type"), errors)
+        self.assertIn(("$.keywords", "schema_type"), errors)
         self.assertIn(("$.application_status", "schema_enum"), errors)
+        self.assertIn(("$.coverage_scope", "schema_enum"), errors)
 
         wrong_python_array = program.to_dict()
         wrong_python_array["regions"] = "서울특별시"
         with self.assertRaises(NormalizedProgramValidationError):
             NormalizedProgram.from_dict(wrong_python_array)
+
+    def test_region_rule_scope_and_include_exclude_invariants(self) -> None:
+        program = self.valid_result.program
+        assert program is not None
+        base = program.to_dict()
+        include = {
+            "relation": RegionRelation.INCLUDE.value,
+            "resolution_status": RegionResolutionStatus.MATCHED.value,
+            "region_scheme": "fixture-kr-2026",
+            "region_code": "province-chungnam",
+            "source_code": "44",
+            "source_text": "충청남도",
+        }
+
+        regional = dict(base)
+        regional["coverage_scope"] = CoverageScope.REGIONAL.value
+        regional["region_rules"] = [include]
+        regional_result = self.validator.validate(regional)
+        self.assertEqual(DataQualityStatus.VALID, regional_result.status)
+
+        conflict = dict(regional)
+        conflict["region_rules"] = [
+            include,
+            {**include, "relation": RegionRelation.EXCLUDE.value},
+        ]
+        conflict["data_quality_status"] = "invalid"
+        conflict_result = self.validator.validate(conflict)
+        conflict_errors = {
+            (issue.path, issue.code)
+            for issue in conflict_result.issues
+        }
+        self.assertEqual(DataQualityStatus.INVALID, conflict_result.status)
+        self.assertIn(
+            ("$.region_rules", "region_include_exclude_conflict"),
+            conflict_errors,
+        )
+
+        unresolved = dict(base)
+        unresolved["coverage_scope"] = CoverageScope.UNKNOWN.value
+        unresolved["region_rules"] = [
+            {
+                **include,
+                "resolution_status": (
+                    RegionResolutionStatus.AMBIGUOUS.value
+                ),
+            }
+        ]
+        unresolved["data_quality_status"] = "invalid"
+        unresolved_result = self.validator.validate(unresolved)
+        self.assertEqual(
+            DataQualityStatus.INVALID,
+            unresolved_result.status,
+        )
+        self.assertTrue(
+            any(
+                issue.code == "unresolved_canonical_region"
+                for issue in unresolved_result.issues
+            )
+        )
 
     def test_semantic_order_and_quality_label_mismatch_are_invalid(
         self,

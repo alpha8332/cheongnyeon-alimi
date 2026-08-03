@@ -24,7 +24,10 @@ from app.core.database import create_db_engine  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.repositories.policy import PolicyRepository  # noqa: E402
 from app.services.seed_importer import import_programs  # noqa: E402
-from collectors.normalized import DataQualityStatus  # noqa: E402
+from collectors.normalized import (  # noqa: E402
+    DataQualityStatus,
+    NormalizedProgram,
+)
 from collectors.validation import NormalizedProgramValidator  # noqa: E402
 
 
@@ -72,6 +75,8 @@ def _serialized_policy(policy: Policy) -> dict[str, Any]:
 
 def _normalized_seed(program: dict[str, Any]) -> dict[str, Any]:
     selected = copy.deepcopy(program)
+    for field in NormalizedProgram.SEARCH_FIELD_NAMES:
+        selected.pop(field)
     selected["collected_at"] = (
         datetime.fromisoformat(
             selected["collected_at"].replace("Z", "+00:00")

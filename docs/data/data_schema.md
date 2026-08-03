@@ -165,13 +165,13 @@ fallback한다.
 
 현재 실행 가능한 계약은
 [`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
-Schema version `1.0.0`이다. 객체의 필드는 모두 required로 고정하고 의미상
+Schema version `1.1.0`이다. 객체의 필드는 모두 required로 고정하고 의미상
 선택 단일 값은 null, 복수 값은 빈 배열로 표현한다. 이 방식으로 필드 생략과
 값 없음이 섞이지 않게 한다.
 
 | 필드 | 논리 타입 | 기준 |
 | --- | --- | --- |
-| `schema_version` | string | 현재 계약 `1.0.0` |
+| `schema_version` | string | 현재 계약 `1.1.0` |
 | `source_id` | string | 안정적인 내부 source ID |
 | `source_name` | string | 사용자에게 표시할 소스 이름 |
 | `external_id` | string 또는 null | source-scoped 외부 ID |
@@ -180,6 +180,9 @@ Schema version `1.0.0`이다. 객체의 필드는 모두 required로 고정하�
 | `summary` | string 또는 null | 현재 두 Extractor에는 공통 입력 없음 |
 | `category_text` | string 또는 null | 분류 원문 text |
 | `categories` | category enum 배열 | 다중 분류, 없으면 `[]` |
+| `keywords` | string 배열 | Source 공식 키워드·검색 분류어, 없으면 `[]` |
+| `life_stages` | string 배열 | Source가 명시한 생애주기, 없으면 `[]` |
+| `target_groups` | string 배열 | Source가 명시한 대상자 특성, 없으면 `[]` |
 | `application_period_text` | string 또는 null | 신청기간 원문 text |
 | `application_start` | date 또는 null | `YYYY-MM-DD` |
 | `application_end` | date 또는 null | `YYYY-MM-DD` |
@@ -187,6 +190,8 @@ Schema version `1.0.0`이다. 객체의 필드는 모두 required로 고정하�
 | `application_status` | enum 또는 null | 수집 기준 시점 상태 |
 | `region_text` | string 또는 null | 지역 원문 text·코드 |
 | `regions` | string 배열 | 표준화된 지역 이름 |
+| `coverage_scope` | coverage enum | `nationwide`, `regional`, `unknown` |
+| `region_rules` | region rule object 배열 | 포함·제외 canonical 지역과 Source 근거 |
 | `age_min` | integer 또는 null | 0~150 |
 | `age_max` | integer 또는 null | 0~150 |
 | `age_condition_text` | string 또는 null | 연령 원문 text |
@@ -206,6 +211,39 @@ Schema version `1.0.0`이다. 객체의 필드는 모두 required로 고정하�
 `source_id`와 provenance를 Normalized에도 보존해 같은 external ID의 다른
 소스를 구분하고 Raw까지 재추적한다. provenance 항목은 Extracted 계약과 같은
 Raw document ID·역할·hash·수집 시각·안전 endpoint 구조를 사용한다.
+
+### 검색 배열과 지역 규칙
+
+`keywords`, `life_stages`, `target_groups`는 `null`이 될 수 없다. 각 원소는
+공통 text 정규화를 거친 비어 있지 않은 문자열이며 첫 등장 순서를 유지해
+exact 중복을 제거한다. Source에 없는 청년·지역·대상 값을 시스템이 임의로
+추가하지 않는다.
+
+`region_rules`의 모든 원소는 다음 6개 key를 가진다.
+
+| 필드 | 타입 | 기준 |
+| --- | --- | --- |
+| `relation` | enum | `include`, `exclude` |
+| `resolution_status` | enum | `matched`, `unmapped`, `ambiguous` |
+| `region_scheme` | string 또는 null | matched canonical code scheme |
+| `region_code` | string 또는 null | scheme 안의 canonical code |
+| `source_code` | string 또는 null | Source가 제공한 원본 code |
+| `source_text` | string 또는 null | Source가 제공한 지역 근거 text |
+
+- `matched`는 `region_scheme`·`region_code`가 모두 필요하다.
+- `unmapped`·`ambiguous`는 canonical 두 필드가 `null`이고 source code 또는
+  text 중 하나 이상의 근거가 필요하다.
+- `nationwide`는 명시적 Source 근거가 있을 때만 사용하며 `region_rules=[]`다.
+- `regional`은 matched include가 하나 이상 필요하다.
+- `unknown`에는 matched rule이 없지만 unresolved Source evidence는 남길 수
+  있다.
+- 같은 canonical 지역을 중복하거나 include·exclude에 동시에 둘 수 없다.
+
+기존 `regions`는 표시·exact filter 호환용 이름 배열이며 canonical identity가
+아니다. 1.0.0 입력은 compatibility adapter가 검색 배열 `[]`,
+`coverage_scope=unknown`, `region_rules=[]`인 1.1.0 객체로 변환한다. 기존
+`regions`나 문자열 `전국`을 generic adapter가 canonical rule로 추정하지
+않는다.
 
 ### 날짜와 시간
 
@@ -247,6 +285,14 @@ closed
 scheduled
 ```
 
+지역 적용 범위:
+
+```text
+nationwide
+regional
+unknown
+```
+
 `always`는 일정 유형이고 `open`은 수집 기준일의 상태이므로 같은 enum에 넣지
 않는다. 판단 근거가 없으면 `"unknown"` enum 대신 null을 사용한다.
 
@@ -256,6 +302,7 @@ scheduled
 | --- | --- | --- |
 | 선택 단일 값 | `null` | 빈 문자열, 임의 날짜, 의미 없는 `"unknown"` |
 | 복수 값 | `[]` | `null`, 빈 문자열, 단일 string |
+| 지역 적용 범위 | 필수 enum `unknown` | `null`, 지역·전국 추정 |
 | 필수 값 | invalid 처리 | 누락을 null로 정상 통과 |
 
 원문 표현은 별도 text 필드나 Raw/Extracted 단계에 보존한다. 구조화에
@@ -278,13 +325,14 @@ invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하�
 ### Backend·Frontend 영향과 승인 게이트
 
 Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
-버전이다. Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical
-Seed를 구현했다. Backend에는 31개 필드를 소비하는 Policy ORM·응답 모델과
+버전이고 1.1.0은 PSF1에서 검색 데이터 5개 필드를 추가한 minor version이다.
+Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical Seed를
+구현했다. Backend에는 기존 31개 필드를 소비하는 Policy ORM·응답 모델과
 최초 Alembic revision이 있다. 배열·조건·provenance는 PostgreSQL `JSONB`,
 수집 시각은 timezone-aware timestamp, 일정·상태·품질은 DB enum으로
 매핑한다. SQLite `JSON`과 CHECK constraint는 명시적인 단위 테스트
-대체 경계이며 PostgreSQL 검증 결과를 대신하지 않는다. Frontend 타입은 아직
-없다.
+대체 경계이며 PostgreSQL 검증 결과를 대신하지 않는다. Frontend 공개
+`PolicyDto`는 기존 31개 필드 중 provenance를 제외한 API 경계를 소비한다.
 
 이 DB 매핑은 논리 Schema의 required·null·빈 배열·enum 규칙을 변경하지
 않는다. PostgreSQL 17.10의 빈 테스트 DB에서 Migration upgrade, JSONB와
@@ -300,21 +348,23 @@ ID를 일반화하지 않는다. Backend 02 B4 importer는 이 문서와 실행 
 날짜·null·빈 배열·enum에 importer 기본값을 적용하지 않으며 dry-run도 실제
 upsert 후 rollback한다.
 
-31개 필드의 JSON 타입, PostgreSQL 컬럼, importer 변환과 공개 API 노출 여부는
+PSF1 시점의 canonical Seed는 1.1.0이지만 PSF3 Migration 전 Policy ORM은
+새 검색 5개 필드를 아직 저장하지 않는다. 이 전환 중 importer는 검색 배열이
+모두 `[]`, coverage가 `unknown`, rules가 `[]`인 안전한 기본값만 기존 31개
+저장 경계에 허용한다. 하나라도 의미 있는 검색 값이 있으면
+`search_storage_not_ready`로 batch를 쓰지 않아 조용한 손실을 막는다.
+Frontend는 1.0.0·1.1.0 `schema_version`을 모두 허용하되 새 검색 5개 필드를
+기존 `PolicyDto`에 포함하지 않는다.
+
+현재 1.1.0의 36개 필드 중 기존 31개 필드의 PostgreSQL 매핑과 새 5개 필드의
+PSF1→PSF3 전환 경계는
 [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
 따른다.
 
-다만 이후 소비자가 적용할 때 다음 변경을 공동 검토해야 한다.
-
-- 단일 `category` 후보 대신 `categories` 배열 사용
-- `application_schedule`과 `application_status` 분리
-- `source_id`, source 원문 text와 Raw provenance 포함
-- 선택 단일 값은 null, 복수 값은 빈 배열, 모든 필드 key는 required
-- invalid는 정상 API 응답·DB 적재·Frontend Mock에서 제외
-
-[Fixture와 Seed 계약](fixture_seed_contract.md)은 양쪽 검토 항목과 현재
-승인 상태를 기록한다. Backend·Frontend 승인 전까지 이번 Schema와 Seed는
-Data 파이프라인의 실행 가능한 소비자 기준안이다.
+[Fixture와 Seed 계약](fixture_seed_contract.md)은 1.1.0의 Backend 저장 후보,
+Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 실제
+PostgreSQL 저장은 PSF3, Source 값 채움은 PSF4, transaction은 PSF5에서
+완성한다.
 
 ## JSON Schema 동기화 규칙
 

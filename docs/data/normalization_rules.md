@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.0.0 구현
+- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.1.0 구현
 
 정규화는 `ExtractedPolicy`의 소스별 표현을 공통
 `NormalizedProgram`으로 변환한다. 원문에 없는 값을 추정해 정확한 값처럼
@@ -105,9 +105,33 @@
 }
 ```
 
+## 검색용 문자열 배열
+
+`keywords`, `life_stages`, `target_groups`는 항상 문자열 배열이며 값이 없으면
+`[]`이다. null이나 쉼표로 합친 단일 문자열은 허용하지 않는다. 각 값은
+앞뒤 공백을 제거하고 빈 값과 중복을 제외하되 원문 순서를 유지한다.
+
+PSF1의 공통 Normalizer는 Source 원문만 보고 이 값을 추정하지 않고 안전한
+기본값 `[]`를 만든다. 실제 온통청년·복지로 필드 매핑은 Source별 근거를
+확정하는 PSF4에서 추가한다. `summary`도 같은 경계에 따라 원문을 임의로
+요약하거나 생성하지 않는다.
+
 ## 지역
 
-행정구역 코드 체계가 별도 계약으로 확정되기 전에는 표준 이름만 정리한다.
+기존 표시·정확 일치 필터용 `regions`와 검색 판정용 지역 계약을 분리한다.
+`coverage_scope`는 `nationwide`, `regional`, `unknown` 중 하나이고,
+`region_rules`는 다음 필드를 모두 가진 객체 배열이다.
+
+- `relation`: `include` 또는 `exclude`
+- `resolution_status`: `matched`, `unmapped`, `ambiguous`
+- `region_scheme`, `region_code`: 확정된 canonical 지역 identity
+- `source_code`, `source_text`: 원문 근거
+
+PSF1에서는 행정구역 기준정보를 아직 확정하지 않았으므로 기존 Normalizer가
+`regions`를 채우더라도 `coverage_scope=unknown`, `region_rules=[]`를
+기본값으로 둔다. Source 코드를 시·도나 전국으로 추정하지 않는다. 실제
+scheme·code와 상하위 지역 관계는 PSF2 기준정보, Source 매핑은 PSF4에서
+구현한다.
 
 | 원문 예 | 정규화 값 |
 | --- | --- |
@@ -127,10 +151,18 @@
   추정하지 않고 `regions=[]`과 `unmapped_region_code` 경고를 남긴다.
 - 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
   치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
+- `nationwide`는 지역 rule을 가질 수 없다.
+- `regional`은 canonical 지역으로 해석된 `include` rule이 하나 이상 필요하다.
+- `unknown`은 canonical 지역으로 해석된 rule을 가질 수 없다.
+- `matched` rule은 `region_scheme`과 `region_code`가 모두 필요하다.
+- `unmapped`·`ambiguous` rule은 canonical identity를 갖지 않고
+  `source_code` 또는 `source_text` 중 하나 이상의 근거를 보존한다.
+- 같은 canonical 지역에 동일 relation을 중복하거나 include와 exclude를
+  동시에 선언할 수 없다.
 
 ## 카테고리
 
-Normalized 1.0.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
+Normalized 1.1.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
 `categories` 배열을 사용한다. 같은 enum은 중복하지 않고 원문 순서를
 유지한다.
 
@@ -168,7 +200,7 @@ Normalized 1.0.0은 실제 복지로 관심주제의 다중값을 보존하기 �
 
 Validator는
 [`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
-과 날짜·연령 범위, 품질 상태 일치 규칙을 함께 검사한다.
+과 날짜·연령 범위, 품질 상태 및 지역 rule 불변식을 함께 검사한다.
 
 - `ValidationIssue.path`: `$.title`, `$.regions`, `$.provenance[0]` 같은
   JSON path
@@ -198,6 +230,9 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 - 기존 Seed의 재생성 필요성
 - Backend 필터와 Frontend 표시 영향
 
-현재 Backend·Frontend 소비 구현은 없지만 단일 category에서 배열로의 전환,
-신청 일정·상태 분리, null·빈 배열과 provenance 필드는 안정적인 영역 간
-계약으로 승인하기 전에 공동 검토해야 한다.
+현재 Backend는 기존 31개 저장 필드만 보존하므로 PSF3 Migration 전에는 새
+검색 필드가 모두 안전한 기본값인 1.1.0 입력만 적재한다. 의미 있는 검색 값이
+있으면 `search_storage_not_ready`로 거부해 조용한 데이터 손실을 막는다.
+Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
+공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
+Slice에서 별도로 연결한다.

@@ -28,6 +28,13 @@ JSON_COLUMNS = {
     "excluded_conditions",
     "provenance",
 }
+PENDING_SEARCH_STORAGE_FIELDS = {
+    "keywords",
+    "life_stages",
+    "target_groups",
+    "coverage_scope",
+    "region_rules",
+}
 
 
 def policy_values(**overrides):
@@ -61,7 +68,7 @@ def policy_values(**overrides):
     return values
 
 
-def test_policy_columns_cover_normalized_program_contract():
+def test_policy_columns_cover_current_normalized_storage_contract():
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     model_columns = set(Policy.__table__.columns.keys()) - {
         "id",
@@ -69,8 +76,8 @@ def test_policy_columns_cover_normalized_program_contract():
         "updated_at",
     }
 
-    assert len(schema["required"]) == 31
-    assert model_columns == set(schema["properties"])
+    assert len(schema["required"]) == 36
+    assert model_columns == set(schema["properties"]) - PENDING_SEARCH_STORAGE_FIELDS
 
 
 def test_json_columns_use_jsonb_only_for_postgresql():

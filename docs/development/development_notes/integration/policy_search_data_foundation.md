@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF0 completed, PSF1 next
+- 현재 Slice: PSF1 completed, PSF2 next
 
 ## 목적
 
@@ -35,7 +35,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | PSF0 | completed | 현재 lineage·손실·partial 영향 감사, ADR 0001 승인, version·DB·API 경계 확정 |
-| PSF1 | pending | Normalized 1.1.0 실행 계약·legacy adapter·Fixture |
+| PSF1 | completed | Normalized 1.1.0 실행 계약·legacy adapter·지역 경계 Fixture·소비 전환 검증 |
 | PSF2 | pending | 행정구역 기준정보 |
 | PSF3 | pending | PostgreSQL Migration·ORM |
 | PSF4 | pending | Source Adapter·정규화 |
@@ -107,8 +107,45 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 않았다. 승인된 설계를 실제 계약으로 구현하는 시점은 PSF1 이후이며, 각
 Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 
+### PSF1 - 검색 데이터 계약과 Fixture
+
+- `NormalizedProgram`과 JSON Schema를 1.1.0·36개 필드로 갱신하고 검색용
+  문자열 배열 3개, coverage enum과 근거 보존형 `RegionRule`을 구현했다.
+- exact 1.0.0 field set만 compatibility adapter로 받아 새 배열 `[]`,
+  `coverage_scope=unknown`, `region_rules=[]`를 보완한다. 기존 `regions`에서
+  전국이나 canonical 지역을 추정하지 않는다.
+- 전국·지역·미확인의 coverage 불변식, matched·unmapped·ambiguous의 canonical
+  identity·Source evidence 규칙과 include/exclude 중복·충돌을 Validator와
+  모델 양쪽에서 검사한다.
+- 외부 원문이 없는 합성 계약 Fixture 7건으로 전국, 상위 지역, 정확 지역,
+  제외 지역, 미확인, 동명이인, 폐지 code 경계를 고정했다.
+- canonical Seed를 1.1.0으로 결정적 재생성했다. PSF4 Source 매핑 전이므로
+  새 검색 필드는 안전한 기본값만 가진다.
+- 현재 Backend ORM이 기존 31개 필드만 저장하므로 기본값이 아닌 검색 필드가
+  들어오면 importer가 `search_storage_not_ready`로 거부한다. 이는 PSF3 전
+  조용한 데이터 손실을 막는 전환 경계다.
+- Frontend `PolicyDto`는 version을 1.0.0·1.1.0 union으로 넓혔지만 새 검색
+  5개 필드는 기존 목록·상세 공개 DTO에서 제외함을 소비 테스트로 고정했다.
+
 ## 주요 변경 파일
 
+- `collectors/normalized.py`
+- `collectors/normalizer.py`
+- `collectors/validation.py`
+- `data/schema/normalized_program.schema.json`
+- `data/fixtures/contracts/policy_search_region_cases.json`
+- `data/fixtures/normalized/programs.json`
+- `data/fixtures/rejected/programs.json`
+- `data/seeds/initial_programs.json`
+- `scripts/build_data_fixtures.py`
+- `backend/app/services/seed_importer.py`
+- `frontend/src/types/policy.ts`
+- `frontend/src/mocks/policyContract.ts`
+- `docs/data/data_schema.md`
+- `docs/data/normalization_rules.md`
+- `docs/data/fixture_seed_contract.md`
+- `docs/architecture/policy_database_mapping.md`
+- `docs/api/policies.md`
 - `docs/architecture/decisions/0001-policy-search-data-foundation.md`
 - `docs/architecture/decisions/README.md`
 - `docs/development/develop_plan/integration/03_policy_search_data_foundation.md`
@@ -156,10 +193,27 @@ Python 계약 테스트와 PostgreSQL skip에서 기존 Starlette `httpx` 사용
 deprecation warning 1건이 발생했다. 이는 DT1에서 이미 확인한 범위 밖
 의존성 경고이며 PSF0에서 패키지를 변경하지 않았다.
 
+### PSF1 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Fixture·Seed 결정적 재생성 검사 | 13개 파일 일치 |
+| Data·Backend 단위·통합 테스트 | PostgreSQL 전용 항목 포함 174건 통과, 25 subtests 통과 |
+| PostgreSQL 대상 테스트 | 전용 `_test` DB에서 Migration·Seed·Runtime·Repository·API 24건 통과 |
+| Frontend 소비 테스트 | 7건 통과 |
+| Frontend lint | 통과 |
+| Frontend production build | Vite 8.1.5, 210 modules build 통과 |
+| Browser UI 회귀 | Vite `localhost:3000` 실행 확인, 현재 앱의 Browser 연결 목록이 비어 있어 직접 화면 검증 미실행 |
+| `scripts/validate_docs.py` | 통과 |
+| `git diff --check` | 통과, line-ending 안내만 발생 |
+
+현재 Slice는 DB Schema를 바꾸지 않는다. SQLite·계약 테스트와 전용 `_test`
+PostgreSQL 종단 테스트로 1.1.0 기본값 저장 호환, 의미 있는 검색 필드의
+명시적 거부, Migration upgrade·downgrade와 기존 API 회귀를 검증했다.
+Frontend test·build가 생성한 `.test-dist`와 `dist`는 검증 후 제거했다.
+
 ## 남은 작업
 
-- PSF1에서 승인된 1.1.0 Schema·Python 모델·legacy adapter와 경계 Fixture를
-  구현하고 Data·Backend·Frontend 소비 테스트를 갱신한다.
 - PSF2에서 온통청년 `zipCd`를 해석할 권위 있는 행정구역 scheme·version과
   라이선스를 확보해야 한다. 확보 전에는 code를 매핑하지 않는다.
 - PSF3에서 `pg_trgm` 사용 가능 여부와 cross-row 지역 불변식의 PostgreSQL

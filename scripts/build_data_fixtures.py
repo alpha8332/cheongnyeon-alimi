@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -53,6 +54,7 @@ MANAGED_GLOBS = (
     "data/fixtures/raw/**/*.json",
     "data/fixtures/extracted/*.json",
     "data/fixtures/normalized/*.json",
+    "data/fixtures/contracts/*.json",
     "data/fixtures/rejected/*.json",
     "data/seeds/*.json",
 )
@@ -82,6 +84,7 @@ def build_outputs() -> dict[Path, bytes]:
         for result in results
         if result.program is None
     ]
+    search_contract_cases = _search_contract_cases(accepted)
 
     return {
         **raw_outputs,
@@ -97,11 +100,187 @@ def build_outputs() -> dict[Path, bytes]:
             rejected,
             pretty=True,
         ),
+        Path(
+            "data/fixtures/contracts/policy_search_region_cases.json"
+        ): _json_bytes(search_contract_cases, pretty=True),
         Path("data/seeds/initial_programs.json"): _json_bytes(
             accepted,
             pretty=True,
         ),
     }
+
+
+def _search_contract_cases(
+    programs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    youth = next(
+        program
+        for program in programs
+        if program["external_id"] == "SYN-YOUTH-001"
+    )
+    nationwide_source = next(
+        program
+        for program in programs
+        if program["external_id"] == "SYN-YOUTH-002"
+    )
+    unknown_source = next(
+        program
+        for program in programs
+        if program["external_id"] == "SYN-BOK-001"
+    )
+
+    def program_case(
+        case_id: str,
+        source: dict[str, Any],
+        *,
+        coverage_scope: str,
+        region_text: str | None,
+        regions: list[str],
+        region_rules: list[dict[str, str | None]],
+    ) -> dict[str, Any]:
+        program = deepcopy(source)
+        program["external_id"] = f"SYN-SEARCH-{case_id.upper()}"
+        program["title"] = f"합성 검색 계약 {case_id}"
+        program["summary"] = "합성 검색 계약 요약"
+        program["keywords"] = ["청년", "주거"]
+        program["life_stages"] = ["청년"]
+        program["target_groups"] = ["청년가구"]
+        program["coverage_scope"] = coverage_scope
+        program["region_text"] = region_text
+        program["regions"] = regions
+        program["region_rules"] = region_rules
+        return {"case_id": case_id, "program": program}
+
+    def rule(
+        *,
+        relation: str,
+        resolution_status: str,
+        region_scheme: str | None,
+        region_code: str | None,
+        source_code: str | None,
+        source_text: str | None,
+    ) -> dict[str, str | None]:
+        return {
+            "relation": relation,
+            "resolution_status": resolution_status,
+            "region_scheme": region_scheme,
+            "region_code": region_code,
+            "source_code": source_code,
+            "source_text": source_text,
+        }
+
+    scheme = "fixture-kr-2026"
+    return [
+        program_case(
+            "nationwide",
+            nationwide_source,
+            coverage_scope="nationwide",
+            region_text="전국",
+            regions=["전국"],
+            region_rules=[],
+        ),
+        program_case(
+            "regional_parent",
+            youth,
+            coverage_scope="regional",
+            region_text="충청남도",
+            regions=["충청남도"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="province-chungnam",
+                    source_code="44",
+                    source_text="충청남도",
+                )
+            ],
+        ),
+        program_case(
+            "regional_exact",
+            youth,
+            coverage_scope="regional",
+            region_text="천안시",
+            regions=["천안시"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="city-cheonan",
+                    source_code="44133",
+                    source_text="천안시",
+                )
+            ],
+        ),
+        program_case(
+            "regional_exclusion",
+            youth,
+            coverage_scope="regional",
+            region_text="충청남도, 아산시 제외",
+            regions=["충청남도"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="province-chungnam",
+                    source_code="44",
+                    source_text="충청남도",
+                ),
+                rule(
+                    relation="exclude",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="city-asan",
+                    source_code="44200",
+                    source_text="아산시 제외",
+                ),
+            ],
+        ),
+        program_case(
+            "unknown",
+            unknown_source,
+            coverage_scope="unknown",
+            region_text=None,
+            regions=[],
+            region_rules=[],
+        ),
+        program_case(
+            "ambiguous",
+            unknown_source,
+            coverage_scope="unknown",
+            region_text="광주",
+            regions=[],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="ambiguous",
+                    region_scheme=None,
+                    region_code=None,
+                    source_code=None,
+                    source_text="광주",
+                )
+            ],
+        ),
+        program_case(
+            "retired_code",
+            youth,
+            coverage_scope="regional",
+            region_text="합성 폐지 지역",
+            regions=["합성 폐지 지역"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme="fixture-kr-2020",
+                    region_code="retired-city",
+                    source_code="legacy-001",
+                    source_text="합성 폐지 지역",
+                )
+            ],
+        ),
+    ]
 
 
 def write_outputs(

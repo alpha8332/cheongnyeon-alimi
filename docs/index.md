@@ -19,7 +19,8 @@
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
 - [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
-  NormalizedProgram 31개 필드의 PostgreSQL·Importer·공개 API 매핑
+  NormalizedProgram 1.1.0의 36개 논리 필드와 현재 31개
+  PostgreSQL·Importer·공개 API 전환 매핑
 - [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
   Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
@@ -114,8 +115,9 @@
 
 ## 공동 확인 및 인계 보드
 
-Normalized 1.0.0 Schema와 canonical Seed의 Data·Backend·Frontend 소비 검토는
-2주차 Integration 02에서 완료됐다. 검토 증거와 현재 규칙은
+기존 Normalized 1.0.0의 Data·Backend·Frontend 소비 검토는 2주차
+Integration 02에서 완료됐다. PSF1은 1.1.0 검색 데이터 계약과 전환 경계를
+추가했으며 검토 증거와 현재 규칙은
 [Fixture와 Seed 계약](data/fixture_seed_contract.md),
 [Policy DB 매핑](architecture/policy_database_mapping.md)과
 [Policy API 계약](api/policies.md)을 따른다.

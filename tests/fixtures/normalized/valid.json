@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "source_id": "fixture-source",
   "source_name": "합성 Fixture",
   "external_id": "VALID-1",
@@ -10,6 +10,16 @@
   "categories": [
     "housing"
   ],
+  "keywords": [
+    "청년",
+    "주거"
+  ],
+  "life_stages": [
+    "청년"
+  ],
+  "target_groups": [
+    "청년가구"
+  ],
   "application_period_text": "2026-07-01 ~ 2026-07-31",
   "application_start": "2026-07-01",
   "application_end": "2026-07-31",
@@ -18,6 +28,17 @@
   "region_text": "서울시",
   "regions": [
     "서울특별시"
+  ],
+  "coverage_scope": "regional",
+  "region_rules": [
+    {
+      "relation": "include",
+      "resolution_status": "matched",
+      "region_scheme": "fixture-kr-2026",
+      "region_code": "city-seoul",
+      "source_code": "11",
+      "source_text": "서울시"
+    }
   ],
   "age_min": 19,
   "age_max": 34,

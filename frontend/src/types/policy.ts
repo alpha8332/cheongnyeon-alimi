@@ -17,7 +17,7 @@ export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 export type PublicDataQualityStatus = 'valid' | 'partial';
 
 export interface PolicyDto {
-  schema_version: '1.0.0';
+  schema_version: '1.0.0' | '1.1.0';
   source_id: string;
   source_name: string;
   external_id: string | null;

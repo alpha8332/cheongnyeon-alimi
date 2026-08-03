@@ -21,6 +21,15 @@ EXTERNAL_ID_REQUIRED_SOURCES = frozenset(
         "bokjiro-central-welfare-api",
     }
 )
+PENDING_SEARCH_STORAGE_FIELDS = frozenset(
+    {
+        "keywords",
+        "life_stages",
+        "target_groups",
+        "coverage_scope",
+        "region_rules",
+    }
+)
 
 IDENTITY_FIELDS = frozenset({"source_id", "external_id"})
 IMMUTABLE_FIELDS = frozenset({"id", "created_at"})
@@ -119,6 +128,30 @@ def _identity_issue(
             path=f"$[{index}].external_id",
         )
     return None
+
+
+def _search_storage_issue(
+    item: Mapping[str, Any],
+    index: int,
+) -> ImportIssue | None:
+    has_meaningful_search_data = any(
+        (
+            bool(item.get("keywords")),
+            bool(item.get("life_stages")),
+            bool(item.get("target_groups")),
+            item.get("coverage_scope") != "unknown",
+            bool(item.get("region_rules")),
+        )
+    )
+    if not has_meaningful_search_data:
+        return None
+    return ImportIssue(
+        index=index,
+        source_id=_nonempty_string(item.get("source_id")),
+        external_id=_nonempty_string(item.get("external_id")),
+        code="search_storage_not_ready",
+        path=f"$[{index}]",
+    )
 
 
 def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
@@ -332,6 +365,11 @@ def _preflight_programs(
         if identity_issue is not None:
             skipped += 1
             issues.append(identity_issue)
+            continue
+        search_storage_issue = _search_storage_issue(candidate, index)
+        if search_storage_issue is not None:
+            skipped += 1
+            issues.append(search_storage_issue)
             continue
         accepted.append((index, candidate))
         if validation.status is DataQualityStatus.PARTIAL:

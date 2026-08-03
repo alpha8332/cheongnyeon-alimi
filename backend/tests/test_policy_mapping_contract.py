@@ -10,6 +10,7 @@ from app.models.policy import Policy
 from app.schemas.policy import PolicyRead
 from app.services.seed_importer import (
     EXTERNAL_ID_REQUIRED_SOURCES,
+    PENDING_SEARCH_STORAGE_FIELDS,
     _policy_values,
 )
 from collectors.normalized import NormalizedProgram
@@ -73,13 +74,20 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     )
     public_api_fields = frozenset(PolicyRead.model_fields)
 
-    assert len(normalized_fields) == 31
+    storage_candidate_fields = (
+        normalized_fields - NormalizedProgram.SEARCH_FIELD_NAMES
+    )
+
+    assert len(normalized_fields) == 36
     assert frozenset(schema["required"]) == normalized_fields
     assert NormalizedProgram.FIELD_NAMES == normalized_fields
-    assert orm_fields == normalized_fields
-    assert importer_fields == normalized_fields
+    assert PENDING_SEARCH_STORAGE_FIELDS == (
+        NormalizedProgram.SEARCH_FIELD_NAMES
+    )
+    assert orm_fields == storage_candidate_fields
+    assert importer_fields == storage_candidate_fields
     assert public_api_fields == (
-        normalized_fields - {"provenance"} | SYSTEM_FIELDS
+        storage_candidate_fields - {"provenance"} | SYSTEM_FIELDS
     )
 
 
@@ -107,7 +115,10 @@ def test_importer_conversion_preserves_every_seed_field():
     for item in load_seed():
         values = _policy_values(item)
 
-        for field in NormalizedProgram.FIELD_NAMES:
+        for field in (
+            NormalizedProgram.FIELD_NAMES
+            - NormalizedProgram.SEARCH_FIELD_NAMES
+        ):
             actual = values[field]
             expected = item[field]
             if field in DATE_FIELDS:
@@ -127,6 +138,11 @@ def test_importer_conversion_preserves_every_seed_field():
         assert values["created_at"].tzinfo is not None
         assert values["updated_at"].tzinfo is not None
         assert values["created_at"] == values["updated_at"]
+        assert item["keywords"] == []
+        assert item["life_stages"] == []
+        assert item["target_groups"] == []
+        assert item["coverage_scope"] == "unknown"
+        assert item["region_rules"] == []
 
 
 def test_source_scoped_identity_and_current_source_admission_are_stable():

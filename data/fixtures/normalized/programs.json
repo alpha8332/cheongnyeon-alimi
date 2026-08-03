@@ -14,12 +14,15 @@
     ],
     "category_text": "주거",
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope": "unknown",
     "data_quality_status": "valid",
     "education_statuses": [],
     "eligibility_text": "합성 청년 대상",
     "employment_statuses": [],
     "excluded_conditions": [],
     "external_id": "SYN-YOUTH-001",
+    "keywords": [],
+    "life_stages": [],
     "organization": "합성 주거기관",
     "preferred_conditions": [],
     "provenance": [
@@ -38,17 +41,19 @@
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       }
     ],
+    "region_rules": [],
     "region_text": "서울시",
     "regions": [
       "서울특별시"
     ],
     "required_conditions": [],
-    "schema_version": "1.0.0",
+    "schema_version": "1.1.0",
     "source_id": "youthcenter-api",
     "source_name": "온통청년 청년정책 API",
     "source_url": "https://fixture.invalid/youth/001",
     "summary": null,
     "support_content": "합성 월 지원",
+    "target_groups": [],
     "title": "합성 청년 주거 지원"
   },
   {
@@ -67,12 +72,15 @@
     ],
     "category_text": "금융･복지･문화",
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope": "unknown",
     "data_quality_status": "valid",
     "education_statuses": [],
     "eligibility_text": null,
     "employment_statuses": [],
     "excluded_conditions": [],
     "external_id": "SYN-YOUTH-002",
+    "keywords": [],
+    "life_stages": [],
     "organization": "합성 등록기관",
     "preferred_conditions": [],
     "provenance": [
@@ -91,17 +99,19 @@
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       }
     ],
+    "region_rules": [],
     "region_text": "전국",
     "regions": [
       "전국"
     ],
     "required_conditions": [],
-    "schema_version": "1.0.0",
+    "schema_version": "1.1.0",
     "source_id": "youthcenter-api",
     "source_name": "온통청년 청년정책 API",
     "source_url": "https://fixture.invalid/youth/002",
     "summary": null,
     "support_content": "합성 생활 지원",
+    "target_groups": [],
     "title": "합성 상시 생활 지원"
   },
   {
@@ -120,12 +130,15 @@
     ],
     "category_text": "서민금융,생활지원",
     "collected_at": "2026-07-26T06:01:00+00:00",
+    "coverage_scope": "unknown",
     "data_quality_status": "partial",
     "education_statuses": [],
     "eligibility_text": "합성 지원 대상 합성 선정 기준",
     "employment_statuses": [],
     "excluded_conditions": [],
     "external_id": "SYN-BOK-001",
+    "keywords": [],
+    "life_stages": [],
     "organization": "합성 복지부처",
     "preferred_conditions": [],
     "provenance": [
@@ -151,15 +164,17 @@
         "source_url": "https://fixture.invalid/bokjiro/detail"
       }
     ],
+    "region_rules": [],
     "region_text": null,
     "regions": [],
     "required_conditions": [],
-    "schema_version": "1.0.0",
+    "schema_version": "1.1.0",
     "source_id": "bokjiro-central-welfare-api",
     "source_name": "복지로 중앙부처 복지서비스 API",
     "source_url": "https://fixture.invalid/bokjiro/001",
     "summary": null,
     "support_content": "합성 상세 지원 내용",
+    "target_groups": [],
     "title": "합성 청년 자산 지원 상세"
   },
   {
@@ -175,12 +190,15 @@
     "categories": [],
     "category_text": null,
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope": "unknown",
     "data_quality_status": "partial",
     "education_statuses": [],
     "eligibility_text": null,
     "employment_statuses": [],
     "excluded_conditions": [],
     "external_id": "SYN-BOK-002",
+    "keywords": [],
+    "life_stages": [],
     "organization": "합성 복지부처",
     "preferred_conditions": [],
     "provenance": [
@@ -199,15 +217,17 @@
         "source_url": "https://fixture.invalid/bokjiro/list"
       }
     ],
+    "region_rules": [],
     "region_text": null,
     "regions": [],
     "required_conditions": [],
-    "schema_version": "1.0.0",
+    "schema_version": "1.1.0",
     "source_id": "bokjiro-central-welfare-api",
     "source_name": "복지로 중앙부처 복지서비스 API",
     "source_url": "https://fixture.invalid/bokjiro/002",
     "summary": null,
     "support_content": "상세가 없는 합성 목록 사례",
+    "target_groups": [],
     "title": "합성 목록 전용 지원"
   }
 ]
