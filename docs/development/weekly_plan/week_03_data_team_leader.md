@@ -244,6 +244,9 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 않는다. 기다리는 동안 DT3의 pagination·수집 실행 구조 중 검색 계약과
 독립적인 부분을 준비할 수 있다.
 
+현재 상태는 `in-progress`다. PSF 이후 actual profile, Data 권고안과 Schema
+영향 판정은 준비됐고 Backend `W3-B0`·Frontend `W3-F0` 초안을 기다린다.
+
 ### 수행 작업
 
 #### Data 담당 결정안
@@ -635,7 +638,7 @@ git status --short
 - [x] 2주차 병합 기준과 3주차 Forest·담당 확인
 - [x] Gate G0 시작 승인
 - [x] Integration 03 PSF0~PSF8 완료
-- [ ] Integration 03 기반 브랜치 병합 승인
+- [x] Integration 03 기반 브랜치 병합 승인
 - [ ] Gate G1 검색 계약 승인
 - [ ] Gate G2 세 영역 준비 증거 확인
 - [ ] Gate G3 실제 DB → API → UI 통합 확인

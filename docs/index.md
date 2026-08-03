@@ -133,7 +133,7 @@ preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Data·Backend·Frontend | Integration 03 PSF0~PSF8 기반 구현·검증 완료. 기반 브랜치 병합 후 Data 02 DT2 Data 근거를 준비하고 Backend 06·Frontend 04 초안과 Gate G1 노출 의미 승인 | [검색 데이터 기반 개발 기록](development/development_notes/integration/policy_search_data_foundation.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
+| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Backend·Frontend·Data | Integration 03 병합과 DT2 actual profile·Data 권고안·Schema 영향 판정 완료. Backend 06·Frontend 04 초안으로 unknown·partial·상태·정렬·검색 이유 소비 의미를 검토하고 Gate G1 승인 | [검색 데이터 기반 개발 기록](development/development_notes/integration/policy_search_data_foundation.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

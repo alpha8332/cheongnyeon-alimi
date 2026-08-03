@@ -32,7 +32,7 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend 소비 검토 | in-progress | DT0~DT1 Source 근거, DT2~DT4 릴리스 범위 순회·실제 Raw·DB 초기 적재·품질 보고 | Data 01, Integration 02, DT2부터 Integration 03 |
+| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend 소비 검토 | in-progress | DT0~DT1 완료, DT2 actual profile·Data 권고안 준비 후 공동 G1 대기, DT3~DT4 실제 Raw·DB 초기 적재·품질 보고 | Data 01, Integration 02, DT2부터 Integration 03 |
 | 2 | [Integration 03 Policy Search Data Foundation](integration/03_policy_search_data_foundation.md) | Data·Backend 공동 | Frontend 소비·Team Leader Gate | completed | PSF0~PSF8 Source 중립 계약·지역 기준정보·mapping·원자적 적재·판정·소비·성능·actual 재생과 전체 Gate 완료 | Data 02 DT1 |
 | 3 | Backend 06 Policy Search | Backend | Data 계약·Frontend 소비 검토 | 계획 필요 | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Integration 03 판정 primitive와 Data 02 실제 분포 |
 | 4 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Backend 06 계약 승인 |

@@ -2,14 +2,14 @@
 
 ## 작업 정보
 
-- 작업일: 2026-07-31
+- 작업일: 2026-07-31, 2026-08-03
 - 담당 영역: Data, Team Leader 시작 조정
 - 상태: in-progress
 - 브랜치: `feature/data/release-dataset-bootstrap`
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: Integration 03 completed, base merge pending, then DT2
+- 현재 Slice: DT2 in-progress, Data evidence prepared, Gate G1 pending
 
 ## 목적
 
@@ -29,7 +29,7 @@ Integration 04 종단 인수 결과는 각 담당 Forest 기록에 남긴다.
 | --- | --- | --- |
 | DT0 | completed | Git·Source·비밀·Runtime·PostgreSQL 인증·Migration과 테스트 확인 |
 | DT1 | completed | 두 Source 실호출·분포·partial 원인·릴리스 범위 초안 확인 |
-| DT2 | pending | Integration 03 완료·병합 대기, 공동 G1은 Backend·Frontend 초안 대기 |
+| DT2 | in-progress | PSF 이후 actual profile·Data 권고안·Schema 영향 판정 완료, 공동 G1은 Backend·Frontend 초안 대기 |
 | DT3 | pending | 승인 수집 범위와 Runtime DB bootstrap 대기 |
 | DT4 | pending | 실제 snapshot 적재와 G1 대기 |
 
@@ -225,6 +225,68 @@ timeout은 20초, 재시도는 0회, 요청 간격은 1초로 제한했다. 두 
 - `partial` 기본 노출 규칙을 유지하거나 바꾸면 Backend 필터와 Frontend
   미확인 조건 표시가 어떻게 동기화되는가?
 
+### DT2 - PSF 이후 actual profile
+
+Integration 03이 병합된 현재 코드로 DT1 Runtime Raw를 외부 API 호출 없이
+각 Source 10건씩 다시 재생했다. 정책 제목·원문·식별자는 출력하지 않고 계약
+판정에 필요한 집계만 확인했다.
+
+| 항목 | 온통청년 10건 | 복지로 10건 |
+| --- | ---: | ---: |
+| `valid` / `partial` / `invalid` | 8 / 2 / 0 | 0 / 10 / 0 |
+| `coverage_scope` | regional 10 | unknown 10 |
+| 정규화 지역·region rule 존재 | 10 / 10 | 0 / 0 |
+| 최소·최대 연령 모두 존재 | 9 | 0 |
+| 신청 상태 | open 6, closed 3, scheduled 1 | null 10 |
+| 신청 일정 | fixed 5, always 2, null 3 | null 10 |
+| category·keyword 존재 | 10 / 10 | 9 / 9 |
+| summary·support text 존재 | 10 / 10 | 10 / 10 |
+| eligibility·신청 방법 존재 | 4 / 9 | 3 / 0 |
+
+PSF 이전 DT1에서는 권위 있는 지역 crosswalk가 없어 온통청년 10건 모두
+`partial`이었지만, `kr-bjd-20260803` exact crosswalk 적용 뒤 10건 모두 지역
+규칙이 연결되고 8건이 `valid`가 됐다. 남은 2건의 warning은
+`unmapped_category`다. 복지로 10건은 지역·연령·신청기간 근거가 없어서
+`missing_regions`, `missing_age_condition`, `missing_application_period`를
+유지하며, category가 없는 1건에는 `missing_categories`도 있다.
+
+### DT2 - Data 권고안
+
+아래는 현재 실행 계약과 실제 표본에 근거한 G1 검토 입력이다. Backend API와
+Frontend 표시 계약으로 확정된 내용은 아니며 두 담당자의 소비 검토가 필요하다.
+
+| 결정 항목 | Data 권고 | 실제 근거와 소비 영향 |
+| --- | --- | --- |
+| 지역 | `match`는 포함, `mismatch`는 제외하고 `unknown`은 추정 없이 미확인 후보로 보존 | 온통청년은 exact regional 10건, 복지로는 unknown 10건이다. unknown을 모두 제외하면 복지로가 검색에서 사라지므로 Backend는 점수 감점·미확인 조건 반환, Frontend는 지역 미확인 표시 여부를 결정해야 한다. |
+| 전국·상위 지역 | nationwide는 지역 query에 match, regional은 exact·ancestor·exclude 규칙을 그대로 사용 | PSF6 primitive가 천안·충남·전국·타 지역과 exclude를 구분한다. alias가 ambiguous·unmapped이면 임의 지역으로 고르지 않는다. |
+| 연령 | 확인된 범위의 `match`·`mismatch`를 사용하고 경계가 없으면 `unknown` 후보로 보존 | 온통청년 9건만 숫자 범위가 있고 복지로 10건은 모두 미상이다. 27세 검색에서 확정 불일치는 제외하되 미상은 자격 확인 필요로 반환하는 안을 제안한다. |
+| 신청 상태 | 명시적 상태 query는 같은 값만 `match`, null은 `unknown`; 기본 검색은 open 우선, scheduled·unknown의 별도 표시, closed 기본 제외를 제안 | 실제 표본은 open 6·closed 3·scheduled 1·null 10이다. 최종 기본값과 정렬은 Backend·Frontend가 함께 승인해야 한다. |
+| 품질 | invalid는 항상 제외하고, 검색 endpoint는 valid와 partial을 후보로 삼되 partial·누락 조건을 응답과 화면에서 명시하는 안을 제안 | 복지로 실제 표본 전부가 partial이다. 기존 목록·상세 API의 `include_partial=false` 기본값은 유지하고 새 검색 계약에서 별도 승인한다. |
+| 검색 text | Source Raw key를 직접 조회하지 않고 title, category·keyword, summary, eligibility, support projection을 사용 | 두 Source 모두 title·summary·support가 10건에 있고 eligibility는 4·3건이다. 신청 방법은 정책 의도 검색의 기본 projection에서 제외하고 필요 시 후속 저가중치 필드로 검토한다. |
+| 관련도·정렬 | Data는 field별 근거와 3값 판정만 제공하고 최종 가중치·pagination은 Backend 06이 결정 | 검색 이유에는 일치 field와 미확인 조건을 분리해야 한다. 같은 점수의 결정적 tie-breaker도 API 초안에서 확정해야 한다. |
+
+### DT2 - Schema·Fixture·Seed 영향 판정
+
+- `NormalizedProgram` 1.1.0의 필드와 enum으로 현재 Data 권고를 표현할 수 있다.
+- 선택 단일 값의 `null`, 반복 값의 `[]`, `coverage_scope=unknown` 규칙을
+  변경하지 않는다.
+- `valid|partial|invalid`, 신청 상태와 지역·관계 enum을 추가하거나 바꾸지
+  않는다.
+- canonical Fixture·Seed와 PostgreSQL Migration 변경은 필요하지 않다.
+- 새 자연어 검색 request·해석 조건·검색 이유·미확인 조건은 NormalizedProgram
+  필드가 아니라 Backend 06 API 응답 계약과 Frontend 04 타입에서 정의한다.
+
+### DT2 - 공동 G1 대기 항목
+
+- Backend 06: 자연어 원문 parameter, 구조화 `region`·`age`·`category`·
+  `status`, unknown 포함 방식, 기본 정렬·pagination과 검색 이유 응답 초안
+- Frontend 04: partial·지역/연령/상태 미확인 표시, 해석 조건 확인·수정,
+  결과 없음과 pagination query state 초안
+- 공동 결정: 검색 endpoint의 partial 기본 포함 여부, open·scheduled·unknown·
+  closed 기본 노출 순서와 unknown 후보의 점수·노출 하한
+
+이 항목의 소비 증거가 없으므로 DT2와 Gate G1은 완료로 표시하지 않는다.
+
 ## 주요 변경 파일
 
 - `tests/test_runtime_replay.py`
@@ -252,6 +314,10 @@ timeout은 20초, 재시도는 0회, 요청 간격은 1초로 제한했다. 두 
   계약으로 넘긴다.
 - 릴리스 범위는 전체 목록을 기준으로 하되, 상세 호출은 확인된 할당량과
   사용자 영향 안에서 별도로 승인한다.
+- DT2 Data 권고는 현재 1.1.0의 3값 판정과 projection을 사용하며 Schema·
+  Fixture·Seed·`null`·빈 배열·enum 변경을 제안하지 않는다.
+- unknown·partial 후보의 기본 노출과 정렬은 Data가 단독 확정하지 않고
+  Backend 06·Frontend 04 소비 초안과 Gate G1에서 승인한다.
 
 ## 검증 결과
 
@@ -296,12 +362,26 @@ timeout은 20초, 재시도는 0회, 요청 간격은 1초로 제한했다. 두 
 정리가 DB를 base로 되돌린 뒤 동일한 전체 명령을 다시 실행했고 76건이
 통과했다. 첫 실패를 삭제하거나 최종 성공으로 덮어 기록하지 않는다.
 
+### DT2 Data 근거 준비 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| 실제 API 호출 | 없음, 저장된 DT1 Runtime Raw만 오프라인 재생 |
+| 온통청년 actual replay | 10건 수용, valid 8·partial 2·invalid 0, regional·region rule 10건 |
+| 복지로 actual replay | 10건 수용, valid 0·partial 10·invalid 0, coverage unknown 10건 |
+| Data 전체 단위 테스트 | 102건 통과 |
+| 검색 계약·PostgreSQL 집중 pytest | 11건 통과, 기존 warning 1건 |
+| Frontend 기존 계약 테스트 | 7건 통과 |
+| Schema·Fixture·Seed·DB·API 변경 | 없음 |
+
+검색 계약 집중 검증 후 `_test` DB는 `alembic_version` 외 public table이 없는
+상태로 정리됐음을 확인했다. Browser UI는 변경하지 않았고 Frontend 04
+초안도 아직 없으므로 이번 DT2 Data 근거 준비에서 화면 검증을 수행하지 않는다.
+
 ## 남은 작업
 
-- 완료된 Integration 03 브랜치를 현재 Data 02 기반 브랜치에 병합한 뒤 DT2의
-  Data 근거 준비를 재개한다.
-- DT2에서 Backend·Frontend 초안과 함께 지역·연령·상태·partial·검색 text
-  계약을 공동 검토한다.
+- Backend 06·Frontend 04 초안을 받은 뒤 DT2 Data 권고와 query·응답·UI 의미를
+  공동 검토하고 Gate G1 승인 또는 수정사항을 기록한다.
 - 온통청년의 권위 있는 행정구역 코드표를 확보하고 집계·과거 코드 처리
   원칙을 승인한다.
 - DT3 전체 호출 전 온통청년 큰 page size 1회 확인과 복지로 상세 후보·호출

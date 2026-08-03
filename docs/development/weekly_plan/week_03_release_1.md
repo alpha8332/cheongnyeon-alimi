@@ -59,6 +59,8 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
   완료하고 소비 호환·성능·실데이터 재생까지 검증했다. Mock UI partial 배지
   표시 문제는 Frontend 최종 디자인·Integration 04 인계사항이다. 전체 Gate와
   Data 02 인계를 마쳤으며 기반 브랜치 병합 후 DT2 Data 준비를 재개한다.
+- Integration 03 병합 뒤 DT2 actual profile과 Data 권고안·Schema 영향 판정을
+  준비했다. Backend 06·Frontend 04 초안이 없어 Gate G1 공동 승인은 대기한다.
 - 전체 또는 릴리스 범위 pagination과 자동 주기 적재는 구현하지 않았다.
 - 공개 Policy API에는 자유 `keyword`와 `age` query가 없다.
 - Frontend 검색은 최대 100건을 받은 뒤 문장 전체 포함 여부를 검사한다.

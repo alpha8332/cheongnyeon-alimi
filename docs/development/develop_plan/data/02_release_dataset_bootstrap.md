@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: Integration 03 completed, base merge pending, then DT2
+- 현재 Slice: DT2 in-progress, Data evidence prepared, Gate G1 pending
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -99,11 +99,18 @@ Source 중립 검색 필드·지역·DB 기반은 Integration 03이 담당하고
 
 ### DT2 - 검색 계약 Data 근거와 Gate G1 지원
 
+- 상태: in-progress (`2026-08-03`)
 - 목적: 실제 표본을 바탕으로 지역·연령·상태·품질 의미를 제안하고
   Backend·Frontend 공동 계약 검토를 지원한다.
 - 선행 조건: DT1, Integration 03 PSF0~PSF8, Backend 06·Frontend 04 초안
 - 산출물: Data 권고안, 경계 사례와 Schema 변경 영향 판정
 - 완료 기준: Data·Backend·Frontend 소비 관점의 G1 검토 증거 확보
+
+Integration 03 병합 후 저장된 DT1 Runtime Raw를 외부 호출 없이 다시 재생해
+Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 지역·연령·상태·
+품질의 `match|mismatch|unknown`을 표현할 수 있어 Data Schema, Fixture, Seed,
+`null`, 빈 배열과 enum 변경은 제안하지 않는다. Backend 06·Frontend 04 초안이
+없으므로 query·응답·표시 의미의 공동 G1 승인은 아직 완료하지 않는다.
 
 ### DT3 - 릴리스 snapshot 수집과 PostgreSQL bootstrap
 
