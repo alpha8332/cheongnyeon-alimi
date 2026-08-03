@@ -288,6 +288,14 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - Runtime DB에서 두 Source 각 10건을 실제 FK·constraint·projection write까지
   dry-run한 뒤 rollback했다. 전후 Policy·rule·projection·CollectionRun은
   모두 0건이고 지역 538건·별칭 1,080건은 유지됐다.
+- 1280×720 인앱 Browser에서 홈·검색·기본 목록·partial 포함·복지 필터·자산
+  검색·partial 상세·빈 결과·직접 진입과 새로고침 기능은 모두 통과했다.
+  console error·warning, React 오류 화면과 관찰된 네트워크 실패도 없었다.
+- `/programs`에서 partial 포함 시 두 partial 카드의 `정보 일부 누락`
+  배지가 `PolicyCard` 제목과 같은 `overflow: hidden; white-space: nowrap`
+  영역에 놓여 `정보...`처럼 잘리는 임시 Mock UI 결함도 확인했다. 데이터·API·
+  소비 계약 회귀는 아니므로 PSF7 차단사항으로 보지 않고 Frontend 최종 디자인과
+  Integration 04 Browser 검증에 인계한다.
 
 ## 주요 변경 파일
 
@@ -532,7 +540,7 @@ Browser UI 검증은 수행하지 않았다.
 | Frontend 계약 테스트 | 최초 6/7, stale welfare 기대 수정 후 7/7 통과 |
 | Frontend lint·production build | 통과, Vite 8.1.5·210 modules |
 | Vite HTTP | 임시 `127.0.0.1:3000` root·`/programs` 200 |
-| Browser UI | 인앱 Browser 연결 목록이 비어 있어 미실행, 성공으로 간주하지 않음 |
+| Browser UI | 기능 흐름·console·network 통과, Mock partial 배지 표시 문제는 Frontend·Integration 04에 인계 |
 | 합성 PostgreSQL plan | 20,000건·200 matches, 기본 ILIKE 19.258ms·LIKE 2.597ms·강제 GIN 2.030ms |
 | actual Raw 오프라인 재생 | 온통청년 10·복지로 10 accepted, 추정 지역·조건 생성 없음 |
 | actual Raw Runtime DB dry-run | 각 10건 insert 후보, rollback 후 검색·실행 row 0 |
@@ -551,10 +559,10 @@ PostgreSQL plan은 18.4, `Korean_Korea.949`, `random_page_cost=4`,
   `unmapped`로 보존하고 Source 문서가 확보되기 전 추정하지 않는다.
 - PSF8에서 전체 Forest Gate, Git·비밀·Runtime 경계와 Data 02 DT2 인계를
   최종 검토해야 한다.
+- Frontend 최종 디자인 또는 Integration 04에서 partial 배지를 제목 overflow
+  밖에 배치하고 1280×720 목록·상세 Browser 시나리오를 다시 확인해야 한다.
 - Backend 06은 실제 snapshot과 최종 filter·정렬·pagination을 포함한 plan에서
   기본 `ILIKE` Sequential Scan과 trigram GIN 미선택 위험을 다시 평가해야 한다.
-- 인앱 Browser 연결이 가능한 세션에서 기존 사용자 목록·상세 화면 회귀를
-  PSF8 또는 Release 1 Acceptance 전에 직접 확인해야 한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
   PSF8 전체 Gate와 Data 02 DT2 소비 승인이 완료되어야 제거할 수 있다.
 - Source 간 canonical deduplication, Backend 최종 가중치와 지역 crawler는

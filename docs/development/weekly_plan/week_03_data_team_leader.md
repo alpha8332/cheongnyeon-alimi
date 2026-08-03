@@ -196,7 +196,8 @@ Gate와 검증은
 현재 PSF0~PSF7의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
 공식 행정구역 기준정보, 두 Source mapping과 Policy·관계·projection 원자적
 적재, 지역·조건 판정 primitive와 기존 소비 호환·성능·실데이터 재생 검증이
-완료됐다. Forest Gate와 Data 02 인계를 수행하는 PSF8이 다음 Slice다.
+완료됐다. Mock UI partial 배지 표시 문제는 Frontend·Integration 04에 인계하고
+Forest Gate와 Data 02 인계를 수행하는 PSF8이 다음 Slice다.
 
 ### 내가 수행할 역할
 

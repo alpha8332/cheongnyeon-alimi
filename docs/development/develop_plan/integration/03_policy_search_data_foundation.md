@@ -451,6 +451,10 @@ PSF7은 Backend 독립 실행 경계, 기존 33-field `PolicyRead`, Frontend 타
 `LIKE` sequential scan과 강제 trigram GIN plan을 비교해 planner 선택 위험을
 Backend 06으로 인계했다. actual DT1 Raw 20건은 외부 API 호출 없이 재생·DB
 dry-run했으며 Source 근거가 없는 지역·연령·상태를 계속 unknown으로 보존했다.
+자동·HTTP 검증과 Browser 기능 흐름도 통과했다. 1280×720 Mock 목록에서
+partial 배지가 제목의 overflow 영역에 포함돼 잘리는 임시 UI 결함은 확인했지만,
+PSF7의 데이터·API·소비 계약에는 영향을 주지 않는다. 이 항목은 Frontend 최종
+디자인과 Integration 04 Browser 검증에서 확인할 인계사항으로 남긴다.
 
 ### PSF8 - Gate와 Data 02 인계
 
