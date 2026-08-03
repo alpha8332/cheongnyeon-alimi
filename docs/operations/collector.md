@@ -109,6 +109,28 @@ runtime/raw
 - 실제 적재는 `collection_runs` Migration과 실행 이력을 사용하므로 반드시
   최신 Alembic head를 적용한다.
 
+PSF3 이후 지역 code를 사용하는 Source를 적재하기 전에는 versioned 지역
+기준정보도 같은 DB에 준비한다.
+
+```powershell
+Set-Location backend
+..\.venv\Scripts\python.exe -B -m app.cli.import_regions
+Set-Location ..
+```
+
+반복 실행은 같은 값이면 unchanged이며, 같은 scheme의 DB 값이 잠긴 Seed와
+다르면 덮어쓰지 않고 실패한다. PSF4부터 온통청년 5자리 `zipCd`는 승인된
+exact crosswalk만 사용해 region rule을 생성한다. 미매핑·모호한 값과 폐지
+code를 현행 지역으로 추정하거나 자동 치환하지 않는다.
+
+PSF5부터 비어 있지 않은 region rule, 정책과 versioned search projection을
+같은 transaction에 저장한다. 관계 또는 projection write 하나가 실패하면
+accepted batch 전체를 rollback한다. Runtime replay는 Normalizer warning을
+program과 함께 importer에 전달해 Source 변환 warning으로 분류한 partial을
+재검증에서도 유지한다. 아래 `--dry-run`은 실제 FK·constraint·projection
+write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projection·실행
+이력을 남기지 않는다.
+
 온통청년 최신 Raw 회차를 검증만 하고 rollback:
 
 ```powershell

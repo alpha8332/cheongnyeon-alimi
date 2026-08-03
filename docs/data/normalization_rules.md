@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.0.0 구현
+- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.1.0 구현
 
 정규화는 `ExtractedPolicy`의 소스별 표현을 공통
 `NormalizedProgram`으로 변환한다. 원문에 없는 값을 추정해 정확한 값처럼
@@ -105,9 +105,40 @@
 }
 ```
 
+## 검색용 문자열 배열
+
+`keywords`, `life_stages`, `target_groups`는 항상 문자열 배열이며 값이 없으면
+`[]`이다. null이나 쉼표로 합친 단일 문자열은 허용하지 않는다. 각 값은
+앞뒤 공백을 제거하고 빈 값과 중복을 제외하되 원문 순서를 유지한다.
+
+PSF4 Source Adapter는 온통청년 `mclsfNm`·`plcyKywdNm`을 `keywords`로,
+복지로 `intrsThemaArray`를 `keywords`, `lifeArray`를 `life_stages`,
+`trgterIndvdlArray`를 `target_groups`로 옮긴다. 쉼표와 반복 XML leaf를
+원문 순서대로 분리하고 공통 text 정규화 뒤 빈 값과 exact 중복을 제거한다.
+Source에 없는 값은 계속 `[]`이며 API가 청년 정책을 제공한다는 이유만으로
+`청년`을 추가하지 않는다.
+
+`summary`는 온통청년 `plcyExplnCn`, 복지로 상세 `wlfareInfoOutlCn` 우선·목록
+`servDgst` fallback만 사용한다. 모델이 요약문이나 검색 합성 문자열을
+생성하지 않으며 Raw와 `extra.source_fields`는 그대로 보존한다.
+
 ## 지역
 
-행정구역 코드 체계가 별도 계약으로 확정되기 전에는 표준 이름만 정리한다.
+기존 표시·정확 일치 필터용 `regions`와 검색 판정용 지역 계약을 분리한다.
+`coverage_scope`는 `nationwide`, `regional`, `unknown` 중 하나이고,
+`region_rules`는 다음 필드를 모두 가진 객체 배열이다.
+
+- `relation`: `include` 또는 `exclude`
+- `resolution_status`: `matched`, `unmapped`, `ambiguous`
+- `region_scheme`, `region_code`: 확정된 canonical 지역 identity
+- `source_code`, `source_text`: 원문 근거
+
+PSF2의 canonical 지역 scheme은 `kr-bjd-20260803`이며 공식 법정동 snapshot의
+시·도와 시·군·구, 별칭, 유효기간과 계층을
+[행정구역 기준정보](administrative_regions.md)로 고정했다. PSF4 Normalizer는
+Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가 없으면
+`coverage_scope=unknown`, `region_rules=[]`를 유지한다. 기준표가 존재한다는
+사실만으로 Source code를 시·도나 전국으로 추정하지 않는다.
 
 | 원문 예 | 정규화 값 |
 | --- | --- |
@@ -123,14 +154,28 @@
 - 동명이인 지역이나 불명확한 축약어는 추정하지 않는다.
 - 값이 없으면 `[]`을 사용한다.
 - 원문은 `region_text`에 보존한다.
-- 5자리 행정구역 코드 목록은 승인된 code-to-name 기준표가 아직 없으므로
-  추정하지 않고 `regions=[]`과 `unmapped_region_code` 경고를 남긴다.
+- 온통청년 `zipCd`의 쉼표 구분 5자리 값은 `kr-bjd-prefix5`의 명시적 exact
+  crosswalk에 있을 때만 후보를 찾는다. 전체 숫자 목록이 아니거나 crosswalk에
+  없으면 이름·기관·prefix로 추정하지 않는다.
+- exact 폐지 code는 당시 canonical identity로 보존하고 현행 후계 지역으로
+  자동 치환하지 않는다. 미매핑·모호한 값은 Source 증거와 함께 unresolved
+  rule로 보존한다.
+- 향후 HTML Adapter의 지역명은 Adapter가 `source_text` 증거로 명시한 경우만
+  versioned alias resolver를 사용하며 `중구` 같은 다중 후보는 `ambiguous`다.
 - 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
   치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
+- `nationwide`는 지역 rule을 가질 수 없다.
+- `regional`은 canonical 지역으로 해석된 `include` rule이 하나 이상 필요하다.
+- `unknown`은 canonical 지역으로 해석된 rule을 가질 수 없다.
+- `matched` rule은 `region_scheme`과 `region_code`가 모두 필요하다.
+- `unmapped`·`ambiguous` rule은 canonical identity를 갖지 않고
+  `source_code` 또는 `source_text` 중 하나 이상의 근거를 보존한다.
+- 같은 canonical 지역에 동일 relation을 중복하거나 include와 exclude를
+  동시에 선언할 수 없다.
 
 ## 카테고리
 
-Normalized 1.0.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
+Normalized 1.1.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
 `categories` 배열을 사용한다. 같은 enum은 중복하지 않고 원문 순서를
 유지한다.
 
@@ -168,7 +213,7 @@ Normalized 1.0.0은 실제 복지로 관심주제의 다중값을 보존하기 �
 
 Validator는
 [`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
-과 날짜·연령 범위, 품질 상태 일치 규칙을 함께 검사한다.
+과 날짜·연령 범위, 품질 상태 및 지역 rule 불변식을 함께 검사한다.
 
 - `ValidationIssue.path`: `$.title`, `$.regions`, `$.provenance[0]` 같은
   JSON path
@@ -198,6 +243,10 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 - 기존 Seed의 재생성 필요성
 - Backend 필터와 Frontend 표시 영향
 
-현재 Backend·Frontend 소비 구현은 없지만 단일 category에서 배열로의 전환,
-신청 일정·상태 분리, null·빈 배열과 provenance 필드는 안정적인 영역 간
-계약으로 승인하기 전에 공동 검토해야 한다.
+현재 Backend는 검색 배열과 coverage를 Policy 컬럼에 저장하고 비어 있지 않은
+`region_rules`와 versioned projection을 Policy upsert와 같은 transaction에
+저장한다. Runtime replay는 Normalizer warning을 accepted program과 함께
+전달하므로 canonical 필드만으로 재구성할 수 없는 partial 분류도 유지한다.
+Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
+공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
+Slice에서 별도로 연결한다.

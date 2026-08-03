@@ -36,6 +36,11 @@ test('canonical Seed를 provenance 없는 공개 PolicyDto로 변환한다', () 
 
   for (const policy of policies) {
     assert.equal('provenance' in policy, false);
+    assert.equal('keywords' in policy, false);
+    assert.equal('life_stages' in policy, false);
+    assert.equal('target_groups' in policy, false);
+    assert.equal('coverage_scope' in policy, false);
+    assert.equal('region_rules' in policy, false);
     assert.notEqual(policy.data_quality_status, 'invalid');
     assert.match(policy.created_at, /Z$/);
     assert.match(policy.updated_at, /Z$/);
@@ -87,9 +92,10 @@ test('partial opt-in과 필터·pagination을 Mock에서도 API와 동일하게 
       include_partial: true,
     }),
   );
-  assert.equal(filteredResponse.total, 2);
+  assert.equal(filteredResponse.total, 1);
   assert.equal(filteredResponse.items.length, 1);
   assert.ok(filteredResponse.items[0]?.categories.includes('welfare'));
+  assert.equal(filteredResponse.items[0]?.external_id, 'SYN-YOUTH-002');
 
   const emptyPage = createMockPolicyListResponse(
     policies,

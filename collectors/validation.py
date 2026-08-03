@@ -16,6 +16,7 @@ from collectors.normalized import (
     DataQualityStatus,
     NormalizedProgram,
     NormalizedProgramValidationError,
+    upgrade_normalized_program,
 )
 
 
@@ -74,8 +75,9 @@ class NormalizedProgramValidator:
         self,
         candidate: Any,
     ) -> tuple[ValidationIssue, ...]:
+        selected = _canonical_candidate(candidate)
         return tuple(
-            _schema_issues(candidate, self.schema, self.schema, "$")
+            _schema_issues(selected, self.schema, self.schema, "$")
         )
 
     def classify(
@@ -83,14 +85,15 @@ class NormalizedProgramValidator:
         candidate: Mapping[str, Any],
         normalization_issues: Sequence[ValidationIssue] = (),
     ) -> DataQualityStatus:
-        schema_issues = self.schema_issues(candidate)
-        semantic_issues = _semantic_issues(candidate)
+        selected = _canonical_candidate(candidate)
+        schema_issues = self.schema_issues(selected)
+        semantic_issues = _semantic_issues(selected)
         if schema_issues or any(
             issue.severity == "error"
             for issue in (*semantic_issues, *normalization_issues)
         ):
             return DataQualityStatus.INVALID
-        if normalization_issues or _quality_gap_issues(candidate):
+        if normalization_issues or _quality_gap_issues(selected):
             return DataQualityStatus.PARTIAL
         return DataQualityStatus.VALID
 
@@ -99,7 +102,7 @@ class NormalizedProgramValidator:
         candidate: Mapping[str, Any],
         normalization_issues: Sequence[ValidationIssue] = (),
     ) -> ValidationResult:
-        selected = deepcopy(dict(candidate))
+        selected = _canonical_candidate(candidate)
         schema_issues = list(self.schema_issues(selected))
         semantic_issues = _semantic_issues(selected)
         has_errors = bool(schema_issues) or any(
@@ -201,6 +204,16 @@ def partition_validation_results(
         partial=tuple(partial),
         invalid=tuple(invalid),
     )
+
+
+def _canonical_candidate(candidate: Any) -> Any:
+    if not isinstance(candidate, Mapping):
+        return deepcopy(candidate)
+    selected = deepcopy(dict(candidate))
+    try:
+        return upgrade_normalized_program(selected)
+    except NormalizedProgramValidationError:
+        return selected
 
 
 def _schema_issues(
@@ -455,7 +468,129 @@ def _semantic_issues(
                 severity="error",
             )
         )
+    issues.extend(_region_contract_issues(candidate))
     return issues
+
+
+def _region_contract_issues(
+    candidate: Mapping[str, Any],
+) -> list[ValidationIssue]:
+    coverage_scope = candidate.get("coverage_scope")
+    region_rules = candidate.get("region_rules")
+    if not isinstance(region_rules, list):
+        return []
+
+    issues: list[ValidationIssue] = []
+    matched: list[Mapping[str, Any]] = []
+    matched_includes: list[Mapping[str, Any]] = []
+    canonical_relations: dict[tuple[str, str], set[str]] = {}
+    canonical_rule_keys: set[tuple[str, str, str]] = set()
+
+    for index, rule in enumerate(region_rules):
+        if not isinstance(rule, Mapping):
+            continue
+        status = rule.get("resolution_status")
+        relation = rule.get("relation")
+        scheme = rule.get("region_scheme")
+        code = rule.get("region_code")
+        source_code = rule.get("source_code")
+        source_text = rule.get("source_text")
+        path = f"$.region_rules[{index}]"
+
+        if status == "matched":
+            if not isinstance(scheme, str) or not isinstance(code, str):
+                issues.append(
+                    _semantic_issue(
+                        path,
+                        "matched_region_reference",
+                        "matched region rule requires scheme and code",
+                    )
+                )
+                continue
+            matched.append(rule)
+            if relation == "include":
+                matched_includes.append(rule)
+            key = (scheme, code)
+            relation_value = str(relation)
+            canonical_relations.setdefault(key, set()).add(
+                relation_value
+            )
+            rule_key = (scheme, code, relation_value)
+            if rule_key in canonical_rule_keys:
+                issues.append(
+                    _semantic_issue(
+                        path,
+                        "duplicate_region_relation",
+                        "canonical region relation is duplicated",
+                    )
+                )
+            canonical_rule_keys.add(rule_key)
+        elif status in {"unmapped", "ambiguous"}:
+            if scheme is not None or code is not None:
+                issues.append(
+                    _semantic_issue(
+                        path,
+                        "unresolved_canonical_region",
+                        "unresolved rule cannot contain canonical region",
+                    )
+                )
+            if source_code is None and source_text is None:
+                issues.append(
+                    _semantic_issue(
+                        path,
+                        "missing_region_evidence",
+                        "unresolved rule requires source evidence",
+                    )
+                )
+
+    if coverage_scope == "nationwide" and region_rules:
+        issues.append(
+            _semantic_issue(
+                "$.region_rules",
+                "nationwide_region_rules",
+                "nationwide coverage cannot contain region rules",
+            )
+        )
+    if coverage_scope == "regional" and not matched_includes:
+        issues.append(
+            _semantic_issue(
+                "$.coverage_scope",
+                "regional_without_include",
+                "regional coverage requires a matched include rule",
+            )
+        )
+    if coverage_scope == "unknown" and matched:
+        issues.append(
+            _semantic_issue(
+                "$.coverage_scope",
+                "unknown_with_matched_region",
+                "unknown coverage cannot contain matched region rules",
+            )
+        )
+    for relations in canonical_relations.values():
+        if {"include", "exclude"}.issubset(relations):
+            issues.append(
+                _semantic_issue(
+                    "$.region_rules",
+                    "region_include_exclude_conflict",
+                    "canonical region cannot be both included and excluded",
+                )
+            )
+            break
+    return issues
+
+
+def _semantic_issue(
+    path: str,
+    code: str,
+    message: str,
+) -> ValidationIssue:
+    return ValidationIssue(
+        path=path,
+        code=code,
+        message=message,
+        severity="error",
+    )
 
 
 def _optional_iso_date(value: Any) -> date | None:

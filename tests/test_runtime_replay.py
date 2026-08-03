@@ -61,6 +61,10 @@ class RuntimeReplayTests(unittest.TestCase):
         self.assertEqual(2, bokjiro.partial_count)
         self.assertEqual(0, bokjiro.invalid_count)
         self.assertEqual(2, bokjiro.accepted_count)
+        self.assertEqual(2, len(bokjiro.normalization_issues))
+        self.assertTrue(
+            all(issues for issues in bokjiro.normalization_issues)
+        )
 
     def test_limit_keeps_parent_and_matching_detail(self) -> None:
         replay = replay_runtime_raw(

@@ -20,6 +20,7 @@
 | Backend 04 | Admin Access Control | [개발 계획](backend/04_admin_access_control.md) | draft |
 | Backend 05 | CollectionRun Admin API | [개발 계획](backend/05_collection_run_admin_api.md) | draft |
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
+| Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.
@@ -48,25 +49,29 @@
 | ---: | --- | --- | --- |
 | 완료 | 2주차 Backend 안전성·Router advisory | Backend 03과 Frontend 02 완료 | `fix/backend/week2-hardening` |
 | 1 | `R1-REAL-DATA-BOOTSTRAP` | 실제 Source 릴리스 범위 수집·DB 초기 적재 | `feature/data/release-dataset-bootstrap` |
-| 2 | `R1-POLICY-SEARCH` | Backend 서버 검색 → Frontend 자연어 조건 연결 | `feature/backend/policy-search`, `feature/frontend/policy-search` |
-| 3 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수 검증 | 상세 Forest 계획에서 확정 |
-| 4 | `BE-ADMIN-RUN-HISTORY` | `v0.1.0` 뒤 Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
+| 2 | `R1-SEARCH-DATA-FOUNDATION` | Source 중립 검색 필드·지역 계층·DB 관계·projection | `feature/database/policy-search-foundation` |
+| 3 | `R1-POLICY-SEARCH` | Backend 서버 검색 → Frontend 자연어 조건 연결 | `feature/backend/policy-search`, `feature/frontend/policy-search` |
+| 4 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수 검증 | 상세 Forest 계획에서 확정 |
+| 5 | `BE-ADMIN-RUN-HISTORY` | `v0.1.0` 뒤 Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text
 fix/backend/week2-hardening
   → develop 병합
-  → Data 02 실제 데이터 기준선
+  → Data 02 DT0~DT1 실제 Source 근거
+  → Integration 03 검색 데이터 기반
+  → Data 02 DT2~DT4 실제 데이터 기준선
   → Backend 06·Frontend 04 검색
-  → Integration 03 실데이터 인수
+  → Integration 04 실데이터 인수
   → v0.1.0
   → Backend 04·05와 Frontend 03 관리자 기능
   → 나머지 v0.5.0 사용자·품질 Forest
 ```
 
-현재 `runtime/raw`가 없고 공개 API에는 자유 키워드·연령 query가 없다.
-Frontend의 client-only 전체 문장 포함 검색을 실제 정책 검색 완료로 간주하지
-않는다.
+Data 02 DT1에서 실제 표본 Raw 25개를 Git 제외 `runtime/raw`에 저장했지만
+전체 릴리스 snapshot과 Runtime DB 적재는 아직 없다. 공개 API에는 자유
+키워드·연령 query가 없으며 Frontend의 client-only 전체 문장 포함 검색을
+실제 정책 검색 완료로 간주하지 않는다.
 
 관리자 기능은 `v0.5.0` 범위에서 인증·권한 → Backend API → Frontend UI
 의존 순서를 지킨다. 이 표의 미래 작업은 `docs/index.md`의 활성 인계사항이

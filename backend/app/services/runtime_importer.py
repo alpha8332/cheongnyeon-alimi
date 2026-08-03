@@ -27,10 +27,18 @@ def import_runtime_raw(
         source_id=source_id,
         limit=limit,
     )
+    normalization_issues = replay.normalization_issues or tuple(
+        () for _ in replay.programs
+    )
+    if len(normalization_issues) != len(replay.programs):
+        raise ValueError(
+            "runtime normalization issues must align with programs"
+        )
     database = import_programs(
         db,
         replay.programs,
         dry_run=dry_run,
+        normalization_issues=normalization_issues,
     )
     return RuntimeImportResult(
         replay=replay,

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:cheongnyeon-alimi:schema:normalized-program:1.0.0",
+  "$id": "urn:cheongnyeon-alimi:schema:normalized-program:1.1.0",
   "title": "NormalizedProgram",
   "description": "Canonical policy data with quality status and Raw provenance.",
   "type": "object",
@@ -15,6 +15,9 @@
     "summary",
     "category_text",
     "categories",
+    "keywords",
+    "life_stages",
+    "target_groups",
     "application_period_text",
     "application_start",
     "application_end",
@@ -22,6 +25,8 @@
     "application_status",
     "region_text",
     "regions",
+    "coverage_scope",
+    "region_rules",
     "age_min",
     "age_max",
     "age_condition_text",
@@ -40,7 +45,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "source_id": {
       "type": "string",
@@ -92,6 +97,15 @@
         ]
       }
     },
+    "keywords": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "life_stages": {
+      "$ref": "#/$defs/stringArray"
+    },
+    "target_groups": {
+      "$ref": "#/$defs/stringArray"
+    },
     "application_period_text": {
       "$ref": "#/$defs/nullableText"
     },
@@ -130,6 +144,21 @@
     },
     "regions": {
       "$ref": "#/$defs/stringArray"
+    },
+    "coverage_scope": {
+      "type": "string",
+      "enum": [
+        "nationwide",
+        "regional",
+        "unknown"
+      ]
+    },
+    "region_rules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/regionRule"
+      }
     },
     "age_min": {
       "$ref": "#/$defs/nullableAge"
@@ -221,6 +250,47 @@
         "type": "string",
         "minLength": 1,
         "pattern": "^\\S(?:.*\\S)?$"
+      }
+    },
+    "regionRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "resolution_status",
+        "region_scheme",
+        "region_code",
+        "source_code",
+        "source_text"
+      ],
+      "properties": {
+        "relation": {
+          "type": "string",
+          "enum": [
+            "include",
+            "exclude"
+          ]
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "matched",
+            "unmapped",
+            "ambiguous"
+          ]
+        },
+        "region_scheme": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "region_code": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "source_code": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "source_text": {
+          "$ref": "#/$defs/nullableText"
+        }
       }
     },
     "provenance": {

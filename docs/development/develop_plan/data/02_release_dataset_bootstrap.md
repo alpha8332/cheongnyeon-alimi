@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT1 completed, next DT2
+- 현재 Slice: Integration 03 completed, base merge pending, then DT2
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -44,7 +44,8 @@
 - 합의되지 않은 Schema, `null`, 빈 배열 또는 enum 변경
 
 Backend·Frontend 구현은 각각 Backend 06과 Frontend 04가 담당한다.
-실제 종단 인수와 릴리스 판정은 Integration 03이 담당한다.
+Source 중립 검색 필드·지역·DB 기반은 Integration 03이 담당하고, 실제 종단
+인수와 릴리스 판정은 Integration 04가 담당한다.
 
 ## 선행 조건
 
@@ -78,7 +79,8 @@ Backend·Frontend 구현은 각각 Backend 06과 Frontend 04가 담당한다.
   - 최신 `develop` 기준과 작업 브랜치 범위 확인
   - 두 Source 비밀 주입과 `runtime/raw` Git 제외 확인
   - 인증 가능한 Runtime DB와 Migration 적용 대상 확인
-  - Data 02·Backend 06·Frontend 04·Integration 03의 책임과 기록 위치 확인
+  - Data 02·Integration 03·Backend 06·Frontend 04·Integration 04의 책임과
+    기록 위치 확인
 
 ### DT1 - Source preflight와 대표 실데이터
 
@@ -99,14 +101,15 @@ Backend·Frontend 구현은 각각 Backend 06과 Frontend 04가 담당한다.
 
 - 목적: 실제 표본을 바탕으로 지역·연령·상태·품질 의미를 제안하고
   Backend·Frontend 공동 계약 검토를 지원한다.
-- 선행 조건: DT1, Backend 06·Frontend 04 초안
+- 선행 조건: DT1, Integration 03 PSF0~PSF8, Backend 06·Frontend 04 초안
 - 산출물: Data 권고안, 경계 사례와 Schema 변경 영향 판정
 - 완료 기준: Data·Backend·Frontend 소비 관점의 G1 검토 증거 확보
 
 ### DT3 - 릴리스 snapshot 수집과 PostgreSQL bootstrap
 
 - 목적: 승인 범위를 재현 가능하게 수집·재처리·적재한다.
-- 선행 조건: DT1 릴리스 범위, 인증 가능한 Runtime DB와 Migration
+- 선행 조건: DT1 릴리스 범위, Integration 03 Migration·Importer 기반,
+  인증 가능한 Runtime DB
 - 산출물: Runtime Raw, 적재 집계, 재실행·실패 복구 결과와 bootstrap 절차
 - 완료 기준: 실제 Raw → Normalized → PostgreSQL 적재 및 재실행 검증
 
@@ -117,7 +120,7 @@ Backend·Frontend 구현은 각각 Backend 06과 Frontend 04가 담당한다.
 - 산출물: 품질 분포, 검색 경계 사례, golden query 후보 또는 정책 부재 근거
 - 완료 기준: Backend·Frontend가 사용할 안전한 실제 사례와 제약 전달
 
-DT5·DT6은 이 Data Forest의 구현 Slice가 아니다. Integration 03 계획과
+DT5·DT6은 이 Data Forest의 구현 Slice가 아니다. Integration 04 계획과
 개발 기록에서 실제 DB → API → UI 및 릴리스 판정을 수행한다.
 
 ## 검증 계획
@@ -172,6 +175,7 @@ PostgreSQL 통합 테스트는 `TEST_DATABASE_URL`이 `_test` DB를 가리킬 �
 - [전체 Forest 로드맵](../forest_roadmap.md)
 - [Data Pipeline Forest](01_data_pipeline.md)
 - [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
+- [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md)
 - [Source Profile](../../../data/source_profiles.md)
 - [Collector 실행](../../../operations/collector.md)
 - [Backend Windows 로컬 환경](../../backend_local_setup.md)

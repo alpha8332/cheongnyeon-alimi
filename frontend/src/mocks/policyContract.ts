@@ -16,6 +16,11 @@ export interface SeedPolicyProgram
     'id' | 'created_at' | 'updated_at' | 'data_quality_status'
   > {
   provenance: unknown[];
+  keywords: string[];
+  life_stages: string[];
+  target_groups: string[];
+  coverage_scope: 'nationwide' | 'regional' | 'unknown';
+  region_rules: unknown[];
   data_quality_status: SeedQualityStatus;
 }
 

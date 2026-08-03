@@ -12,8 +12,11 @@ from typing import Any
 
 from collectors.bokjiro import SOURCE_ID as BOKJIRO_SOURCE_ID
 from collectors.extracted import (
+    ExtractedCoverageScope,
     ExtractedPolicy,
+    ExtractedRegionRelation,
     ExtractionError,
+    SourceRegionEvidence,
     SourceProvenance,
 )
 from collectors.profile import SourceFieldProfile, build_field_profile
@@ -39,6 +42,7 @@ _SENSITIVE_QUERY_NAMES = {
     "openapivlak",
     "servicekey",
 }
+_YOUTHCENTER_REGION_SCHEME = "kr-bjd-prefix5"
 
 
 class YouthCenterExtractor:
@@ -77,6 +81,9 @@ class YouthCenterExtractor:
                 application_period = _APPLICATION_PERIOD_CODES.get(
                     _present_text(fields.get("aplyPrdSeCd")) or ""
                 )
+            coverage_scope, region_evidence = _youth_region_evidence(
+                fields.get("zipCd")
+            )
             policies.append(
                 ExtractedPolicy(
                     source_id=self.source_id,
@@ -87,9 +94,16 @@ class YouthCenterExtractor:
                         _present_text(fields.get("operInstCdNm"))
                         or _present_text(fields.get("rgtrInstCdNm"))
                     ),
+                    summary=_present_text(fields.get("plcyExplnCn")),
                     category_text=_present_text(fields.get("lclsfNm")),
+                    keywords=_split_text_values(
+                        fields.get("mclsfNm"),
+                        fields.get("plcyKywdNm"),
+                    ),
                     application_period_text=application_period,
                     region_text=_present_text(fields.get("zipCd")),
+                    coverage_scope_hint=coverage_scope,
+                    region_evidence=region_evidence,
                     age_text=_youth_age_text(fields),
                     eligibility_text=_join_text(
                         fields.get("ptcpPrpTrgtCn"),
@@ -200,6 +214,16 @@ class BokjiroExtractor:
                 item,
                 *(() if detail is None else (detail,)),
             )
+            interest_values = _prefer_text_values(
+                detail_fields,
+                list_fields,
+                "intrsThemaArray",
+            )
+            interest_text = (
+                ",".join(interest_values)
+                if interest_values
+                else None
+            )
             policies.append(
                 ExtractedPolicy(
                     source_id=self.source_id,
@@ -215,8 +239,25 @@ class BokjiroExtractor:
                         list_fields,
                         "jurMnofNm",
                     ),
-                    category_text=_present_text(
-                        list_fields.get("intrsThemaArray")
+                    summary=(
+                        _prefer(
+                            detail_fields,
+                            list_fields,
+                            "wlfareInfoOutlCn",
+                        )
+                        or _present_text(list_fields.get("servDgst"))
+                    ),
+                    category_text=interest_text,
+                    keywords=interest_values,
+                    life_stages=_prefer_text_values(
+                        detail_fields,
+                        list_fields,
+                        "lifeArray",
+                    ),
+                    target_groups=_prefer_text_values(
+                        detail_fields,
+                        list_fields,
+                        "trgterIndvdlArray",
                     ),
                     application_period_text=None,
                     region_text=None,
@@ -443,6 +484,58 @@ def _join_text(*values: Any) -> str | None:
     return "\n".join(selected) if selected else None
 
 
+def _split_text_values(*values: Any) -> tuple[str, ...]:
+    selected: list[str] = []
+
+    def append(value: Any) -> None:
+        if isinstance(value, list):
+            for item in value:
+                append(item)
+            return
+        if not isinstance(value, str):
+            return
+        for token in value.split(","):
+            normalized = token.strip()
+            if normalized and normalized not in selected:
+                selected.append(normalized)
+
+    for value in values:
+        append(value)
+    return tuple(selected)
+
+
+def _youth_region_evidence(
+    value: Any,
+) -> tuple[
+    ExtractedCoverageScope,
+    tuple[SourceRegionEvidence, ...],
+]:
+    text = _present_text(value)
+    if text is None:
+        return ExtractedCoverageScope.UNKNOWN, ()
+    if text.strip() == "전국":
+        return ExtractedCoverageScope.NATIONWIDE, ()
+
+    codes = _split_text_values(text)
+    if not codes or any(
+        len(code) != 5 or not code.isascii() or not code.isdigit()
+        for code in codes
+    ):
+        return ExtractedCoverageScope.UNKNOWN, ()
+    return (
+        ExtractedCoverageScope.REGIONAL,
+        tuple(
+            SourceRegionEvidence(
+                relation=ExtractedRegionRelation.INCLUDE,
+                external_scheme=_YOUTHCENTER_REGION_SCHEME,
+                source_code=code,
+                source_text=None,
+            )
+            for code in codes
+        ),
+    )
+
+
 def _prefer(
     preferred: Mapping[str, Any] | None,
     fallback: Mapping[str, Any],
@@ -453,6 +546,21 @@ def _prefer(
         if value is not None:
             return value
     return _present_text(fallback.get(field_name))
+
+
+def _prefer_text_values(
+    preferred: Mapping[str, Any] | None,
+    fallback: Mapping[str, Any],
+    field_name: str,
+) -> tuple[str, ...]:
+    preferred_values = _split_text_values(
+        None if preferred is None else preferred.get(field_name)
+    )
+    return (
+        preferred_values
+        if preferred_values
+        else _split_text_values(fallback.get(field_name))
+    )
 
 
 def _youth_age_text(fields: Mapping[str, Any]) -> str | None:

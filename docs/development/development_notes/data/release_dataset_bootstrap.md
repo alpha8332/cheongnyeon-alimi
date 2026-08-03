@@ -9,7 +9,7 @@
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: DT1 completed, next DT2
+- 현재 Slice: Integration 03 completed, base merge pending, then DT2
 
 ## 목적
 
@@ -20,8 +20,8 @@
 ## Forest 범위
 
 이 기록은 Data 02의 DT0부터 DT4까지 실제 구현·검증 결과를 누적한다.
-Backend 검색 구현, Frontend UI와 Integration 03 종단 인수 결과는 각 담당
-Forest 기록에 남긴다.
+Integration 03 검색 데이터 기반, Backend 검색 구현, Frontend UI와
+Integration 04 종단 인수 결과는 각 담당 Forest 기록에 남긴다.
 
 ## Slice 진행 현황
 
@@ -29,8 +29,8 @@ Forest 기록에 남긴다.
 | --- | --- | --- |
 | DT0 | completed | Git·Source·비밀·Runtime·PostgreSQL 인증·Migration과 테스트 확인 |
 | DT1 | completed | 두 Source 실호출·분포·partial 원인·릴리스 범위 초안 확인 |
-| DT2 | pending | 지역·연령·상태·partial 계약과 Backend·Frontend 초안 대기 |
-| DT3 | pending | 승인 수집 범위와 인증 가능한 Runtime DB 대기 |
+| DT2 | pending | Integration 03 완료·병합 대기, 공동 G1은 Backend·Frontend 초안 대기 |
+| DT3 | pending | 승인 수집 범위와 Runtime DB bootstrap 대기 |
 | DT4 | pending | 실제 snapshot 적재와 G1 대기 |
 
 ## 구현 내용
@@ -101,9 +101,10 @@ Forest 기록에 남긴다.
 | Data 02 | `develop_plan/data/02_release_dataset_bootstrap.md`, 이 기록 | 생성·진행 중 |
 | Backend 06 | `develop_plan/backend/06_policy_search.md`, 대응 Backend 개발 기록 | Backend 담당이 구현 전 생성 필요 |
 | Frontend 04 | `develop_plan/frontend/04_policy_search.md`, 대응 Frontend 개발 기록 | Frontend 담당이 구현 전 생성 필요 |
-| Integration 03 | `develop_plan/integration/03_release_1_acceptance.md`, 대응 Integration 개발 기록 | Team Leader가 DT5 전 생성 필요 |
+| Integration 03 | `develop_plan/integration/03_policy_search_data_foundation.md`, 대응 Integration 개발 기록 | PSF0~PSF8 구현·전체 Gate 완료, 기반 브랜치 병합 대기 |
+| Integration 04 | Release 1 Acceptance 계획과 대응 Integration 개발 기록 | Team Leader가 DT5 전 생성 필요 |
 | 보고서 | `docs/contest/`의 Release 1 제출 근거 | 실제 증거가 생길 때 작성 |
-| 사용성 리뷰·QA | Integration 03 개발 기록의 독립 검증 절 | 시나리오·결함이 생길 때 기록 |
+| 사용성 리뷰·QA | Integration 04 개발 기록의 독립 검증 절 | 시나리오·결함이 생길 때 기록 |
 
 Backend는 자연어 해석·검색 계약과 테스트 골격, Frontend는 Backend 해석
 조건·검색 이유 UI prototype을 DT1과 병렬로 준비할 수 있다. 각 담당자의
@@ -297,6 +298,8 @@ timeout은 20초, 재시도는 0회, 요청 간격은 1초로 제한했다. 두 
 
 ## 남은 작업
 
+- 완료된 Integration 03 브랜치를 현재 Data 02 기반 브랜치에 병합한 뒤 DT2의
+  Data 근거 준비를 재개한다.
 - DT2에서 Backend·Frontend 초안과 함께 지역·연령·상태·partial·검색 text
   계약을 공동 검토한다.
 - 온통청년의 권위 있는 행정구역 코드표를 확보하고 집계·과거 코드 처리
@@ -305,6 +308,6 @@ timeout은 20초, 재시도는 0회, 요청 간격은 1초로 제한했다. 두 
   상한을 승인한다.
 - Backend 06·Frontend 04 담당자는 구현 전 개별 Forest 계획과 개발 기록
   위치를 생성한다.
-- Team Leader는 DT5 전 Integration 03 계획과 개발 기록을 생성한다.
+- Team Leader는 DT5 전 Integration 04 계획과 개발 기록을 생성한다.
 - 현재 테스트에서 발생한 Starlette의 `httpx` 사용 deprecation warning은
   DT0 범위 밖이며 별도 의존성 검토에서 처리한다.

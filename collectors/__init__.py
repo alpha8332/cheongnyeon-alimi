@@ -17,8 +17,12 @@ from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
     Category,
+    CoverageScope,
     DataQualityStatus,
     NormalizedProgram,
+    RegionRelation,
+    RegionResolutionStatus,
+    RegionRule,
 )
 from collectors.normalizer import Normalizer
 from collectors.profile import FieldStatistics, SourceFieldProfile
@@ -60,6 +64,7 @@ __all__ = [
     "Collector",
     "CollectorFactory",
     "CollectorRegistry",
+    "CoverageScope",
     "DataQualityStatus",
     "ExtractedPolicy",
     "FieldStatistics",
@@ -73,6 +78,9 @@ __all__ = [
     "RawDocumentStore",
     "RawFormat",
     "RawPolicyDocument",
+    "RegionRelation",
+    "RegionResolutionStatus",
+    "RegionRule",
     "SourceType",
     "SourceFieldProfile",
     "SourceProvenance",

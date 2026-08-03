@@ -19,24 +19,27 @@
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
 - [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
-  NormalizedProgram 31개 필드의 PostgreSQL·Importer·공개 API 매핑
+  NormalizedProgram 1.1.0의 36개 논리 필드, 행정구역·검색 projection
+  PostgreSQL·Importer·공개 API 경계
 - [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
   Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
 - [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
-  실제 응답 구조와 호출 제약
+  실제 응답 구조·검색 필드 mapping과 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
-  데이터 계약 원칙
+  데이터 계약과 Source Adapter 원칙
 - [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
   원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
 - [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
   정규화 필드, provenance와 품질 분류의 실행 가능한 계약
-- [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
-  변환 기준
+- [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
+  카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
+- [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
+  versioned 지역·계층·별칭·유효기간 Seed와 exact code 해석 경계
 - [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터
   canonical Seed까지의 재생성·소비자 검토 기준
 - [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,
@@ -75,6 +78,11 @@
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
+- [Policy Search Data Foundation Forest 계획](development/develop_plan/integration/03_policy_search_data_foundation.md):
+  Source 중립 검색 필드, 행정구역 계층·적용 관계, search projection과
+  Migration의 Release 1 공통 기반
+- [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
+  장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
@@ -90,6 +98,8 @@
   Policy timestamp·SQL logging 현재 동작, 결정과 검증 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
+- [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
+  검색 데이터 lineage·ADR Gate와 Schema·지역·DB·Source Adapter 검증 결과
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
@@ -107,8 +117,9 @@
 
 ## 공동 확인 및 인계 보드
 
-Normalized 1.0.0 Schema와 canonical Seed의 Data·Backend·Frontend 소비 검토는
-2주차 Integration 02에서 완료됐다. 검토 증거와 현재 규칙은
+기존 Normalized 1.0.0의 Data·Backend·Frontend 소비 검토는 2주차
+Integration 02에서 완료됐다. PSF1은 1.1.0 검색 데이터 계약과 전환 경계를
+추가했으며 검토 증거와 현재 규칙은
 [Fixture와 Seed 계약](data/fixture_seed_contract.md),
 [Policy DB 매핑](architecture/policy_database_mapping.md)과
 [Policy API 계약](api/policies.md)을 따른다.
@@ -122,7 +133,7 @@ preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-DATA-SEMANTICS` | review-pending | Data·Backend·Frontend | DT2·Gate G1에서 온통청년 지역 코드, 복지로 누락 지역·연령·기간, 신청 상태와 `partial` 노출 의미를 공동 승인 | [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md), [Data 02 계획](development/develop_plan/data/02_release_dataset_bootstrap.md) |
+| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Data·Backend·Frontend | Integration 03 PSF0~PSF8 기반 구현·검증 완료. 기반 브랜치 병합 후 Data 02 DT2 Data 근거를 준비하고 Backend 06·Frontend 04 초안과 Gate G1 노출 의미 승인 | [검색 데이터 기반 개발 기록](development/development_notes/integration/policy_search_data_foundation.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

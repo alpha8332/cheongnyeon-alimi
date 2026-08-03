@@ -32,10 +32,11 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend 소비 검토 | in-progress | 두 Source 릴리스 범위 순회, 실제 Raw·정규화·DB 초기 적재, 재실행·품질 보고 | Data 01, Integration 02 |
-| 2 | Backend 06 Policy Search | Backend | Data 계약·Frontend 소비 검토 | 계획 필요 | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Data 02의 실제 분포 확인 |
-| 3 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Backend 06 계약 승인 |
-| 4 | Integration 03 Release 1 Acceptance | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Backend 06, Frontend 04 |
+| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend 소비 검토 | in-progress | DT0~DT1 Source 근거, DT2~DT4 릴리스 범위 순회·실제 Raw·DB 초기 적재·품질 보고 | Data 01, Integration 02, DT2부터 Integration 03 |
+| 2 | [Integration 03 Policy Search Data Foundation](integration/03_policy_search_data_foundation.md) | Data·Backend 공동 | Frontend 소비·Team Leader Gate | completed | PSF0~PSF8 Source 중립 계약·지역 기준정보·mapping·원자적 적재·판정·소비·성능·actual 재생과 전체 Gate 완료 | Data 02 DT1 |
+| 3 | Backend 06 Policy Search | Backend | Data 계약·Frontend 소비 검토 | 계획 필요 | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Integration 03 판정 primitive와 Data 02 실제 분포 |
+| 4 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Backend 06 계약 승인 |
+| 5 | Integration 04 Release 1 Acceptance | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Integration 03, Backend 06, Frontend 04 |
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
 API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.
@@ -46,19 +47,27 @@ Backend 06은 기존 Backend 04·05 번호를 관리자 Forest가 이미 사용�
 번호를 바꾸지 않고 다음 번호를 사용한다. Frontend도 기존 Frontend 03을
 보존한다.
 
+Integration 03은 DT1에서 확인한 현재 지역·검색 필드 구조의 실제 충돌을
+해결하는 공통 기반이다. 기존에 계획 이름만 있던 Release 1 Acceptance는
+Integration 04로 이동한다. 완료 문서 번호를 바꾸지 않으며 아직 생성되지
+않은 계획의 번호만 조정한다.
+
 ### `v0.1.0` 의존 흐름
 
 ```text
-Data 02 실제 데이터 기준선
+Data 02 DT0~DT1 실제 Source 근거
+  → Integration 03 검색 데이터 기반
+  → Data 02 DT2~DT4 실제 데이터 기준선
   → Backend 06 자연어 해석·서버 검색 계약
   → Frontend 04 해석 결과·검색 UI 연결
-  → Integration 03 실데이터 인수 검증
+  → Integration 04 실데이터 인수 검증
   → v0.1.0
 ```
 
 Data 02의 샘플 분포 조사는 Backend 06의 query·index 설계와 병행할 수 있다.
-하지만 실제 데이터 필드와 지역 표현을 확인하기 전에 검색 의미를 확정하지
-않는다.
+하지만 Backend 06 최종 검색 구현은 Integration 03이 제공하는 Source 중립
+검색 필드, 지역 계층·적용 관계와 판정 primitive 뒤에 진행한다. Data 02
+DT2~DT4도 새 계약과 Migration을 소비해 실제 snapshot을 만든다.
 
 ## `v0.5.0` Forest
 
@@ -118,11 +127,17 @@ Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockf
 
 ```text
 feature/data/release-dataset-bootstrap
+feature/database/policy-search-foundation
 feature/backend/policy-search
 feature/frontend/policy-search
 feature/backend/admin-run-management
 feature/deploy/open-source-runtime
 ```
+
+`feature/database/policy-search-foundation`은 Data 02 DT1 커밋에서 파생해
+완료 후 `feature/data/release-dataset-bootstrap`에 병합하는 stacked 예외다.
+기반·대상 브랜치와 검증 순서는 해당 Forest 계획에 명시한다. Data 02가
+`develop`에 병합되기 전에는 이 의존 관계를 PR에서 숨기지 않는다.
 
 Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표나 독립 완료
 기준을 한 브랜치에 장기간 누적하지 않는다.

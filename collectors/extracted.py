@@ -5,6 +5,7 @@ from __future__ import annotations
 import urllib.parse
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Any
 
 from collectors.raw import (
@@ -18,6 +19,63 @@ from collectors.registry import SOURCE_ID_PATTERN
 
 class ExtractionError(ValueError):
     """Raw documents cannot be interpreted under a source contract."""
+
+
+class ExtractedCoverageScope(str, Enum):
+    """Source-backed coverage hint before canonical region resolution."""
+
+    NATIONWIDE = "nationwide"
+    REGIONAL = "regional"
+    UNKNOWN = "unknown"
+
+
+class ExtractedRegionRelation(str, Enum):
+    """Source-backed regional inclusion or exclusion."""
+
+    INCLUDE = "include"
+    EXCLUDE = "exclude"
+
+
+@dataclass(frozen=True, slots=True)
+class SourceRegionEvidence:
+    """One source region token and the resolver contract it requires."""
+
+    relation: ExtractedRegionRelation
+    external_scheme: str | None
+    source_code: str | None
+    source_text: str | None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.relation, ExtractedRegionRelation):
+            raise ExtractionError("invalid source region relation")
+        for field_name in (
+            "external_scheme",
+            "source_code",
+            "source_text",
+        ):
+            value = getattr(self, field_name)
+            if value is not None and (
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+            ):
+                raise ExtractionError(
+                    f"{field_name} must be a normalized string or null"
+                )
+        if self.source_code is None and self.source_text is None:
+            raise ExtractionError("source region evidence cannot be empty")
+        if self.external_scheme is not None and self.source_code is None:
+            raise ExtractionError(
+                "external region scheme requires a source code"
+            )
+
+    def to_dict(self) -> dict[str, str | None]:
+        return {
+            "relation": self.relation.value,
+            "external_scheme": self.external_scheme,
+            "source_code": self.source_code,
+            "source_text": self.source_text,
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +138,14 @@ class ExtractedPolicy:
     collected_at: datetime
     provenance: tuple[SourceProvenance, ...]
     extra: dict[str, Any]
+    summary: str | None = None
+    keywords: tuple[str, ...] = ()
+    life_stages: tuple[str, ...] = ()
+    target_groups: tuple[str, ...] = ()
+    coverage_scope_hint: ExtractedCoverageScope = (
+        ExtractedCoverageScope.UNKNOWN
+    )
+    region_evidence: tuple[SourceRegionEvidence, ...] = ()
 
     def __post_init__(self) -> None:
         if not SOURCE_ID_PATTERN.fullmatch(self.source_id):
@@ -102,6 +168,7 @@ class ExtractedPolicy:
             "eligibility_text",
             "support_content",
             "application_method",
+            "summary",
         ):
             value = getattr(self, field_name)
             if value is not None and not isinstance(value, str):
@@ -127,6 +194,40 @@ class ExtractedPolicy:
             )
         if not isinstance(self.extra, dict):
             raise ExtractionError("extra must be an object")
+        for field_name in ("keywords", "life_stages", "target_groups"):
+            values = getattr(self, field_name)
+            if (
+                not isinstance(values, tuple)
+                or not all(
+                    isinstance(value, str)
+                    and value
+                    and value == value.strip()
+                    for value in values
+                )
+                or len(values) != len(set(values))
+            ):
+                raise ExtractionError(
+                    f"{field_name} must contain unique normalized strings"
+                )
+        if not isinstance(
+            self.coverage_scope_hint,
+            ExtractedCoverageScope,
+        ):
+            raise ExtractionError("invalid extracted coverage scope")
+        if not isinstance(self.region_evidence, tuple) or not all(
+            isinstance(item, SourceRegionEvidence)
+            for item in self.region_evidence
+        ):
+            raise ExtractionError(
+                "region_evidence must contain source region evidence"
+            )
+        if (
+            self.coverage_scope_hint is ExtractedCoverageScope.NATIONWIDE
+            and self.region_evidence
+        ):
+            raise ExtractionError(
+                "nationwide source evidence cannot include region rules"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -135,9 +236,18 @@ class ExtractedPolicy:
             "external_id": self.external_id,
             "title": self.title,
             "organization": self.organization,
+            "summary": self.summary,
             "category_text": self.category_text,
+            "keywords": list(self.keywords),
+            "life_stages": list(self.life_stages),
+            "target_groups": list(self.target_groups),
             "application_period_text": self.application_period_text,
             "region_text": self.region_text,
+            "coverage_scope_hint": self.coverage_scope_hint.value,
+            "region_evidence": [
+                item.to_dict()
+                for item in self.region_evidence
+            ],
             "age_text": self.age_text,
             "eligibility_text": self.eligibility_text,
             "support_content": self.support_content,
