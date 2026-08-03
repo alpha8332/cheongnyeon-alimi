@@ -1,120 +1,83 @@
 /**
- * W3-F0 DRAFT — NOT APPROVED (DT2 Gate G1 pending)
+ * W3-F0 DRAFT — Gate G1 aligned with Backend 06 PolicySearch contract (pending approval).
  *
- * Natural-language policy search API consumption types for Frontend 04.
- * Do not import from production code until Backend 06 and Data semantics
- * are jointly approved.
+ * Do not import from production code until Team Leader records `G1_APPROVED`.
  *
- * Fixed handoff constraints reflected here:
- * - Frontend sends raw Korean `q`; no Frontend-only NL parser.
- * - Region·age·status use match|mismatch|unknown verdicts from Backend.
- * - Invalid policies are never public; partial inclusion is opt-in (TBD G1).
- * - Existing GET /api/v1/policies list/detail remains until search API ships.
+ * Fixed handoff constraints:
+ * - Frontend sends raw Korean `q` (trimmed, required); no Frontend NL parser.
+ * - Flat query params only on the wire; no nested `structured` object.
+ * - Region·age·status verdicts: match | mismatch | unknown (Backend sole authority).
+ * - Invalid policies are never public.
+ * - Existing GET /api/v1/policies list/detail unchanged until search API ships.
  */
 
 import type { ApplicationStatus, PolicyCategory, PolicyDto } from '@/types/policy';
 
-/** Backend interpretation verdict for a structured dimension. */
-export type PolicyMatchVerdict = 'match' | 'mismatch' | 'unknown';
+/** Backend evaluation verdict for a searchable dimension. Aligns with Backend `MatchVerdict`. */
+export type MatchVerdict = 'match' | 'mismatch' | 'unknown';
 
-/** G1-pending: final HTTP method/path — placeholder documents intent only. */
-export type PolicySearchHttpMethod = 'GET' | 'POST';
-
-/**
- * Structured filters the user may set explicitly or edit after Backend
- * interprets natural language. Names align with Backend 06 W3-B0 draft target;
- * rename only through G1.
- */
-export interface PolicySearchStructuredFilters {
-  /** Exact category enum token when user selects a chip. */
-  category?: PolicyCategory;
-  /** Canonical region name from administrative reference when confirmed. */
-  region?: string;
-  /** Inclusive age the user intends to match (integer 0–150). */
-  age?: number;
-  /** Application status filter when explicitly chosen. */
-  status?: ApplicationStatus;
+/** Per-policy dimension verdicts returned by Backend search evaluation. */
+export interface DimensionVerdicts {
+  region: MatchVerdict;
+  age: MatchVerdict;
+  status: MatchVerdict;
 }
 
 /**
- * Request draft. `q` is required for NL search; structured fields refine or
- * override interpreted conditions after user edit (exact merge rules: G1).
+ * Machine-readable search reason code from Backend evaluation.
+ * Closed enum list — sync with Backend 06 W3-B0 on G1 approval.
  */
-export interface PolicySearchRequestDraft {
-  /** Raw Korean natural-language query. Frontend must not tokenize or parse. */
+export type ReasonCode = string;
+
+/**
+ * GET /api/v1/policies/search flat query parameters.
+ * Mirrors Backend Pydantic request model field names, nullability, and defaults.
+ */
+export interface PolicySearchQueryParams {
+  /** Natural-language query. Required after trim; empty → 422. */
   q: string;
-  structured?: PolicySearchStructuredFilters;
+  keyword?: string | null;
+  region?: string | null;
+  age?: number | null;
+  category?: PolicyCategory | null;
+  status?: ApplicationStatus | null;
+  /** Default `true` when omitted (Backend and Frontend URL state). */
+  include_partial?: boolean;
   page?: number;
   limit?: number;
-  /**
-   * Include partial policies in ranked candidates when true.
-   * Default and interaction with list API include_partial: G1 decision.
-   */
-  include_partial?: boolean;
-  /**
-   * When true, confirmed mismatches are excluded from results.
-   * Unknown handling (include vs rank penalty): G1 decision.
-   */
-  exclude_confirmed_mismatch?: boolean;
 }
 
-/** One interpreted condition Backend derived from `q` or user edits. */
-export interface PolicySearchInterpretedConditionDraft {
-  /** Stable key for chip UI, e.g. region, age, status, category, keyword. */
-  dimension: string;
-  /** Human-readable label for chips, e.g. "지역: 서울특별시". */
-  label: string;
-  /** Structured value Backend will use for query (shape varies by dimension). */
-  value: string | number | PolicyCategory | ApplicationStatus | null;
-  /** Whether Backend treats this condition as confirmed, uncertain, or rejected. */
-  verdict: PolicyMatchVerdict;
-  /** True when the user edited this chip after the initial interpretation. */
-  user_modified?: boolean;
-}
+/** Backend defaults — keep in sync with Backend 06 W3-B0. */
+export const POLICY_SEARCH_DEFAULTS = {
+  include_partial: true,
+  page: 1,
+  limit: 20,
+} as const;
 
-/** Per-result explanation of why a policy appears and what remains unknown. */
-export interface PolicySearchResultReasonDraft {
-  /** Short UI string, e.g. "지역 일치", "연령 정보 미확인". */
-  summary: string;
-  /** Machine-readable codes aligned with Backend reason enum (G1). */
-  codes: string[];
-  /** Dimensions still unknown for this policy row (not global query unknowns). */
-  unknown_dimensions: string[];
-}
-
-/** Ranked search hit wrapping public PolicyDto. */
-export interface PolicySearchResultItemDraft {
+/**
+ * One ranked search hit: nested PolicyRead (`PolicyDto`) plus search metadata.
+ * Matches Backend nested DTO — not a flat merge of PolicyRead fields.
+ */
+export interface PolicySearchHit {
   policy: PolicyDto;
-  /** Deterministic relevance score from Backend (higher first). Tie-break: G1. */
   score: number;
-  reasons: PolicySearchResultReasonDraft[];
-  /**
-   * Per-dimension verdicts for this row. Frontend uses for badges/tooltips.
-   * Keys mirror interpreted condition dimensions.
-   */
-  verdicts: Partial<Record<string, PolicyMatchVerdict>>;
+  verdicts: DimensionVerdicts;
+  reason_codes: ReasonCode[];
+  message: string;
+  /** Dimensions still unconfirmed for this policy row (not guessed as match). */
+  unconfirmed_conditions: string[];
 }
 
-/** Top-level search response envelope (pagination + interpretation metadata). */
-export interface PolicySearchResponseDraft {
+/** Search response envelope. Pagination matches PolicyListResponse shape. */
+export interface PolicySearchResponse {
   total: number;
   page: number;
   limit: number;
-  /** Conditions Backend applied after merging NL + structured + user edits. */
-  interpreted_conditions: PolicySearchInterpretedConditionDraft[];
-  /** Global dimensions Backend could not resolve from the query (not guessed). */
-  unconfirmed_dimensions: string[];
-  items: PolicySearchResultItemDraft[];
+  items: PolicySearchHit[];
 }
 
-/** G1-pending endpoint descriptor for planning only. */
-export interface PolicySearchEndpointDraft {
-  method: PolicySearchHttpMethod;
-  /** Placeholder path — MUST NOT be hard-coded in production client pre-G1. */
-  path: '/api/v1/policies/search' | '/api/v1/search/policies';
-}
-
-export const POLICY_SEARCH_ENDPOINT_DRAFT: PolicySearchEndpointDraft = {
-  method: 'GET',
-  path: '/api/v1/policies/search',
+/** Approved search endpoint (G1 integration). */
+export const POLICY_SEARCH_ENDPOINT = {
+  method: 'GET' as const,
+  path: '/api/v1/policies/search' as const,
 };
