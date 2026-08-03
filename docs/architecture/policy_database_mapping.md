@@ -53,7 +53,7 @@
 | `region_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `regions` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
 | `coverage_scope` | coverage enum | `policy_coverage_scope` | 아니요 | 직접 | 기존 DTO 비노출 |
-| `region_rules` | rule object 배열 | `policy_region_rules` 행 | 해당 없음 | PSF5에서 관계 행 변환 | 기존 DTO 비노출 |
+| `region_rules` | rule object 배열 | `policy_region_rules` 행 | 해당 없음 | 검증 뒤 관계 행 전체 동기화 | 기존 DTO 비노출 |
 | `age_min` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
 | `age_max` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
 | `age_condition_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
@@ -145,9 +145,9 @@ Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저�
   배열·coverage를 실제 값으로 채운다. 온통청년 숫자 `zipCd`는
   `kr-bjd-prefix5` exact resolver를 거쳐 관계 후보가 되며 복지로는 지역
   key가 없어 `unknown`을 유지한다.
-- `region_rules` 관계 교체와 projection 동기화는 PSF5의 단일 transaction
-  책임이다. PSF5 전 비어 있지 않은 rules는
-  `search_relation_storage_not_ready`로 거부해 조용한 손실을 막는다.
+- `region_rules` 관계 교체와 projection 동기화는 Policy upsert와 같은
+  transaction에서 수행한다. importer 밖에서는 중간 관계 상태를 관찰할 수
+  없고 어느 write라도 실패하면 Policy·rule·projection 전체를 rollback한다.
 - 1.0.0 입력은 Normalized compatibility adapter에서만 1.1.0 안전 기본값으로
   확장하며 지역·전국 여부를 추정하지 않는다.
 
@@ -176,9 +176,21 @@ PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 iden
 `policy_search_documents`는 정책당 한 행이며 title·keyword·summary·eligibility·
 support와 합성 `search_text`, `projection_version`, timezone `updated_at`을
 저장한다. Migration은 `pg_trgm` extension과 `search_text`의
-`gin_trgm_ops` GIN index를 준비한다. projection 생성·교체는 PSF5 책임이며
-최종 점수는 Backend 06에서 확정한다. downgrade는 공용일 수 있는 extension은
-제거하지 않고 PSF3가 만든 index·table·enum·trigger만 제거한다.
+`gin_trgm_ops` GIN index를 준비한다. 현재 projection version은 `1.0.0`이다.
+NFKC와 공백 정규화 뒤 다음 필드군을 순서 보존·중복 제거해 합성한다.
+
+- `title_text`: `title`
+- `keyword_text`: `category_text`, `categories`, `keywords`
+- `summary_text`: `summary`
+- `eligibility_text`: `life_stages`, `target_groups`, 연령·자격 원문,
+  학업·취업 상태와 필수·우대·제외 조건
+- `support_text`: `support_content`
+- `search_text`: 위 다섯 문서를 같은 순서로 합성한 전체 검색 후보
+
+projection service는 commit하지 않으며 importer 또는 재생성 호출자가
+transaction을 소유한다. 값과 version이 같으면 행과 `updated_at`을 바꾸지
+않는다. 최종 점수는 Backend 06에서 확정한다. downgrade는 공용일 수 있는
+extension은 제거하지 않고 PSF3가 만든 index·table·enum·trigger만 제거한다.
 
 ## 식별자와 upsert
 
@@ -189,7 +201,9 @@ support와 합성 `search_text`, `projection_version`, timezone `updated_at`을
   Source의 null ID는 `unsupported_null_external_id`로 적재하지 않는다.
 - DB 컬럼과 논리 Schema의 nullable은 향후 Source 계약 확장 경계를 보존하기
   위한 것이며 현재 importer가 null identity를 허용한다는 뜻이 아니다.
-- 같은 identity의 같은 값은 `unchanged`이고 `updated_at`을 바꾸지 않는다.
+- 같은 identity의 Policy 컬럼·지역 rule 집합·projection 값과 version이 모두
+  같을 때만 `unchanged`이고 각 `updated_at`을 바꾸지 않는다. 관계 행은
+  순서가 없는 집합으로 비교한다.
 - 같은 identity의 변경 값은 identity를 제외한 Normalized 필드를 원자적으로
   update한다. `updated_at`은 기존 시각과 새 write instant 중 늦은 값이므로
   시스템 시각이 역행해도 감소하지 않는다.
@@ -209,12 +223,15 @@ canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 �
 4. `collected_at`은 문자열 offset이 아니라 UTC absolute instant를 비교한다.
 5. 빈 배열은 DB에서도 `[]`, null은 DB에서도 `NULL`이어야 한다.
 6. 다중 category와 provenance object의 누락·병합·축약이 없어야 한다.
-7. 기존 공개 API 필드 집합은 기존 31개에서 `provenance`만 제외하고
+7. `region_rules`는 여섯 필드의 관계 집합과 DB 행을 비교하고 정책당 검색
+   문서 한 행의 field별 text와 projection version을 비교한다.
+8. 기존 공개 API 필드 집합은 기존 31개에서 `provenance`만 제외하고
    `id`·`created_at`·`updated_at`을 더한 집합이다. 검색 5개 필드는 기존
    목록·상세 DTO에 노출하지 않는다.
 
 구조적 집합과 변환은
 `backend/tests/test_policy_mapping_contract.py`, 실제 PostgreSQL 왕복은
-`backend/tests/test_postgresql_end_to_end.py`가 검증한다. Integration 소유의
+`backend/tests/test_postgresql_end_to_end.py`와
+`backend/tests/test_postgresql_policy_search_import.py`가 검증한다. Integration 소유의
 canonical Seed 전체 흐름과 거부·재실행·rollback·Repository 조회는
 `tests/integration/test_seed_to_database.py`가 검증한다.

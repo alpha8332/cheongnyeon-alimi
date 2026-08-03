@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -11,8 +11,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.policy import Policy, utc_now
+from app.services.policy_search_projection import (
+    synchronize_policy_search_storage,
+)
 from collectors.normalized import DataQualityStatus
-from collectors.validation import NormalizedProgramValidator
+from collectors.validation import NormalizedProgramValidator, ValidationIssue
 
 
 EXTERNAL_ID_REQUIRED_SOURCES = frozenset(
@@ -21,10 +24,6 @@ EXTERNAL_ID_REQUIRED_SOURCES = frozenset(
         "bokjiro-central-welfare-api",
     }
 )
-PENDING_SEARCH_STORAGE_FIELDS = frozenset(
-    {"region_rules"}
-)
-
 IDENTITY_FIELDS = frozenset({"source_id", "external_id"})
 IMMUTABLE_FIELDS = frozenset({"id", "created_at"})
 POLICY_WRITE_FIELDS = tuple(
@@ -124,21 +123,6 @@ def _identity_issue(
     return None
 
 
-def _search_storage_issue(
-    item: Mapping[str, Any],
-    index: int,
-) -> ImportIssue | None:
-    if not item.get("region_rules"):
-        return None
-    return ImportIssue(
-        index=index,
-        source_id=_nonempty_string(item.get("source_id")),
-        external_id=_nonempty_string(item.get("external_id")),
-        code="search_relation_storage_not_ready",
-        path=f"$[{index}].region_rules",
-    )
-
-
 def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
     write_instant = utc_now()
     return {
@@ -182,7 +166,10 @@ def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _postgresql_upsert(db: Session, values: Mapping[str, Any]) -> str:
+def _postgresql_upsert(
+    db: Session,
+    values: Mapping[str, Any],
+) -> tuple[str, int]:
     statement = postgresql_insert(Policy).values(**values)
     changed = or_(
         *(
@@ -208,6 +195,7 @@ def _postgresql_upsert(db: Session, values: Mapping[str, Any]) -> str:
             where=changed,
         )
         .returning(
+            Policy.id,
             literal_column(
                 "xmax = 0",
                 type_=Boolean,
@@ -216,8 +204,16 @@ def _postgresql_upsert(db: Session, values: Mapping[str, Any]) -> str:
     )
     row = db.execute(statement).first()
     if row is None:
-        return "unchanged"
-    return "inserted" if row.inserted else "updated"
+        policy_id = db.scalar(
+            select(Policy.id).where(
+                Policy.source_id == values["source_id"],
+                Policy.external_id == values["external_id"],
+            )
+        )
+        if policy_id is None:
+            raise RuntimeError("upserted policy identity was not found")
+        return "unchanged", policy_id
+    return ("inserted" if row.inserted else "updated"), row.id
 
 
 def _normalized_datetime(value: datetime) -> datetime:
@@ -241,7 +237,10 @@ def _nondecreasing_datetime(
     return incoming
 
 
-def _portable_upsert(db: Session, values: Mapping[str, Any]) -> str:
+def _portable_upsert(
+    db: Session,
+    values: Mapping[str, Any],
+) -> tuple[str, int]:
     existing = db.execute(
         select(Policy).where(
             Policy.source_id == values["source_id"],
@@ -249,14 +248,16 @@ def _portable_upsert(db: Session, values: Mapping[str, Any]) -> str:
         )
     ).scalar_one_or_none()
     if existing is None:
-        db.add(Policy(**values))
-        return "inserted"
+        existing = Policy(**values)
+        db.add(existing)
+        db.flush()
+        return "inserted", existing.id
 
     if all(
         _values_equal(getattr(existing, field), values[field])
         for field in MUTABLE_FIELDS
     ):
-        return "unchanged"
+        return "unchanged", existing.id
 
     for field in MUTABLE_FIELDS:
         setattr(existing, field, values[field])
@@ -264,7 +265,7 @@ def _portable_upsert(db: Session, values: Mapping[str, Any]) -> str:
         existing.updated_at,
         values["updated_at"],
     )
-    return "updated"
+    return "updated", existing.id
 
 
 class _DryRunRollback(Exception):
@@ -282,6 +283,7 @@ def _item_path(index: int, path: str) -> str:
 def _preflight_programs(
     items: list[Any],
     validator: NormalizedProgramValidator,
+    normalization_issues: Sequence[Sequence[ValidationIssue]],
 ) -> tuple[
     list[tuple[int, Mapping[str, Any]]],
     int,
@@ -312,7 +314,10 @@ def _preflight_programs(
             continue
 
         validated += 1
-        validation = validator.validate(item)
+        validation = validator.validate(
+            item,
+            normalization_issues[index],
+        )
         if (
             validation.status is DataQualityStatus.INVALID
             or validation.program is None
@@ -355,11 +360,6 @@ def _preflight_programs(
             skipped += 1
             issues.append(identity_issue)
             continue
-        search_storage_issue = _search_storage_issue(candidate, index)
-        if search_storage_issue is not None:
-            skipped += 1
-            issues.append(search_storage_issue)
-            continue
         accepted.append((index, candidate))
         if validation.status is DataQualityStatus.PARTIAL:
             partial += 1
@@ -373,9 +373,19 @@ def import_programs(
     *,
     dry_run: bool = False,
     validator: NormalizedProgramValidator | None = None,
+    normalization_issues: Sequence[Sequence[ValidationIssue]] | None = None,
 ) -> ImportResult:
     items = list(programs)
     selected_validator = validator or NormalizedProgramValidator()
+    selected_normalization_issues = (
+        tuple(() for _ in items)
+        if normalization_issues is None
+        else tuple(tuple(issues) for issues in normalization_issues)
+    )
+    if len(selected_normalization_issues) != len(items):
+        raise ValueError(
+            "normalization_issues must align with programs"
+        )
     (
         accepted,
         validated,
@@ -383,7 +393,11 @@ def import_programs(
         skipped,
         rejected,
         issues,
-    ) = _preflight_programs(items, selected_validator)
+    ) = _preflight_programs(
+        items,
+        selected_validator,
+        selected_normalization_issues,
+    )
     if skipped or rejected:
         return ImportResult(
             total=len(items),
@@ -406,9 +420,33 @@ def import_programs(
             for current_index, item in accepted:
                 current_values = _policy_values(item)
                 if use_postgresql:
-                    outcome = _postgresql_upsert(db, current_values)
+                    outcome, policy_id = _postgresql_upsert(
+                        db,
+                        current_values,
+                    )
                 else:
-                    outcome = _portable_upsert(db, current_values)
+                    outcome, policy_id = _portable_upsert(
+                        db,
+                        current_values,
+                    )
+                db.flush()
+                search_sync = synchronize_policy_search_storage(
+                    db,
+                    policy_id=policy_id,
+                    policy=item,
+                    updated_at=current_values["updated_at"],
+                )
+                if outcome == "unchanged" and search_sync.changed:
+                    policy = db.get(Policy, policy_id)
+                    if policy is None:
+                        raise RuntimeError(
+                            "search storage policy was not found"
+                        )
+                    policy.updated_at = _nondecreasing_datetime(
+                        policy.updated_at,
+                        current_values["updated_at"],
+                    )
+                    outcome = "updated"
                 db.flush()
                 counts[outcome] += 1
             if dry_run:

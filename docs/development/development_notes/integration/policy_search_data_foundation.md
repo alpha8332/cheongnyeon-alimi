@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF4 completed, PSF5 next
+- 현재 Slice: PSF5 completed, PSF6 next
 
 ## 목적
 
@@ -39,7 +39,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | PSF2 | completed | 공식 법정동 snapshot, versioned 지역·별칭 Seed와 exact resolver |
 | PSF3 | completed | 검색 컬럼·지역 관계·projection Migration, 제약과 지역 Seed 적재 |
 | PSF4 | completed | 두 Source 검색 field mapping, exact 지역 증거 resolver와 actual Raw 재생 |
-| PSF5 | pending | Import transaction·projection 동기화 |
+| PSF5 | completed | Policy·지역 규칙·versioned projection 원자적 적재와 Runtime warning lineage 보존 |
 | PSF6 | pending | 지역·조건 판정 primitive |
 | PSF7 | pending | 소비 호환·성능·actual Raw 재생 |
 | PSF8 | pending | Forest Gate와 Data 02 인계 |
@@ -207,6 +207,32 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
   온통청년 결과의 비어 있지 않은 rule은 PSF5 전까지 importer가
   `search_relation_storage_not_ready`로 거부하므로 손실 적재하지 않는다.
 
+### PSF5 - Import transaction과 projection 동기화
+
+- `PolicySearchRepository`는 관계 rule을 순서 없는 집합으로 비교하고 값이
+  달라질 때만 정책별 행을 전체 교체한다. matched FK와 unresolved Source
+  evidence는 Normalized 1.1.0의 여섯 필드를 그대로 저장한다.
+- projection service는 title·keyword·summary·eligibility·support field군을
+  NFKC·공백 정규화하고 `search_text`로 합성한다. 현재 version은 `1.0.0`이며
+  값과 version이 같으면 projection 행과 timestamp를 바꾸지 않는다.
+- Policy upsert 뒤 관계와 projection을 같은 importer transaction에서
+  동기화한다. Policy 컬럼이 같아도 rule 또는 projection이 달라지면 updated,
+  세 저장 대상이 모두 같을 때만 unchanged다. source identity와 created_at은
+  유지하고 updated_at은 감소하지 않는다.
+- projection 재생성 service는 commit을 소유하지 않아 호출자가 transaction과
+  대상 policy ID를 결정한다. importer 중간 관계 상태는 외부에 노출되지 않는다.
+- PostgreSQL projection trigger로 두 번째 policy write를 강제 실패시켜 앞선
+  Policy·rule·projection까지 batch 전체가 rollback되는 것을 확인했다.
+- 첫 실제 온통청년 dry-run에서 `unmapped_category` warning으로 정한 partial
+  2건이 canonical 객체 재검증만으로는 valid로 재분류되어
+  `quality_status_mismatch`가 발생하는 기존 Runtime 경계를 발견했다. Validator를
+  느슨하게 만들지 않고 `RuntimeReplayResult`가 accepted program과 Normalizer
+  issue를 같은 순서로 전달하도록 수정했다. 이후 같은 Raw 10건과 복지로
+  partial 10건이 DB admission을 통과했다.
+- 실제 API는 재호출하지 않았다. Runtime DB에서 두 Source를 `--dry-run`해 실제
+  FK·constraint·projection write까지 수행한 뒤 rollback했으며 Policy·rule·
+  projection·CollectionRun은 모두 0건으로 유지됐다.
+
 ## 주요 변경 파일
 
 - `collectors/normalized.py`
@@ -219,6 +245,10 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `data/seeds/initial_programs.json`
 - `scripts/build_data_fixtures.py`
 - `backend/app/services/seed_importer.py`
+- `backend/app/services/runtime_importer.py`
+- `backend/app/services/policy_search_projection.py`
+- `backend/app/repositories/policy_search.py`
+- `collectors/runtime.py`
 - `frontend/src/types/policy.ts`
 - `frontend/src/mocks/policyContract.ts`
 - `docs/data/data_schema.md`
@@ -244,6 +274,8 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `docs/data/administrative_regions.md`
 - `backend/alembic/versions/20260803_0004_policy_search_storage.py`
 - `backend/app/models/administrative_region.py`
+- `backend/tests/test_policy_search_projection.py`
+- `backend/tests/test_postgresql_policy_search_import.py`
 - `backend/app/models/policy_search.py`
 - `backend/app/models/policy.py`
 - `backend/app/services/region_reference_importer.py`
@@ -374,13 +406,30 @@ Runtime DB는 적용 전 Policy·CollectionRun이 모두 0건이었다. head 적
 PSF4는 DB Schema·공개 API·Frontend UI를 변경하지 않으므로 Migration 추가와
 Browser UI 검증은 수행하지 않았다.
 
+### PSF5 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Projection·Importer 집중 단위 테스트 | 정책·rule·projection 동시 적재, version 복구, partial warning lineage 통과 |
+| Data 전체 단위 테스트 | 102건 통과 |
+| Backend·Integration 전체 pytest | PostgreSQL 포함 96건 통과, 기존 warning 1건 |
+| PostgreSQL 원자성 | 동일 입력 unchanged·중복 0건, projection 강제 실패 batch 전체 rollback |
+| Fixture·Seed 결정적 재생성 검사 | 13개 파일 일치 |
+| 행정구역 Seed 결정적 검사 | 지역 538건·별칭 1,080건 일치 |
+| 온통청년 actual Raw DB dry-run | 10건 accepted·insert 후보 10, rollback 후 DB 0건 |
+| 복지로 actual Raw DB dry-run | 10건 accepted·insert 후보 10, rollback 후 DB 0건 |
+
+actual Raw 검증은 저장된 Runtime Raw만 사용했고 외부 API를 호출하지 않았다.
+DB Migration과 공개 Policy API·Frontend DTO는 바꾸지 않았으므로 새 Migration과
+Browser UI 검증은 수행하지 않았다.
+
 ## 남은 작업
 
 - 온통청년이 공개 `zipCd` code-to-name 표를 제공하지 않는 권위 공백은 남아
   있다. 전체 pagination에서 새 code가 나오면 exact crosswalk 외 값은
   `unmapped`로 보존하고 Source 문서가 확보되기 전 추정하지 않는다.
-- PSF5에서 `region_rules`와 search projection을 Policy upsert와 같은
-  transaction으로 교체하고 rollback·idempotency를 검증해야 한다.
+- PSF6에서 exact·ancestor·nationwide·unknown·exclude 지역 판정과 연령·상태
+  3값 primitive를 구현해야 한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
   PSF8 전체 Gate와 Data 02 DT2 소비 승인이 완료되어야 제거할 수 있다.
 - Source 간 canonical deduplication, Backend 최종 가중치와 지역 crawler는

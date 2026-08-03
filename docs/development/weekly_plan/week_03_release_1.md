@@ -53,9 +53,10 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 - canonical Seed → PostgreSQL → Policy API → React UI 통합은 검증됐다.
 - Data 02 DT1에서 Git 제외 `runtime/raw`에 실제 표본 25개를 저장했지만
   Runtime DB 적재 smoke는 완료되지 않았다.
-- Integration 03 PSF0~PSF4에서 검색 데이터 ADR, Normalized 1.1.0 실행 계약,
+- Integration 03 PSF0~PSF5에서 검색 데이터 ADR, Normalized 1.1.0 실행 계약,
   `kr-bjd-20260803` 행정구역 기준정보, PostgreSQL 저장 기반과 두 Source
-  mapping을 완료했으며 PSF5 원자적 적재가 다음이다.
+  mapping·원자적 관계·projection 적재를 완료했으며 PSF6 판정 primitive가
+  다음이다.
 - 전체 또는 릴리스 범위 pagination과 자동 주기 적재는 구현하지 않았다.
 - 공개 Policy API에는 자유 `keyword`와 `age` query가 없다.
 - Frontend 검색은 최대 100건을 받은 뒤 문장 전체 포함 여부를 검사한다.

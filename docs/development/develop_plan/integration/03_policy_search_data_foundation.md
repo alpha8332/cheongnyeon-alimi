@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF4 completed, PSF5 next
+- 현재 Slice: PSF5 completed, PSF6 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -373,6 +373,7 @@ exact crosswalk와 일치했고 총 373개 rule이 matched였다. 복지로 10�
 
 ### PSF5 - Import transaction과 projection 동기화
 
+- 상태: completed (`2026-08-03`)
 - 목적: Policy·지역 규칙·검색 문서를 하나의 원자적 적재 단위로 만든다.
 - 선행 조건: PSF3·PSF4
 - 수행:
@@ -386,6 +387,19 @@ exact crosswalk와 일치했고 총 373개 rule이 matched였다. 복지로 10�
   - 동일 입력 재실행 시 중복 row·관계·projection 없음
   - 부분 실패 시 Policy·지역·projection 전부 rollback
   - source identity·created_at·updated_at 기존 불변식 유지
+
+PSF5는 `PolicySearchRepository`와 projection service를 추가해 Policy upsert,
+관계 rule 전체 교체와 projection version `1.0.0` 동기화를 importer의 같은
+transaction에서 수행한다. 관계와 projection까지 같을 때만 unchanged이며,
+둘 중 하나만 달라도 updated로 집계한다. projection 재생성 service는 commit을
+소유하지 않아 호출자가 같은 transaction 경계를 유지한다. Runtime replay는
+Normalizer의 warning lineage를 accepted program과 나란히 전달해 Source
+warning으로 정한 partial 상태를 DB 재검증에서도 보존한다.
+
+PostgreSQL에서 같은 입력 재실행의 Policy·rule·projection 중복 0건과 timestamp
+불변, projection write 강제 실패 시 batch 전체 rollback을 검증했다. 실제 DT1
+Raw는 API 재호출 없이 Runtime DB `--dry-run`으로 온통청년 10건과 복지로
+10건이 모두 적재 후보가 된 뒤 rollback되는 것을 확인했다.
 
 ### PSF6 - 지역·조건 판정 primitive
 

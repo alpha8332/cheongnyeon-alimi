@@ -8,7 +8,13 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.policy import Policy
+from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
+from app.services.policy_search_projection import (
+    POLICY_SEARCH_PROJECTION_VERSION,
+    rebuild_policy_search_documents,
+)
 from app.services.seed_importer import import_programs, import_seed_data
+from collectors.validation import ValidationIssue
 
 SEED_FILE_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "seeds" / "initial_programs.json"
 
@@ -188,7 +194,7 @@ def test_policy_search_columns_are_stored_after_psf3(
     assert getattr(stored, field) == value
 
 
-def test_region_rules_are_not_silently_dropped_before_psf5(db):
+def test_region_rules_and_search_projection_are_stored_atomically(db):
     program = seed_programs()[0]
     program["region_rules"] = [
         {
@@ -203,13 +209,96 @@ def test_region_rules_are_not_silently_dropped_before_psf5(db):
 
     result = import_programs(db, [program])
 
-    assert result.accepted == 0
-    assert result.skipped == 1
-    assert result.inserted == 0
-    assert result.committed is False
-    assert result.issues[0].code == "search_relation_storage_not_ready"
-    assert result.issues[0].path == "$[0].region_rules"
-    assert db.query(Policy).count() == 0
+    assert result.accepted == 1
+    assert result.skipped == 0
+    assert result.inserted == 1
+    assert result.committed is True
+    policy = db.query(Policy).one()
+    rule = db.query(PolicyRegionRule).one()
+    document = db.query(PolicySearchDocument).one()
+    assert rule.policy_id == policy.id
+    assert rule.resolution_status == "ambiguous"
+    assert rule.source_text == "광주"
+    assert document.policy_id == policy.id
+    assert document.title_text == program["title"]
+    assert "월세" in document.keyword_text
+    assert "청년" in document.search_text
+    assert document.projection_version == POLICY_SEARCH_PROJECTION_VERSION
+
+
+def test_rule_only_change_is_updated_without_duplicate_storage(db):
+    program = seed_programs()[0]
+    program["region_rules"] = [
+        {
+            "relation": "include",
+            "resolution_status": "ambiguous",
+            "region_scheme": None,
+            "region_code": None,
+            "source_code": None,
+            "source_text": "광주",
+        }
+    ]
+    first = import_programs(db, [program])
+    policy = db.query(Policy).one()
+    created_at = policy.created_at
+    db.commit()
+
+    changed = dict(program)
+    changed["region_rules"] = [
+        {
+            **program["region_rules"][0],
+            "source_text": "광주광역시 또는 광주시",
+        }
+    ]
+    second = import_programs(db, [changed])
+    policy = db.query(Policy).one()
+    rules = db.query(PolicyRegionRule).all()
+
+    assert first.inserted == 1
+    assert second.updated == 1
+    assert second.unchanged == 0
+    assert len(rules) == 1
+    assert rules[0].source_text == "광주광역시 또는 광주시"
+    assert policy.created_at == created_at
+
+
+def test_projection_rebuild_repairs_version_in_caller_transaction(db):
+    program = seed_programs()[0]
+    imported = import_programs(db, [program])
+    document = db.query(PolicySearchDocument).one()
+    document.projection_version = "stale"
+    db.commit()
+
+    with db.begin():
+        rebuilt = rebuild_policy_search_documents(db)
+    document = db.query(PolicySearchDocument).one()
+
+    assert imported.inserted == 1
+    assert rebuilt.total == 1
+    assert rebuilt.updated == 1
+    assert rebuilt.unchanged == 0
+    assert document.projection_version == POLICY_SEARCH_PROJECTION_VERSION
+
+
+def test_runtime_normalization_warning_lineage_preserves_partial_status(db):
+    program = seed_programs()[0]
+    program["data_quality_status"] = "partial"
+    warning = ValidationIssue(
+        path="$.categories",
+        code="unmapped_category",
+        message="source category uses the other fallback",
+        severity="warning",
+    )
+
+    result = import_programs(
+        db,
+        [program],
+        normalization_issues=((warning,),),
+    )
+
+    assert result.inserted == 1
+    assert result.partial == 1
+    assert db.query(Policy).one().data_quality_status == "partial"
 
 
 def test_database_write_failure_is_counted_without_payload_exposure(db):

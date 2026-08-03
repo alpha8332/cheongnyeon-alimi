@@ -51,6 +51,7 @@ class RuntimeReplayResult:
     invalid_count: int
     programs: tuple[dict[str, Any], ...]
     issues: tuple[RuntimeValidationIssue, ...]
+    normalization_issues: tuple[tuple[ValidationIssue, ...], ...] = ()
 
     @property
     def accepted_count(self) -> int:
@@ -90,9 +91,12 @@ def replay_runtime_raw(
         selected_normalizer.normalize(policy)
         for policy in extracted
     ]
+    accepted_results = tuple(
+        result for result in results if result.program is not None
+    )
     programs = tuple(
         result.program.to_dict()
-        for result in results
+        for result in accepted_results
         if result.program is not None
     )
     issues = tuple(
@@ -118,6 +122,9 @@ def replay_runtime_raw(
         ),
         programs=programs,
         issues=issues,
+        normalization_issues=tuple(
+            result.issues for result in accepted_results
+        ),
     )
 
 

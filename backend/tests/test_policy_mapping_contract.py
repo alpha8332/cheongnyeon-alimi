@@ -10,7 +10,6 @@ from app.models.policy import Policy
 from app.schemas.policy import PolicyRead
 from app.services.seed_importer import (
     EXTERNAL_ID_REQUIRED_SOURCES,
-    PENDING_SEARCH_STORAGE_FIELDS,
     _policy_values,
 )
 from collectors.normalized import NormalizedProgram
@@ -82,7 +81,6 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     assert len(normalized_fields) == 36
     assert frozenset(schema["required"]) == normalized_fields
     assert NormalizedProgram.FIELD_NAMES == normalized_fields
-    assert PENDING_SEARCH_STORAGE_FIELDS == {"region_rules"}
     assert orm_fields == storage_candidate_fields
     assert importer_fields == storage_candidate_fields
     assert public_api_fields == (

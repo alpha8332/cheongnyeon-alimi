@@ -94,9 +94,9 @@ PSF4 canonical Seed는 합성 Source 원문에서 확인되는 summary·keywords
 복지로 life stages·target groups를 채운다. 합성 온통청년의 명시적 `전국`은
 `coverage_scope=nationwide`, 그 밖에 근거가 없는 범위는 `unknown`이다.
 기존 1.0.0 입력은 compatibility adapter가 안전한 빈 배열·`unknown`만 보완하고
-검색 조건을 추정하지 않는다. PSF3 Backend importer는 검색 배열과 coverage를
-저장하지만, PSF5 관계 transaction 전 비어 있지 않은 `region_rules`는
-`search_relation_storage_not_ready`로 거부한다.
+검색 조건을 추정하지 않는다. Backend importer는 검색 배열·coverage,
+`region_rules` 관계와 versioned projection을 Policy와 같은 transaction에
+저장한다.
 
 ### Backend 검토 항목
 
@@ -158,8 +158,8 @@ Backend 02 B6의 PostgreSQL 18.4 종단 검증은 당시 canonical Seed 4건의 
 31개 필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone
 instant·provenance 손실 0건을 확인했다. PSF1의 1.1.0 canonical Seed는 새
 검색 필드가 안전한 기본값일 때 호환된다. PSF3는 정책 검색 컬럼과 지역·규칙·
-projection 구조의 PostgreSQL 왕복을 검증하며, 실제 36개 입력의 관계형
-transaction 검증은 PSF5에서 수행한다.
+projection 구조의 PostgreSQL 왕복을 검증했다. PSF5는 실제 36개 입력의
+관계형 transaction·idempotency·rollback을 검증했다.
 Frontend TypeScript 타입·Mock 소비 코드는 별도 원격 브랜치에 있으나 D6
 검토에서 현재 Policy API와의 계약 차이를 확인했다. Data 영역은 해당
 Frontend 코드를 대신 수정하거나 승인하지 않으며,
@@ -210,7 +210,7 @@ Fixture 12개와 `initial_programs.json`의 누락·추가·byte 차이가 있�
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
 | Data | reviewed | 1.1.0 Schema·legacy adapter·결정적 재생성·검색 지역 경계 Fixture 테스트 완료 |
-| Backend | transitional | 검색 배열·coverage와 지역·규칙·projection DB 구조 구현, 비어 있지 않은 region rules의 importer transaction은 PSF5 대기 |
+| Backend | reviewed | 검색 배열·coverage와 지역·규칙·projection 구조, 원자적 importer·idempotency·rollback 검증 완료 |
 | Frontend | transitional | FE 2A 공개 `PolicyDto` 계약을 유지하고 `schema_version`만 1.0.0·1.1.0 union으로 소비하며 검색 5개 필드는 공개 DTO에서 제외 |
 
 ### Frontend 초기 Mock 검토 결과 (2026-07-28)
@@ -241,8 +241,8 @@ API 모드 브라우저 렌더링을 확인해 Frontend 소비 승인을 완료�
 
 기존 Data 6의 31개 필드 소비 계약은 승인 상태를 유지한다. PSF4는 새 검색
 필드의 Source 값 채움과 합성 Seed 재생성을 완료했다. Backend의 배열·coverage
-저장은 PSF3에서 완료됐고, 관계·projection의 원자적 저장과 별도 검색 응답
-소비 승인은 후속 Slice에서 완료한다.
+저장은 PSF3, 관계·projection의 원자적 저장은 PSF5에서 완료됐다. 별도 검색
+응답 소비 승인은 후속 Slice에서 완료한다.
 
 [bokjiro-api]: https://www.data.go.kr/data/15090532/openapi.do
 [youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide

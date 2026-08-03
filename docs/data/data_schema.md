@@ -365,9 +365,11 @@ upsert 후 rollback한다.
 
 PSF3 Migration은 세 검색 배열과 coverage를 Policy에 저장하고 기존 row를
 `[]`·`unknown`으로 backfill한다. 실제 `schema_version`은 바꾸지 않는다.
-`region_rules` 관계 교체와 projection 동기화는 PSF5 책임이므로, 현재
-importer는 비어 있지 않은 rule을 `search_relation_storage_not_ready`로
-거부해 조용한 손실을 막는다.
+PSF5 importer는 `region_rules` 관계 교체와 versioned projection 동기화를
+Policy upsert와 같은 transaction에서 수행한다. Runtime replay는 accepted
+program과 Normalizer warning을 순서대로 전달하므로 `other` category fallback
+같이 canonical 객체만으로 재구성할 수 없는 partial 근거도 DB admission에서
+유실되지 않는다.
 Frontend는 1.0.0·1.1.0 `schema_version`을 모두 허용하되 새 검색 5개 필드를
 기존 `PolicyDto`에 포함하지 않는다.
 
@@ -378,7 +380,7 @@ Frontend는 1.0.0·1.1.0 `schema_version`을 모두 허용하되 새 검색 5개
 [Fixture와 Seed 계약](fixture_seed_contract.md)은 1.1.0의 Backend 저장 후보,
 Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 PostgreSQL
 구조와 Source 값 채움은 PSF3·PSF4에서 구현됐고 관계·projection의 원자적
-transaction은 PSF5에서 완성한다.
+transaction은 PSF5에서 완성했다.
 
 ## JSON Schema 동기화 규칙
 

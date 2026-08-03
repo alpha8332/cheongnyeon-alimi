@@ -243,9 +243,10 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 - 기존 Seed의 재생성 필요성
 - Backend 필터와 Frontend 표시 영향
 
-현재 Backend는 검색 배열과 coverage를 Policy 컬럼에 저장한다. PSF5 전에는
-비어 있지 않은 `region_rules`를
-`search_relation_storage_not_ready`로 거부해 관계 손실을 막는다.
+현재 Backend는 검색 배열과 coverage를 Policy 컬럼에 저장하고 비어 있지 않은
+`region_rules`와 versioned projection을 Policy upsert와 같은 transaction에
+저장한다. Runtime replay는 Normalizer warning을 accepted program과 함께
+전달하므로 canonical 필드만으로 재구성할 수 없는 partial 분류도 유지한다.
 Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
 공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
 Slice에서 별도로 연결한다.

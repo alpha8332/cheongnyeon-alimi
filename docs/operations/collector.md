@@ -123,12 +123,13 @@ Set-Location ..
 exact crosswalk만 사용해 region rule을 생성한다. 미매핑·모호한 값과 폐지
 code를 현행 지역으로 추정하거나 자동 치환하지 않는다.
 
-PSF5 전환 경계에서는 비어 있지 않은 region rule을 정책·projection과 같은
-transaction에 저장할 수 없으므로 온통청년 Runtime 적재는
-`search_relation_storage_not_ready`로 명시적으로 거부된다. 이 기간에는 아래
-`--dry-run`으로 Raw→Normalized 품질과 rule을 확인하되 실제 적재 성공으로
-기록하지 않는다. 복지로처럼 region rule이 없는 입력과 합성 Seed의 검색
-배열·coverage 저장은 계속 지원한다.
+PSF5부터 비어 있지 않은 region rule, 정책과 versioned search projection을
+같은 transaction에 저장한다. 관계 또는 projection write 하나가 실패하면
+accepted batch 전체를 rollback한다. Runtime replay는 Normalizer warning을
+program과 함께 importer에 전달해 Source 변환 warning으로 분류한 partial을
+재검증에서도 유지한다. 아래 `--dry-run`은 실제 FK·constraint·projection
+write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projection·실행
+이력을 남기지 않는다.
 
 온통청년 최신 Raw 회차를 검증만 하고 rollback:
 

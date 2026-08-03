@@ -180,6 +180,10 @@ PSF4 adapter는 위 채택 경로를 구현했으며 공통 필드로 명시적�
 | Backend 검색 | 기존 exact repository와 분리된 3값 primitive 필요 | PSF6 인계 후 Backend 06 query·정렬 구현 |
 | Frontend 검색 | 기존 `PolicyDto`만으로 검색 이유를 만들 수 없음 | Frontend 04가 별도 검색 응답의 조건·이유·미확인을 표시 |
 
+PSF5는 Importer 조치를 projection version `1.0.0`, 호출자 소유 rebuild service와
+단일 transaction 관계 교체로 구현했다. Runtime Normalizer warning도 accepted
+program과 함께 전달해 partial 분류 근거를 보존한다.
+
 Migration은 기존 row에 배열 `[]`, `coverage_scope=unknown`과 빈 projection을
 안전하게 준비하되 Source 근거를 생성하지 않는다. projection은 명시적인
 backfill/rebuild 절차로 채우고, downgrade는 새 테이블·컬럼을 제거하되 기존

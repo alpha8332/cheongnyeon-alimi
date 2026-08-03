@@ -28,7 +28,7 @@ JSON_COLUMNS = {
     "excluded_conditions",
     "provenance",
 }
-PENDING_SEARCH_STORAGE_FIELDS = {
+RELATIONAL_STORAGE_FIELDS = {
     "region_rules",
 }
 JSON_COLUMNS.update({"keywords", "life_stages", "target_groups"})
@@ -74,7 +74,7 @@ def test_policy_columns_cover_current_normalized_storage_contract():
     }
 
     assert len(schema["required"]) == 36
-    assert model_columns == set(schema["properties"]) - PENDING_SEARCH_STORAGE_FIELDS
+    assert model_columns == set(schema["properties"]) - RELATIONAL_STORAGE_FIELDS
 
 
 def test_json_columns_use_jsonb_only_for_postgresql():
