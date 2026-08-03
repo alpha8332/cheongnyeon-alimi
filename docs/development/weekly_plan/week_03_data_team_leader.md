@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: approved
+- 상태: in-progress
 - 대상 주차: 3주차
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
@@ -44,8 +44,8 @@ DT5 실제 데이터 통합·결함 조정
 DT6 golden query·Release 1 판정
 ```
 
-DT1을 수행하는 동안 Backend의 자연어 해석 코드 조사·테스트 골격과
-Frontend의 해석 조건·검색 이유 UI prototype은 병렬로 진행할 수 있다.
+DT1을 수행하는 동안 Backend의 현재 코드·API 구조 조사와 Frontend의
+현재 API Client·query state 소비 구조 조사는 병렬로 진행할 수 있다.
 DT1에서 현재 지역·검색 필드 구조의 실제 충돌이 확인됐으므로
 [Integration 03 검색 데이터 기반](../develop_plan/integration/03_policy_search_data_foundation.md)을
 먼저 수행한다. 이 기반과 DT2 검색 계약이 승인된 뒤 세 영역이 본 구현을
@@ -82,12 +82,14 @@ DT1에서 현재 지역·검색 필드 구조의 실제 충돌이 확인됐으�
   필요 여부와 담당자를 확인한다.
 - Backend·Frontend 담당자에게 3주차 시작 기준과 Critical Path를 공유한다.
 - 보고서 담당, 사용성 리뷰어와 QA가 사용할 증빙·결함 기록 위치를 정한다.
-- 각 Forest 브랜치는 최신 `develop`에서 시작하고 Slice마다 브랜치를 만들지
-  않는다는 기준을 확인한다.
+- 각 Forest는 원칙적으로 최신 `develop`에서 시작하되, 완료된 검색 기반이 아직
+  `develop`에 없으므로 Backend 06·Frontend 04는 합의된 공통 커밋
+  SHA를 [Gate G1 인수인계](week_03_search_contract_handoff.md)의 명령으로 확인한
+  뒤 시작한다. Slice마다 브랜치를 만들지 않는다.
 
 ### 병렬 가능한 다른 담당 작업
 
-- Backend: 현재 Policy Repository·Service·API 분석과 테스트 골격
+- Backend: 현재 Policy Repository·Service·API 구조 분석
 - Frontend: Backend 해석 조건·검색 이유 표시와 query state 조사
 - QA: 검색 정상·빈 결과·경계값·실패 smoke 초안
 - 보고서: Release 1 증빙 목차와 수집 양식
@@ -155,8 +157,8 @@ DT0 완료 후 DT1 Source preflight와 각 담당자의 준비 작업을 시작�
 
 DT1 전체가 끝나기 전에 Backend와 Frontend는 다음을 진행할 수 있다.
 
-- Backend `W3-B0`: query DTO, Repository 변경 지점과 테스트 골격
-- Frontend `W3-F0`: Backend 해석 조건·검색 이유 표시 prototype
+- Backend `W3-B0`: query DTO·Repository 변경 지점의 문서 초안
+- Frontend `W3-F0`: Backend 해석 조건·검색 이유 표시 의미의 문서 초안
 
 다만 지역 계층, 연령 조건 미상, 기본 status와 partial 의미는 확정 구현하지
 않는다.
@@ -220,7 +222,7 @@ Forest 전체 Gate와 Data 02 인계를 완료했다.
 - 선행: DT1 completed
 - 완료: PSF7 기존 소비 호환, 합성 query plan과 actual Raw DB dry-run
 - 완료: PSF8 전체 Gate, Git·비밀·Runtime 경계와 Data 02 인계
-- 병렬 가능: Backend 테스트 골격, Frontend 검색 이유·미확인 조건 prototype
+- 병렬 가능: Backend·Frontend 현재 구조 분석과 계획·계약 문서 초안
 - 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
   Backend 06 최종 query
 - 후속: 기반 브랜치 병합 후 DT2 Data 근거 준비 재개, 공동 G1은 Backend 06·
@@ -230,7 +232,8 @@ Forest 전체 Gate와 Data 02 인계를 완료했다.
 
 ### 목적
 
-Data 표본, Backend 자연어 해석 초안과 Frontend 표시 prototype을 하나의 검색 계약으로
+Data 표본, Backend 자연어·API 계약 초안과 Frontend 타입·표시 의미
+초안을 하나의 검색 계약으로
 정리하고 세 영역의 본 구현을 해제한다.
 
 ### 선행 조건
@@ -282,11 +285,13 @@ Data·Backend·Frontend와 다음을 확정한다.
 - Frontend: TypeScript query·화면 소비 기준
 - Integration: golden query와 전체 인수 기준
 
-### 병렬 가능 작업
+### Gate G1 전 병렬 준비
 
-- Data: 승인 전에도 pagination 종료 탐지와 안전한 호출 제어 구현 가능
-- Backend: 계약 독립적인 테스트 fixture와 query builder 골격 가능
-- Frontend: 해석 조건·검색 이유 UI component 가능
+- Data: actual profile과 Source 호출·pagination 제약 근거 정리
+- Backend: 현재 구조 분석과 API·Repository 계약·Forest 계획 초안
+- Frontend: 현재 구조 분석과 TypeScript 타입·표시 의미·Forest 계획 초안
+
+G1 전에는 세 영역의 본 구현과 테스트 코드를 작성하지 않는다.
 
 ### Gate G1 승인 조건
 
@@ -317,8 +322,8 @@ PostgreSQL에 적재한다.
 - pagination 종료, 중단·재시도와 API 이용 조건 확인
 - Migration 적용 PostgreSQL과 Runtime Raw root 준비
 
-G1 전체 검색 계약이 아직 승인되지 않아도 Source pagination·Raw 저장
-구현은 진행할 수 있다. 다만 지역·연령 정규화 규칙 변경은 G1 없이 확정하지
+DT3 구현은 DT2·Gate G1 승인 뒤 시작한다. G1 전에는 Source
+pagination·Raw 저장의 현재 구조와 제약만 분석하고 새 구현을 완료로 처리하지
 않는다.
 
 ### 수행 작업
@@ -625,7 +630,7 @@ git status --short
 
 - [ ] Source preflight·호출 예산·릴리스 범위 승인
 - [x] 대표 실데이터 분포와 검색 계약 질문 공유
-- [ ] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
+- [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [ ] Gate G1 Data 계약 공동 승인
 - [ ] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
 - [ ] 재실행 idempotency·transaction·중복 방지 검증
@@ -649,6 +654,7 @@ git status --short
 ## 관련 문서
 
 - [3주차 전체 상세 계획](week_03_release_1.md)
+- [검색 계약 Gate G1 인수인계](week_03_search_contract_handoff.md)
 - [주차별 상세 실행 계획 안내](README.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
 - [Policy Search Data Foundation](../develop_plan/integration/03_policy_search_data_foundation.md)

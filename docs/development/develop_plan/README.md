@@ -60,8 +60,11 @@ fix/backend/week2-hardening
   → develop 병합
   → Data 02 DT0~DT1 실제 Source 근거
   → Integration 03 검색 데이터 기반
-  → Data 02 DT2~DT4 실제 데이터 기준선
-  → Backend 06·Frontend 04 검색
+  → DT2 Data 권고 + Backend 06·Frontend 04 초안
+  → Gate G1 검색 계약 공동 승인
+  ├→ Data 02 DT3~DT4 실제 데이터 기준선
+  ├→ Backend 06 서버 검색
+  └→ Frontend 04 승인 Mock·검색 UI → Backend endpoint 뒤 실제 API 연결
   → Integration 04 실데이터 인수
   → v0.1.0
   → Backend 04·05와 Frontend 03 관리자 기능

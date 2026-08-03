@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-07-31
+- 기준일: 2026-08-03
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -101,8 +101,8 @@ completed
 
 ### Data
 
-- DT1 실제 표본을 근거로 Integration 03 검색 데이터 기반의 Source mapping과
-  지역 계약을 공동 구현한다.
+- 완료된 Integration 03 검색 데이터 기반으로 DT2 actual profile·Data 권고를
+  Backend·Frontend 초안과 공동 검토하고 Gate G1을 지원한다.
 - Source별 pagination, 할당량과 릴리스 수집 범위를 확정한다.
 - 실제 정책 Raw를 수집하고 정규화·검증·PostgreSQL에 초기 적재한다.
 - 수동 재수집·재처리의 idempotency와 실패 복구를 검증한다.
@@ -111,8 +111,10 @@ completed
 
 ### Backend
 
-- Data와 함께 Source 중립 search projection, 행정구역·정책 관계,
-  Migration과 3값 판정 primitive를 먼저 구현한다.
+- 완료된 Source 중립 search projection, 행정구역·정책 관계, Migration과
+  3값 판정 primitive를 기준선으로 사용한다.
+- Gate G1을 위해 자연어 request·구조화 조건·검색 이유·미확인 조건 API
+  초안을 먼저 Data·Frontend와 검토한다.
 - 자연어 원문 `q`를 결정적인 한국어 규칙으로 해석해 지역, 나이,
   주거·월세 등 카테고리와 핵심어를 구조화한다.
 - `keyword`, region, age, category, status, pagination과 기본 정렬 계약을
@@ -126,6 +128,8 @@ completed
 
 ### Frontend
 
+- Gate G1을 위해 Backend request·response와 일치하는 TypeScript query·응답,
+  해석 조건·검색 이유·미확인 조건 소비 초안을 먼저 검토한다.
 - 자연어 원문을 `q`로 Backend에 전달하고 별도 자연어 parser를 두지 않는다.
 - Backend가 반환한 해석 조건을 표시하고 수정 가능하게 한다.
 - Backend 검색 결과, 검색 이유, 미확인 조건, pagination과 정렬 결과를
@@ -135,7 +139,9 @@ completed
 ### Team Leader - Integration
 
 - [Policy Search Data Foundation](integration/03_policy_search_data_foundation.md)의
-  ADR·Schema·Migration·소비 호환 Gate를 먼저 주관한다.
+  완료된 ADR·Schema·Migration·소비 호환 Gate를 기준선으로 관리한다.
+- DT2 Data 권고, Backend 06·Frontend 04 초안을 대조해 Gate G1을 승인하거나
+  차단사항과 다음 담당을 기록한다.
 - 실제 DB → FastAPI → React 흐름을 로컬 HTTP와 Browser로 검증한다.
 - 다음 golden query의 실제 기대 정책과 이유를 snapshot 기준으로 기록한다.
 
@@ -304,5 +310,6 @@ completed
 
 - [Release와 Milestone 계획](release_roadmap.md)
 - [전체 Forest 로드맵](forest_roadmap.md)
+- [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
 - [개발 계획 안내](README.md)
 - [문서화 정책](../../governance/documentation_policy.md)

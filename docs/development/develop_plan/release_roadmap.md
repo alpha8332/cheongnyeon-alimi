@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-07-31
+- 기준일: 2026-08-03
 - 범위: `v0.1.0`, `v0.5.0`, `v1.0.0`
 - 역할: 여러 Forest의 릴리스 목표와 통합 완료 조건을 정하는 기준선
 
@@ -23,26 +23,30 @@
 
 ## 현재 기준선
 
-2주차까지 다음 기반이 완료됐다.
+2주차 기반과 3주차 Integration 03까지 다음이 완료됐다.
 
 - 온통청년·복지로 제한 수집, Raw 저장, 정규화와 검증
 - 합성 canonical Seed의 PostgreSQL 적재와 Policy API 통합
 - Runtime Raw 재처리 CLI와 최소 `collection_runs` 실행 이력
 - React 사용자 정책 목록·상세·필터 UI와 실제 Policy API 연결
 - PostgreSQL 안전성 보강과 React Router advisory 대응
+- `NormalizedProgram` 1.1.0, `kr-bjd-20260803` 행정구역 기준정보와
+  Source 중립 지역 관계·검색 projection·3값 판정 primitive
 
 Data 02 DT1에서 Git 제외 `runtime/raw`에 온통청년 10건과 복지로 목록
 10건·상세 3건의 실제 표본을 저장하고 재처리했다. 온통청년 전체 건수는
-2,696, 복지로는 461로 보고됐지만 표본은 두 Source 모두 전건 partial이었다.
-전체 또는 릴리스 범위 수집과 자동 주기 적재는 아직 구현하지 않았다.
+2,696, 복지로는 461로 보고됐다. PSF 이후 오프라인 재생에서 온통청년은
+exact 지역 규칙이 연결돼 valid 8·partial 2, 복지로는 지역·연령·신청기간
+근거가 없어 partial 10이었다. 전체 또는 릴리스 범위 수집과 자동 주기 적재는
+아직 구현하지 않았다.
 
-온통청년은 지역 code 원문이 있지만 승인된 행정구역 code table이 없고,
-복지로는 지역·연령·신청기간이 응답에 없다. 현재 `regions` JSONB exact
-match와 제한된 Source 검색 field mapping으로는 향후 지역 정책과 중앙정부
-정책을 함께 정확히 검색할 수 없다. 현재 공개 Policy API에는 자유 키워드와
-연령 query가 없으며, Frontend 검색은 최대 100건을 받은 뒤 입력 문장 전체가
-한 정책 문자열에 포함되는지 검사한다. 따라서 합성 Seed 통합이나 DT1 제한
-표본만으로는 `v0.1.0`을 릴리스할 수 없다.
+Integration 03은 공식 법정동 snapshot, 온통청년 exact 지역 crosswalk,
+`nationwide|regional|unknown`, 지역·연령·신청 상태 판정과 Source 중립 검색
+projection을 구현·검증했다. 복지로의 누락 조건과 온통청년 공개 `zipCd`
+code-to-name 표 부재는 추정하지 않고 lineage와 unknown으로 보존한다. 현재
+공개 Policy API에는 자유 키워드와 연령 query가 없고 Frontend 검색은
+client-only이므로, DT2 Gate G1의 Backend·Frontend 계약과 실제 릴리스
+snapshot·서버 검색·UI 연결 전에는 `v0.1.0`을 릴리스할 수 없다.
 
 ## 릴리스 역할과 승인 증거
 
@@ -88,8 +92,9 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 #### 검색 계약
 
 - [Policy Search Data Foundation](integration/03_policy_search_data_foundation.md)에서
-  Source 중립 검색 필드, `nationwide|regional|unknown`, versioned 행정구역
-  계층·정책 관계와 Korean search projection을 먼저 구현·검증한다.
+  완료한 Source 중립 검색 필드, `nationwide|regional|unknown`, versioned
+  행정구역 계층·정책 관계와 Korean search projection을 Backend·Frontend
+  검색 계약의 기준선으로 사용한다.
 - 현재 목록·상세의 source-scoped identity와 provenance는 유지하고,
   지역·검색 내부 구조는 향후 지자체 Source가 같은 Adapter 계약을 사용할 수
   있게 공개 DTO와 분리한다.
@@ -262,6 +267,7 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 - [Forest 로드맵](forest_roadmap.md)
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
+- [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
 - [시스템 흐름](../../architecture/system_flow.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)

@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: approved
+- 상태: in-progress
 - 대상 Release: `v0.1.0`
 - 실행 주차: 3주차
 - 주 담당: Data, Backend, Frontend
@@ -40,9 +40,11 @@ Data와 Team Leader를 함께 수행하는 담당자의 Slice·선행 관계와 
 - Data 02, Integration 03, Backend 06, Frontend 04, Integration 04의
   담당자와 상세 계획 확정
 
-현재 브랜치가 `fix/backend/week2-hardening`이면 새 3주차 구현을 누적하지
-않는다. 2주차 결과를 `develop`에 병합한 뒤 최신 `develop`에서 Forest 단위
-작업 브랜치를 시작한다.
+3주차 공통 검색 기준선은 Data 02·Integration 03과 DT2 Data 권고,
+Gate G1 인수인계가 포함된 커밋이다. Backend 06과 Frontend 04는
+[검색 계약 Gate G1 인수인계](week_03_search_contract_handoff.md)의 명령으로
+정확한 SHA를 확인한 뒤 Forest 단위 브랜치를 시작하고 stacked 의존 관계를
+기록한다.
 
 ## 현재 기준선
 
@@ -147,16 +149,16 @@ W3-D0 실제 데이터 표본·분포 확인
   → W3-G4 v0.1.0 판정
 ```
 
-이 경로가 지연되면 Data 전체 적재나 UI 골격이 완료돼도 Release 1을 완료할
+이 경로가 지연되면 Data 전체 적재나 UI가 완료돼도 Release 1을 완료할
 수 없다.
 
 ### 처음부터 병렬 가능한 작업
 
 | Data | Backend | Frontend | Team Leader·지원 |
 | --- | --- | --- | --- |
-| Source pagination·할당량 조사 | 현재 Repository·API·자연어 해석 변경 지점 조사 | 해석 조건·검색 이유 UI prototype | 인수 기준·golden query·QA 항목 준비 |
-| 대표 실제 표본·Source key lineage | 지역 DB·search projection 후보 | Mock query state·pagination UI | ADR·Schema 소비 Gate 준비 |
-| 필드·품질 분포·지역 기준정보 조사 | Migration·index와 실패 경계 조사 | loading·empty·error 회귀 준비 | 역할·브랜치·통합 환경 확인 |
+| Source pagination·할당량 조사 | 현재 Repository·API·자연어 해석 변경 지점 조사 | 현재 API Client·query state 소비 구조 조사 | 인수 기준·golden query·QA 항목 준비 |
+| 대표 실제 표본·Source key lineage | API·Repository 계약 문서 초안 | TypeScript 타입·표시 의미 문서 초안 | ADR·Schema 소비 Gate 준비 |
+| 필드·품질 분포·지역 기준정보 조사 | Backend 06 Forest·Slice 계획 | Frontend 04 Forest·Slice 계획 | 역할·브랜치·통합 환경 확인 |
 
 ### 선행 결과를 기다려야 하는 작업
 
@@ -179,9 +181,10 @@ W3-D0 실제 데이터 표본·분포 확인
   Release 1 체크리스트 확인
 - `W3-D0` Data: 두 Source preflight, pagination·할당량 확인, 최소 대표 표본
   수집과 필드·품질 분포 작성
-- `W3-B0` Backend: 현재 Policy Repository·Service·API 분석, 자연어 해석과
-  query·응답 계약 및 테스트 골격 초안
-- `W3-F0` Frontend: 해석 조건·검색 이유·미확인 조건 표시 UI prototype
+- `W3-B0` Backend: 현재 Policy Repository·Service·API 분석과 query·응답
+  계약·Forest 계획 문서 초안
+- `W3-F0` Frontend: 현재 API Client·query state 분석과 TypeScript
+  타입·표시 의미·Forest 계획 문서 초안
 - `W3-R0` 보고서: 데이터 건수, 품질, 검색 결과, 테스트와 화면 증빙 양식 준비
 - `W3-U0` 사용성 리뷰어: golden query와 변형 사용자 문장 준비
 - `W3-Q0` QA: 정상·빈 결과·경계값·API 오류 smoke 목록 준비
@@ -238,8 +241,8 @@ Data 표본을 바탕으로 Data·Backend·Frontend와 Team Leader가 다음을 
 - Schema나 enum 변경 여부와 세 영역 영향이 확인됨
 - 미확정 항목은 구현을 막는지 또는 후속으로 가능한지 분류됨
 
-G1 전에도 prototype과 테스트 골격은 만들 수 있지만 실제 계약 구현을 완료로
-처리하지 않는다.
+G1 전에는 현재 구조 분석과 계획·계약 문서 초안만 작성한다.
+Backend·Frontend 구현과 테스트 코드 작성은 G1 승인 뒤 별도 Slice에서 시작한다.
 
 ### Phase 2 - 세 영역 병렬 구현
 
@@ -421,8 +424,8 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03 구현이 필�
 ## 완료 체크리스트
 
 - [ ] 2주차 결과가 `develop`에 병합되고 3주차 Forest 계획이 승인됨
-- [ ] 대표 실제 표본과 데이터 분포 확인
-- [ ] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
+- [x] 대표 실제 표본과 데이터 분포 확인
+- [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [ ] Gate G1 검색 계약 공동 승인
 - [ ] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
 - [ ] 재수집·재처리 idempotency와 품질 보고 검증
@@ -441,6 +444,7 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03 구현이 필�
 
 - [주차별 상세 실행 계획 안내](README.md)
 - [Data·Team Leader 실행 계획](week_03_data_team_leader.md)
+- [검색 계약 Gate G1 인수인계](week_03_search_contract_handoff.md)
 - [주차별 실행 계획 요약](../develop_plan/weekly_delivery_plan.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)

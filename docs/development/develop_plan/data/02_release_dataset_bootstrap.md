@@ -183,6 +183,7 @@ PostgreSQL 통합 테스트는 `TEST_DATABASE_URL`이 `_test` DB를 가리킬 �
 - [Data Pipeline Forest](01_data_pipeline.md)
 - [Policy Data Database Integration](../integration/02_policy_data_database_integration.md)
 - [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md)
+- [검색 계약 Gate G1 인수인계](../../weekly_plan/week_03_search_contract_handoff.md)
 - [Source Profile](../../../data/source_profiles.md)
 - [Collector 실행](../../../operations/collector.md)
 - [Backend Windows 로컬 환경](../../backend_local_setup.md)

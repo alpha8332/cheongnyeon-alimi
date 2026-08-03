@@ -56,6 +56,8 @@
   실데이터 정책 검색과 `v0.1.0` 실행 순서
 - [3주차 Data·Team Leader 실행 계획](development/weekly_plan/week_03_data_team_leader.md):
   실데이터 수집·적재와 통합·릴리스 판정 Slice
+- [3주차 검색 계약 Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md):
+  Backend 06·Frontend 04 공통 시작 커밋, 고정 계약, 역할별 초안과 공동 승인 기준
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
@@ -133,7 +135,7 @@ preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Backend·Frontend·Data | Integration 03 병합과 DT2 actual profile·Data 권고안·Schema 영향 판정 완료. Backend 06·Frontend 04 초안으로 unknown·partial·상태·정렬·검색 이유 소비 의미를 검토하고 Gate G1 승인 | [검색 데이터 기반 개발 기록](development/development_notes/integration/policy_search_data_foundation.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
+| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Backend·Frontend·Data | Integration 03 병합과 DT2 actual profile·Data 권고안·Schema 영향 판정 완료. Backend 06·Frontend 04 초안으로 unknown·partial·상태·정렬·검색 이유 소비 의미를 검토하고 Gate G1 승인 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [검색 데이터 기반 개발 기록](development/development_notes/integration/policy_search_data_foundation.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

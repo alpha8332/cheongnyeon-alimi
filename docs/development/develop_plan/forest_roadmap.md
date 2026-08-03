@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-07-31
+- 기준일: 2026-08-03
 - 역할: 완료 Forest와 릴리스별 후속 Forest의 순서·의존성 조정
 
 이 문서는 포트폴리오 수준의 순서를 정한다. `draft`, `approved`,
@@ -32,10 +32,10 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend 소비 검토 | in-progress | DT0~DT1 완료, DT2 actual profile·Data 권고안 준비 후 공동 G1 대기, DT3~DT4 실제 Raw·DB 초기 적재·품질 보고 | Data 01, Integration 02, DT2부터 Integration 03 |
+| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend·Frontend 소비 검토 | in-progress | DT0~DT1 완료, DT2 actual profile·Data 권고안 준비 후 공동 G1 대기, DT3~DT4 실제 Raw·DB 초기 적재·품질 보고 | Data 01, Integration 02, DT2부터 Integration 03 |
 | 2 | [Integration 03 Policy Search Data Foundation](integration/03_policy_search_data_foundation.md) | Data·Backend 공동 | Frontend 소비·Team Leader Gate | completed | PSF0~PSF8 Source 중립 계약·지역 기준정보·mapping·원자적 적재·판정·소비·성능·actual 재생과 전체 Gate 완료 | Data 02 DT1 |
 | 3 | Backend 06 Policy Search | Backend | Data 계약·Frontend 소비 검토 | 계획 필요 | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Integration 03 판정 primitive와 Data 02 실제 분포 |
-| 4 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Backend 06 계약 승인 |
+| 4 | Frontend 04 Policy Search | Frontend | Backend API 검토 | 계획 필요 | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Integration 03·DT2 Data 근거, 실제 API 연결은 Backend 06 계약 승인 |
 | 5 | Integration 04 Release 1 Acceptance | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | 계획 필요 | 실제 DB → API → UI, golden query, Browser와 릴리스 체크 | Data 02, Integration 03, Backend 06, Frontend 04 |
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
@@ -57,17 +57,23 @@ Integration 04로 이동한다. 완료 문서 번호를 바꾸지 않으며 아�
 ```text
 Data 02 DT0~DT1 실제 Source 근거
   → Integration 03 검색 데이터 기반
-  → Data 02 DT2~DT4 실제 데이터 기준선
-  → Backend 06 자연어 해석·서버 검색 계약
-  → Frontend 04 해석 결과·검색 UI 연결
+  → Data 02 DT2 Data 권고 + Backend 06·Frontend 04 초안
+  → Gate G1 검색 계약 공동 승인
+  ├→ Data 02 DT3~DT4 실제 데이터 기준선
+  ├→ Backend 06 자연어 해석·서버 검색
+  └→ Frontend 04 승인 Mock·검색 UI
+                    ↓ Backend endpoint 준비
+                 Frontend 실제 API 연결
   → Integration 04 실데이터 인수 검증
   → v0.1.0
 ```
 
-Data 02의 샘플 분포 조사는 Backend 06의 query·index 설계와 병행할 수 있다.
-하지만 Backend 06 최종 검색 구현은 Integration 03이 제공하는 Source 중립
-검색 필드, 지역 계층·적용 관계와 판정 primitive 뒤에 진행한다. Data 02
-DT2~DT4도 새 계약과 Migration을 소비해 실제 snapshot을 만든다.
+Data 02의 actual profile, Backend 06의 API·Repository 계약 초안과 Frontend 04의
+타입·표시 계약 초안은 Gate G1 입력으로 병행한다. G1 전에는 각 영역의
+현재 구조 분석과 별도 Forest·Slice 계획만 준비하고 계약에 의존하는 코드
+구현은 시작하지 않는다. G1 승인
+뒤 Data DT3~DT4, Backend 06과 Frontend 04 본 구현을 병렬로 진행하고 실제
+Frontend API 연결은 Backend endpoint를 기다린다.
 
 ## `v0.5.0` Forest
 
@@ -118,10 +124,14 @@ Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockf
 
 ## 브랜치 계획
 
-현재 `fix/backend/week2-hardening`은 2주차 안전성 Forest를 위한 브랜치다.
-이 로드맵 문서 변경은 독립적인 계획 단위이므로 최신 `develop`에서
-`docs/docs/release-roadmap` 브랜치로 분리하는 것을 권장한다. 이 문서 작업에서
-브랜치를 직접 생성하거나 커밋하지 않는다.
+2주차 `fix/backend/week2-hardening` 작업은 완료됐다. 3주차 Data 02와
+Integration 03 결과는 `feature/data/release-dataset-bootstrap`에 병합돼 있다.
+Backend 06과
+Frontend 04는 이 기준선에서 각 Forest 브랜치를 분기해 DT2/G1 초안을
+준비한다. 정확한 공통 시작 SHA는
+[검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)의
+해석 명령으로 확인한다. 브랜치 생성과 커밋은 각 담당자의 명시적 작업 요청을
+따른다.
 
 구현 브랜치는 Forest 단위로 만든다. 권장 예시는 다음과 같다.
 
@@ -136,8 +146,10 @@ feature/deploy/open-source-runtime
 
 `feature/database/policy-search-foundation`은 Data 02 DT1 커밋에서 파생해
 완료 후 `feature/data/release-dataset-bootstrap`에 병합하는 stacked 예외다.
-기반·대상 브랜치와 검증 순서는 해당 Forest 계획에 명시한다. Data 02가
-`develop`에 병합되기 전에는 이 의존 관계를 PR에서 숨기지 않는다.
+Backend 06·Frontend 04도 완료된 검색 기반을 소비하기 위해 위 공통 커밋에서
+분기한다. 기반·대상 브랜치와 검증 순서는 해당 Forest 계획에 명시하고,
+Data 02가 `develop`에 병합되기 전에는 stacked 의존 관계와 병합 순서를 PR에서
+숨기지 않는다.
 
 Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표나 독립 완료
 기준을 한 브랜치에 장기간 누적하지 않는다.
@@ -158,6 +170,7 @@ Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표
 - [Release와 Milestone 계획](release_roadmap.md)
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
+- [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
 - [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)
