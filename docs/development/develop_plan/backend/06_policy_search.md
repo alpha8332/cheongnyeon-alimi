@@ -4,8 +4,10 @@
 
 - 번호: Backend 06
 - 담당 영역: Backend
-- 상태: draft
+- 상태: in-progress
 - 작업 브랜치: `feature/backend/policy-search`
+- 개발 기록:
+  [Backend Policy Search 개발 기록](../../development_notes/backend/policy_search.md)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -171,11 +173,13 @@ class PolicySearchResponse(BaseModel):
     items: list[PolicySearchResultItem]
 ```
 
-### 4. 3값 판정 & Partial 처리 세부 규칙
+### 4. 3값 판정, Partial 처리 및 정렬 세부 규칙
 
 - **`mismatch`**: 지역, 연령, 상태 조건이 명확히 불일치하는 정책은 DB Query level에서 확정 제외한다.
 - **`unknown`**: 원문 데이터 부족으로 판단이 불가능한 항목은 제외하지 않고 미확인 후보로 검색 결과에 포함하며, `unconfirmed_conditions` 항목에 사유를 명시한다.
 - **`partial`**: 온통청년/복지로 수집 표본 중 일부 필수 필드가 누락된 `partial` 데이터는 관련도 감점(penalty) 없이 검색 후보에 포함하되, `missing_fields` 배열(예: `["application_period", "min_age"]`)을 통해 사용자에게 누락 사실만 안내한다.
+- **신청 상태 기본 정렬**: `open` (모집중) > `scheduled` (모집예정) > `unknown` (상태미확인) > `closed` (마감) 순으로 기본 정렬하며, 동일 정렬 순위 내에서는 `id` 오름차순(결정적 tie-breaker)을 적용한다.
+- **Pagination 계산**: `offset = (page - 1) * limit` 방식을 사용하며 `total_count`, `page`, `limit` 정보를 응답 상위에 포함한다.
 
 ### 5. 오류 및 예외 처리
 
