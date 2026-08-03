@@ -111,10 +111,16 @@
 `[]`이다. null이나 쉼표로 합친 단일 문자열은 허용하지 않는다. 각 값은
 앞뒤 공백을 제거하고 빈 값과 중복을 제외하되 원문 순서를 유지한다.
 
-PSF1의 공통 Normalizer는 Source 원문만 보고 이 값을 추정하지 않고 안전한
-기본값 `[]`를 만든다. 실제 온통청년·복지로 필드 매핑은 Source별 근거를
-확정하는 PSF4에서 추가한다. `summary`도 같은 경계에 따라 원문을 임의로
-요약하거나 생성하지 않는다.
+PSF4 Source Adapter는 온통청년 `mclsfNm`·`plcyKywdNm`을 `keywords`로,
+복지로 `intrsThemaArray`를 `keywords`, `lifeArray`를 `life_stages`,
+`trgterIndvdlArray`를 `target_groups`로 옮긴다. 쉼표와 반복 XML leaf를
+원문 순서대로 분리하고 공통 text 정규화 뒤 빈 값과 exact 중복을 제거한다.
+Source에 없는 값은 계속 `[]`이며 API가 청년 정책을 제공한다는 이유만으로
+`청년`을 추가하지 않는다.
+
+`summary`는 온통청년 `plcyExplnCn`, 복지로 상세 `wlfareInfoOutlCn` 우선·목록
+`servDgst` fallback만 사용한다. 모델이 요약문이나 검색 합성 문자열을
+생성하지 않으며 Raw와 `extra.source_fields`는 그대로 보존한다.
 
 ## 지역
 
@@ -129,10 +135,10 @@ PSF1의 공통 Normalizer는 Source 원문만 보고 이 값을 추정하지 않
 
 PSF2의 canonical 지역 scheme은 `kr-bjd-20260803`이며 공식 법정동 snapshot의
 시·도와 시·군·구, 별칭, 유효기간과 계층을
-[행정구역 기준정보](administrative_regions.md)로 고정했다. 기존 Normalizer는
-PSF4 Source Adapter 전까지 `coverage_scope=unknown`, `region_rules=[]`를
-기본값으로 유지한다. 기준표가 존재한다는 사실만으로 Source code를 시·도나
-전국으로 추정하지 않는다.
+[행정구역 기준정보](administrative_regions.md)로 고정했다. PSF4 Normalizer는
+Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가 없으면
+`coverage_scope=unknown`, `region_rules=[]`를 유지한다. 기준표가 존재한다는
+사실만으로 Source code를 시·도나 전국으로 추정하지 않는다.
 
 | 원문 예 | 정규화 값 |
 | --- | --- |
@@ -148,9 +154,14 @@ PSF4 Source Adapter 전까지 `coverage_scope=unknown`, `region_rules=[]`를
 - 동명이인 지역이나 불명확한 축약어는 추정하지 않는다.
 - 값이 없으면 `[]`을 사용한다.
 - 원문은 `region_text`에 보존한다.
-- 5자리 값은 `kr-bjd-prefix5`의 명시적 exact crosswalk에 있을 때만 후보를
-  찾는다. 특정 Source의 code 계약은 PSF4에서 승인하기 전까지 매핑하지 않고
-  `unmapped` 근거로 보존한다.
+- 온통청년 `zipCd`의 쉼표 구분 5자리 값은 `kr-bjd-prefix5`의 명시적 exact
+  crosswalk에 있을 때만 후보를 찾는다. 전체 숫자 목록이 아니거나 crosswalk에
+  없으면 이름·기관·prefix로 추정하지 않는다.
+- exact 폐지 code는 당시 canonical identity로 보존하고 현행 후계 지역으로
+  자동 치환하지 않는다. 미매핑·모호한 값은 Source 증거와 함께 unresolved
+  rule로 보존한다.
+- 향후 HTML Adapter의 지역명은 Adapter가 `source_text` 증거로 명시한 경우만
+  versioned alias resolver를 사용하며 `중구` 같은 다중 후보는 `ambiguous`다.
 - 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
   치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
 - `nationwide`는 지역 rule을 가질 수 없다.

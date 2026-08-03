@@ -27,8 +27,8 @@
 
 - `NormalizedProgram` 1.1.0 검색 데이터 계약, 1.0.0 compatibility adapter,
   공식 법정동 기반 versioned 지역·계층·별칭 Seed, 지역 적용 관계 경계
-  Fixture, PostgreSQL 지역 관계·검색 projection Migration과 손실 방지
-  importer 경계 추가
+  Fixture, PostgreSQL 지역 관계·검색 projection Migration, 온통청년·복지로
+  Source 검색 필드·exact 지역 Adapter와 손실 방지 importer 경계 추가
   ([개발 기록](docs/development/development_notes/integration/policy_search_data_foundation.md))
 - Frontend Policy Discovery Slice: 공개 `PolicyDto`, canonical Seed Mock
   adapter, `/api/v1/policies` 목록·상세 Client와 partial opt-in 정책

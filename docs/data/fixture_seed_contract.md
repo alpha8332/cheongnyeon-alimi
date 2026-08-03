@@ -90,11 +90,13 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 - 검색 문자열 배열은 값이 없으면 `[]`, 범위를 확인하지 못하면
   `coverage_scope=unknown`, 지역 rule이 없으면 `region_rules=[]`이다.
 
-PSF1 canonical Seed의 새 검색 필드는 Source 매핑 전이므로 모두 위 안전한
-기본값이다. 기존 1.0.0 입력은 compatibility adapter가 이 기본값만 보완하며
-지역이나 검색 조건을 추정하지 않는다. PSF3 Backend importer는 검색 배열과
-coverage를 저장하지만, PSF5 관계 transaction 전 비어 있지 않은
-`region_rules`는 `search_relation_storage_not_ready`로 거부한다.
+PSF4 canonical Seed는 합성 Source 원문에서 확인되는 summary·keywords와
+복지로 life stages·target groups를 채운다. 합성 온통청년의 명시적 `전국`은
+`coverage_scope=nationwide`, 그 밖에 근거가 없는 범위는 `unknown`이다.
+기존 1.0.0 입력은 compatibility adapter가 안전한 빈 배열·`unknown`만 보완하고
+검색 조건을 추정하지 않는다. PSF3 Backend importer는 검색 배열과 coverage를
+저장하지만, PSF5 관계 transaction 전 비어 있지 않은 `region_rules`는
+`search_relation_storage_not_ready`로 거부한다.
 
 ### Backend 검토 항목
 
@@ -237,10 +239,10 @@ pagination envelope와 숫자 `id` 목록·상세 경계를 같은 Mock contract
 구현했다. 소비 테스트 7건·lint·build, PostgreSQL 실제 API HTTP와 실제
 API 모드 브라우저 렌더링을 확인해 Frontend 소비 승인을 완료했다.
 
-기존 Data 6의 31개 필드 소비 계약은 승인 상태를 유지한다. PSF1의 새 검색
-5개 필드는 Data 실행 계약과 전환 경계를 확정했으며, Backend 전체 저장 승인은
-PSF3, Source 값 채움은 PSF4, 별도 검색 응답 소비 승인은 후속 Slice에서
-완료한다.
+기존 Data 6의 31개 필드 소비 계약은 승인 상태를 유지한다. PSF4는 새 검색
+필드의 Source 값 채움과 합성 Seed 재생성을 완료했다. Backend의 배열·coverage
+저장은 PSF3에서 완료됐고, 관계·projection의 원자적 저장과 별도 검색 응답
+소비 승인은 후속 Slice에서 완료한다.
 
 [bokjiro-api]: https://www.data.go.kr/data/15090532/openapi.do
 [youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide

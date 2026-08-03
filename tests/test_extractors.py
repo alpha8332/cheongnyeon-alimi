@@ -75,7 +75,8 @@ def youth_documents() -> list[RawPolicyDocument]:
         "rgtrInstCdNm": "Fallback organization",
         "lclsfNm": "주거",
         "mclsfNm": "주거비 지원",
-        "plcyKywdNm": "보조금",
+        "plcyKywdNm": "보조금, 월세",
+        "plcyExplnCn": "정책 요약",
         "aplyYmd": "",
         "aplyPrdSeCd": "0057002",
         "zipCd": "11110,11140",
@@ -142,6 +143,7 @@ def bokjiro_documents() -> list[RawPolicyDocument]:
             "<jurMnofNm>List ministry</jurMnofNm>"
             "<intrsThemaArray>일자리,생활지원</intrsThemaArray>"
             "<lifeArray>청년</lifeArray>"
+            "<trgterIndvdlArray>저소득,장애인</trgterIndvdlArray>"
             "<servDgst>List support</servDgst>"
             "<servDtlLink>https://example.test/service/1</servDtlLink>"
             "</servList>"
@@ -160,6 +162,9 @@ def bokjiro_documents() -> list[RawPolicyDocument]:
             "<servId>WLF000002</servId>"
             "<servNm>List-only title</servNm>"
             "<jurMnofNm>List-only ministry</jurMnofNm>"
+            "<intrsThemaArray></intrsThemaArray>"
+            "<lifeArray></lifeArray>"
+            "<trgterIndvdlArray></trgterIndvdlArray>"
             "<servDgst>List-only support</servDgst>"
             "<optional></optional>"
             "</servList>"
@@ -181,6 +186,10 @@ def bokjiro_documents() -> list[RawPolicyDocument]:
             "<jurMnofNm>Detail ministry</jurMnofNm>"
             "<tgtrDtlCn>Target detail</tgtrDtlCn>"
             "<slctCritCn>Selection detail</slctCritCn>"
+            "<wlfareInfoOutlCn>Detail summary</wlfareInfoOutlCn>"
+            "<intrsThemaArray>주거, 생활지원</intrsThemaArray>"
+            "<lifeArray>청년, 중장년</lifeArray>"
+            "<trgterIndvdlArray>저소득</trgterIndvdlArray>"
             "<alwServCn>Detail support</alwServCn>"
             "<servSeCode>010</servSeCode>"
             "<servSeCode>020</servSeCode>"
@@ -206,6 +215,18 @@ class YouthCenterExtractorTests(unittest.TestCase):
         first = policies[0]
         self.assertIsInstance(first, ExtractedPolicy)
         self.assertEqual("Fallback organization", first.organization)
+        self.assertEqual("정책 요약", first.summary)
+        self.assertEqual(
+            ("주거비 지원", "보조금", "월세"),
+            first.keywords,
+        )
+        self.assertEqual("regional", first.coverage_scope_hint.value)
+        self.assertEqual(2, len(first.region_evidence))
+        self.assertEqual(
+            "kr-bjd-prefix5",
+            first.region_evidence[0].external_scheme,
+        )
+        self.assertEqual("11110", first.region_evidence[0].source_code)
         self.assertEqual("상시", first.application_period_text)
         self.assertEqual("19세 ~ 34세", first.age_text)
         self.assertEqual("청년\n추가 조건", first.eligibility_text)
@@ -231,6 +252,10 @@ class YouthCenterExtractorTests(unittest.TestCase):
             "Known support",
             policies[1].support_content,
         )
+        self.assertIsNone(policies[1].summary)
+        self.assertEqual((), policies[1].keywords)
+        self.assertEqual("unknown", policies[1].coverage_scope_hint.value)
+        self.assertEqual((), policies[1].region_evidence)
 
     def test_profiles_missing_and_empty_fields_separately(self) -> None:
         profile = YouthCenterExtractor().profiles(
@@ -275,6 +300,10 @@ class BokjiroExtractorTests(unittest.TestCase):
         self.assertIsInstance(detailed, ExtractedPolicy)
         self.assertEqual("Detail title", detailed.title)
         self.assertEqual("Detail ministry", detailed.organization)
+        self.assertEqual("Detail summary", detailed.summary)
+        self.assertEqual(("주거", "생활지원"), detailed.keywords)
+        self.assertEqual(("청년", "중장년"), detailed.life_stages)
+        self.assertEqual(("저소득",), detailed.target_groups)
         self.assertEqual(
             "Target detail\nSelection detail",
             detailed.eligibility_text,
@@ -297,6 +326,10 @@ class BokjiroExtractorTests(unittest.TestCase):
         self.assertEqual("List-only title", list_only.title)
         self.assertEqual("List-only ministry", list_only.organization)
         self.assertEqual("List-only support", list_only.support_content)
+        self.assertEqual("List-only support", list_only.summary)
+        self.assertEqual((), list_only.keywords)
+        self.assertEqual((), list_only.life_stages)
+        self.assertEqual((), list_only.target_groups)
         self.assertEqual(2, len(list_only.provenance))
         self.assertIsNone(
             list_only.extra["source_fields"]["detail_response"]
@@ -320,8 +353,9 @@ class BokjiroExtractorTests(unittest.TestCase):
         }
 
         self.assertEqual(2, list_profile.document_count)
-        self.assertEqual(1, list_fields["lifeArray"].missing_count)
-        self.assertEqual(0.5, list_fields["lifeArray"].presence_rate)
+        self.assertEqual(0, list_fields["lifeArray"].missing_count)
+        self.assertEqual(1, list_fields["lifeArray"].empty_count)
+        self.assertEqual(1.0, list_fields["lifeArray"].presence_rate)
         self.assertEqual(1, list_fields["optional"].empty_count)
         self.assertEqual(1, detail_profile.document_count)
         self.assertEqual(

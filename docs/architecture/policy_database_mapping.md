@@ -141,6 +141,10 @@ Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저�
 - 신규 ORM·DB default는 1.1.0이며 importer는 입력 version을 그대로 쓴다.
 - 현재 importer는 `keywords`, `life_stages`, `target_groups`,
   `coverage_scope`를 저장한다.
+- PSF4 canonical Seed와 Runtime Normalized 결과는 Source 근거가 있는 검색
+  배열·coverage를 실제 값으로 채운다. 온통청년 숫자 `zipCd`는
+  `kr-bjd-prefix5` exact resolver를 거쳐 관계 후보가 되며 복지로는 지역
+  key가 없어 `unknown`을 유지한다.
 - `region_rules` 관계 교체와 projection 동기화는 PSF5의 단일 transaction
   책임이다. PSF5 전 비어 있지 않은 rules는
   `search_relation_storage_not_ready`로 거부해 조용한 손실을 막는다.

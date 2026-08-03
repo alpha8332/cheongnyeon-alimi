@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF3 completed, PSF4 next
+- 현재 Slice: PSF4 completed, PSF5 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -310,8 +310,8 @@ PSF2는 행정안전부 법정동코드의 `2026-08-03` 존재·폐지 전체 sn
 1,080건을 결정적으로 생성한다. 원천 parent를 보존하면서 비자치구와 집계
 시의 공식 전체 이름 exact 관계만 `aggregate_parent_code`로 추가한다.
 동남구→천안시→충청남도→대한민국, 동명이인, 폐지 code, exact 5자리
-crosswalk와 미매핑 경계를 검증했다. Source별 code 의미는 PSF4 전까지
-추정하지 않는다. 현재 계약과 재현 절차는
+crosswalk와 미매핑 경계를 검증했다. PSF4가 Source 증거를 제공하기 전까지는
+Source별 code 의미를 추정하지 않았다. 현재 계약과 재현 절차는
 [행정구역 기준정보](../../../data/administrative_regions.md)를 따른다.
 
 ### PSF3 - PostgreSQL Migration과 ORM
@@ -343,6 +343,7 @@ PSF5 범위로 유지한다.
 
 ### PSF4 - Source Adapter와 정규화
 
+- 상태: completed (`2026-08-03`)
 - 목적: 실제 Source key를 공통 검색 필드로 손실 없이 옮긴다.
 - 선행 조건: PSF1
 - 수행:
@@ -356,6 +357,19 @@ PSF5 범위로 유지한다.
   - 검색 대상 key의 Raw→공통 필드 lineage 100% 설명
   - Source key 누락·빈 값·다중 값 회귀 통과
   - 사용자 표시 text에 검색용 합성 문자열을 섞지 않음
+
+PSF4는 `ExtractedPolicy`에 Source 중립 검색 필드와 명시적인 지역 증거 계약을
+추가했다. 온통청년은 설명·중분류·키워드와 5자리 `zipCd`를, 복지로는 상세
+개요 우선·목록 요약 fallback과 관심주제·생애주기·대상자 배열을 공통 필드로
+옮긴다. 지역은 `kr-bjd-prefix5` exact crosswalk만 사용하며 이름·기관·prefix로
+추정하지 않는다. 폐지 code도 후계 지역으로 치환하지 않고 원 code identity를
+보존하며 미매핑·모호한 증거는 `unknown` 규칙으로 남긴다.
+
+DT1 Runtime Raw 오프라인 재생에서 온통청년 10건의 고유 `zipCd` 260개가 모두
+exact crosswalk와 일치했고 총 373개 rule이 matched였다. 복지로 10건은 지역
+근거가 없어 모두 `unknown`을 유지했다. 합성 Seed는 Source 검색 값을 포함하되
+비어 있지 않은 관계 rule은 PSF5 transaction 완료 전까지 Backend importer가
+명시적으로 거부한다.
 
 ### PSF5 - Import transaction과 projection 동기화
 
@@ -511,8 +525,9 @@ git status --short
 
 ## 위험과 미확정 사항
 
-- 최신 법정동 code 기준표는 PSF2에서 확보했다. 다만 온통청년 `zipCd`가
-  같은 5자리 scheme을 사용한다는 Source 계약은 PSF4에서 확인해야 한다.
+- 온통청년 공개 코드 정의서에는 `zipCd` 대응표가 없다. PSF4는 DT1 표본의
+  고유 code 260개 exact 일치를 근거로 제한적인 crosswalk를 승인했으며 전체
+  pagination의 새 값은 자동 추정하지 않고 `unmapped`로 보존한다.
 - 지역 code의 집계·폐지·분할 관계를 잘못 일반화하면 검색 오탐이 생긴다.
 - PostgreSQL `pg_trgm`은 로컬 Runtime·`_test` DB에서 확인했다. 배포 환경의
   extension 생성 권한은 배포 Forest에서 다시 확인해야 한다.

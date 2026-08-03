@@ -36,14 +36,14 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+          "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
           "document_role": "list_response",
           "raw_document_id": "10000000000000000000000000000000",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:9c536a8b315e01159d3e65d66fa842edaf18c7097cbcf5c60eb44cf0fc4ebf03",
+          "content_hash": "sha256:5cbe2b93336f6435bb0d3dc5e300c11f0c22fe0eab3be73fe18b44c9fa7f1af2",
           "document_role": "list_item",
           "raw_document_id": "11000000000000000000000000000002",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
@@ -103,14 +103,14 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+          "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
           "document_role": "list_response",
           "raw_document_id": "10000000000000000000000000000000",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:02dfcff3dbe823a51fddc106dfea263c0a8edb6d142c93e95ea1921fd3534d7b",
+          "content_hash": "sha256:d2d2de4c10a3eb1b62f3390418c75c3439a71e0f142b5854e0c7c2408e7b8a03",
           "document_role": "list_item",
           "raw_document_id": "11000000000000000000000000000001",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
@@ -179,14 +179,14 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+          "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
           "document_role": "list_response",
           "raw_document_id": "10000000000000000000000000000000",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:02dfcff3dbe823a51fddc106dfea263c0a8edb6d142c93e95ea1921fd3534d7b",
+          "content_hash": "sha256:d2d2de4c10a3eb1b62f3390418c75c3439a71e0f142b5854e0c7c2408e7b8a03",
           "document_role": "list_item",
           "raw_document_id": "11000000000000000000000000000001",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
@@ -255,14 +255,14 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+          "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
           "document_role": "list_response",
           "raw_document_id": "10000000000000000000000000000000",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:02dfcff3dbe823a51fddc106dfea263c0a8edb6d142c93e95ea1921fd3534d7b",
+          "content_hash": "sha256:d2d2de4c10a3eb1b62f3390418c75c3439a71e0f142b5854e0c7c2408e7b8a03",
           "document_role": "list_item",
           "raw_document_id": "11000000000000000000000000000001",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
@@ -316,10 +316,10 @@
       "application_start": null,
       "application_status": null,
       "categories": [
-        "finance",
-        "welfare"
+        "housing",
+        "finance"
       ],
-      "category_text": "서민금융,생활지원",
+      "category_text": "주거,서민금융",
       "collected_at": "2026-07-26T06:01:00+00:00",
       "coverage_scope": "unknown",
       "data_quality_status": "partial",
@@ -340,21 +340,21 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:7d64e81c498ec1ba442c28c44c0b8092e7b7ea21e5db398c4f3430629cf256c6",
+          "content_hash": "sha256:06b41052833f1e2a755fc52bb8a1b51420bf9ec451f636e55368a296d8b5869e",
           "document_role": "list_response",
           "raw_document_id": "20000000000000000000000000000000",
           "source_url": "https://fixture.invalid/bokjiro/list"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:5510c01d1ccb614d254cd6c4e49d8c5fdc215b27bf0954873be3c392526a82c7",
+          "content_hash": "sha256:58d9cc0b7ba2a16f73bea234d9e1a1c927fd984132f5f35848a738c2eec28a26",
           "document_role": "list_item",
           "raw_document_id": "21000000000000000000000000000001",
           "source_url": "https://fixture.invalid/bokjiro/list"
         },
         {
           "collected_at": "2026-07-26T06:01:00+00:00",
-          "content_hash": "sha256:dd1671eec158beb0847a62adb1d734a1d699c0a8e7131debaef32ba697b634e4",
+          "content_hash": "sha256:fcb900c875f107ca0493e1a677356bdbcb6696f9de6c09ae73bb5259412933e4",
           "document_role": "detail_response",
           "raw_document_id": "22000000000000000000000000000001",
           "source_url": "https://fixture.invalid/bokjiro/detail"
@@ -389,10 +389,10 @@
       "application_start": null,
       "application_status": null,
       "categories": [
-        "finance",
-        "welfare"
+        "housing",
+        "finance"
       ],
-      "category_text": "서민금융,생활지원",
+      "category_text": "주거,서민금융",
       "collected_at": "2026-07-26T06:01:00+00:00",
       "coverage_scope": "unknown",
       "data_quality_status": "partial",
@@ -413,21 +413,21 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:7d64e81c498ec1ba442c28c44c0b8092e7b7ea21e5db398c4f3430629cf256c6",
+          "content_hash": "sha256:06b41052833f1e2a755fc52bb8a1b51420bf9ec451f636e55368a296d8b5869e",
           "document_role": "list_response",
           "raw_document_id": "20000000000000000000000000000000",
           "source_url": "https://fixture.invalid/bokjiro/list"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:5510c01d1ccb614d254cd6c4e49d8c5fdc215b27bf0954873be3c392526a82c7",
+          "content_hash": "sha256:58d9cc0b7ba2a16f73bea234d9e1a1c927fd984132f5f35848a738c2eec28a26",
           "document_role": "list_item",
           "raw_document_id": "21000000000000000000000000000001",
           "source_url": "https://fixture.invalid/bokjiro/list"
         },
         {
           "collected_at": "2026-07-26T06:01:00+00:00",
-          "content_hash": "sha256:dd1671eec158beb0847a62adb1d734a1d699c0a8e7131debaef32ba697b634e4",
+          "content_hash": "sha256:fcb900c875f107ca0493e1a677356bdbcb6696f9de6c09ae73bb5259412933e4",
           "document_role": "detail_response",
           "raw_document_id": "22000000000000000000000000000001",
           "source_url": "https://fixture.invalid/bokjiro/detail"
@@ -494,14 +494,14 @@
       "provenance": [
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+          "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
           "document_role": "list_response",
           "raw_document_id": "10000000000000000000000000000000",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"
         },
         {
           "collected_at": "2026-07-26T06:00:00+00:00",
-          "content_hash": "sha256:02dfcff3dbe823a51fddc106dfea263c0a8edb6d142c93e95ea1921fd3534d7b",
+          "content_hash": "sha256:d2d2de4c10a3eb1b62f3390418c75c3439a71e0f142b5854e0c7c2408e7b8a03",
           "document_role": "list_item",
           "raw_document_id": "11000000000000000000000000000001",
           "source_url": "https://fixture.invalid/youthcenter/getPlcy"

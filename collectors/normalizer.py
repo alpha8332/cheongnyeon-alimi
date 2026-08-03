@@ -8,13 +8,24 @@ from datetime import date, timedelta, timezone
 from html.parser import HTMLParser
 from typing import Any
 
-from collectors.extracted import ExtractedPolicy
+from collectors.extracted import (
+    ExtractedCoverageScope,
+    ExtractedPolicy,
+    ExtractedRegionRelation,
+)
 from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
     Category,
+    CoverageScope,
     DataQualityStatus,
     NormalizedProgram,
+    RegionRelation,
+)
+from collectors.regions import (
+    RegionReference,
+    RegionResolutionStatus,
+    default_region_reference,
 )
 from collectors.validation import (
     NormalizedProgramValidator,
@@ -108,8 +119,12 @@ class Normalizer:
     def __init__(
         self,
         validator: NormalizedProgramValidator | None = None,
+        region_reference: RegionReference | None = None,
     ) -> None:
         self.validator = validator or NormalizedProgramValidator()
+        self.region_reference = (
+            region_reference or default_region_reference()
+        )
 
     def normalize(self, policy: ExtractedPolicy) -> ValidationResult:
         issues: list[ValidationIssue] = []
@@ -133,7 +148,16 @@ class Normalizer:
         issues.extend(application_issues)
 
         region_text = normalize_text(policy.region_text)
-        regions, region_issues = _normalize_regions(region_text)
+        (
+            regions,
+            coverage_scope,
+            region_rules,
+            region_issues,
+        ) = _normalize_region_contract(
+            policy,
+            region_text,
+            self.region_reference,
+        )
         issues.extend(region_issues)
 
         age_condition_text = normalize_text(policy.age_text)
@@ -147,12 +171,16 @@ class Normalizer:
             "external_id": policy.external_id,
             "title": normalize_text(policy.title),
             "organization": normalize_text(policy.organization),
-            "summary": None,
+            "summary": normalize_text(policy.summary),
             "category_text": category_text,
             "categories": [item.value for item in categories],
-            "keywords": [],
-            "life_stages": [],
-            "target_groups": [],
+            "keywords": list(_normalize_string_values(policy.keywords)),
+            "life_stages": list(
+                _normalize_string_values(policy.life_stages)
+            ),
+            "target_groups": list(
+                _normalize_string_values(policy.target_groups)
+            ),
             "application_period_text": application_period_text,
             "application_start": (
                 application_start.isoformat()
@@ -176,8 +204,8 @@ class Normalizer:
             ),
             "region_text": region_text,
             "regions": list(regions),
-            "coverage_scope": "unknown",
-            "region_rules": [],
+            "coverage_scope": coverage_scope.value,
+            "region_rules": region_rules,
             "age_min": age_min,
             "age_max": age_max,
             "age_condition_text": age_condition_text,
@@ -223,6 +251,15 @@ def normalize_text(value: str | None) -> str | None:
     parser.close()
     normalized = re.sub(r"\s+", " ", "".join(parser.parts)).strip()
     return normalized or None
+
+
+def _normalize_string_values(values: Iterable[str]) -> tuple[str, ...]:
+    selected: list[str] = []
+    for value in values:
+        normalized = normalize_text(value)
+        if normalized is not None and normalized not in selected:
+            selected.append(normalized)
+    return tuple(selected)
 
 
 def _normalize_application_period(
@@ -457,6 +494,120 @@ def _normalize_regions(
         if normalized not in selected:
             selected.append(normalized)
     return tuple(selected), issues
+
+
+def _normalize_region_contract(
+    policy: ExtractedPolicy,
+    region_text: str | None,
+    reference: RegionReference,
+) -> tuple[
+    tuple[str, ...],
+    CoverageScope,
+    list[dict[str, str | None]],
+    list[ValidationIssue],
+]:
+    if not policy.region_evidence:
+        regions, issues = _normalize_regions(region_text)
+        scope = (
+            CoverageScope.NATIONWIDE
+            if policy.coverage_scope_hint
+            is ExtractedCoverageScope.NATIONWIDE
+            else CoverageScope.UNKNOWN
+        )
+        return regions, scope, [], issues
+
+    regions: list[str] = []
+    rules: list[dict[str, str | None]] = []
+    issues: list[ValidationIssue] = []
+    matched_rule_keys: set[tuple[str, str, str]] = set()
+    unresolved_rule_keys: set[
+        tuple[str, str | None, str | None, str | None]
+    ] = set()
+
+    for evidence in policy.region_evidence:
+        source_text = normalize_text(evidence.source_text)
+        if evidence.external_scheme is not None:
+            assert evidence.source_code is not None
+            resolution = reference.resolve_external_code(
+                evidence.external_scheme,
+                evidence.source_code,
+                active_only=False,
+            )
+        else:
+            assert source_text is not None
+            resolution = reference.resolve_alias(source_text)
+
+        relation = (
+            RegionRelation.INCLUDE
+            if evidence.relation is ExtractedRegionRelation.INCLUDE
+            else RegionRelation.EXCLUDE
+        )
+        if resolution.status is RegionResolutionStatus.MATCHED:
+            region = resolution.candidates[0]
+            rule_key = (reference.scheme, region.code, relation.value)
+            if rule_key in matched_rule_keys:
+                continue
+            matched_rule_keys.add(rule_key)
+            rules.append(
+                {
+                    "relation": relation.value,
+                    "resolution_status": "matched",
+                    "region_scheme": reference.scheme,
+                    "region_code": region.code,
+                    "source_code": evidence.source_code,
+                    "source_text": source_text,
+                }
+            )
+            if (
+                relation is RegionRelation.INCLUDE
+                and region.full_name not in regions
+            ):
+                regions.append(region.full_name)
+            continue
+
+        unresolved_key = (
+            relation.value,
+            evidence.external_scheme,
+            evidence.source_code,
+            source_text,
+        )
+        if unresolved_key in unresolved_rule_keys:
+            continue
+        unresolved_rule_keys.add(unresolved_key)
+        rules.append(
+            {
+                "relation": relation.value,
+                "resolution_status": resolution.status.value,
+                "region_scheme": None,
+                "region_code": None,
+                "source_code": evidence.source_code,
+                "source_text": source_text,
+            }
+        )
+        issues.append(
+            _warning(
+                "$.region_rules",
+                (
+                    "ambiguous_region"
+                    if resolution.status
+                    is RegionResolutionStatus.AMBIGUOUS
+                    else "unmapped_region_code"
+                ),
+                "source region evidence could not be resolved exactly",
+            )
+        )
+
+    has_matched_include = any(
+        rule["relation"] == RegionRelation.INCLUDE.value
+        and rule["resolution_status"] == "matched"
+        for rule in rules
+    )
+    scope = (
+        CoverageScope.REGIONAL
+        if has_matched_include
+        else CoverageScope.UNKNOWN
+    )
+    return tuple(regions), scope, rules, issues
 
 
 def _warning(path: str, code: str, message: str) -> ValidationIssue:

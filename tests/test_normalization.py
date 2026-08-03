@@ -5,7 +5,13 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
-from collectors.extracted import ExtractedPolicy, SourceProvenance
+from collectors.extracted import (
+    ExtractedCoverageScope,
+    ExtractedPolicy,
+    ExtractedRegionRelation,
+    SourceProvenance,
+    SourceRegionEvidence,
+)
 from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
@@ -39,6 +45,14 @@ def extracted_policy(
     age_text: str | None = "만 19세 이상 34세 이하",
     eligibility_text: str | None = "  청년\n\n대상  ",
     support_content: str | None = "<p>월 10만원</p><script>x</script>",
+    summary: str | None = None,
+    keywords: tuple[str, ...] = (),
+    life_stages: tuple[str, ...] = (),
+    target_groups: tuple[str, ...] = (),
+    coverage_scope_hint: ExtractedCoverageScope = (
+        ExtractedCoverageScope.UNKNOWN
+    ),
+    region_evidence: tuple[SourceRegionEvidence, ...] = (),
 ) -> ExtractedPolicy:
     provenance = (
         SourceProvenance(
@@ -73,6 +87,12 @@ def extracted_policy(
         collected_at=COLLECTED_AT,
         provenance=provenance,
         extra={"source_fields": {}},
+        summary=summary,
+        keywords=keywords,
+        life_stages=life_stages,
+        target_groups=target_groups,
+        coverage_scope_hint=coverage_scope_hint,
+        region_evidence=region_evidence,
     )
 
 
@@ -122,6 +142,100 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
         self.assertEqual((), program.target_groups)
         self.assertEqual(CoverageScope.UNKNOWN, program.coverage_scope)
         self.assertEqual((), program.region_rules)
+
+    def test_source_search_fields_and_exact_region_code_are_normalized(
+        self,
+    ) -> None:
+        result = self.normalizer.normalize(
+            extracted_policy(
+                summary="<p>천안 청년 월세 지원</p>",
+                keywords=("주거비 지원", "월세"),
+                life_stages=("청년",),
+                target_groups=("저소득 청년",),
+                region_text="44131,99999",
+                coverage_scope_hint=ExtractedCoverageScope.REGIONAL,
+                region_evidence=(
+                    SourceRegionEvidence(
+                        relation=ExtractedRegionRelation.INCLUDE,
+                        external_scheme="kr-bjd-prefix5",
+                        source_code="44131",
+                        source_text=None,
+                    ),
+                    SourceRegionEvidence(
+                        relation=ExtractedRegionRelation.INCLUDE,
+                        external_scheme="kr-bjd-prefix5",
+                        source_code="99999",
+                        source_text=None,
+                    ),
+                ),
+            )
+        )
+
+        self.assertEqual(DataQualityStatus.PARTIAL, result.status)
+        program = result.program
+        assert program is not None
+        self.assertEqual("천안 청년 월세 지원", program.summary)
+        self.assertEqual(("주거비 지원", "월세"), program.keywords)
+        self.assertEqual(("청년",), program.life_stages)
+        self.assertEqual(("저소득 청년",), program.target_groups)
+        self.assertEqual(CoverageScope.REGIONAL, program.coverage_scope)
+        self.assertEqual(("충청남도 천안시 동남구",), program.regions)
+        self.assertEqual(2, len(program.region_rules))
+        self.assertEqual(
+            RegionResolutionStatus.MATCHED,
+            program.region_rules[0].resolution_status,
+        )
+        self.assertEqual("4413100000", program.region_rules[0].region_code)
+        self.assertEqual(
+            RegionResolutionStatus.UNMAPPED,
+            program.region_rules[1].resolution_status,
+        )
+        self.assertIn(
+            "unmapped_region_code",
+            {issue.code for issue in result.issues},
+        )
+
+    def test_text_adapter_ambiguity_and_retired_code_are_not_inferred(
+        self,
+    ) -> None:
+        ambiguous = self.normalizer.normalize(
+            extracted_policy(
+                region_text="중구",
+                coverage_scope_hint=ExtractedCoverageScope.REGIONAL,
+                region_evidence=(
+                    SourceRegionEvidence(
+                        relation=ExtractedRegionRelation.INCLUDE,
+                        external_scheme=None,
+                        source_code=None,
+                        source_text="중구",
+                    ),
+                ),
+            )
+        ).program
+        retired = self.normalizer.normalize(
+            extracted_policy(
+                region_text="28110",
+                coverage_scope_hint=ExtractedCoverageScope.REGIONAL,
+                region_evidence=(
+                    SourceRegionEvidence(
+                        relation=ExtractedRegionRelation.INCLUDE,
+                        external_scheme="kr-bjd-prefix5",
+                        source_code="28110",
+                        source_text=None,
+                    ),
+                ),
+            )
+        ).program
+
+        assert ambiguous is not None
+        self.assertEqual(CoverageScope.UNKNOWN, ambiguous.coverage_scope)
+        self.assertEqual(
+            RegionResolutionStatus.AMBIGUOUS,
+            ambiguous.region_rules[0].resolution_status,
+        )
+        assert retired is not None
+        self.assertEqual(CoverageScope.REGIONAL, retired.coverage_scope)
+        self.assertEqual("2811000000", retired.region_rules[0].region_code)
 
     def test_actual_compact_date_and_multiple_category_are_supported(
         self,

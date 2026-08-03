@@ -209,18 +209,33 @@ page 1 응답 내용이 달라진 것으로 관찰했다. 고정된 빈 값 비�
 - 표본 제목·지원·자격 text에서 주거·월세 직접 표현은 탐지되지 않음
 
 보유 `온통청년 API코드정보.xlsx`에는 정책·자격·분류 코드가 있지만
-`zipCd` 행정구역 code-to-name 표는 없다. 따라서 실제 5자리 코드 목록을
-앞자리나 기관명으로 추정하지 않고 `unmapped_region_code`를 유지한다.
-PSF2는 별도 공식 법정동 자료를 `kr-bjd-20260803` 기준정보로 확보했지만,
-그 사실만으로 `zipCd`의 Source 계약을 동일하다고 단정하지 않는다. 실제
-표본 code의 exact crosswalk와 Source 의미는 PSF4에서 확인한다. 집계·과거
-code와 현재 세부 code는 [행정구역 기준정보](administrative_regions.md)의
-원천 parent·aggregate parent·폐지 보존 규칙을 따른다.
+`zipCd` 행정구역 code-to-name 표는 없다. PSF4는 DT1 Raw의 `zipCd` 373개,
+고유 260개를 별도 공식 법정동 기준정보의 `kr-bjd-prefix5` exact crosswalk와
+대조했고 260개가 모두 유일하게 일치했다. 이 증거를 바탕으로 Adapter는
+쉼표 구분 5자리 code만 exact resolver에 전달한다. 앞자리·기관명이나 code
+개수로 지역·전국을 추정하지 않는다.
+
+표본에는 인천광역시 개편 전 code `28110`, `28140`, `28260`과 현행 code가
+함께 존재한다. 폐지 code는 후계 code로 자동 치환하지 않고 당시 canonical
+identity와 Source code를 보존한다. 새로운 code가 crosswalk에 없으면
+`unmapped`, 여러 후보면 `ambiguous`로 남긴다. 집계·과거 code와 현재 세부
+code는 [행정구역 기준정보](administrative_regions.md)의 원천 parent·aggregate
+parent·폐지 보존 규칙을 따른다.
 
 현재 2,696건을 전체 수집하려면 page size와 종료 조건 확인이 필요하다.
 공개 자료에서 `/go/ythip/getPlcy`의 최대 `pageSize`와 숫자 호출 한도를
 확인하지 못했으므로 `pageSize=500`은 전체 수집 전에 1회 검증 대상으로
 남긴다.
+
+### 2026-08-03 PSF4 오프라인 재생
+
+DT1의 같은 Raw 11개를 네트워크 없이 새 Adapter로 재생했다.
+
+- 정책 10건 중 valid 8건, partial 2건, invalid 0건
+- `plcyExplnCn` summary와 `mclsfNm`·`plcyKywdNm` keywords 10건 모두 채움
+- 10건 모두 `regional`, region rule 373개 모두 exact `matched`
+- `zipCd` 원문과 전체 Source field·Raw provenance 유지
+- Source에 명시되지 않은 life stage·target group은 모두 빈 배열 유지
 
 ## 복지로 중앙부처 복지서비스 API
 
@@ -381,6 +396,17 @@ Raw 14개와 정책 10건을 재처리했다. 응답의 `total_count`는 461이�
 개발계정 트래픽 100의 기간 단위가 불명확해 461건 전체 상세 호출은
 승인 범위가 아니다. 상세 대상은 검색 가치와 실제 보강 효과를 기준으로
 결정론적으로 제한하고 호출 상한을 실행 전에 기록해야 한다.
+
+### 2026-08-03 PSF4 오프라인 재생
+
+DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
+
+- 정책 10건 모두 partial, invalid 0건
+- summary 10건, interests 기반 keywords 9건
+- life stages 8건, target groups 5건
+- 지역 근거가 없어 10건 모두 `coverage_scope=unknown`, region rule 0건
+- 상세 3건은 상세 값을 우선하고 목록 값은 fallback으로 유지했으며 양쪽
+  Source field와 Raw provenance를 모두 보존
 
 ## 공통 비밀정보 경계
 

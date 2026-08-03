@@ -83,9 +83,11 @@ match는 하지 않는다.
 [지역사랑상품권 이용 가능 지역코드 안내](https://www.data.go.kr/data/15108279/openapi.do)도
 행정안전부 법정동코드 앞 5자리(시·도 2자리와 시·군·구 3자리)를 같은 구조로
 설명한다. `44131`은 동남구와 exact match하지만 `4413`이나 없는
-`99999`는 `unmapped`다. 이 crosswalk 자체가 온통청년 `zipCd` 계약임을
-의미하지는 않는다. Source별 code 의미와 전국 표현은 PSF4에서 실제 응답
-근거로 따로 확정한다.
+`99999`는 `unmapped`다. crosswalk 자체만으로 Source 의미를 추정하지 않는다.
+PSF4는 온통청년 DT1 표본의 고유 `zipCd` 260개가 모두 이 crosswalk와
+유일하게 일치함을 확인해 숫자 5자리 목록만 exact resolver에 전달한다.
+개편 전 code는 후계 지역으로 치환하지 않고, 새 미매핑 값과 숫자가 아닌
+표현은 Source 근거가 추가될 때까지 `unknown`으로 유지한다.
 
 ## 소비 경계
 

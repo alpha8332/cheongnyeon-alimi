@@ -7,6 +7,7 @@ import unicodedata
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,13 @@ class RegionResolutionStatus(str, Enum):
     MATCHED = "matched"
     UNMAPPED = "unmapped"
     AMBIGUOUS = "ambiguous"
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_REGIONS_PATH = ROOT / "data/seeds/administrative_regions.json"
+DEFAULT_ALIASES_PATH = (
+    ROOT / "data/seeds/administrative_region_aliases.json"
+)
 
 
 def normalize_region_key(value: str) -> str:
@@ -272,3 +280,13 @@ class RegionReference:
         else:
             status = RegionResolutionStatus.AMBIGUOUS
         return RegionResolution(status=status, candidates=candidates)
+
+
+@lru_cache(maxsize=1)
+def default_region_reference() -> RegionReference:
+    """Load and cache the repository's versioned canonical region seeds."""
+
+    return RegionReference.from_seed_files(
+        DEFAULT_REGIONS_PATH,
+        DEFAULT_ALIASES_PATH,
+    )

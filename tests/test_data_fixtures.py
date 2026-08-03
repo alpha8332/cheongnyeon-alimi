@@ -208,12 +208,37 @@ class DataFixtureContractTests(unittest.TestCase):
         self.assertTrue(
             all(candidate["schema_version"] == "1.1.0" for candidate in seed)
         )
-        for candidate in seed:
-            self.assertEqual([], candidate["keywords"])
-            self.assertEqual([], candidate["life_stages"])
-            self.assertEqual([], candidate["target_groups"])
-            self.assertEqual("unknown", candidate["coverage_scope"])
-            self.assertEqual([], candidate["region_rules"])
+        by_external_id = {
+            candidate["external_id"]: candidate
+            for candidate in seed
+        }
+        self.assertEqual(
+            ["주거비 지원", "월세", "보조금"],
+            by_external_id["SYN-YOUTH-001"]["keywords"],
+        )
+        self.assertEqual(
+            ["생활지원", "생활비"],
+            by_external_id["SYN-YOUTH-002"]["keywords"],
+        )
+        self.assertEqual(
+            ["주거", "서민금융"],
+            by_external_id["SYN-BOK-001"]["keywords"],
+        )
+        self.assertEqual(
+            ["청년"],
+            by_external_id["SYN-BOK-001"]["life_stages"],
+        )
+        self.assertEqual(
+            ["저소득 청년"],
+            by_external_id["SYN-BOK-001"]["target_groups"],
+        )
+        self.assertEqual(
+            "nationwide",
+            by_external_id["SYN-YOUTH-002"]["coverage_scope"],
+        )
+        self.assertTrue(
+            all(candidate["region_rules"] == [] for candidate in seed)
+        )
         self.assertTrue(
             any(candidate["application_start"] is None for candidate in seed)
         )

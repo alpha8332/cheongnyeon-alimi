@@ -114,7 +114,8 @@ def test_nullable_and_jsonb_columns_match_the_normalized_contract():
 
 
 def test_importer_conversion_preserves_every_seed_field():
-    for item in load_seed():
+    programs = load_seed()
+    for item in programs:
         values = _policy_values(item)
 
         for field in (
@@ -139,11 +140,20 @@ def test_importer_conversion_preserves_every_seed_field():
         assert values["created_at"].tzinfo is not None
         assert values["updated_at"].tzinfo is not None
         assert values["created_at"] == values["updated_at"]
-        assert item["keywords"] == []
-        assert item["life_stages"] == []
-        assert item["target_groups"] == []
-        assert item["coverage_scope"] == "unknown"
         assert item["region_rules"] == []
+    by_external_id = {item["external_id"]: item for item in programs}
+    assert by_external_id["SYN-YOUTH-001"]["keywords"] == [
+        "주거비 지원",
+        "월세",
+        "보조금",
+    ]
+    assert by_external_id["SYN-YOUTH-002"]["coverage_scope"] == (
+        "nationwide"
+    )
+    assert by_external_id["SYN-BOK-001"]["life_stages"] == ["청년"]
+    assert by_external_id["SYN-BOK-001"]["target_groups"] == [
+        "저소득 청년"
+    ]
 
 
 def test_source_scoped_identity_and_current_source_admission_are_stable():

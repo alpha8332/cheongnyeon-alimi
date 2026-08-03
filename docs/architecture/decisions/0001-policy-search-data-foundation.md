@@ -163,8 +163,10 @@ trigger로 transaction 최종 상태에서 검증한다.
 | 지역·연령·신청기간 | 현재 API 근거 key 없음 | 값을 만들지 않고 coverage·조건 판정을 `unknown`으로 유지 |
 
 두 Source 모두 Raw byte, `extra.source_fields`와 provenance가 재처리 근거다.
-`extra`는 현재 Normalized·DB·공개 API로 전달되지 않으므로 PSF4 adapter가
-공통 필드로 명시적으로 승격하지 않은 Source key는 검색에 사용하지 않는다.
+PSF4 adapter는 위 채택 경로를 구현했으며 공통 필드로 명시적으로 승격하지
+않은 Source key는 검색에 사용하지 않는다. 온통청년 `zipCd`는 실제 표본의
+고유 code 260개가 모두 `kr-bjd-prefix5` exact crosswalk와 일치한 근거만
+사용하고, 폐지 code를 후계 지역으로 치환하거나 미매핑 값을 추정하지 않는다.
 
 ## 호환성·Migration 영향
 

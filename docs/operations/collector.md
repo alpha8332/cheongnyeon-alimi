@@ -119,8 +119,16 @@ Set-Location ..
 ```
 
 반복 실행은 같은 값이면 unchanged이며, 같은 scheme의 DB 값이 잠긴 Seed와
-다르면 덮어쓰지 않고 실패한다. 현재 Source별 지역 매핑은 PSF4 전까지
-활성화하지 않는다.
+다르면 덮어쓰지 않고 실패한다. PSF4부터 온통청년 5자리 `zipCd`는 승인된
+exact crosswalk만 사용해 region rule을 생성한다. 미매핑·모호한 값과 폐지
+code를 현행 지역으로 추정하거나 자동 치환하지 않는다.
+
+PSF5 전환 경계에서는 비어 있지 않은 region rule을 정책·projection과 같은
+transaction에 저장할 수 없으므로 온통청년 Runtime 적재는
+`search_relation_storage_not_ready`로 명시적으로 거부된다. 이 기간에는 아래
+`--dry-run`으로 Raw→Normalized 품질과 rule을 확인하되 실제 적재 성공으로
+기록하지 않는다. 복지로처럼 region rule이 없는 입력과 합성 Seed의 검색
+배열·coverage 저장은 계속 지원한다.
 
 온통청년 최신 Raw 회차를 검증만 하고 rollback:
 

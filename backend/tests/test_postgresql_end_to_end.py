@@ -122,10 +122,6 @@ def test_postgresql_seed_repository_api_end_to_end():
             assert stored_by_identity[identity] == current_storage_program(
                 program
             )
-            assert program["keywords"] == []
-            assert program["life_stages"] == []
-            assert program["target_groups"] == []
-            assert program["coverage_scope"] == "unknown"
             assert program["region_rules"] == []
 
         rejected_batch = copy.deepcopy(programs[:2])

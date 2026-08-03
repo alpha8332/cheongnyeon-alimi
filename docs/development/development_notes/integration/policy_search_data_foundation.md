@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF3 completed, PSF4 next
+- 현재 Slice: PSF4 completed, PSF5 next
 
 ## 목적
 
@@ -38,7 +38,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | PSF1 | completed | Normalized 1.1.0 실행 계약·legacy adapter·지역 경계 Fixture·소비 전환 검증 |
 | PSF2 | completed | 공식 법정동 snapshot, versioned 지역·별칭 Seed와 exact resolver |
 | PSF3 | completed | 검색 컬럼·지역 관계·projection Migration, 제약과 지역 Seed 적재 |
-| PSF4 | pending | Source Adapter·정규화 |
+| PSF4 | completed | 두 Source 검색 field mapping, exact 지역 증거 resolver와 actual Raw 재생 |
 | PSF5 | pending | Import transaction·projection 동기화 |
 | PSF6 | pending | 지역·조건 판정 primitive |
 | PSF7 | pending | 소비 호환·성능·actual Raw 재생 |
@@ -175,6 +175,38 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
   않은 rules는 `search_relation_storage_not_ready`로 명시적으로 거부한다.
 - 기존 Policy 목록·상세 API와 Frontend DTO 필드 집합은 변경하지 않았다.
 
+### PSF4 - Source Adapter와 정규화
+
+- `ExtractedPolicy`에 `summary`, `keywords`, `life_stages`, `target_groups`,
+  `coverage_scope_hint`와 `SourceRegionEvidence`를 추가했다. 향후 HTML Source도
+  같은 code·text·include·exclude 경계를 사용하므로 공통 Normalizer가 Source
+  key나 selector를 직접 알 필요가 없다.
+- 온통청년 `plcyExplnCn`을 summary, `mclsfNm`과 `plcyKywdNm`을 keywords로
+  옮긴다. `zipCd`가 쉼표 구분 5자리 목록일 때만 `kr-bjd-prefix5` Source
+  evidence를 만들며 그 밖의 문자열이나 누락은 지역으로 추정하지 않는다.
+- 복지로 summary는 상세 `wlfareInfoOutlCn` 우선·목록 `servDgst` fallback,
+  keywords는 `intrsThemaArray`, life stages는 `lifeArray`, target groups는
+  `trgterIndvdlArray`를 사용한다. 상세 값이 없을 때만 목록 값으로 fallback하며
+  쉼표 문자열과 반복 XML leaf를 모두 순서 보존 배열로 처리한다.
+- 공통 Normalizer는 versioned 지역 Seed를 캐시해 Adapter가 명시한 code는
+  exact external-code resolver, text는 alias resolver로 처리한다. matched는
+  canonical code와 표시 `regions`, unmapped·ambiguous는 Source 증거만 가진
+  rule로 만든다. 폐지 code도 `active_only=False` exact identity로 보존하고
+  후계 지역으로 치환하지 않는다.
+- 실제 DT1 Raw 대조에서 온통청년 `zipCd`는 총 373개·고유 260개였고 모두
+  exact crosswalk에 유일하게 일치했다. 개편 전 인천 code 3개가 발견되어
+  현행 code로 자동 치환하지 않는 경계를 고정했다.
+- 실제 Raw 오프라인 재생 결과 온통청년은 10건 중 valid 8·partial 2,
+  summary·keywords 10건, regional 10건, matched rule 373개였다. 복지로는
+  partial 10건, summary 10·keywords 9·life stages 8·target groups 5건이며
+  지역 근거가 없어 모두 unknown·rule 0건이었다.
+- 합성 Raw·Extracted·Normalized·검색 계약 Fixture와 canonical Seed를
+  결정적으로 재생성했다. Seed는 실제 Source 검색 값을 포함하지만 지역 관계
+  rule은 PSF5 전환 동안 비워 기존 PostgreSQL·API 회귀 경계를 유지한다.
+- 공개 Policy API와 Frontend DTO 필드 집합은 변경하지 않았다. Runtime
+  온통청년 결과의 비어 있지 않은 rule은 PSF5 전까지 importer가
+  `search_relation_storage_not_ready`로 거부하므로 손실 적재하지 않는다.
+
 ## 주요 변경 파일
 
 - `collectors/normalized.py`
@@ -220,6 +252,14 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `backend/tests/test_policy_search_models.py`
 - `backend/tests/test_region_reference_importer.py`
 - `backend/tests/test_postgresql_policy_search_migration.py`
+- `collectors/extracted.py`
+- `collectors/extractors.py`
+- `collectors/normalizer.py`
+- `tests/test_extractors.py`
+- `tests/test_normalization.py`
+- `tests/test_data_fixtures.py`
+- `docs/data/source_profiles.md`
+- `docs/operations/collector.md`
 
 ## 설계 결정
 
@@ -319,10 +359,26 @@ Runtime DB는 적용 전 Policy·CollectionRun이 모두 0건이었다. head 적
 의존성을 변경하지 않았다. Frontend/API 계약 변경이 없어 Browser UI 검증은
 수행하지 않았다.
 
+### PSF4 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Source Adapter·Normalizer 집중 테스트 | 34건 통과 |
+| Data 전체 단위 테스트 | 102건 통과 |
+| Fixture·Seed 결정적 재생성 검사 | 13개 파일 일치 |
+| Backend·Integration 전체 pytest | PostgreSQL 포함 91건 통과, 기존 warning 1건 |
+| DT1 온통청년 Raw 오프라인 재생 | 10건 accepted, valid 8·partial 2, matched rule 373개 |
+| DT1 복지로 Raw 오프라인 재생 | 10건 accepted, partial 10, coverage unknown 10건 |
+
+실제 API를 다시 호출하지 않고 Git 제외 Runtime Raw와 provenance를 재생했다.
+PSF4는 DB Schema·공개 API·Frontend UI를 변경하지 않으므로 Migration 추가와
+Browser UI 검증은 수행하지 않았다.
+
 ## 남은 작업
 
-- PSF4에서 온통청년 `zipCd`가 `kr-bjd-prefix5`와 같은 의미인지 실제 Source
-  근거로 확정해야 한다. PSF2 기준표만으로 Source 의미를 추정하지 않는다.
+- 온통청년이 공개 `zipCd` code-to-name 표를 제공하지 않는 권위 공백은 남아
+  있다. 전체 pagination에서 새 code가 나오면 exact crosswalk 외 값은
+  `unmapped`로 보존하고 Source 문서가 확보되기 전 추정하지 않는다.
 - PSF5에서 `region_rules`와 search projection을 Policy upsert와 같은
   transaction으로 교체하고 rollback·idempotency를 검증해야 한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.

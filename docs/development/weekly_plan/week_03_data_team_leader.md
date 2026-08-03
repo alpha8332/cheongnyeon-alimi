@@ -193,9 +193,9 @@ Gate와 검증은
 [Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
 따른다.
 
-현재 PSF0~PSF3의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
-공식 행정구역 기준정보와 PostgreSQL 저장 기반이 완료됐고 PSF4 Source
-mapping이 다음 Slice다. 관계·projection의 원자적 적재는 PSF5에서 완성한다.
+현재 PSF0~PSF4의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
+공식 행정구역 기준정보, PostgreSQL 저장 기반과 두 Source mapping이 완료됐다.
+관계·projection의 원자적 적재를 완성하는 PSF5가 다음 Slice다.
 
 ### 내가 수행할 역할
 
@@ -216,8 +216,8 @@ mapping이 다음 Slice다. 관계·projection의 원자적 적재는 PSF5에서
 ### 선행·후속
 
 - 선행: DT1 completed
-- 병렬 가능: PSF4 Source mapping과 Backend 테스트 골격,
-  Frontend 검색 이유·미확인 조건 prototype
+- 완료: PSF4 Source mapping과 실제 Raw 오프라인 재생
+- 병렬 가능: Backend 테스트 골격, Frontend 검색 이유·미확인 조건 prototype
 - 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
   Backend 06 최종 query
 - 후속: PSF8 완료·기반 브랜치 병합 후 DT2 재개

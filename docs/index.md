@@ -27,15 +27,15 @@
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
 - [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
-  실제 응답 구조와 호출 제약
+  실제 응답 구조·검색 필드 mapping과 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
-  데이터 계약 원칙
+  데이터 계약과 Source Adapter 원칙
 - [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
   원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
 - [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
   정규화 필드, provenance와 품질 분류의 실행 가능한 계약
-- [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
-  변환 기준
+- [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
+  카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
 - [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
@@ -99,7 +99,7 @@
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
-  검색 데이터 lineage·ADR Gate와 후속 Schema·지역·DB 기반 검증 결과
+  검색 데이터 lineage·ADR Gate와 Schema·지역·DB·Source Adapter 검증 결과
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,

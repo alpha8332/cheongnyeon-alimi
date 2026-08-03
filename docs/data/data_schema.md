@@ -4,8 +4,8 @@
 
 - 상태: 논리적 기준선
 - 현재 구현 상태: Raw·Extracted·Normalized Python 모델, Raw·Normalized
-  JSON Schema, 합성 Fixture·canonical JSON Seed와 versioned 행정구역
-  기준정보·resolver 구현
+  JSON Schema, Source 검색 Adapter, 합성 Fixture·canonical JSON Seed와
+  versioned 행정구역 기준정보·resolver 구현
 
 이 문서는 `RawPolicyDocument`, `ExtractedPolicy`와
 `NormalizedProgram`의 역할과 필드 원칙을 정의한다. 실행 가능한 계약은
@@ -114,9 +114,15 @@ Source Extractor가 소스별 Raw에서 의미 있는 중간 필드를 추출한
 | `external_id` | string |
 | `title` | string 또는 null |
 | `organization` | string 또는 null |
+| `summary` | string 또는 null |
 | `category_text` | string 또는 null |
+| `keywords` | string tuple, 없으면 `()` |
+| `life_stages` | string tuple, 없으면 `()` |
+| `target_groups` | string tuple, 없으면 `()` |
 | `application_period_text` | string 또는 null |
 | `region_text` | string 또는 null |
+| `coverage_scope_hint` | `nationwide`, `regional`, `unknown` |
+| `region_evidence` | Source code·text와 include·exclude tuple |
 | `age_text` | string 또는 null |
 | `eligibility_text` | string 또는 null |
 | `support_content` | string 또는 null |
@@ -138,6 +144,13 @@ Source Extractor가 소스별 Raw에서 의미 있는 중간 필드를 추출한
 원문 순서의 string 배열이다. 따라서 공통 필드로 매핑한 값, 코드, 미매핑
 필드와 빈 문자열을 Raw 재로드 없이도 확인할 수 있고 정확한 byte와 계층은
 provenance가 가리키는 Raw에서 재현한다.
+
+검색 필드는 Source Adapter가 명시적인 Source key만 승격한다. 온통청년은
+`plcyExplnCn`, `mclsfNm`, `plcyKywdNm`, `zipCd`를 사용하고 복지로는
+`wlfareInfoOutlCn`·`servDgst`, `intrsThemaArray`, `lifeArray`,
+`trgterIndvdlArray`를 사용한다. 향후 HTML Source도 `SourceRegionEvidence`에
+include·exclude, 외부 code scheme과 원문 code·text를 명시하며 공통
+Normalizer가 Source별 JSON key나 HTML selector를 직접 해석하지 않게 한다.
 
 ### Extracted provenance
 
@@ -363,8 +376,8 @@ Frontend는 1.0.0·1.1.0 `schema_version`을 모두 허용하되 새 검색 5개
 따른다.
 
 [Fixture와 Seed 계약](fixture_seed_contract.md)은 1.1.0의 Backend 저장 후보,
-Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 실제
-PostgreSQL 구조는 PSF3, Source 값 채움은 PSF4, 관계·projection의 원자적
+Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 PostgreSQL
+구조와 Source 값 채움은 PSF3·PSF4에서 구현됐고 관계·projection의 원자적
 transaction은 PSF5에서 완성한다.
 
 ## JSON Schema 동기화 규칙
