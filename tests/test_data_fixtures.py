@@ -310,7 +310,7 @@ class DataFixtureContractTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            "fixture-kr-2020",
+            "kr-bjd-20260803",
             by_id["retired_code"]["region_rules"][0][
                 "region_scheme"
             ],

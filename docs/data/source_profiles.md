@@ -211,8 +211,11 @@ page 1 응답 내용이 달라진 것으로 관찰했다. 고정된 빈 값 비�
 보유 `온통청년 API코드정보.xlsx`에는 정책·자격·분류 코드가 있지만
 `zipCd` 행정구역 code-to-name 표는 없다. 따라서 실제 5자리 코드 목록을
 앞자리나 기관명으로 추정하지 않고 `unmapped_region_code`를 유지한다.
-집계·과거 코드와 현재 세부 코드의 관계는 권위 있는 버전 고정 표를 확보한
-뒤 별도 계약으로 결정한다.
+PSF2는 별도 공식 법정동 자료를 `kr-bjd-20260803` 기준정보로 확보했지만,
+그 사실만으로 `zipCd`의 Source 계약을 동일하다고 단정하지 않는다. 실제
+표본 code의 exact crosswalk와 Source 의미는 PSF4에서 확인한다. 집계·과거
+code와 현재 세부 code는 [행정구역 기준정보](administrative_regions.md)의
+원천 parent·aggregate parent·폐지 보존 규칙을 따른다.
 
 현재 2,696건을 전체 수집하려면 page size와 종료 조건 확인이 필요하다.
 공개 자료에서 `/go/ythip/getPlcy`의 최대 `pageSize`와 숫자 호출 한도를

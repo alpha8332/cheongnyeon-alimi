@@ -4,7 +4,8 @@
 
 - 상태: 논리적 기준선
 - 현재 구현 상태: Raw·Extracted·Normalized Python 모델, Raw·Normalized
-  JSON Schema, 합성 Fixture와 canonical JSON Seed 구현
+  JSON Schema, 합성 Fixture·canonical JSON Seed와 versioned 행정구역
+  기준정보·resolver 구현
 
 이 문서는 `RawPolicyDocument`, `ExtractedPolicy`와
 `NormalizedProgram`의 역할과 필드 원칙을 정의한다. 실행 가능한 계약은

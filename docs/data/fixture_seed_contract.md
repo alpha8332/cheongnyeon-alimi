@@ -36,6 +36,8 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 | `data/fixtures/rejected/programs.json` | invalid와 실패 사유 | 1 |
 | `data/fixtures/contracts/policy_search_region_cases.json` | 검색 범위·지역 관계 경계 사례 | 7 |
 | `data/seeds/initial_programs.json` | canonical 개발 Seed | 4 |
+| `data/seeds/administrative_regions.json` | versioned 지역 Seed | 538 |
+| `data/seeds/administrative_region_aliases.json` | 지역 별칭 Seed | 1,080 |
 
 Normalized Fixture와 canonical Seed는 byte가 같은 JSON 배열이다. rejected는
 정상 Seed에 포함하지 않는다. 현재 Backend가 CSV importer를 요구하지 않았고
@@ -66,8 +68,9 @@ Raw Fixture는 실제 응답에서 확인한 JSON·XML 문서 역할과 필드 �
 | `SYN-YOUTH-REJECTED` | 온통청년 | invalid | 필수 제목 누락과 `$.title` 오류 |
 
 검색 계약 Fixture 7건은 전국, 상위 지역, 정확 지역, 제외 지역, 지역 미확인,
-동명이인, 폐기 코드를 합성 identity와 원문 근거로 표현한다. 외부 API 응답이나
-실제 행정구역 기준정보가 아니며 PSF2 기준정보 구현의 소비 경계를 고정한다.
+동명이인, 폐지 코드를 합성 정책과 원문 근거로 표현한다. PSF2 이후 canonical
+지역 identity는 실제 `kr-bjd-20260803` code를 사용하며 정책 내용과 Source
+응답은 계속 합성이다.
 
 partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 일부
 부족하다는 품질 상태를 보존하며, invalid만 정상 Fixture와 Seed에서
@@ -174,8 +177,14 @@ uv run python -B scripts/build_data_fixtures.py --write
 uv run python -B scripts/build_data_fixtures.py --check
 ```
 
-`--check`는 외부 API와 `runtime/raw/`를 사용하지 않는다. 예상 파일의 누락,
-추가 JSON 파일과 byte 차이가 있으면 실패한다.
+`--check`는 외부 API와 `runtime/raw/`를 사용하지 않는다. 이 생성기가 소유한
+Fixture 12개와 `initial_programs.json`의 누락·추가·byte 차이가 있으면
+실패한다. 행정구역 Seed는 별도 생성기의 `--check`로 검증한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts/build_administrative_regions.py `
+  --snapshot-date 2026-08-03 --check
+```
 
 ## 출처·개인정보·재배포 검토
 

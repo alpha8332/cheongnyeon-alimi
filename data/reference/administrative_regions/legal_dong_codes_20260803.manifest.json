@@ -1,0 +1,13 @@
+{
+  "active_count": 20560,
+  "license_name": "이용허락범위 제한 없음",
+  "license_url": "https://www.data.go.kr/data/15077871/openapi.do",
+  "normalized_csv_sha256": "dd2235aee1748602616da06212a0f973a18212d2e044318fdc55fe5e33d08feb",
+  "record_count": 53387,
+  "retired_count": 32827,
+  "schema_version": "1.0.0",
+  "scheme": "kr-bjd-20260803",
+  "snapshot_date": "2026-08-03",
+  "source_api_url": "https://apis.data.go.kr/1741000/StanReginCd/getStanReginCdList",
+  "source_page_url": "https://www.code.go.kr/stdcode/regCodeL.do"
+}

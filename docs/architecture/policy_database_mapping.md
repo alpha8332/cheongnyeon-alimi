@@ -137,6 +137,14 @@ PSF1에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
 - 새 5개 필드의 PostgreSQL 컬럼·관계 저장과 전체 36개 왕복 검증은 PSF3
   Migration에서 이 문서를 갱신한 뒤 활성화한다.
 
+PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 identity로
+사용한다. PostgreSQL에는 아직 적재하지 않았으며 PSF3의
+`administrative_regions`는 공식 `parent_code`와 별도로 nullable
+`aggregate_parent_code`를 저장해야 한다. 비자치구의 원천 parent를 집계 시로
+덮어쓰지 않으며 alias 다중 후보, active·retired와 유효기간을 보존한다.
+구체적인 생성·해석 계약은
+[행정구역 기준정보](../data/administrative_regions.md)를 따른다.
+
 ## 식별자와 upsert
 
 - DB identity는 `(source_id, external_id)` unique constraint다.

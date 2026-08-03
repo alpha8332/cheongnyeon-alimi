@@ -127,11 +127,12 @@ PSF1의 공통 Normalizer는 Source 원문만 보고 이 값을 추정하지 않
 - `region_scheme`, `region_code`: 확정된 canonical 지역 identity
 - `source_code`, `source_text`: 원문 근거
 
-PSF1에서는 행정구역 기준정보를 아직 확정하지 않았으므로 기존 Normalizer가
-`regions`를 채우더라도 `coverage_scope=unknown`, `region_rules=[]`를
-기본값으로 둔다. Source 코드를 시·도나 전국으로 추정하지 않는다. 실제
-scheme·code와 상하위 지역 관계는 PSF2 기준정보, Source 매핑은 PSF4에서
-구현한다.
+PSF2의 canonical 지역 scheme은 `kr-bjd-20260803`이며 공식 법정동 snapshot의
+시·도와 시·군·구, 별칭, 유효기간과 계층을
+[행정구역 기준정보](administrative_regions.md)로 고정했다. 기존 Normalizer는
+PSF4 Source Adapter 전까지 `coverage_scope=unknown`, `region_rules=[]`를
+기본값으로 유지한다. 기준표가 존재한다는 사실만으로 Source code를 시·도나
+전국으로 추정하지 않는다.
 
 | 원문 예 | 정규화 값 |
 | --- | --- |
@@ -147,8 +148,9 @@ scheme·code와 상하위 지역 관계는 PSF2 기준정보, Source 매핑은 P
 - 동명이인 지역이나 불명확한 축약어는 추정하지 않는다.
 - 값이 없으면 `[]`을 사용한다.
 - 원문은 `region_text`에 보존한다.
-- 5자리 행정구역 코드 목록은 승인된 code-to-name 기준표가 아직 없으므로
-  추정하지 않고 `regions=[]`과 `unmapped_region_code` 경고를 남긴다.
+- 5자리 값은 `kr-bjd-prefix5`의 명시적 exact crosswalk에 있을 때만 후보를
+  찾는다. 특정 Source의 code 계약은 PSF4에서 승인하기 전까지 매핑하지 않고
+  `unmapped` 근거로 보존한다.
 - 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
   치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
 - `nationwide`는 지역 rule을 가질 수 없다.

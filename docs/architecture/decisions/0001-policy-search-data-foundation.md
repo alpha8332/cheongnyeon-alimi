@@ -101,12 +101,16 @@ Raw 재처리나 승인된 1.1.0 입력 때만 갱신한다.
 | 저장 대상 | 테이블·컬럼 | 결정 |
 | --- | --- | --- |
 | 공통 검색 배열·범위 | `policies.keywords`, `life_stages`, `target_groups`, `coverage_scope` | 배열은 JSONB `NOT NULL DEFAULT '[]'`, 범위는 enum `NOT NULL DEFAULT 'unknown'` |
-| 행정구역 기준정보 | `administrative_regions` | scheme·code, 이름, level, parent, 유효기간을 보존 |
+| 행정구역 기준정보 | `administrative_regions` | scheme·code, 이름, level, 공식 parent, 검색용 aggregate parent와 유효기간을 보존 |
 | 지역 별칭 | `administrative_region_aliases` | 별칭과 대상 region을 연결하며 모호한 별칭의 다중 후보를 허용 |
 | 정책 지역 규칙 | `policy_region_rules` | include·exclude, canonical region, Source code·text와 resolution 상태 보존 |
 | 검색 projection | `policy_search_documents` | 정책당 한 행, field별 text와 합성 `search_text`, projection version 보존 |
 
 `administrative_regions`의 identity는 이름이 아니라 `(scheme, code)`다.
+PSF2에서 공식 상위지역코드가 비자치구의 집계 시를 표현하지 않는 사례를
+확인했다. 원천 parent는 덮어쓰지 않고 같은 공식 광역 parent 아래 현재 유효한
+전체 이름의 정확 일치로 검증된 경우에만 nullable `aggregate_parent` 관계를
+추가한다. 문자열 prefix나 폐지 code의 후계 지역은 추정하지 않는다.
 `policy_region_rules`는 unresolved evidence를 보존하기 위해 canonical region
 참조를 nullable로 두되, resolution 상태와 canonical reference 조합은 DB
 constraint와 importer 검증을 함께 사용한다. `regional`의 matched include

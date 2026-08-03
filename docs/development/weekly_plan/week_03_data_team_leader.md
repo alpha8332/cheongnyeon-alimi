@@ -193,8 +193,8 @@ Gate와 검증은
 [Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
 따른다.
 
-현재 PSF0 계약 Gate와 PSF1 Normalized 1.1.0 실행 계약·지역 경계 Fixture가
-완료됐고 PSF2 행정구역 기준정보가 다음 Slice다. PSF3 전에는 의미 있는 새
+현재 PSF0~PSF2의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture와
+공식 행정구역 기준정보가 완료됐고 PSF3 Migration이 다음 Slice다. PSF3 전에는 의미 있는 새
 검색 필드를 기존 31개 ORM에 적재하지 않는다.
 
 ### 내가 수행할 역할
@@ -216,7 +216,7 @@ Gate와 검증은
 ### 선행·후속
 
 - 선행: DT1 completed
-- 병렬 가능: PSF2 지역 기준정보와 PSF4 Source mapping, Backend 테스트 골격,
+- 병렬 가능: PSF4 Source mapping과 Backend 테스트 골격,
   Frontend 검색 이유·미확인 조건 prototype
 - 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
   Backend 06 최종 query

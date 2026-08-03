@@ -38,6 +38,8 @@
   변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
+- [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
+  versioned 지역·계층·별칭·유효기간 Seed와 exact code 해석 경계
 - [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터
   canonical Seed까지의 재생성·소비자 검토 기준
 - [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,

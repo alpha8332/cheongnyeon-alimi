@@ -8,7 +8,7 @@
 - 대상 Release: `v0.1.0`
 - 권장 브랜치: `feature/database/policy-search-foundation`
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: PSF1 completed, PSF2 next
+- 현재 Slice: PSF2 completed, PSF3 next
 - 선행 Slice: Data 02 DT1
 - 후속 Forest: Data 02 DT2~DT4, Backend 06, Frontend 04,
   Integration 04 Release 1 Acceptance
@@ -201,8 +201,9 @@ administrative_region_aliases
 policy_region_rules
 ```
 
-`administrative_regions`는 scheme, code, 이름, level, parent, 유효기간을
-보존한다. 별칭은 광주처럼 문맥에 따라 모호할 수 있으므로 전역 unique
+`administrative_regions`는 scheme, code, 이름, level, 공식 parent,
+검증된 nullable aggregate parent와 유효기간을 보존한다. 별칭은 광주처럼
+문맥에 따라 모호할 수 있으므로 전역 unique
 문자열로 단정하지 않는다. `policy_region_rules`는 include·exclude, 원본
 code와 근거 text를 보존한다.
 
@@ -287,6 +288,7 @@ Frontend는 기존 목록·상세 DTO의 필드 집합을 유지하고 version u
 
 ### PSF2 - 행정구역 기준정보
 
+- 상태: completed (`2026-08-03`)
 - 목적: 이름 추정이 아닌 versioned code와 계층으로 지역을 판정한다.
 - 선행 조건: PSF1 계약
 - 수행:
@@ -300,6 +302,16 @@ Frontend는 기존 목록·상세 DTO의 필드 집합을 유지하고 version u
   - 코드 수·계층·고아 parent·중복·순환 검증
   - 천안·충남·전국과 모호한 별칭 Fixture 통과
   - 권위 없는 앞자리 추정 없음
+
+PSF2는 행정안전부 법정동코드의 `2026-08-03` 존재·폐지 전체 snapshot을
+`kr-bjd-20260803` scheme으로 고정했다. 원천 53,387건에서 정책 검색에 필요한
+시·도와 시·군·구 537건을 선별하고 대한민국 루트를 더한 538건과 별칭
+1,080건을 결정적으로 생성한다. 원천 parent를 보존하면서 비자치구와 집계
+시의 공식 전체 이름 exact 관계만 `aggregate_parent_code`로 추가한다.
+동남구→천안시→충청남도→대한민국, 동명이인, 폐지 code, exact 5자리
+crosswalk와 미매핑 경계를 검증했다. Source별 code 의미는 PSF4 전까지
+추정하지 않는다. 현재 계약과 재현 절차는
+[행정구역 기준정보](../../../data/administrative_regions.md)를 따른다.
 
 ### PSF3 - PostgreSQL Migration과 ORM
 
@@ -488,8 +500,8 @@ git status --short
 
 ## 위험과 미확정 사항
 
-- 온통청년 `zipCd`의 권위 있는 최신 행정구역 code table은 아직 확보하지
-  않았다.
+- 최신 법정동 code 기준표는 PSF2에서 확보했다. 다만 온통청년 `zipCd`가
+  같은 5자리 scheme을 사용한다는 Source 계약은 PSF4에서 확인해야 한다.
 - 지역 code의 집계·폐지·분할 관계를 잘못 일반화하면 검색 오탐이 생긴다.
 - PostgreSQL `pg_trgm` extension 사용 가능 여부를 로컬·배포 환경에서
   확인해야 한다.

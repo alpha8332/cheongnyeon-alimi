@@ -19,6 +19,7 @@
 - [데이터 정규화 규칙](normalization_rules.md)
 - [데이터 수집 정책](collection_policy.md)
 - [Fixture와 Seed 계약](fixture_seed_contract.md)
+- [행정구역 기준정보](administrative_regions.md)
 
 ## 실행 가능한 Schema
 
@@ -31,9 +32,12 @@
 
 - [Normalized Fixture](../../data/fixtures/normalized/programs.json)
 - [Canonical 개발 Seed](../../data/seeds/initial_programs.json)
+- [행정구역 Seed](../../data/seeds/administrative_regions.json)
+- [행정구역 별칭 Seed](../../data/seeds/administrative_region_aliases.json)
 
-두 파일은 결정적으로 재생성되는 같은 JSON 계약이며 실제 API 원문이 아닌
-합성 데이터다. Raw·Extracted·rejected 경계와 명령은
+Normalized Fixture와 canonical 개발 Seed는 결정적으로 재생성되는 같은 JSON
+계약이며 실제 API 원문이 아닌 합성 데이터다. 행정구역 두 Seed는 잠긴 공식
+법정동 snapshot에서 별도로 재생성한다. Raw·Extracted·rejected 경계와 명령은
 [Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
 
 ## 포함하지 않는 내용

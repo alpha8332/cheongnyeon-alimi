@@ -118,11 +118,11 @@
       ],
       "region_rules": [
         {
-          "region_code": "province-chungnam",
-          "region_scheme": "fixture-kr-2026",
+          "region_code": "4400000000",
+          "region_scheme": "kr-bjd-20260803",
           "relation": "include",
           "resolution_status": "matched",
-          "source_code": "44",
+          "source_code": "44000",
           "source_text": "충청남도"
         }
       ],
@@ -194,11 +194,11 @@
       ],
       "region_rules": [
         {
-          "region_code": "city-cheonan",
-          "region_scheme": "fixture-kr-2026",
+          "region_code": "4413000000",
+          "region_scheme": "kr-bjd-20260803",
           "relation": "include",
           "resolution_status": "matched",
-          "source_code": "44133",
+          "source_code": "44130",
           "source_text": "천안시"
         }
       ],
@@ -270,16 +270,16 @@
       ],
       "region_rules": [
         {
-          "region_code": "province-chungnam",
-          "region_scheme": "fixture-kr-2026",
+          "region_code": "4400000000",
+          "region_scheme": "kr-bjd-20260803",
           "relation": "include",
           "resolution_status": "matched",
-          "source_code": "44",
+          "source_code": "44000",
           "source_text": "충청남도"
         },
         {
-          "region_code": "city-asan",
-          "region_scheme": "fixture-kr-2026",
+          "region_code": "4420000000",
+          "region_scheme": "kr-bjd-20260803",
           "relation": "exclude",
           "resolution_status": "matched",
           "source_code": "44200",
@@ -509,17 +509,17 @@
       ],
       "region_rules": [
         {
-          "region_code": "retired-city",
-          "region_scheme": "fixture-kr-2020",
+          "region_code": "4405000000",
+          "region_scheme": "kr-bjd-20260803",
           "relation": "include",
           "resolution_status": "matched",
-          "source_code": "legacy-001",
-          "source_text": "합성 폐지 지역"
+          "source_code": "44050",
+          "source_text": "충청남도 천안군"
         }
       ],
-      "region_text": "합성 폐지 지역",
+      "region_text": "충청남도 천안군",
       "regions": [
-        "합성 폐지 지역"
+        "천안군"
       ],
       "required_conditions": [],
       "schema_version": "1.1.0",

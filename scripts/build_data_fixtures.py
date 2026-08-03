@@ -56,7 +56,7 @@ MANAGED_GLOBS = (
     "data/fixtures/normalized/*.json",
     "data/fixtures/contracts/*.json",
     "data/fixtures/rejected/*.json",
-    "data/seeds/*.json",
+    "data/seeds/initial_programs.json",
 )
 
 
@@ -169,7 +169,7 @@ def _search_contract_cases(
             "source_text": source_text,
         }
 
-    scheme = "fixture-kr-2026"
+    scheme = "kr-bjd-20260803"
     return [
         program_case(
             "nationwide",
@@ -190,8 +190,8 @@ def _search_contract_cases(
                     relation="include",
                     resolution_status="matched",
                     region_scheme=scheme,
-                    region_code="province-chungnam",
-                    source_code="44",
+                    region_code="4400000000",
+                    source_code="44000",
                     source_text="충청남도",
                 )
             ],
@@ -207,8 +207,8 @@ def _search_contract_cases(
                     relation="include",
                     resolution_status="matched",
                     region_scheme=scheme,
-                    region_code="city-cheonan",
-                    source_code="44133",
+                    region_code="4413000000",
+                    source_code="44130",
                     source_text="천안시",
                 )
             ],
@@ -224,15 +224,15 @@ def _search_contract_cases(
                     relation="include",
                     resolution_status="matched",
                     region_scheme=scheme,
-                    region_code="province-chungnam",
-                    source_code="44",
+                    region_code="4400000000",
+                    source_code="44000",
                     source_text="충청남도",
                 ),
                 rule(
                     relation="exclude",
                     resolution_status="matched",
                     region_scheme=scheme,
-                    region_code="city-asan",
+                    region_code="4420000000",
                     source_code="44200",
                     source_text="아산시 제외",
                 ),
@@ -267,16 +267,16 @@ def _search_contract_cases(
             "retired_code",
             youth,
             coverage_scope="regional",
-            region_text="합성 폐지 지역",
-            regions=["합성 폐지 지역"],
+            region_text="충청남도 천안군",
+            regions=["천안군"],
             region_rules=[
                 rule(
                     relation="include",
                     resolution_status="matched",
-                    region_scheme="fixture-kr-2020",
-                    region_code="retired-city",
-                    source_code="legacy-001",
-                    source_text="합성 폐지 지역",
+                    region_scheme=scheme,
+                    region_code="4405000000",
+                    source_code="44050",
+                    source_text="충청남도 천안군",
                 )
             ],
         ),

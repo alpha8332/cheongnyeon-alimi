@@ -9,7 +9,7 @@
 - 기반 브랜치: `feature/data/release-dataset-bootstrap`
 - 관련 계획:
   [`03_policy_search_data_foundation.md`](../../develop_plan/integration/03_policy_search_data_foundation.md)
-- 현재 Slice: PSF1 completed, PSF2 next
+- 현재 Slice: PSF2 completed, PSF3 next
 
 ## 목적
 
@@ -36,7 +36,7 @@ crawler와 Release snapshot bootstrap은 이 기록의 Forest 범위 밖이다.
 | --- | --- | --- |
 | PSF0 | completed | 현재 lineage·손실·partial 영향 감사, ADR 0001 승인, version·DB·API 경계 확정 |
 | PSF1 | completed | Normalized 1.1.0 실행 계약·legacy adapter·지역 경계 Fixture·소비 전환 검증 |
-| PSF2 | pending | 행정구역 기준정보 |
+| PSF2 | completed | 공식 법정동 snapshot, versioned 지역·별칭 Seed와 exact resolver |
 | PSF3 | pending | PostgreSQL Migration·ORM |
 | PSF4 | pending | Source Adapter·정규화 |
 | PSF5 | pending | Import transaction·projection 동기화 |
@@ -127,6 +127,28 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - Frontend `PolicyDto`는 version을 1.0.0·1.1.0 union으로 넓혔지만 새 검색
   5개 필드는 기존 목록·상세 공개 DTO에서 제외함을 소비 테스트로 고정했다.
 
+### PSF2 - 행정구역 기준정보
+
+- 행정안전부 법정동코드 조회의 존재·폐지 전체 목록과 상세 다운로드를
+  `2026-08-03`에 대조해 53,387건을 결정적 gzip CSV로 고정했다. manifest는
+  source·license URL, 존재 20,560건, 폐지 32,827건과 정규화 CSV SHA-256을
+  보존한다.
+- 정책 지역 판정에는 시·도와 시·군·구 537건을 선택하고 대한민국 시스템
+  루트 1건을 추가했다. `kr-bjd-20260803` scheme의 지역 538건과 공식
+  전체명·최하지역명·승인 축약 1,080건을 별도 Seed로 생성한다.
+- 공식 `parent_code`와 감사용 `source_parent_code`를 보존한다. 공식 parent가
+  비자치구의 집계 시를 표현하지 않는 경우, 같은 광역 parent 아래 현재 유효
+  전체 이름이 정확히 일치할 때만 `aggregate_parent_code`를 추가한다.
+- 이 규칙으로 `천안시 동남구 → 천안시 → 충청남도 → 대한민국` ancestor를
+  제공한다. 이름이나 code prefix를 실행 시점에 일반 추정하지 않으며 폐지
+  code의 후계 지역도 만들지 않는다.
+- 별칭 resolver는 Unicode NFKC와 공백만 정규화하고 여러 지역의 `중구`를
+  `ambiguous`로 반환한다. 5자리 crosswalk도 Seed에 명시된 exact 값만
+  `matched`로 처리하고 없는 값은 `unmapped`로 반환한다.
+- PSF1 검색 계약 Fixture의 합성 지역 identity를 실제 scheme과 충남·천안·
+  아산·폐지 천안군 code로 교체했다. Source 응답과 정책 내용은 계속 합성이며
+  온통청년 `zipCd`의 의미 확정은 PSF4에 남겼다.
+
 ## 주요 변경 파일
 
 - `collectors/normalized.py`
@@ -154,6 +176,14 @@ Slice에서 관련 기준 문서와 소비 테스트를 함께 갱신한다.
 - `docs/development/development_notes/integration/policy_search_data_foundation.md`
 - `docs/development/development_notes/README.md`
 - `docs/index.md`
+- `collectors/regions.py`
+- `data/reference/administrative_regions/`
+- `data/seeds/administrative_regions.json`
+- `data/seeds/administrative_region_aliases.json`
+- `scripts/fetch_administrative_regions.py`
+- `scripts/build_administrative_regions.py`
+- `tests/test_administrative_regions.py`
+- `docs/data/administrative_regions.md`
 
 ## 설계 결정
 
@@ -212,10 +242,29 @@ PostgreSQL 종단 테스트로 1.1.0 기본값 저장 호환, 의미 있는 검�
 명시적 거부, Migration upgrade·downgrade와 기존 API 회귀를 검증했다.
 Frontend test·build가 생성한 `.test-dist`와 `dist`는 검증 후 제거했다.
 
+### PSF2 검증 (`2026-08-03`)
+
+| 검증 | 결과 |
+| --- | --- |
+| 공식 전체·상세 자료 수집 대조 | 53,387건 일치, 존재 20,560건·폐지 32,827건 |
+| 지역 Seed 결정적 재생성 `--check` | 지역 538건·별칭 1,080건 일치 |
+| Data 단위 테스트 | 100건 통과 |
+| Backend·Integration pytest | 69건 통과, PostgreSQL 전용 12건 skip |
+| PSF2 지역 경계 테스트 | 7건 통과 |
+
+PSF2는 DB Schema나 공개 API·Frontend UI를 변경하지 않는다. PostgreSQL 전용
+12건은 현재 shell에 `TEST_DATABASE_URL`·`PGPASSFILE`이 없어 skip됐으며
+성공으로 간주하지 않았다. 이 Slice의 지역 기준정보는 파일 모델과 Seed
+경계이므로 DB 적재·Migration 통합 검증은 PSF3 완료 기준에서 수행한다.
+기존 Starlette `httpx` deprecation warning 1건은 그대로 발생했으며 PSF2
+범위에서 의존성을 바꾸지 않았다.
+
 ## 남은 작업
 
-- PSF2에서 온통청년 `zipCd`를 해석할 권위 있는 행정구역 scheme·version과
-  라이선스를 확보해야 한다. 확보 전에는 code를 매핑하지 않는다.
+- PSF3에서 `aggregate_parent_code`를 원천 parent와 분리해 저장하고 Seed를
+  PostgreSQL에 적재하는 Migration·constraint를 검증해야 한다.
+- PSF4에서 온통청년 `zipCd`가 `kr-bjd-prefix5`와 같은 의미인지 실제 Source
+  근거로 확정해야 한다. PSF2 기준표만으로 Source 의미를 추정하지 않는다.
 - PSF3에서 `pg_trgm` 사용 가능 여부와 cross-row 지역 불변식의 PostgreSQL
   구현 방식을 실제 `_test` DB에서 검증한다.
 - 기존 `R1-SEARCH-DATA-SEMANTICS` 인계 항목은 PSF0만으로 종료하지 않는다.
