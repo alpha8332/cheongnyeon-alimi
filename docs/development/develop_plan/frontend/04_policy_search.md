@@ -3,7 +3,8 @@
 ## 계획 정보
 
 - 번호: Frontend 04
-- 상태: draft
+- 상태: approved
+- 승인: Gate G1 (`2026-08-04`)
 - 담당 영역: Frontend
 - Forest: Policy Search (자연어·조건 검색 UI)
 - 권장 브랜치: `feature/frontend/policy-search`
@@ -11,7 +12,7 @@
   [`week_03_search_contract_handoff.md`](../../weekly_plan/week_03_search_contract_handoff.md)를
   마지막으로 변경한 커밋 (`d3fde3e0912a1a54a27f32d157941be58ecc8660`)
 - Gate: DT2·Gate G1 (Backend 06·Frontend 04·Data 권고안 공동 검토)
-- 현재 Slice: W3-F0 (G1 통합안 타입·계획 동기화) — **본 구현 금지**
+- 현재 Slice: FE4-11 pending (W3-F0 completed)
 - 선행 Forest: Frontend 01 Policy Discovery (completed),
   Integration 03 Policy Search Data Foundation (completed)
 - 후속 Forest: Integration 04 Release 1 Acceptance (Team Leader)
@@ -20,10 +21,10 @@
 
 ## 목적
 
-Backend 06 **Gate G1 통합안**에 맞춰 자연어 `q`와 flat query parameter 검색 API를
-Frontend가 오해 없이 소비하도록, Gate G1 전에 TypeScript request·response
-**pure type 초안**, URL state 분리 원칙, Mock·UI Slice 계획, Browser 검증
-**계획**을 고정한다.
+Backend 06 **Gate G1 승인 계약**에 맞춰 자연어 `q`와 flat query parameter 검색
+API를 Frontend가 오해 없이 소비하도록, 승인된 TypeScript request·response
+**pure type 기준선**, URL state 분리 원칙, Mock·UI Slice 계획과 Browser 검증
+계획을 구현한다.
 
 Frontend는 자연어 parser를 만들지 않는다. 지역·연령·카테고리·신청 상태는 Backend
 `MatchVerdict`(`match|mismatch|unknown|null`)와 `DimensionVerdicts`를 그대로
@@ -31,7 +32,7 @@ Frontend는 자연어 parser를 만들지 않는다. 지역·연령·카테고�
 
 ## 범위
 
-### W3-F0 (현재 — 계획·pure type 초안만)
+### W3-F0 (completed `2026-08-04` — 계획·pure type 승인 기준선)
 
 - Gate G1 통합 Backend 계약과 동기화된 `frontend/src/types/draft/*`
 - URL에 Backend 응답 JSON(interpreted blob) **저장 금지** 명세
@@ -554,7 +555,7 @@ git diff --check
 - FE4-11~FE4-24 완료; 승인 타입·UI·Client 반영
 - `/search` UX가 Data 표본·golden query 시나리오 통과
 - `npm test` 검색 contract + Browser·a11y 개발 기록 (FE4-23)
-- `docs/index.md` `R1-SEARCH-DATA-SEMANTICS` 후속 반영
+- `docs/index.md` `R1-SEARCH-IMPLEMENTATION` 후속 반영
 
 ## 위험과 미확정 사항
 

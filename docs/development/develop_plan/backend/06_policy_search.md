@@ -4,8 +4,10 @@
 
 - 번호: Backend 06
 - 담당 영역: Backend
-- 상태: draft
+- 상태: approved
+- 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
+- 현재 Slice: B1 pending (W3-B0 completed)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -14,7 +16,7 @@
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md)
 - 후속 Forest:
   Integration 04 Real Data Acceptance (`v0.1.0` 실데이터 인수)
-- 대상 인계사항: `R1-SEARCH-DATA-SEMANTICS`
+- 대상 인계사항: `R1-SEARCH-IMPLEMENTATION`
 
 ## 목적
 
@@ -60,7 +62,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 - Integration 03 (Policy Search Data Foundation) 완료
 - `week_03_search_contract_handoff.md` 공통 커밋 기준 분기
-- Gate G1 인수인계 통합안 검토 및 승인 대기
+- Gate G1 인수인계 통합안 승인 완료 (`2026-08-04`)
 
 ## 공통 설계 원칙
 
@@ -75,7 +77,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### W3-B0 - 검색 API 및 Repository 계약 초안 작성
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: Gate G1 승인을 위한 W3-B0 검색 Request/Response DTO, 4값(Nullable) 판정 규칙, 해석 경고/오류 처리 및 API 스펙 초안 작성
 - 산출물:
   - `docs/development/develop_plan/backend/06_policy_search.md` 개발 계획 및 W3-B0 계약 초안
@@ -85,7 +87,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B1 - 자연어 해석 및 규칙 기반 구조화 서비스 구현
 
-- 상태: draft
+- 상태: pending (Gate G1 approved)
 - 목적: 한국어 자연어 `q` 및 명시적 파라미터를 파싱하고 override 규칙을 적용하는 Service 구현
 - 산출물:
   - `backend/app/services/policy_search_parser.py`
@@ -363,8 +365,9 @@ query-level 해석 경고와 row-level 정책 근거 부족은 서로 다른 위
 ## Forest 완료 기준
 
 - Backend 06 계획 문서(`06_policy_search.md`) G1 최종 승인안 반영 작성 및 문서 색인 등록
-- W3-B0 계약 초안 및 Gate G1 제출용 준비 완료 (`W3-B0_READY`)
-- `python scripts/validate_docs.py` 통과
+- W3-B0 계약 승인 뒤 B1~B4 parser·Repository·Service·API 구현 완료
+- 실제 PostgreSQL 대상 결정적 정렬·pagination·기존 Policy API 회귀 검증 통과
+- Backend 단위·통합 테스트와 `python scripts/validate_docs.py` 통과
 
 ## 위험과 미확정 사항
 

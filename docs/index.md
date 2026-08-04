@@ -68,7 +68,7 @@
 - [CollectionRun Admin UI Forest 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md):
   관리자 실행 이력·수동 실행의 Frontend 소비 계획
 - [Policy Search Forest 계획](development/develop_plan/frontend/04_policy_search.md):
-  `GET /api/v1/policies/search` flat query 소비, Filter Chip·Reason UI (Gate G1 통합안 draft)
+  Gate G1 승인 `GET /api/v1/policies/search` flat query 소비, Filter Chip·Reason UI
 - [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
   기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
@@ -80,7 +80,7 @@
 - [Backend CollectionRun Admin API Forest 계획](development/develop_plan/backend/05_collection_run_admin_api.md):
   실행 이력 조회·수동 실행의 관리자 API 계획
 - [Backend Policy Search Forest 계획](development/develop_plan/backend/06_policy_search.md):
-  PostgreSQL 기반 정책 검색 API·파서 및 W3-B0 계약 계획
+  Gate G1 승인 PostgreSQL 기반 정책 검색 API·파서 및 W3-B0 계약
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
@@ -135,11 +135,12 @@ Integration 02에서 완료됐다. PSF1은 1.1.0 검색 데이터 계약과 전�
 테스트를 같은 Forest에서 다시 확인한다.
 
 2주차 완료 시점에는 활성 인계사항이 없었다. 3주차 Data 02 DT1 실데이터
-preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
+preflight에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 DT2A~DT2D 공동 검토와
+Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다음과 같다.
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Data·Team Leader | Backend·Frontend 초안 병합, DT2A 계약 정합성과 DT2B Data 근거 결정 동결 완료. DT2C 소비 검증 → DT2D Gate G1 승인·후속 해제 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md), [Data 02 계획](development/develop_plan/data/02_release_dataset_bootstrap.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
+| `R1-SEARCH-IMPLEMENTATION` | action-needed | Backend·Frontend | Gate G1 승인 기준으로 Backend B1과 Frontend FE4-11 병렬 시작. Frontend 실제 API 연결은 Backend endpoint·계약 테스트 준비 후 진행 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

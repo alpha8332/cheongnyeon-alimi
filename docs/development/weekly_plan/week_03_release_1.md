@@ -63,8 +63,8 @@ Gate G1 인수인계가 포함된 커밋이다. Backend 06과 Frontend 04는
   Data 02 인계를 마쳤으며 기반 브랜치 병합 후 DT2 Data 준비를 재개한다.
 - Integration 03 병합 뒤 DT2 actual profile과 Data 권고안·Schema 영향 판정을
   준비했고 Backend 06·Frontend 04 초안을 병합했다. DT2A 계약 보완과 DT2B
-  공동 결정은 완료했으며 DT2C 소비 검증·DT2D 상태 동기화 전까지 Gate G1
-  승인은 대기한다.
+  공동 결정과 DT2C 소비 검증, DT2D 상태 동기화를 완료해 Gate G1을
+  `2026-08-04`에 승인했다.
 - 전체 또는 릴리스 범위 pagination과 자동 주기 적재는 구현하지 않았다.
 - 공개 Policy API에는 자유 `keyword`와 `age` query가 없다.
 - Frontend 검색은 최대 100건을 받은 뒤 문장 전체 포함 여부를 검사한다.
@@ -237,6 +237,7 @@ Data 표본을 바탕으로 Data·Backend·Frontend와 Team Leader가 다음을 
 
 #### Gate G1 - 검색 계약 승인
 
+- 상태: approved (`2026-08-04`)
 - Data 실제 표본과 분포가 근거로 연결됨
 - Backend API query·응답·오류 계약이 문서화됨
 - Frontend TypeScript query 타입과 UI 의미가 같은 계약을 사용함
@@ -411,9 +412,10 @@ git status --short
 
 ## 인계사항 발생 조건
 
-DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03 구현이 필요한
-활성 인계사항이다. 다음 중 추가 차단이 실제로 발생하면 요청 범위를 넘어
-임의 수정하지 않고 `docs/index.md` 인계 보드에 기록한다.
+DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03과 DT2·Gate G1에서
+종료했다. 후속 `R1-SEARCH-IMPLEMENTATION`을 진행하며 다음 중 추가 차단이
+실제로 발생하면 요청 범위를 넘어 임의 수정하지 않고 `docs/index.md` 인계
+보드에 기록한다.
 
 - 실제 Source 필드와 Schema·DB·API 계약 충돌
 - `null`, 빈 배열, enum 또는 지역·연령 규칙 변경 필요
@@ -428,7 +430,7 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03 구현이 필�
 - [ ] 2주차 결과가 `develop`에 병합되고 3주차 Forest 계획이 승인됨
 - [x] 대표 실제 표본과 데이터 분포 확인
 - [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
-- [ ] Gate G1 검색 계약 공동 승인
+- [x] Gate G1 검색 계약 공동 승인
 - [ ] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
 - [ ] 재수집·재처리 idempotency와 품질 보고 검증
 - [ ] Backend 서버 검색과 실제 PostgreSQL 테스트

@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT2C pending, DT2B G1 decisions completed
+- 현재 Slice: DT3 pending, DT2·Gate G1 completed
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -99,7 +99,7 @@ Source 중립 검색 필드·지역·DB 기반은 Integration 03이 담당하고
 
 ### DT2 - 검색 계약 Data 근거와 Gate G1 지원
 
-- 상태: in-progress (`2026-08-03`)
+- 상태: completed (`2026-08-04`)
 - 목적: 실제 표본을 바탕으로 지역·연령·상태·품질 의미를 제안하고
   Backend·Frontend 공동 계약 검토를 지원한다.
 - 선행 조건: DT1, Integration 03 PSF0~PSF8, Backend 06·Frontend 04 초안
@@ -110,9 +110,9 @@ Source 중립 검색 필드·지역·DB 기반은 Integration 03이 담당하고
 Integration 03 병합 후 저장된 DT1 Runtime Raw를 외부 호출 없이 다시 재생해
 Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 지역·연령·상태·
 품질의 `match|mismatch|unknown`을 표현할 수 있어 Data Schema, Fixture, Seed,
-`null`, 빈 배열과 enum 변경은 제안하지 않는다. Backend 06·Frontend 04 초안이
-현재 브랜치에 병합됐지만 response parity와 `null`·경고 위치 표현에 잔여
-불일치가 있어 공동 G1 승인은 아직 완료하지 않는다.
+`null`, 빈 배열과 enum 변경은 제안하지 않는다. Backend 06·Frontend 04 초안을
+현재 브랜치에 병합한 뒤 response parity와 `null`·경고 위치 표현을 DT2A에서
+보완했으며, DT2B~DT2D 결정·소비 검증을 거쳐 Gate G1을 승인했다.
 
 #### DT2A - 병합 계약 정합성 보완
 
@@ -153,7 +153,7 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 
 #### DT2C - 소비 계약 검증과 증거 기록
 
-- 상태: pending
+- 상태: completed (`2026-08-04`)
 - 선행 조건: DT2B
 - 목적: 승인 후보 문서와 draft type이 각 소비 환경에서 실행 가능함을 확인한다.
 - 작업:
@@ -164,10 +164,14 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 - 완료 기준:
   - Frontend type build·lint와 문서 검증 통과
   - 계약 대조와 실제 검증 결과가 같은 승인 후보를 가리킴
+- 완료 결과:
+  - Node `22.22.0` 컨테이너에서 Frontend build·lint와 계약 테스트 7건 통과
+  - 문서 검증 테스트 10건, `validate_docs.py`, `git diff --check` 통과
+  - 비밀·Runtime Raw·로컬 DB credential과 산출물의 Git 비추적 경계 확인
 
 #### DT2D - Gate G1 승인과 후속 해제
 
-- 상태: pending
+- 상태: completed (`2026-08-04`)
 - 선행 조건: DT2A~DT2C
 - 목적: DT2 완료 증거를 동기화하고 세 영역의 본 구현을 공식 해제한다.
 - 작업:
@@ -178,6 +182,10 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 - 완료 기준:
   - Data DT2 `completed`와 Gate G1 `approved`가 관련 계획·인계·색인에서 일치
   - DT3, Backend B1~B4와 Frontend FE4-11~FE4-24 시작 조건이 명확함
+- 완료 결과:
+  - `G1_APPROVED`를 기록하고 Backend 06·Frontend 04 계획을 `approved`로 전환
+  - Data DT3, Backend B1, Frontend FE4-11의 시작 조건을 해제
+  - 공동 인계 보드를 검색 구현 후속 인계로 전환
 
 ### DT3 - 릴리스 snapshot 수집과 PostgreSQL bootstrap
 

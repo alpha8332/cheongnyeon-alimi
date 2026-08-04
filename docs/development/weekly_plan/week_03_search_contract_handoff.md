@@ -2,7 +2,7 @@
 
 ## 문서 정보
 
-- 상태: action-needed
+- 상태: completed (`2026-08-04`)
 - 담당 Gate: DT2·Gate G1
 - 조정 담당: Data·Team Leader
 - 다음 담당: Backend 06·Frontend 04
@@ -30,7 +30,7 @@ Data·Team Leader에게 차이와 선택지를 알린다.
 - DT2 Data 작업: PSF 이후 actual profile, Data 권고안과 Schema 영향 판정 완료
 - Backend 06: W3-B0 계획·API 초안 병합 완료
 - Frontend 04: W3-F0 계획·draft type·표시 초안 병합 완료
-- Gate G1: DT2A 정합성·DT2B 결정 동결 완료, DT2C~DT2D 검증·승인 대기
+- Gate G1: approved (`2026-08-04`), DT2A~DT2D 완료
 
 현재 실제 표본의 PSF 이후 오프라인 재생 결과는 다음과 같다.
 
@@ -60,10 +60,10 @@ Backend·Frontend 담당자가 제출하지 못한 공동 계약 마감은 Data�
 DT2A~DT2C 중 불일치나 실패가 남으면 DT2D에서 승인 문구를 기록하지 않는다.
 Node/npm 등 검증 환경 부재도 통과로 간주하지 않는다.
 
-DT2A는 `2026-08-04`에 완료했다. Backend·Frontend request·response parity
-정적 검사, 문서 검증 테스트 10건, `validate_docs.py`와 `git diff --check`가
-통과했다. Frontend build·lint는 아직 실행하지 않았으며 DT2C 완료 증거로
-남긴다. 현재 다음 Slice는 DT2B다.
+DT2A와 DT2B는 `2026-08-04`에 완료했다. Backend·Frontend request·response
+parity와 G1 결정 정적 검사, 문서 검증 테스트 10건, `validate_docs.py`와
+`git diff --check`가 통과했다. DT2C에서 Frontend 소비 검증까지 완료했으며
+DT2D 승인도 마쳤다. 현재 Data의 다음 Slice는 DT3다.
 
 ## 브랜치 기준
 
@@ -215,7 +215,45 @@ Fixture, Seed, Migration, DB enum, `null`·빈 배열과 기존 Policy API 계�
 DT2B는 `2026-08-04`에 완료했다. G1 결정 정적 검사와 문서 검증 테스트
 10건이 통과했다. 최초 `validate_docs.py`는 Backend·Frontend Forest 계획의
 필수 `위험과 미확정 사항` 제목을 바꿔 2건 실패했고, 제목을 복원한 뒤 최종
-검증과 `git diff --check`가 통과했다. 현재 다음 Slice는 DT2C다.
+검증과 `git diff --check`가 통과했다.
+
+## DT2C 소비 계약 검증
+
+DT2C는 `2026-08-04`에 완료했다. 호스트에는 Node/npm이 없어 Docker의
+Node `22.22.0` 환경에서 저장소를 read-only로 연결하고 Frontend를 임시
+작업 경로로 복사해 검증했다. 최초 build는 격리 경로에 `data/seeds`를
+포함하지 않아 실패했으며, 저장소 구조와 같은 상대 경로로 Seed를 함께
+배치한 재실행에서 build·lint가 통과했다. Frontend 계약 테스트도 7건
+통과했다.
+
+문서 검증 테스트 10건, `python scripts/validate_docs.py`,
+`git diff --check`가 통과했다. 최초 비밀 경계 검사기는 추적을 허용한
+`.env.example`을 오탐했으며, 허용 예외를 반영한 검사에서 비밀·Runtime Raw·
+로컬 DB 파일의 추적 후보는 0건이었다. `.gitignore`에는 `.pgpass`, 로컬
+SQLite·DB 파일과 dump·backup 산출물 경계를 추가했다. PostgreSQL과 외부
+API는 호출하지 않았고 credential도 사용하지 않았다.
+
+전체 npm 의존성 검사에는 개발 의존성 high 1건이 남았지만
+`npm audit --omit=dev --audit-level=high`는 취약점 0건이었다. DT2C는 통과했지만
+이 결과는 후속 Frontend 의존성 관리에서 다시 검토한다.
+
+## DT2D Gate G1 승인 기록
+
+DT2D는 `2026-08-04`에 완료했다. 실제 Data 표본과 DT2B 결정표, Backend
+W3-B0·Frontend W3-F0 계약 parity, DT2C build·lint·계약 테스트와 문서·Git
+경계 검증을 다시 대조했으며 Release 1 본 구현을 막는 불일치가 0건임을
+확인했다. Schema·Fixture·Seed·DB enum, `null`·빈 배열 규칙은 변경하지 않는다.
+
+```text
+G1_APPROVED
+DT2 검색 계약 공동 검토가 완료됐습니다. Data는 DT3 수집·bootstrap을,
+Backend는 Backend 06 B1을, Frontend는 Frontend 04 FE4-11을 시작해도 됩니다.
+Frontend 실제 API 연결은 Backend endpoint가 준비된 뒤 진행합니다.
+```
+
+`category` 다중 선택은 non-blocking 후속 검토이며 지역 ambiguous 후보 정확도와
+Frontend 개발 의존성 high 1건은 각 구현·의존성 검증에서 확인한다. 이들은
+Gate G1 승인 차단사항이 아니다.
 
 ## Backend 06 인수 범위
 

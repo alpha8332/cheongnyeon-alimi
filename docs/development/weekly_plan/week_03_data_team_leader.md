@@ -223,10 +223,8 @@ Forest 전체 Gate와 Data 02 인계를 완료했다.
 - 완료: PSF7 기존 소비 호환, 합성 query plan과 actual Raw DB dry-run
 - 완료: PSF8 전체 Gate, Git·비밀·Runtime 경계와 Data 02 인계
 - 병렬 가능: Backend·Frontend 현재 구조 분석과 계획·계약 문서 초안
-- 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
-  Backend 06 최종 query
-- 후속: Backend 06·Frontend 04 초안 병합 완료. DT2A~DT2D 정합성 보완,
-  공동 결정, 소비 검증과 Gate 종료 수행
+- 완료: DT2 최종 지역·partial 노출 계약과 Gate G1 공동 승인
+- 후속: DT3 실제 bootstrap, Backend 06 B1과 Frontend 04 FE4-11 병렬 시작
 
 ## Slice DT2 - 검색 계약 공동 결정과 Gate G1 주관
 
@@ -247,9 +245,9 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 않는다. 기다리는 동안 DT3의 pagination·수집 실행 구조 중 검색 계약과
 독립적인 부분을 준비할 수 있다.
 
-현재 상태는 `in-progress`다. PSF 이후 actual profile, Data 권고안과 Schema
-영향 판정 및 Backend `W3-B0`·Frontend `W3-F0` 병합은 완료됐다. 남은 계약
-불일치를 보완하고 소비 검증을 통과한 뒤에만 G1을 승인한다.
+현재 상태는 `completed`다. PSF 이후 actual profile, Data 권고안과 Schema
+영향 판정, Backend `W3-B0`·Frontend `W3-F0` 병합, 계약 불일치 보완과
+소비 검증을 모두 완료하고 `2026-08-04`에 G1을 승인했다.
 
 ### DT2 세부 실행 순서
 
@@ -281,18 +279,23 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 
 #### DT2C - 소비 계약 검증과 증거 기록
 
-- Frontend build·lint, 문서 검증 테스트, `validate_docs.py`와
-  `git diff --check`를 실행한다.
-- Node/npm 등 실행 환경이 없으면 성공으로 간주하지 않고 환경 또는 담당자
-  증거를 확보할 때까지 DT2C를 `blocked`가 아닌 `pending`으로 유지한다.
-- 실제 실행 결과만 Data 개발 기록에 기록한다.
+- 상태: completed (`2026-08-04`)
+- 호스트에 Node/npm이 없어 Node `22.22.0` Docker 컨테이너에 저장소를
+  read-only로 연결하고 Frontend build·lint를 검증했다.
+- 수정된 검증 환경에서 build·lint, Frontend 계약 테스트 7건, 문서 검증
+  테스트 10건, `validate_docs.py`와 `git diff --check`가 통과했다.
+- 전체 npm 의존성 audit에는 개발 의존성 high 1건이 남았지만 production
+  dependency audit은 0건이다. DT2C에서 lockfile을 임의 변경하지 않는다.
+- 비밀·Runtime Raw·로컬 DB credential과 산출물의 Git 비추적 경계를
+  확인했다. PostgreSQL·외부 API·pgpass는 이 Slice에서 사용하지 않았다.
 
 #### DT2D - Gate 승인과 후속 해제
 
-- 인수인계 결정표와 검증 결과를 최종화하고 `G1_APPROVED`를 기록한다.
+- 상태: completed (`2026-08-04`)
+- 인수인계 결정표와 검증 결과를 최종화하고 `G1_APPROVED`를 기록했다.
 - Data DT2, W3-B0·W3-F0 준비 상태, 주차 체크리스트와 `docs/index.md` 인계
-  상태를 동기화한다.
-- 이후에만 DT3, Backend B1~B4, Frontend FE4-11~FE4-24를 병렬 해제한다.
+  상태를 동기화했다.
+- DT3, Backend B1과 Frontend FE4-11의 시작 조건을 병렬 해제했다.
 
 ### 수행 작업
 
@@ -676,12 +679,12 @@ git status --short
 - [ ] Source preflight·호출 예산·릴리스 범위 승인
 - [x] 대표 실데이터 분포와 검색 계약 질문 공유
 - [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
-- [ ] Gate G1 Data 계약 공동 승인
+- [x] Gate G1 Data 계약 공동 승인
 - [ ] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
 - [ ] 재실행 idempotency·transaction·중복 방지 검증
 - [ ] 지역·연령·상태·품질과 golden query 후보 검증
 - [ ] Backend·Frontend에 안전한 실제 사례 인계
-- [ ] 비밀·Raw·DB Git 비추적 확인
+- [x] 비밀·Raw·DB Git 비추적 확인
 
 ### Team Leader
 
@@ -689,7 +692,7 @@ git status --short
 - [x] Gate G0 시작 승인
 - [x] Integration 03 PSF0~PSF8 완료
 - [x] Integration 03 기반 브랜치 병합 승인
-- [ ] Gate G1 검색 계약 승인
+- [x] Gate G1 검색 계약 승인
 - [ ] Gate G2 세 영역 준비 증거 확인
 - [ ] Gate G3 실제 DB → API → UI 통합 확인
 - [ ] QA·리뷰어·보고서 근거 확인

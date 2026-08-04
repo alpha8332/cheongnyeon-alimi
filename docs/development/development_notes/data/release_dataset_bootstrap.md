@@ -2,14 +2,14 @@
 
 ## 작업 정보
 
-- 작업일: 2026-07-31, 2026-08-03
+- 작업일: 2026-07-31, 2026-08-03, 2026-08-04
 - 담당 영역: Data, Team Leader 시작 조정
 - 상태: in-progress
 - 브랜치: `feature/data/release-dataset-bootstrap`
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: DT2C pending, DT2B G1 decisions completed
+- 현재 Slice: DT3 pending, DT2·Gate G1 completed
 
 ## 목적
 
@@ -29,9 +29,9 @@ Integration 04 종단 인수 결과는 각 담당 Forest 기록에 남긴다.
 | --- | --- | --- |
 | DT0 | completed | Git·Source·비밀·Runtime·PostgreSQL 인증·Migration과 테스트 확인 |
 | DT1 | completed | 두 Source 실호출·분포·partial 원인·릴리스 범위 초안 확인 |
-| DT2 | in-progress | PSF 이후 actual profile·Data 권고안·Schema 영향 판정 완료, 공동 G1은 Backend·Frontend 초안 대기 |
+| DT2 | completed | DT2A~DT2D 완료, `G1_APPROVED` 기록과 세 영역 후속 Slice 해제 |
 | DT3 | pending | 승인 수집 범위와 Runtime DB bootstrap 대기 |
-| DT4 | pending | 실제 snapshot 적재와 G1 대기 |
+| DT4 | pending | DT3 실제 snapshot 적재 결과와 품질 판정 대기 |
 
 ## 구현 내용
 
@@ -352,12 +352,69 @@ Browser 인수를 통과시킨 것이 아니며, 각 후속 Slice 검증이 실�
 | `git diff --check` | 통과 |
 | PostgreSQL·외부 API | 미사용, DT2B 결정 동결에 불필요 |
 
-### DT2 - 공동 G1 대기 항목
+### DT2C - 소비 계약 검증과 증거 기록
 
-- DT2C: Frontend build·lint와 문서·diff 검증 증거 확보
-- DT2D: 관련 상태와 공동 인계 보드를 동기화하고 Gate G1 승인 여부 기록
+호스트에 Node/npm이 설치되어 있지 않아 Docker Desktop을 시작하고
+`node:22.22.0-bookworm-slim` 컨테이너를 사용했다. 저장소는 read-only로
+마운트했으며 Frontend와 canonical Seed를 컨테이너 임시 경로로 복사했다.
+따라서 저장소에 `node_modules`, `dist` 또는 임시 산출물을 만들지 않았다.
 
-DT2C~DT2D가 남아 있으므로 DT2와 Gate G1은 아직 완료로 표시하지 않는다.
+| 검증 | 실제 결과 |
+| --- | --- |
+| 최초 Frontend build | 실패, 격리 경로에 `data/seeds`를 복사하지 않아 `@seed/initial_programs.json`을 찾지 못함 |
+| 수정된 Frontend build | 통과, Node `22.22.0`, Vite `8.1.5`, 210 modules transformed |
+| Frontend lint | 통과 |
+| Frontend 계약 테스트 | 7건 통과 |
+| 전체 npm dependency audit | 개발 의존성 high 1건 보고 |
+| production dependency audit | `npm audit --omit=dev --audit-level=high`, 취약점 0건 |
+| 문서 검증 테스트 | 10건 통과 |
+| `python scripts/validate_docs.py` | 통과 |
+| `git diff --check` | 통과 |
+| 비밀·Raw·DB 추적 후보 | 0건 |
+| PostgreSQL·외부 API·pgpass | 미사용, DT2C 범위에 불필요 |
+
+첫 Frontend 계약 테스트·audit wrapper는 PowerShell에서 전달한 shell quote가
+닫히지 않아 테스트 시작 전에 실패했다. 인자를 수정한 재실행에서 계약 테스트
+7건과 production audit이 모두 통과했다. 최초 비밀 경계 검사도 의도적으로
+추적하는 `.env.example`을 실제 비밀로 오탐했으며, 허용 예외를 분리한
+재검사에서 추적 후보가 없음을 확인했다. 실패한 시도는 저장소 코드나 계약의
+실패로 간주하지 않되 실행 기록에서 숨기지 않는다.
+
+`.gitignore`에는 `.pgpass`, `*.db`, `*.sqlite`, `*.sqlite3`, `*.dump`,
+`*.backup`을 추가했다. 기존 `.env`·`APIkey.txt`·`runtime/raw/` 경계와 함께
+가상 probe에 `git check-ignore --no-index`를 적용해 모두 제외됨을 확인했다.
+`.env.example`은 예제 계약이므로 계속 추적한다. npm의 개발 의존성 high 1건은
+DT2C에서 lockfile을 임의 변경하지 않고 Frontend 의존성 관리 위험으로 남긴다.
+
+### DT2D - Gate G1 승인과 후속 해제
+
+DT2A~DT2C 증거와 Backend `74bc87a0ffe40d36464f1f2f4236247e9be45bac`,
+Frontend `ed3fca6121203354da3dcf5d621ff0207555c679`가 현재 Data HEAD의 조상임을
+확인했다. 이전 보완 커밋 `139d9c096c37bfc7be21cfd04e0636fa663918ea`와
+`7a232da47eb1a6f1724aaf06c50f6ce33d52db4a`도 포함되어 있다.
+
+| 승인 조건 | 결과 |
+| --- | --- |
+| 실제 Data 표본과 검색 결정 연결 | 충족, 온통청년·복지로 각 10건 actual profile 사용 |
+| Backend·Frontend request·response parity | 충족, DT2A 불일치 0건 |
+| Schema·Fixture·Seed·DB 영향 | 변경 없음 |
+| Release 1 차단 미확정 항목 | 0건 |
+| 소비 환경 실행 | DT2C Frontend build·lint·계약 테스트와 문서 검증 통과 |
+| Git 비밀·Raw·DB 경계 | 추적 후보 0건 |
+
+따라서 Gate G1을 `approved`로 판정하고 `G1_APPROVED` 신호를 인수인계 문서에
+기록했다. Data DT3, Backend 06 B1과 Frontend 04 FE4-11을 시작할 수 있다.
+Frontend 실제 API 연결은 Backend endpoint가 준비된 뒤 수행한다. 공동 인계
+보드는 계약 결정 항목을 종료하고 구현 후속 인계로 전환했다.
+
+남은 non-blocking 위험은 category 다중 선택, 지역 ambiguous 후보 정확도와
+Frontend 개발 의존성 high 1건이다. 이 항목들은 각각 Backend·Frontend 본
+구현 및 의존성 관리에서 검증하며 현재 계약이나 Schema를 변경하지 않는다.
+
+DT2D 첫 문서 검증은 Frontend 계획의 `- 상태: approved` 뒤에 날짜 설명을 같은
+줄에 넣어 검증기가 상태를 인식하지 못해 1건 실패했다. Forest 상태와 승인
+일자를 별도 줄로 분리한 뒤 문서 검증 테스트 10건, `validate_docs.py`와
+`git diff --check`를 다시 실행해 모두 통과했다.
 
 ## 주요 변경 파일
 
