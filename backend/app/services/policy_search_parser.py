@@ -158,153 +158,82 @@ def parse_search_query(
 ) -> InterpretedConditions:
     """한국어 자연어 검색어 q 및 명시적 파라미터를 규칙 기반으로 해석하고 override를 적용한다."""
     q_raw = q
-    q_clean = (q.strip() if q else "")
-    # 다중 공백 정리
-    q_clean_normalized = re.sub(r"\s+", " ", q_clean)
+    q_clean_normalized = normalize_search_text(q.strip() if q else "")
 
-    conditions: list[ConditionItem] = []
     override_fields: list[SearchDimension] = []
-    consumed_tokens: set[str] = set()
+    conditions: list[ConditionItem] = []
+    consumed_tokens: list[str] = []
 
-    # 1. 연령(age) 파싱
-    q_parsed_age: int | None = None
-    age_match = re.search(r"(?:만\s*)?(\d{1,3})\s*(?:세|살)", q_clean_normalized)
-    if not age_match:
-        age_match = re.search(r"만\s*(\d{1,3})", q_clean_normalized)
+    # 명시적 파라미터 유무 체크 및 override
+    explicit_override_keys: set[SearchDimension] = set()
 
-    if age_match:
-        try:
-            parsed_val = int(age_match.group(1))
-            if 0 <= parsed_val <= 150:
-                q_parsed_age = parsed_val
-                consumed_tokens.add(age_match.group(0))
-        except ValueError:
-            pass
-
-    if age is not None:
-        if q_parsed_age is not None:
-            override_fields.append("age")
-        conditions.append(
-            ConditionItem(
-                dimension="age",
-                value=age,
-                source="explicit",
-                resolution="resolved",
-                candidates=[],
-            )
-        )
-    elif q_parsed_age is not None:
-        conditions.append(
-            ConditionItem(
-                dimension="age",
-                value=q_parsed_age,
-                source="q",
-                resolution="resolved",
-                candidates=[],
-            )
-        )
-
-    # 2. 신청 상태(status) 파싱
-    q_parsed_status: ApplicationStatus | None = None
-    for kw, stat in STATUS_KEYWORD_MAP.items():
-        if kw in q_clean_normalized:
-            q_parsed_status = stat
-            consumed_tokens.add(kw)
-            break
-
-    if status is not None:
-        if q_parsed_status is not None:
-            override_fields.append("status")
-        conditions.append(
-            ConditionItem(
-                dimension="status",
-                value=status,
-                source="explicit",
-                resolution="resolved",
-                candidates=[],
-            )
-        )
-    elif q_parsed_status is not None:
-        conditions.append(
-            ConditionItem(
-                dimension="status",
-                value=q_parsed_status,
-                source="q",
-                resolution="resolved",
-                candidates=[],
-            )
-        )
-
-    # 3. 카테고리(category) 파싱
-    q_parsed_category: PolicyCategory | None = None
-    for kw, cat in CATEGORY_KEYWORD_MAP.items():
-        if kw in q_clean_normalized:
-            q_parsed_category = cat
-            consumed_tokens.add(kw)
-            break
-
-    if category is not None:
-        if q_parsed_category is not None:
-            override_fields.append("category")
-        conditions.append(
-            ConditionItem(
-                dimension="category",
-                value=category,
-                source="explicit",
-                resolution="resolved",
-                candidates=[],
-            )
-        )
-    elif q_parsed_category is not None:
-        conditions.append(
-            ConditionItem(
-                dimension="category",
-                value=q_parsed_category,
-                source="q",
-                resolution="resolved",
-                candidates=[],
-            )
-        )
-
-    # 4. 지역(region) 파싱 및 resolution
-    q_parsed_region_raw: str | None = None
-    q_region_candidates: list[str] = []
-    q_region_resolution: str = "resolved"
-
-    # 명시적 region 처리 혹은 q에서 region 파싱
     if region is not None:
-        # 명시적 region 검증
-        explicit_reg_clean = region.strip()
-        reg_res, reg_cands = _resolve_region_name(explicit_reg_clean, db)
-        if q_parsed_region_raw is not None or _has_region_in_query(q_clean_normalized):
-            override_fields.append("region")
+        explicit_override_keys.add("region")
+        override_fields.append("region")
+    if age is not None:
+        explicit_override_keys.add("age")
+        override_fields.append("age")
+    if category is not None:
+        explicit_override_keys.add("category")
+        override_fields.append("category")
+    if status is not None:
+        explicit_override_keys.add("status")
+        override_fields.append("status")
+    if keyword is not None:
+        explicit_override_keys.add("keyword")
+        override_fields.append("keyword")
+
+    # 1. 명시적 region 처리
+    if region is not None:
+        reg_val = region.strip()
+        reg_res, reg_cands = _resolve_region_name(reg_val, db)
         conditions.append(
             ConditionItem(
                 dimension="region",
-                value=explicit_reg_clean,
+                value=reg_val,
                 source="explicit",
-                resolution=reg_res,  # resolved, unmapped, ambiguous
+                resolution=reg_res,
                 candidates=reg_cands,
             )
         )
-    else:
-        # q에서 지역 파싱
-        matched_reg_kw = _extract_region_from_query(q_clean_normalized)
-        if matched_reg_kw:
-            consumed_tokens.add(matched_reg_kw)
-            reg_res, reg_cands = _resolve_region_name(matched_reg_kw, db)
-            resolved_val = REGION_KEYWORD_MAP.get(matched_reg_kw, matched_reg_kw)
-            conditions.append(
-                ConditionItem(
-                    dimension="region",
-                    value=resolved_val,
-                    source="q",
-                    resolution=reg_res,
-                    candidates=reg_cands,
-                )
-            )
 
-    # 5. 명시적 키워드(keyword) 처리
+    # 2. 명시적 age 처리
+    if age is not None:
+        conditions.append(
+            ConditionItem(
+                dimension="age",
+                value=int(age),
+                source="explicit",
+                resolution="resolved",
+                candidates=[],
+            )
+        )
+
+    # 3. 명시적 category 처리
+    if category is not None:
+        conditions.append(
+            ConditionItem(
+                dimension="category",
+                value=str(category),
+                source="explicit",
+                resolution="resolved",
+                candidates=[],
+            )
+        )
+
+    # 4. 명시적 status 처리
+    if status is not None:
+        conditions.append(
+            ConditionItem(
+                dimension="status",
+                value=str(status),
+                source="explicit",
+                resolution="resolved",
+                candidates=[],
+            )
+        )
+
+    # 5. 명시적 keyword 처리
     if keyword is not None:
         conditions.append(
             ConditionItem(
@@ -316,7 +245,73 @@ def parse_search_query(
             )
         )
 
-    # 6. 해석되지 않은 토큰/단어(uninterpreted_terms) 수집
+    # 6. q 자연어 파싱 (explicit 파라미터가 지정된 차원은 override)
+    # 6-1. 자연어 연령 파싱
+    if "age" not in explicit_override_keys:
+        parsed_age = _extract_age_from_query(q_clean_normalized)
+        if parsed_age is not None:
+            age_token, age_val = parsed_age
+            consumed_tokens.append(age_token)
+            conditions.append(
+                ConditionItem(
+                    dimension="age",
+                    value=int(age_val),
+                    source="q",
+                    resolution="resolved",
+                    candidates=[],
+                )
+            )
+
+    # 6-2. 자연어 신청 상태 파싱
+    if "status" not in explicit_override_keys:
+        parsed_status = _extract_status_from_query(q_clean_normalized)
+        if parsed_status is not None:
+            status_token, status_val = parsed_status
+            consumed_tokens.append(status_token)
+            conditions.append(
+                ConditionItem(
+                    dimension="status",
+                    value=str(status_val),
+                    source="q",
+                    resolution="resolved",
+                    candidates=[],
+                )
+            )
+
+    # 6-3. 자연어 카테고리 파싱
+    if "category" not in explicit_override_keys:
+        parsed_cat = _extract_category_from_query(q_clean_normalized)
+        if parsed_cat is not None:
+            cat_token, cat_val = parsed_cat
+            consumed_tokens.append(cat_token)
+            conditions.append(
+                ConditionItem(
+                    dimension="category",
+                    value=str(cat_val),
+                    source="q",
+                    resolution="resolved",
+                    candidates=[],
+                )
+            )
+
+    # 6-4. 자연어 지역 파싱 (DB 기반 동적 해석 적용)
+    if "region" not in explicit_override_keys:
+        parsed_reg = _extract_region_from_query(q_clean_normalized, db)
+        if parsed_reg is not None:
+            consumed_tokens.append(parsed_reg)
+            reg_res, reg_cands = _resolve_region_name(parsed_reg, db)
+            resolved_val = reg_cands[0] if reg_cands else parsed_reg
+            conditions.append(
+                ConditionItem(
+                    dimension="region",
+                    value=resolved_val,
+                    source="q",
+                    resolution=reg_res,
+                    candidates=reg_cands,
+                )
+            )
+
+    # 7. 해석되지 않은 토큰/단어(uninterpreted_terms) 수집
     tokens = q_clean_normalized.split()
     uninterpreted: list[str] = []
     for token in tokens:
@@ -341,17 +336,70 @@ def parse_search_query(
     )
 
 
-def _extract_region_from_query(query_text: str) -> str | None:
-    """q 문장에서 알려진 지역 키워드 매칭"""
-    # ambiguous 지역 키워드 먼저 확인
+def _extract_age_from_query(query_text: str) -> tuple[str, int] | None:
+    age_match = re.search(r"(?:만\s*)?(\d{1,3})\s*(?:세|살)", query_text)
+    if not age_match:
+        age_match = re.search(r"만\s*(\d{1,3})", query_text)
+
+    if age_match:
+        try:
+            parsed_val = int(age_match.group(1))
+            if 0 <= parsed_val <= 150:
+                return age_match.group(0), parsed_val
+        except ValueError:
+            pass
+    return None
+
+
+def _extract_status_from_query(query_text: str) -> tuple[str, ApplicationStatus] | None:
+    for kw, stat in STATUS_KEYWORD_MAP.items():
+        if kw in query_text:
+            return kw, stat
+    return None
+
+
+def _extract_category_from_query(query_text: str) -> tuple[str, PolicyCategory] | None:
+    for kw, cat in CATEGORY_KEYWORD_MAP.items():
+        if kw in query_text:
+            return kw, cat
+    return None
+
+
+def _extract_region_from_query(query_text: str, db: Session | None = None) -> str | None:
+    """q 문장에서 알려진 또는 DB 내 행정구역 별칭/이름 키워드 매칭"""
+    # 1. ambiguous 지역 키워드 확인
     for amb_kw in AMBIGUOUS_REGION_CANDIDATES.keys():
         if amb_kw in query_text:
             return amb_kw
-    # REGION_KEYWORD_MAP의 키워드를 길이가 긴 순서대로 매칭
+
+    # 2. REGION_KEYWORD_MAP의 키워드를 길이가 긴 순서대로 매칭
     sorted_kws = sorted(REGION_KEYWORD_MAP.keys(), key=len, reverse=True)
     for kw in sorted_kws:
         if kw in query_text:
             return kw
+
+    # 3. DB 세션이 전달된 경우 DB AdministrativeRegionAlias / AdministrativeRegion 동적 검색
+    if db is not None:
+        try:
+            from sqlalchemy import select
+            from app.models.administrative_region import AdministrativeRegion, AdministrativeRegionAlias
+
+            aliases = db.scalars(
+                select(AdministrativeRegionAlias.alias).distinct()
+            ).all()
+            for alias_str in sorted(aliases, key=len, reverse=True):
+                if len(alias_str) >= 2 and alias_str in query_text:
+                    return alias_str
+
+            names = db.scalars(
+                select(AdministrativeRegion.name).distinct()
+            ).all()
+            for name_str in sorted(names, key=len, reverse=True):
+                if len(name_str) >= 2 and name_str in query_text:
+                    return name_str
+        except Exception:
+            pass
+
     return None
 
 

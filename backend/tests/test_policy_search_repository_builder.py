@@ -165,3 +165,14 @@ def test_repository_search_policies_deterministic_sorting(db, sample_policies):
     assert total >= 1
     # p2 (청년 도약 계좌 적금)가 적금 키워드 매칭으로 상위에 위치
     assert items[0].policy.id == sample_policies[1].id
+
+
+def test_repository_search_policies_unmatched_term_returns_zero(db, sample_policies):
+    repo = PolicySearchRepository(db)
+
+    # 일치하는 검색어가 하나도 없는 경우 0건 반환 검증 (Blocker 1 해결)
+    interpreted = parse_search_query(q="존재하지않는특수키워드검색어12345", db=db)
+    items, total = repo.search_policies(interpreted, page=1, limit=10)
+
+    assert total == 0
+    assert items == []

@@ -7,7 +7,7 @@
 - 상태: approved
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: completed (Forest All Slices B0-B4 Completed)
+- 현재 Slice: in-progress (B1-B4 refinement & Golden Query testing)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),

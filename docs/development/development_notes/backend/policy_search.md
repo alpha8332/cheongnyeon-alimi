@@ -4,11 +4,11 @@
 
 - 기간: 2026-08-04
 - 담당 영역: Backend
-- 상태: completed
+- 상태: in-progress
 - 브랜치: `feature/backend/policy-search-impl`
 - 선행 Forest: [Policy Search Data Foundation](../../develop_plan/integration/03_policy_search_data_foundation.md)
 - 관련 계획: [Backend 06 Policy Search Forest 개발 계획](../../develop_plan/backend/06_policy_search.md)
-- 현재 Slice: completed (Forest All Slices B0-B4 Completed)
+- 현재 Slice: in-progress (Refinement for Golden Queries & SQL Query Builder)
 
 ## 목적
 

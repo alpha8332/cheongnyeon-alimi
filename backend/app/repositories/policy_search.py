@@ -233,9 +233,30 @@ class PolicySearchRepository:
         req_keyword = cond_map.get("keyword")
 
         # 2. 기본 정책 쿼리 생성
+        from sqlalchemy import or_
         query = select(Policy).where(Policy.data_quality_status != "invalid")
         if not include_partial:
             query = query.where(Policy.data_quality_status == "valid")
+
+        # 2-1. 검색 토큰(uninterpreted_terms 및 explicit keyword) SQL Level Exclusion 필터링
+        search_terms = list(interpreted.uninterpreted_terms)
+        if req_keyword is not None:
+            search_terms.append(str(req_keyword.value))
+
+        if search_terms:
+            term_clauses = []
+            for term in search_terms:
+                term_clean = term.strip()
+                if term_clean:
+                    pattern = f"%{term_clean}%"
+                    term_clauses.append(PolicySearchDocument.search_text.ilike(pattern))
+                    term_clauses.append(Policy.title.ilike(pattern))
+                    term_clauses.append(Policy.summary.ilike(pattern))
+
+            if term_clauses:
+                query = query.outerjoin(
+                    PolicySearchDocument, PolicySearchDocument.policy_id == Policy.id
+                ).where(or_(*term_clauses))
 
         policies = tuple(self.db.scalars(query).all())
 
@@ -394,6 +415,9 @@ class PolicySearchRepository:
                     evidence = eval_service.match_policy_projection(
                         policy.id, search_terms
                     )
+                    if not evidence.fields and not any(t.lower() in (policy.title or "").lower() or t.lower() in (policy.summary or "").lower() for t in search_terms):
+                        # 검색어가 주어졌으나 projection 및 title/summary에서 단 한 개 토큰도 매칭되지 않은 경우 제외
+                        continue
                     score += len(evidence.fields) * 2.0
                     for field_match in evidence.fields:
                         score += len(field_match.terms) * 1.0

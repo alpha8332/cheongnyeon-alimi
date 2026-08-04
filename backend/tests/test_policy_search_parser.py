@@ -94,3 +94,36 @@ def test_parse_search_query_unmapped_explicit_region():
     assert dim_map["region"].source == "explicit"
     assert dim_map["region"].resolution == "unmapped"
     assert dim_map["region"].candidates == []
+
+
+def test_parse_search_query_cheonan_region_parsing(db):
+    from app.models.administrative_region import AdministrativeRegion, AdministrativeRegionAlias
+    reg = AdministrativeRegion(
+        scheme="kr-bjd-20260803",
+        code="4413000000",
+        name="천안시",
+        full_name="충청남도 천안시",
+        level="district",
+        status="active",
+    )
+    alias = AdministrativeRegionAlias(
+        scheme="kr-bjd-20260803",
+        region_code="4413000000",
+        alias="천안",
+        kind="curated",
+    )
+    db.add_all([reg, alias])
+    db.commit()
+
+    query = "   27세 천안 청년 월세 지원   "
+    res = parse_search_query(q=query, db=db)
+
+    # q_raw 보존 검증 (공백 포함 원문 유지)
+    assert res.q_raw == query
+    assert res.q_clean == "27세 천안 청년 월세 지원"
+
+    dim_map = {cond.dimension: cond for cond in res.conditions}
+    assert "region" in dim_map
+    assert dim_map["region"].source == "q"
+    assert dim_map["region"].resolution == "resolved"
+    assert "충청남도 천안시" in dim_map["region"].candidates

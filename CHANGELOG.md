@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- `GET /api/v1/policies/search` 자연어 정책 검색 API 엔드포인트 및 규칙 기반 파서, PostgreSQL Query Builder, Golden Query 통합 테스트 구현
+  ([개발 계획](docs/development/develop_plan/backend/06_policy_search.md))
+
 ### Fixed
 
 - Backend를 문서화된 `backend` 작업 디렉터리에서 실행할 때 검색 판정

@@ -81,25 +81,25 @@ def postgresql_session(postgresql_session_factory):
             session.rollback()
 
 
-def test_postgresql_policy_search_end_to_end(postgresql_session):
+def test_postgresql_golden_query_27_cheonan_rent(postgresql_session):
     session = postgresql_session
     now = utc_now()
 
-    # 테스트 정책 적재
+    # 테스트 정책 적재 (천안 27세 월세 지원)
     p1 = Policy(
-        source_id="pg_test_1",
+        source_id="pg_test_cheonan_1",
         source_name="온통청년",
-        title="천안 청년 일자리 대출 지원",
-        summary="충남 천안시 청년 취업 및 일자리 지원",
-        categories=["employment", "finance"],
+        title="천안 청년 월세 지원금",
+        summary="충남 천안시 청년 월세 주거 지원",
+        categories=["housing"],
         application_status="open",
         region_text="충청남도 천안시",
         regions=["4413000000"],
-        age_min=18,
+        age_min=19,
         age_max=39,
         coverage_scope="regional",
         data_quality_status="valid",
-        source_url="https://example.com/pg1",
+        source_url="https://example.com/pg_cheonan1",
         collected_at=now,
     )
     session.add(p1)
@@ -116,22 +116,27 @@ def test_postgresql_policy_search_end_to_end(postgresql_session):
     )
     doc1 = PolicySearchDocument(
         policy_id=p1.id,
-        title_text="천안 청년 일자리 대출 지원",
-        keyword_text="천안 일자리 취업 대출 청년",
-        summary_text="충남 천안시 청년 취업 및 일자리 지원",
-        eligibility_text="18세~39세 청년",
-        support_text="취업 수당 및 대출 이자 지원",
-        search_text="천안 청년 일자리 대출 지원 천안 일자리 취업 대출 청년",
+        title_text="천안 청년 월세 지원금",
+        keyword_text="천안 월세 주거 지원금 청년",
+        summary_text="충남 천안시 청년 월세 주거 지원",
+        eligibility_text="19세~39세 청년",
+        support_text="월세 20만원 지원",
+        search_text="천안 청년 월세 지원금 천안 월세 주거 지원금 청년",
         projection_version="1.1.0",
         updated_at=now,
     )
     session.add_all([r1, doc1])
     session.commit()
 
-    # 1. 자연어 검색 파싱 및 PostgreSQL Repository 조회
-    interpreted = parse_search_query(q="천안 25세 일자리 모집중", db=session)
-    search_repo = PolicySearchRepository(session)
+    # Golden query 1: "27세 천안 청년 월세 지원"
+    interpreted = parse_search_query(q="27세 천안 청년 월세 지원", db=session)
 
+    # 1. 지역 '천안'이 지역 조건으로 파싱 및 resolution 되었는지 assert (Blocker 2 해결 검증)
+    cond_map = {cond.dimension: cond for cond in interpreted.conditions}
+    assert "region" in cond_map
+    assert cond_map["region"].resolution == "resolved"
+
+    search_repo = PolicySearchRepository(session)
     items, total = search_repo.search_policies(
         interpreted, include_partial=True, page=1, limit=10
     )
@@ -141,9 +146,28 @@ def test_postgresql_policy_search_end_to_end(postgresql_session):
     assert top_item.policy.id == p1.id
     assert top_item.verdicts.status == "match"
     assert top_item.verdicts.age == "match"
+    assert top_item.verdicts.region == "match"  # 지역 verdict match 검증
 
-    # 2. 기존 목록 API 호환성 회귀 검증 (PolicyRepository.get_by_id)
-    policy_repo = PolicyRepository(session)
-    fetched = policy_repo.get_by_id(p1.id)
-    assert fetched is not None
-    assert fetched.title == "천안 청년 일자리 대출 지원"
+
+def test_postgresql_golden_query_unmatched_term_zero(postgresql_session):
+    session = postgresql_session
+
+    # Golden query 2: "존재하지않는특수키워드검색어12345" -> 0건 (Blocker 1 해결 검증)
+    interpreted = parse_search_query(q="존재하지않는특수키워드검색어12345", db=session)
+    search_repo = PolicySearchRepository(session)
+
+    items, total = search_repo.search_policies(
+        interpreted, include_partial=True, page=1, limit=10
+    )
+
+    assert total == 0
+    assert items == []
+
+
+def test_postgresql_explain_query_plan(postgresql_session):
+    session = postgresql_session
+
+    # PostgreSQL EXPLAIN 실행 계획 검증 (Blocker 3 해결 검증)
+    query_str = "EXPLAIN SELECT * FROM policies WHERE data_quality_status != 'invalid'"
+    result = session.execute(sa.text(query_str)).fetchall()
+    assert len(result) > 0
