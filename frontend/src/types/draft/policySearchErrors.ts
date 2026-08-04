@@ -9,6 +9,7 @@
 export type PolicySearchClientErrorKind =
   | 'empty_query'
   | 'empty_results'
+  | 'bad_request'
   | 'not_found'
   | 'validation'
   | 'server'
@@ -23,3 +24,9 @@ export interface PolicySearchErrorPresentation {
   /** When true, keep visible filter chips for user edit after error. */
   preserve_filter_chips: boolean;
 }
+
+/**
+ * Reason-code copy fallback plan (documented in Forest plan § Reason fallback):
+ * - Known codes may map to localized labels in post-G1 UI.
+ * - Unknown `reason_code` values must render Backend-provided `message` without throwing.
+ */

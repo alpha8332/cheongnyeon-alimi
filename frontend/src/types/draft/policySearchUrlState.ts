@@ -2,8 +2,8 @@
  * W3-F0 DRAFT — URL query state types only (Gate G1 pending).
  *
  * URL stores user input and explicit flat filters only.
- * Backend response fields (verdicts, reason_codes, interpreted NL chips) are
- * NOT serialized into the URL query string.
+ * Backend response fields (interpreted_conditions, verdicts, reason_codes, score,
+ * unconfirmed_conditions) are NOT serialized into the URL query string.
  *
  * parse/build/toRequest helpers: implement in post-G1 Slice FE4-05 (SearchBar & URL Sync).
  */

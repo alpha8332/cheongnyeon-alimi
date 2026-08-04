@@ -13,7 +13,7 @@ Do not import from production UI, API Client, Mock, or MSW until `G1_APPROVED`.
 
 | Area | Draft file | Notes |
 | --- | --- | --- |
-| Request/response | `policySearch.contract.ts` | `PolicySearchQueryParams`, `PolicySearchHit` (nested), `PolicySearchResponse`, `ReasonCode` |
+| Request/response | `policySearch.contract.ts` | `PolicySearchQueryParams`, `PolicySearchInterpretedConditions`, nested `PolicySearchHit`, `UnconfirmedCondition`, nullable `DimensionVerdicts` |
 | URL state types | `policySearchUrlState.ts` | Types only; no parse/build functions pre-G1 |
 | Display labels | `policySearchDisplay.ts` | Constants only; no mapper functions pre-G1 |
 | Error types | `policySearchErrors.ts` | Types only; HTTP mapping in Forest plan |
@@ -21,6 +21,10 @@ Do not import from production UI, API Client, Mock, or MSW until `G1_APPROVED`.
 ## URL rule (G1)
 
 - URL may store: `q`, `keyword`, `region`, `age`, `category`, `status`, `include_partial`, `page`, `limit`
-- URL must **not** store Backend response JSON (verdicts, `reason_codes`, interpreted NL blob)
+- URL must **not** store Backend response JSON (`interpreted_conditions`, verdicts, `reason_codes`, `score`, per-row unconfirmed blob)
+
+## Reason-code fallback (G1)
+
+`ReasonCode` is an extensible string. Post-G1 UI maps known codes when copy exists; otherwise display Backend `message` from `UnconfirmedCondition` or error body without failing.
 
 Promote to `frontend/src/types/policySearch.ts` only after Team Leader records `G1_APPROVED`.

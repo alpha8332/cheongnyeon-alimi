@@ -25,9 +25,9 @@ Frontend가 오해 없이 소비하도록, Gate G1 전에 TypeScript request·re
 **pure type 초안**, URL state 분리 원칙, Mock·UI Slice 계획, Browser 검증
 **계획**을 고정한다.
 
-Frontend는 자연어 parser를 만들지 않는다. 지역·연령·신청 상태는 Backend
-`MatchVerdict`(`match|mismatch|unknown`)와 `DimensionVerdicts`를 그대로
-표시하고, unknown을 전국·무제한으로 추정하지 않는다.
+Frontend는 자연어 parser를 만들지 않는다. 지역·연령·카테고리·신청 상태는 Backend
+`MatchVerdict`(`match|mismatch|unknown|null`)와 `DimensionVerdicts`를 그대로
+표시하고, `null`(미적용)과 `unknown`(근거 없음)을 전국·무제한으로 추정하지 않는다.
 
 ## 범위
 
@@ -81,9 +81,9 @@ GET /api/v1/policies/search
 
 | Parameter | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `q` | string | yes | — | trim 후 비어 있으면 422 |
-| `keyword` | string \| null | no | null | 미파싱 키워드 텍스트 매칭 |
-| `region` | string \| null | no | null | canonical region name |
+| `q` | string | yes | — | trim 후 비어 있으면 422; **권장 최대 200자** |
+| `keyword` | string \| null | no | null | 미파싱 키워드 텍스트 매칭; **권장 최대 100자** |
+| `region` | string \| null | no | null | 행정구역 **alias 또는 canonical name**; **권장 최대 100자** |
 | `age` | integer \| null | no | null | 0–150 |
 | `category` | enum \| null | no | null | PolicyCategory |
 | `status` | enum \| null | no | null | ApplicationStatus |
@@ -91,13 +91,37 @@ GET /api/v1/policies/search
 | `page` | integer | no | 1 | ≥ 1 |
 | `limit` | integer | no | **20** | 1–100 |
 
-TypeScript: `PolicySearchQueryParams`, `POLICY_SEARCH_DEFAULTS`
-(`frontend/src/types/draft/policySearch.contract.ts`).
+**명시적 flat filter 우선:** `keyword`·`region`·`age`·`category`·`status`를 URL
+또는 요청에 명시하면, Backend가 `q`에서 해석한 **동일 dimension**을 override한다.
+응답 `interpreted_conditions.override_fields`에 override된 dimension이 기록된다.
+
+TypeScript: `PolicySearchQueryParams`, `POLICY_SEARCH_DEFAULTS`,
+`POLICY_SEARCH_QUERY_LIMITS` (`frontend/src/types/draft/policySearch.contract.ts`).
 
 ### Response
 
 Pagination envelope는 `PolicyListResponse`와 동일 (`total`, `page`, `limit`,
-`items`).
+`items`). 최상위에 NL 해석 블록 `interpreted_conditions`가 포함된다.
+
+**`interpreted_conditions` (response top-level)**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `q_raw` | string | 요청 `q` 원문 |
+| `q_clean` | string | Backend 정규화·trim 후 문자열 |
+| `conditions` | array | 해석된 조건 목록 (아래) |
+| `override_fields` | dimension[] | explicit filter가 `q` 해석을 덮어쓴 dimension |
+| `uninterpreted_terms` | string[] | `q`에서 매핑되지 않은 토큰 |
+
+**`conditions[]` 요소**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `dimension` | enum | `keyword` \| `region` \| `age` \| `category` \| `status` |
+| `value` | mixed | dimension별 resolved 값 |
+| `source` | enum | `q` \| `explicit` |
+| `resolution` | enum | `resolved` \| `unmapped` \| `ambiguous` |
+| `candidates` | string[] | `ambiguous` 시 후보 (예: region alias) |
 
 각 `items[]` 요소는 **중첩(Nested) DTO**: `policy`(PolicyRead/`PolicyDto`) +
 검색 확장 필드:
@@ -105,14 +129,23 @@ Pagination envelope는 `PolicyListResponse`와 동일 (`total`, `page`, `limit`,
 | Field | Type | Notes |
 | --- | --- | --- |
 | `policy` | PolicyRead | 목록·상세와 동일 공개 필드 envelope |
-| `score` | number | 관련도 점수 (Backend 결정적 tie-breaker) |
-| `verdicts` | `DimensionVerdicts` | `region`, `age`, `status` 각 `MatchVerdict` |
-| `reason_codes` | `ReasonCode[]` | Backend reason enum 코드 |
+| `score` | number | Backend 정렬용; **Release 1 UI 숫자 미표시**, 요청 간 비교 금지 |
+| `verdicts` | `DimensionVerdicts` | `region`, `age`, `status`, `category` 각 `MatchVerdict \| null` |
+| `reason_codes` | `ReasonCode[]` | Backend reason code (확장 가능 string) |
 | `message` | string | 사람이 읽을 수 있는 추천 요약 |
-| `unconfirmed_conditions` | string[] | 해당 행에서 미확인 dimension 목록 |
+| `unconfirmed_conditions` | object[] | `{ field, reason_code, message }` per-row 미확인 조건 |
 
-TypeScript: `PolicySearchHit`, `PolicySearchResponse`, `MatchVerdict`,
-`DimensionVerdicts`, `ReasonCode`.
+**`DimensionVerdicts` nullable 의미**
+
+| 값 | 의미 |
+| --- | --- |
+| `null` | 해당 dimension 조건이 이번 검색에 **적용되지 않음** |
+| `match` / `mismatch` | 조건 적용 + 정책 근거로 판정 |
+| `unknown` | 조건은 적용됐으나 정책 데이터에 근거 **없음** |
+
+TypeScript: `PolicySearchHit`, `PolicySearchResponse`,
+`PolicySearchInterpretedConditions`, `InterpretedCondition`, `UnconfirmedCondition`,
+`MatchVerdict`, `DimensionVerdicts`, `ReasonCode`.
 
 ### 기존 목록 API와 경계
 
@@ -129,7 +162,8 @@ TypeScript: `PolicySearchHit`, `PolicySearchResponse`, `MatchVerdict`,
 
 Release 1 정렬은 Backend `score` 내림차순 단일 고정이며, Frontend 별도 sort
 UI·query parameter는 제공하지 않는다. 결과 순서는 Backend ranked list를
-그대로 표시한다.
+그대로 표시한다. **`score` 숫자는 Release 1 화면에 노출하지 않으며**, 서로 다른
+검색 요청 사이에서 score를 비교·캐시 키로 사용하지 않는다.
 
 ## URL State 분리 원칙 (G1 고정)
 
@@ -142,9 +176,9 @@ TypeScript: `PolicySearchUrlQueryState` (`policySearchUrlState.ts`).
 
 ### URL에 저장하지 않는 것
 
-- Backend 응답 `verdicts`, `reason_codes`, `message`, `unconfirmed_conditions`
+- Backend 응답 `interpreted_conditions`, `verdicts`, `reason_codes`, `message`,
+  `unconfirmed_conditions`, per-item `score`
 - NL 해석 결과 전체 JSON blob (`interpreted` query param **사용 금지**)
-- per-item 판정·score
 
 Filter Chip UI는 URL flat params + **최신 검색 응답 in-memory state**로
 렌더한다. 공유 URL은 입력·필터만 복원하고, Chip verdict 스타일은 재검색 후
@@ -222,7 +256,7 @@ FE4-11 Types promote
 | --- | --- |
 | **목표** | Backend DTO와 100% 정렬된 pure TypeScript types |
 | **변경 파일** | `frontend/src/types/draft/policySearch.contract.ts`, `policySearchUrlState.ts`, `policySearchDisplay.ts`, `policySearchErrors.ts`, `draft/README.md` |
-| **세부 작업** | `PolicySearchQueryParams`, `PolicySearchHit` (nested `policy`), `PolicySearchResponse`, `MatchVerdict`, `DimensionVerdicts`, `ReasonCode`, `PolicySearchUrlQueryState`; 실행 함수 **없음** |
+| **세부 작업** | `PolicySearchQueryParams`, `PolicySearchInterpretedConditions`, `PolicySearchHit` (nested `policy`), `PolicySearchResponse`, nullable `DimensionVerdicts` (+ `category`), `UnconfirmedCondition`, `ReasonCode`, `PolicySearchUrlQueryState`, `POLICY_SEARCH_QUERY_LIMITS`; 실행 함수 **없음** |
 | **검증** | `npm run build`; Backend W3-B0 diff |
 | **완료 기준** | G1 체크리스트 #1–#7 필드명 일치 |
 
@@ -247,7 +281,7 @@ FE4-11 Types promote
 | M3 | q=25세 일자리, age=25 | age match | employment | |
 | M4 | q=복지로 생활 | multi unknown | partial only | 복지로 10건 |
 | M5 | q=(empty trim) | — | 422 | validation |
-| M6 | keyword=지원금 only | text match | partial | uninterpreted notice |
+| M6 | q=지원금&keyword=지원금 | text match | partial | q 필수 계약; keyword explicit |
 
 ---
 
@@ -268,16 +302,23 @@ FE4-11 Types promote
 | `unknown` (verdict) | 정보 미확인 | dimension 판정 불가 |
 | row alert | 자격요건 직접 확인 필요 | 복지로형 multi-unknown |
 
+**Reason-code fallback (G1)**
+
+`ReasonCode`는 확장 가능한 string이다. FE4-19 UI는 알려진 code에만 전용 copy를
+매핑하고, **알 수 없는 code**가 와도 throw·blank 하지 않고 Backend가 제공한
+`message`(또는 `unconfirmed_conditions[].message`, error body)를 그대로 표시한다.
+
 **Error UX (G1 후 mapHttpStatus 구현)**
 
-| HTTP/상황 | kind | retry | filter chips 유지 |
-| --- | --- | --- | --- |
-| loading | — | — | — |
-| empty q (422) | validation | no | no |
-| 200 total=0 | empty_results | no | yes |
-| 422 | validation | no | yes |
-| 404 | not_found | no | no |
-| 5xx/network | server/network | yes | yes |
+| HTTP/상황 | kind | retry | filter chips 유지 | Notes |
+| --- | --- | --- | --- | --- |
+| loading | — | — | — | — |
+| 400 | bad_request | no | yes | 해석 불가; 명시적 region `unmapped`/`ambiguous` |
+| empty q (422) | validation | no | no | trim 후 공백 |
+| 200 total=0 | empty_results | no | yes | 정상 빈 결과 |
+| 422 | validation | no | yes | q 누락·공백, 길이·타입·범위·enum |
+| 404 | not_found | no | no | 잘못된 route/version |
+| 5xx/network | server/network | yes | yes | 재시도 가능 |
 
 ---
 
@@ -305,7 +346,7 @@ checklist에 포함한다.
 | **목표** | draft types → production `types/policySearch.ts` |
 | **변경 파일** | `frontend/src/types/policySearch.ts` (신규), `types/draft/*` 유지 또는 archive |
 | **선행** | `G1_APPROVED` |
-| **세부 작업** | nested `PolicySearchHit`, `ReasonCode`, defaults `limit=20` promote |
+| **세부 작업** | nested `PolicySearchHit`, `PolicySearchInterpretedConditions`, nullable `DimensionVerdicts`, `UnconfirmedCondition`, `ReasonCode`, defaults `limit=20` promote |
 | **검증** | `npm run build` |
 | **완료 기준** | production import 허용; draft import 금지 해제 |
 
@@ -514,7 +555,7 @@ git diff --check
 
 | ID | 항목 | 영향 | 재개 조건 |
 | --- | --- | --- | --- |
-| G1-REASON | `reason_codes` enum 목록 | copy mapping | Backend W3-B0 |
+| G1-REASON | `reason_codes`·`UnconfirmedCondition.reason_code` copy | unknown code fallback | Backend W3-B0 + FE4-19 |
 | G1-UNK | unknown 포함·감점 | 복지로 10건 | Data 권고 + G1 |
 | G1-ROUTE | `/search` vs `/programs` IA | navigation | FE4-20 + Team Leader |
 | FF-REBASE | Backend merge 후 rebase | branch | handoff § rebase |
@@ -532,16 +573,18 @@ git diff --check
 
 | # | Frontend 초안 | Backend W3-B0 | Data 권고 |
 | --- | --- | --- | --- |
-| 1 | `PolicySearchQueryParams.q` | required trim | NL 경계 |
-| 2 | flat `keyword`·`region`·`age`·`category`·`status` | same names/types | |
+| 1 | `PolicySearchQueryParams.q` required trim; limits q200/kw100/reg100 | same | NL 경계 |
+| 2 | flat `keyword`·`region`·`age`·`category`·`status`; explicit override | same names/types | |
 | 3 | `MatchVerdict` | evaluation enum | match/mismatch/unknown |
-| 4 | `DimensionVerdicts` | region·age·status | |
-| 5 | `PolicySearchHit.unconfirmed_conditions` | per-row unknowns | no national guess |
-| 6 | `reason_codes`·`message` | reason DTO | |
-| 7 | `include_partial` default **true** | same default | 복지로 10건 |
-| 8 | 422/404/500 UX (문서) | error contract | |
-| 9 | URL flat params only | — | no response JSON in URL |
-| 10 | Mock M1–M6 | contract tests | actual profile |
+| 4 | `DimensionVerdicts` nullable; `region`·`age`·`status`·`category` | same | null vs unknown |
+| 5 | `PolicySearchResponse.interpreted_conditions` | NL interpretation block | |
+| 6 | `PolicySearchHit.unconfirmed_conditions` `{ field, reason_code, message }` | per-row unknowns | no national guess |
+| 7 | `reason_codes`·`message`; ReasonCode extensible + message fallback | reason DTO | |
+| 8 | `include_partial` default **true**; `limit` default **20** | same default | 복지로 10건 |
+| 9 | 400/422/404/500 UX (문서) | error contract | |
+| 10 | URL flat params only; no response JSON | — | no interpreted blob in URL |
+| 11 | Mock M1–M6 (M6: q+keyword) | contract tests | actual profile |
+| 12 | `score` ordering only; no UI numeric display | Backend rank | |
 
 ## 기존 Frontend 구조 분석
 
