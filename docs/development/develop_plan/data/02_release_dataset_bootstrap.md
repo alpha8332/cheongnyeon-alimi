@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT2B pending, DT2A contract parity completed
+- 현재 Slice: DT2C pending, DT2B G1 decisions completed
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -136,7 +136,7 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 
 #### DT2B - Data 근거 기반 G1 결정 동결
 
-- 상태: pending
+- 상태: completed (`2026-08-04`)
 - 선행 조건: DT2A
 - 목적: 실제 표본과 세 영역 초안을 하나의 Release 1 검색 의미로 확정한다.
 - 작업:

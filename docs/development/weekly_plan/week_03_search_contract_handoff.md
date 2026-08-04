@@ -30,7 +30,7 @@ Data·Team Leader에게 차이와 선택지를 알린다.
 - DT2 Data 작업: PSF 이후 actual profile, Data 권고안과 Schema 영향 판정 완료
 - Backend 06: W3-B0 계획·API 초안 병합 완료
 - Frontend 04: W3-F0 계획·draft type·표시 초안 병합 완료
-- Gate G1: DT2A 정합성 보완 완료, DT2B~DT2D 결정·검증·승인 대기
+- Gate G1: DT2A 정합성·DT2B 결정 동결 완료, DT2C~DT2D 검증·승인 대기
 
 현재 실제 표본의 PSF 이후 오프라인 재생 결과는 다음과 같다.
 
@@ -177,25 +177,45 @@ Backend와 Frontend가 같은 공통 커밋에서 병렬 분기하면 첫 번째
 - `NormalizedProgram` 1.1.0, Fixture, Seed, DB enum, `null`과 빈 배열 규칙은
   현재 DT2 Data 권고에서 변경하지 않는다.
 
-## Gate G1에서 함께 정할 내용
+## DT2B Gate G1 결정 동결
 
-다음은 아직 공동 승인이 필요한 항목이다.
+Backend W3-B0, Frontend W3-F0와 Data actual profile을 대조해 다음을 Release 1
+승인 후보 계약으로 동결한다. DT2C 실행 검증과 DT2D 상태 동기화 전까지
+`G1_APPROVED` 신호는 기록하지 않는다.
 
-- 자연어 검색 endpoint·method와 `q` 외 구조화 조건 전달 방식
-- `keyword`, `region`, `age`, `category`, `status`의 이름·타입·검증 오류
-- 확인된 `mismatch` 제외와 `unknown` 후보의 포함·감점·노출 하한
-- 새 검색 결과에서 partial 정책을 기본 후보로 포함할지 여부
-- open·scheduled·unknown·closed의 기본 노출과 정렬
-- 관련도 점수와 결정적 tie-breaker·pagination
-- 해석된 조건, 결과별 검색 이유와 미확인 조건의 응답 DTO
-- 사용자가 해석 조건을 확인·수정해 다시 요청하는 방식
-- 빈 결과·해석 실패·404·422·500의 API·UI 의미
+| 결정 영역 | DT2B 동결 계약 | Data 근거·소비 영향 |
+| --- | --- | --- |
+| endpoint | `GET /api/v1/policies/search`, trim 후 1~200자인 `q` 필수 | 자연어 검색 전용 route이며 `/programs` 기존 목록·exact filter는 유지 |
+| explicit filter | flat `keyword`, `region`, `age`, `category`, `status`; 명시 값이 같은 q dimension을 override | Frontend parser 없이 수정 조건을 다시 요청할 수 있음 |
+| pagination | `page=1`, `limit=20`, 최대 100; `total`은 pagination 전 필터 결과 | q·filter·limit 변경 시 Frontend가 `page=1`로 재설정 |
+| mismatch·unknown | confirmed mismatch는 DB에서 제외, unknown은 hard cutoff 없이 후보에 포함하고 `unknown_count ASC`로 감점 | 복지로 10건이 지역·연령·상태 unknown이므로 전부 제거하지 않고 미확인을 표시 |
+| 품질 | invalid는 제외, 검색 API만 `include_partial=true` 기본; 기존 목록 API 기본 false 유지 | 복지로 표본 10건 모두 partial이며 누락 조건을 row에 표시 |
+| 상태 | 기본은 open·scheduled·`application_status=null`, closed 제외; 명시적 `status=closed`에서 closed 검색 | null은 enum이 아닌 unknown bucket이며 미확인 후보 규칙 적용 |
+| 정렬 | `score DESC` → `unknown_count ASC` → open·scheduled·null·closed → `policy.id ASC` | Frontend sort UI·score 숫자 노출 없이 Backend 순서를 그대로 사용 |
+| 해석 경고 | q의 unmapped·ambiguous는 `interpreted_conditions.conditions[]`; 명시 region 실패는 400 | query-level 경고와 row-level 정책 근거 부족을 분리 |
+| 검색 이유 | row의 `reason_codes`, `message`, `unconfirmed_conditions`; 알 수 없는 code는 Backend message fallback | 정책 적용 가능성을 추정하지 않고 사용자 확인 필요를 설명 |
+| URL state | 사용자 입력 flat parameter만 저장하고 Backend 해석·verdict·score는 저장하지 않음 | 공유 URL은 재검색으로 응답 상태를 복원 |
+| 오류 | 의미 오류 400, validation 422, 정상 빈 결과 200·빈 items, 잘못된 route 404, 내부정보 없는 500 | loading·empty·error를 Frontend에서 분리 |
 
-Data 권고는 확정 불일치를 제외하고 unknown을 추정 없이 미확인 후보로
-보존하는 것이다. invalid는 제외하고 partial은 누락 조건과 함께 검색 후보로
-검토한다. 실제 복지로 표본 10건이 모두 partial·unknown이므로 모두 제외하면
-복지로가 검색에서 사라지고, 설명 없이 포함하면 사용자가 지원 가능성을
-오해할 수 있다.
+### 위험·미확정 항목 분류
+
+| ID | DT2B 판정 | Release 1 처리 |
+| --- | --- | --- |
+| `G1-REASON` | resolved | 확장 가능한 string code와 Backend message fallback 사용 |
+| `G1-UNK` | resolved | unknown 포함·감점·미확인 표시, hard cutoff 없음 |
+| `G1-ROUTE` | resolved | 자연어 검색 `/search`, 기존 목록 `/programs` 병행 |
+| `FF-REBASE` | resolved | 두 담당 HEAD가 Data 브랜치에 병합됨 |
+| category 다중 선택 | non-blocking | v0.1.0은 단일 `category`, 다중 선택은 후속 검토 |
+| 지역 ambiguous 후보 정확도 | implementation-risk | 임의 선택 금지, Backend B1·B4 parser·통합 테스트에서 검증 |
+
+본 구현을 막는 미확정 검색 의미는 0건이다. NormalizedProgram 1.1.0,
+Fixture, Seed, Migration, DB enum, `null`·빈 배열과 기존 Policy API 계약은
+변경하지 않는다.
+
+DT2B는 `2026-08-04`에 완료했다. G1 결정 정적 검사와 문서 검증 테스트
+10건이 통과했다. 최초 `validate_docs.py`는 Backend·Frontend Forest 계획의
+필수 `위험과 미확정 사항` 제목을 바꿔 2건 실패했고, 제목을 복원한 뒤 최종
+검증과 `git diff --check`가 통과했다. 현재 다음 Slice는 DT2C다.
 
 ## Backend 06 인수 범위
 

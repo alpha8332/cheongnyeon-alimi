@@ -161,10 +161,14 @@ TypeScript: `PolicySearchHit`, `PolicySearchResponse`,
 
 ### 정렬(Sort) 정책 (Release 1)
 
-Release 1 정렬은 Backend `score` 내림차순 단일 고정이며, Frontend 별도 sort
-UI·query parameter는 제공하지 않는다. 결과 순서는 Backend ranked list를
-그대로 표시한다. **`score` 숫자는 Release 1 화면에 노출하지 않으며**, 서로 다른
-검색 요청 사이에서 score를 비교·캐시 키로 사용하지 않는다.
+Release 1 정렬은 Backend의 `score DESC` → `unknown_count ASC` → 상태 우선순위
+→ `policy.id ASC` 4단계 고정이며 Frontend 별도 sort UI·query parameter는
+제공하지 않는다. 결과 순서는 Backend ranked list를 그대로 표시한다.
+**`score`와 `unknown_count` 숫자는 Release 1 화면에 노출하지 않으며**, 서로
+다른 검색 요청 사이에서 score를 비교·캐시 키로 사용하지 않는다.
+
+`q`, explicit filter 또는 `limit`가 바뀌면 Frontend URL state의 `page`를 1로
+재설정한다. 단순 page 이동은 다른 검색 조건을 바꾸지 않는다.
 
 ## URL State 분리 원칙 (G1 고정)
 
@@ -464,7 +468,7 @@ checklist에 포함한다.
 | **목표** | Release 1 golden flow 진입: 홈 검색 → `/search?q=` |
 | **변경 파일** | `HomePage.tsx`, `routes/index.tsx` |
 | **선행** | FE4-14 |
-| **세부 작업** | 홈 hero submit → `/search?q=…`; `/programs?search=` client filter와 경계 문서화; **Team Leader G1-ROUTE 확인** |
+| **세부 작업** | 홈 hero submit → `/search?q=…`; `/programs?search=` client filter와 승인된 route 경계 문서화 |
 | **검증** | Browser: 홈 → 검색 결과 (MSW) |
 | **완료 기준** | `release_roadmap` “홈 검색→검색 결과” 1단계 |
 
@@ -554,12 +558,16 @@ git diff --check
 
 ## 위험과 미확정 사항
 
-| ID | 항목 | 영향 | 재개 조건 |
-| --- | --- | --- | --- |
-| G1-REASON | `reason_codes`·`UnconfirmedCondition.reason_code` copy | unknown code fallback | Backend W3-B0 + FE4-19 |
-| G1-UNK | unknown 포함·감점 | 복지로 10건 | Data 권고 + G1 |
-| G1-ROUTE | `/search` vs `/programs` IA | navigation | FE4-20 + Team Leader |
-| FF-REBASE | Backend merge 후 rebase | branch | handoff § rebase |
+DT2B에서 다음과 같이 분류했다.
+
+| ID | DT2B 상태 | 승인 계약·후속 검증 |
+| --- | --- | --- |
+| G1-REASON | resolved | 알려진 code 전용 copy, 알 수 없는 code는 Backend message fallback; FE4-19 검증 |
+| G1-UNK | resolved | unknown 후보 포함·감점과 미확인 표시; FE4-18·FE4-19 검증 |
+| G1-ROUTE | resolved | `/search` 자연어 UX와 `/programs` 기존 목록을 병행; FE4-20 검증 |
+| FF-REBASE | resolved | Frontend HEAD가 Data 브랜치에 병합됨 |
+| category 다중 선택 | non-blocking | v0.1.0은 단일 category만 제공 |
+| 지역 ambiguous 후보 표시 | implementation-risk | candidates를 임의 선택하지 않고 FE4-17·FE4-19에서 수정·경고 UX 검증 |
 
 ## 관련 문서
 

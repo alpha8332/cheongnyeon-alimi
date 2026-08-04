@@ -139,7 +139,7 @@ preflight에서 다음 공동 검토 항목이 실제로 확인됐다.
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Data·Team Leader | Backend 06·Frontend 04 초안 병합과 DT2A 계약 정합성 보완 완료. DT2B Data 근거 결정 동결 → DT2C 소비 검증 → DT2D Gate G1 승인·후속 해제 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md), [Data 02 계획](development/develop_plan/data/02_release_dataset_bootstrap.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
+| `R1-SEARCH-DATA-SEMANTICS` | action-needed | Data·Team Leader | Backend·Frontend 초안 병합, DT2A 계약 정합성과 DT2B Data 근거 결정 동결 완료. DT2C 소비 검증 → DT2D Gate G1 승인·후속 해제 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md), [Data 02 계획](development/develop_plan/data/02_release_dataset_bootstrap.md), [Data 02 개발 기록](development/development_notes/data/release_dataset_bootstrap.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

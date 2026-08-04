@@ -268,12 +268,16 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 
 #### DT2B - Data 근거 기반 G1 결정 동결
 
+- 상태: completed (`2026-08-04`)
 - 실제 온통청년 10건·복지로 10건 분포를 endpoint, parameter, unknown,
   partial, 상태, 정렬, pagination, reason·오류 결정에 연결한다.
 - `G1-REASON`, `G1-UNK`, `G1-ROUTE`를 해소하고 category 다중 선택과 지역
   ambiguous 정확도는 Release 1 blocker인지 후속 구현 위험인지 분류한다.
 - Schema·Fixture·Seed·DB enum·`null`·빈 배열 계약은 바꾸지 않는다고
   세 영역 영향표에 기록한다.
+- G1 결정 정적 검사, 문서 검증 테스트 10건과 최종 `validate_docs.py`·
+  `git diff --check`를 통과했다. 최초 문서 검증의 필수 제목 오류 2건은
+  제목을 정책에 맞게 복원한 뒤 재검증했다.
 
 #### DT2C - 소비 계약 검증과 증거 기록
 

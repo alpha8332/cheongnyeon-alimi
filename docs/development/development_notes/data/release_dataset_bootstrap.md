@@ -9,7 +9,7 @@
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: DT2B pending, DT2A contract parity completed
+- 현재 Slice: DT2C pending, DT2B G1 decisions completed
 
 ## 목적
 
@@ -314,16 +314,50 @@ Backend parser·Repository·endpoint도 구현하지 않았다.
 DT2A 검증은 API·UI 본 구현 테스트가 아니다. G1 승인 전 draft 계약의 정적
 정합성과 문서 실행 가능성만 확인했다.
 
+### DT2B - Data 근거 기반 G1 결정 동결
+
+Backend·Frontend가 제출한 소비 초안과 PSF 이후 actual profile을 공동
+인수인계 결정표에서 대조했다. 복지로 표본 10건이 모두 partial이며 지역·연령·
+상태 근거가 없다는 사실 때문에 unknown·partial을 기본 제외하지 않는다.
+확정 mismatch와 invalid만 제외하고, unknown은 hard cutoff 없이 후보로 남겨
+`unknown_count`로 감점하고 정책별 미확인 이유를 표시한다.
+
+결정된 검색 계약은 필수 자연어 `q`, flat explicit override, 검색 API의
+`include_partial=true`, open·scheduled·null 기본 상태, Backend 4단계 정렬,
+사용자 입력만 저장하는 URL state와 400·422·200 empty·404·500 오류 분리다.
+기존 `/api/v1/policies` 목록·상세와 NormalizedProgram·Fixture·Seed·Migration·
+DB enum은 변경하지 않는다.
+
+| 위험 | DT2B 판정 | 근거·다음 검증 |
+| --- | --- | --- |
+| reason code copy | resolved | 확장 string과 Backend message fallback, FE4-19 |
+| unknown 포함·감점 | resolved | 복지로 보존, `unknown_count ASC`, FE4-18·19 |
+| `/search`·`/programs` 경계 | resolved | 자연어와 기존 목록 route 병행, FE4-20 |
+| Frontend rebase | resolved | Backend·Frontend HEAD 병합 완료 |
+| category 다중 선택 | non-blocking | v0.1.0 단일 값, 후속 검토 |
+| 지역 ambiguous 정확도 | implementation-risk | 임의 선택 금지, Backend B1·B4와 Frontend FE4-17·19 검증 |
+
+Release 1 본 구현을 막는 미확정 검색 의미는 0건이다. 이 판정은 구현 정확도나
+Browser 인수를 통과시킨 것이 아니며, 각 후속 Slice 검증이 실패하면 해당
+항목을 다시 blocker로 전환한다.
+
+#### DT2B 검증 결과
+
+| 검증 | 결과 |
+| --- | --- |
+| G1 결정 필수 항목 정적 검사 | 통과, endpoint·partial·unknown·정렬·위험 분류 확인 |
+| 문서 검증 테스트 | 10건 통과 |
+| 최초 `python scripts/validate_docs.py` | 실패 2건, Backend·Frontend 계획의 필수 위험 제목 변경 감지 |
+| 제목 복원 후 `python scripts/validate_docs.py` | 통과 |
+| `git diff --check` | 통과 |
+| PostgreSQL·외부 API | 미사용, DT2B 결정 동결에 불필요 |
+
 ### DT2 - 공동 G1 대기 항목
 
-- DT2B: 검색 endpoint의 partial 기본 포함, open·scheduled·null·closed 기본
-  노출 순서와 unknown 후보의 감점·노출 의미를 Data 근거와 함께 동결
-- DT2B: `G1-REASON`, `G1-UNK`, `G1-ROUTE`, category 다중 선택과 지역
-  ambiguous 정확도의 Release 1 차단 여부 분류
 - DT2C: Frontend build·lint와 문서·diff 검증 증거 확보
 - DT2D: 관련 상태와 공동 인계 보드를 동기화하고 Gate G1 승인 여부 기록
 
-DT2B~DT2D가 남아 있으므로 DT2와 Gate G1은 아직 완료로 표시하지 않는다.
+DT2C~DT2D가 남아 있으므로 DT2와 Gate G1은 아직 완료로 표시하지 않는다.
 
 ## 주요 변경 파일
 

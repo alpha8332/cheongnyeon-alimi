@@ -368,8 +368,15 @@ query-level 해석 경고와 row-level 정책 근거 부족은 서로 다른 위
 
 ## 위험과 미확정 사항
 
-1. 자연어 검색어 `q`에서 행정구역명을 유도할 때 법정동 계층(시/도 vs 시/군/구) 매핑 정확도 및 ambiguous 후보 수 제안
-2. `GET /api/v1/policies/search` 쿼리 파라미터 중 `category` 다중 선택 지원 여부 (v0.1.0은 단일 category 우선 지원)
+DT2B에서 다음과 같이 분류했다.
+
+| 항목 | DT2B 분류 | Release 1 처리 |
+| --- | --- | --- |
+| 자연어 지역 계층 매핑·ambiguous 후보 정확도 | implementation-risk | 임의 선택 없이 candidates를 반환하고 B1 parser·B4 실제 PostgreSQL 통합에서 검증 |
+| `category` 다중 선택 | non-blocking | v0.1.0 request는 단일 `category`로 동결하고 다중 선택은 후속 검토 |
+
+두 항목 모두 G1 승인이나 본 구현 시작을 막지 않는다. 구현 검증이 실패하면
+Backend Forest 또는 Integration 04의 Release 1 blocker로 다시 분류한다.
 
 ## 관련 문서
 
