@@ -28,9 +28,9 @@ Data·Team Leader에게 차이와 선택지를 알린다.
 - Data 02 DT0~DT1: 환경, 실제 Source preflight와 대표 Raw 확보 완료
 - Integration 03 PSF0~PSF8: Source 중립 검색 데이터 기반 완료·병합
 - DT2 Data 작업: PSF 이후 actual profile, Data 권고안과 Schema 영향 판정 완료
-- Backend 06: 계획·API 초안 필요
-- Frontend 04: 계획·타입·표시 초안 필요
-- Gate G1: Backend·Frontend 소비 검토 대기
+- Backend 06: W3-B0 계획·API 초안 병합 완료
+- Frontend 04: W3-F0 계획·draft type·표시 초안 병합 완료
+- Gate G1: DT2A~DT2D 정합성 보완·결정·검증·승인 대기
 
 현재 실제 표본의 PSF 이후 오프라인 재생 결과는 다음과 같다.
 
@@ -43,6 +43,22 @@ Raw payload, API 키와 DB credential은 담당자에게 전달하지 않는다.
 경계 사례와 집계는
 [Data 02 개발 기록](../development_notes/data/release_dataset_bootstrap.md)을
 사용한다.
+
+## DT2 종료 Slice
+
+Backend·Frontend 담당자가 제출하지 못한 공동 계약 마감은 Data·Team Leader가
+현재 Data 브랜치에서 다음 순서로 수행한다. 이 작업은 G1 전 계획·draft 계약
+보완이며 각 영역의 본 구현을 대신하지 않는다.
+
+| 순서 | Slice | 핵심 작업 | 완료 증거 |
+| ---: | --- | --- | --- |
+| 1 | DT2A 계약 정합성 보완 | Backend import·null status·경고 위치, Frontend `unknown_count`·Slice 참조 수정 | request·response parity 불일치 0건 |
+| 2 | DT2B G1 결정 동결 | actual profile로 unknown·partial·상태·정렬·오류·reason 확정 | Data 근거가 연결된 결정표, blocker 0건 |
+| 3 | DT2C 소비 검증 | Frontend build·lint, 문서 테스트·검증, diff·비밀 경계 확인 | 실제 명령·환경·결과 기록 |
+| 4 | DT2D Gate 종료 | 상태·인계 보드·체크리스트 동기화와 `G1_APPROVED` | DT3·Backend·Frontend 본 구현 시작 신호 |
+
+DT2A~DT2C 중 불일치나 실패가 남으면 DT2D에서 승인 문구를 기록하지 않는다.
+Node/npm 등 검증 환경 부재도 통과로 간주하지 않는다.
 
 ## 브랜치 기준
 

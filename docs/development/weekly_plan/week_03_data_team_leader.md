@@ -225,8 +225,8 @@ Forest 전체 Gate와 Data 02 인계를 완료했다.
 - 병렬 가능: Backend·Frontend 현재 구조 분석과 계획·계약 문서 초안
 - 기다려야 함: DT2 최종 지역·partial 노출 계약, DT3 실제 bootstrap,
   Backend 06 최종 query
-- 후속: 기반 브랜치 병합 후 DT2 Data 근거 준비 재개, 공동 G1은 Backend 06·
-  Frontend 04 초안 대기
+- 후속: Backend 06·Frontend 04 초안 병합 완료. DT2A~DT2D 정합성 보완,
+  공동 결정, 소비 검증과 Gate 종료 수행
 
 ## Slice DT2 - 검색 계약 공동 결정과 Gate G1 주관
 
@@ -248,7 +248,44 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 독립적인 부분을 준비할 수 있다.
 
 현재 상태는 `in-progress`다. PSF 이후 actual profile, Data 권고안과 Schema
-영향 판정은 준비됐고 Backend `W3-B0`·Frontend `W3-F0` 초안을 기다린다.
+영향 판정 및 Backend `W3-B0`·Frontend `W3-F0` 병합은 완료됐다. 남은 계약
+불일치를 보완하고 소비 검증을 통과한 뒤에만 G1을 승인한다.
+
+### DT2 세부 실행 순서
+
+#### DT2A - 병합 계약 정합성 보완
+
+- Backend plan의 실제 Schema import 경로와 `application_status=null` 상태
+  bucket을 현재 코드에 맞춘다.
+- query-level 해석 경고는 `interpreted_conditions.conditions[]`, row-level
+  데이터 미확인은 `items[].unconfirmed_conditions[]`로 분리한다.
+- Frontend draft `PolicySearchHit`에 `unknown_count: number`를 반영하고 폐기된
+  FE4 Slice 참조를 현재 FE4-14·FE4-19로 고친다.
+- 계획·draft type만 수정하며 G1 전 본 구현·Mock·테스트 코드는 만들지 않는다.
+
+#### DT2B - Data 근거 기반 G1 결정 동결
+
+- 실제 온통청년 10건·복지로 10건 분포를 endpoint, parameter, unknown,
+  partial, 상태, 정렬, pagination, reason·오류 결정에 연결한다.
+- `G1-REASON`, `G1-UNK`, `G1-ROUTE`를 해소하고 category 다중 선택과 지역
+  ambiguous 정확도는 Release 1 blocker인지 후속 구현 위험인지 분류한다.
+- Schema·Fixture·Seed·DB enum·`null`·빈 배열 계약은 바꾸지 않는다고
+  세 영역 영향표에 기록한다.
+
+#### DT2C - 소비 계약 검증과 증거 기록
+
+- Frontend build·lint, 문서 검증 테스트, `validate_docs.py`와
+  `git diff --check`를 실행한다.
+- Node/npm 등 실행 환경이 없으면 성공으로 간주하지 않고 환경 또는 담당자
+  증거를 확보할 때까지 DT2C를 `blocked`가 아닌 `pending`으로 유지한다.
+- 실제 실행 결과만 Data 개발 기록에 기록한다.
+
+#### DT2D - Gate 승인과 후속 해제
+
+- 인수인계 결정표와 검증 결과를 최종화하고 `G1_APPROVED`를 기록한다.
+- Data DT2, W3-B0·W3-F0 준비 상태, 주차 체크리스트와 `docs/index.md` 인계
+  상태를 동기화한다.
+- 이후에만 DT3, Backend B1~B4, Frontend FE4-11~FE4-24를 병렬 해제한다.
 
 ### 수행 작업
 
@@ -300,6 +337,7 @@ G1 전에는 세 영역의 본 구현과 테스트 코드를 작성하지 않는
 - Schema, `null`, 빈 배열과 enum 변경 여부가 확인됨
 - 미확정 항목이 본 구현 또는 Release 1을 막는지 분류됨
 - Data·Backend·Frontend 담당자가 소비 관점에서 확인함
+- DT2A 계약 불일치가 모두 해소되고 DT2C의 실행 가능한 검증이 통과함
 
 ### 후속 해제
 

@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT2 in-progress, Data evidence prepared, Gate G1 pending
+- 현재 Slice: DT2A pending, merged contract correction scope fixed
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -103,14 +103,81 @@ Source 중립 검색 필드·지역·DB 기반은 Integration 03이 담당하고
 - 목적: 실제 표본을 바탕으로 지역·연령·상태·품질 의미를 제안하고
   Backend·Frontend 공동 계약 검토를 지원한다.
 - 선행 조건: DT1, Integration 03 PSF0~PSF8, Backend 06·Frontend 04 초안
-- 산출물: Data 권고안, 경계 사례와 Schema 변경 영향 판정
-- 완료 기준: Data·Backend·Frontend 소비 관점의 G1 검토 증거 확보
+- 산출물: Data 권고안, 경계 사례, Schema 변경 영향 판정과 G1 승인 기록
+- 완료 기준: DT2A~DT2D를 순서대로 완료하고 Data·Backend·Frontend 소비
+  관점의 G1 검토 증거를 확보함
 
 Integration 03 병합 후 저장된 DT1 Runtime Raw를 외부 호출 없이 다시 재생해
 Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 지역·연령·상태·
 품질의 `match|mismatch|unknown`을 표현할 수 있어 Data Schema, Fixture, Seed,
 `null`, 빈 배열과 enum 변경은 제안하지 않는다. Backend 06·Frontend 04 초안이
-없으므로 query·응답·표시 의미의 공동 G1 승인은 아직 완료하지 않는다.
+현재 브랜치에 병합됐지만 response parity와 `null`·경고 위치 표현에 잔여
+불일치가 있어 공동 G1 승인은 아직 완료하지 않는다.
+
+#### DT2A - 병합 계약 정합성 보완
+
+- 상태: pending
+- 목적: 병합된 W3-B0·W3-F0 초안의 구현 전 계약 불일치를 제거한다.
+- 작업:
+  - Backend 계획의 실제 `ApplicationStatus`·`PolicyCategory` import 경로 수정
+  - 상태 정렬의 `unknown`을 새 enum이 아닌 `application_status=null` 파생
+    bucket으로 명시
+  - query-level 지역 해석 경고와 row-level 미확인 조건의 DTO 위치 분리
+  - Frontend `PolicySearchHit.unknown_count`와 Backend response parity 복구
+  - Frontend draft 주석의 폐기된 FE4 Slice 번호를 현재 계획과 동기화
+- 변경 경계:
+  - 계획·draft type만 수정하고 Backend API·Repository·Frontend UI 본 구현은
+    시작하지 않음
+  - NormalizedProgram 1.1.0, Fixture, Seed, DB enum, `null`·빈 배열 규칙을
+    변경하지 않음
+- 완료 기준:
+  - request·response 필드, 타입, nullability와 기본값 대조표에 불일치 0건
+  - 코드의 실제 import·enum 경계와 계획 문서가 일치함
+
+#### DT2B - Data 근거 기반 G1 결정 동결
+
+- 상태: pending
+- 선행 조건: DT2A
+- 목적: 실제 표본과 세 영역 초안을 하나의 Release 1 검색 의미로 확정한다.
+- 작업:
+  - `GET /api/v1/policies/search`, 필수 `q`, flat explicit override 확정
+  - confirmed mismatch 제외, unknown 후보 포함·감점과 partial 기본 포함 확정
+  - 기본 상태 노출, null status bucket, score·tie-breaker·pagination 확정
+  - query-level 해석 경고, row-level reason·미확인 조건과 오류 의미 확정
+  - `G1-REASON`, `G1-UNK`, `G1-ROUTE`와 Backend 미확정 사항을 Release 1
+    blocker 또는 후속 구현 위험으로 분류
+- 산출물: 실제 Data 표본과 각 결정이 연결된 G1 결정표
+- 완료 기준:
+  - 본 구현을 막는 미확정 검색 의미 0건
+  - Schema·Fixture·Seed·DB enum 변경 없음과 API·Frontend 영향이 명시됨
+
+#### DT2C - 소비 계약 검증과 증거 기록
+
+- 상태: pending
+- 선행 조건: DT2B
+- 목적: 승인 후보 문서와 draft type이 각 소비 환경에서 실행 가능함을 확인한다.
+- 작업:
+  - Frontend `npm run build`와 `npm run lint`
+  - 문서 검증 단위 테스트와 `python scripts/validate_docs.py`
+  - `git diff --check`, 비밀·Raw·DB 파일 비추적 확인
+  - 실행 명령·환경·결과를 Data 개발 기록에 남기고 미실행 항목을 구분
+- 완료 기준:
+  - Frontend type build·lint와 문서 검증 통과
+  - 계약 대조와 실제 검증 결과가 같은 승인 후보를 가리킴
+
+#### DT2D - Gate G1 승인과 후속 해제
+
+- 상태: pending
+- 선행 조건: DT2A~DT2C
+- 목적: DT2 완료 증거를 동기화하고 세 영역의 본 구현을 공식 해제한다.
+- 작업:
+  - Gate G1 인수인계에 결정표·검증 결과와 `G1_APPROVED` 기록
+  - Backend W3-B0·Frontend W3-F0 준비 상태와 Data DT2 상태 동기화
+  - `docs/index.md` 공동 인계 보드를 종료하거나 구현 후속 인계로 전환
+  - 3주차 Data·Team Leader 체크리스트와 현재 Slice를 DT3로 전환
+- 완료 기준:
+  - Data DT2 `completed`와 Gate G1 `approved`가 관련 계획·인계·색인에서 일치
+  - DT3, Backend B1~B4와 Frontend FE4-11~FE4-24 시작 조건이 명확함
 
 ### DT3 - 릴리스 snapshot 수집과 PostgreSQL bootstrap
 
