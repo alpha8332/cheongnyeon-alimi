@@ -4,11 +4,11 @@
 
 - 기간: 2026-08-04
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/backend/policy-search-impl`
 - 선행 Forest: [Policy Search Data Foundation](../../develop_plan/integration/03_policy_search_data_foundation.md)
 - 관련 계획: [Backend 06 Policy Search Forest 개발 계획](../../develop_plan/backend/06_policy_search.md)
-- 현재 Slice: B4 pending (B3 completed)
+- 현재 Slice: completed (Forest All Slices B0-B4 Completed)
 
 ## 목적
 
@@ -31,7 +31,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
 | **B1** | 자연어 해석 및 규칙 기반 구조화 서비스 구현 | completed | `policy_search_parser.py` 구현 및 단위 테스트 통과 (4 passed) |
 | **B2** | PostgreSQL 검색 Repository 및 Query Builder 구현 | completed | `PolicySearchRepository.search_policies` 및 4단계 정렬 테스트 통과 (3 passed) |
 | **B3** | Policy Search API Endpoint 및 DTO 구현 | completed | `GET /api/v1/policies/search` 엔드포인트 및 HTTP 400/422/200 OK 테스트 통과 (4 passed) |
-| **B4** | PostgreSQL 통합, 정렬/페이징 & API 호환성 검증 | pending | Slice B3 완료 후 진행 예정 |
+| **B4** | PostgreSQL 통합, 정렬/페이징 & API 호환성 검증 | completed | PostgreSQL DB 통합 및 기존 API 회귀 테스트 통과 (110 passed/skipped) |
 
 ## 구현 내용
 
@@ -69,12 +69,19 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
    - 검색 결과가 없는 경우 404가 아닌 **HTTP 200 OK (`total: 0`, `items: []`)** 반환.
    - `PolicySearchResponse` DTO 직렬화 및 기존 `GET /api/v1/policies` 라우터와 호환 유지.
 
+### Slice B4 - PostgreSQL 통합, 정렬/페이징 & API 호환성 검증 (`tests/test_postgresql_policy_search_integration.py`)
+
+1. **PostgreSQL DB 엔드투엔드 통합 테스트**:
+   - Alembic 마이그레이션 적용 및 `import_region_reference`로 행정구역 데이터 세팅 후 `search_policies` 전체 엔드투엔드 흐름 검증.
+   - 기존 목록 API (`PolicyRepository.list`) 및 상세 API (`PolicyRepository.get_by_id`) 호환성 및 회귀 검증 완료.
+
 ## 주요 변경 파일
 
 - `backend/app/api/v1/endpoints/policies.py`: `GET /search` API 라우터 엔드포인트 핸들러 추가
-- `backend/tests/test_policy_search_api_endpoint.py`: API Endpoint HTTP 응답 통합 테스트 (4 passed)
 - `backend/app/repositories/policy_search.py`: `search_policies` Repository Query Builder 메서드
-- `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록 (Slice B3 누적)
+- `backend/tests/test_policy_search_api_endpoint.py`: API Endpoint HTTP 응답 통합 테스트
+- `backend/tests/test_postgresql_policy_search_integration.py`: PostgreSQL E2E 통합 테스트
+- `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록 (최종 완료)
 
 ## 설계 결정
 

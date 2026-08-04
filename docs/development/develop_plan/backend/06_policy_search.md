@@ -7,7 +7,7 @@
 - 상태: approved
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: B4 pending (B3 completed)
+- 현재 Slice: completed (Forest All Slices B0-B4 Completed)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -118,7 +118,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B4 - PostgreSQL 통합, 정렬/페이징 & API 호환성 검증
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: 실제 PostgreSQL 적재 데이터 대상 전체 통합 테스트 및 기존 API 호환성 검증
 - 산출물:
   - 통합 테스트 스위트 및 Backend 개발 기록 `docs/development/development_notes/backend/policy_search.md`
