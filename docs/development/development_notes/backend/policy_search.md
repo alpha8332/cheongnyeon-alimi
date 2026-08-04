@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-search-impl`
 - 선행 Forest: [Policy Search Data Foundation](../../develop_plan/integration/03_policy_search_data_foundation.md)
 - 관련 계획: [Backend 06 Policy Search Forest 개발 계획](../../develop_plan/backend/06_policy_search.md)
-- 현재 Slice: B3 pending (B2 completed)
+- 현재 Slice: B4 pending (B3 completed)
 
 ## 목적
 
@@ -30,7 +30,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
 | **W3-B0** | 검색 API 및 Repository 계약 초안 작성 | completed | Gate G1 최종 계약 승인 (`2026-08-04`) |
 | **B1** | 자연어 해석 및 규칙 기반 구조화 서비스 구현 | completed | `policy_search_parser.py` 구현 및 단위 테스트 통과 (4 passed) |
 | **B2** | PostgreSQL 검색 Repository 및 Query Builder 구현 | completed | `PolicySearchRepository.search_policies` 및 4단계 정렬 테스트 통과 (3 passed) |
-| **B3** | Policy Search API Endpoint 및 DTO 구현 | pending | Slice B2 완료 후 진행 예정 |
+| **B3** | Policy Search API Endpoint 및 DTO 구현 | completed | `GET /api/v1/policies/search` 엔드포인트 및 HTTP 400/422/200 OK 테스트 통과 (4 passed) |
 | **B4** | PostgreSQL 통합, 정렬/페이징 & API 호환성 검증 | pending | Slice B3 완료 후 진행 예정 |
 
 ## 구현 내용
@@ -60,11 +60,21 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
 3. **`total` 및 페이징**:
    - pagination 적용 전 전체 결과 건수 `total` 계산 및 `page`, `limit` 슬라이싱 반환.
 
+### Slice B3 - Policy Search API Endpoint 구현 (`app/api/v1/endpoints/policies.py`)
+
+1. **`GET /api/v1/policies/search` FastAPI 엔드포인트 핸들러**:
+   - Flat query parameters (`q`, `keyword`, `region`, `age`, `category`, `status`, `include_partial`, `page`, `limit`) 검증.
+   - `q` 미입력 또는 빈 공백인 경우 **HTTP 422 Unprocessable Entity** 반환.
+   - 명시적 `region`이 `unmapped` 또는 `ambiguous`인 경우 **HTTP 400 Bad Request** 커스텀 에러 구조 반환.
+   - 검색 결과가 없는 경우 404가 아닌 **HTTP 200 OK (`total: 0`, `items: []`)** 반환.
+   - `PolicySearchResponse` DTO 직렬화 및 기존 `GET /api/v1/policies` 라우터와 호환 유지.
+
 ## 주요 변경 파일
 
-- `backend/app/repositories/policy_search.py`: `search_policies` Repository Query Builder 메서드 추가
-- `backend/tests/test_policy_search_repository_builder.py`: Query Builder 4단계 정렬 및 필터링 테스트
-- `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록 (Slice B2 누적)
+- `backend/app/api/v1/endpoints/policies.py`: `GET /search` API 라우터 엔드포인트 핸들러 추가
+- `backend/tests/test_policy_search_api_endpoint.py`: API Endpoint HTTP 응답 통합 테스트 (4 passed)
+- `backend/app/repositories/policy_search.py`: `search_policies` Repository Query Builder 메서드
+- `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록 (Slice B3 누적)
 
 ## 설계 결정
 

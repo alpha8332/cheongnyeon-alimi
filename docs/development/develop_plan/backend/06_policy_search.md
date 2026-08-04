@@ -7,7 +7,7 @@
 - 상태: approved
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: B3 pending (B2 completed)
+- 현재 Slice: B4 pending (B3 completed)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -107,7 +107,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B3 - Policy Search API Endpoint 및 DTO 구현
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: `GET /api/v1/policies/search` Endpoint 및 Pydantic DTO, 예외 처리 핸들러 구현
 - 산출물:
   - `backend/app/api/v1/endpoints/policy_search.py`
