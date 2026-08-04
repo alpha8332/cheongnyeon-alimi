@@ -8,7 +8,7 @@
 - 브랜치: `feature/backend/policy-search-impl`
 - 선행 Forest: [Policy Search Data Foundation](../../develop_plan/integration/03_policy_search_data_foundation.md)
 - 관련 계획: [Backend 06 Policy Search Forest 개발 계획](../../develop_plan/backend/06_policy_search.md)
-- 현재 Slice: B2 pending (B1 completed)
+- 현재 Slice: B3 pending (B2 completed)
 
 ## 목적
 
@@ -29,7 +29,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
 | --- | --- | --- | --- |
 | **W3-B0** | 검색 API 및 Repository 계약 초안 작성 | completed | Gate G1 최종 계약 승인 (`2026-08-04`) |
 | **B1** | 자연어 해석 및 규칙 기반 구조화 서비스 구현 | completed | `policy_search_parser.py` 구현 및 단위 테스트 통과 (4 passed) |
-| **B2** | PostgreSQL 검색 Repository 및 Query Builder 구현 | pending | Slice B1 완료 후 진행 예정 |
+| **B2** | PostgreSQL 검색 Repository 및 Query Builder 구현 | completed | `PolicySearchRepository.search_policies` 및 4단계 정렬 테스트 통과 (3 passed) |
 | **B3** | Policy Search API Endpoint 및 DTO 구현 | pending | Slice B2 완료 후 진행 예정 |
 | **B4** | PostgreSQL 통합, 정렬/페이징 & API 호환성 검증 | pending | Slice B3 완료 후 진행 예정 |
 
@@ -46,12 +46,25 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
    - 행정구역 매핑 상태(`resolved`, `ambiguous`, `unmapped`) 및 후보군(`candidates[]`) 추출.
    - 파싱에 소비되지 않은 독립 토큰을 `uninterpreted_terms`에 수집.
 
+### Slice B2 - PostgreSQL 검색 Repository 및 Query Builder (`app/repositories/policy_search.py`)
+
+1. **`search_policies` Query Builder 구현**:
+   - `InterpretedConditions`와 `include_partial`, `page`, `limit` 파라미터를 받아 `mismatch` 항목을 제외한 전체 검색 결과를 필터링 및 조율.
+   - `status`, `age`, `category`, `region` 4개 차원에 대해 조건 미선택 시 `null`, 조건 합치 시 `match`, 불일치 시 `mismatch`(확정 제외), 근거 부족 시 `unknown` 처리.
+   - `closed` 신청상태 정책은 명시적 `status=closed` 지정 시에만 노출되도록 기본 제외 필터링.
+2. **4단계 결정적 정렬 (Deterministic 4-step Sort)**:
+   - 1순위: `score DESC` (관련도 점수 내림차순)
+   - 2순위: `unknown_count ASC` (verdicts 내 null 제외 unknown 차원 개수 오름차순)
+   - 3순위: `status` 우선순위 (`open` > `scheduled` > `null/unknown` > `closed`)
+   - 4순위: `policy.id ASC` (결정적 tie-breaker)
+3. **`total` 및 페이징**:
+   - pagination 적용 전 전체 결과 건수 `total` 계산 및 `page`, `limit` 슬라이싱 반환.
+
 ## 주요 변경 파일
 
-- `backend/app/schemas/policy_search.py`: Policy Search Request/Response Pydantic DTO
-- `backend/app/services/policy_search_parser.py`: 규칙 기반 자연어 파서 서비스
-- `backend/tests/test_policy_search_parser.py`: 파서 규칙 및 override 단위 테스트
-- `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록
+- `backend/app/repositories/policy_search.py`: `search_policies` Repository Query Builder 메서드 추가
+- `backend/tests/test_policy_search_repository_builder.py`: Query Builder 4단계 정렬 및 필터링 테스트
+- `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록 (Slice B2 누적)
 
 ## 설계 결정
 

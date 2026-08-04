@@ -1,0 +1,167 @@
+import pytest
+from datetime import datetime, timezone
+from app.models.policy import Policy
+from app.models.policy_search import PolicySearchDocument
+from app.repositories.policy_search import PolicySearchRepository
+from app.services.policy_search_parser import parse_search_query
+
+
+@pytest.fixture
+def sample_policies(db):
+    """테스트용 정책 DB 샘플 생성"""
+    now = datetime.now(timezone.utc)
+
+    # 1. 서울 24세 지원 가능 open 정책 (housing)
+    p1 = Policy(
+        source_id="test_1",
+        source_name="온통청년",
+        title="서울 청년 월세 특별지원",
+        summary="서울 청년 대상 월세 지원금",
+        categories=["housing"],
+        application_status="open",
+        region_text="서울특별시",
+        regions=["1100000000"],
+        age_min=19,
+        age_max=39,
+        coverage_scope="regional",
+        data_quality_status="valid",
+        source_url="https://example.com/1",
+        collected_at=now,
+    )
+    # 2. 전국 30세 지원 가능 scheduled 정책 (finance)
+    p2 = Policy(
+        source_id="test_2",
+        source_name="복지로",
+        title="청년 도약 계좌 적금",
+        summary="전국 청년 자산 형성 대출 적금 지원",
+        categories=["finance"],
+        application_status="scheduled",
+        region_text="전국",
+        regions=[],
+        age_min=19,
+        age_max=34,
+        coverage_scope="nationwide",
+        data_quality_status="valid",
+        source_url="https://example.com/2",
+        collected_at=now,
+    )
+    # 3. 마감된 정책 (closed)
+    p3 = Policy(
+        source_id="test_3",
+        source_name="온통청년",
+        title="마감된 서울 주거 지원",
+        categories=["housing"],
+        application_status="closed",
+        region_text="서울특별시",
+        regions=["1100000000"],
+        age_min=19,
+        age_max=39,
+        coverage_scope="regional",
+        data_quality_status="valid",
+        source_url="https://example.com/3",
+        collected_at=now,
+    )
+
+    db.add_all([p1, p2, p3])
+    db.flush()
+
+    # AdministrativeRegion 생성
+    from app.models.administrative_region import AdministrativeRegion, AdministrativeRegionAlias
+    reg1 = AdministrativeRegion(
+        scheme="kr-bjd-20260803",
+        code="1100000000",
+        name="서울특별시",
+        full_name="서울특별시",
+        level="province",
+        status="active",
+    )
+    alias1 = AdministrativeRegionAlias(
+        scheme="kr-bjd-20260803",
+        region_code="1100000000",
+        alias="서울특별시",
+        kind="curated",
+    )
+    db.add_all([reg1, alias1])
+
+    # PolicyRegionRule 생성
+    from app.models.policy_search import PolicyRegionRule
+    r1 = PolicyRegionRule(
+        policy_id=p1.id,
+        relation="include",
+        resolution_status="matched",
+        region_scheme="kr-bjd-20260803",
+        region_code="1100000000",
+        source_code="1100000000",
+        source_text="서울특별시",
+    )
+    db.add(r1)
+
+    # Search document 생성
+    d1 = PolicySearchDocument(
+        policy_id=p1.id,
+        title_text="서울 청년 월세 특별지원",
+        keyword_text="월세 주거 지원금 청년",
+        summary_text="서울 청년 대상 월세 지원금",
+        eligibility_text="19세~39세 청년",
+        support_text="월 20만원 지원",
+        search_text="서울 청년 월세 특별지원 월세 주거 지원금 청년 서울 청년 대상 월세 지원금 19세~39세 청년 월 20만원 지원",
+        projection_version="1.1.0",
+        updated_at=now,
+    )
+    d2 = PolicySearchDocument(
+        policy_id=p2.id,
+        title_text="청년 도약 계좌 적금",
+        keyword_text="도약 적금 자산 금융 대출",
+        summary_text="전국 청년 자산 형성 대출 적금 지원",
+        eligibility_text="19세~34세 청년",
+        support_text="자산 형성 지원",
+        search_text="청년 도약 계좌 적금 도약 적금 자산 금융 대출 전국 청년 자산 형성 대출 적금 지원 19세~34세 청년 자산 형성 지원",
+        projection_version="1.1.0",
+        updated_at=now,
+    )
+
+    db.add_all([d1, d2])
+    db.commit()
+
+    return [p1, p2, p3]
+
+
+def test_repository_search_policies_basic(db, sample_policies):
+    repo = PolicySearchRepository(db)
+
+    # 1. 서울 24세 월세 검색어 파싱
+    interpreted = parse_search_query(q="서울 24세 월세 모집중", db=db)
+    items, total = repo.search_policies(interpreted, include_partial=True, page=1, limit=10)
+
+    # 결과 검증: closed 정책(p3)은 제외되어 p1이 1위여야 함
+    assert total >= 1
+    top_item = items[0]
+    assert top_item.policy.id == sample_policies[0].id
+    assert top_item.verdicts.status == "match"
+    assert top_item.verdicts.age == "match"
+    assert top_item.verdicts.category == "match"
+    assert top_item.unknown_count == 0
+
+
+def test_repository_search_policies_status_closed_filter(db, sample_policies):
+    repo = PolicySearchRepository(db)
+
+    # status="closed" 명시적 검색
+    interpreted = parse_search_query(q="서울 주거 지원", status="closed", db=db)
+    items, total = repo.search_policies(interpreted, page=1, limit=10)
+
+    assert total == 1
+    assert items[0].policy.id == sample_policies[2].id
+    assert items[0].verdicts.status == "match"
+
+
+def test_repository_search_policies_deterministic_sorting(db, sample_policies):
+    repo = PolicySearchRepository(db)
+
+    # 자연어 키워드 검색
+    interpreted = parse_search_query(q="청년 적금", db=db)
+    items, total = repo.search_policies(interpreted, page=1, limit=10)
+
+    assert total >= 1
+    # p2 (청년 도약 계좌 적금)가 적금 키워드 매칭으로 상위에 위치
+    assert items[0].policy.id == sample_policies[1].id

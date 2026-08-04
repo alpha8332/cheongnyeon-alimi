@@ -7,7 +7,7 @@
 - 상태: approved
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: B2 pending (B1 completed)
+- 현재 Slice: B3 pending (B2 completed)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -97,7 +97,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B2 - PostgreSQL 검색 Repository 및 Query Builder 구현
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: Search projection 테이블 조회, mismatch 제외, unknown/partial 처리 및 4단계 결정적 정렬 Builder 구현
 - 산출물:
   - `backend/app/repositories/policy_search_repository.py`
