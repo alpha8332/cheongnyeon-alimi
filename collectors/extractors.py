@@ -597,6 +597,7 @@ def _first_public_url(*values: Any, fallback: str) -> str:
         if (
             parsed.scheme.lower() in {"http", "https"}
             and parsed.hostname
+            and not any(character.isspace() for character in value)
             and parsed.username is None
             and parsed.password is None
             and (port is None or 1 <= port <= 65535)

@@ -7,9 +7,10 @@ youthcenter-api
 bokjiro-central-welfare-api
 ```
 
-현재 Collector는 명시적 CLI 실행만 지원한다. 저장된 Runtime Raw는 별도
-재처리 CLI로 추가 외부 호출 없이 PostgreSQL에 적재할 수 있다. Scheduler,
-전체 수집과 자동 주기 적재는 구현하지 않았다.
+현재 Collector는 명시적 CLI 실행만 지원한다. 단일 페이지 제한 수집과
+호출 예산 안에서 전체 목록을 순회하는 릴리스 snapshot 수집을 구분한다.
+저장된 Runtime Raw는 별도 재처리 CLI로 추가 외부 호출 없이 PostgreSQL에
+적재할 수 있다. Scheduler와 자동 주기 적재는 구현하지 않았다.
 
 ## 실행 환경
 
@@ -68,6 +69,55 @@ python -m collectors --source bokjiro-central-welfare-api --page 1 --limit 10 --
 
 성공 출력에는 source ID, 실제 요청 수, 항목·상세·Raw 문서 수만 포함된다.
 요청 URL, query, 인증키, payload와 저장 파일명은 출력하지 않는다.
+
+## 릴리스 snapshot 수집
+
+전체 목록 수집은 `scripts/collect_release_snapshot.py`를 사용한다. 각 page의
+Raw가 모두 저장되고 Source가 보고한 `total_count`만큼 고유 external ID를
+확인한 경우에만 완료 manifest를 원자적으로 생성한다. 호출 예산 부족,
+중복 ID, 수집 중 total 변경, 조기 빈 page 또는 Raw metadata 불일치가 있으면
+완료 manifest를 만들지 않고 실패한다.
+
+온통청년 전체 목록, 최대 6회 요청:
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\collect_release_snapshot.py `
+  --source youthcenter-api `
+  --raw-root runtime/raw `
+  --page-size 500 `
+  --detail-limit 0 `
+  --request-budget 6
+```
+
+복지로 전체 목록과 첫 page의 상세 최대 5건, 최대 6회 요청:
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\collect_release_snapshot.py `
+  --source bokjiro-central-welfare-api `
+  --raw-root runtime/raw `
+  --page-size 500 `
+  --detail-limit 5 `
+  --request-budget 6
+```
+
+| 옵션 | 기본값 | 범위 | 의미 |
+| --- | --- | --- | --- |
+| `--source` | 필수 | 지원 Source ID | 수집할 Source |
+| `--raw-root` | `runtime/raw` | 경로 | Git 제외 Raw root |
+| `--page-size` | `500` | 1~500 | page당 목록 수 |
+| `--detail-limit` | `0` | 0~5 | 첫 page 복지로 상세 수 |
+| `--request-budget` | `12` | 1~100 | 목록과 상세를 합한 최대 요청 수 |
+
+완료 manifest는 다음 Git 제외 경로에 저장된다.
+
+```text
+runtime/raw/_snapshots/<source_id>/<snapshot_id>.json
+```
+
+manifest에는 인증 query나 payload를 넣지 않고 snapshot ID, 시작·완료 시각,
+page size, 호출 예산·실제 호출 수, total·item 수와 기여 Raw document ID만
+기록한다. 수집 중간에 저장된 Raw는 원문 보존을 위해 남을 수 있지만 완료
+manifest가 없으므로 릴리스 snapshot으로 선택되지 않는다.
 
 ## Raw 결과
 
@@ -137,29 +187,35 @@ write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projectio
 .\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
   --source youthcenter-api `
   --raw-root runtime/raw `
-  --limit 100 `
+  --limit 5000 `
   --dry-run
 ```
 
 실제 적재는 같은 명령에서 `--dry-run`만 제거한다. 복지로는 source를
-`bokjiro-central-welfare-api`로 지정한다.
+`bokjiro-central-welfare-api`로 지정한다. 재현할 snapshot을 고정하려면
+완료 출력의 ID를 `--snapshot-id`에 전달한다.
 
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | 현재 지원하는 두 source ID 중 하나 |
 | `--raw-root` | `runtime/raw` | Git 제외 Runtime Raw root |
-| `--limit` | `100` | 최신 회차에서 처리할 list item 수, 1~500 |
+| `--limit` | `5000` | snapshot에서 처리할 list item 수, 1~5000 |
+| `--snapshot-id` | 최신 완료 manifest | 특정 완료 snapshot ID |
 | `--dry-run` | 꺼짐 | 실제 transaction을 수행한 뒤 rollback |
 
 ### 회차와 품질 처리
 
-- source별 가장 최신 `list_response` 한 건을 회차 경계로 사용한다.
-- 해당 response를 `parent_document_id`로 참조하는 `list_item`만 처리한다.
-- detail은 선택된 item과 external ID가 같고 목록 수집 시각 이후인 문서 중
-  최신 한 건만 결합한다.
-- `--limit`은 item에 적용하며 부모 response와 연결된 detail은 제한 수에
-  포함하지 않는다.
-- 최신 response에 item이 없으면 과거 회차로 후퇴하지 않고 실패한다.
+- 완료 manifest가 있으면 기본적으로 source별 최신 manifest가 가리키는 모든
+  `list_response`와 연결된 `list_item`을 하나의 회차로 처리한다.
+- `--snapshot-id`를 지정하면 해당 manifest만 선택하고, 참조 Raw가 없거나
+  item 수가 manifest와 다르거나 external ID가 중복이면 실패한다.
+- detail은 manifest가 명시한 문서 중 선택된 item과 external ID가 같은
+  문서만 결합한다.
+- `--limit`은 item에 적용하며 부모 response와 detail은 제한 수에 포함하지
+  않는다.
+- 완료 manifest가 없는 기존 Fixture·과거 Raw는 호환을 위해 최신
+  `list_response` 한 건과 그 자식 item·최신 detail 경계를 사용한다.
+- 선택된 회차에 item이 없으면 과거 회차로 후퇴하지 않고 실패한다.
 - valid·partial은 같은 source batch transaction으로 importer에 전달하고
   invalid는 DB transaction 전에 분리한다.
 - DB write 하나가 실패하면 해당 accepted batch 전체를 rollback한다.

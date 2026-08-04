@@ -19,6 +19,7 @@ def import_runtime_raw(
     raw_root: str | Path,
     source_id: str,
     limit: int,
+    snapshot_id: str | None = None,
     dry_run: bool = False,
 ) -> RuntimeImportResult:
     """Replay one source batch and pass accepted programs to the importer."""
@@ -26,6 +27,7 @@ def import_runtime_raw(
         raw_root=raw_root,
         source_id=source_id,
         limit=limit,
+        snapshot_id=snapshot_id,
     )
     normalization_issues = replay.normalization_issues or tuple(
         () for _ in replay.programs

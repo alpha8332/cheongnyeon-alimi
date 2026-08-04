@@ -9,7 +9,7 @@
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: DT3 pending, DT2·Gate G1 completed
+- 현재 Slice: DT4 pending, DT3 completed
 
 ## 목적
 
@@ -30,8 +30,8 @@ Integration 04 종단 인수 결과는 각 담당 Forest 기록에 남긴다.
 | DT0 | completed | Git·Source·비밀·Runtime·PostgreSQL 인증·Migration과 테스트 확인 |
 | DT1 | completed | 두 Source 실호출·분포·partial 원인·릴리스 범위 초안 확인 |
 | DT2 | completed | DT2A~DT2D 완료, `G1_APPROVED` 기록과 세 영역 후속 Slice 해제 |
-| DT3 | pending | 승인 수집 범위와 Runtime DB bootstrap 대기 |
-| DT4 | pending | DT3 실제 snapshot 적재 결과와 품질 판정 대기 |
+| DT3 | completed | 전체 snapshot 3,159건 수집·Runtime DB 적재·재실행 검증 완료 |
+| DT4 | pending | 적재된 실제 정책 3,159건의 품질·검색 사례 판정 대기 |
 
 ## 구현 내용
 
@@ -416,8 +416,107 @@ DT2D 첫 문서 검증은 Frontend 계획의 `- 상태: approved` 뒤에 날짜 
 일자를 별도 줄로 분리한 뒤 문서 검증 테스트 10건, `validate_docs.py`와
 `git diff --check`를 다시 실행해 모두 통과했다.
 
+### DT3A~DT3B - 완료 snapshot과 다중 page 재생
+
+기존 Collector는 한 번의 목록 응답만 저장했고 Runtime replay도 가장 최신
+`list_response` 하나만 선택했다. 이 경계로 온통청년 전체 목록을 page별로
+수집하면 마지막 page만 DB에 적재되는 구조적 누락이 생긴다. 이를 해결하기
+위해 단일 page Collector 책임은 유지하고 여러 결과를 다음 완료 manifest로
+묶었다.
+
+```text
+runtime/raw/_snapshots/<source_id>/<snapshot_id>.json
+```
+
+manifest는 payload나 URL 대신 시작·완료 시각, page size, 호출 예산·실제
+호출 수, total·item 수와 기여 Raw document ID를 저장한다. Source가 보고한
+total만큼 고유 external ID를 확인한 뒤에만 원자적으로 생성한다. 수집 중
+total 변경, 중복 ID, 조기 종료, 예산 부족 또는 metadata 불일치는 실패하며
+중간 Raw가 있더라도 완료 snapshot으로 선택하지 않는다.
+
+Runtime replay와 import CLI는 최신 또는 `--snapshot-id`로 고정한 manifest의
+여러 목록 응답을 한 batch로 처리한다. 전체 항목을 수용하도록 item limit을
+5,000으로 확장했고 manifest가 없는 합성 Fixture와 과거 Raw의 단일 응답
+호환은 유지했다. Schema·Fixture·Seed·DB enum과 `null`·빈 배열 규칙은
+변경하지 않았다.
+
+### DT3C - 실제 전체 목록 수집과 오프라인 replay
+
+인증값은 키 파일의 Source별 token을 현재 process 환경변수에만 주입했고
+실행 후 제거했다. URI, query, key와 Raw payload는 출력하지 않았다. 첫
+온통청년 시도에서는 로컬 키 파일의 라벨을 포함한 전체 행을 값으로 잘못
+주입해 HTTP 403 인증 실패 1회가 발생했다. Raw와 manifest는 생성되지 않았고,
+키 값은 출력하지 않았다. 마지막 token만 안전하게 분리한 뒤 승인 호출을
+재실행했다.
+
+| Source | page size | 목록 성공 | 상세 성공 | 성공 요청 | 항목 | Raw | snapshot ID |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 온통청년 | 500 | 6 | 0 | 6 | 2,698 | 2,704 | `4580234be1df46cbbe4a700fc4e02630` |
+| 복지로 | 500 | 1 | 5 | 6 | 461 | 467 | `2e0b8100348544b3b023b27017025218` |
+
+실제 Source 요청은 실패 1회와 성공 12회, 합계 13회다. 재시도는 없었다.
+온통청년은 모든 page에서 `total_count=2698`, 복지로는 `total_count=461`을
+보고했고 각 snapshot의 고유 ID 수와 일치했다. 복지로 전체 상세 461건은
+승인 범위가 아니므로 호출하지 않았다.
+
+| Source | Raw replay | extracted | valid | partial | invalid | accepted |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 온통청년 | 2,704 | 2,698 | 1,938 | 760 | 0 | 2,698 |
+| 복지로 | 467 | 461 | 0 | 461 | 0 | 461 |
+
+첫 온통청년 오프라인 replay에서는 3건이 `source_url` Schema pattern 위반으로
+invalid였다. Source 응답의 URL 후보에 literal 공백이 있었고 Extractor는
+scheme·host만 확인한 반면 Normalized validator와 JSON Schema는 공백을
+거부한 계약 불일치였다. Extractor가 공백 URL을 public URL 후보로 사용하지
+않고 query 없는 공식 Raw endpoint로 fallback하도록 수정했다. 원문 URL은
+Raw와 `extra.source_fields`에 그대로 보존한다. 수정 후 2,698건 모두
+valid 또는 partial로 수용됐다.
+
+DT3C까지는 외부 호출 없는 replay 검증이며 PostgreSQL `--dry-run`이나 실제
+적재 성공으로 기록하지 않는다. DT3D에서 Runtime DB credential을 process에만
+주입해 Migration·지역 Seed·dry-run·실적재·동일 snapshot 재실행을 검증한다.
+
+### DT3D - Runtime PostgreSQL bootstrap과 재실행
+
+첫 실행은 `PGPASSWORD`를 사용한 Alembic 연결에서 Windows의 지역화된
+PostgreSQL 오류를 psycopg2가 UTF-8로 해석하지 못해 `UnicodeDecodeError`로
+중단됐다. Migration이나 DB write 전이었다. 임시 `PGPASSFILE`과 `psql`
+preflight를 추가한 두 번째 실행에서 현재 PostgreSQL 18 cluster에 DT0 당시
+사용한 `cheongnyeon_alimi` DB가 없다는 실제 원인을 확인했다. 사용자가 빈
+Runtime DB를 생성한 뒤 같은 절차를 처음부터 재실행했다.
+
+현재 cluster의 빈 Runtime DB에 Alembic `20260803_0004` head를 적용하고
+versioned 지역 기준정보 `kr-bjd-20260803`의 region 538건과 alias 1,080건을
+신규 적재했다. `_test` DB는 사용하지 않았다.
+
+| 실행 | 온통청년 | 복지로 |
+| --- | --- | --- |
+| dry-run | inserted 2,698, rollback | inserted 461, rollback |
+| 첫 실제 import | inserted 2,698 | inserted 461 |
+| 동일 snapshot 재실행 | unchanged 2,698 | unchanged 461 |
+| 최종 DB row / distinct identity | 2,698 / 2,698 | 461 / 461 |
+
+dry-run 후 첫 실제 import가 전건 inserted였으므로 dry-run에서 Policy write와
+실행 이력이 rollback된 경계를 확인했다. 실제 실행 4건은 다음 CollectionRun
+ID로 기록됐다.
+
+- 온통청년 최초: `54d7efd7-a511-4200-be49-5140a912ec00`
+- 복지로 최초: `cc1c4fba-443b-4114-8e79-8636a39f43a5`
+- 온통청년 재실행: `e7ff445a-59a8-453d-937d-9c6438fe61f9`
+- 복지로 재실행: `b14851ba-25e8-4e64-ae09-1709604c02bc`
+
+모든 실행에서 skipped·rejected·failed는 0이다. 최종 Policy 3,159건은
+`(source_id, external_id)` 기준 identity 3,159개와 일치해 중복 row가 없다.
+이 결과로 DT3의 실제 Raw → Normalized → PostgreSQL과 idempotent 재실행
+완료 조건을 충족했다.
+
 ## 주요 변경 파일
 
+- `collectors/snapshot.py`
+- `scripts/collect_release_snapshot.py`
+- `collectors/runtime.py`
+- `scripts/import_runtime_data.py`
+- `tests/test_snapshot_collection.py`
 - `tests/test_runtime_replay.py`
 - `docs/development/develop_plan/data/02_release_dataset_bootstrap.md`
 - `docs/development/development_notes/data/release_dataset_bootstrap.md`
@@ -447,6 +546,11 @@ DT2D 첫 문서 검증은 Frontend 계획의 `- 상태: approved` 뒤에 날짜 
   Fixture·Seed·`null`·빈 배열·enum 변경을 제안하지 않는다.
 - unknown·partial 후보의 기본 노출과 정렬은 Data가 단독 확정하지 않고
   Backend 06·Frontend 04 소비 초안과 Gate G1에서 승인한다.
+- 여러 page의 전체 목록은 마지막 응답 한 건으로 대표하지 않고, total과
+  고유 ID 완전성을 확인한 immutable manifest를 재처리 경계로 사용한다.
+- 호출 예산을 목록과 상세 요청의 합으로 제한하고 manifest 생성 전에
+  부족함을 확인한다. 실패 중간 Raw는 원문 보존하되 릴리스 회차로 승인하지
+  않는다.
 
 ## 검증 결과
 
@@ -507,16 +611,42 @@ DT2D 첫 문서 검증은 Frontend 계획의 `- 상태: approved` 뒤에 날짜 
 상태로 정리됐음을 확인했다. Browser UI는 변경하지 않았고 Frontend 04
 초안도 아직 없으므로 이번 DT2 Data 근거 준비에서 화면 검증을 수행하지 않는다.
 
+### DT3 검증 (`2026-08-04`)
+
+| 검증 | 결과 |
+| --- | --- |
+| snapshot·Collector·replay 집중 pytest | 32건·subtest 10건 통과 |
+| 실제 온통청년 전체 목록 | 6회 성공, 2,698건, 완료 manifest 생성 |
+| 실제 복지로 전체 목록·제한 상세 | 목록 1회·상세 5회 성공, 461건, 완료 manifest 생성 |
+| 실제 호출 실패 | 온통청년 키 행 parsing 오류로 403 1회, Raw·manifest 없음 |
+| 완료 snapshot 오프라인 replay | 온통청년 2,698·복지로 461 전건 수용, invalid 0 |
+| 최초 전체 Data 단위 테스트 | 107건 중 1건 실패, 합성 Raw 1파일 working-tree CRLF |
+| Fixture 결정론적 재생성 후 전체 Data 단위 테스트 | 107건 통과 |
+| 첫 Runtime DB 연결 | 실패, 지역화된 DB 오류가 psycopg2 `UnicodeDecodeError`로 표시됨 |
+| `psql` preflight | 실패, 현재 cluster에 Runtime DB가 없음을 확인 |
+| 빈 Runtime DB 복구 | 생성 후 Alembic `20260803_0004`, region 538·alias 1,080 적용 |
+| PostgreSQL dry-run | 온통청년 2,698·복지로 461 insert projection 후 rollback |
+| 첫 실적재 | 3,159건 inserted, skipped·rejected·failed 0 |
+| 동일 snapshot 재실행 | 3,159건 unchanged, inserted·updated 0 |
+| 최종 identity | Source별 row와 distinct external ID 일치, 합계 3,159 |
+| 최종 Data 단위 테스트 | 108건 통과 |
+| Runtime importer·Integration pytest | 5건 통과, PostgreSQL 환경변수 미주입 4건 skip |
+| Python compile·문서 검증·`git diff --check` | 통과 |
+
+합성 Raw 실패는 JSON 내용이나 Fixture 계약 변경이 아니라 `.gitattributes`가
+LF로 고정한 파일 하나가 작업 트리에서 CRLF로 checkout된 byte 차이였다.
+결정론적 생성기로 13개 산출물을 다시 기록했고 의미 변경 없이 전체 검증이
+통과했다.
+
+skip 4건은 `TEST_DATABASE_URL`이 없는 현재 process에서 테스트 전용 DB를
+요구한 결과이므로 PostgreSQL 테스트 통과로 기록하지 않는다. DT3D 자체의
+Runtime DB 검증은 별도로 dry-run·실적재·재실행과 최종 SQL identity 집계까지
+성공했다.
+
 ## 남은 작업
 
-- Backend 06·Frontend 04 초안을 받은 뒤 DT2 Data 권고와 query·응답·UI 의미를
-  공동 검토하고 Gate G1 승인 또는 수정사항을 기록한다.
-- 온통청년의 권위 있는 행정구역 코드표를 확보하고 집계·과거 코드 처리
-  원칙을 승인한다.
-- DT3 전체 호출 전 온통청년 큰 page size 1회 확인과 복지로 상세 후보·호출
-  상한을 승인한다.
-- Backend 06·Frontend 04 담당자는 구현 전 개별 Forest 계획과 개발 기록
-  위치를 생성한다.
+- DT4에서 전체 실제 데이터의 검색 품질·경계 사례와 golden
+  query 후보를 판정해 Backend·Frontend에 인계한다.
 - Team Leader는 DT5 전 Integration 04 계획과 개발 기록을 생성한다.
 - 현재 테스트에서 발생한 Starlette의 `httpx` 사용 deprecation warning은
   DT0 범위 밖이며 별도 의존성 검토에서 처리한다.

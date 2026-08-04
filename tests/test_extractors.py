@@ -206,6 +206,33 @@ def bokjiro_documents() -> list[RawPolicyDocument]:
 
 
 class YouthCenterExtractorTests(unittest.TestCase):
+    def test_source_url_with_whitespace_falls_back_to_raw_source(self) -> None:
+        documents = list(youth_documents())
+        item = documents[1]
+        fields = json.loads(item.raw_bytes)
+        fields["refUrlAddr1"] = "https://example.invalid/has space"
+        fields["aplyUrlAddr"] = ""
+        fields["refUrlAddr2"] = ""
+        documents[1] = RawPolicyDocument.from_bytes(
+            document_id=item.document_id,
+            source_id=item.source_id,
+            source_type=item.source_type,
+            document_role=item.document_role,
+            external_id=item.external_id,
+            parent_document_id=item.parent_document_id,
+            source_url=item.source_url,
+            collected_at=item.collected_at,
+            content_type=item.content_type,
+            raw_format=item.raw_format,
+            raw_payload=json.dumps(fields).encode("utf-8"),
+            http_status=item.http_status,
+            collector_version=item.collector_version,
+        )
+
+        policy = YouthCenterExtractor().extract(documents)[0]
+
+        self.assertEqual(item.source_url, policy.source_url)
+
     def test_extracts_common_fields_and_preserves_raw_source_fields(
         self,
     ) -> None:

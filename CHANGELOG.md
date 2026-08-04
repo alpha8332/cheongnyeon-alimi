@@ -29,6 +29,10 @@
 
 ### Added
 
+- 호출 예산·완전성 manifest를 사용하는 온통청년·복지로 다중 page 릴리스
+  snapshot 수집과 고정 snapshot 재처리를 추가하고, 실제 정책 3,159건의
+  PostgreSQL bootstrap·멱등 재실행을 검증
+  ([개발 기록](docs/development/development_notes/data/release_dataset_bootstrap.md))
 - `NormalizedProgram` 1.1.0 검색 데이터 계약, 1.0.0 compatibility adapter,
   공식 법정동 기반 versioned 지역·계층·별칭 Seed, 지역 적용 관계 경계
   Fixture, PostgreSQL 지역 관계·검색 projection Migration, 온통청년·복지로

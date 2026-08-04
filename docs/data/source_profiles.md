@@ -4,7 +4,7 @@
 
 - 상태: 기준선
 - 마지막 공식 자료 확인: 2026-07-26
-- 마지막 실호출 확인: 2026-07-31
+- 마지막 실호출 확인: 2026-08-04
 - 범위: 온통청년 청년정책 API, 복지로 중앙부처 복지서비스 API
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
@@ -15,8 +15,8 @@
 
 | Source ID | 표시 이름 | 공식 요청 계약 | 실응답 |
 | --- | --- | --- | --- |
-| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 목록 10건 Raw 확인 |
-| `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 목록 10건·상세 3건 Raw 확인 |
+| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
+| `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
@@ -222,10 +222,9 @@ identity와 Source code를 보존한다. 새로운 code가 crosswalk에 없으�
 code는 [행정구역 기준정보](administrative_regions.md)의 원천 parent·aggregate
 parent·폐지 보존 규칙을 따른다.
 
-현재 2,696건을 전체 수집하려면 page size와 종료 조건 확인이 필요하다.
+DT1 당시 2,696건을 전체 수집하려면 page size와 종료 조건 확인이 필요했다.
 공개 자료에서 `/go/ythip/getPlcy`의 최대 `pageSize`와 숫자 호출 한도를
-확인하지 못했으므로 `pageSize=500`은 전체 수집 전에 1회 검증 대상으로
-남긴다.
+확인하지 못했으므로 DT3에서 `pageSize=500`을 실제 응답으로 검증했다.
 
 ### 2026-08-03 PSF4 오프라인 재생
 
@@ -236,6 +235,24 @@ DT1의 같은 Raw 11개를 네트워크 없이 새 Adapter로 재생했다.
 - 10건 모두 `regional`, region rule 373개 모두 exact `matched`
 - `zipCd` 원문과 전체 Source field·Raw provenance 유지
 - Source에 명시되지 않은 life stage·target group은 모두 빈 배열 유지
+
+### 2026-08-04 Release 1 전체 목록 snapshot
+
+`pageSize=500`을 실제로 수용함을 확인하고 6개 page를 재시도 없이 순회했다.
+첫 응답부터 마지막 응답까지 `total_count=2698`이 유지됐고, 고유 `plcyNo`
+2,698개가 보고 건수와 일치했다. Raw는 목록 응답 6개와 목록 항목 2,698개,
+합계 2,704개다.
+
+- 실제 성공 호출 6회, 상세 호출 없음
+- snapshot ID: `4580234be1df46cbbe4a700fc4e02630`
+- 오프라인 재생: valid 1,938·partial 760·invalid 0, accepted 2,698
+- Source URL 후보 3건에 literal 공백이 있었으며, URL 계약에 맞지 않는 후보를
+  사용하지 않고 query 없는 공식 Raw source endpoint로 fallback함
+- Source 원문 URL 값은 `extra.source_fields`와 Raw에 그대로 보존함
+
+Source가 cursor나 시점 고정 token을 제공하지 않으므로 이 snapshot은 6회
+응답 사이 변경 가능성을 완전히 제거하지 못한다. manifest의 시작·완료 시각,
+각 응답 Raw ID와 고정 total을 재현 경계로 사용한다.
 
 ## 복지로 중앙부처 복지서비스 API
 
@@ -407,6 +424,18 @@ DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
 - 지역 근거가 없어 10건 모두 `coverage_scope=unknown`, region rule 0건
 - 상세 3건은 상세 값을 우선하고 목록 값은 fallback으로 유지했으며 양쪽
   Source field와 Raw provenance를 모두 보존
+
+### 2026-08-04 Release 1 전체 목록 snapshot
+
+명세상 최대 `numOfRows=500`으로 목록 1회를 호출해 `total_count=461`과 고유
+`servId` 461개가 일치함을 확인했다. 승인된 상세 상한 5건만 같은 회차에서
+추가 호출했다. Raw는 목록 응답 1개, 목록 항목 461개와 상세 5개, 합계
+467개다.
+
+- 실제 성공 호출 6회: 목록 1회·상세 5회
+- snapshot ID: `2e0b8100348544b3b023b27017025218`
+- 오프라인 재생: valid 0·partial 461·invalid 0, accepted 461
+- 전체 상세 461건은 호출 상한 밖이며 수행하지 않음
 
 ## 공통 비밀정보 경계
 

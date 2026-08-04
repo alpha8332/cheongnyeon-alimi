@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT3 pending, DT2·Gate G1 completed
+- 현재 Slice: DT4 pending, DT3 completed
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -189,11 +189,76 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 
 ### DT3 - 릴리스 snapshot 수집과 PostgreSQL bootstrap
 
+- 상태: completed (`2026-08-04`)
 - 목적: 승인 범위를 재현 가능하게 수집·재처리·적재한다.
 - 선행 조건: DT1 릴리스 범위, Integration 03 Migration·Importer 기반,
   인증 가능한 Runtime DB
 - 산출물: Runtime Raw, 적재 집계, 재실행·실패 복구 결과와 bootstrap 절차
 - 완료 기준: 실제 Raw → Normalized → PostgreSQL 적재 및 재실행 검증
+
+#### DT3A - 다중 page snapshot 경계와 호출 예산
+
+- 상태: completed (`2026-08-04`)
+- 목적: 단일 page Collector를 승인된 전체 목록 snapshot으로 안전하게 묶는다.
+- 작업:
+  - Collector 결과에 page·total·기여 Raw document ID metadata 추가
+  - page size 500, Source total 도달, 중복·total 변동·조기 종료 검증
+  - 목록·상세 합산 request budget 사전·사후 검증
+  - 완료된 회차만 원자적 manifest로 확정하고 실패 중간 Raw와 구분
+- 완료 기준:
+  - 예산 안에서 여러 page를 완주하고 완전한 manifest를 생성함
+  - 예산 부족·경로 이탈·중복·불완전 회차는 완료 snapshot으로 선택되지 않음
+
+#### DT3B - manifest 기반 오프라인 재생
+
+- 상태: completed (`2026-08-04`)
+- 선행 조건: DT3A
+- 목적: 여러 목록 응답을 하나의 명시적 회차로 재처리한다.
+- 작업:
+  - 최신 또는 명시한 snapshot ID의 manifest 로드
+  - manifest가 가리키는 목록·항목·상세 Raw 완전성 검증
+  - Runtime import limit을 전체 정책 수를 수용하는 5,000으로 확장
+  - manifest가 없는 기존 Fixture·Raw의 단일 회차 호환 유지
+- 완료 기준:
+  - 여러 page Raw가 하나의 Extracted·Normalized batch로 재생됨
+  - 누락·중복·role 불일치 manifest는 DB write 전에 실패함
+
+#### DT3C - 승인 범위 실수집과 dry-run 전 품질 확인
+
+- 상태: completed (`2026-08-04`)
+- 선행 조건: DT3A~DT3B
+- 목적: 승인된 호출량으로 실제 전체 목록을 수집하고 DB 전 경계를 확인한다.
+- 승인 범위:
+  - 온통청년 전체 목록, page size 500, 성공 요청 최대 6회, 상세 없음
+  - 복지로 전체 목록, page size 500, 목록 1회와 상세 최대 5회
+- 완료 기준:
+  - 온통청년 2,698건과 복지로 461건의 완료 manifest 생성
+  - 오프라인 replay에서 두 Source 모두 invalid 0건이고 total과 accepted 일치
+  - 비밀·query·payload와 Runtime Raw가 Git 추적 후보에 포함되지 않음
+
+#### DT3D - Runtime PostgreSQL bootstrap과 복구 검증
+
+- 상태: completed (`2026-08-04`)
+- 선행 조건: DT3C, 인증 가능한 Runtime DB
+- 목적: 완료 snapshot을 Runtime PostgreSQL에 적재하고 재실행 안전성을 확인한다.
+- 작업:
+  - Runtime DB에 최신 Alembic과 versioned 지역 기준정보 적용
+  - Source별 snapshot ID를 고정한 `--dry-run` 후 실제 import
+  - 동일 snapshot 재실행의 unchanged·중복 0 검증
+  - 실패 시 batch rollback과 다시 실행 가능한 bootstrap 절차 기록
+- 완료 기준:
+  - 두 Source accepted 합계와 DB 정책 identity 수가 일치함
+  - 두 번째 import가 inserted·updated 0, 전건 unchanged임
+  - CollectionRun 집계, rollback 경계와 Runtime·`_test` DB 분리가 확인됨
+- 완료 결과:
+  - 새 Runtime DB를 Alembic `20260803_0004` head까지 적용하고 지역 538건·
+    alias 1,080건을 적재함
+  - dry-run은 온통청년 2,698건·복지로 461건의 insert projection을 검증한 뒤
+    rollback함
+  - 첫 실제 import가 3,159건을 insert하고 동일 snapshot 재실행은 3,159건
+    전부 unchanged로 판정함
+  - Source별 DB row 수와 distinct external identity 수가 각각 2,698·461로
+    일치함
 
 ### DT4 - 실제 데이터 품질 판정과 인계
 

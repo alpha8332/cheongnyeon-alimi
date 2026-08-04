@@ -32,7 +32,7 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend·Frontend 소비 검토 | in-progress | DT0~DT2와 Gate G1 완료, DT3~DT4 실제 Raw·DB 초기 적재·품질 보고 | Data 01, Integration 02, DT2부터 Integration 03 |
+| 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend·Frontend 소비 검토 | in-progress | DT0~DT3와 Gate G1 완료, DT4 실제 DB 품질·검색 사례 인계 | Data 01, Integration 02, DT2부터 Integration 03 |
 | 2 | [Integration 03 Policy Search Data Foundation](integration/03_policy_search_data_foundation.md) | Data·Backend 공동 | Frontend 소비·Team Leader Gate | completed | PSF0~PSF8 Source 중립 계약·지역 기준정보·mapping·원자적 적재·판정·소비·성능·actual 재생과 전체 Gate 완료 | Data 02 DT1 |
 | 3 | [Backend 06 Policy Search](backend/06_policy_search.md) | Backend | Data 계약·Frontend 소비 검토 | approved | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Integration 03 판정 primitive, Data 02 DT2와 Gate G1 |
 | 4 | [Frontend 04 Policy Search](frontend/04_policy_search.md) | Frontend | Backend API 검토 | approved | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Integration 03·Data 02 DT2·Gate G1, 실제 API 연결은 Backend endpoint 대기 |

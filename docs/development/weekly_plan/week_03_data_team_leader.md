@@ -359,6 +359,8 @@ G1 승인 후 다음 본 구현을 병렬로 시작한다.
 
 ## Slice DT3 - 릴리스 데이터 수집과 PostgreSQL bootstrap
 
+- 상태: completed (`2026-08-04`)
+
 ### 목적
 
 승인된 릴리스 범위의 실제 정책 snapshot을 반복 실행 가능한 절차로 수집하고
@@ -413,6 +415,16 @@ pagination·Raw 저장의 현재 구조와 제약만 분석하고 새 구현을 
 - 재실행 결과와 transaction·중복 방지 검증
 - Source별 품질·실패·적재 집계 제공
 - 비밀키, Runtime Raw와 DB 파일 Git 비추적 확인
+
+### 완료 결과
+
+- 온통청년 6 page 2,698건과 복지로 목록 461건·상세 5건을 완료 manifest로
+  수집하고 오프라인 replay에서 invalid 0을 확인했다.
+- Runtime PostgreSQL에 지역 538건·alias 1,080건과 정책 3,159건을 적재했다.
+- 동일 snapshot 재실행은 전건 unchanged였고 Source별 row와 distinct
+  external ID 수가 일치했다.
+- 실제 호출 실패 1회, Runtime DB 부재와 psycopg2 지역화 오류를 포함한 실패·
+  복구 이력은 Data 02 개발 기록에 남겼다.
 
 ### 후속 해제
 
