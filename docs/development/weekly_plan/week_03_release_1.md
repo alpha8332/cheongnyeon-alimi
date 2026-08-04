@@ -53,8 +53,9 @@ Gate G1 인수인계가 포함된 커밋이다. Backend 06과 Frontend 04는
 - 두 Source의 제한 수집, Raw 저장, 정규화와 검증이 구현돼 있다.
 - 저장된 Runtime Raw를 PostgreSQL로 재처리하는 CLI가 구현돼 있다.
 - canonical Seed → PostgreSQL → Policy API → React UI 통합은 검증됐다.
-- Data 02 DT1에서 Git 제외 `runtime/raw`에 실제 표본 25개를 저장했지만
-  Runtime DB 적재 smoke는 완료되지 않았다.
+- Data 02 DT3~DT4에서 Git 제외 Runtime Raw의 완료 snapshot을 재현 가능하게
+  수집·재생해 실제 정책 3,159건을 Runtime DB에 적재하고 품질·검색 경계를
+  Backend·Frontend에 인계했다.
 - Integration 03 PSF0~PSF8에서 검색 데이터 ADR, Normalized 1.1.0 실행 계약,
   `kr-bjd-20260803` 행정구역 기준정보, PostgreSQL 저장 기반과 두 Source
   mapping·원자적 관계·projection 적재, 지역·조건 3값 판정 primitive를

@@ -161,7 +161,12 @@ class Normalizer:
         issues.extend(region_issues)
 
         age_condition_text = normalize_text(policy.age_text)
-        age_min, age_max, age_issues = _normalize_age(age_condition_text)
+        age_min, age_max, age_issues = _normalize_age(
+            age_condition_text,
+            zero_only_is_placeholder=(
+                policy.source_id == "youthcenter-api"
+            ),
+        )
         issues.extend(age_issues)
 
         candidate: dict[str, Any] = {
@@ -385,6 +390,8 @@ def _normalize_application_period(
 
 def _normalize_age(
     value: str | None,
+    *,
+    zero_only_is_placeholder: bool = False,
 ) -> tuple[int | None, int | None, list[ValidationIssue]]:
     if value is None:
         return None, None, []
@@ -411,6 +418,14 @@ def _normalize_age(
             if numbers
             else []
         )
+    if zero_only_is_placeholder and minimum == 0 and maximum == 0:
+        return None, None, [
+            _warning(
+                "$.age_condition_text",
+                "placeholder_age_range",
+                "zero-only age range is treated as unknown",
+            )
+        ]
     if (
         minimum is not None
         and not 0 <= minimum <= 150

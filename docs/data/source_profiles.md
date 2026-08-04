@@ -245,10 +245,16 @@ DT1의 같은 Raw 11개를 네트워크 없이 새 Adapter로 재생했다.
 
 - 실제 성공 호출 6회, 상세 호출 없음
 - snapshot ID: `4580234be1df46cbbe4a700fc4e02630`
-- 오프라인 재생: valid 1,938·partial 760·invalid 0, accepted 2,698
+- DT4 연령 placeholder 보정 후 오프라인 재생:
+  valid 1,462·partial 1,236·invalid 0, accepted 2,698
+- `0세 ~ 0세` 631건은 실제 0세 한정으로 확정하지 않고 원문 보존,
+  구조화 연령 null과 `placeholder_age_range` 경고로 처리함
 - Source URL 후보 3건에 literal 공백이 있었으며, URL 계약에 맞지 않는 후보를
   사용하지 않고 query 없는 공식 Raw source endpoint로 fallback함
 - Source 원문 URL 값은 `extra.source_fields`와 Raw에 그대로 보존함
+
+전체 품질·검색 분포와 소비 경계는
+[Release 1 실데이터 품질 Profile](release_dataset_profile.md)을 따른다.
 
 Source가 cursor나 시점 고정 token을 제공하지 않으므로 이 snapshot은 6회
 응답 사이 변경 가능성을 완전히 제거하지 못한다. manifest의 시작·완료 시각,

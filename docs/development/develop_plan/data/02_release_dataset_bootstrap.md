@@ -3,10 +3,10 @@
 ## 계획 정보
 
 - 담당 영역: Data
-- 상태: in-progress
+- 상태: completed
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT4 pending, DT3 completed
+- 현재 Slice: DT4 completed
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -262,10 +262,53 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 
 ### DT4 - 실제 데이터 품질 판정과 인계
 
+- 상태: completed (`2026-08-04`)
 - 목적: 검색 가능한 실제 데이터의 품질과 golden query 후보를 확인한다.
 - 선행 조건: DT2와 DT3
 - 산출물: 품질 분포, 검색 경계 사례, golden query 후보 또는 정책 부재 근거
 - 완료 기준: Backend·Frontend가 사용할 안전한 실제 사례와 제약 전달
+
+#### DT4A - 실제 snapshot 품질 Profile
+
+- 상태: completed (`2026-08-04`)
+- 완료 결과:
+  - 고정한 두 완료 manifest를 외부 API·DB 연결 없이 재생하는
+    `scripts/profile_release_dataset.py`를 추가함
+  - accepted 3,159건, valid 1,462건, partial 1,697건, invalid 0건과
+    기본 노출 1,187건을 집계함
+  - Source별 상태·지역·연령·카테고리·경고와 identity·provenance 분포를
+    안전한 JSON 집계로 재현함
+
+#### DT4B - Source placeholder 연령 경계 보정
+
+- 상태: completed (`2026-08-04`)
+- 완료 결과:
+  - 온통청년 631건의 `0세 ~ 0세`를 확인되지 않은 Source placeholder로 판정함
+  - 원문은 보존하고 구조화 연령을 null, 품질을 partial로 처리해 27세 검색의
+    confirmed mismatch 오분류를 방지함
+  - Schema·Fixture·Seed·enum·null 표현과 Backend·Frontend type은 변경하지 않음
+
+#### DT4C - 검색 경계와 golden query 판정
+
+- 상태: completed (`2026-08-04`)
+- 완료 결과:
+  - 기본 노출에서 27세는 match 544·mismatch 26·unknown 617, 천안시는
+    match 54·mismatch 671·unknown 462로 확인함
+  - 월세 검색어는 전체 165건·기본 노출 51건이지만 `27세 천안 청년 월세
+    지원`의 confirmed 정책은 0건임
+  - confirmed mismatch를 제외한 실제 후보 2건은 복지로의 지역·연령·상태
+    unknown 정책이므로 자격 확정 결과로 사용할 수 없음을 기록함
+
+#### DT4D - Runtime DB 동기화와 담당자 인계
+
+- 상태: completed (`2026-08-04`)
+- 완료 결과:
+  - 연령 placeholder 보정을 Runtime PostgreSQL에 재적재해 631건 updated,
+    2,067건 unchanged를 확인함
+  - 동일 snapshot 재실행은 온통청년 2,698건 전부 unchanged였고 Source별
+    DB row와 identity·품질 집계가 오프라인 Profile과 일치함
+  - 구조화된 `age_min=0 AND age_max=0` 행은 0건임을 SQL로 확인함
+  - 안전한 실제 사례·제약을 Data 기준 문서와 공동 인계 보드에 등록함
 
 DT5·DT6은 이 Data Forest의 구현 Slice가 아니다. Integration 04 계획과
 개발 기록에서 실제 DB → API → UI 및 릴리스 판정을 수행한다.
@@ -296,23 +339,16 @@ PostgreSQL 통합 테스트는 `TEST_DATABASE_URL`이 `_test` DB를 가리킬 �
 
 ## 위험과 미확정 사항
 
-- DT0에서 Runtime DB를 Alembic head까지 준비했지만 실제 정책은 아직 0건이다.
-  실제 snapshot은 DT3 전까지 존재하지 않는다.
-- DT1 대표 표본 Raw 25개는 Git 제외 `runtime/raw`에만 있으며 아직 DB에
-  적재하지 않았다.
-- 온통청년은 2,696건을 보고했지만 계정별 숫자 호출 한도와 `pageSize=500`
-  수용 여부가 공개 자료에서 확인되지 않았다. DT3 전체 순회 전에 큰
-  page size 1회 확인과 호출 예산 승인이 필요하다.
-- 복지로는 목록 전체 461건이 명세상 한 요청에 들어가지만, 공개 페이지의
-  개발계정 트래픽 100은 기간 단위가 불명확하다. 전체 461건 상세 호출은
-  릴리스 범위로 승인하지 않았다.
-- 온통청년 `zipCd`는 실제 응답에 있으나 보유 코드 정의서에는 행정구역
-  code-to-name 표가 없어 정규화 지역이 0건이다.
-- 복지로 목록·상세 계약에는 현재 지역·연령·신청기간을 직접 정규화할
-  근거가 없어 해당 필드가 모두 누락된다.
-- 실제 Source에 golden query에 맞는 진행 중 정책이 없을 수 있다.
-- 검색 의미에 필요한 Schema 변경이 발견되면 DT2에서 세 영역 영향을
-  검토하기 전까지 구현하지 않는다.
+- 복지로 461건은 현재 계약만으로 지역·연령·신청기간을 확정할 수 없어
+  전건 partial이고 기본 검색에서 unknown 후보로만 사용할 수 있다.
+- `27세 천안 청년 월세 지원`의 confirmed 정책은 0건이다. 실제 후보 2건은
+  지역·연령·상태가 모두 unknown이므로 자격 충족으로 표시하면 안 된다.
+- Integration 04는 일반 월세 탐색을 golden flow로 사용할지, confirmed
+  천안·27세 정책을 위한 Source 범위를 보강할지 결정해야 한다.
+- 충청남도 broad query는 현재 계약상 하위 시군 정책을 자동 포함하지 않는다.
+  semantics 변경은 Backend·Frontend 영향이 있는 별도 공동 결정이다.
+- Frontend 의존성 audit과 Starlette deprecation warning은 Data 02 범위 밖의
+  기존 후속 위험이다.
 
 ## 관련 문서
 
@@ -325,5 +361,6 @@ PostgreSQL 통합 테스트는 `TEST_DATABASE_URL`이 `_test` DB를 가리킬 �
 - [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md)
 - [검색 계약 Gate G1 인수인계](../../weekly_plan/week_03_search_contract_handoff.md)
 - [Source Profile](../../../data/source_profiles.md)
+- [Release 1 실데이터 품질 Profile](../../../data/release_dataset_profile.md)
 - [Collector 실행](../../../operations/collector.md)
 - [Backend Windows 로컬 환경](../../backend_local_setup.md)

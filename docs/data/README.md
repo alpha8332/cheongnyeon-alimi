@@ -20,6 +20,7 @@
 - [데이터 수집 정책](collection_policy.md)
 - [Fixture와 Seed 계약](fixture_seed_contract.md)
 - [행정구역 기준정보](administrative_regions.md)
+- [Release 1 실데이터 품질 Profile](release_dataset_profile.md)
 
 ## 실행 가능한 Schema
 

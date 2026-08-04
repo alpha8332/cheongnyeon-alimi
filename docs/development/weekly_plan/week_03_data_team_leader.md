@@ -434,6 +434,8 @@ pagination·Raw 저장의 현재 구조와 제약만 분석하고 새 구현을 
 
 ## Slice DT4 - 실제 데이터 품질 판정과 담당자 인계
 
+- 상태: completed (`2026-08-04`)
+
 ### 목적
 
 DB에 적재된 snapshot이 사용자 검색에 사용할 수 있는지 판정하고 Backend와
@@ -485,6 +487,18 @@ Raw payload와 비밀정보는 인계하지 않는다.
 - 실제 snapshot이 검색 통합에 사용 가능한지 설명할 수 있음
 - Backend·Frontend가 사용할 안전한 실제 사례와 경계값이 준비됨
 - golden query 후보 존재 또는 Source 범위 결정 필요가 명확함
+
+### 완료 결과
+
+- 실제 정책 3,159건을 오프라인 재생해 valid 1,462·partial 1,697·invalid 0,
+  기본 노출 1,187건의 품질·검색 분포를 재현했다.
+- Source placeholder인 `0세 ~ 0세` 631건을 원문 보존·구조화 연령 null·
+  partial로 보정하고 Runtime DB 재적재와 전건 unchanged 재실행을 확인했다.
+- 일반 월세 검색에는 실제 후보가 있지만 `27세 천안 청년 월세 지원`의
+  confirmed 정책은 0건이며, 복지로 unknown 후보 2건만 남는다고 판정했다.
+- Backend·Frontend 안전 인계와 Integration 04 선택 사항은
+  [Release 1 실데이터 품질 Profile](../../data/release_dataset_profile.md)에
+  기록했다.
 
 ### 후속 해제와 대기
 
@@ -688,14 +702,14 @@ git status --short
 
 ### Data
 
-- [ ] Source preflight·호출 예산·릴리스 범위 승인
+- [x] Source preflight·호출 예산·릴리스 범위 승인
 - [x] 대표 실데이터 분포와 검색 계약 질문 공유
 - [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [x] Gate G1 Data 계약 공동 승인
-- [ ] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
-- [ ] 재실행 idempotency·transaction·중복 방지 검증
-- [ ] 지역·연령·상태·품질과 golden query 후보 검증
-- [ ] Backend·Frontend에 안전한 실제 사례 인계
+- [x] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
+- [x] 재실행 idempotency·transaction·중복 방지 검증
+- [x] 지역·연령·상태·품질과 golden query 후보 검증
+- [x] Backend·Frontend에 안전한 실제 사례 인계
 - [x] 비밀·Raw·DB Git 비추적 확인
 
 ### Team Leader

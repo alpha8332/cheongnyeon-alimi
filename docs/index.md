@@ -62,6 +62,8 @@
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
   Release 1 실제 정책 수집·PostgreSQL 적재와 품질 기준선
+- [Release 1 실데이터 품질 Profile](data/release_dataset_profile.md):
+  실제 snapshot 품질·검색 분포와 Backend·Frontend 안전 인계
 - [Policy Discovery Forest 계획](development/develop_plan/frontend/01_policy_discovery.md)
 - [React Router Advisory Review Forest 계획](development/develop_plan/frontend/02_react_router_advisory.md):
   현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
@@ -141,6 +143,7 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
 | `R1-SEARCH-IMPLEMENTATION` | action-needed | Backend·Frontend | Gate G1 승인 기준으로 Backend B1과 Frontend FE4-11 병렬 시작. Frontend 실제 API 연결은 Backend endpoint·계약 테스트 준비 후 진행 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md) |
+| `R1-ACTUAL-DATA-BOUNDARIES` | action-needed | Backend·Frontend·Team Leader | unknown age·region·status 표시를 보존하고, `27세 천안 청년 월세 지원`에 confirmed 정책이 없음을 Integration 04 golden flow에서 반영 | [Release 1 실데이터 품질 Profile](data/release_dataset_profile.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

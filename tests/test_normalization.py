@@ -36,6 +36,7 @@ COLLECTED_AT = datetime(2026, 7, 26, 7, 30, tzinfo=timezone.utc)
 
 def extracted_policy(
     *,
+    source_id: str = "test-source",
     title: str | None = "<b>청년 &amp; 정책</b>",
     category_text: str | None = "주거,일자리",
     application_period_text: str | None = (
@@ -71,7 +72,7 @@ def extracted_policy(
         ),
     )
     return ExtractedPolicy(
-        source_id="test-source",
+        source_id=source_id,
         source_name="테스트 정책 API",
         external_id="POLICY-1",
         title=title,
@@ -323,6 +324,40 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
         self.assertEqual((), program.regions)
         self.assertEqual("2026-02-30", program.application_period_text)
         self.assertEqual("나이 200세 이상", program.age_condition_text)
+
+    def test_zero_only_age_range_is_unknown_placeholder(self) -> None:
+        result = self.normalizer.normalize(
+            extracted_policy(
+                source_id="youthcenter-api",
+                age_text="0세 ~ 0세",
+            )
+        )
+
+        self.assertEqual(DataQualityStatus.PARTIAL, result.status)
+        program = result.program
+        assert program is not None
+        self.assertIsNone(program.age_min)
+        self.assertIsNone(program.age_max)
+        self.assertEqual("0세 ~ 0세", program.age_condition_text)
+        self.assertIn(
+            ("$.age_condition_text", "placeholder_age_range"),
+            {(issue.path, issue.code) for issue in result.issues},
+        )
+
+    def test_other_source_can_keep_exact_zero_age_range(self) -> None:
+        result = self.normalizer.normalize(
+            extracted_policy(age_text="0세 ~ 0세")
+        )
+
+        self.assertEqual(DataQualityStatus.VALID, result.status)
+        program = result.program
+        assert program is not None
+        self.assertEqual(0, program.age_min)
+        self.assertEqual(0, program.age_max)
+        self.assertNotIn(
+            "placeholder_age_range",
+            {issue.code for issue in result.issues},
+        )
 
     def test_missing_search_fields_are_partial_not_invented_values(
         self,

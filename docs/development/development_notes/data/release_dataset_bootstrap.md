@@ -4,12 +4,12 @@
 
 - 작업일: 2026-07-31, 2026-08-03, 2026-08-04
 - 담당 영역: Data, Team Leader 시작 조정
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/data/release-dataset-bootstrap`
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: DT4 pending, DT3 completed
+- 현재 Slice: DT4 completed
 
 ## 목적
 
@@ -31,7 +31,7 @@ Integration 04 종단 인수 결과는 각 담당 Forest 기록에 남긴다.
 | DT1 | completed | 두 Source 실호출·분포·partial 원인·릴리스 범위 초안 확인 |
 | DT2 | completed | DT2A~DT2D 완료, `G1_APPROVED` 기록과 세 영역 후속 Slice 해제 |
 | DT3 | completed | 전체 snapshot 3,159건 수집·Runtime DB 적재·재실행 검증 완료 |
-| DT4 | pending | 적재된 실제 정책 3,159건의 품질·검색 사례 판정 대기 |
+| DT4 | completed | 품질 Profile·연령 placeholder 보정·검색 경계·안전 인계 완료 |
 
 ## 구현 내용
 
@@ -510,6 +510,56 @@ ID로 기록됐다.
 이 결과로 DT3의 실제 Raw → Normalized → PostgreSQL과 idempotent 재실행
 완료 조건을 충족했다.
 
+### DT4 - 실제 데이터 품질 판정과 인계
+
+두 완료 snapshot을 외부 API와 PostgreSQL 연결 없이 같은 Normalizer와
+Backend search projection·3값 판정 primitive로 재생하는
+`scripts/profile_release_dataset.py`를 추가했다. 출력은 Raw payload가 아닌
+집계와 승인된 소수 정책 식별자만 포함하며 snapshot ID를 기본값으로 고정한다.
+
+| 구분 | 결과 |
+| --- | ---: |
+| accepted / invalid | 3,159 / 0 |
+| valid / partial | 1,462 / 1,697 |
+| 기본 노출 | 1,187 |
+| 기본 노출 valid / partial | 486 / 701 |
+| 고유 `(source_id, external_id)` | 3,159 |
+
+온통청년 631건은 Source가 연령 제한 사용 여부 Y와 최소·최대 0을 함께
+제공했다. 기존 해석은 이를 정확한 0세 한정으로 구조화해 27세 검색에서
+confirmed mismatch로 제외했다. 실제 Source placeholder를 자격 제한으로
+확정하지 않도록 원문 `0세 ~ 0세`는 보존하고 `age_min`·`age_max`를 null,
+품질을 partial로 바꿨다. `placeholder_age_range`는 Source 판정,
+`unstructured_age_condition`은 검색 가능한 bound 부재를 각각 나타낸다.
+
+보정 후 기본 노출 1,187건에서 27세는 match 544·mismatch 26·unknown 617,
+천안시는 match 54·mismatch 671·unknown 462였다. 월세 term은 전체 165건,
+기본 노출 51건이다. `27세 천안 청년 월세 지원`의 세 text term을 모두
+포함한 기본 노출은 36건이지만 연령·지역이 모두 confirmed match인 정책은
+0건이다. confirmed mismatch를 제외하면 다음 복지로 후보 2건만 남는다.
+
+- `WLF00001063` 주거안정 월세대출
+- `WLF00004661` 청년월세 지원사업
+
+두 후보는 지역·연령·신청 상태가 모두 unknown인 partial 정책이다. 실제
+정책이지만 자격 충족이나 신청 가능으로 표시할 수 없다. 상세 수치와
+Backend·Frontend 표시 경계는
+[Release 1 실데이터 품질 Profile](../../../data/release_dataset_profile.md)에
+기록했다.
+
+사용자가 Runtime DB credential을 현재 process의 임시 pgpass로만 주입해
+보정된 온통청년 snapshot을 재적재했다. 첫 실행은 inserted 0·updated 631·
+unchanged 2,067, 두 번째 실행은 inserted·updated 0·unchanged 2,698이었다.
+CollectionRun ID는 각각 다음과 같다.
+
+- 보정 재적재: `fc6c05aa-21bf-4241-96f6-e696926ed0d2`
+- 동일 snapshot 재실행: `d00a2dc7-f2e8-4fee-9c09-c01301096873`
+
+최종 SQL 집계는 온통청년 2,698 row·identity, valid 1,462·partial 1,236과
+복지로 461 row·identity, valid 0·partial 461로 오프라인 Profile과 일치했다.
+`age_min=0 AND age_max=0` 행은 0건이다. 두 import 모두 skipped·rejected·
+failed 0이었고 credential과 Raw payload는 출력하거나 기록하지 않았다.
+
 ## 주요 변경 파일
 
 - `collectors/snapshot.py`
@@ -518,6 +568,12 @@ ID로 기록됐다.
 - `scripts/import_runtime_data.py`
 - `tests/test_snapshot_collection.py`
 - `tests/test_runtime_replay.py`
+- `scripts/profile_release_dataset.py`
+- `tests/test_release_dataset_profile.py`
+- `collectors/normalizer.py`
+- `tests/test_normalization.py`
+- `docs/data/release_dataset_profile.md`
+- `docs/data/normalization_rules.md`
 - `docs/development/develop_plan/data/02_release_dataset_bootstrap.md`
 - `docs/development/development_notes/data/release_dataset_bootstrap.md`
 - `docs/data/source_profiles.md`
@@ -551,6 +607,10 @@ ID로 기록됐다.
 - 호출 예산을 목록과 상세 요청의 합으로 제한하고 manifest 생성 전에
   부족함을 확인한다. 실패 중간 Raw는 원문 보존하되 릴리스 회차로 승인하지
   않는다.
+- Source의 `0세 ~ 0세` placeholder는 0세 한정 자격으로 추정하지 않고
+  원문·경고를 보존한 unknown으로 처리한다.
+- 일반 text 검색 후보와 confirmed 자격 후보를 구분하고, actual golden
+  policy가 없으면 unknown 후보를 자격 충족으로 승격하지 않는다.
 
 ## 검증 결과
 
@@ -643,10 +703,29 @@ skip 4건은 `TEST_DATABASE_URL`이 없는 현재 process에서 테스트 전용
 Runtime DB 검증은 별도로 dry-run·실적재·재실행과 최종 SQL identity 집계까지
 성공했다.
 
+### DT4 검증 (`2026-08-04`)
+
+| 검증 | 결과 |
+| --- | --- |
+| Profile·Normalizer·Runtime replay·검색 판정 집중 pytest | 30건 통과, 기존 warning 1건 |
+| 실제 완료 snapshot Profile | 3,159건 수용, invalid 0, 외부 API·DB 호출 없음 |
+| 전체 Data unittest | 113건 통과 |
+| Integration pytest | 4건 skip, `TEST_DATABASE_URL` 미주입 |
+| Runtime DB 보정 재적재 | updated 631·unchanged 2,067, 실패 0 |
+| 동일 snapshot 재실행 | 온통청년 2,698건 전부 unchanged |
+| 최종 DB identity·품질 | 두 Source 모두 오프라인 Profile과 일치 |
+| 구조화 0~0 연령 | SQL 0건 |
+| Python compile·문서 검증·`git diff --check` | 통과 |
+
+Integration 4건 skip은 테스트 DB credential을 현재 process에 주입하지 않은
+결과로 성공 처리하지 않는다. DT4의 변경된 Runtime DB 경계는 별도의 실제
+import·재실행과 SQL 집계로 검증했다.
+
 ## 남은 작업
 
-- DT4에서 전체 실제 데이터의 검색 품질·경계 사례와 golden
-  query 후보를 판정해 Backend·Frontend에 인계한다.
-- Team Leader는 DT5 전 Integration 04 계획과 개발 기록을 생성한다.
+- Backend·Frontend는 actual profile의 unknown age·region·status와 제목 중복
+  경계를 구현·소비 결과에 반영한다.
+- Team Leader는 DT5 전 Integration 04 계획과 개발 기록을 생성하고 일반
+  월세 탐색을 golden flow로 사용할지 Source 범위를 보강할지 결정한다.
 - 현재 테스트에서 발생한 Starlette의 `httpx` 사용 deprecation warning은
   DT0 범위 밖이며 별도 의존성 검토에서 처리한다.
