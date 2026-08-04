@@ -30,7 +30,7 @@ Data·Team Leader에게 차이와 선택지를 알린다.
 - DT2 Data 작업: PSF 이후 actual profile, Data 권고안과 Schema 영향 판정 완료
 - Backend 06: W3-B0 계획·API 초안 병합 완료
 - Frontend 04: W3-F0 계획·draft type·표시 초안 병합 완료
-- Gate G1: DT2A~DT2D 정합성 보완·결정·검증·승인 대기
+- Gate G1: DT2A 정합성 보완 완료, DT2B~DT2D 결정·검증·승인 대기
 
 현재 실제 표본의 PSF 이후 오프라인 재생 결과는 다음과 같다.
 
@@ -59,6 +59,11 @@ Backend·Frontend 담당자가 제출하지 못한 공동 계약 마감은 Data�
 
 DT2A~DT2C 중 불일치나 실패가 남으면 DT2D에서 승인 문구를 기록하지 않는다.
 Node/npm 등 검증 환경 부재도 통과로 간주하지 않는다.
+
+DT2A는 `2026-08-04`에 완료했다. Backend·Frontend request·response parity
+정적 검사, 문서 검증 테스트 10건, `validate_docs.py`와 `git diff --check`가
+통과했다. Frontend build·lint는 아직 실행하지 않았으며 DT2C 완료 증거로
+남긴다. 현재 다음 Slice는 DT2B다.
 
 ## 브랜치 기준
 

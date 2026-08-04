@@ -6,7 +6,7 @@
 - 상태: in-progress
 - 대상 기간: 3주차 Release 1 실데이터 기준선
 - 관련 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: DT2A pending, merged contract correction scope fixed
+- 현재 Slice: DT2B pending, DT2A contract parity completed
 - 개발 기록:
   [Release Dataset Bootstrap 개발 기록](../../development_notes/data/release_dataset_bootstrap.md)
 
@@ -116,7 +116,7 @@ Data 근거와 Schema 영향 판정을 준비했다. 현재 1.1.0 계약으로 �
 
 #### DT2A - 병합 계약 정합성 보완
 
-- 상태: pending
+- 상태: completed (`2026-08-04`)
 - 목적: 병합된 W3-B0·W3-F0 초안의 구현 전 계약 불일치를 제거한다.
 - 작업:
   - Backend 계획의 실제 `ApplicationStatus`·`PolicyCategory` import 경로 수정

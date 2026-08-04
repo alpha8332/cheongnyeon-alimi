@@ -9,7 +9,7 @@
 - 기준 `develop` SHA: `fb6402d1793dbd9b4999d1a004fddf695f2d8bde`
 - 관련 계획:
   [Release Dataset Bootstrap Forest](../../develop_plan/data/02_release_dataset_bootstrap.md)
-- 현재 Slice: DT2 in-progress, Data evidence prepared, Gate G1 pending
+- 현재 Slice: DT2B pending, DT2A contract parity completed
 
 ## 목적
 
@@ -276,16 +276,54 @@ Frontend 표시 계약으로 확정된 내용은 아니며 두 담당자의 소�
 - 새 자연어 검색 request·해석 조건·검색 이유·미확인 조건은 NormalizedProgram
   필드가 아니라 Backend 06 API 응답 계약과 Frontend 04 타입에서 정의한다.
 
+### DT2A - 병합 계약 정합성 보완
+
+Backend `74bc87a0ffe40d36464f1f2f4236247e9be45bac`와 Frontend
+`ed3fca6121203354da3dcf5d621ff0207555c679` 병합 뒤 W3-B0·W3-F0의 전체
+request·response를 다시 대조했다. 본 구현은 시작하지 않고 계획과 Frontend
+draft type의 잔여 불일치만 수정했다.
+
+| 계약 영역 | 승인 후보 경계 | DT2A 보완 |
+| --- | --- | --- |
+| request | 필수 `q`, flat optional filter, `include_partial=true`, `page=1`, `limit=20` | Backend·Frontend 필드·기본값 유지 |
+| interpreted condition | dimension, string·integer value, source, resolution, candidates | Backend `SearchDimension`과 Frontend union의 nullability 일치 |
+| override | 검색 dimension 배열 | Backend `list[str]`을 제한된 dimension 배열로 좁힘 |
+| verdict | region·age·status·category의 `match|mismatch|unknown|null` | 변경 없음 |
+| result item | policy, score, verdicts, `unknown_count`, reason codes, message, row-level unconfirmed | Frontend에서 누락된 `unknown_count` 복구 |
+| query 경고 | `interpreted_conditions.conditions[]` resolution·candidates | 존재하지 않는 top-level unconfirmed 참조 제거 |
+| row 미확인 | `items[].unconfirmed_conditions[]` | 정책별 근거 부족에만 사용한다고 명시 |
+| 상태 정렬 | open, scheduled, null unknown bucket, closed | `unknown`을 새 ApplicationStatus·DB enum으로 해석하지 않도록 고정 |
+| 기존 모델 import | `app.schemas.policy` | 계획의 잘못된 `app.models.policy` import 수정 |
+
+`NormalizedProgram` 1.1.0, Fixture, Seed, Migration, DB enum, 기존 Policy API와
+운영 데이터는 변경하지 않았다. Frontend production import·UI·Mock·API Client,
+Backend parser·Repository·endpoint도 구현하지 않았다.
+
+#### DT2A 검증 결과
+
+| 검증 | 결과 |
+| --- | --- |
+| Backend·Frontend request·response 정적 parity | 통과, 필드·타입·nullability·기본값 잔여 불일치 0건 |
+| 실제 Backend Schema import·ApplicationStatus 대조 | 통과, `app.schemas.policy`, `open|closed|scheduled` 유지 |
+| 폐기된 Frontend Slice 참조 | `FE4-05`·`FE4-09` 잔존 0건 |
+| 문서 검증 테스트 | 10건 통과 |
+| `python scripts/validate_docs.py` | 통과 |
+| `git diff --check` | 통과 |
+| Frontend build·lint | 미실행, DT2C 범위 |
+
+DT2A 검증은 API·UI 본 구현 테스트가 아니다. G1 승인 전 draft 계약의 정적
+정합성과 문서 실행 가능성만 확인했다.
+
 ### DT2 - 공동 G1 대기 항목
 
-- Backend 06: 자연어 원문 parameter, 구조화 `region`·`age`·`category`·
-  `status`, unknown 포함 방식, 기본 정렬·pagination과 검색 이유 응답 초안
-- Frontend 04: partial·지역/연령/상태 미확인 표시, 해석 조건 확인·수정,
-  결과 없음과 pagination query state 초안
-- 공동 결정: 검색 endpoint의 partial 기본 포함 여부, open·scheduled·unknown·
-  closed 기본 노출 순서와 unknown 후보의 점수·노출 하한
+- DT2B: 검색 endpoint의 partial 기본 포함, open·scheduled·null·closed 기본
+  노출 순서와 unknown 후보의 감점·노출 의미를 Data 근거와 함께 동결
+- DT2B: `G1-REASON`, `G1-UNK`, `G1-ROUTE`, category 다중 선택과 지역
+  ambiguous 정확도의 Release 1 차단 여부 분류
+- DT2C: Frontend build·lint와 문서·diff 검증 증거 확보
+- DT2D: 관련 상태와 공동 인계 보드를 동기화하고 Gate G1 승인 여부 기록
 
-이 항목의 소비 증거가 없으므로 DT2와 Gate G1은 완료로 표시하지 않는다.
+DT2B~DT2D가 남아 있으므로 DT2와 Gate G1은 아직 완료로 표시하지 않는다.
 
 ## 주요 변경 파일
 

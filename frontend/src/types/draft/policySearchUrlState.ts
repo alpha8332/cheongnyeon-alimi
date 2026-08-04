@@ -5,7 +5,7 @@
  * Backend response fields (interpreted_conditions, verdicts, reason_codes, score,
  * unconfirmed_conditions) are NOT serialized into the URL query string.
  *
- * parse/build/toRequest helpers: implement in post-G1 Slice FE4-05 (SearchBar & URL Sync).
+ * parse/build/toRequest helpers: implement in post-G1 Slice FE4-14 (SearchBar & URL Sync).
  */
 
 import type { PolicySearchQueryParams } from '@/types/draft/policySearch.contract';
@@ -42,6 +42,6 @@ export const POLICY_SEARCH_URL_DEFAULTS: Pick<
 
 /**
  * Type-level note: PolicySearchUrlQueryState round-trips to PolicySearchQueryParams
- * without NL parsing. Implementation deferred to G1-approved Slice FE4-05.
+ * without NL parsing. Implementation deferred to G1-approved Slice FE4-14.
  */
 export type PolicySearchUrlToRequest = PolicySearchUrlQueryState & PolicySearchQueryParams;

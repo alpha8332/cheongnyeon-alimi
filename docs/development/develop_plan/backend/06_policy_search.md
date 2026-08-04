@@ -135,9 +135,8 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 ### 2. Request Query Parameters (`PolicySearchQueryParams`)
 
 ```python
-from typing import Literal
 from pydantic import BaseModel, Field
-from app.models.policy import ApplicationStatus, PolicyCategory
+from app.schemas.policy import ApplicationStatus, PolicyCategory
 
 class PolicySearchQueryParams(BaseModel):
     q: str = Field(
@@ -180,15 +179,17 @@ class PolicySearchQueryParams(BaseModel):
 ### 3. Response DTO (`PolicySearchResponse`)
 
 ```python
-from typing import Any, Literal
+from typing import Literal
 from pydantic import BaseModel, Field
 from app.schemas.policy import PolicyRead
 
+SearchDimension = Literal["keyword", "region", "age", "category", "status"]
+
 class ConditionItem(BaseModel):
-    dimension: Literal["keyword", "region", "age", "category", "status"] = Field(
+    dimension: SearchDimension = Field(
         ..., description="해석된 차원 종류"
     )
-    value: Any = Field(..., description="추출 또는 명시 지정된 차원 값")
+    value: str | int = Field(..., description="추출 또는 명시 지정된 차원 값")
     source: Literal["q", "explicit"] = Field(
         ..., description="조건 출처 (q: 자연어 파싱, explicit: 명시적 쿼리 파라미터)"
     )
@@ -205,7 +206,7 @@ class InterpretedConditions(BaseModel):
     conditions: list[ConditionItem] = Field(
         default_factory=list, description="차원별 상세 해석 조건 목록"
     )
-    override_fields: list[str] = Field(
+    override_fields: list[SearchDimension] = Field(
         default_factory=list, description="명시적 필터 파라미터로 override된 차원 이름 목록"
     )
     uninterpreted_terms: list[str] = Field(
@@ -263,6 +264,13 @@ class PolicySearchResponse(BaseModel):
 
 `unconfirmed_conditions` 및 `reason_codes`는 머신 판독 및 사용자 안내를 위한 확장 가능한 문자열 코드 체계다. **기존 등록된 코드의 의미는 변경하지 않으며(하위 호환성 유지), 필요 시 새 코드를 추가 확정하는 규칙**을 따른다.
 
+query-level 해석 경고와 row-level 정책 근거 부족은 서로 다른 위치에 둔다.
+자연어 해석의 `unmapped`·`ambiguous`는
+`interpreted_conditions.conditions[]`의 `resolution`·`candidates`로 전달하고,
+`items[].unconfirmed_conditions[]`는 개별 정책의 지역·연령·상태·카테고리
+근거가 부족한 경우에만 사용한다. top-level `unconfirmed_conditions`는
+추가하지 않는다.
+
 | reason_code | 대기 차원/필드 | 의미 및 설명 |
 | --- | --- | --- |
 | `DATA_MISSING_REGION` | `region` | 정책 원문에 지역 제한 근거 데이터가 누락되어 판단 불가 (`unknown`) |
@@ -283,7 +291,10 @@ class PolicySearchResponse(BaseModel):
   - 검색 조건으로 지정되었으나 정책 원문 데이터 부족으로 판단 불가능한 차원은 `unknown`으로 기록함.
   - `unknown` 차원을 가진 정책은 확정 제외하지 않고 미확인 후보로 결과에 포함하되, 동일 text relevance를 가진 `match` 항목보다 나중에 정렬함 (`unknown_count ASC`).
 - **`include_partial` 기본값**: 복지로 수집 표본 10건이 모두 `partial` 데이터이므로, 검색 API (`GET /api/v1/policies/search`)의 기본값은 `true`로 설정함 (기존 목록 API `GET /api/v1/policies` 기본값 `false`는 유지).
-- **신청 상태 기본 노출**: `open` → `scheduled` → `unknown` 상태 정책을 기본 노출하며, `closed` (마감) 정책은 기본 제외하고 명시 요청(`status=closed` 등) 시에만 포함함.
+- **신청 상태 기본 노출**: `open` → `scheduled` → `application_status=null`
+  정책을 기본 노출하며, `closed` (마감) 정책은 기본 제외하고 명시 요청
+  (`status=closed` 등) 시에만 포함함. 여기서 null은 정렬을 위한 unknown
+  bucket이며 `ApplicationStatus` 또는 DB enum에 `unknown` 값을 추가하지 않는다.
 - **score 점수 정의**:
   - Backend 내부 PostgreSQL ranking/relevance 계산값 (float).
   - 높을수록 검색어 및 조건 관련도가 높음을 의미함.
@@ -292,7 +303,7 @@ class PolicySearchResponse(BaseModel):
 - **최종 4단계 결정적 정렬**:
   1. `score DESC` (관련도 점수 내림차순)
   2. `unknown_count ASC` (`verdicts` 내 null을 제외한 unknown 차원 개수 오름차순)
-  3. `status 우선순위` (`open` > `scheduled` > `unknown` > `closed`)
+  3. `status 우선순위` (`open` > `scheduled` > `null` unknown bucket > `closed`)
   4. `policy.id ASC` (결정적 tie-breaker)
 - **`total` 정의**: 페이징(`page`, `limit`)이 적용되기 전, 필터링 조건(`mismatch` 제외, `status` 기본 필터 등)을 충족하는 전체 검색 결과 건수.
 - **URL Query State 관리**: Frontend 및 URL에는 사용자가 직접 입력한 파라미터(`q`, `region`, `age` 등)만 보존하며, Backend 응답인 `interpreted_conditions` 전체 JSON을 URL state로 저장하지 않음.
@@ -301,7 +312,7 @@ class PolicySearchResponse(BaseModel):
 
 - **해석 오류 처리 규칙**:
   1. **명시적 region 해석 실패**: 명시적 쿼리 파라미터 `region`이 기준 행정구역에 매핑되지 않거나(`unmapped`), 둘 이상의 행정구역으로 모호한 경우(`ambiguous`) ➔ **HTTP `400 Bad Request`** 반환 (`details`에 candidates 또는 error 이유 포함).
-  2. **자연어 `q` 추출 region 해석 경고**: `q`에서 파싱된 region이 `unmapped` 또는 `ambiguous`인 경우 ➔ 임의로 단일 지역을 선택하지 않고, **HTTP `200 OK` 응답 내 `interpreted_conditions.conditions[]`의 `resolution="unmapped"`/`"ambiguous"` 및 `candidates[]`와 `unconfirmed_conditions`로 경고를 전달**하며 정상 검색 진행.
+  2. **자연어 `q` 추출 region 해석 경고**: `q`에서 파싱된 region이 `unmapped` 또는 `ambiguous`인 경우 ➔ 임의로 단일 지역을 선택하지 않고, **HTTP `200 OK` 응답 내 `interpreted_conditions.conditions[]`의 `resolution="unmapped"`/`"ambiguous"` 및 `candidates[]`로 query-level 경고를 전달**하며 정상 검색 진행. 개별 정책 근거 부족만 `items[].unconfirmed_conditions[]`로 전달함.
   3. **유효한 검색 term 전무**: 자연어 `q`가 무의미한 특수문자/공백으로만 이루어져 파싱된 키워드나 조건이 전혀 없고, 명시적 필터도 지정되지 않은 경우 ➔ **HTTP `400 Bad Request`** 반환.
   4. **검색 결과 없음**: 검색 조건이 정상 해석되었으나 조건을 충족하는 정책이 없는 경우 ➔ HTTP 404가 아닌 **HTTP `200 OK` (`total: 0`, `items: []`)** 반환.
 - **HTTP Error Response Models**:

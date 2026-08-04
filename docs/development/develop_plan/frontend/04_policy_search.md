@@ -118,7 +118,7 @@ Pagination envelope는 `PolicyListResponse`와 동일 (`total`, `page`, `limit`,
 | Field | Type | Notes |
 | --- | --- | --- |
 | `dimension` | enum | `keyword` \| `region` \| `age` \| `category` \| `status` |
-| `value` | mixed | dimension별 resolved 값 |
+| `value` | string \| integer | dimension별 추출·명시 값, null 아님 |
 | `source` | enum | `q` \| `explicit` |
 | `resolution` | enum | `resolved` \| `unmapped` \| `ambiguous` |
 | `candidates` | string[] | `ambiguous` 시 후보 (예: region alias) |
@@ -131,6 +131,7 @@ Pagination envelope는 `PolicyListResponse`와 동일 (`total`, `page`, `limit`,
 | `policy` | PolicyRead | 목록·상세와 동일 공개 필드 envelope |
 | `score` | number | Backend 정렬용; **Release 1 UI 숫자 미표시**, 요청 간 비교 금지 |
 | `verdicts` | `DimensionVerdicts` | `region`, `age`, `status`, `category` 각 `MatchVerdict \| null` |
+| `unknown_count` | integer | 적용된 verdict 중 `unknown` 개수, Backend tie-breaker |
 | `reason_codes` | `ReasonCode[]` | Backend reason code (확장 가능 string) |
 | `message` | string | 사람이 읽을 수 있는 추천 요약 |
 | `unconfirmed_conditions` | object[] | `{ field, reason_code, message }` per-row 미확인 조건 |
@@ -256,7 +257,7 @@ FE4-11 Types promote
 | --- | --- |
 | **목표** | Backend DTO와 100% 정렬된 pure TypeScript types |
 | **변경 파일** | `frontend/src/types/draft/policySearch.contract.ts`, `policySearchUrlState.ts`, `policySearchDisplay.ts`, `policySearchErrors.ts`, `draft/README.md` |
-| **세부 작업** | `PolicySearchQueryParams`, `PolicySearchInterpretedConditions`, `PolicySearchHit` (nested `policy`), `PolicySearchResponse`, nullable `DimensionVerdicts` (+ `category`), `UnconfirmedCondition`, `ReasonCode`, `PolicySearchUrlQueryState`, `POLICY_SEARCH_QUERY_LIMITS`; 실행 함수 **없음** |
+| **세부 작업** | `PolicySearchQueryParams`, `PolicySearchInterpretedConditions`, `PolicySearchHit` (nested `policy`, `unknown_count`), `PolicySearchResponse`, nullable `DimensionVerdicts` (+ `category`), `UnconfirmedCondition`, `ReasonCode`, `PolicySearchUrlQueryState`, `POLICY_SEARCH_QUERY_LIMITS`; 실행 함수 **없음** |
 | **검증** | `npm run build`; Backend W3-B0 diff |
 | **완료 기준** | G1 체크리스트 #1–#7 필드명 일치 |
 
@@ -450,7 +451,7 @@ checklist에 포함한다.
 | **목표** | `reason_codes`·`message`·미파싱 keyword·global unconfirmed banner |
 | **변경 파일** | `SearchReasonBlock.tsx`, `UninterpretedNotice.tsx`, `UnconfirmedBanner.tsx` |
 | **선행** | FE4-18 |
-| **세부 작업** | 카드 하단 Reason; amber uninterpreted box; query-level 미확인 dimension banner |
+| **세부 작업** | 카드 하단 Reason; amber uninterpreted box; query-level 경고는 `interpreted_conditions.conditions[]`, row-level 근거 부족은 `items[].unconfirmed_conditions[]`에서 표시 |
 | **검증** | Browser M1–M4 |
 | **완료 기준** | “왜 추천됐는가” per row |
 
@@ -585,6 +586,7 @@ git diff --check
 | 10 | URL flat params only; no response JSON | — | no interpreted blob in URL |
 | 11 | Mock M1–M6 (M6: q+keyword) | contract tests | actual profile |
 | 12 | `score` ordering only; no UI numeric display | Backend rank | |
+| 13 | `PolicySearchHit.unknown_count` integer | same response field | Backend tie-breaker, UI 숫자 미표시 |
 
 ## 기존 Frontend 구조 분석
 

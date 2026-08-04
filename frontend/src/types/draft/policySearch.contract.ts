@@ -44,7 +44,7 @@ export type InterpretedConditionValue =
 /** One row in response `interpreted_conditions.conditions`. */
 export interface InterpretedCondition {
   dimension: InterpretedConditionDimension;
-  value: InterpretedConditionValue | null;
+  value: InterpretedConditionValue;
   source: InterpretedConditionSource;
   resolution: InterpretedConditionResolution;
   /** Candidate strings when resolution is `ambiguous` (e.g. region alias matches). */
@@ -131,6 +131,8 @@ export interface PolicySearchHit {
   policy: PolicyDto;
   score: number;
   verdicts: DimensionVerdicts;
+  /** Number of applied verdict dimensions whose result is `unknown`. */
+  unknown_count: number;
   reason_codes: ReasonCode[];
   message: string;
   unconfirmed_conditions: UnconfirmedCondition[];

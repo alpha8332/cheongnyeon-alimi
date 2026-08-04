@@ -255,6 +255,7 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 
 #### DT2A - 병합 계약 정합성 보완
 
+- 상태: completed (`2026-08-04`)
 - Backend plan의 실제 Schema import 경로와 `application_status=null` 상태
   bucket을 현재 코드에 맞춘다.
 - query-level 해석 경고는 `interpreted_conditions.conditions[]`, row-level
@@ -262,6 +263,8 @@ Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 �
 - Frontend draft `PolicySearchHit`에 `unknown_count: number`를 반영하고 폐기된
   FE4 Slice 참조를 현재 FE4-14·FE4-19로 고친다.
 - 계획·draft type만 수정하며 G1 전 본 구현·Mock·테스트 코드는 만들지 않는다.
+- 정적 parity 검사, 문서 검증 테스트 10건, `validate_docs.py`와
+  `git diff --check`를 통과했다. Frontend build·lint는 DT2C에서 실행한다.
 
 #### DT2B - Data 근거 기반 G1 결정 동결
 

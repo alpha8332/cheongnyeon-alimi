@@ -2,7 +2,7 @@
  * W3-F0 DRAFT — Client error presentation types only (Gate G1 pending).
  *
  * HTTP status → UI mapping tables live in the Forest plan (§ Error UX).
- * mapHttpStatus helpers: implement in post-G1 Slice FE4-09 (Reason & Error UX).
+ * mapHttpStatus helpers: implement in post-G1 Slice FE4-19 (Reason & Error UX).
  */
 
 /** Client-side search error categories for Empty/Error state components. */
