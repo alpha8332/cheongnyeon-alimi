@@ -7,7 +7,7 @@
 - 상태: approved
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: B1 pending (W3-B0 completed)
+- 현재 Slice: B2 pending (B1 completed)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -87,7 +87,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B1 - 자연어 해석 및 규칙 기반 구조화 서비스 구현
 
-- 상태: pending (Gate G1 approved)
+- 상태: completed (`2026-08-04`)
 - 목적: 한국어 자연어 `q` 및 명시적 파라미터를 파싱하고 override 규칙을 적용하는 Service 구현
 - 산출물:
   - `backend/app/services/policy_search_parser.py`

@@ -102,6 +102,8 @@
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
 - [Backend Policy Runtime Safety Forest 개발 기록](development/development_notes/backend/policy_runtime_safety.md):
   Policy timestamp·SQL logging 현재 동작, 결정과 검증 결과
+- [Backend Policy Search Forest 개발 기록](development/development_notes/backend/policy_search.md):
+  PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
