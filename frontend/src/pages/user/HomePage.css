@@ -1,0 +1,25 @@
+.home-search-suggestions {
+  margin-bottom: 28px;
+}
+
+.home-search-suggestions__row {
+  margin-bottom: 0;
+}
+
+.home-search-suggestions__chip {
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.home-search-suggestions__chip:hover {
+  transform: scale(1.02);
+  border-color: var(--sky);
+  background: var(--white);
+}
+
+.home-search-suggestions__chip:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}

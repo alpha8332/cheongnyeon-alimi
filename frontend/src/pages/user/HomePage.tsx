@@ -5,6 +5,11 @@ import Card from '@/components/common/Card';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
 import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
+import {
+  buildPolicySearchEntryPath,
+  HOME_RECOMMENDED_SEARCHES,
+} from '@/utils/policySearchNavigation';
+import './HomePage.css';
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,17 +21,16 @@ export default function HomePage() {
   });
   const featuredPolicies = policyList?.items ?? [];
 
+  const navigateToPolicySearch = (q: string) => {
+    const path = buildPolicySearchEntryPath(q);
+    if (path) {
+      navigate(path);
+    }
+  };
+
   const handleSearch = (event?: FormEvent) => {
-    if (event) {
-      event.preventDefault();
-    }
-
-    if (!searchTerm.trim()) {
-      navigate('/programs');
-      return;
-    }
-
-    navigate(`/programs?search=${encodeURIComponent(searchTerm)}`);
+    event?.preventDefault();
+    navigateToPolicySearch(searchTerm);
   };
 
   return (
@@ -55,6 +59,22 @@ export default function HomePage() {
         </div>
       </form>
 
+      <section className="home-search-suggestions" aria-label="추천 검색어">
+        <p className="chips-label">추천 검색어</p>
+        <div className="chips-row home-search-suggestions__row">
+          {HOME_RECOMMENDED_SEARCHES.map((term) => (
+            <button
+              key={term}
+              type="button"
+              className="chip home-search-suggestions__chip"
+              onClick={() => navigateToPolicySearch(term)}
+            >
+              {term}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <div className="section-head">
         <h2 className="section-title">조건 맞춤 TOP 추천</h2>
         <span className="section-badge">주요 정책</span>
@@ -72,7 +92,8 @@ export default function HomePage() {
 
       <Card title="📋 더 많은 정책 보기">
         <p className="hint-text">
-          전체 정책 목록과 필터는 정책 목록 페이지에서 확인할 수 있습니다.
+          자연어 검색은 상단 검색창을, 전체 목록·exact 필터는 정책 목록 페이지에서
+          확인할 수 있습니다.
         </p>
         <div style={{ marginTop: '16px' }}>
           <Button variant="secondary" onClick={() => navigate('/programs')}>

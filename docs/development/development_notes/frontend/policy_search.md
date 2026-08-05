@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/policy-search`
 - 관련 계획:
   [Policy Search Forest 개발 계획](../../develop_plan/frontend/04_policy_search.md)
-- 현재 Slice: FE4-20 pending (Home → `/search` IA)
+- 현재 Slice: FE4-21 pending (Search → Detail link)
 
 ## 목적
 
@@ -31,8 +31,27 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 | FE4-14~17 | completed | Search UI core |
 | FE4-18 | completed | Partial/Unknown badges |
 | FE4-19 | completed | Reason sidebar + Uninterpreted UX |
+| FE4-20 | completed | Home → `/search?q=` golden flow |
 
 ## 구현 내용
+
+### FE4-20 — Home → `/search` IA
+
+#### HomePage hero 검색
+
+- submit/Enter → `buildPolicySearchEntryPath(q)` → `navigate('/search?q=…')`
+- 빈 q submit 시 이동하지 않음 (Policy Search 422 계약)
+
+#### 추천 검색어 칩
+
+- `HOME_RECOMMENDED_SEARCHES`: 천안시 24세 청년 지원금, 청년도약계좌, 서울 주거, 전국 청년
+- 칩 클릭 → 동일 `/search?q=` 진입
+
+#### Route 경계
+
+- `/search?q=` — NL Policy Search (FE4-14~)
+- `/programs?search=` — 목록 exact filter + client keyword (`SearchPage`, Forest 범위 밖 유지)
+- `/search` route는 `App.tsx`에 등록 (계획서 `routes/index.tsx` 대응)
 
 ### FE4-19 — Reason & Uninterpreted UX (우측 사이드바)
 
@@ -77,11 +96,14 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 | `frontend/src/pages/user/PolicySearchPage.tsx` | FE4-19 2-col + selection |
 | `frontend/src/components/policySearch/PolicySearchResultCard.tsx` | FE4-19 selectable |
 | `frontend/tests/policySearch.reason.test.ts` | FE4-19 tests |
+| `frontend/src/pages/user/HomePage.tsx` | FE4-20 hero + chips |
+| `frontend/src/utils/policySearchNavigation.ts` | FE4-20 entry path helper |
+| `frontend/tests/policySearch.navigation.test.ts` | FE4-20 tests |
 
 ## 설계 결정
 
+- Home empty search는 `/programs`로 fallback하지 않고 no-op (Search API q 필수)
 - Reason panel은 카드 하단이 아닌 우측 sticky sidebar에 배치 (search_ux_preview 정렬)
-- row-level `unconfirmed_conditions` tooltip은 FE4-18 card badge 유지; FE4-19는
   query-level ambiguous/unmapped + 선택 row `message` 중심
 - unknown verdict copy는 「미확인」; 전국·무제한 추정 문구 금지
 
@@ -91,13 +113,12 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 python3 scripts/validate_docs.py  — passed
 cd frontend && npm run build      — passed
 cd frontend && npm run lint       — passed
-cd frontend && npm test           — passed (37/37)
+cd frontend && npm test           — passed (40/40)
 ```
 
-Browser M1–M4 시나리오는 이번 세션에서 수동 확인하지 않았다.
+Browser 홈 → `/search?q=서울+주거` golden flow는 이번 세션에서 수동 확인하지 않았다.
 
 ## 남은 작업
 
-- FE4-20: Home → `/search?q=` IA
 - FE4-21: Search → Detail link
 - FE4-22: Real API Client

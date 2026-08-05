@@ -22,6 +22,11 @@ export {
   withPolicySearchPage,
 };
 
+export {
+  buildPolicySearchEntryPath,
+  HOME_RECOMMENDED_SEARCHES,
+} from './policySearchNavigation';
+
 const POLICY_CATEGORIES = new Set<PolicyCategory>([
   'housing',
   'finance',
