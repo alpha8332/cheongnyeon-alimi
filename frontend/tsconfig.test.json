@@ -18,7 +18,10 @@
     "src/mocks/policySearchHandlers.ts",
     "src/mocks/policySearchRequest.ts",
     "src/types/policy.ts",
+    "src/api/policySearchApiError.ts",
+    "src/utils/policySearchErrors.ts",
     "src/types/policySearch.ts",
+    "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",
     "tests/**/*.ts"
   ]

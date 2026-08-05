@@ -2,7 +2,7 @@
  * Policy Search client error presentation types (Frontend 04).
  *
  * HTTP status → UI mapping tables live in the Forest plan (§ Error UX).
- * mapHttpStatus helpers: implement in Slice FE4-19 (Reason & Error UX).
+ * mapHttpStatus helpers: {@link ../utils/policySearchErrors.ts} (FE4-15).
  */
 
 /** Client-side search error categories for Empty/Error state components. */

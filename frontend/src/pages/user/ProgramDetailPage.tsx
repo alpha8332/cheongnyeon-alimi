@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
@@ -27,19 +28,27 @@ function DetailField({
   value: string;
 }) {
   return (
-    <div style={{ marginBottom: '12px' }}>
-      <strong>{label}</strong>
-      <p
-        style={{
-          margin: '4px 0 0',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-        title={value}
-      >
-        {value}
+    <div className="detail-field">
+      <div className="detail-field__label">{label}</div>
+      <p className="detail-field__value">{value}</p>
+    </div>
+  );
+}
+
+function DetailShell({
+  children,
+  title = '정책 상세',
+}: {
+  children: ReactNode;
+  title?: string;
+}) {
+  return (
+    <div className="page">
+      <p className="detail-back">
+        <Link to="/programs">← 목록으로</Link>
       </p>
+      <h1 className="detail-title">{title}</h1>
+      {children}
     </div>
   );
 }
@@ -58,84 +67,62 @@ export default function ProgramDetailPage() {
 
   if (policyId === null) {
     return (
-      <div>
-        <h2>정책 상세</h2>
+      <DetailShell>
         <ErrorState message="잘못된 정책 식별자입니다." />
-        <p style={{ marginTop: '12px' }}>
-          <Link to="/programs">목록으로 돌아가기</Link>
-        </p>
-      </div>
+      </DetailShell>
     );
   }
 
   if (isLoading) {
     return (
-      <div>
-        <h2>정책 상세</h2>
+      <DetailShell>
         <LoadingState message="정책 상세를 불러오는 중입니다." />
-      </div>
+      </DetailShell>
     );
   }
 
   if (isError) {
     return (
-      <div>
-        <h2>정책 상세</h2>
+      <DetailShell>
         <ErrorState
           message="정책 상세를 불러오지 못했습니다."
           onRetry={() => void refetch()}
         />
-        <p style={{ marginTop: '12px' }}>
-          <Link to="/programs">목록으로 돌아가기</Link>
-        </p>
-      </div>
+      </DetailShell>
     );
   }
 
   if (!policy) {
     return (
-      <div>
-        <h2>정책 상세</h2>
+      <DetailShell>
         <EmptyState message="요청한 정책을 찾을 수 없습니다." />
-        <p style={{ marginTop: '12px' }}>
-          <Link to="/programs">목록으로 돌아가기</Link>
-        </p>
-      </div>
+      </DetailShell>
     );
   }
 
   const categoryTags = formatCategoryTags(policy);
 
   return (
-    <div>
-      <p>
+    <div className="page">
+      <p className="detail-back">
         <Link to="/programs">← 목록으로</Link>
       </p>
 
-      <h2>
+      <h1 className="detail-title">
         {policy.title}
         <PartialBadge policy={policy} />
-      </h2>
+      </h1>
 
-      <Card>
+      <Card title="📄 정책 정보">
         <DetailField label="기관" value={formatOrganization(policy)} />
         <DetailField label="지역" value={formatRegion(policy)} />
         <DetailField label="연령" value={formatAge(policy)} />
 
-        <div style={{ marginBottom: '12px' }}>
-          <strong>카테고리</strong>
-          <div style={{ marginTop: '4px' }}>
+        <div className="detail-field">
+          <div className="detail-field__label">카테고리</div>
+          <div className="tag-list">
             {categoryTags.map((tag) => (
-              <span
-                key={tag}
-                style={{
-                  border: '1px solid black',
-                  padding: '2px 6px',
-                  marginRight: '6px',
-                  fontSize: '12px',
-                  display: 'inline-block',
-                }}
-              >
+              <span key={tag} className="tag-list__item">
                 {tag}
               </span>
             ))}
@@ -155,7 +142,7 @@ export default function ProgramDetailPage() {
           value={formatNullableText(policy.application_method, '신청 방법 없음')}
         />
 
-        <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: '1fr 1fr' }}>
+        <div className="detail-grid">
           <DetailField
             label="일정 유형"
             value={formatApplicationSchedule(policy.application_schedule)}
@@ -172,8 +159,9 @@ export default function ProgramDetailPage() {
         />
         <DetailField label="D-Day" value={getDDayLabel(policy)} />
 
-        <div style={{ marginTop: '12px' }}>
+        <div style={{ marginTop: '16px' }}>
           <Button
+            variant="gradient"
             onClick={() => {
               window.open(policy.source_url, '_blank', 'noopener,noreferrer');
             }}

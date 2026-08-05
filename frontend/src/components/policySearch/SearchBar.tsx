@@ -1,34 +1,41 @@
 import { useState, type FormEvent } from 'react';
-import './SearchBar.css';
+import './PolicySearchShell.css';
 
 interface SearchBarProps {
-  initialQ: string;
+  defaultQ: string;
   onSubmit: (q: string) => void;
-  disabled?: boolean;
+  onClear?: () => void;
+  isSubmitting?: boolean;
   placeholder?: string;
 }
 
 export default function SearchBar({
-  initialQ,
+  defaultQ,
   onSubmit,
-  disabled = false,
-  placeholder = '예: 서울 주거, 25세 일자리, 전국 청년',
+  onClear,
+  isSubmitting = false,
+  placeholder = '예: 천안 사는 24세 청년 지원금',
 }: SearchBarProps) {
-  const [value, setValue] = useState(initialQ);
+  const [value, setValue] = useState(defaultQ);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     onSubmit(value);
   };
 
+  const handleClear = () => {
+    setValue('');
+    onClear?.();
+  };
+
   return (
-    <form className="policy-search-bar" onSubmit={handleSubmit}>
-      <div className="policy-search-bar__wrap">
-        <span className="policy-search-bar__icon" aria-hidden="true">
+    <form onSubmit={handleSubmit}>
+      <div className="search-wrap">
+        <span className="search-wrap__icon" aria-hidden="true">
           🔍
         </span>
         <input
-          className="policy-search-bar__input"
+          className="search-wrap__input"
           type="search"
           name="q"
           value={value}
@@ -36,14 +43,23 @@ export default function SearchBar({
           placeholder={placeholder}
           autoComplete="off"
           aria-label="정책 검색어"
-          disabled={disabled}
         />
+        {value ? (
+          <button
+            className="search-wrap__clear"
+            type="button"
+            aria-label="검색어 지우기"
+            onClick={handleClear}
+          >
+            ✕
+          </button>
+        ) : null}
         <button
-          className="policy-search-bar__submit"
+          className="btn btn-primary"
           type="submit"
-          disabled={disabled || !value.trim()}
+          disabled={isSubmitting || !value.trim()}
         >
-          검색
+          검색하기
         </button>
       </div>
     </form>

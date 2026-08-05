@@ -11,9 +11,15 @@ export default function ErrorState({
   onRetry,
 }: ErrorStateProps) {
   return (
-    <Card>
-      <p>{message}</p>
-      {onRetry ? <Button onClick={onRetry}>다시 시도</Button> : null}
+    <Card compact>
+      <p className="state-message state-message--error">{message}</p>
+      {onRetry ? (
+        <div style={{ marginTop: '12px' }}>
+          <Button variant="secondary" onClick={onRetry}>
+            다시 시도
+          </Button>
+        </div>
+      ) : null}
     </Card>
   );
 }

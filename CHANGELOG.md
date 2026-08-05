@@ -29,6 +29,7 @@
 
 ### Added
 
+- Policy Search Loading/Empty/Error shell 및 SearchBar 입력 수정·지우기 버튼 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Policy Search `/search` 페이지, SearchBar·URL flat param 동기화, Mock 기반 React Query fetch 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Gate G1 Policy Search TypeScript contract types를 production 타입 경로로 승격 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - 호출 예산·완전성 manifest를 사용하는 온통청년·복지로 다중 page 릴리스

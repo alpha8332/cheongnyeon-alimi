@@ -1,4 +1,6 @@
+import axios from 'axios';
 import { apiClient } from '@/api/client';
+import { PolicySearchApiError } from '@/api/policySearchApiError';
 import { handlePolicySearchMock } from '@/mocks/policySearchHandlers';
 import { mockPolicies } from '@/mocks/policies';
 import {
@@ -16,17 +18,7 @@ function delay(ms: number): Promise<void> {
   });
 }
 
-export class PolicySearchApiError extends Error {
-  readonly status: number;
-  readonly detail: string;
-
-  constructor(status: number, detail: string) {
-    super(detail);
-    this.name = 'PolicySearchApiError';
-    this.status = status;
-    this.detail = detail;
-  }
-}
+export { PolicySearchApiError } from '@/api/policySearchApiError';
 
 export async function getPolicySearch(
   query: PolicySearchQueryParams,
@@ -42,10 +34,27 @@ export async function getPolicySearch(
     return result.body;
   }
 
-  const response = await apiClient.get<PolicySearchResponse>(
-    POLICY_SEARCH_ENDPOINT.path,
-    { params: query },
-  );
+  try {
+    const response = await apiClient.get<PolicySearchResponse>(
+      POLICY_SEARCH_ENDPOINT.path,
+      { params: query },
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status ?? 0;
+      const detail =
+        typeof error.response?.data === 'object' &&
+        error.response?.data !== null &&
+        'detail' in error.response.data &&
+        typeof (error.response.data as { detail: unknown }).detail === 'string'
+          ? (error.response.data as { detail: string }).detail
+          : error.message;
+
+      throw new PolicySearchApiError(status || 503, detail);
+    }
+
+    throw error;
+  }
 }

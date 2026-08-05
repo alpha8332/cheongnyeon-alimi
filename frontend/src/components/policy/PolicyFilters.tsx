@@ -24,91 +24,84 @@ export default function PolicyFilters({
   onChange,
 }: PolicyFiltersProps) {
   return (
-    <div
-      style={{
-        border: '1px solid black',
-        padding: '10px',
-        marginBottom: '16px',
-        display: 'grid',
-        gap: '10px',
-      }}
-    >
-      <label>
-        검색
-        <Input
-          placeholder="정책명, 키워드 검색"
-          value={filters.search}
-          onChange={(event) =>
-            onChange({ ...filters, search: event.target.value })
-          }
-          style={{ display: 'block', width: '100%', marginTop: '4px' }}
-        />
-      </label>
+    <div className="panel panel--compact" style={{ marginBottom: '20px' }}>
+      <h3 className="panel-title">🔎 필터</h3>
+      <div className="field-grid">
+        <label className="field">
+          <span className="field__label">검색</span>
+          <Input
+            placeholder="정책명, 키워드 검색"
+            value={filters.search}
+            onChange={(event) =>
+              onChange({ ...filters, search: event.target.value })
+            }
+          />
+        </label>
 
-      <label>
-        지역
-        <select
-          value={filters.region}
-          onChange={(event) =>
-            onChange({ ...filters, region: event.target.value })
-          }
-          style={{ display: 'block', width: '100%', marginTop: '4px' }}
-        >
-          <option value="">전체</option>
-          {regionOptions.map((region) => (
-            <option key={region} value={region}>
-              {region}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className="field">
+          <span className="field__label">지역</span>
+          <select
+            className="field__select"
+            value={filters.region}
+            onChange={(event) =>
+              onChange({ ...filters, region: event.target.value })
+            }
+          >
+            <option value="">전체</option>
+            {regionOptions.map((region) => (
+              <option key={region} value={region}>
+                {region}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label>
-        카테고리
-        <select
-          value={filters.category}
-          onChange={(event) =>
-            onChange({
-              ...filters,
-              category: event.target.value as ProgramFilterState['category'],
-            })
-          }
-          style={{ display: 'block', width: '100%', marginTop: '4px' }}
-        >
-          <option value="">전체</option>
-          {CATEGORY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className="field">
+          <span className="field__label">카테고리</span>
+          <select
+            className="field__select"
+            value={filters.category}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                category: event.target.value as ProgramFilterState['category'],
+              })
+            }
+          >
+            <option value="">전체</option>
+            {CATEGORY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label>
-        연령
-        <Input
-          type="number"
-          min={0}
-          max={150}
-          placeholder="예: 25"
-          value={filters.age}
-          onChange={(event) =>
-            onChange({ ...filters, age: event.target.value })
-          }
-          style={{ display: 'block', width: '100%', marginTop: '4px' }}
-        />
-      </label>
+        <label className="field">
+          <span className="field__label">연령</span>
+          <Input
+            type="number"
+            min={0}
+            max={150}
+            placeholder="예: 25"
+            value={filters.age}
+            onChange={(event) =>
+              onChange({ ...filters, age: event.target.value })
+            }
+          />
+        </label>
 
-      <label>
-        <input
-          type="checkbox"
-          checked={filters.includePartial}
-          onChange={(event) =>
-            onChange({ ...filters, includePartial: event.target.checked })
-          }
-        />{' '}
-        정보가 일부 누락된 정책 포함
-      </label>
+        <label className="field-row">
+          <input
+            type="checkbox"
+            checked={filters.includePartial}
+            onChange={(event) =>
+              onChange({ ...filters, includePartial: event.target.checked })
+            }
+          />
+          정보가 일부 누락된 정책 포함
+        </label>
+      </div>
     </div>
   );
 }
