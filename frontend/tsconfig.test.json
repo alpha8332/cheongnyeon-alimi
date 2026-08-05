@@ -7,12 +7,18 @@
     "skipLibCheck": true,
     "types": ["node"],
     "rootDir": ".",
-    "outDir": ".test-dist"
+    "outDir": ".test-dist",
+    "ignoreDeprecations": "6.0",
+    "resolveJsonModule": true
   },
   "include": [
     "src/api/policyRequest.ts",
     "src/mocks/policyContract.ts",
+    "src/mocks/policySearchFixtures.ts",
+    "src/mocks/policySearchHandlers.ts",
+    "src/mocks/policySearchRequest.ts",
     "src/types/policy.ts",
+    "src/types/policySearch.ts",
     "src/utils/policyId.ts",
     "tests/**/*.ts"
   ]

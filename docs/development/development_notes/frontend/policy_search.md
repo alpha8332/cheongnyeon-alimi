@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/policy-search`
 - 관련 계획:
   [Policy Search Forest 개발 계획](../../develop_plan/frontend/04_policy_search.md)
-- 현재 Slice: FE4-13 pending (Mock contract tests)
+- 현재 Slice: FE4-14 pending (SearchBar & URL, MSW worker)
 
 ## 목적
 
@@ -31,45 +31,53 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 | W3-F0 (FE4-00~04) | completed | pure type draft·Forest 계획·Mock 명세 |
 | FE4-11 | completed | draft contract → production types promote |
 | FE4-12 | completed | M1–M6 mock fixtures·handler |
-| FE4-13 | pending | Mock contract tests (`npm test`) |
+| FE4-13 | completed | Mock contract tests (`npm test`) |
+| FE4-14 | pending | SearchBar·URL·MSW worker |
 
 ## 구현 내용
 
 ### FE4-11 — Types promote
 
 W3-F0 draft에서 Gate G1 최종 계약 타입을 production 경로로 승격했다.
-실행 helper(parse/build URL, HTTP mapper)는 FE4-14·FE4-19에서 구현한다.
 
 ### FE4-12 — MSW fixtures M1–M6
 
 Gate G1 Mock spec M1–M6을 canonical Seed 기반 nested `PolicySearchHit`
-fixture와 handler 함수로 구현했다. `policy_id` 참조 fixture JSON과 TypeScript
-scenario registry를 함께 두었으며, MSW worker 연결은 FE4-14에서 수행한다.
+fixture와 handler 함수로 구현했다.
 
-- `handlePolicySearchMock()` — flat query in → `200` nested response 또는 `422`
-- defaults: `include_partial=true`, `page=1`, `limit=20`
-- M5: trim 후 빈 `q` → 422
-- M1–M4, M6: Forest plan 표 시나리오 query signature 매칭
+### FE4-13 — Mock contract tests (W3-F2A)
+
+`frontend/tests/policySearch.contract.test.ts`에 9개 계약 테스트를 추가했다.
+
+- G1 endpoint·defaults (`limit=20`, `include_partial=true`)
+- flat query resolve·URLSearchParams·422 validation
+- TS scenario registry ↔ JSON fixture drift 검증 (M1–M4, M6)
+- M1–M6 handler nested `PolicySearchResponse` envelope·verdict·`unknown_count`
+- pagination·`include_partial=false` 경계
+
+`npm test`는 policy list 7 + policy search 9 = **16 tests pass**.
+
+`handlePolicySearchMock`은 canonical Seed `PolicyDto[]`를 두 번째 인자로
+받는다. FE4-14 MSW wiring에서 `mockPolicies`를 주입한다.
 
 ## 주요 변경 파일
 
 | 파일 | 변경 |
 | --- | --- |
-| `frontend/src/types/policySearch.ts` | FE4-11 — API contract types |
-| `frontend/src/mocks/policySearchRequest.ts` | FE4-12 — query resolve·422 validation |
-| `frontend/src/mocks/policySearchFixtures.ts` | FE4-12 — M1–M6 scenario registry |
-| `frontend/src/mocks/policySearchHandlers.ts` | FE4-12 — mock handler entry |
-| `frontend/src/mocks/fixtures/policySearch/*.json` | FE4-12 — scenario fixture JSON |
-| `docs/development/develop_plan/frontend/04_policy_search.md` | FE4-11·FE4-12 완료 갱신 |
+| `frontend/tests/policySearch.contract.test.ts` | FE4-13 — contract tests |
+| `frontend/tsconfig.test.json` | search mock compile include |
+| `frontend/package.json` | `npm test` glob for all contract tests |
+| `frontend/src/mocks/policySearchHandlers.ts` | policies 주입 시그니처 |
+| `frontend/src/mocks/policySearchRequest.ts` | `ResolvedPolicySearchQuery` 타입 수정 |
+| `frontend/src/mocks/*.ts`, `frontend/src/types/policySearch.ts` | Node test용 relative import |
+| `docs/development/develop_plan/frontend/04_policy_search.md` | FE4-13 completed |
 
 ## 설계 결정
 
-- MSW npm 패키지는 아직 설치하지 않았다. 기존 list/detail Mock과 동일하게 handler
-  함수를 먼저 두고, FE4-14 SearchBar·URL Slice에서 MSW worker를 연결한다.
-- Fixture policy envelope는 `mockPolicies`(canonical Seed)에서 materialize하여
-  Seed 변경 시 public `PolicyDto` shape drift를 줄인다.
-- Backend `GET /api/v1/policies/search` 구현 커밋(`49c56cf`~)은 현재 브랜치 HEAD에
-  없으므로 Mock은 Backend 06 계획·승격 타입(`@/types/policySearch`)을 권위로 한다.
+- Node `npm test`는 `@/` path alias 없이 relative import로 컴파일한다. Vite
+  app build는 기존 `@/`·`@seed` alias를 유지한다.
+- JSON fixture drift test는 manifest.json을 index로 TS registry와 deep equal
+  비교한다.
 
 ## 검증 결과
 
@@ -77,22 +85,18 @@ scenario registry를 함께 두었으며, MSW worker 연결은 FE4-14에서 수�
 python3 scripts/validate_docs.py  — passed
 cd frontend && npm run build      — passed
 cd frontend && npm run lint       — passed
+cd frontend && npm test           — passed (16/16)
 ```
 
-`npm test` search contract 자동화는 FE4-13에서 추가한다. MSW browser smoke는
-FE4-14에서 수행한다.
+## Backend·Data 3주차 통합 확인
+
+| 항목 | HEAD | 비고 |
+| --- | --- | --- |
+| Data DT2 profile | ✅ | `3cd6b89` lineage |
+| Backend search HTTP endpoint | ❌ 미포함 | Mock contract tests는 G1 타입·FE4-12 Mock 기준 |
+| `@/types/policySearch` vs Backend 06 plan | ✅ 구조 일치 | staging parity는 FE4-22 |
 
 ## 남은 작업
 
-- FE4-13: Mock contract tests (`npm test`)
-- FE4-14~: Search UI·URL sync (MSW worker)
-- FE4-22: Backend endpoint 실 API Client (endpoint merge 후)
-
-## Backend·Data 3주차 통합 확인 (FE4-12 착수 전)
-
-| 항목 | HEAD (`0c68c5b`) | 비고 |
-| --- | --- | --- |
-| Data DT2 profile (`3cd6b89`) | 포함 | release dataset quality profile |
-| Search foundation (evaluation, projection ORM) | 포함 | HTTP endpoint 아님 |
-| Backend search endpoint (`49c56cf`, `01035da`) | **미포함** | `feature/backend/policy-search-impl` 계열 |
-| Frontend `@/types/policySearch` vs Backend 06 plan | **구조 일치** | `unknown_count`, nullable verdicts, `interpreted_conditions` |
+- FE4-14: MSW worker + SearchBar·URL sync
+- FE4-22: Backend endpoint merge 후 실 API Client

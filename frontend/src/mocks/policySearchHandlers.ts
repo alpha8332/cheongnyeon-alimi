@@ -1,19 +1,19 @@
-import { mockPolicies } from '@/mocks/policies';
+import type { PolicyDto } from '../types/policy.js';
 import {
   materializePolicySearchResponse,
   POLICY_SEARCH_SCENARIO_FIXTURES,
   type PolicySearchMockScenarioId,
-} from '@/mocks/policySearchFixtures';
+} from './policySearchFixtures.js';
 import {
   PolicySearchQueryValidationError,
   resolvePolicySearchQuery,
   type ResolvedPolicySearchQuery,
-} from '@/mocks/policySearchRequest';
+} from './policySearchRequest.js';
 import {
   POLICY_SEARCH_ENDPOINT,
   type PolicySearchQueryParams,
   type PolicySearchResponse,
-} from '@/types/policySearch';
+} from '../types/policySearch.js';
 
 export type PolicySearchMockSuccess = {
   status: 200;
@@ -76,7 +76,8 @@ function filterPartialHits(
   }
 
   const items = response.items.filter(
-    (hit) => hit.policy.data_quality_status !== 'partial',
+    (hit: PolicySearchResponse['items'][number]) =>
+      hit.policy.data_quality_status !== 'partial',
   );
 
   return {
@@ -88,6 +89,7 @@ function filterPartialHits(
 
 export function handlePolicySearchMock(
   input: PolicySearchQueryParams | URLSearchParams,
+  policies: readonly PolicyDto[],
 ): PolicySearchMockResult {
   const rawQ =
     input instanceof URLSearchParams ? (input.get('q') ?? '') : (input.q ?? '');
@@ -140,7 +142,7 @@ export function handlePolicySearchMock(
 
   const fixture = POLICY_SEARCH_SCENARIO_FIXTURES[scenarioId];
   const body = filterPartialHits(
-    materializePolicySearchResponse(mockPolicies, fixture, query),
+    materializePolicySearchResponse(policies, fixture, query),
     query.include_partial,
   );
 

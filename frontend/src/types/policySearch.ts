@@ -12,7 +12,7 @@
  * - Existing GET /api/v1/policies list/detail unchanged until search API ships.
  */
 
-import type { ApplicationStatus, PolicyCategory, PolicyDto } from '@/types/policy';
+import type { ApplicationStatus, PolicyCategory, PolicyDto } from './policy.js';
 
 /** Backend evaluation verdict for a searchable dimension. Aligns with Backend `MatchVerdict`. */
 export type MatchVerdict = 'match' | 'mismatch' | 'unknown';

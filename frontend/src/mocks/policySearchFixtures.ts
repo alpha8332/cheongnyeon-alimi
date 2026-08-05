@@ -1,4 +1,4 @@
-import type { PolicyDto } from '@/types/policy';
+import type { PolicyDto } from '../types/policy.js';
 import type {
   DimensionVerdicts,
   InterpretedCondition,
@@ -6,8 +6,8 @@ import type {
   PolicySearchInterpretedConditions,
   PolicySearchResponse,
   UnconfirmedCondition,
-} from '@/types/policySearch';
-import type { ResolvedPolicySearchQuery } from '@/mocks/policySearchRequest';
+} from '../types/policySearch.js';
+import type { ResolvedPolicySearchQuery } from './policySearchRequest.js';
 
 export type PolicySearchMockScenarioId = 'M1' | 'M2' | 'M3' | 'M4' | 'M6';
 

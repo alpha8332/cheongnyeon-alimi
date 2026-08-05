@@ -12,7 +12,7 @@
   [`week_03_search_contract_handoff.md`](../../weekly_plan/week_03_search_contract_handoff.md)를
   마지막으로 변경한 커밋 (`d3fde3e0912a1a54a27f32d157941be58ecc8660`)
 - Gate: DT2·Gate G1 (Backend 06·Frontend 04·Data 권고안 공동 검토)
-- 현재 Slice: FE4-13 pending (FE4-12 completed)
+- 현재 Slice: FE4-14 pending (FE4-13 completed)
 - 선행 Forest: Frontend 01 Policy Discovery (completed),
   Integration 03 Policy Search Data Foundation (completed)
 - 후속 Forest: Integration 04 Release 1 Acceptance (Team Leader)
@@ -371,15 +371,15 @@ checklist에 포함한다.
 
 ---
 
-### FE4-13 — Mock contract tests / W3-F2A (G1 후)
+### FE4-13 — Mock contract tests / W3-F2A (G1 후) — completed
 
 | 항목 | 내용 |
 | --- | --- |
 | **목표** | 승인 Mock 계약 자동 테스트 (`npm test`) |
-| **변경 파일** | `frontend/tests/policySearch.contract.test.ts` (신규) |
+| **변경 파일** | `frontend/tests/policySearch.contract.test.ts`, `frontend/tsconfig.test.json`, `frontend/package.json` |
 | **선행** | FE4-11, FE4-12 |
-| **세부 작업** | request flat param serialize; nested response parse; pagination envelope; default `include_partial=true`, `limit=20` |
-| **검증** | `npm test` |
+| **세부 작업** | request flat param resolve; nested response envelope; M1–M6; TS/JSON drift; defaults `include_partial=true`, `limit=20` |
+| **검증** | `npm test` (16 tests: policy list 7 + policy search 9) |
 | **완료 기준** | W3-F2A Gate G2 Frontend Mock 준비 충족 |
 
 ---

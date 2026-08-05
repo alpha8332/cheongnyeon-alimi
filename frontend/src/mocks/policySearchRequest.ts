@@ -2,17 +2,18 @@ import {
   POLICY_SEARCH_DEFAULTS,
   POLICY_SEARCH_QUERY_LIMITS,
   type PolicySearchQueryParams,
-} from '@/types/policySearch';
+} from '../types/policySearch.js';
 
 export type ResolvedPolicySearchQuery = Required<
   Pick<PolicySearchQueryParams, 'include_partial' | 'page' | 'limit'>
-> &
-  Pick<
-    PolicySearchQueryParams,
-    'keyword' | 'region' | 'age' | 'category' | 'status'
-  > & {
-    q: string;
-  };
+> & {
+  q: string;
+  keyword?: string | null;
+  region?: string | null;
+  age?: number | null;
+  category?: PolicySearchQueryParams['category'];
+  status?: PolicySearchQueryParams['status'];
+};
 
 export class PolicySearchQueryValidationError extends Error {
   readonly detail: string;
