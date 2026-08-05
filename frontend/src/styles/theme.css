@@ -435,6 +435,57 @@ p {
   border-radius: 999px;
 }
 
+.chip--match {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+
+.chip--unknown,
+.chip--ambiguous {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.chip--mismatch {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.chip--unmapped {
+  color: var(--coral);
+  background: var(--coral-soft);
+  border-color: #fecdd3;
+}
+
+.chip-x {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: var(--white);
+  border-radius: 50%;
+  font-size: 11px;
+  color: var(--coral);
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.12s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.chip-x:hover:not(:disabled) {
+  transform: scale(1.15);
+  background: var(--coral-soft);
+}
+
+.chip-x:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* ── Policy card ── */
 
 .policy-card {

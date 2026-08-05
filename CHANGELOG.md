@@ -29,6 +29,7 @@
 
 ### Added
 
+- Policy Search 해석 조건 칩 remove/edit/add 및 URL flat param 동기화 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Policy Search pagination UI 및 URL `page` sync, stale response guard 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Policy Search Loading/Empty/Error shell 및 SearchBar 입력 수정·지우기 버튼 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Policy Search `/search` 페이지, SearchBar·URL flat param 동기화, Mock 기반 React Query fetch 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
