@@ -7,11 +7,6 @@ export default function PolicySearchLoadingShell() {
       aria-busy="true"
       aria-label="검색 결과 로딩 중"
     >
-      <div className="policy-search-shell__header">
-        <div className="policy-search-skeleton policy-search-skeleton--title" />
-        <div className="policy-search-skeleton policy-search-skeleton--badge" />
-      </div>
-
       <div className="policy-search-loading-spinner" aria-hidden="true">
         <span className="policy-search-loading-spinner__ring" />
       </div>

@@ -59,8 +59,8 @@ export default function HomePage() {
         </div>
       </form>
 
-      <section className="home-search-suggestions" aria-label="추천 검색어">
-        <p className="chips-label">추천 검색어</p>
+      <section className="home-search-suggestions" aria-label="예시 검색어">
+        <p className="chips-label">예시 검색어</p>
         <div className="chips-row home-search-suggestions__row">
           {HOME_RECOMMENDED_SEARCHES.map((term) => (
             <button
@@ -74,11 +74,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      <div className="section-head">
-        <h2 className="section-title">조건 맞춤 TOP 추천</h2>
-        <span className="section-badge">주요 정책</span>
-      </div>
 
       {isLoading ? (
         <LoadingState message="주요 정책을 불러오는 중입니다." />

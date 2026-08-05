@@ -207,15 +207,6 @@ export default function PolicySearchPage() {
 
           {showResultCards && data ? (
             <section aria-label="검색 결과">
-              <div className="section-head">
-                <h2 className="section-title">
-                  조건 맞춤 TOP {Math.min(data.items.length, 3)} 추천
-                </h2>
-                <span className="section-badge">
-                  검색 결과 기반 · {data.total}건
-                </span>
-              </div>
-
               <div className="cards-grid">
                 {data.items.map((hit) => (
                   <PolicySearchResultCard
