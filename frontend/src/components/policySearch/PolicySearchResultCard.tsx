@@ -66,19 +66,40 @@ function formatCardEligibility(hit: PolicySearchHit): string {
 
 interface PolicySearchResultCardProps {
   hit: PolicySearchHit;
+  isSelected?: boolean;
+  onSelect?: (hit: PolicySearchHit) => void;
 }
 
 export default function PolicySearchResultCard({
   hit,
+  isSelected = false,
+  onSelect,
 }: PolicySearchResultCardProps) {
   const tag = getStatusCardTag(hit);
   const showUnknownVerdict =
     hasUnknownVerdicts(hit) && hit.policy.data_quality_status !== 'partial';
   const showPartialBadge = hit.policy.data_quality_status === 'partial';
   const showUnconfirmed = hasUnconfirmedConditions(hit);
+  const isSelectable = Boolean(onSelect);
 
   return (
-    <article className="policy-card">
+    <article
+      className={`policy-card${isSelected ? ' policy-card--selected' : ''}${isSelectable ? ' policy-card--selectable' : ''}`}
+      onClick={isSelectable ? () => onSelect?.(hit) : undefined}
+      onKeyDown={
+        isSelectable
+          ? (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onSelect?.(hit);
+              }
+            }
+          : undefined
+      }
+      role={isSelectable ? 'button' : undefined}
+      tabIndex={isSelectable ? 0 : undefined}
+      aria-pressed={isSelectable ? isSelected : undefined}
+    >
       <div className="policy-card__visual">
         <span
           className={`policy-card__tag${tag.variant ? ` policy-card__tag--${tag.variant}` : ''}`}

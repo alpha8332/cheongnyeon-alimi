@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/policy-search`
 - 관련 계획:
   [Policy Search Forest 개발 계획](../../develop_plan/frontend/04_policy_search.md)
-- 현재 Slice: FE4-19 pending (Reason & Uninterpreted UX)
+- 현재 Slice: FE4-20 pending (Home → `/search` IA)
 
 ## 목적
 
@@ -28,53 +28,62 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
-| FE4-14 | completed | SearchBar·URL sync·Mock fetch |
-| FE4-15 | completed | Loading/Empty/Error shell + SearchBar bugfix |
-| FE4-16 | completed | Pagination + URL page sync + stale guard |
-| FE4-17 | completed | InterpretedConditionChips remove/edit/add + URL sync |
-| FE4-18 | completed | Partial/Unknown badges + unconfirmed tooltip |
+| FE4-14~17 | completed | Search UI core |
+| FE4-18 | completed | Partial/Unknown badges |
+| FE4-19 | completed | Reason sidebar + Uninterpreted UX |
 
 ## 구현 내용
 
+### FE4-19 — Reason & Uninterpreted UX (우측 사이드바)
+
+#### 레이아웃
+
+- `PolicySearchPage`: Desktop 2열 (`primary` + `340px` sticky sidebar)
+- `app-shell__main` max-width 1440px on `/search`
+- `@1100px` 이하: sidebar가 primary 아래로 stack
+
+#### SearchReasonBlock
+
+- `interpreted_conditions.conditions[]` + 선택 정책 verdict checklist
+- 선택 정책 `message` / `reason_codes` fallback (`resolvePolicySearchReasonMessage`)
+- 카드 클릭 선택 → sidebar verdict 갱신
+
+#### UninterpretedNotice
+
+- `uninterpreted_terms` amber box (preview `.uninterpreted` 스타일)
+- `※ '토큰'은 조건 Chip으로 파싱되지 않아 키워드 매칭만 적용됩니다.`
+
+#### UnconfirmedBanner
+
+- query-level `ambiguous` / `unmapped` resolution 경고
+
+#### Utils
+
+- `policySearchReasonHelpers.ts`: analysis rows, reason fallback, uninterpreted copy
+
 ### FE4-18 — Partial / Unknown badges
 
-#### 배지 semantic 분리
-
-- `PartialBadge`: `data_quality_status=partial` → 「정보 일부 누락」(amber)
-- `UnknownVerdictBadge`: `unknown_count > 0` & non-partial → 「정보 미확인」(slate)
-- `UnconfirmedConditionsBadge`: `unconfirmed_conditions[]` → 「자격요건 직접 확인 필요」
-  + hover/focus tooltip (field별 message 목록)
-- 카드 visual tag는 모집 상태(모집중·마감 임박)만 표시; partial/unknown과 분리
-
-#### Display constants promote
-
-- `frontend/src/constants/policySearchDisplay.ts` (draft `policySearchDisplay.ts` 승격)
-- unknown copy: 전국·제한 없음 추정 금지 문구 포함
-
-#### PolicySearchResultCard
-
-- eligibility: unknown/unconfirmed 시 「일부 조건 정보 없음 · 원문 확인 필요」
-- M4 복지로 표본: partial + multi-unknown + unconfirmed tooltip 동시 표시
-
-### FE4-17 — Filter Chips
-
-(InterpretedConditionChips, ConditionEditorDrawer, URL filter mutations)
+(PartialBadge, UnknownVerdictBadge, UnconfirmedConditionsBadge on cards)
 
 ## 주요 변경 파일
 
 | 파일 | 변경 |
 | --- | --- |
-| `frontend/src/components/policySearch/PolicySearchResultCard.tsx` | FE4-18 badge wiring |
-| `frontend/src/components/policySearch/PolicySearchBadges.tsx` / `.css` | FE4-18 unknown/unconfirmed |
-| `frontend/src/components/policy/PartialBadge.tsx` | FE4-18 label fix |
-| `frontend/src/constants/policySearchDisplay.ts` | FE4-18 promoted labels |
-| `frontend/tests/policySearch.badges.test.ts` | FE4-18 badge helper tests |
+| `frontend/src/components/policySearch/PolicySearchSidebar.tsx` | FE4-19 layout shell |
+| `frontend/src/components/policySearch/SearchReasonBlock.tsx` | FE4-19 |
+| `frontend/src/components/policySearch/UninterpretedNotice.tsx` | FE4-19 |
+| `frontend/src/components/policySearch/UnconfirmedBanner.tsx` | FE4-19 |
+| `frontend/src/utils/policySearchReasonHelpers.ts` | FE4-19 pure helpers |
+| `frontend/src/pages/user/PolicySearchPage.tsx` | FE4-19 2-col + selection |
+| `frontend/src/components/policySearch/PolicySearchResultCard.tsx` | FE4-19 selectable |
+| `frontend/tests/policySearch.reason.test.ts` | FE4-19 tests |
 
 ## 설계 결정
 
-- partial 정책은 품질 배지 + unconfirmed alert로 M4 표현; 별도 unknown verdict 배지는
-  non-partial row에만 표시 (중복 방지)
-- `PolicyCard` visual tag의 partial warn 라벨은 FE4-18 범위 밖 (Discovery UI 후속)
+- Reason panel은 카드 하단이 아닌 우측 sticky sidebar에 배치 (search_ux_preview 정렬)
+- row-level `unconfirmed_conditions` tooltip은 FE4-18 card badge 유지; FE4-19는
+  query-level ambiguous/unmapped + 선택 row `message` 중심
+- unknown verdict copy는 「미확인」; 전국·무제한 추정 문구 금지
 
 ## 검증 결과
 
@@ -82,19 +91,13 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 python3 scripts/validate_docs.py  — passed
 cd frontend && npm run build      — passed
 cd frontend && npm run lint       — passed
-cd frontend && npm test           — passed (33/33)
+cd frontend && npm test           — passed (37/37)
 ```
 
-Browser M4(`?q=복지로+생활`) 시나리오는 이번 세션에서 수동 확인하지 않았다.
-
-## Backend·Data 3주차 통합 확인
-
-| 항목 | HEAD | 비고 |
-| --- | --- | --- |
-| Backend search HTTP endpoint | ❌ 미포함 | Mock-first |
-| `@/types/policySearch` vs Backend 06 plan | ✅ 구조 일치 | staging parity는 FE4-22 |
+Browser M1–M4 시나리오는 이번 세션에서 수동 확인하지 않았다.
 
 ## 남은 작업
 
-- FE4-19~21: Reason UX, Home IA, Detail link
+- FE4-20: Home → `/search?q=` IA
+- FE4-21: Search → Detail link
 - FE4-22: Real API Client

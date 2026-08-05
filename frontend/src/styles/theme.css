@@ -176,6 +176,10 @@ p {
   width: 100%;
 }
 
+.app-shell__main:has(.policy-search-page) {
+  max-width: 1440px;
+}
+
 /* ── Page sections ── */
 
 .page {

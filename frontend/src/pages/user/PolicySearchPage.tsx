@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import SearchBar from '@/components/policySearch/SearchBar';
 import SearchPagination from '@/components/policySearch/SearchPagination';
@@ -7,6 +7,7 @@ import PolicySearchEmptyShell from '@/components/policySearch/PolicySearchEmptyS
 import PolicySearchErrorShell from '@/components/policySearch/PolicySearchErrorShell';
 import PolicySearchLoadingShell from '@/components/policySearch/PolicySearchLoadingShell';
 import InterpretedConditionChips from '@/components/policySearch/InterpretedConditionChips';
+import PolicySearchSidebar from '@/components/policySearch/PolicySearchSidebar';
 import { usePolicySearchQuery } from '@/hooks/usePolicySearchQuery';
 import {
   buildInterpretedFilterChips,
@@ -24,6 +25,7 @@ import {
   mapPolicySearchEmptyResults,
   mapPolicySearchError,
 } from '@/utils/policySearchErrors';
+import { findSelectedHit } from '@/utils/policySearchReason';
 import {
   buildPolicySearchUrlParams,
   getPolicySearchTotalPages,
@@ -34,9 +36,11 @@ import {
   toPolicySearchRequest,
   withPolicySearchPage,
 } from '@/utils/policySearchUrl';
+import '@/components/policySearch/PolicySearchSidebar.css';
 
 export default function PolicySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
   const urlState = useMemo(
     () => parsePolicySearchUrl(searchParams),
     [searchParams],
@@ -55,9 +59,29 @@ export default function PolicySearchPage() {
 
   const isResponseCurrent =
     data !== undefined && isPolicySearchResponseCurrent(data, request);
+  const sidebarResponse = isResponseCurrent ? data : null;
+  const activeSelectedPolicyId = useMemo(() => {
+    if (!sidebarResponse?.items.length) {
+      return null;
+    }
+
+    if (
+      selectedPolicyId !== null &&
+      sidebarResponse.items.some((hit) => hit.policy.id === selectedPolicyId)
+    ) {
+      return selectedPolicyId;
+    }
+
+    return sidebarResponse.items[0]?.policy.id ?? null;
+  }, [sidebarResponse, selectedPolicyId]);
+  const selectedHit = useMemo(
+    () => findSelectedHit(sidebarResponse, activeSelectedPolicyId),
+    [sidebarResponse, activeSelectedPolicyId],
+  );
+
   const filterChips = useMemo(
-    () => buildInterpretedFilterChips(urlState, isResponseCurrent ? data : null),
-    [urlState, data, isResponseCurrent],
+    () => buildInterpretedFilterChips(urlState, sidebarResponse),
+    [urlState, sidebarResponse],
   );
 
   const applyUrlState = (nextState: ReturnType<typeof parsePolicySearchUrl>) => {
@@ -132,7 +156,7 @@ export default function PolicySearchPage() {
       : null;
 
   return (
-    <div className="page">
+    <div className="page policy-search-page">
       <header className="greeting">
         <h1 className="greeting__title">안녕하세요, 청년님 👋</h1>
         <p className="greeting__subtitle">
@@ -140,73 +164,91 @@ export default function PolicySearchPage() {
         </p>
       </header>
 
-      <SearchBar
-        key={urlState.q}
-        defaultQ={urlState.q}
-        onSubmit={handleSearchSubmit}
-        isSubmitting={showLoading}
-      />
+      <div className="policy-search-layout">
+        <div className="policy-search-layout__primary">
+          <SearchBar
+            key={urlState.q}
+            defaultQ={urlState.q}
+            onSubmit={handleSearchSubmit}
+            isSubmitting={showLoading}
+          />
 
-      {shouldFetch ? (
-        <InterpretedConditionChips
-          chips={filterChips}
-          onRemove={handleFilterRemove}
-          onUpdate={handleFilterUpdate}
-          onAdd={handleFilterAdd}
-          disabled={showLoading}
-        />
-      ) : null}
-
-      {!shouldFetch ? (
-        <p className="hint-text">
-          검색어를 입력하고 검색하기 버튼을 눌러 주세요. URL에{' '}
-          <code>?q=...</code> 형태로 공유할 수 있습니다.
-        </p>
-      ) : null}
-
-      {showLoading ? <PolicySearchLoadingShell /> : null}
-
-      {showError && errorPresentation ? (
-        <PolicySearchErrorShell
-          presentation={errorPresentation}
-          onRetry={
-            errorPresentation.retryable ? () => void refetch() : undefined
-          }
-        />
-      ) : null}
-
-      {showEmptyResults && emptyPresentation ? (
-        <PolicySearchEmptyShell presentation={emptyPresentation} />
-      ) : null}
-
-      {showResultCards && data ? (
-        <section aria-label="검색 결과">
-          <div className="section-head">
-            <h2 className="section-title">
-              조건 맞춤 TOP {Math.min(data.items.length, 3)} 추천
-            </h2>
-            <span className="section-badge">
-              검색 결과 기반 · {data.total}건
-            </span>
-          </div>
-
-          <div className="cards-grid">
-            {data.items.map((hit) => (
-              <PolicySearchResultCard key={hit.policy.id} hit={hit} />
-            ))}
-          </div>
-
-          {getPolicySearchTotalPages(data.total, data.limit) > 1 ? (
-            <SearchPagination
-              total={data.total}
-              page={data.page}
-              limit={data.limit}
-              onPageChange={handlePageChange}
+          {shouldFetch ? (
+            <InterpretedConditionChips
+              chips={filterChips}
+              onRemove={handleFilterRemove}
+              onUpdate={handleFilterUpdate}
+              onAdd={handleFilterAdd}
               disabled={showLoading}
             />
           ) : null}
-        </section>
-      ) : null}
+
+          {!shouldFetch ? (
+            <p className="hint-text">
+              검색어를 입력하고 검색하기 버튼을 눌러 주세요. URL에{' '}
+              <code>?q=...</code> 형태로 공유할 수 있습니다.
+            </p>
+          ) : null}
+
+          {showLoading ? <PolicySearchLoadingShell /> : null}
+
+          {showError && errorPresentation ? (
+            <PolicySearchErrorShell
+              presentation={errorPresentation}
+              onRetry={
+                errorPresentation.retryable ? () => void refetch() : undefined
+              }
+            />
+          ) : null}
+
+          {showEmptyResults && emptyPresentation ? (
+            <PolicySearchEmptyShell presentation={emptyPresentation} />
+          ) : null}
+
+          {showResultCards && data ? (
+            <section aria-label="검색 결과">
+              <div className="section-head">
+                <h2 className="section-title">
+                  조건 맞춤 TOP {Math.min(data.items.length, 3)} 추천
+                </h2>
+                <span className="section-badge">
+                  검색 결과 기반 · {data.total}건
+                </span>
+              </div>
+
+              <div className="cards-grid">
+                {data.items.map((hit) => (
+                  <PolicySearchResultCard
+                    key={hit.policy.id}
+                    hit={hit}
+                    isSelected={activeSelectedPolicyId === hit.policy.id}
+                    onSelect={(nextHit) =>
+                      setSelectedPolicyId(nextHit.policy.id)
+                    }
+                  />
+                ))}
+              </div>
+
+              {getPolicySearchTotalPages(data.total, data.limit) > 1 ? (
+                <SearchPagination
+                  total={data.total}
+                  page={data.page}
+                  limit={data.limit}
+                  onPageChange={handlePageChange}
+                  disabled={showLoading}
+                />
+              ) : null}
+            </section>
+          ) : null}
+        </div>
+
+        {shouldFetch ? (
+          <PolicySearchSidebar
+            response={sidebarResponse}
+            selectedHit={selectedHit}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
