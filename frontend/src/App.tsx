@@ -4,6 +4,7 @@ import Layout from '@/layouts/RootLayout';
 // user 페이지
 import HomePage from '@/pages/user/HomePage';
 import SearchPage from '@/pages/user/SearchPage';
+import PolicySearchPage from '@/pages/user/PolicySearchPage';
 import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import FavoritesPage from '@/pages/user/FavoritesPage';
 import NotificationsPage from '@/pages/user/NotificationsPage';
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
       // User 라우트
       { index: true, element: <HomePage /> },
       { path: 'programs', element: <SearchPage /> },
+      { path: 'search', element: <PolicySearchPage /> },
       { path: 'programs/:id', element: <ProgramDetailPage /> },
       { path: 'favorites', element: <FavoritesPage /> },
       { path: 'notifications', element: <NotificationsPage /> },

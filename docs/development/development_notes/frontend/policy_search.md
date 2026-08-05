@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/policy-search`
 - 관련 계획:
   [Policy Search Forest 개발 계획](../../develop_plan/frontend/04_policy_search.md)
-- 현재 Slice: FE4-14 pending (SearchBar & URL, MSW worker)
+- 현재 Slice: FE4-15 pending (Loading / Empty / Error shell)
 
 ## 목적
 
@@ -32,7 +32,8 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 | FE4-11 | completed | draft contract → production types promote |
 | FE4-12 | completed | M1–M6 mock fixtures·handler |
 | FE4-13 | completed | Mock contract tests (`npm test`) |
-| FE4-14 | pending | SearchBar·URL·MSW worker |
+| FE4-14 | completed | SearchBar·URL sync·Mock fetch |
+| FE4-15 | pending | Loading / Empty / Error shell |
 
 ## 구현 내용
 
@@ -58,19 +59,39 @@ fixture와 handler 함수로 구현했다.
 `npm test`는 policy list 7 + policy search 9 = **16 tests pass**.
 
 `handlePolicySearchMock`은 canonical Seed `PolicyDto[]`를 두 번째 인자로
-받는다. FE4-14 MSW wiring에서 `mockPolicies`를 주입한다.
+받는다. FE4-14에서 `getPolicySearch()`가 `mockPolicies`를 주입한다.
+
+### FE4-14 — SearchBar & URL Sync
+
+`/search` 라우트와 SearchBar·URL flat param 동기화를 구현했다.
+
+- `utils/policySearchUrl.ts`: `parsePolicySearchUrl`, `buildPolicySearchUrlParams`,
+  `toPolicySearchRequest` — interpreted blob URL 저장 없음
+- `SearchBar.tsx`: controlled `q`, submit → URL `?q=...` 갱신
+- `PolicySearchPage.tsx`: `search_ux_preview.html` 블루 테마 검색창·카드 레이아웃
+  (프로토타입 JS 로직 제외)
+- `api/policySearch.ts` + `usePolicySearchQuery`: React Query + `handlePolicySearchMock`
+  (`mockPolicies` 주입). MSW npm 패키지는 미설치 — handler 직접 호출 패턴(FE4-12와 동일)
+- `App.tsx`: `/search` route 등록
+
+URL round-trip: `?q=서울+주거&region=서울특별시` 등 flat param reload 시
+SearchBar·fetch query 복원 확인.
 
 ## 주요 변경 파일
 
 | 파일 | 변경 |
 | --- | --- |
+| `frontend/src/utils/policySearchUrl.ts` | FE4-14 — URL parse/build |
+| `frontend/src/components/policySearch/SearchBar.tsx` | FE4-14 — 검색창 |
+| `frontend/src/pages/user/PolicySearchPage.tsx` | FE4-14 — 검색 페이지 |
+| `frontend/src/api/policySearch.ts` | FE4-14 — Mock API client |
+| `frontend/src/hooks/usePolicySearchQuery.ts` | FE4-14 — React Query hook |
+| `frontend/src/App.tsx` | FE4-14 — `/search` route |
+| `frontend/index.html` | Plus Jakarta Sans font |
 | `frontend/tests/policySearch.contract.test.ts` | FE4-13 — contract tests |
 | `frontend/tsconfig.test.json` | search mock compile include |
 | `frontend/package.json` | `npm test` glob for all contract tests |
-| `frontend/src/mocks/policySearchHandlers.ts` | policies 주입 시그니처 |
-| `frontend/src/mocks/policySearchRequest.ts` | `ResolvedPolicySearchQuery` 타입 수정 |
-| `frontend/src/mocks/*.ts`, `frontend/src/types/policySearch.ts` | Node test용 relative import |
-| `docs/development/develop_plan/frontend/04_policy_search.md` | FE4-13 completed |
+| `docs/development/develop_plan/frontend/04_policy_search.md` | FE4-14 completed |
 
 ## 설계 결정
 
@@ -78,6 +99,8 @@ fixture와 handler 함수로 구현했다.
   app build는 기존 `@/`·`@seed` alias를 유지한다.
 - JSON fixture drift test는 manifest.json을 index로 TS registry와 deep equal
   비교한다.
+- FE4-14 Mock fetch는 MSW worker 대신 `getPolicySearch()` → `handlePolicySearchMock`
+  직접 호출. MSW npm 패키지 설치·worker wiring은 후속 Slice에서 필요 시 검토.
 
 ## 검증 결과
 
@@ -98,5 +121,6 @@ cd frontend && npm test           — passed (16/16)
 
 ## 남은 작업
 
-- FE4-14: MSW worker + SearchBar·URL sync
+- FE4-15: Loading / Empty / Error shell (`policySearchErrors` mapper)
+- FE4-16~21: Pagination, Filter Chips, badges, Home IA, Detail link
 - FE4-22: Backend endpoint merge 후 실 API Client

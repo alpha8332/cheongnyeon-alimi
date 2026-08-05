@@ -29,6 +29,7 @@
 
 ### Added
 
+- Policy Search `/search` 페이지, SearchBar·URL flat param 동기화, Mock 기반 React Query fetch 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Gate G1 Policy Search TypeScript contract types를 production 타입 경로로 승격 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - 호출 예산·완전성 manifest를 사용하는 온통청년·복지로 다중 page 릴리스
   snapshot 수집과 고정 snapshot 재처리를 추가하고, 실제 정책 3,159건의
