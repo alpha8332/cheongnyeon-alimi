@@ -1,0 +1,55 @@
+{
+  "scenario": "M3",
+  "description": "q=25세 일자리, age=25 — age match employment",
+  "total": 1,
+  "interpreted_conditions": {
+    "q_raw": "25세 일자리",
+    "q_clean": "25세 일자리",
+    "conditions": [
+      {
+        "dimension": "age",
+        "value": 25,
+        "source": "explicit",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "category",
+        "value": "employment",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "keyword",
+        "value": "일자리",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      }
+    ],
+    "override_fields": ["age"],
+    "uninterpreted_terms": []
+  },
+  "items": [
+    {
+      "policy_id": 2,
+      "score": 0.86,
+      "verdicts": {
+        "region": null,
+        "age": "match",
+        "status": "match",
+        "category": "unknown"
+      },
+      "reason_codes": ["AGE_MATCH", "CATEGORY_UNKNOWN"],
+      "message": "25세 조건은 충족하나 일자리 카테고리 근거가 제한적입니다.",
+      "unconfirmed_conditions": [
+        {
+          "field": "category",
+          "reason_code": "DATA_MISSING_CATEGORY",
+          "message": "카테고리 분류 근거가 불명확합니다."
+        }
+      ]
+    }
+  ]
+}

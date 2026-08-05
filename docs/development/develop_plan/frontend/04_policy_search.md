@@ -12,7 +12,7 @@
   [`week_03_search_contract_handoff.md`](../../weekly_plan/week_03_search_contract_handoff.md)를
   마지막으로 변경한 커밋 (`d3fde3e0912a1a54a27f32d157941be58ecc8660`)
 - Gate: DT2·Gate G1 (Backend 06·Frontend 04·Data 권고안 공동 검토)
-- 현재 Slice: FE4-12 pending (FE4-11 completed)
+- 현재 Slice: FE4-13 pending (FE4-12 completed)
 - 선행 Forest: Frontend 01 Policy Discovery (completed),
   Integration 03 Policy Search Data Foundation (completed)
 - 후속 Forest: Integration 04 Release 1 Acceptance (Team Leader)
@@ -358,15 +358,15 @@ checklist에 포함한다.
 
 ---
 
-### FE4-12 — MSW fixtures (G1 후)
+### FE4-12 — MSW fixtures (G1 후) — completed
 
 | 항목 | 내용 |
 | --- | --- |
 | **목표** | FE4-02 Mock spec M1–M6 MSW 구현 |
-| **변경 파일** | `frontend/src/mocks/policySearchHandlers.ts`, fixtures JSON |
+| **변경 파일** | `frontend/src/mocks/policySearchHandlers.ts`, `policySearchFixtures.ts`, `policySearchRequest.ts`, `fixtures/policySearch/*.json` |
 | **선행** | FE4-11 |
-| **세부 작업** | nested `PolicySearchHit`; dev/test only; `GET /api/v1/policies/search` |
-| **검증** | offline MSW smoke |
+| **세부 작업** | nested `PolicySearchHit`; dev/test only; `GET /api/v1/policies/search`; default `limit=20`, `include_partial=true` |
+| **검증** | `npm run build`; handler 함수 smoke (MSW worker는 FE4-14) |
 | **완료 기준** | M1–M6 handler pass |
 
 ---
@@ -606,7 +606,8 @@ DT2B에서 다음과 같이 분류했다.
 | `frontend/src/api/policies.ts` | list/detail | 유지; search 별도 |
 | `frontend/src/pages/user/HomePage.tsx` | `/programs?search=` client filter | FE4-20 → `/search?q=` |
 | `frontend/src/pages/user/SearchPage.tsx` | `/programs` exact+local filter | 검색 API 미사용; `/search`와 병행 |
-| `frontend/src/types/policySearch.ts` | G1 search contract | FE4-12 MSW·FE4-14 UI import |
+| `frontend/src/types/policySearch.ts` | G1 search contract | FE4-14 UI·FE4-22 API import |
+| `frontend/src/mocks/policySearchHandlers.ts` | M1–M6 mock handler | FE4-13 contract test |
 | `frontend/src/types/policySearchErrors.ts` | Error presentation types | FE4-19 mapper |
 | `frontend/src/types/policySearchUrlState.ts` | URL state types | FE4-14 parse/build |
 | `frontend/src/types/draft/policySearchDisplay.ts` | Display labels (draft) | FE4-18 promote 예정 |

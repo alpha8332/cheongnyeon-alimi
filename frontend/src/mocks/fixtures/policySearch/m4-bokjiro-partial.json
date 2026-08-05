@@ -1,0 +1,70 @@
+{
+  "scenario": "M4",
+  "description": "q=복지로 생활 — partial-only multi-unknown",
+  "total": 2,
+  "interpreted_conditions": {
+    "q_raw": "복지로 생활",
+    "q_clean": "복지로 생활",
+    "conditions": [
+      {
+        "dimension": "keyword",
+        "value": "생활",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      }
+    ],
+    "override_fields": [],
+    "uninterpreted_terms": ["복지로"]
+  },
+  "items": [
+    {
+      "policy_id": 3,
+      "score": 0.65,
+      "verdicts": {
+        "region": "unknown",
+        "age": "unknown",
+        "status": "unknown",
+        "category": "unknown"
+      },
+      "reason_codes": ["PARTIAL_POLICY_DATA", "REGION_UNKNOWN", "AGE_UNKNOWN"],
+      "message": "복지로 partial 정책으로 다수 조건 근거가 없습니다.",
+      "unconfirmed_conditions": [
+        {
+          "field": "region",
+          "reason_code": "DATA_MISSING_REGION",
+          "message": "지역 정보가 없습니다."
+        },
+        {
+          "field": "age",
+          "reason_code": "DATA_MISSING_AGE",
+          "message": "연령 정보가 없습니다."
+        },
+        {
+          "field": "status",
+          "reason_code": "DATA_MISSING_STATUS",
+          "message": "신청 상태 정보가 없습니다."
+        }
+      ]
+    },
+    {
+      "policy_id": 4,
+      "score": 0.58,
+      "verdicts": {
+        "region": "unknown",
+        "age": "unknown",
+        "status": "unknown",
+        "category": "unknown"
+      },
+      "reason_codes": ["PARTIAL_POLICY_DATA"],
+      "message": "목록 전용 partial 정책으로 자격요건 직접 확인이 필요합니다.",
+      "unconfirmed_conditions": [
+        {
+          "field": "general",
+          "reason_code": "PARTIAL_POLICY_DATA",
+          "message": "partial 품질 등급으로 일부 차원 판정이 유보됩니다."
+        }
+      ]
+    }
+  ]
+}

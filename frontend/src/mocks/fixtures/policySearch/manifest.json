@@ -1,0 +1,40 @@
+{
+  "endpoint": "GET /api/v1/policies/search",
+  "defaults": {
+    "include_partial": true,
+    "page": 1,
+    "limit": 20
+  },
+  "scenarios": [
+    {
+      "id": "M1",
+      "fixture": "m1-seoul-housing.json",
+      "query": "q=서울+주거&region=서울특별시"
+    },
+    {
+      "id": "M2",
+      "fixture": "m2-nationwide-youth.json",
+      "query": "q=전국+청년"
+    },
+    {
+      "id": "M3",
+      "fixture": "m3-age-employment.json",
+      "query": "q=25세+일자리&age=25"
+    },
+    {
+      "id": "M4",
+      "fixture": "m4-bokjiro-partial.json",
+      "query": "q=복지로+생활"
+    },
+    {
+      "id": "M5",
+      "fixture": "m5-empty-q.validation.json",
+      "query": "q="
+    },
+    {
+      "id": "M6",
+      "fixture": "m6-keyword-explicit.json",
+      "query": "q=지원금&keyword=지원금"
+    }
+  ]
+}
