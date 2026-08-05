@@ -1,8 +1,8 @@
 /**
- * W3-F0 DRAFT — Client error presentation types only (Gate G1 pending).
+ * Policy Search client error presentation types (Frontend 04).
  *
  * HTTP status → UI mapping tables live in the Forest plan (§ Error UX).
- * mapHttpStatus helpers: implement in post-G1 Slice FE4-19 (Reason & Error UX).
+ * mapHttpStatus helpers: implement in Slice FE4-19 (Reason & Error UX).
  */
 
 /** Client-side search error categories for Empty/Error state components. */
@@ -15,7 +15,7 @@ export type PolicySearchClientErrorKind =
   | 'server'
   | 'network';
 
-/** Presentation shape for LoadingState / EmptyState / ErrorState (post-G1). */
+/** Presentation shape for LoadingState / EmptyState / ErrorState. */
 export interface PolicySearchErrorPresentation {
   kind: PolicySearchClientErrorKind;
   title: string;
@@ -27,6 +27,6 @@ export interface PolicySearchErrorPresentation {
 
 /**
  * Reason-code copy fallback plan (documented in Forest plan § Reason fallback):
- * - Known codes may map to localized labels in post-G1 UI.
+ * - Known codes may map to localized labels in FE4-19 UI.
  * - Unknown `reason_code` values must render Backend-provided `message` without throwing.
  */

@@ -5,7 +5,7 @@
  * See docs/development/develop_plan/frontend/04_policy_search.md § Display UX.
  */
 
-import type { MatchVerdict } from '@/types/draft/policySearch.contract';
+import type { MatchVerdict } from '@/types/policySearch';
 
 /** Post-G1 design-system badge variant keys. */
 export type PolicySearchBadgeVariant =

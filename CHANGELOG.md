@@ -29,6 +29,7 @@
 
 ### Added
 
+- Gate G1 Policy Search TypeScript contract types를 production 타입 경로로 승격 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - 호출 예산·완전성 manifest를 사용하는 온통청년·복지로 다중 page 릴리스
   snapshot 수집과 고정 snapshot 재처리를 추가하고, 실제 정책 3,159건의
   PostgreSQL bootstrap·멱등 재실행 및 실제 검색 품질 Profile을 검증
@@ -52,7 +53,6 @@
   ([개발 기록](docs/development/development_notes/backend/policy_persistence_hardening.md))
 - `NormalizedProgram` 1.0.0 기반 PostgreSQL/SQLite ORM Policy 모델, Seed Upsert Importer CLI(`python -m app.cli.import_seed`) 및 정책 목록·상세 조회 API 추가 ([개발 기록](docs/development/development_notes/backend/policy_baseline.md))
 - 온통청년·복지로 source Collector·Extractor, 비밀정보 안전한 공통 HTTP·CLI,
-
   Raw 보존부터 provenance 기반 정규화·Schema 검증·품질 분류와 결정적
   Fixture·canonical Seed까지의 데이터 파이프라인 기반 추가
   ([개발 기록](docs/development/development_notes/data/data_pipeline.md))

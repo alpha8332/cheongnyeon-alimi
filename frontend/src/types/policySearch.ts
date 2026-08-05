@@ -1,9 +1,9 @@
 /**
- * W3-F0 DRAFT — Gate G1 aligned with Backend 06 PolicySearch contract (pending approval).
+ * Gate G1 approved Policy Search API contract types (Frontend 04).
  *
- * Do not import from production code until Team Leader records `G1_APPROVED`.
+ * Aligns with Backend 06 W3-B0 `GET /api/v1/policies/search`.
  *
- * Fixed handoff constraints:
+ * Fixed consumption constraints:
  * - Frontend sends raw Korean `q` (trimmed, required); no Frontend NL parser.
  * - Flat query params only on the wire; no nested `structured` object.
  * - Explicit flat filters override the same dimension interpreted from `q`.

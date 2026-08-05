@@ -98,6 +98,8 @@
 - [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):
   DT0 실행 환경과 실데이터 수집·적재 검증 결과
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
+- [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
+  Gate G1 search contract TypeScript types promote (FE4-11)
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
@@ -142,7 +144,7 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-IMPLEMENTATION` | action-needed | Backend·Frontend | Gate G1 승인 기준으로 Backend B1과 Frontend FE4-11 병렬 시작. Frontend 실제 API 연결은 Backend endpoint·계약 테스트 준비 후 진행 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md) |
+| `R1-SEARCH-IMPLEMENTATION` | action-needed | Backend·Frontend | Frontend FE4-11 types promote 완료; FE4-12 MSW·Backend endpoint 병렬 진행. Frontend 실제 API 연결은 Backend endpoint·계약 테스트 준비 후 진행 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md), [Frontend 04 개발 기록](development/development_notes/frontend/policy_search.md) |
 | `R1-ACTUAL-DATA-BOUNDARIES` | action-needed | Backend·Frontend·Team Leader | unknown age·region·status 표시를 보존하고, `27세 천안 청년 월세 지원`에 confirmed 정책이 없음을 Integration 04 golden flow에서 반영 | [Release 1 실데이터 품질 Profile](data/release_dataset_profile.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.

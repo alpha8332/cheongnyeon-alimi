@@ -1,14 +1,14 @@
 /**
- * W3-F0 DRAFT — URL query state types only (Gate G1 pending).
+ * Policy Search URL query state types (Frontend 04).
  *
  * URL stores user input and explicit flat filters only.
  * Backend response fields (interpreted_conditions, verdicts, reason_codes, score,
  * unconfirmed_conditions) are NOT serialized into the URL query string.
  *
- * parse/build/toRequest helpers: implement in post-G1 Slice FE4-14 (SearchBar & URL Sync).
+ * parse/build/toRequest helpers: implement in Slice FE4-14 (SearchBar & URL Sync).
  */
 
-import type { PolicySearchQueryParams } from '@/types/draft/policySearch.contract';
+import type { PolicySearchQueryParams } from '@/types/policySearch';
 import type { ApplicationStatus, PolicyCategory } from '@/types/policy';
 
 /** Planned Frontend route for NL search (distinct from `/programs` list API). */
@@ -42,6 +42,6 @@ export const POLICY_SEARCH_URL_DEFAULTS: Pick<
 
 /**
  * Type-level note: PolicySearchUrlQueryState round-trips to PolicySearchQueryParams
- * without NL parsing. Implementation deferred to G1-approved Slice FE4-14.
+ * without NL parsing. Implementation deferred to Slice FE4-14.
  */
 export type PolicySearchUrlToRequest = PolicySearchUrlQueryState & PolicySearchQueryParams;

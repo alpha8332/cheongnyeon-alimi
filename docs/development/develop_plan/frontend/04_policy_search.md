@@ -12,11 +12,11 @@
   [`week_03_search_contract_handoff.md`](../../weekly_plan/week_03_search_contract_handoff.md)를
   마지막으로 변경한 커밋 (`d3fde3e0912a1a54a27f32d157941be58ecc8660`)
 - Gate: DT2·Gate G1 (Backend 06·Frontend 04·Data 권고안 공동 검토)
-- 현재 Slice: FE4-11 pending (W3-F0 completed)
+- 현재 Slice: FE4-12 pending (FE4-11 completed)
 - 선행 Forest: Frontend 01 Policy Discovery (completed),
   Integration 03 Policy Search Data Foundation (completed)
 - 후속 Forest: Integration 04 Release 1 Acceptance (Team Leader)
-- 대응 개발 기록 (G1 승인·`in-progress` 전환 시 생성):
+- 대응 개발 기록:
   `docs/development/development_notes/frontend/policy_search.md`
 
 ## 목적
@@ -34,7 +34,7 @@ Frontend는 자연어 parser를 만들지 않는다. 지역·연령·카테고�
 
 ### W3-F0 (completed `2026-08-04` — 계획·pure type 승인 기준선)
 
-- Gate G1 통합 Backend 계약과 동기화된 `frontend/src/types/draft/*`
+- Gate G1 승인 계약과 동기화된 `frontend/src/types/policySearch.ts` 등 production types
 - URL에 Backend 응답 JSON(interpreted blob) **저장 금지** 명세
 - Mock 데이터셋 시나리오 표 (구현 금지)
 - Display·Error UX **문서** (실행 helper 금지)
@@ -97,7 +97,7 @@ GET /api/v1/policies/search
 응답 `interpreted_conditions.override_fields`에 override된 dimension이 기록된다.
 
 TypeScript: `PolicySearchQueryParams`, `POLICY_SEARCH_DEFAULTS`,
-`POLICY_SEARCH_QUERY_LIMITS` (`frontend/src/types/draft/policySearch.contract.ts`).
+`POLICY_SEARCH_QUERY_LIMITS` (`frontend/src/types/policySearch.ts`).
 
 ### Response
 
@@ -345,16 +345,16 @@ checklist에 포함한다.
 
 ---
 
-### FE4-11 — Types promote (G1 후)
+### FE4-11 — Types promote (G1 후) — completed
 
 | 항목 | 내용 |
 | --- | --- |
 | **목표** | draft types → production `types/policySearch.ts` |
-| **변경 파일** | `frontend/src/types/policySearch.ts` (신규), `types/draft/*` 유지 또는 archive |
+| **변경 파일** | `frontend/src/types/policySearch.ts`, `policySearchErrors.ts`, `policySearchUrlState.ts` (신규); `types/draft/*` 정리 |
 | **선행** | `G1_APPROVED` |
 | **세부 작업** | nested `PolicySearchHit`, `PolicySearchInterpretedConditions`, nullable `DimensionVerdicts`, `UnconfirmedCondition`, `ReasonCode`, defaults `limit=20` promote |
 | **검증** | `npm run build` |
-| **완료 기준** | production import 허용; draft import 금지 해제 |
+| **완료 기준** | production import 허용; contract·error·URL draft 파일 제거 |
 
 ---
 
@@ -577,7 +577,8 @@ DT2B에서 다음과 같이 분류했다.
 - [Integration 03 Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md)
 - [Policy API (목록·상세)](../../../api/policies.md)
 - [Policy Discovery (Frontend 01)](01_policy_discovery.md)
-- W3-F0 draft types: `frontend/src/types/draft/`
+- Production types: `frontend/src/types/policySearch.ts`, `policySearchErrors.ts`, `policySearchUrlState.ts`
+- Display label draft: `frontend/src/types/draft/policySearchDisplay.ts`
 
 ## Gate G1 Frontend 체크리스트 (Team Leader용)
 
@@ -605,4 +606,7 @@ DT2B에서 다음과 같이 분류했다.
 | `frontend/src/api/policies.ts` | list/detail | 유지; search 별도 |
 | `frontend/src/pages/user/HomePage.tsx` | `/programs?search=` client filter | FE4-20 → `/search?q=` |
 | `frontend/src/pages/user/SearchPage.tsx` | `/programs` exact+local filter | 검색 API 미사용; `/search`와 병행 |
-| `frontend/src/types/draft/*` | G1 pure types | production import 금지 |
+| `frontend/src/types/policySearch.ts` | G1 search contract | FE4-12 MSW·FE4-14 UI import |
+| `frontend/src/types/policySearchErrors.ts` | Error presentation types | FE4-19 mapper |
+| `frontend/src/types/policySearchUrlState.ts` | URL state types | FE4-14 parse/build |
+| `frontend/src/types/draft/policySearchDisplay.ts` | Display labels (draft) | FE4-18 promote 예정 |
