@@ -25,6 +25,7 @@
     "src/constants/policySearchDisplayHelpers.ts",
     "src/utils/policySearchReasonHelpers.ts",
     "src/utils/policySearchNavigation.ts",
+    "src/utils/policyDetailNavigation.ts",
     "src/types/policySearch.ts",
     "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",

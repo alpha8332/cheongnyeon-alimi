@@ -221,6 +221,7 @@ export default function PolicySearchPage() {
                   <PolicySearchResultCard
                     key={hit.policy.id}
                     hit={hit}
+                    searchIncludePartial={urlState.include_partial}
                     isSelected={activeSelectedPolicyId === hit.policy.id}
                     onSelect={(nextHit) =>
                       setSelectedPolicyId(nextHit.policy.id)

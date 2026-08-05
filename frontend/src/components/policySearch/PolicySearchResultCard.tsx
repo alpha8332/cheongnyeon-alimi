@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import PartialBadge from '@/components/policy/PartialBadge';
 import UnconfirmedConditionsBadge, {
   UnknownVerdictBadge,
@@ -7,6 +8,7 @@ import {
   hasUnknownVerdicts,
   hasUnconfirmedConditions,
 } from '@/constants/policySearchDisplay';
+import { buildPolicySearchHitDetailPath } from '@/utils/policyDetailNavigation';
 import {
   formatAge,
   formatApplicationStatus,
@@ -66,39 +68,32 @@ function formatCardEligibility(hit: PolicySearchHit): string {
 
 interface PolicySearchResultCardProps {
   hit: PolicySearchHit;
+  searchIncludePartial?: boolean;
   isSelected?: boolean;
   onSelect?: (hit: PolicySearchHit) => void;
 }
 
 export default function PolicySearchResultCard({
   hit,
+  searchIncludePartial = false,
   isSelected = false,
   onSelect,
 }: PolicySearchResultCardProps) {
   const tag = getStatusCardTag(hit);
+  const detailPath = buildPolicySearchHitDetailPath(hit, searchIncludePartial);
   const showUnknownVerdict =
     hasUnknownVerdicts(hit) && hit.policy.data_quality_status !== 'partial';
   const showPartialBadge = hit.policy.data_quality_status === 'partial';
   const showUnconfirmed = hasUnconfirmedConditions(hit);
-  const isSelectable = Boolean(onSelect);
+  const isHoverSelectable = Boolean(onSelect);
 
   return (
-    <article
-      className={`policy-card${isSelected ? ' policy-card--selected' : ''}${isSelectable ? ' policy-card--selectable' : ''}`}
-      onClick={isSelectable ? () => onSelect?.(hit) : undefined}
-      onKeyDown={
-        isSelectable
-          ? (event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                onSelect?.(hit);
-              }
-            }
-          : undefined
-      }
-      role={isSelectable ? 'button' : undefined}
-      tabIndex={isSelectable ? 0 : undefined}
-      aria-pressed={isSelectable ? isSelected : undefined}
+    <Link
+      to={detailPath}
+      className={`policy-card policy-card--selectable${isSelected ? ' policy-card--selected' : ''}`}
+      aria-label={`${hit.policy.title} 상세 보기`}
+      onMouseEnter={isHoverSelectable ? () => onSelect?.(hit) : undefined}
+      onFocus={isHoverSelectable ? () => onSelect?.(hit) : undefined}
     >
       <div className="policy-card__visual">
         <span
@@ -138,6 +133,6 @@ export default function PolicySearchResultCard({
           </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

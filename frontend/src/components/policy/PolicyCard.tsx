@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import PartialBadge from '@/components/policy/PartialBadge';
 import type { PolicyDto } from '@/types/policy';
+import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
 import {
   formatAge,
   formatApplicationStatus,
@@ -39,10 +40,9 @@ function getCardTag(policy: PolicyDto): { label: string; variant: '' | 'warn' | 
 
 export default function PolicyCard({ policy }: PolicyCardProps) {
   const tag = getCardTag(policy);
-  const detailPath =
-    policy.data_quality_status === 'partial'
-      ? `/programs/${policy.id}?include_partial=true`
-      : `/programs/${policy.id}`;
+  const detailPath = buildProgramDetailRoutePath(policy.id, {
+    includePartial: policy.data_quality_status === 'partial',
+  });
 
   return (
     <article className="policy-card">

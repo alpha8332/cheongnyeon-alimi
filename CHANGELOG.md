@@ -29,6 +29,7 @@
 
 ### Added
 
+- Policy Search 결과 카드에서 `/programs/{id}` 상세 이동 및 partial opt-in query 전달 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - 홈 hero 검색·추천 검색어 칩에서 `/search?q=` golden flow 진입 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Policy Search 우측 사이드바 Reason·미해석 키워드 UX 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
 - Policy Search partial/unknown 배지 분리 및 unconfirmed_conditions tooltip 추가 ([개발 기록](docs/development/development_notes/frontend/policy_search.md))
