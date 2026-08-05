@@ -22,6 +22,7 @@
     "src/utils/policySearchErrors.ts",
     "src/utils/policySearchPagination.ts",
     "src/utils/policySearchFilterMutations.ts",
+    "src/constants/policySearchDisplayHelpers.ts",
     "src/types/policySearch.ts",
     "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",

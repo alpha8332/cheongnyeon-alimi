@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/policy-search`
 - 관련 계획:
   [Policy Search Forest 개발 계획](../../develop_plan/frontend/04_policy_search.md)
-- 현재 Slice: FE4-18 pending (Partial / Unknown badges)
+- 현재 Slice: FE4-19 pending (Reason & Uninterpreted UX)
 
 ## 목적
 
@@ -32,59 +32,49 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 | FE4-15 | completed | Loading/Empty/Error shell + SearchBar bugfix |
 | FE4-16 | completed | Pagination + URL page sync + stale guard |
 | FE4-17 | completed | InterpretedConditionChips remove/edit/add + URL sync |
+| FE4-18 | completed | Partial/Unknown badges + unconfirmed tooltip |
 
 ## 구현 내용
 
-### FE4-17 — Filter Chips remove + edit/add
+### FE4-18 — Partial / Unknown badges
 
-#### InterpretedConditionChips
+#### 배지 semantic 분리
 
-- `interpreted_conditions.conditions` + URL flat param mirror로 칩 렌더
-- ✕ remove: URL flat param 제거 후 재검색 (`removePolicySearchFilter`)
-- 칩 클릭 edit / 「+ 조건 추가」: `ConditionEditorDrawer`로
-  `region`·`age`·`status`·`category`·`keyword` flat param 갱신
-- filter 변경(삭제·수정·추가) 시 `page=1` 자동 reset (`withPolicySearchPage`)
-- q에서만 해석된 조건(source=`q`, URL param 없음)은 ✕ remove 비활성;
-  verdict/resolution 스타일은 in-memory 응답 기준
+- `PartialBadge`: `data_quality_status=partial` → 「정보 일부 누락」(amber)
+- `UnknownVerdictBadge`: `unknown_count > 0` & non-partial → 「정보 미확인」(slate)
+- `UnconfirmedConditionsBadge`: `unconfirmed_conditions[]` → 「자격요건 직접 확인 필요」
+  + hover/focus tooltip (field별 message 목록)
+- 카드 visual tag는 모집 상태(모집중·마감 임박)만 표시; partial/unknown과 분리
 
-#### MatchVerdict / resolution 칩 스타일
+#### Display constants promote
 
-- `chip--match` / `chip--unknown` / `chip--mismatch`
-- `chip--ambiguous` / `chip--unmapped` (interpretation resolution)
-- URL JSON blob 저장 없음 (G1 flat param only)
+- `frontend/src/constants/policySearchDisplay.ts` (draft `policySearchDisplay.ts` 승격)
+- unknown copy: 전국·제한 없음 추정 금지 문구 포함
 
-#### Fallback
+#### PolicySearchResultCard
 
-- 응답 없음(loading/error/initial) 시 URL flat param만으로 read-only 칩 구성
-- error/empty shell에서도 칩 UI 유지 (FE4-03 Error UX 표)
+- eligibility: unknown/unconfirmed 시 「일부 조건 정보 없음 · 원문 확인 필요」
+- M4 복지로 표본: partial + multi-unknown + unconfirmed tooltip 동시 표시
 
-### FE4-16 — Pagination
+### FE4-17 — Filter Chips
 
-(이전 Slice — SearchPagination, stale guard, URL `page` sync)
-
-### FE4-15 — Loading / Empty / Error shell
-
-(SearchBar bugfix, shell UI, Golden Query Empty UX copy)
+(InterpretedConditionChips, ConditionEditorDrawer, URL filter mutations)
 
 ## 주요 변경 파일
 
 | 파일 | 변경 |
 | --- | --- |
-| `frontend/src/components/policySearch/InterpretedConditionChips.tsx` | FE4-17 interactive chips |
-| `frontend/src/components/policySearch/ConditionEditorDrawer.tsx` | FE4-17 add/edit drawer |
-| `frontend/src/utils/interpretedConditionChips.ts` | FE4-17 chip builder + verdict aggregate |
-| `frontend/src/utils/policySearchFilterMutations.ts` | FE4-17 URL filter remove/update |
-| `frontend/src/pages/user/PolicySearchPage.tsx` | FE4-17 wiring |
-| `frontend/src/styles/theme.css` | FE4-17 chip verdict variants + chip-x |
-| `frontend/tests/policySearch.filterMutations.test.ts` | FE4-17 mutation tests |
-| `frontend/src/components/policySearch/SearchPagination.tsx` | FE4-16 |
-| `frontend/tests/policySearch.pagination.test.ts` | FE4-16 |
+| `frontend/src/components/policySearch/PolicySearchResultCard.tsx` | FE4-18 badge wiring |
+| `frontend/src/components/policySearch/PolicySearchBadges.tsx` / `.css` | FE4-18 unknown/unconfirmed |
+| `frontend/src/components/policy/PartialBadge.tsx` | FE4-18 label fix |
+| `frontend/src/constants/policySearchDisplay.ts` | FE4-18 promoted labels |
+| `frontend/tests/policySearch.badges.test.ts` | FE4-18 badge helper tests |
 
 ## 설계 결정
 
-- Chip remove는 URL flat param이 있는 경우만 허용; q-only 해석 조건은 검색어 수정 안내
-- Verdict 색상은 items[] verdict aggregate(match > unknown > mismatch); keyword dimension 제외
-- `UrlFilterChips.tsx` / `buildUrlFilterChips`는 FE4-17에서 supersede (미삭제, 후속 정리 가능)
+- partial 정책은 품질 배지 + unconfirmed alert로 M4 표현; 별도 unknown verdict 배지는
+  non-partial row에만 표시 (중복 방지)
+- `PolicyCard` visual tag의 partial warn 라벨은 FE4-18 범위 밖 (Discovery UI 후속)
 
 ## 검증 결과
 
@@ -92,10 +82,10 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 python3 scripts/validate_docs.py  — passed
 cd frontend && npm run build      — passed
 cd frontend && npm run lint       — passed
-cd frontend && npm test           — passed (29/29)
+cd frontend && npm test           — passed (33/33)
 ```
 
-Browser remove region·edit age 시나리오는 이번 세션에서 수동 확인하지 않았다.
+Browser M4(`?q=복지로+생활`) 시나리오는 이번 세션에서 수동 확인하지 않았다.
 
 ## Backend·Data 3주차 통합 확인
 
@@ -106,5 +96,5 @@ Browser remove region·edit age 시나리오는 이번 세션에서 수동 확�
 
 ## 남은 작업
 
-- FE4-18~21: badges, Reason UX, Home IA, Detail link
+- FE4-19~21: Reason UX, Home IA, Detail link
 - FE4-22: Real API Client
