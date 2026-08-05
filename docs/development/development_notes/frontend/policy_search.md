@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/policy-search`
 - 관련 계획:
   [Policy Search Forest 개발 계획](../../develop_plan/frontend/04_policy_search.md)
-- 현재 Slice: FE4-16 pending (Pagination)
+- 현재 Slice: FE4-17 pending (Filter Chips remove + edit/add)
 
 ## 목적
 
@@ -30,9 +30,36 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 | --- | --- | --- |
 | FE4-14 | completed | SearchBar·URL sync·Mock fetch |
 | FE4-15 | completed | Loading/Empty/Error shell + SearchBar bugfix |
-| FE4-16 | pending | Pagination |
+| FE4-16 | completed | Pagination + URL page sync + stale guard |
 
 ## 구현 내용
+
+### FE4-16 — Pagination
+
+#### SearchPagination UI
+
+- `SearchPagination.tsx`: Backend envelope `total`/`page`/`limit` 소비,
+  블루 포인트 테마 prev/next·페이지 번호 컨트롤
+- 총 페이지 1 이하일 때는 렌더링 생략
+- 결과 범위 요약(예: `1-20 / 45건 · 페이지 2 / 3`)
+
+#### URL state 연동
+
+- `policySearchUrl.ts`: `getPolicySearchTotalPages`, `withPolicySearchPage`,
+  `isPolicySearchResponseCurrent`, `buildPolicySearchPageNumbers`
+- 페이지 클릭 → `?page=N` URL sync; 기존 `q`·flat filter 유지
+- 검색어 submit 시 `withPolicySearchPage(..., 1)`로 page reset (FE4-14 동작 유지)
+
+#### Stale response guard
+
+- `PolicySearchPage`: `isPolicySearchResponseCurrent(data, request)`로
+  envelope `page`/`limit` 불일치 시 결과 카드·pagination 미표시
+- `isFetching && !isResponseCurrent`일 때만 page transition loading shell 표시
+  (background refetch 시 기존 결과 유지)
+
+#### Release 1 정렬 정책
+
+- sort UI·sort query parameter 추가 없음 (Backend `score DESC` 고정 순서 유지)
 
 ### FE4-15 — Loading / Empty / Error shell
 
@@ -60,12 +87,17 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 
 | 파일 | 변경 |
 | --- | --- |
-| `frontend/src/components/policySearch/SearchBar.tsx` | bugfix + clear |
+| `frontend/src/components/policySearch/SearchPagination.tsx` | FE4-16 pagination UI |
+| `frontend/src/components/policySearch/SearchPagination.css` | FE4-16 theme styles |
+| `frontend/src/utils/policySearchPagination.ts` | FE4-16 page helpers (testable) |
+| `frontend/src/utils/policySearchUrl.ts` | FE4-16 re-export + URL parse/build |
+| `frontend/src/pages/user/PolicySearchPage.tsx` | FE4-16 wiring + stale guard |
+| `frontend/tests/policySearch.pagination.test.ts` | FE4-16 unit tests |
+| `frontend/src/components/policySearch/SearchBar.tsx` | FE4-15 bugfix + clear |
 | `frontend/src/components/policySearch/PolicySearch*Shell.tsx` | FE4-15 |
 | `frontend/src/utils/policySearchErrors.ts` | mapper |
 | `frontend/src/api/policySearchApiError.ts` | error class |
 | `frontend/tests/policySearch.errors.test.ts` | mapper tests |
-| `frontend/src/pages/user/PolicySearchPage.tsx` | shell wiring |
 
 ## 설계 결정
 
@@ -73,6 +105,8 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
   remount, 타이핑 중에는 remount 없음
 - Error mapper는 FE4-03 표를 `PolicySearchErrorPresentation`으로 구현; FE4-19에서
   reason code copy 확장
+- Pagination stale guard는 React Query queryKey(page 포함)와 envelope page/limit
+  이중 확인; filter chip 변경 page reset은 FE4-17에서 구현 예정
 
 ## 검증 결과
 
@@ -80,10 +114,10 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 python3 scripts/validate_docs.py  — passed
 cd frontend && npm run build      — passed
 cd frontend && npm run lint       — passed
-cd frontend && npm test           — passed (19/19)
+cd frontend && npm test           — passed (25/25)
 ```
 
-Browser M5 422·empty scenario는 이번 세션에서 수동 확인하지 않았다.
+Browser page change(`?q=전국+청년&limit=1`)는 이번 세션에서 수동 확인하지 않았다.
 
 ## Backend·Data 3주차 통합 확인
 
@@ -94,6 +128,5 @@ Browser M5 422·empty scenario는 이번 세션에서 수동 확인하지 않았
 
 ## 남은 작업
 
-- FE4-16: Pagination
 - FE4-17~21: Filter Chips, badges, Home IA, Detail link
 - FE4-22: Real API Client

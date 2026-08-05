@@ -20,6 +20,7 @@
     "src/types/policy.ts",
     "src/api/policySearchApiError.ts",
     "src/utils/policySearchErrors.ts",
+    "src/utils/policySearchPagination.ts",
     "src/types/policySearch.ts",
     "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",

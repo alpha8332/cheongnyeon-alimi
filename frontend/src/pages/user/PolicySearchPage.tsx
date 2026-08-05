@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import SearchBar from '@/components/policySearch/SearchBar';
+import SearchPagination from '@/components/policySearch/SearchPagination';
 import PolicySearchResultCard from '@/components/policySearch/PolicySearchResultCard';
 import PolicySearchEmptyShell from '@/components/policySearch/PolicySearchEmptyShell';
 import PolicySearchErrorShell from '@/components/policySearch/PolicySearchErrorShell';
@@ -15,10 +16,13 @@ import {
 } from '@/utils/policySearchErrors';
 import {
   buildPolicySearchUrlParams,
+  getPolicySearchTotalPages,
   hasPolicySearchQuery,
+  isPolicySearchResponseCurrent,
   isPolicySearchUrlStateValid,
   parsePolicySearchUrl,
   toPolicySearchRequest,
+  withPolicySearchPage,
 } from '@/utils/policySearchUrl';
 
 export default function PolicySearchPage() {
@@ -46,11 +50,13 @@ export default function PolicySearchPage() {
       return;
     }
 
-    const nextState = {
-      ...urlState,
-      q: trimmedQ,
-      page: 1,
-    };
+    const nextState = withPolicySearchPage(
+      {
+        ...urlState,
+        q: trimmedQ,
+      },
+      1,
+    );
 
     if (!isPolicySearchUrlStateValid(nextState)) {
       return;
@@ -59,9 +65,22 @@ export default function PolicySearchPage() {
     setSearchParams(buildPolicySearchUrlParams(nextState), { replace: false });
   };
 
-  const showLoading = shouldFetch && (isLoading || isFetching);
+  const handlePageChange = (nextPage: number) => {
+    const nextState = withPolicySearchPage(urlState, nextPage);
+
+    if (!isPolicySearchUrlStateValid(nextState)) {
+      return;
+    }
+
+    setSearchParams(buildPolicySearchUrlParams(nextState), { replace: false });
+  };
+
+  const isResponseCurrent =
+    data !== undefined && isPolicySearchResponseCurrent(data, request);
+  const showLoading =
+    shouldFetch && (isLoading || (isFetching && !isResponseCurrent));
   const showError = shouldFetch && isError && !showLoading;
-  const showSuccess = shouldFetch && !showLoading && !isError && data;
+  const showSuccess = shouldFetch && !showLoading && !isError && isResponseCurrent;
   const showEmptyResults =
     showSuccess && data !== undefined && isPolicySearchEmptyResults(data);
   const showResultCards =
@@ -131,6 +150,16 @@ export default function PolicySearchPage() {
               <PolicySearchResultCard key={hit.policy.id} hit={hit} />
             ))}
           </div>
+
+          {getPolicySearchTotalPages(data.total, data.limit) > 1 ? (
+            <SearchPagination
+              total={data.total}
+              page={data.page}
+              limit={data.limit}
+              onPageChange={handlePageChange}
+              disabled={showLoading}
+            />
+          ) : null}
         </section>
       ) : null}
     </div>

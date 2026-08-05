@@ -8,6 +8,19 @@ import {
   type PolicySearchUrlQueryState,
 } from '@/types/policySearchUrlState';
 import type { ApplicationStatus, PolicyCategory } from '@/types/policy';
+import {
+  buildPolicySearchPageNumbers,
+  getPolicySearchTotalPages,
+  isPolicySearchResponseCurrent,
+  withPolicySearchPage,
+} from './policySearchPagination';
+
+export {
+  buildPolicySearchPageNumbers,
+  getPolicySearchTotalPages,
+  isPolicySearchResponseCurrent,
+  withPolicySearchPage,
+};
 
 const POLICY_CATEGORIES = new Set<PolicyCategory>([
   'housing',
