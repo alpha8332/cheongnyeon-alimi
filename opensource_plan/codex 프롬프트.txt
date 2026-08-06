@@ -1,0 +1,34 @@
+로컬 디렉토리 경로: C:\git\cheongnyeon-alimi
+브랜치: docs/governance/documentation-system(로컬)
+
+확인 사항
+- 코드 수정 후 채팅으로 코드 리뷰를 간단하게 해줄 것.
+- 작업 후 네가 커밋하지말고 나에게 commit message를 알려줄 것.
+- 작업 후 docs index에 맞게 docs를 추가할 것.
+- 작업 중 추가한 null 폴더나 test 파일은 삭제할 것. (test code는 삭제하지 않아도 됨. 테스트용으로 추가한 임시 파일만 삭제할 것.)
+- 만약 다음 작업에서 브랜치를 새로 생성해서 진행하는 편이 나을 경우, 브랜치명과 함께 언급해줄 것. 
+
+계획 문서들의 경로를 아예 git repo안으로 옮겼다. "C:\git\cheongnyeon-alimi\opensource_plan" 여기에서 문서 확인해서 시스템 파악하면 된다.
+(1주차 개발 목표는 2개의 forest로 나뉘어 있다. docs와 data. 먼저 docs부터 구축한다. docs 구축의 slice별 계획 경로는 "C:\git\opensource_plan\개발 계획\1. docs 구조 설계.docx")
+
+그럼 이제부터 오픈소스 개발대회 출품작의 발판을 마련해보자. 아주 튼튼하게 만들어서 절대 무너지지 않는 시스템을 만들어보자. 
+
+Slice D0부터 가보자.
+
+Slice D0 — 문서 시스템의 규칙 확정
+목적은 빈 문서만 대량 생성하는 일을 피하고, 이후 모든 개발 작업에 적용할 문서 갱신 규칙을 먼저 고정하는 것입니다.
+산출물:
+•	docs/index.md: 문서 탐색 시작점과 변경 유형별 갱신 안내
+•	docs/governance/documentation_policy.md: 상세 문서화 정책
+•	CHANGELOG.md: Keep a Changelog 형태의 [Unreleased]
+•	docs/development/development_notes.md: 실제 완료된 개발 기록
+•	docs/develop_plan/README.md: 앞으로 할 작업과 계획을 관리하는 규칙
+핵심 구분:
+•	develop_plan/: 아직 하지 않은 작업, 설계안, 의존성, 완료 기준
+•	development_notes.md: 실제 구현 결과와 검증 기록
+•	CHANGELOG.md: 팀과 사용자에게 의미 있는 변화
+•	troubleshooting/: 실제 발생하고 해결한 문제만 기록
+완료 기준:
+•	코드 변경 유형별 수정해야 할 문서가 명확함
+•	계획과 실제 개발 기록이 섞이지 않음
+•	AI Agent가 작업 전후 확인할 체크리스트가 있음

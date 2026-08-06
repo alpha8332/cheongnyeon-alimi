@@ -1,0 +1,269 @@
+# 데이터 정규화 규칙
+
+## 문서 상태
+
+- 상태: 기준선
+- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.1.0 구현
+
+정규화는 `ExtractedPolicy`의 소스별 표현을 공통
+`NormalizedProgram`으로 변환한다. 원문에 없는 값을 추정해 정확한 값처럼
+만들지 않는 것을 우선한다.
+
+## 공통 원칙
+
+- Normalizer는 API 필드명, XML 태그와 CSS Selector를 알지 않는다.
+- 원문 text는 Raw 또는 Extracted 단계에 보존한다.
+- 파싱할 수 없는 선택 필드는 null 또는 빈 배열로 표현한다.
+- 필드 하나를 파싱하지 못해 전체 실행을 중단하지 않는다.
+- 필수 필드 누락과 Schema 위반은 Validator가 invalid로 분류한다.
+- 같은 입력과 규칙은 같은 결과를 생성해야 한다.
+- application 상태의 기준일은 입력 `collected_at`의 Asia/Seoul 날짜다.
+
+## 텍스트
+
+텍스트 정규화는 다음 처리를 기본으로 한다.
+
+- HTML 태그 제거
+- HTML Entity 변환
+- 앞뒤 공백 제거
+- 연속 공백 정리
+- 줄바꿈 정리
+
+문장 의미, 금액과 자격 조건을 요약하거나 재작성하지 않는다. LLM 기반 추출은
+별도 설계와 검증 기준이 승인되기 전까지 기본 정규화 범위에 포함하지 않는다.
+
+## 날짜
+
+### 지원할 입력
+
+```text
+2026-07-01
+2026.07.01
+2026. 7. 1.
+2026/07/01
+20260701
+2026-07-01 ~ 2026-07-31
+상시
+마감
+예산 소진 시
+```
+
+### 출력 원칙
+
+- 명시된 날짜는 `YYYY-MM-DD`로 변환한다.
+- 명시된 시작일과 종료일은 각각 `application_start`,
+  `application_end`에 저장한다.
+- 종료일이 없거나 `예산 소진 시`이면 임의의 종료일을 만들지 않는다.
+- `상시`, `예산 소진 시` 같은 원문 의미는 구조화 결과와 별도로 보존한다.
+- 유효하지 않은 달력 날짜는 보정하지 않고 파싱 실패로 처리한다.
+- 두 날짜가 있으면 `application_schedule=fixed_period`로 두고 수집 기준일이
+  시작 전이면 `scheduled`, 기간 안이면 `open`, 종료 뒤면 `closed`다.
+- 시작일 하나만 있고 기준일보다 미래면 `scheduled`지만 시작 뒤 상태는
+  종료일 없이 추정하지 않아 null이다.
+- `상시`는 `application_schedule=always`,
+  `application_status=open`으로 전달한다.
+- `마감`은 명시된 상태이므로 `application_status=closed`다.
+- `예산 소진 시`는 `application_schedule=until_budget_exhausted`로 두고
+  실제 소진 여부를 알 수 없어 상태는 null이다.
+- 알 수 없는 상태를 `"unknown"`으로 만들지 않고 null로 둔다.
+
+### Source 근거 경계
+
+- 신청기간 구조화 입력은 Extractor가 Source별로 명시한
+  `application_period_text`만 사용한다.
+- 온통청년은 `aplyYmd`를 우선하고 값이 없을 때 검증된 `aplyPrdSeCd` 코드
+  mapping만 사용한다.
+- summary, 지원 내용, 자격, 신청 방법 등 일반 본문에서 발견한 날짜는
+  신청기간으로 추정하거나 승격하지 않는다.
+- 복지로의 현재 목록·상세 계약에는 신청기간 전용 필드가 없으므로 일반 본문에
+  날짜가 있어도 기간·상태는 null로 유지한다.
+- Source 근거 없는 승격 여부는 Release 1 offline profile의
+  `application_period_safety`로 재검증한다.
+
+## 연령
+
+지원할 대표 입력:
+
+```text
+만 19세 이상 34세 이하
+19~39세
+청년기본법상 청년
+연령 제한 없음
+```
+
+원칙:
+
+- 숫자가 명확한 경우에만 `age_min`과 `age_max`를 구조화한다.
+- 한쪽 경계만 명확하면 확인된 경계만 기록한다.
+- 법령명이나 모호한 표현에서 숫자를 추정하지 않는다.
+- 원문은 `age_condition_text`에 보존한다.
+- 연령 제한 없음과 연령 정보 누락을 같은 의미로 취급하지 않는다.
+- 허용 범위는 0~150이고 최소 연령이 최대 연령보다 클 수 없다.
+- 온통청년의 최소·최대가 모두 0인 `0세 ~ 0세`는 실제 DT4 snapshot에서
+  Source placeholder로 관찰됐으므로 0세 한정으로 확정하지 않는다. 원문은
+  보존하고 구조화 경계를 `null`로 두며 `placeholder_age_range` 경고로
+  partial 처리한다. 다른 Source의 0~0 범위에는 이 규칙을 확대 적용하지 않는다.
+
+예:
+
+```json
+{
+  "age_min": 19,
+  "age_max": 34,
+  "age_condition_text": "만 19세 이상 34세 이하"
+}
+```
+
+```json
+{
+  "age_min": null,
+  "age_max": null,
+  "age_condition_text": "청년기본법상 청년"
+}
+```
+
+## 검색용 문자열 배열
+
+`keywords`, `life_stages`, `target_groups`는 항상 문자열 배열이며 값이 없으면
+`[]`이다. null이나 쉼표로 합친 단일 문자열은 허용하지 않는다. 각 값은
+앞뒤 공백을 제거하고 빈 값과 중복을 제외하되 원문 순서를 유지한다.
+
+PSF4 Source Adapter는 온통청년 `mclsfNm`·`plcyKywdNm`을 `keywords`로,
+복지로 `intrsThemaArray`를 `keywords`, `lifeArray`를 `life_stages`,
+`trgterIndvdlArray`를 `target_groups`로 옮긴다. 쉼표와 반복 XML leaf를
+원문 순서대로 분리하고 공통 text 정규화 뒤 빈 값과 exact 중복을 제거한다.
+Source에 없는 값은 계속 `[]`이며 API가 청년 정책을 제공한다는 이유만으로
+`청년`을 추가하지 않는다.
+
+`summary`는 온통청년 `plcyExplnCn`, 복지로 상세 `wlfareInfoOutlCn` 우선·목록
+`servDgst` fallback만 사용한다. 모델이 요약문이나 검색 합성 문자열을
+생성하지 않으며 Raw와 `extra.source_fields`는 그대로 보존한다.
+
+## 지역
+
+기존 표시·정확 일치 필터용 `regions`와 검색 판정용 지역 계약을 분리한다.
+`coverage_scope`는 `nationwide`, `regional`, `unknown` 중 하나이고,
+`region_rules`는 다음 필드를 모두 가진 객체 배열이다.
+
+- `relation`: `include` 또는 `exclude`
+- `resolution_status`: `matched`, `unmapped`, `ambiguous`
+- `region_scheme`, `region_code`: 확정된 canonical 지역 identity
+- `source_code`, `source_text`: 원문 근거
+
+PSF2의 canonical 지역 scheme은 `kr-bjd-20260803`이며 공식 법정동 snapshot의
+시·도와 시·군·구, 별칭, 유효기간과 계층을
+[행정구역 기준정보](administrative_regions.md)로 고정했다. PSF4 Normalizer는
+Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가 없으면
+`coverage_scope=unknown`, `region_rules=[]`를 유지한다. 기준표가 존재한다는
+사실만으로 Source code를 시·도나 전국으로 추정하지 않는다.
+
+| 원문 예 | 정규화 값 |
+| --- | --- |
+| 서울시 | 서울특별시 |
+| 경북 | 경상북도 |
+| 포항 | 포항시 |
+| 전국 | 전국 |
+
+원칙:
+
+- 결과는 `regions` 배열에 저장한다.
+- 시·도와 시·군·구가 모두 확인되면 필요한 계층을 배열에 보존한다.
+- 동명이인 지역이나 불명확한 축약어는 추정하지 않는다.
+- 값이 없으면 `[]`을 사용한다.
+- 원문은 `region_text`에 보존한다.
+- 온통청년 `zipCd`의 쉼표 구분 5자리 값은 `kr-bjd-prefix5`의 명시적 exact
+  crosswalk에 있을 때만 후보를 찾는다. 전체 숫자 목록이 아니거나 crosswalk에
+  없으면 이름·기관·prefix로 추정하지 않는다.
+- exact 폐지 code는 당시 canonical identity로 보존하고 현행 후계 지역으로
+  자동 치환하지 않는다. 미매핑·모호한 값은 Source 증거와 함께 unresolved
+  rule로 보존한다.
+- 향후 HTML Adapter의 지역명은 Adapter가 `source_text` 증거로 명시한 경우만
+  versioned alias resolver를 사용하며 `중구` 같은 다중 후보는 `ambiguous`다.
+- 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
+  치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
+- `nationwide`는 지역 rule을 가질 수 없다.
+- `regional`은 canonical 지역으로 해석된 `include` rule이 하나 이상 필요하다.
+- `unknown`은 canonical 지역으로 해석된 rule을 가질 수 없다.
+- `matched` rule은 `region_scheme`과 `region_code`가 모두 필요하다.
+- `unmapped`·`ambiguous` rule은 canonical identity를 갖지 않고
+  `source_code` 또는 `source_text` 중 하나 이상의 근거를 보존한다.
+- 같은 canonical 지역에 동일 relation을 중복하거나 include와 exclude를
+  동시에 선언할 수 없다.
+
+## 카테고리
+
+Normalized 1.1.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
+`categories` 배열을 사용한다. 같은 enum은 중복하지 않고 원문 순서를
+유지한다.
+
+현재 기준 매핑:
+
+| 원문 | enum |
+| --- | --- |
+| 주거 | `housing` |
+| 금융, 서민금융, 금융·생활지원 | `finance` |
+| 복지·문화, 생활지원, 건강, 보육, 보호·돌봄, 문화·여가, 안전·위기 | `welfare` |
+| 취업·일자리 | `employment` |
+| 창업 | `startup` |
+| 교육·직업훈련 | `education` |
+| 기타 또는 매핑 불가 | `other` |
+
+쉼표로 구분된 복지로 관심주제는 각각 매핑한다. 온통청년
+`금융･복지･문화`는 `finance`, `welfare` 두 값을 만든다. 매핑되지 않은
+명시적 분류는 `other`를 사용하되 `unmapped_category` 경고와
+`category_text` 원문을 함께 유지한다. 분류 자체가 없으면 `other`를 만들지
+않고 빈 배열을 사용한다.
+
+## 누락과 오류
+
+- 선택 단일 값 없음: null
+- 배열 값 없음: `[]`
+- 필수 값 없음: invalid
+- category·지역·연령·신청기간 검색 필드 일부 누락: partial
+- 파서 예외: 원문과 오류 이유를 보존하고 다음 문서 처리를 계속
+
+파싱 실패를 빈 문자열이나 `other`로 무조건 숨기지 않는다. `other`는
+카테고리 의미가 실제로 기타이거나 정의된 매핑에 속하지 않을 때만 사용하고,
+원문을 함께 보존한다.
+
+## Validator와 오류 위치
+
+Validator는
+[`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
+과 날짜·연령 범위, 품질 상태 및 지역 rule 불변식을 함께 검사한다.
+
+- `ValidationIssue.path`: `$.title`, `$.regions`, `$.provenance[0]` 같은
+  JSON path
+- `code`: Schema keyword 또는 정규화·품질 규칙 식별자
+- `message`: 비밀값과 원문 전체를 포함하지 않는 설명
+- `severity`: `warning` 또는 `error`
+
+Schema 오류, 필수 필드 누락, 날짜·연령 역전과 잘못 선언한 품질 상태는
+invalid다. 선택 필드 파싱 경고와 주요 검색 필드 누락은 partial이다.
+valid·partial 결과는 Schema-valid Python 모델을 포함하고 invalid 결과는
+candidate와 오류만 남겨 정상 결과와 분리한다.
+
+Data 5의 정상·경계·실패 사례는 개인정보나 외부 원문이 없는 합성 테스트
+데이터를 사용한다. Data 6의 Raw·Extracted·Normalized Fixture와 canonical
+Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합성 데이터다.
+구체적인 대표 사례와 소비자 검토 상태는
+[Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
+
+## 규칙 변경
+
+정규화 규칙을 변경할 때는 다음을 함께 확인한다.
+
+- `data/schema/normalized_program.schema.json`
+- 이 문서
+- 파서와 Normalizer 테스트
+- 정상·경계·실패 Fixture
+- 기존 Seed의 재생성 필요성
+- Backend 필터와 Frontend 표시 영향
+
+현재 Backend는 검색 배열과 coverage를 Policy 컬럼에 저장하고 비어 있지 않은
+`region_rules`와 versioned projection을 Policy upsert와 같은 transaction에
+저장한다. Runtime replay는 Normalizer warning을 accepted program과 함께
+전달하므로 canonical 필드만으로 재구성할 수 없는 partial 분류도 유지한다.
+Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
+공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
+Slice에서 별도로 연결한다.

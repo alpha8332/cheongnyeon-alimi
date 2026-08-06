@@ -1,0 +1,43 @@
+.interpreted-chips {
+  margin-bottom: 8px;
+}
+
+.interpreted-chips__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.interpreted-chips__head .chips-label {
+  margin-bottom: 0;
+}
+
+.interpreted-chips__add {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.interpreted-chips__empty {
+  margin: 0 0 28px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chip__label {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.chip__label:disabled {
+  cursor: default;
+}
+
+.chip__label:not(:disabled):hover {
+  text-decoration: underline;
+}

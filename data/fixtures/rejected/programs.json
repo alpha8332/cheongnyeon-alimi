@@ -1,0 +1,75 @@
+[
+  {
+    "candidate": {
+      "age_condition_text": "연령 제한 없음",
+      "age_max": null,
+      "age_min": null,
+      "application_end": null,
+      "application_method": null,
+      "application_period_text": "마감",
+      "application_schedule": null,
+      "application_start": null,
+      "application_status": "closed",
+      "categories": [
+        "other"
+      ],
+      "category_text": "기타",
+      "collected_at": "2026-07-26T06:00:00+00:00",
+      "coverage_scope": "nationwide",
+      "data_quality_status": "invalid",
+      "education_statuses": [],
+      "eligibility_text": null,
+      "employment_statuses": [],
+      "excluded_conditions": [],
+      "external_id": "SYN-YOUTH-REJECTED",
+      "keywords": [
+        "기타지원",
+        "합성오류"
+      ],
+      "life_stages": [],
+      "organization": "합성 오류기관",
+      "preferred_conditions": [],
+      "provenance": [
+        {
+          "collected_at": "2026-07-26T06:00:00+00:00",
+          "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
+          "document_role": "list_response",
+          "raw_document_id": "10000000000000000000000000000000",
+          "source_url": "https://fixture.invalid/youthcenter/getPlcy"
+        },
+        {
+          "collected_at": "2026-07-26T06:00:00+00:00",
+          "content_hash": "sha256:40212bfb9e6e4d222233731452b0a96c41e252600c58122c4fe8d8f98fe8e1d7",
+          "document_role": "list_item",
+          "raw_document_id": "11000000000000000000000000000003",
+          "source_url": "https://fixture.invalid/youthcenter/getPlcy"
+        }
+      ],
+      "region_rules": [],
+      "region_text": "전국",
+      "regions": [
+        "전국"
+      ],
+      "required_conditions": [],
+      "schema_version": "1.1.0",
+      "source_id": "youthcenter-api",
+      "source_name": "온통청년 청년정책 API",
+      "source_url": "https://fixture.invalid/youth/rejected",
+      "summary": "필수 제목이 없는 합성 정책 요약",
+      "support_content": "필수 제목이 없는 합성 실패 사례",
+      "target_groups": [],
+      "title": null
+    },
+    "external_id": "SYN-YOUTH-REJECTED",
+    "issues": [
+      {
+        "code": "schema_type",
+        "message": "expected JSON type ['string']",
+        "path": "$.title",
+        "severity": "error"
+      }
+    ],
+    "source_id": "youthcenter-api",
+    "status": "invalid"
+  }
+]

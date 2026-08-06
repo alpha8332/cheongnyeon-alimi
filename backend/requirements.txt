@@ -1,0 +1,20 @@
+# Core Web Framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+
+# Settings, Environment and Schema Validation
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.0
+
+# Database and ORM
+sqlalchemy>=2.0.28
+psycopg2-binary>=2.9.9
+alembic>=1.13.1
+
+# HTTP Client
+httpx>=0.27.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.5

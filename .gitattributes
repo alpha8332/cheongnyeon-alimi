@@ -1,0 +1,4 @@
+data/fixtures/**/*.json text eol=lf
+data/seeds/*.json text eol=lf
+data/schema/*.json text eol=lf
+data/release_1_acceptance.json text eol=lf

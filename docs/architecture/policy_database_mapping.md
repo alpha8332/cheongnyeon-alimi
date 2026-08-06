@@ -1,0 +1,287 @@
+# Policy 데이터베이스 매핑
+
+## 문서 상태
+
+- 상태: 현재 구현 기준
+- 입력 계약: `NormalizedProgram` 1.0.0·1.1.0
+- 저장 모델: Backend `Policy`, 행정구역·정책 지역 관계·검색 projection 모델
+- Migration head: `20260803_0004`
+
+이 문서는 Data의 canonical JSON, Backend importer, PostgreSQL `policies`
+테이블과 공개 Policy API 사이의 현재 필드 매핑을 정의한다. 논리 필드의 의미와
+검증 규칙은 [데이터 Schema 기준선](../data/data_schema.md), 공개 응답은
+[Policy API 계약](../api/policies.md)이 권위 있다.
+
+## 매핑 원칙
+
+- `region_rules`를 제외한 Normalized 35개 필드는 이름을 바꾸지 않고 같은
+  이름의 DB 컬럼에 저장한다. `region_rules`는 관계형 테이블에 저장한다.
+- 선택 단일 값은 nullable 컬럼에 `NULL`, 복수 값은 non-null JSONB에 JSON
+  배열로 저장한다.
+- 날짜는 PostgreSQL `date`, 수집 시각은 timezone-aware `timestamptz`로
+  변환한다.
+- 원문 text와 구조화 필드는 서로 대체하지 않고 모두 보존한다.
+- `provenance`는 DB에는 보존하지만 일반 사용자 Policy API에는 노출하지
+  않는다.
+- 저장 계층이 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력
+  계약에는 없고 공개 Policy DTO에 추가된다.
+
+## 36개 필드 매핑
+
+`직접`은 JSON 값과 DB 조회 값이 같은 의미와 값을 유지한다는 뜻이다. 날짜와
+시각만 Python·PostgreSQL 타입으로 변환한 뒤 아래 비교 기준을 적용한다.
+
+| Normalized 필드 | JSON 타입 | PostgreSQL 컬럼 타입 | DB null | Importer 변환 | 공개 API |
+| --- | --- | --- | --- | --- | --- |
+| `schema_version` | string `1.0.0` 또는 `1.1.0` | `varchar(32)` | 아니요 | 직접 | 노출 |
+| `source_id` | string | `text` | 아니요 | 비어 있지 않은 string | 노출 |
+| `source_name` | string | `varchar(255)` | 아니요 | 직접 | 노출 |
+| `external_id` | string 또는 null | `varchar(512)` | 예 | 현재 admission 후 string | 노출 |
+| `title` | string | `varchar(1000)` | 아니요 | 직접 | 노출 |
+| `organization` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `summary` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `category_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `categories` | category string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `keywords` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 기존 DTO 비노출 |
+| `life_stages` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 기존 DTO 비노출 |
+| `target_groups` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 기존 DTO 비노출 |
+| `application_period_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `application_start` | date string 또는 null | `date` | 예 | Python `date` | ISO date 노출 |
+| `application_end` | date string 또는 null | `date` | 예 | Python `date` | ISO date 노출 |
+| `application_schedule` | enum 또는 null | `policy_application_schedule` | 예 | 직접 | 노출 |
+| `application_status` | enum 또는 null | `policy_application_status` | 예 | 직접 | 노출 |
+| `region_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `regions` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `coverage_scope` | coverage enum | `policy_coverage_scope` | 아니요 | 직접 | 기존 DTO 비노출 |
+| `region_rules` | rule object 배열 | `policy_region_rules` 행 | 해당 없음 | 검증 뒤 관계 행 전체 동기화 | 기존 DTO 비노출 |
+| `age_min` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
+| `age_max` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
+| `age_condition_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `eligibility_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `support_content` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `application_method` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `education_statuses` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `employment_statuses` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `required_conditions` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `preferred_conditions` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `excluded_conditions` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
+| `source_url` | URI string | `text` | 아니요 | 직접 | 노출 |
+| `collected_at` | timezone date-time string | `timestamptz` | 아니요 | aware `datetime` | aware date-time 노출 |
+| `provenance` | object 배열 | `jsonb` | 아니요 | 배열 그대로 | 비노출 |
+| `data_quality_status` | quality enum | `policy_data_quality_status` | 아니요 | 직접 | valid·partial만 노출 |
+
+### JSONB 배열
+
+다음 11개 필드는 PostgreSQL JSONB에 원소 순서와 값을 그대로 저장한다.
+
+```text
+categories
+keywords
+life_stages
+target_groups
+regions
+education_statuses
+employment_statuses
+required_conditions
+preferred_conditions
+excluded_conditions
+provenance
+```
+
+`category_text`·`categories`와 `region_text`·`regions`는 원문과 정규화 결과를
+동시에 보존한다. 배열이 비어 있으면 `[]`이며 `NULL`, 빈 문자열 또는 단일
+string으로 바꾸지 않는다. `categories`, `regions`와 세 검색 배열에는 GIN
+index가 있다. 기존 Repository는 categories·regions의 exact membership
+의미를 유지한다.
+
+### 일정·상태와 기간
+
+- `application_period_text`는 원문 기간 표현을 보존한다.
+- `application_start`와 `application_end`는 검색 가능한 날짜다.
+- `application_schedule`은 신청 방식, `application_status`는 수집 시점의
+  상태이므로 서로 대체하지 않는다.
+- 날짜가 없으면 `NULL`이며 원문 text가 있더라도 임의 날짜를 만들지 않는다.
+
+### provenance와 공개 API
+
+`provenance`는 Raw 문서 ID·역할·hash·수집 시각·안전한 source URL의 object
+배열로 DB에 보존한다. 일반 사용자 `PolicyRead`에는 포함하지 않는다. 검색
+전용 5개 필드도 기존 목록·상세 DTO에 추가하지 않는다. 기존 공개 필드와
+저장 계층이 생성한 다음 필드만 기존 API에 유지된다.
+
+| 저장 계층 생성 필드 | PostgreSQL 타입 | 현재 생성 경계 | 공개 API |
+| --- | --- | --- | --- |
+| `id` | auto-increment integer | DB identity | 노출 |
+| `created_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
+| `updated_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
+
+Importer는 최초 insert에 하나의 UTC aware write instant를 생성해 두 필드에
+같이 전달한다. ORM과 Migration의 `ck_policies_timestamp_order`는
+`updated_at >= created_at`을 강제한다. Migration은 이 constraint를 추가하기
+전에 기존 역전 행의 `updated_at`을 `created_at`으로 보정한다. Importer 밖의
+insert에서는 ORM Python default와 DB `CURRENT_TIMESTAMP` server default가
+방어적 fallback이며, Policy를 변경하는 writer는 `updated_at`을 명시해야
+한다. 상세 결정과 검증은
+[Backend Policy Runtime Safety 계획](../development/develop_plan/backend/03_policy_runtime_safety.md)과
+[개발 기록](../development/development_notes/backend/policy_runtime_safety.md)에
+기록한다.
+
+invalid는 DB enum에는 존재하지만 importer admission에서 거부되므로 정상
+Policy API에 도달하지 않는다. partial은 저장하며
+`include_partial=true`일 때만 공개한다.
+
+## Normalized 1.1.0 저장 경계
+
+PSF1에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
+`target_groups`, `coverage_scope`, `region_rules`를 더한 36개 필드가 됐다.
+Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저장한다.
+
+- 기존 row는 배열 `[]`, coverage `unknown`으로 backfill하지만 실제
+  `schema_version` 값은 바꾸지 않는다.
+- 신규 ORM·DB default는 1.1.0이며 importer는 입력 version을 그대로 쓴다.
+- 현재 importer는 `keywords`, `life_stages`, `target_groups`,
+  `coverage_scope`를 저장한다.
+- PSF4 canonical Seed와 Runtime Normalized 결과는 Source 근거가 있는 검색
+  배열·coverage를 실제 값으로 채운다. 온통청년 숫자 `zipCd`는
+  `kr-bjd-prefix5` exact resolver를 거쳐 관계 후보가 되며 복지로는 지역
+  key가 없어 `unknown`을 유지한다.
+- `region_rules` 관계 교체와 projection 동기화는 Policy upsert와 같은
+  transaction에서 수행한다. importer 밖에서는 중간 관계 상태를 관찰할 수
+  없고 어느 write라도 실패하면 Policy·rule·projection 전체를 rollback한다.
+- 1.0.0 입력은 Normalized compatibility adapter에서만 1.1.0 안전 기본값으로
+  확장하며 지역·전국 여부를 추정하지 않는다.
+
+PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 identity로
+사용한다. `administrative_regions`는 공식 `parent_code`와 별도로 nullable
+`aggregate_parent_code`를 저장해야 한다. 비자치구의 원천 parent를 집계 시로
+덮어쓰지 않으며 alias 다중 후보, active·retired와 유효기간을 보존한다.
+구체적인 생성·해석 계약은
+[행정구역 기준정보](../data/administrative_regions.md)를 따른다.
+
+### 관계 테이블과 DB 불변식
+
+- `administrative_region_aliases`는 동일 별칭의 여러 canonical 후보를
+  허용하고 동일 region·kind 중복은 금지한다.
+- `policy_region_rules`는 matched일 때 canonical FK가 필요하고,
+  unmapped·ambiguous일 때 canonical FK를 금지하면서 Source 근거를 요구한다.
+- 같은 정책·canonical 지역의 중복과 include·exclude 충돌은 unique
+  constraint로 금지한다.
+- 지연 constraint trigger는 transaction 최종 상태에서 `nationwide`의 rule
+  금지, `regional`의 matched include 필수, `unknown`의 matched rule 금지를
+  검사한다.
+- 지역 parent·aggregate parent는 복합 FK와 지연 cycle trigger로 검사한다.
+
+### 검색 projection
+
+`policy_search_documents`는 정책당 한 행이며 title·keyword·summary·eligibility·
+support와 합성 `search_text`, `projection_version`, timezone `updated_at`을
+저장한다. Migration은 `pg_trgm` extension과 `search_text`의
+`gin_trgm_ops` GIN index를 준비한다. 현재 projection version은 `1.0.0`이다.
+NFKC와 공백 정규화 뒤 다음 필드군을 순서 보존·중복 제거해 합성한다.
+
+- `title_text`: `title`
+- `keyword_text`: `category_text`, `categories`, `keywords`
+- `summary_text`: `summary`
+- `eligibility_text`: `life_stages`, `target_groups`, 연령·자격 원문,
+  학업·취업 상태와 필수·우대·제외 조건
+- `support_text`: `support_content`
+- `search_text`: 위 다섯 문서를 같은 순서로 합성한 전체 검색 후보
+
+projection service는 commit하지 않으며 importer 또는 재생성 호출자가
+transaction을 소유한다. 값과 version이 같으면 행과 `updated_at`을 바꾸지
+않는다. 최종 점수는 Backend 06에서 확정한다. downgrade는 공용일 수 있는
+extension은 제거하지 않고 PSF3가 만든 index·table·enum·trigger만 제거한다.
+
+### query별 판정 primitive
+
+PSF6의 `PolicySearchEvaluationService`는 저장 계약을 바꾸지 않고 검색 요청별
+판정 근거를 만든다. 결과는 공통 `match|mismatch|unknown`이며 정책 원본이나
+projection에 다시 저장하지 않는다.
+
+- 지역 alias는 active canonical 후보만 조회하며 0건은 `unmapped`, 1건은
+  `matched`, 여러 건은 후보 목록을 가진 `ambiguous`다.
+- regional 판정은 query 지역에서 `aggregate_parent_code` 우선으로 루트까지
+  탐색한다. 정확 code는 `exact`, 상위 include는 `ancestor`, 다른 active
+  include만 있으면 `other_region`이며 일치하는 exclude가 include보다 앞선다.
+- nationwide는 지역 query 해석 여부와 무관하게 match, coverage unknown과
+  unresolved·retired rule은 근거를 보존한 unknown이다.
+- 나이는 확인된 최소·최대 범위와 명시적 `연령 제한 없음`만 match로 삼고,
+  경계가 없거나 모호한 원문은 unknown이다. 신청 상태가 null이면 unknown이다.
+- projection match는 입력받은 검색어의 NFKC·공백 정규화와 공백 제거 비교만
+  수행해 field별 일치어와 미일치어를 반환한다. 동의어·축약 확장, parser와
+  최종 관련도 점수는 Backend 06 책임이다.
+
+### Backend 06 소비와 성능 경계
+
+Backend 06은 자연어를 구조화한 뒤 다음 PSF6 내부 값을 조합한다. 이 값은
+아직 공개 검색 API 응답 이름을 확정한 것이 아니다.
+
+| 내부 값 | Backend 06 소비 목적 |
+| --- | --- |
+| `RegionQueryResolution` | alias 해석 상태와 canonical 후보·모호성 표시 |
+| `RegionDecision` | 지역 3값, exact·ancestor·exclude 등 reason과 rule evidence |
+| `AgeDecision` | 범위·제한 없음·미상 reason |
+| `ApplicationStatusDecision` | 신청 상태 일치·불일치·미상 reason |
+| `ProjectionMatchEvidence` | field별 일치어와 미일치어, 검색 이유·점수 입력 |
+
+PSF7 로컬 PostgreSQL 18.4, `Korean_Korea.949`, 기본 `random_page_cost=4`에서
+합성 policy와 projection 20,000건 중 200건이 일치하는 query를 측정했다.
+기본 `ILIKE '%청년 월세%'`는 Sequential Scan 19.258ms, 기본 `LIKE`는
+Sequential Scan 2.597ms, `enable_seqscan=off`의 `ILIKE`는 trigram GIN
+Bitmap Scan 2.030ms였다. 이는 단일 로컬 실행 결과이며 Release 성능 보장이
+아니다.
+
+현재 GIN index는 사용 가능하지만 planner가 기본 선택하지 않고 `ILIKE`의
+case-insensitive 비교 비용도 관찰됐다. Backend 06은 실제 snapshot과 최종
+query·정렬·pagination을 대상으로 다음을 다시 확인한다.
+
+- 한국어와 이미 정규화된 field에 `LIKE`를 사용할 수 있는 범위
+- 영문 case-insensitive 요구와 `lower(...)` projection·expression index 필요성
+- 실제 match 비율에서 기본 planner 선택과 통계 정확도
+- 지역·연령·상태 join 및 정렬을 포함한 전체 plan과 batch 조회
+
+PSF7은 이 측정만으로 index, locale 또는 DB 설정을 바꾸지 않는다.
+
+## 식별자와 upsert
+
+- DB identity는 `(source_id, external_id)` unique constraint다.
+- 현재 `youthcenter-api`와 `bokjiro-central-welfare-api`는 비어 있지 않은
+  `external_id`가 필수다.
+- 두 Source의 null ID는 `missing_external_id`, 그 밖의 아직 합의되지 않은
+  Source의 null ID는 `unsupported_null_external_id`로 적재하지 않는다.
+- DB 컬럼과 논리 Schema의 nullable은 향후 Source 계약 확장 경계를 보존하기
+  위한 것이며 현재 importer가 null identity를 허용한다는 뜻이 아니다.
+- 같은 identity의 Policy 컬럼·지역 rule 집합·projection 값과 version이 모두
+  같을 때만 `unchanged`이고 각 `updated_at`을 바꾸지 않는다. 관계 행은
+  순서가 없는 집합으로 비교한다.
+- 같은 identity의 변경 값은 identity를 제외한 Normalized 필드를 원자적으로
+  update한다. `updated_at`은 기존 시각과 새 write instant 중 늦은 값이므로
+  시스템 시각이 역행해도 감소하지 않는다.
+- 향후 Source의 대체 ID 생성 규칙은 이 매핑에서 일반화하지 않는다.
+
+## Seed와 DB 조회 비교 기준
+
+canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 다음처럼
+비교한다.
+
+1. Seed 객체와 `NormalizedProgram.FIELD_NAMES`는 36개로 같고 Policy ORM의
+   system field 제외 컬럼은 `region_rules`를 제외한 35개다.
+2. string, integer, enum, null과 JSONB 배열·object는 값과 배열 순서를 exact
+   equality로 비교한다.
+3. `application_start`·`application_end`는 DB `date.isoformat()`과 Seed의
+   `YYYY-MM-DD`를 비교한다.
+4. `collected_at`은 문자열 offset이 아니라 UTC absolute instant를 비교한다.
+5. 빈 배열은 DB에서도 `[]`, null은 DB에서도 `NULL`이어야 한다.
+6. 다중 category와 provenance object의 누락·병합·축약이 없어야 한다.
+7. `region_rules`는 여섯 필드의 관계 집합과 DB 행을 비교하고 정책당 검색
+   문서 한 행의 field별 text와 projection version을 비교한다.
+8. 기존 공개 API 필드 집합은 기존 31개에서 `provenance`만 제외하고
+   `id`·`created_at`·`updated_at`을 더한 집합이다. 검색 5개 필드는 기존
+   목록·상세 DTO에 노출하지 않는다.
+
+구조적 집합과 변환은
+`backend/tests/test_policy_mapping_contract.py`, 실제 PostgreSQL 왕복은
+`backend/tests/test_postgresql_end_to_end.py`와
+`backend/tests/test_postgresql_policy_search_import.py`가 검증한다. Integration 소유의
+canonical Seed 전체 흐름과 거부·재실행·rollback·Repository 조회는
+`tests/integration/test_seed_to_database.py`가 검증한다.
