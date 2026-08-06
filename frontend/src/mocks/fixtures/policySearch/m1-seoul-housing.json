@@ -1,0 +1,42 @@
+{
+  "scenario": "M1",
+  "description": "q=서울 주거, region=서울특별시 — region match baseline",
+  "total": 1,
+  "interpreted_conditions": {
+    "q_raw": "서울 주거",
+    "q_clean": "서울 주거",
+    "conditions": [
+      {
+        "dimension": "region",
+        "value": "서울특별시",
+        "source": "explicit",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "keyword",
+        "value": "주거",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      }
+    ],
+    "override_fields": ["region"],
+    "uninterpreted_terms": []
+  },
+  "items": [
+    {
+      "policy_id": 1,
+      "score": 0.91,
+      "verdicts": {
+        "region": "match",
+        "age": null,
+        "status": null,
+        "category": "match"
+      },
+      "reason_codes": ["REGION_MATCH", "KEYWORD_MATCH"],
+      "message": "서울 지역 주거 조건과 일치하는 온통청년 정책입니다.",
+      "unconfirmed_conditions": []
+    }
+  ]
+}

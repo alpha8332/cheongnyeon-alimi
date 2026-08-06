@@ -1,12 +1,15 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
 interface CardProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  compact?: boolean;
+  title?: string;
 }
 
-export default function Card({ children }: CardProps) {
+export default function Card({ children, compact = false, title }: CardProps) {
   return (
-    <div style={{ border: '1px solid black', padding: '10px' }}>
+    <div className={`panel${compact ? ' panel--compact' : ''}`}>
+      {title ? <h3 className="panel-title">{title}</h3> : null}
       {children}
     </div>
   );

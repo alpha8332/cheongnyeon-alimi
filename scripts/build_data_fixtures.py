@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -53,8 +54,9 @@ MANAGED_GLOBS = (
     "data/fixtures/raw/**/*.json",
     "data/fixtures/extracted/*.json",
     "data/fixtures/normalized/*.json",
+    "data/fixtures/contracts/*.json",
     "data/fixtures/rejected/*.json",
-    "data/seeds/*.json",
+    "data/seeds/initial_programs.json",
 )
 
 
@@ -82,6 +84,7 @@ def build_outputs() -> dict[Path, bytes]:
         for result in results
         if result.program is None
     ]
+    search_contract_cases = _search_contract_cases(accepted)
 
     return {
         **raw_outputs,
@@ -97,11 +100,187 @@ def build_outputs() -> dict[Path, bytes]:
             rejected,
             pretty=True,
         ),
+        Path(
+            "data/fixtures/contracts/policy_search_region_cases.json"
+        ): _json_bytes(search_contract_cases, pretty=True),
         Path("data/seeds/initial_programs.json"): _json_bytes(
             accepted,
             pretty=True,
         ),
     }
+
+
+def _search_contract_cases(
+    programs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    youth = next(
+        program
+        for program in programs
+        if program["external_id"] == "SYN-YOUTH-001"
+    )
+    nationwide_source = next(
+        program
+        for program in programs
+        if program["external_id"] == "SYN-YOUTH-002"
+    )
+    unknown_source = next(
+        program
+        for program in programs
+        if program["external_id"] == "SYN-BOK-001"
+    )
+
+    def program_case(
+        case_id: str,
+        source: dict[str, Any],
+        *,
+        coverage_scope: str,
+        region_text: str | None,
+        regions: list[str],
+        region_rules: list[dict[str, str | None]],
+    ) -> dict[str, Any]:
+        program = deepcopy(source)
+        program["external_id"] = f"SYN-SEARCH-{case_id.upper()}"
+        program["title"] = f"합성 검색 계약 {case_id}"
+        program["summary"] = "합성 검색 계약 요약"
+        program["keywords"] = ["청년", "주거"]
+        program["life_stages"] = ["청년"]
+        program["target_groups"] = ["청년가구"]
+        program["coverage_scope"] = coverage_scope
+        program["region_text"] = region_text
+        program["regions"] = regions
+        program["region_rules"] = region_rules
+        return {"case_id": case_id, "program": program}
+
+    def rule(
+        *,
+        relation: str,
+        resolution_status: str,
+        region_scheme: str | None,
+        region_code: str | None,
+        source_code: str | None,
+        source_text: str | None,
+    ) -> dict[str, str | None]:
+        return {
+            "relation": relation,
+            "resolution_status": resolution_status,
+            "region_scheme": region_scheme,
+            "region_code": region_code,
+            "source_code": source_code,
+            "source_text": source_text,
+        }
+
+    scheme = "kr-bjd-20260803"
+    return [
+        program_case(
+            "nationwide",
+            nationwide_source,
+            coverage_scope="nationwide",
+            region_text="전국",
+            regions=["전국"],
+            region_rules=[],
+        ),
+        program_case(
+            "regional_parent",
+            youth,
+            coverage_scope="regional",
+            region_text="충청남도",
+            regions=["충청남도"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="4400000000",
+                    source_code="44000",
+                    source_text="충청남도",
+                )
+            ],
+        ),
+        program_case(
+            "regional_exact",
+            youth,
+            coverage_scope="regional",
+            region_text="천안시",
+            regions=["천안시"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="4413000000",
+                    source_code="44130",
+                    source_text="천안시",
+                )
+            ],
+        ),
+        program_case(
+            "regional_exclusion",
+            youth,
+            coverage_scope="regional",
+            region_text="충청남도, 아산시 제외",
+            regions=["충청남도"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="4400000000",
+                    source_code="44000",
+                    source_text="충청남도",
+                ),
+                rule(
+                    relation="exclude",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="4420000000",
+                    source_code="44200",
+                    source_text="아산시 제외",
+                ),
+            ],
+        ),
+        program_case(
+            "unknown",
+            unknown_source,
+            coverage_scope="unknown",
+            region_text=None,
+            regions=[],
+            region_rules=[],
+        ),
+        program_case(
+            "ambiguous",
+            unknown_source,
+            coverage_scope="unknown",
+            region_text="광주",
+            regions=[],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="ambiguous",
+                    region_scheme=None,
+                    region_code=None,
+                    source_code=None,
+                    source_text="광주",
+                )
+            ],
+        ),
+        program_case(
+            "retired_code",
+            youth,
+            coverage_scope="regional",
+            region_text="충청남도 천안군",
+            regions=["천안군"],
+            region_rules=[
+                rule(
+                    relation="include",
+                    resolution_status="matched",
+                    region_scheme=scheme,
+                    region_code="4405000000",
+                    source_code="44050",
+                    source_text="충청남도 천안군",
+                )
+            ],
+        ),
+    ]
 
 
 def write_outputs(
@@ -301,6 +480,9 @@ def _youth_items() -> list[dict[str, str]]:
             "plcyNm": "<b>합성 청년 주거 지원</b>",
             "operInstCdNm": "합성 주거기관",
             "lclsfNm": "주거",
+            "mclsfNm": "주거비 지원",
+            "plcyKywdNm": "월세,보조금",
+            "plcyExplnCn": "합성 청년 주거 정책 요약",
             "aplyYmd": "2026. 1. 1. ~ 2026. 6. 30.",
             "aplyPrdSeCd": "0057001",
             "zipCd": "서울시",
@@ -318,6 +500,9 @@ def _youth_items() -> list[dict[str, str]]:
             "plcyNm": "합성 상시 생활 지원",
             "operInstCdNm": "",
             "lclsfNm": "금융･복지･문화",
+            "mclsfNm": "생활지원",
+            "plcyKywdNm": "생활비",
+            "plcyExplnCn": "합성 상시 생활 정책 요약",
             "aplyYmd": "",
             "aplyPrdSeCd": "0057002",
             "zipCd": "전국",
@@ -335,6 +520,9 @@ def _youth_items() -> list[dict[str, str]]:
             "plcyNm": "",
             "operInstCdNm": "합성 오류기관",
             "lclsfNm": "기타",
+            "mclsfNm": "기타지원",
+            "plcyKywdNm": "합성오류",
+            "plcyExplnCn": "필수 제목이 없는 합성 정책 요약",
             "aplyYmd": "",
             "aplyPrdSeCd": "0057003",
             "zipCd": "전국",
@@ -357,6 +545,8 @@ def _bokjiro_items() -> tuple[str, str]:
             "<servNm>합성 청년 자산 지원</servNm>"
             "<jurMnofNm>합성 복지부처</jurMnofNm>"
             "<intrsThemaArray>서민금융,생활지원</intrsThemaArray>"
+            "<lifeArray>청년</lifeArray>"
+            "<trgterIndvdlArray>저소득</trgterIndvdlArray>"
             "<servDgst>합성 목록 요약</servDgst>"
             "<servDtlLink>https://fixture.invalid/bokjiro/001"
             "</servDtlLink>"
@@ -383,6 +573,10 @@ def _bokjiro_detail_xml() -> str:
         "<jurMnofNm>합성 복지부처</jurMnofNm>"
         "<tgtrDtlCn>합성 지원 대상</tgtrDtlCn>"
         "<slctCritCn>합성 선정 기준</slctCritCn>"
+        "<wlfareInfoOutlCn>합성 상세 정책 개요</wlfareInfoOutlCn>"
+        "<intrsThemaArray>주거, 서민금융</intrsThemaArray>"
+        "<lifeArray>청년</lifeArray>"
+        "<trgterIndvdlArray>저소득 청년</trgterIndvdlArray>"
         "<alwServCn>합성 상세 지원 내용</alwServCn>"
         "<servSeCode>01</servSeCode>"
         "<servSeCode>02</servSeCode>"

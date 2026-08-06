@@ -50,6 +50,12 @@ class CollectionResult:
     item_count: int
     detail_count: int
     stored_paths: tuple[Path, ...]
+    page: int | None = None
+    page_size: int | None = None
+    total_count: int | None = None
+    external_ids: tuple[str, ...] = ()
+    list_response_document_id: str | None = None
+    detail_document_ids: tuple[str, ...] = ()
 
     @property
     def raw_document_count(self) -> int:

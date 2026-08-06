@@ -12,7 +12,8 @@ from app.models.policy import Policy
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 INITIAL_REVISION = "20260728_0001"
 COLLECTION_RUN_REVISION = "20260730_0002"
-HEAD_REVISION = "20260730_0003"
+TIMESTAMP_REVISION = "20260730_0003"
+HEAD_REVISION = "20260803_0004"
 
 
 def alembic_config() -> Config:
@@ -50,6 +51,10 @@ def test_policy_timestamp_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == TIMESTAMP_REVISION
+    )
+    assert (
+        scripts.get_revision(TIMESTAMP_REVISION).down_revision
         == COLLECTION_RUN_REVISION
     )
     assert (
@@ -67,6 +72,10 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
 
     assert "CREATE TABLE policies" in sql
     assert sql.count(" JSONB NOT NULL") == 8
+    assert "ADD COLUMN keywords JSONB" in sql
+    assert "ADD COLUMN life_stages JSONB" in sql
+    assert "ADD COLUMN target_groups JSONB" in sql
+    assert "external_codes JSONB" in sql
     assert "TIMESTAMP WITH TIME ZONE" in sql
     assert "CREATE TYPE policy_application_schedule AS ENUM" in sql
     assert "CREATE TYPE policy_application_status AS ENUM" in sql
@@ -81,9 +90,27 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
         "WHERE updated_at < created_at"
     ) in sql
     assert "CONSTRAINT ck_policies_timestamp_order CHECK" in sql
+    assert "CREATE TYPE policy_coverage_scope AS ENUM" in sql
+    assert "CREATE TYPE administrative_region_level AS ENUM" in sql
+    assert "CREATE TABLE administrative_regions" in sql
+    assert "CREATE TABLE administrative_region_aliases" in sql
+    assert "CREATE TABLE policy_region_rules" in sql
+    assert "CREATE TABLE policy_search_documents" in sql
+    assert "CREATE EXTENSION IF NOT EXISTS pg_trgm" in sql
+    assert "gin (search_text gin_trgm_ops)" in sql
+    assert "CREATE CONSTRAINT TRIGGER ck_policies_region_coverage" in sql
+    assert "CREATE CONSTRAINT TRIGGER ck_administrative_regions_acyclic" in sql
 
     for column in Policy.__table__.columns:
-        assert f"\n    {column.name} " in sql
+        if column.name in {
+            "keywords",
+            "life_stages",
+            "target_groups",
+            "coverage_scope",
+        }:
+            assert f"ADD COLUMN {column.name} " in sql
+        else:
+            assert f"\n    {column.name} " in sql
 
 
 def test_upgrade_sql_matches_collection_run_contract():
@@ -116,3 +143,9 @@ def test_downgrade_sql_removes_table_indexes_and_enum_types():
     assert "DROP TYPE policy_data_quality_status" in sql
     assert "DROP TYPE policy_application_status" in sql
     assert "DROP TYPE policy_application_schedule" in sql
+    assert "DROP TABLE policy_search_documents" in sql
+    assert "DROP TABLE policy_region_rules" in sql
+    assert "DROP TABLE administrative_region_aliases" in sql
+    assert "DROP TABLE administrative_regions" in sql
+    assert "DROP TYPE policy_region_resolution_status" in sql
+    assert "DROP TYPE policy_coverage_scope" in sql

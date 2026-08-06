@@ -25,6 +25,7 @@ from app.core.database import create_db_engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.services.seed_importer import import_programs  # noqa: E402
+from collectors.normalized import NormalizedProgram  # noqa: E402
 
 
 SEED_PATH = ROOT / "data" / "seeds" / "initial_programs.json"
@@ -62,7 +63,11 @@ def _assert_public_program(
     response_item: dict[str, Any],
     seed_program: dict[str, Any],
 ) -> None:
-    expected_fields = set(seed_program) - {"provenance"}
+    expected_fields = (
+        set(seed_program)
+        - {"provenance"}
+        - NormalizedProgram.SEARCH_FIELD_NAMES
+    )
     assert set(response_item) == expected_fields | SYSTEM_FIELDS
     assert "provenance" not in response_item
 

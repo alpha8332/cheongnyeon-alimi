@@ -6,7 +6,7 @@
 - Data 검증: 완료
 - Backend 승인: 완료
 - Frontend 승인: 완료
-- 기준 Schema: `NormalizedProgram` 1.0.0
+- 기준 Schema: `NormalizedProgram` 1.1.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
 Backend·Frontend 소비 규칙을 정의한다. 실제 API 응답을 배포하는 자료가
@@ -34,7 +34,10 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 | `data/fixtures/extracted/policies.json` | Extractor 결과 | 5 |
 | `data/fixtures/normalized/programs.json` | valid·partial 결과 | 4 |
 | `data/fixtures/rejected/programs.json` | invalid와 실패 사유 | 1 |
+| `data/fixtures/contracts/policy_search_region_cases.json` | 검색 범위·지역 관계 경계 사례 | 7 |
 | `data/seeds/initial_programs.json` | canonical 개발 Seed | 4 |
+| `data/seeds/administrative_regions.json` | versioned 지역 Seed | 538 |
+| `data/seeds/administrative_region_aliases.json` | 지역 별칭 Seed | 1,080 |
 
 Normalized Fixture와 canonical Seed는 byte가 같은 JSON 배열이다. rejected는
 정상 Seed에 포함하지 않는다. 현재 Backend가 CSV importer를 요구하지 않았고
@@ -64,6 +67,11 @@ Raw Fixture는 실제 응답에서 확인한 JSON·XML 문서 역할과 필드 �
 | `SYN-BOK-002` | 복지로 | partial | 목록만 존재, category·지역 배열 비어 있음 |
 | `SYN-YOUTH-REJECTED` | 온통청년 | invalid | 필수 제목 누락과 `$.title` 오류 |
 
+검색 계약 Fixture 7건은 전국, 상위 지역, 정확 지역, 제외 지역, 지역 미확인,
+동명이인, 폐지 코드를 합성 정책과 원문 근거로 표현한다. PSF2 이후 canonical
+지역 identity는 실제 `kr-bjd-20260803` code를 사용하며 정책 내용과 Source
+응답은 계속 합성이다.
+
 partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 일부
 부족하다는 품질 상태를 보존하며, invalid만 정상 Fixture와 Seed에서
 분리한다.
@@ -72,13 +80,23 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 
 `initial_programs.json`의 root는 `NormalizedProgram` 객체 배열이다.
 
-- 모든 객체는 Schema의 31개 key를 가진다.
+- 모든 객체는 Schema의 36개 key를 가진다.
 - 선택 단일 값 없음은 `null`, 복수 값 없음은 `[]`이다.
 - enum과 `YYYY-MM-DD` 날짜는 JSON string으로 유지한다.
 - `source_id + external_id`를 source-scoped 식별 경계로 사용한다.
 - `data_quality_status`가 `valid` 또는 `partial`인 객체만 포함한다.
 - Raw document ID·역할·Hash·시각·안전 URL provenance를 그대로 보존한다.
 - 배열을 단일 string으로, null을 빈 문자열로 바꾸지 않는다.
+- 검색 문자열 배열은 값이 없으면 `[]`, 범위를 확인하지 못하면
+  `coverage_scope=unknown`, 지역 rule이 없으면 `region_rules=[]`이다.
+
+PSF4 canonical Seed는 합성 Source 원문에서 확인되는 summary·keywords와
+복지로 life stages·target groups를 채운다. 합성 온통청년의 명시적 `전국`은
+`coverage_scope=nationwide`, 그 밖에 근거가 없는 범위는 `unknown`이다.
+기존 1.0.0 입력은 compatibility adapter가 안전한 빈 배열·`unknown`만 보완하고
+검색 조건을 추정하지 않는다. Backend importer는 검색 배열·coverage,
+`region_rules` 관계와 versioned projection을 Policy와 같은 transaction에
+저장한다.
 
 ### Backend 검토 항목
 
@@ -136,9 +154,12 @@ validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한�
 Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소로 검색하고
 목록·상세 모두 기본 valid, `include_partial=true`일 때 valid·partial을
 노출한다. provenance는 DB에 보존하되 공개 Policy DTO에는 포함하지 않는다.
-Backend 02 B6의 PostgreSQL 18.4 종단 검증에서 canonical Seed 4건의 31개
-필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone instant·provenance
-손실 0건을 확인했다.
+Backend 02 B6의 PostgreSQL 18.4 종단 검증은 당시 canonical Seed 4건의 기존
+31개 필드와 ORM 값을 비교해 null·빈 배열·enum·날짜·timezone
+instant·provenance 손실 0건을 확인했다. PSF1의 1.1.0 canonical Seed는 새
+검색 필드가 안전한 기본값일 때 호환된다. PSF3는 정책 검색 컬럼과 지역·규칙·
+projection 구조의 PostgreSQL 왕복을 검증했다. PSF5는 실제 36개 입력의
+관계형 transaction·idempotency·rollback을 검증했다.
 Frontend TypeScript 타입·Mock 소비 코드는 별도 원격 브랜치에 있으나 D6
 검토에서 현재 Policy API와의 계약 차이를 확인했다. Data 영역은 해당
 Frontend 코드를 대신 수정하거나 승인하지 않으며,
@@ -159,8 +180,14 @@ uv run python -B scripts/build_data_fixtures.py --write
 uv run python -B scripts/build_data_fixtures.py --check
 ```
 
-`--check`는 외부 API와 `runtime/raw/`를 사용하지 않는다. 예상 파일의 누락,
-추가 JSON 파일과 byte 차이가 있으면 실패한다.
+`--check`는 외부 API와 `runtime/raw/`를 사용하지 않는다. 이 생성기가 소유한
+Fixture 12개와 `initial_programs.json`의 누락·추가·byte 차이가 있으면
+실패한다. 행정구역 Seed는 별도 생성기의 `--check`로 검증한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts/build_administrative_regions.py `
+  --snapshot-date 2026-08-03 --check
+```
 
 ## 출처·개인정보·재배포 검토
 
@@ -182,9 +209,9 @@ uv run python -B scripts/build_data_fixtures.py --check
 
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
-| Data | reviewed | Schema·재생성·committed Raw → Seed 종단 간 테스트 완료 |
-| Backend | approved | Backend 02 B6에서 PostgreSQL Migration → canonical Seed 4건 → Repository → API를 검증하고 31개 필드, null·빈 배열·enum·날짜·timezone instant·provenance 손실 0건을 확인 |
-| Frontend | approved | FE 2A 공개 `PolicyDto`, `/api/v1/policies`, pagination, 숫자 `id`, partial opt-in의 test·lint·build, 실제 API HTTP와 브라우저 렌더링 검증 통과 |
+| Data | reviewed | 1.1.0 Schema·legacy adapter·결정적 재생성·검색 지역 경계 Fixture 테스트 완료 |
+| Backend | reviewed | 검색 배열·coverage와 지역·규칙·projection 구조, 원자적 importer·idempotency·rollback 검증 완료 |
+| Frontend | transitional | FE 2A 공개 `PolicyDto` 계약을 유지하고 `schema_version`만 1.0.0·1.1.0 union으로 소비하며 검색 5개 필드는 공개 DTO에서 제외 |
 
 ### Frontend 초기 Mock 검토 결과 (2026-07-28)
 
@@ -212,8 +239,10 @@ pagination envelope와 숫자 `id` 목록·상세 경계를 같은 Mock contract
 구현했다. 소비 테스트 7건·lint·build, PostgreSQL 실제 API HTTP와 실제
 API 모드 브라우저 렌더링을 확인해 Frontend 소비 승인을 완료했다.
 
-Backend와 Frontend의 승인 증거가 모두 확인되어 Data 6의 기술 산출물을
-안정적인 영역 간 계약으로 확정했다.
+기존 Data 6의 31개 필드 소비 계약은 승인 상태를 유지한다. PSF4는 새 검색
+필드의 Source 값 채움과 합성 Seed 재생성을 완료했다. Backend의 배열·coverage
+저장은 PSF3, 관계·projection의 원자적 저장은 PSF5에서 완료됐다. 별도 검색
+응답 소비 승인은 후속 Slice에서 완료한다.
 
 [bokjiro-api]: https://www.data.go.kr/data/15090532/openapi.do
 [youth-api-guide]: https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide

@@ -1,13 +1,28 @@
-import React from 'react';
 import type { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'gradient';
 }
 
-export default function Button({ children, ...props }: ButtonProps) {
+export default function Button({
+  variant = 'primary',
+  className = '',
+  children,
+  ...props
+}: ButtonProps) {
+  const variantClass =
+    variant === 'gradient'
+      ? 'btn-gradient'
+      : variant === 'secondary'
+        ? 'btn-secondary'
+        : 'btn-primary';
+
   return (
-    <button type="button" {...props}>
+    <button
+      type="button"
+      className={`btn ${variantClass} ${className}`.trim()}
+      {...props}
+    >
       {children}
     </button>
   );

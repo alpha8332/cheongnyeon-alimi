@@ -1,0 +1,6490 @@
+{
+  "aliases": [
+    {
+      "alias": "가평군",
+      "kind": "official_short",
+      "region_code": "4182000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강남구",
+      "kind": "official_short",
+      "region_code": "1168000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강동구",
+      "kind": "official_short",
+      "region_code": "1174000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강릉시",
+      "kind": "official_short",
+      "region_code": "4215000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강릉시",
+      "kind": "official_short",
+      "region_code": "5115000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강북구",
+      "kind": "official_short",
+      "region_code": "1130500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강서구",
+      "kind": "official_short",
+      "region_code": "1150000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강서구",
+      "kind": "official_short",
+      "region_code": "2144000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강서구",
+      "kind": "official_short",
+      "region_code": "2644000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도",
+      "kind": "official_full",
+      "region_code": "4200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도",
+      "kind": "official_short",
+      "region_code": "4200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 강릉시",
+      "kind": "official_full",
+      "region_code": "4215000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 고성군",
+      "kind": "official_full",
+      "region_code": "4282000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 동해시",
+      "kind": "official_full",
+      "region_code": "4217000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 명주군",
+      "kind": "official_full",
+      "region_code": "4284000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 삼척군",
+      "kind": "official_full",
+      "region_code": "4285000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 삼척시",
+      "kind": "official_full",
+      "region_code": "4223000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 속초시",
+      "kind": "official_full",
+      "region_code": "4221000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 양구군",
+      "kind": "official_full",
+      "region_code": "4280000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 양양군",
+      "kind": "official_full",
+      "region_code": "4283000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 영월군",
+      "kind": "official_full",
+      "region_code": "4275000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 울진군",
+      "kind": "official_full",
+      "region_code": "4205000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 원성군",
+      "kind": "official_full",
+      "region_code": "4274000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 원주군",
+      "kind": "official_full",
+      "region_code": "4274500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 원주시",
+      "kind": "official_full",
+      "region_code": "4213000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 인제군",
+      "kind": "official_full",
+      "region_code": "4281000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 정선군",
+      "kind": "official_full",
+      "region_code": "4277000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 철원군",
+      "kind": "official_full",
+      "region_code": "4278000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 춘성군",
+      "kind": "official_full",
+      "region_code": "4271000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 춘천군",
+      "kind": "official_full",
+      "region_code": "4271500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 춘천시",
+      "kind": "official_full",
+      "region_code": "4211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 태백시",
+      "kind": "official_full",
+      "region_code": "4219000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 평창군",
+      "kind": "official_full",
+      "region_code": "4276000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 홍천군",
+      "kind": "official_full",
+      "region_code": "4272000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 화천군",
+      "kind": "official_full",
+      "region_code": "4279000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원도 횡성군",
+      "kind": "official_full",
+      "region_code": "4273000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도",
+      "kind": "official_full",
+      "region_code": "5100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도",
+      "kind": "official_short",
+      "region_code": "5100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 강릉시",
+      "kind": "official_full",
+      "region_code": "5115000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 고성군",
+      "kind": "official_full",
+      "region_code": "5182000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 동해시",
+      "kind": "official_full",
+      "region_code": "5117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 삼척시",
+      "kind": "official_full",
+      "region_code": "5123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 속초시",
+      "kind": "official_full",
+      "region_code": "5121000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 양구군",
+      "kind": "official_full",
+      "region_code": "5180000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 양양군",
+      "kind": "official_full",
+      "region_code": "5183000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 영월군",
+      "kind": "official_full",
+      "region_code": "5175000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 원주시",
+      "kind": "official_full",
+      "region_code": "5113000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 인제군",
+      "kind": "official_full",
+      "region_code": "5181000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 정선군",
+      "kind": "official_full",
+      "region_code": "5177000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 철원군",
+      "kind": "official_full",
+      "region_code": "5178000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 춘천시",
+      "kind": "official_full",
+      "region_code": "5111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 태백시",
+      "kind": "official_full",
+      "region_code": "5119000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 평창군",
+      "kind": "official_full",
+      "region_code": "5176000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 홍천군",
+      "kind": "official_full",
+      "region_code": "5172000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 화천군",
+      "kind": "official_full",
+      "region_code": "5179000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강원특별자치도 횡성군",
+      "kind": "official_full",
+      "region_code": "5173000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강진군",
+      "kind": "official_short",
+      "region_code": "1278000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강진군",
+      "kind": "official_short",
+      "region_code": "4681000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강화군",
+      "kind": "official_short",
+      "region_code": "2871000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "강화군",
+      "kind": "official_short",
+      "region_code": "4188000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "거제군",
+      "kind": "official_short",
+      "region_code": "4881000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "거제시",
+      "kind": "official_short",
+      "region_code": "4831000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "거창군",
+      "kind": "official_short",
+      "region_code": "4888000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "검단구",
+      "kind": "official_short",
+      "region_code": "2829000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도",
+      "kind": "official_full",
+      "region_code": "4100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도",
+      "kind": "official_short",
+      "region_code": "4100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 가평군",
+      "kind": "official_full",
+      "region_code": "4182000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 강화군",
+      "kind": "official_full",
+      "region_code": "4188000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 고양군",
+      "kind": "official_full",
+      "region_code": "4178000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 고양시",
+      "kind": "official_full",
+      "region_code": "4128000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 고양시 덕양구",
+      "kind": "official_full",
+      "region_code": "4128100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 고양시 일산구",
+      "kind": "official_full",
+      "region_code": "4128300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 고양시 일산동구",
+      "kind": "official_full",
+      "region_code": "4128500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 고양시 일산서구",
+      "kind": "official_full",
+      "region_code": "4128700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 과천시",
+      "kind": "official_full",
+      "region_code": "4129000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 광명시",
+      "kind": "official_full",
+      "region_code": "4121000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 광주군",
+      "kind": "official_full",
+      "region_code": "4179000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 광주시",
+      "kind": "official_full",
+      "region_code": "4161000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 구리시",
+      "kind": "official_full",
+      "region_code": "4131000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 군포시",
+      "kind": "official_full",
+      "region_code": "4141000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 김포군",
+      "kind": "official_full",
+      "region_code": "4187000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 김포시",
+      "kind": "official_full",
+      "region_code": "4157000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 남양주군",
+      "kind": "official_full",
+      "region_code": "4172000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 남양주시",
+      "kind": "official_full",
+      "region_code": "4136000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 동두천시",
+      "kind": "official_full",
+      "region_code": "4125000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 미금시",
+      "kind": "official_full",
+      "region_code": "4135000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천군",
+      "kind": "official_full",
+      "region_code": "4105000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시",
+      "kind": "official_full",
+      "region_code": "4119000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 남구",
+      "kind": "official_full",
+      "region_code": "4119300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 소사구",
+      "kind": "official_full",
+      "region_code": "4119400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 소사구",
+      "kind": "official_full",
+      "region_code": "4119700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 오정구",
+      "kind": "official_full",
+      "region_code": "4119600000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 오정구",
+      "kind": "official_full",
+      "region_code": "4119900000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 원미구",
+      "kind": "official_full",
+      "region_code": "4119200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 원미구",
+      "kind": "official_full",
+      "region_code": "4119500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 부천시 중구",
+      "kind": "official_full",
+      "region_code": "4119100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 성남시",
+      "kind": "official_full",
+      "region_code": "4113000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 성남시 분당구",
+      "kind": "official_full",
+      "region_code": "4113500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 성남시 수정구",
+      "kind": "official_full",
+      "region_code": "4113100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 성남시 중원구",
+      "kind": "official_full",
+      "region_code": "4113300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 송탄시",
+      "kind": "official_full",
+      "region_code": "4123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 수원시",
+      "kind": "official_full",
+      "region_code": "4111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 수원시 권선구",
+      "kind": "official_full",
+      "region_code": "4111300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 수원시 영통구",
+      "kind": "official_full",
+      "region_code": "4111700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 수원시 장안구",
+      "kind": "official_full",
+      "region_code": "4111100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 수원시 팔달구",
+      "kind": "official_full",
+      "region_code": "4111500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 시흥군",
+      "kind": "official_full",
+      "region_code": "4176000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 시흥시",
+      "kind": "official_full",
+      "region_code": "4139000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안산시",
+      "kind": "official_full",
+      "region_code": "4127000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안산시 단원구",
+      "kind": "official_full",
+      "region_code": "4127300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안산시 상록구",
+      "kind": "official_full",
+      "region_code": "4127100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안성군",
+      "kind": "official_full",
+      "region_code": "4186000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안성시",
+      "kind": "official_full",
+      "region_code": "4155000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안양시",
+      "kind": "official_full",
+      "region_code": "4117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안양시 동안구",
+      "kind": "official_full",
+      "region_code": "4117300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 안양시 만안구",
+      "kind": "official_full",
+      "region_code": "4117100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 양주군",
+      "kind": "official_full",
+      "region_code": "4171000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 양주시",
+      "kind": "official_full",
+      "region_code": "4163000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 양평군",
+      "kind": "official_full",
+      "region_code": "4183000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 여주군",
+      "kind": "official_full",
+      "region_code": "4173000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 여주시",
+      "kind": "official_full",
+      "region_code": "4167000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 연천군",
+      "kind": "official_full",
+      "region_code": "4180000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 오산시",
+      "kind": "official_full",
+      "region_code": "4137000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 옹진군",
+      "kind": "official_full",
+      "region_code": "4189000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 용인군",
+      "kind": "official_full",
+      "region_code": "4185000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 용인시",
+      "kind": "official_full",
+      "region_code": "4146000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 용인시 기흥구",
+      "kind": "official_full",
+      "region_code": "4146300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 용인시 수지구",
+      "kind": "official_full",
+      "region_code": "4146500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 용인시 처인구",
+      "kind": "official_full",
+      "region_code": "4146100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 의왕시",
+      "kind": "official_full",
+      "region_code": "4143000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 의정부시",
+      "kind": "official_full",
+      "region_code": "4115000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 이천군",
+      "kind": "official_full",
+      "region_code": "4184000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 이천시",
+      "kind": "official_full",
+      "region_code": "4150000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 인천시",
+      "kind": "official_full",
+      "region_code": "4101000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 인천시 남구",
+      "kind": "official_full",
+      "region_code": "4101300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 인천시 동구",
+      "kind": "official_full",
+      "region_code": "4101200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 인천시 북구",
+      "kind": "official_full",
+      "region_code": "4101400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 인천시 중구",
+      "kind": "official_full",
+      "region_code": "4101100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 파주군",
+      "kind": "official_full",
+      "region_code": "4177000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 파주시",
+      "kind": "official_full",
+      "region_code": "4148000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 평택군",
+      "kind": "official_full",
+      "region_code": "4174000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 평택시",
+      "kind": "official_full",
+      "region_code": "4122000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 평택시",
+      "kind": "official_full",
+      "region_code": "4133000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 포천군",
+      "kind": "official_full",
+      "region_code": "4181000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 포천시",
+      "kind": "official_full",
+      "region_code": "4165000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 하남시",
+      "kind": "official_full",
+      "region_code": "4145000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 화성군",
+      "kind": "official_full",
+      "region_code": "4175000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 화성시",
+      "kind": "official_full",
+      "region_code": "4159000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 화성시 동탄구",
+      "kind": "official_full",
+      "region_code": "4159700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 화성시 만세구",
+      "kind": "official_full",
+      "region_code": "4159100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 화성시 병점구",
+      "kind": "official_full",
+      "region_code": "4159500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경기도 화성시 효행구",
+      "kind": "official_full",
+      "region_code": "4159300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경산군",
+      "kind": "official_short",
+      "region_code": "4781000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경산시",
+      "kind": "official_short",
+      "region_code": "4729000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도",
+      "kind": "official_full",
+      "region_code": "4800000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도",
+      "kind": "official_short",
+      "region_code": "4800000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 거제군",
+      "kind": "official_full",
+      "region_code": "4881000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 거제시",
+      "kind": "official_full",
+      "region_code": "4831000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 거창군",
+      "kind": "official_full",
+      "region_code": "4888000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 고성군",
+      "kind": "official_full",
+      "region_code": "4882000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 김해군",
+      "kind": "official_full",
+      "region_code": "4878000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 김해시",
+      "kind": "official_full",
+      "region_code": "4825000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 남해군",
+      "kind": "official_full",
+      "region_code": "4884000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 동래군",
+      "kind": "official_full",
+      "region_code": "4807000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 마산시",
+      "kind": "official_full",
+      "region_code": "4815000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 마산시",
+      "kind": "official_full",
+      "region_code": "4816000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 마산시 합포구",
+      "kind": "official_full",
+      "region_code": "4815100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 마산시 회원구",
+      "kind": "official_full",
+      "region_code": "4815300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 밀양군",
+      "kind": "official_full",
+      "region_code": "4875000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 밀양시",
+      "kind": "official_full",
+      "region_code": "4827000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시",
+      "kind": "official_full",
+      "region_code": "4801000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시 동구",
+      "kind": "official_full",
+      "region_code": "4801300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시 동래구",
+      "kind": "official_full",
+      "region_code": "4801600000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시 부산진",
+      "kind": "official_full",
+      "region_code": "4801500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시 서구",
+      "kind": "official_full",
+      "region_code": "4801200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시 영도구",
+      "kind": "official_full",
+      "region_code": "4801400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 부산시 중구",
+      "kind": "official_full",
+      "region_code": "4801100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 사천군",
+      "kind": "official_full",
+      "region_code": "4883000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 사천시",
+      "kind": "official_full",
+      "region_code": "4824000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 산청군",
+      "kind": "official_full",
+      "region_code": "4886000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 삼천포시",
+      "kind": "official_full",
+      "region_code": "4823000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 양산군",
+      "kind": "official_full",
+      "region_code": "4876000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 양산시",
+      "kind": "official_full",
+      "region_code": "4833000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산군",
+      "kind": "official_full",
+      "region_code": "4806000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산군",
+      "kind": "official_full",
+      "region_code": "4877500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산시",
+      "kind": "official_full",
+      "region_code": "4813000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산시 남구",
+      "kind": "official_full",
+      "region_code": "4813300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산시 동구",
+      "kind": "official_full",
+      "region_code": "4813500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산시 울주구",
+      "kind": "official_full",
+      "region_code": "4813700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울산시 중구",
+      "kind": "official_full",
+      "region_code": "4813100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 울주군",
+      "kind": "official_full",
+      "region_code": "4877000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 의령군",
+      "kind": "official_full",
+      "region_code": "4872000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 의창군",
+      "kind": "official_full",
+      "region_code": "4879000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 장승포시",
+      "kind": "official_full",
+      "region_code": "4829000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 진양군",
+      "kind": "official_full",
+      "region_code": "4871000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 진주시",
+      "kind": "official_full",
+      "region_code": "4817000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 진해시",
+      "kind": "official_full",
+      "region_code": "4819000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창녕군",
+      "kind": "official_full",
+      "region_code": "4874000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원군",
+      "kind": "official_full",
+      "region_code": "4805000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원군",
+      "kind": "official_full",
+      "region_code": "4879500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시",
+      "kind": "official_full",
+      "region_code": "4811000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시",
+      "kind": "official_full",
+      "region_code": "4812000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시 마산합포구",
+      "kind": "official_full",
+      "region_code": "4812500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시 마산회원구",
+      "kind": "official_full",
+      "region_code": "4812700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시 성산구",
+      "kind": "official_full",
+      "region_code": "4812300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시 의창구",
+      "kind": "official_full",
+      "region_code": "4812100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 창원시 진해구",
+      "kind": "official_full",
+      "region_code": "4812900000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 충무시",
+      "kind": "official_full",
+      "region_code": "4821000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 통영군",
+      "kind": "official_full",
+      "region_code": "4880000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 통영시",
+      "kind": "official_full",
+      "region_code": "4822000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 하동군",
+      "kind": "official_full",
+      "region_code": "4885000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 함안군",
+      "kind": "official_full",
+      "region_code": "4873000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 함양군",
+      "kind": "official_full",
+      "region_code": "4887000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상남도 합천군",
+      "kind": "official_full",
+      "region_code": "4889000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도",
+      "kind": "official_full",
+      "region_code": "4700000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도",
+      "kind": "official_short",
+      "region_code": "4700000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 경산군",
+      "kind": "official_full",
+      "region_code": "4781000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 경산시",
+      "kind": "official_full",
+      "region_code": "4729000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 경주군",
+      "kind": "official_full",
+      "region_code": "4779500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 경주시",
+      "kind": "official_full",
+      "region_code": "4713000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 고령군",
+      "kind": "official_full",
+      "region_code": "4783000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 구미시",
+      "kind": "official_full",
+      "region_code": "4719000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 군위군",
+      "kind": "official_full",
+      "region_code": "4772000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 금릉군",
+      "kind": "official_full",
+      "region_code": "4786000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 김천시",
+      "kind": "official_full",
+      "region_code": "4715000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 달성군",
+      "kind": "official_full",
+      "region_code": "4771000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시",
+      "kind": "official_full",
+      "region_code": "4701000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시 남구",
+      "kind": "official_full",
+      "region_code": "4701400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시 북구",
+      "kind": "official_full",
+      "region_code": "4701500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시 서구",
+      "kind": "official_full",
+      "region_code": "4701300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시 수성구",
+      "kind": "official_full",
+      "region_code": "4701600000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시 중구",
+      "kind": "official_full",
+      "region_code": "4701100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 대구시 중구",
+      "kind": "official_full",
+      "region_code": "4701200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 문경군",
+      "kind": "official_full",
+      "region_code": "4789000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 문경시",
+      "kind": "official_full",
+      "region_code": "4728000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 봉화군",
+      "kind": "official_full",
+      "region_code": "4792000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 상주군",
+      "kind": "official_full",
+      "region_code": "4788000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 상주시",
+      "kind": "official_full",
+      "region_code": "4725000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 선산군",
+      "kind": "official_full",
+      "region_code": "4787000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 성주군",
+      "kind": "official_full",
+      "region_code": "4784000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 신안동시",
+      "kind": "official_full",
+      "region_code": "4702000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 안동군",
+      "kind": "official_full",
+      "region_code": "4774000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 안동시",
+      "kind": "official_full",
+      "region_code": "4717000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영덕군",
+      "kind": "official_full",
+      "region_code": "4777000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영양군",
+      "kind": "official_full",
+      "region_code": "4776000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영일군",
+      "kind": "official_full",
+      "region_code": "4778000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영주군",
+      "kind": "official_full",
+      "region_code": "4705000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영주시",
+      "kind": "official_full",
+      "region_code": "4721000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영천군",
+      "kind": "official_full",
+      "region_code": "4780000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영천시",
+      "kind": "official_full",
+      "region_code": "4723000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 영풍군",
+      "kind": "official_full",
+      "region_code": "4791000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 예천군",
+      "kind": "official_full",
+      "region_code": "4790000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 울릉군",
+      "kind": "official_full",
+      "region_code": "4794000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 울진군",
+      "kind": "official_full",
+      "region_code": "4793000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 월성군",
+      "kind": "official_full",
+      "region_code": "4779000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 의성군",
+      "kind": "official_full",
+      "region_code": "4773000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 점촌시",
+      "kind": "official_full",
+      "region_code": "4727000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 청도군",
+      "kind": "official_full",
+      "region_code": "4782000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 청송군",
+      "kind": "official_full",
+      "region_code": "4775000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 칠곡군",
+      "kind": "official_full",
+      "region_code": "4785000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 포항시",
+      "kind": "official_full",
+      "region_code": "4711000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 포항시 남구",
+      "kind": "official_full",
+      "region_code": "4711100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경상북도 포항시 북구",
+      "kind": "official_full",
+      "region_code": "4711300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경주군",
+      "kind": "official_short",
+      "region_code": "4779500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "경주시",
+      "kind": "official_short",
+      "region_code": "4713000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "계룡시",
+      "kind": "official_short",
+      "region_code": "4425000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "계양구",
+      "kind": "official_short",
+      "region_code": "2824500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고령군",
+      "kind": "official_short",
+      "region_code": "4783000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고성군",
+      "kind": "official_short",
+      "region_code": "4282000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고성군",
+      "kind": "official_short",
+      "region_code": "4882000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고성군",
+      "kind": "official_short",
+      "region_code": "5182000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고양군",
+      "kind": "official_short",
+      "region_code": "4178000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고양시",
+      "kind": "official_short",
+      "region_code": "4128000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고양시 일산구",
+      "kind": "official_short",
+      "region_code": "4128300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고창군",
+      "kind": "official_short",
+      "region_code": "4579000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고창군",
+      "kind": "official_short",
+      "region_code": "5279000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고흥군",
+      "kind": "official_short",
+      "region_code": "1274000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "고흥군",
+      "kind": "official_short",
+      "region_code": "4677000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "곡성군",
+      "kind": "official_short",
+      "region_code": "1272000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "곡성군",
+      "kind": "official_short",
+      "region_code": "4672000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "공주군",
+      "kind": "official_short",
+      "region_code": "4474000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "공주시",
+      "kind": "official_short",
+      "region_code": "4415000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "과천시",
+      "kind": "official_short",
+      "region_code": "4129000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "관악구",
+      "kind": "official_short",
+      "region_code": "1162000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광명시",
+      "kind": "official_short",
+      "region_code": "4121000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광산구",
+      "kind": "official_short",
+      "region_code": "1233000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광산구",
+      "kind": "official_short",
+      "region_code": "2420000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광산구",
+      "kind": "official_short",
+      "region_code": "2920000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광산군",
+      "kind": "official_short",
+      "region_code": "4605000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광양군",
+      "kind": "official_short",
+      "region_code": "4674000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광양시",
+      "kind": "official_short",
+      "region_code": "1219000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광양시",
+      "kind": "official_short",
+      "region_code": "4623000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시",
+      "kind": "official_full",
+      "region_code": "2900000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시",
+      "kind": "official_short",
+      "region_code": "2900000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시 광산구",
+      "kind": "official_full",
+      "region_code": "2920000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시 남구",
+      "kind": "official_full",
+      "region_code": "2915500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시 동구",
+      "kind": "official_full",
+      "region_code": "2911000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시 북구",
+      "kind": "official_full",
+      "region_code": "2917000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주광역시 서구",
+      "kind": "official_full",
+      "region_code": "2914000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주군",
+      "kind": "official_short",
+      "region_code": "4179000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주시",
+      "kind": "official_short",
+      "region_code": "4161000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주시",
+      "kind": "official_short",
+      "region_code": "4601000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주시 동구",
+      "kind": "official_short",
+      "region_code": "4601100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주시 북구",
+      "kind": "official_short",
+      "region_code": "4601300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주시 서구",
+      "kind": "official_short",
+      "region_code": "4601200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주직할시",
+      "kind": "official_full",
+      "region_code": "2400000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주직할시",
+      "kind": "official_short",
+      "region_code": "2400000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주직할시 광산구",
+      "kind": "official_full",
+      "region_code": "2420000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주직할시 동구",
+      "kind": "official_full",
+      "region_code": "2411000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주직할시 북구",
+      "kind": "official_full",
+      "region_code": "2417000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광주직할시 서구",
+      "kind": "official_full",
+      "region_code": "2414000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "광진구",
+      "kind": "official_short",
+      "region_code": "1121500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "괴산군",
+      "kind": "official_short",
+      "region_code": "4376000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "구례군",
+      "kind": "official_short",
+      "region_code": "1273000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "구례군",
+      "kind": "official_short",
+      "region_code": "4673000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "구로구",
+      "kind": "official_short",
+      "region_code": "1153000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "구리시",
+      "kind": "official_short",
+      "region_code": "4131000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "구미시",
+      "kind": "official_short",
+      "region_code": "4719000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "군산시",
+      "kind": "official_short",
+      "region_code": "4513000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "군산시",
+      "kind": "official_short",
+      "region_code": "5213000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "군위군",
+      "kind": "official_short",
+      "region_code": "2772000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "군위군",
+      "kind": "official_short",
+      "region_code": "4772000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "군포시",
+      "kind": "official_short",
+      "region_code": "4141000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "권선구",
+      "kind": "official_short",
+      "region_code": "4111300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금릉군",
+      "kind": "official_short",
+      "region_code": "4786000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금산군",
+      "kind": "official_short",
+      "region_code": "4471000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금산군",
+      "kind": "official_short",
+      "region_code": "4505000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금성시",
+      "kind": "official_short",
+      "region_code": "4602000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금정구",
+      "kind": "official_short",
+      "region_code": "2141000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금정구",
+      "kind": "official_short",
+      "region_code": "2641000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "금천구",
+      "kind": "official_short",
+      "region_code": "1154500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "기장군",
+      "kind": "official_short",
+      "region_code": "2671000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "기흥구",
+      "kind": "official_short",
+      "region_code": "4146300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김제군",
+      "kind": "official_short",
+      "region_code": "4581000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김제시",
+      "kind": "official_short",
+      "region_code": "4521000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김제시",
+      "kind": "official_short",
+      "region_code": "5221000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김천시",
+      "kind": "official_short",
+      "region_code": "4715000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김포군",
+      "kind": "official_short",
+      "region_code": "4187000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김포시",
+      "kind": "official_short",
+      "region_code": "4157000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김해군",
+      "kind": "official_short",
+      "region_code": "4878000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "김해시",
+      "kind": "official_short",
+      "region_code": "4825000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "나주군",
+      "kind": "official_short",
+      "region_code": "4685000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "나주시",
+      "kind": "official_short",
+      "region_code": "1217000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "나주시",
+      "kind": "official_short",
+      "region_code": "4617000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "1227000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2129000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2220000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2317000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2629000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2720000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2817000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "2915500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "3114000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남구",
+      "kind": "official_short",
+      "region_code": "4711100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남동구",
+      "kind": "official_short",
+      "region_code": "2320000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남동구",
+      "kind": "official_short",
+      "region_code": "2820000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남양주군",
+      "kind": "official_short",
+      "region_code": "4172000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남양주시",
+      "kind": "official_short",
+      "region_code": "4136000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남원군",
+      "kind": "official_short",
+      "region_code": "4576000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남원시",
+      "kind": "official_short",
+      "region_code": "4519000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남원시",
+      "kind": "official_short",
+      "region_code": "5219000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남제주군",
+      "kind": "official_short",
+      "region_code": "4972000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "남해군",
+      "kind": "official_short",
+      "region_code": "4884000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "노원구",
+      "kind": "official_short",
+      "region_code": "1135000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "논산군",
+      "kind": "official_short",
+      "region_code": "4475000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "논산시",
+      "kind": "official_short",
+      "region_code": "4423000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "단양군",
+      "kind": "official_short",
+      "region_code": "4380000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "단원구",
+      "kind": "official_short",
+      "region_code": "4127300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "달서구",
+      "kind": "official_short",
+      "region_code": "2229000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "달서구",
+      "kind": "official_short",
+      "region_code": "2729000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "달성군",
+      "kind": "official_short",
+      "region_code": "2771000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "달성군",
+      "kind": "official_short",
+      "region_code": "4771000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "담양군",
+      "kind": "official_short",
+      "region_code": "1271000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "담양군",
+      "kind": "official_short",
+      "region_code": "4671000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "당진군",
+      "kind": "official_short",
+      "region_code": "4483000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "당진시",
+      "kind": "official_short",
+      "region_code": "4427000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시",
+      "kind": "official_full",
+      "region_code": "2700000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시",
+      "kind": "official_short",
+      "region_code": "2700000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 군위군",
+      "kind": "official_full",
+      "region_code": "2772000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 남구",
+      "kind": "official_full",
+      "region_code": "2720000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 달서구",
+      "kind": "official_full",
+      "region_code": "2729000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 달성군",
+      "kind": "official_full",
+      "region_code": "2771000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 동구",
+      "kind": "official_full",
+      "region_code": "2714000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 북구",
+      "kind": "official_full",
+      "region_code": "2723000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 서구",
+      "kind": "official_full",
+      "region_code": "2717000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 수성구",
+      "kind": "official_full",
+      "region_code": "2726000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구광역시 중구",
+      "kind": "official_full",
+      "region_code": "2711000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시",
+      "kind": "official_short",
+      "region_code": "4701000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시 남구",
+      "kind": "official_short",
+      "region_code": "4701400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시 북구",
+      "kind": "official_short",
+      "region_code": "4701500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시 서구",
+      "kind": "official_short",
+      "region_code": "4701300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시 수성구",
+      "kind": "official_short",
+      "region_code": "4701600000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시 중구",
+      "kind": "official_short",
+      "region_code": "4701100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구시 중구",
+      "kind": "official_short",
+      "region_code": "4701200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시",
+      "kind": "official_full",
+      "region_code": "2200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시",
+      "kind": "official_short",
+      "region_code": "2200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 남구",
+      "kind": "official_full",
+      "region_code": "2220000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 달서구",
+      "kind": "official_full",
+      "region_code": "2229000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 동구",
+      "kind": "official_full",
+      "region_code": "2214000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 북구",
+      "kind": "official_full",
+      "region_code": "2223000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 서구",
+      "kind": "official_full",
+      "region_code": "2217000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 수성구",
+      "kind": "official_full",
+      "region_code": "2226000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대구직할시 중구",
+      "kind": "official_full",
+      "region_code": "2211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대덕구",
+      "kind": "official_short",
+      "region_code": "2523000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대덕구",
+      "kind": "official_short",
+      "region_code": "3023000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대덕군",
+      "kind": "official_short",
+      "region_code": "4472000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시",
+      "kind": "official_full",
+      "region_code": "3000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시",
+      "kind": "official_short",
+      "region_code": "3000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시 대덕구",
+      "kind": "official_full",
+      "region_code": "3023000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시 동구",
+      "kind": "official_full",
+      "region_code": "3011000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시 서구",
+      "kind": "official_full",
+      "region_code": "3017000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시 유성구",
+      "kind": "official_full",
+      "region_code": "3020000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전광역시 중구",
+      "kind": "official_full",
+      "region_code": "3014000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전시",
+      "kind": "official_short",
+      "region_code": "4411000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전시 동구",
+      "kind": "official_short",
+      "region_code": "4411100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전시 서구",
+      "kind": "official_short",
+      "region_code": "4411500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전시 중구",
+      "kind": "official_short",
+      "region_code": "4411300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시",
+      "kind": "official_full",
+      "region_code": "2500000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시",
+      "kind": "official_short",
+      "region_code": "2500000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시 대덕구",
+      "kind": "official_full",
+      "region_code": "2523000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시 동구",
+      "kind": "official_full",
+      "region_code": "2511000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시 서구",
+      "kind": "official_full",
+      "region_code": "2517000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시 유성구",
+      "kind": "official_full",
+      "region_code": "2520000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대전직할시 중구",
+      "kind": "official_full",
+      "region_code": "2514000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대천시",
+      "kind": "official_short",
+      "region_code": "4417000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대한민국",
+      "kind": "curated",
+      "region_code": "0000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대한민국",
+      "kind": "official_full",
+      "region_code": "0000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "대한민국",
+      "kind": "official_short",
+      "region_code": "0000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "덕양구",
+      "kind": "official_short",
+      "region_code": "4128100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "덕진구",
+      "kind": "official_short",
+      "region_code": "4511300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "도봉구",
+      "kind": "official_short",
+      "region_code": "1132000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동광양시",
+      "kind": "official_short",
+      "region_code": "4621000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "1221000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2214000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2314000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2411000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2511000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2617000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2714000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2814000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "2911000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "3011000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동구",
+      "kind": "official_short",
+      "region_code": "3117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동남구",
+      "kind": "official_short",
+      "region_code": "4413100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동대문구",
+      "kind": "official_short",
+      "region_code": "1123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동두천시",
+      "kind": "official_short",
+      "region_code": "4125000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동래구",
+      "kind": "official_short",
+      "region_code": "2126000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동래구",
+      "kind": "official_short",
+      "region_code": "2626000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동래군",
+      "kind": "official_short",
+      "region_code": "4807000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동안구",
+      "kind": "official_short",
+      "region_code": "4117300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동작구",
+      "kind": "official_short",
+      "region_code": "1159000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동탄구",
+      "kind": "official_short",
+      "region_code": "4159700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동해시",
+      "kind": "official_short",
+      "region_code": "4217000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "동해시",
+      "kind": "official_short",
+      "region_code": "5117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마산시",
+      "kind": "official_short",
+      "region_code": "4815000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마산시",
+      "kind": "official_short",
+      "region_code": "4816000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마산시 합포구",
+      "kind": "official_short",
+      "region_code": "4815100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마산시 회원구",
+      "kind": "official_short",
+      "region_code": "4815300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마산합포구",
+      "kind": "official_short",
+      "region_code": "4812500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마산회원구",
+      "kind": "official_short",
+      "region_code": "4812700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "마포구",
+      "kind": "official_short",
+      "region_code": "1144000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "만세구",
+      "kind": "official_short",
+      "region_code": "4159100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "만안구",
+      "kind": "official_short",
+      "region_code": "4117100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "명주군",
+      "kind": "official_short",
+      "region_code": "4284000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "목포시",
+      "kind": "official_short",
+      "region_code": "1211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "목포시",
+      "kind": "official_short",
+      "region_code": "4611000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "무안군",
+      "kind": "official_short",
+      "region_code": "1281000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "무안군",
+      "kind": "official_short",
+      "region_code": "4684000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "무주군",
+      "kind": "official_short",
+      "region_code": "4573000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "무주군",
+      "kind": "official_short",
+      "region_code": "5273000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "문경군",
+      "kind": "official_short",
+      "region_code": "4789000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "문경시",
+      "kind": "official_short",
+      "region_code": "4728000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "미금시",
+      "kind": "official_short",
+      "region_code": "4135000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "미추홀구",
+      "kind": "official_short",
+      "region_code": "2817700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "밀양군",
+      "kind": "official_short",
+      "region_code": "4875000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "밀양시",
+      "kind": "official_short",
+      "region_code": "4827000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "병점구",
+      "kind": "official_short",
+      "region_code": "4159500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "보령군",
+      "kind": "official_short",
+      "region_code": "4478000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "보령시",
+      "kind": "official_short",
+      "region_code": "4418000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "보성군",
+      "kind": "official_short",
+      "region_code": "1275000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "보성군",
+      "kind": "official_short",
+      "region_code": "4678000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "보은군",
+      "kind": "official_short",
+      "region_code": "4372000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "봉화군",
+      "kind": "official_short",
+      "region_code": "4792000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시",
+      "kind": "official_full",
+      "region_code": "2600000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시",
+      "kind": "official_short",
+      "region_code": "2600000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 강서구",
+      "kind": "official_full",
+      "region_code": "2644000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 금정구",
+      "kind": "official_full",
+      "region_code": "2641000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 기장군",
+      "kind": "official_full",
+      "region_code": "2671000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 남구",
+      "kind": "official_full",
+      "region_code": "2629000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 동구",
+      "kind": "official_full",
+      "region_code": "2617000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 동래구",
+      "kind": "official_full",
+      "region_code": "2626000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 부산진구",
+      "kind": "official_full",
+      "region_code": "2623000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 북구",
+      "kind": "official_full",
+      "region_code": "2632000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 사상구",
+      "kind": "official_full",
+      "region_code": "2653000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 사하구",
+      "kind": "official_full",
+      "region_code": "2638000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 서구",
+      "kind": "official_full",
+      "region_code": "2614000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 수영구",
+      "kind": "official_full",
+      "region_code": "2650000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 연제구",
+      "kind": "official_full",
+      "region_code": "2647000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 영도구",
+      "kind": "official_full",
+      "region_code": "2620000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 중구",
+      "kind": "official_full",
+      "region_code": "2611000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산광역시 해운대구",
+      "kind": "official_full",
+      "region_code": "2635000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시",
+      "kind": "official_short",
+      "region_code": "4801000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시 동구",
+      "kind": "official_short",
+      "region_code": "4801300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시 동래구",
+      "kind": "official_short",
+      "region_code": "4801600000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시 부산진",
+      "kind": "official_short",
+      "region_code": "4801500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시 서구",
+      "kind": "official_short",
+      "region_code": "4801200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시 영도구",
+      "kind": "official_short",
+      "region_code": "4801400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산시 중구",
+      "kind": "official_short",
+      "region_code": "4801100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시",
+      "kind": "official_full",
+      "region_code": "2100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시",
+      "kind": "official_short",
+      "region_code": "2100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 강서구",
+      "kind": "official_full",
+      "region_code": "2144000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 금정구",
+      "kind": "official_full",
+      "region_code": "2141000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 남구",
+      "kind": "official_full",
+      "region_code": "2129000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 동구",
+      "kind": "official_full",
+      "region_code": "2117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 동래구",
+      "kind": "official_full",
+      "region_code": "2126000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 부산진구",
+      "kind": "official_full",
+      "region_code": "2123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 북구",
+      "kind": "official_full",
+      "region_code": "2132000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 사하구",
+      "kind": "official_full",
+      "region_code": "2138000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 서구",
+      "kind": "official_full",
+      "region_code": "2114000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 영도구",
+      "kind": "official_full",
+      "region_code": "2120000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 중구",
+      "kind": "official_full",
+      "region_code": "2111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산직할시 해운대구",
+      "kind": "official_full",
+      "region_code": "2135000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산진구",
+      "kind": "official_short",
+      "region_code": "2123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부산진구",
+      "kind": "official_short",
+      "region_code": "2623000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부안군",
+      "kind": "official_short",
+      "region_code": "4580000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부안군",
+      "kind": "official_short",
+      "region_code": "5280000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부여군",
+      "kind": "official_short",
+      "region_code": "4476000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천군",
+      "kind": "official_short",
+      "region_code": "4105000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시",
+      "kind": "official_short",
+      "region_code": "4119000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 남구",
+      "kind": "official_short",
+      "region_code": "4119300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 소사구",
+      "kind": "official_short",
+      "region_code": "4119400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 소사구",
+      "kind": "official_short",
+      "region_code": "4119700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 오정구",
+      "kind": "official_short",
+      "region_code": "4119600000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 오정구",
+      "kind": "official_short",
+      "region_code": "4119900000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 원미구",
+      "kind": "official_short",
+      "region_code": "4119200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 원미구",
+      "kind": "official_short",
+      "region_code": "4119500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부천시 중구",
+      "kind": "official_short",
+      "region_code": "4119100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "부평구",
+      "kind": "official_short",
+      "region_code": "2823700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "1230000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2132000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2223000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2323000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2417000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2632000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2723000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2823000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "2917000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "3120000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북구",
+      "kind": "official_short",
+      "region_code": "4711300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "북제주군",
+      "kind": "official_short",
+      "region_code": "4971000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "분당구",
+      "kind": "official_short",
+      "region_code": "4113500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "사상구",
+      "kind": "official_short",
+      "region_code": "2653000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "사천군",
+      "kind": "official_short",
+      "region_code": "4883000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "사천시",
+      "kind": "official_short",
+      "region_code": "4824000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "사하구",
+      "kind": "official_short",
+      "region_code": "2138000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "사하구",
+      "kind": "official_short",
+      "region_code": "2638000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "산청군",
+      "kind": "official_short",
+      "region_code": "4886000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "삼척군",
+      "kind": "official_short",
+      "region_code": "4285000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "삼척시",
+      "kind": "official_short",
+      "region_code": "4223000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "삼척시",
+      "kind": "official_short",
+      "region_code": "5123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "삼천포시",
+      "kind": "official_short",
+      "region_code": "4823000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "상당구",
+      "kind": "official_short",
+      "region_code": "4311100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "상록구",
+      "kind": "official_short",
+      "region_code": "4127100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "상주군",
+      "kind": "official_short",
+      "region_code": "4788000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "상주시",
+      "kind": "official_short",
+      "region_code": "4725000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "1224000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2114000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2217000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2326000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2414000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2517000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2614000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2717000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2826000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "2914000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서구",
+      "kind": "official_short",
+      "region_code": "3017000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서귀포시",
+      "kind": "official_short",
+      "region_code": "4913000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서귀포시",
+      "kind": "official_short",
+      "region_code": "5013000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서대문구",
+      "kind": "official_short",
+      "region_code": "1141000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서북구",
+      "kind": "official_short",
+      "region_code": "4413300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서산군",
+      "kind": "official_short",
+      "region_code": "4482000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서산시",
+      "kind": "official_short",
+      "region_code": "4421000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시",
+      "kind": "official_full",
+      "region_code": "1100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시",
+      "kind": "official_short",
+      "region_code": "1100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 강남구",
+      "kind": "official_full",
+      "region_code": "1168000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 강동구",
+      "kind": "official_full",
+      "region_code": "1174000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 강북구",
+      "kind": "official_full",
+      "region_code": "1130500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 강서구",
+      "kind": "official_full",
+      "region_code": "1150000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 관악구",
+      "kind": "official_full",
+      "region_code": "1162000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 광진구",
+      "kind": "official_full",
+      "region_code": "1121500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 구로구",
+      "kind": "official_full",
+      "region_code": "1153000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 금천구",
+      "kind": "official_full",
+      "region_code": "1154500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 노원구",
+      "kind": "official_full",
+      "region_code": "1135000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 도봉구",
+      "kind": "official_full",
+      "region_code": "1132000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 동대문구",
+      "kind": "official_full",
+      "region_code": "1123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 동작구",
+      "kind": "official_full",
+      "region_code": "1159000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 마포구",
+      "kind": "official_full",
+      "region_code": "1144000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 서대문구",
+      "kind": "official_full",
+      "region_code": "1141000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 서초구",
+      "kind": "official_full",
+      "region_code": "1165000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 성동구",
+      "kind": "official_full",
+      "region_code": "1120000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 성북구",
+      "kind": "official_full",
+      "region_code": "1129000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 송파구",
+      "kind": "official_full",
+      "region_code": "1171000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 양천구",
+      "kind": "official_full",
+      "region_code": "1147000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 영등포구",
+      "kind": "official_full",
+      "region_code": "1156000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 용산구",
+      "kind": "official_full",
+      "region_code": "1117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 은평구",
+      "kind": "official_full",
+      "region_code": "1138000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 종로구",
+      "kind": "official_full",
+      "region_code": "1111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 중구",
+      "kind": "official_full",
+      "region_code": "1114000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서울특별시 중랑구",
+      "kind": "official_full",
+      "region_code": "1126000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서원구",
+      "kind": "official_short",
+      "region_code": "4311200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서천군",
+      "kind": "official_short",
+      "region_code": "4477000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서초구",
+      "kind": "official_short",
+      "region_code": "1165000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "서해구",
+      "kind": "official_short",
+      "region_code": "2827500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "선산군",
+      "kind": "official_short",
+      "region_code": "4787000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "성남시",
+      "kind": "official_short",
+      "region_code": "4113000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "성동구",
+      "kind": "official_short",
+      "region_code": "1120000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "성북구",
+      "kind": "official_short",
+      "region_code": "1129000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "성산구",
+      "kind": "official_short",
+      "region_code": "4812300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "성주군",
+      "kind": "official_short",
+      "region_code": "4784000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "세종특별자치시",
+      "kind": "official_full",
+      "region_code": "3611000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "세종특별자치시",
+      "kind": "official_short",
+      "region_code": "3611000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "속초시",
+      "kind": "official_short",
+      "region_code": "4221000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "속초시",
+      "kind": "official_short",
+      "region_code": "5121000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "송정시",
+      "kind": "official_short",
+      "region_code": "4603000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "송탄시",
+      "kind": "official_short",
+      "region_code": "4123000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "송파구",
+      "kind": "official_short",
+      "region_code": "1171000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "수성구",
+      "kind": "official_short",
+      "region_code": "2226000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "수성구",
+      "kind": "official_short",
+      "region_code": "2726000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "수영구",
+      "kind": "official_short",
+      "region_code": "2650000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "수원시",
+      "kind": "official_short",
+      "region_code": "4111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "수정구",
+      "kind": "official_short",
+      "region_code": "4113100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "수지구",
+      "kind": "official_short",
+      "region_code": "4146500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "순창군",
+      "kind": "official_short",
+      "region_code": "4577000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "순창군",
+      "kind": "official_short",
+      "region_code": "5277000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "순천시",
+      "kind": "official_short",
+      "region_code": "1215000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "순천시",
+      "kind": "official_short",
+      "region_code": "4615000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "승주군",
+      "kind": "official_short",
+      "region_code": "4676000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "시흥군",
+      "kind": "official_short",
+      "region_code": "4176000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "시흥시",
+      "kind": "official_short",
+      "region_code": "4139000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "신안군",
+      "kind": "official_short",
+      "region_code": "1287000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "신안군",
+      "kind": "official_short",
+      "region_code": "4691000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "신안동시",
+      "kind": "official_short",
+      "region_code": "4702000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "아산군",
+      "kind": "official_short",
+      "region_code": "4484000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "아산시",
+      "kind": "official_short",
+      "region_code": "4420000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "안동군",
+      "kind": "official_short",
+      "region_code": "4774000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "안동시",
+      "kind": "official_short",
+      "region_code": "4717000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "안산시",
+      "kind": "official_short",
+      "region_code": "4127000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "안성군",
+      "kind": "official_short",
+      "region_code": "4186000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "안성시",
+      "kind": "official_short",
+      "region_code": "4155000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "안양시",
+      "kind": "official_short",
+      "region_code": "4117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양구군",
+      "kind": "official_short",
+      "region_code": "4280000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양구군",
+      "kind": "official_short",
+      "region_code": "5180000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양산군",
+      "kind": "official_short",
+      "region_code": "4876000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양산시",
+      "kind": "official_short",
+      "region_code": "4833000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양양군",
+      "kind": "official_short",
+      "region_code": "4283000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양양군",
+      "kind": "official_short",
+      "region_code": "5183000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양주군",
+      "kind": "official_short",
+      "region_code": "4171000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양주시",
+      "kind": "official_short",
+      "region_code": "4163000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양천구",
+      "kind": "official_short",
+      "region_code": "1147000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "양평군",
+      "kind": "official_short",
+      "region_code": "4183000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "여수시",
+      "kind": "official_short",
+      "region_code": "1213000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "여수시",
+      "kind": "official_short",
+      "region_code": "4613000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "여주군",
+      "kind": "official_short",
+      "region_code": "4173000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "여주시",
+      "kind": "official_short",
+      "region_code": "4167000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "여천군",
+      "kind": "official_short",
+      "region_code": "4675000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "여천시",
+      "kind": "official_short",
+      "region_code": "4619000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "연기군",
+      "kind": "official_short",
+      "region_code": "4473000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "연수구",
+      "kind": "official_short",
+      "region_code": "2818500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "연제구",
+      "kind": "official_short",
+      "region_code": "2647000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "연천군",
+      "kind": "official_short",
+      "region_code": "4180000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영광군",
+      "kind": "official_short",
+      "region_code": "1283000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영광군",
+      "kind": "official_short",
+      "region_code": "4687000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영덕군",
+      "kind": "official_short",
+      "region_code": "4777000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영도구",
+      "kind": "official_short",
+      "region_code": "2120000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영도구",
+      "kind": "official_short",
+      "region_code": "2620000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영동군",
+      "kind": "official_short",
+      "region_code": "4374000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영등포구",
+      "kind": "official_short",
+      "region_code": "1156000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영암군",
+      "kind": "official_short",
+      "region_code": "1280000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영암군",
+      "kind": "official_short",
+      "region_code": "4683000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영양군",
+      "kind": "official_short",
+      "region_code": "4776000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영월군",
+      "kind": "official_short",
+      "region_code": "4275000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영월군",
+      "kind": "official_short",
+      "region_code": "5175000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영일군",
+      "kind": "official_short",
+      "region_code": "4778000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영종구",
+      "kind": "official_short",
+      "region_code": "2815500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영주군",
+      "kind": "official_short",
+      "region_code": "4705000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영주시",
+      "kind": "official_short",
+      "region_code": "4721000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영천군",
+      "kind": "official_short",
+      "region_code": "4780000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영천시",
+      "kind": "official_short",
+      "region_code": "4723000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영통구",
+      "kind": "official_short",
+      "region_code": "4111700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "영풍군",
+      "kind": "official_short",
+      "region_code": "4791000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "예산군",
+      "kind": "official_short",
+      "region_code": "4481000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "예천군",
+      "kind": "official_short",
+      "region_code": "4790000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "오산시",
+      "kind": "official_short",
+      "region_code": "4137000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "옥구군",
+      "kind": "official_short",
+      "region_code": "4582000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "옥천군",
+      "kind": "official_short",
+      "region_code": "4373000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "온양시",
+      "kind": "official_short",
+      "region_code": "4419000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "옹진군",
+      "kind": "official_short",
+      "region_code": "2872000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "옹진군",
+      "kind": "official_short",
+      "region_code": "4189000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "완도군",
+      "kind": "official_short",
+      "region_code": "1285000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "완도군",
+      "kind": "official_short",
+      "region_code": "4689000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "완산구",
+      "kind": "official_short",
+      "region_code": "4511100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "완주군",
+      "kind": "official_short",
+      "region_code": "4571000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "완주군",
+      "kind": "official_short",
+      "region_code": "5271000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "용산구",
+      "kind": "official_short",
+      "region_code": "1117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "용인군",
+      "kind": "official_short",
+      "region_code": "4185000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "용인시",
+      "kind": "official_short",
+      "region_code": "4146000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울릉군",
+      "kind": "official_short",
+      "region_code": "4794000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시",
+      "kind": "official_full",
+      "region_code": "3100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시",
+      "kind": "official_short",
+      "region_code": "3100000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시 남구",
+      "kind": "official_full",
+      "region_code": "3114000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시 동구",
+      "kind": "official_full",
+      "region_code": "3117000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시 북구",
+      "kind": "official_full",
+      "region_code": "3120000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시 울주군",
+      "kind": "official_full",
+      "region_code": "3171000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산광역시 중구",
+      "kind": "official_full",
+      "region_code": "3111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산군",
+      "kind": "official_short",
+      "region_code": "4806000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산군",
+      "kind": "official_short",
+      "region_code": "4877500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산시",
+      "kind": "official_short",
+      "region_code": "4813000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산시 남구",
+      "kind": "official_short",
+      "region_code": "4813300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산시 동구",
+      "kind": "official_short",
+      "region_code": "4813500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산시 울주구",
+      "kind": "official_short",
+      "region_code": "4813700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울산시 중구",
+      "kind": "official_short",
+      "region_code": "4813100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울주군",
+      "kind": "official_short",
+      "region_code": "3171000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울주군",
+      "kind": "official_short",
+      "region_code": "4877000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울진군",
+      "kind": "official_short",
+      "region_code": "4205000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "울진군",
+      "kind": "official_short",
+      "region_code": "4793000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "원성군",
+      "kind": "official_short",
+      "region_code": "4274000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "원주군",
+      "kind": "official_short",
+      "region_code": "4274500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "원주시",
+      "kind": "official_short",
+      "region_code": "4213000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "원주시",
+      "kind": "official_short",
+      "region_code": "5113000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "월성군",
+      "kind": "official_short",
+      "region_code": "4779000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "유성구",
+      "kind": "official_short",
+      "region_code": "2520000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "유성구",
+      "kind": "official_short",
+      "region_code": "3020000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "은평구",
+      "kind": "official_short",
+      "region_code": "1138000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "음성군",
+      "kind": "official_short",
+      "region_code": "4377000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "의령군",
+      "kind": "official_short",
+      "region_code": "4872000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "의성군",
+      "kind": "official_short",
+      "region_code": "4773000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "의왕시",
+      "kind": "official_short",
+      "region_code": "4143000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "의정부시",
+      "kind": "official_short",
+      "region_code": "4115000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "의창구",
+      "kind": "official_short",
+      "region_code": "4812100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "의창군",
+      "kind": "official_short",
+      "region_code": "4879000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "이리시",
+      "kind": "official_short",
+      "region_code": "4515000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "이천군",
+      "kind": "official_short",
+      "region_code": "4184000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "이천시",
+      "kind": "official_short",
+      "region_code": "4150000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "익산군",
+      "kind": "official_short",
+      "region_code": "4583000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "익산시",
+      "kind": "official_short",
+      "region_code": "4514000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "익산시",
+      "kind": "official_short",
+      "region_code": "5214000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인제군",
+      "kind": "official_short",
+      "region_code": "4281000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인제군",
+      "kind": "official_short",
+      "region_code": "5181000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시",
+      "kind": "official_full",
+      "region_code": "2800000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시",
+      "kind": "official_short",
+      "region_code": "2800000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 강화군",
+      "kind": "official_full",
+      "region_code": "2871000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 검단구",
+      "kind": "official_full",
+      "region_code": "2829000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 계양구",
+      "kind": "official_full",
+      "region_code": "2824500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 남구",
+      "kind": "official_full",
+      "region_code": "2817000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 남동구",
+      "kind": "official_full",
+      "region_code": "2820000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 동구",
+      "kind": "official_full",
+      "region_code": "2814000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 미추홀구",
+      "kind": "official_full",
+      "region_code": "2817700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 부평구",
+      "kind": "official_full",
+      "region_code": "2823700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 북구",
+      "kind": "official_full",
+      "region_code": "2823000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 서구",
+      "kind": "official_full",
+      "region_code": "2826000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 서해구",
+      "kind": "official_full",
+      "region_code": "2827500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 연수구",
+      "kind": "official_full",
+      "region_code": "2818500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 영종구",
+      "kind": "official_full",
+      "region_code": "2815500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 옹진군",
+      "kind": "official_full",
+      "region_code": "2872000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 제물포구",
+      "kind": "official_full",
+      "region_code": "2812500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천광역시 중구",
+      "kind": "official_full",
+      "region_code": "2811000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천시",
+      "kind": "official_short",
+      "region_code": "4101000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천시 남구",
+      "kind": "official_short",
+      "region_code": "4101300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천시 동구",
+      "kind": "official_short",
+      "region_code": "4101200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천시 북구",
+      "kind": "official_short",
+      "region_code": "4101400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천시 중구",
+      "kind": "official_short",
+      "region_code": "4101100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시",
+      "kind": "official_full",
+      "region_code": "2300000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시",
+      "kind": "official_short",
+      "region_code": "2300000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시 남구",
+      "kind": "official_full",
+      "region_code": "2317000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시 남동구",
+      "kind": "official_full",
+      "region_code": "2320000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시 동구",
+      "kind": "official_full",
+      "region_code": "2314000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시 북구",
+      "kind": "official_full",
+      "region_code": "2323000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시 서구",
+      "kind": "official_full",
+      "region_code": "2326000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "인천직할시 중구",
+      "kind": "official_full",
+      "region_code": "2311000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "일산동구",
+      "kind": "official_short",
+      "region_code": "4128500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "일산서구",
+      "kind": "official_short",
+      "region_code": "4128700000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "임실군",
+      "kind": "official_short",
+      "region_code": "4575000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "임실군",
+      "kind": "official_short",
+      "region_code": "5275000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장성군",
+      "kind": "official_short",
+      "region_code": "1284000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장성군",
+      "kind": "official_short",
+      "region_code": "4688000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장수군",
+      "kind": "official_short",
+      "region_code": "4574000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장수군",
+      "kind": "official_short",
+      "region_code": "5274000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장승포시",
+      "kind": "official_short",
+      "region_code": "4829000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장안구",
+      "kind": "official_short",
+      "region_code": "4111100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장흥군",
+      "kind": "official_short",
+      "region_code": "1277000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "장흥군",
+      "kind": "official_short",
+      "region_code": "4680000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전국",
+      "kind": "curated",
+      "region_code": "0000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시",
+      "kind": "official_full",
+      "region_code": "1200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시",
+      "kind": "official_short",
+      "region_code": "1200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 강진군",
+      "kind": "official_full",
+      "region_code": "1278000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 고흥군",
+      "kind": "official_full",
+      "region_code": "1274000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 곡성군",
+      "kind": "official_full",
+      "region_code": "1272000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 광산구",
+      "kind": "official_full",
+      "region_code": "1233000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 광양시",
+      "kind": "official_full",
+      "region_code": "1219000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 구례군",
+      "kind": "official_full",
+      "region_code": "1273000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 나주시",
+      "kind": "official_full",
+      "region_code": "1217000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 남구",
+      "kind": "official_full",
+      "region_code": "1227000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 담양군",
+      "kind": "official_full",
+      "region_code": "1271000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 동구",
+      "kind": "official_full",
+      "region_code": "1221000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 목포시",
+      "kind": "official_full",
+      "region_code": "1211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 무안군",
+      "kind": "official_full",
+      "region_code": "1281000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 보성군",
+      "kind": "official_full",
+      "region_code": "1275000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 북구",
+      "kind": "official_full",
+      "region_code": "1230000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 서구",
+      "kind": "official_full",
+      "region_code": "1224000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 순천시",
+      "kind": "official_full",
+      "region_code": "1215000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 신안군",
+      "kind": "official_full",
+      "region_code": "1287000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 여수시",
+      "kind": "official_full",
+      "region_code": "1213000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 영광군",
+      "kind": "official_full",
+      "region_code": "1283000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 영암군",
+      "kind": "official_full",
+      "region_code": "1280000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 완도군",
+      "kind": "official_full",
+      "region_code": "1285000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 장성군",
+      "kind": "official_full",
+      "region_code": "1284000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 장흥군",
+      "kind": "official_full",
+      "region_code": "1277000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 진도군",
+      "kind": "official_full",
+      "region_code": "1286000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 함평군",
+      "kind": "official_full",
+      "region_code": "1282000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 해남군",
+      "kind": "official_full",
+      "region_code": "1279000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전남광주통합특별시 화순군",
+      "kind": "official_full",
+      "region_code": "1276000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도",
+      "kind": "official_full",
+      "region_code": "4600000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도",
+      "kind": "official_short",
+      "region_code": "4600000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 강진군",
+      "kind": "official_full",
+      "region_code": "4681000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 고흥군",
+      "kind": "official_full",
+      "region_code": "4677000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 곡성군",
+      "kind": "official_full",
+      "region_code": "4672000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광산군",
+      "kind": "official_full",
+      "region_code": "4605000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광양군",
+      "kind": "official_full",
+      "region_code": "4674000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광양시",
+      "kind": "official_full",
+      "region_code": "4623000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광주시",
+      "kind": "official_full",
+      "region_code": "4601000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광주시 동구",
+      "kind": "official_full",
+      "region_code": "4601100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광주시 북구",
+      "kind": "official_full",
+      "region_code": "4601300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 광주시 서구",
+      "kind": "official_full",
+      "region_code": "4601200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 구례군",
+      "kind": "official_full",
+      "region_code": "4673000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 금성시",
+      "kind": "official_full",
+      "region_code": "4602000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 나주군",
+      "kind": "official_full",
+      "region_code": "4685000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 나주시",
+      "kind": "official_full",
+      "region_code": "4617000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 담양군",
+      "kind": "official_full",
+      "region_code": "4671000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 동광양시",
+      "kind": "official_full",
+      "region_code": "4621000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 목포시",
+      "kind": "official_full",
+      "region_code": "4611000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 무안군",
+      "kind": "official_full",
+      "region_code": "4684000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 보성군",
+      "kind": "official_full",
+      "region_code": "4678000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 송정시",
+      "kind": "official_full",
+      "region_code": "4603000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 순천시",
+      "kind": "official_full",
+      "region_code": "4615000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 승주군",
+      "kind": "official_full",
+      "region_code": "4676000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 신안군",
+      "kind": "official_full",
+      "region_code": "4691000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 여수시",
+      "kind": "official_full",
+      "region_code": "4613000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 여천군",
+      "kind": "official_full",
+      "region_code": "4675000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 여천시",
+      "kind": "official_full",
+      "region_code": "4619000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 영광군",
+      "kind": "official_full",
+      "region_code": "4687000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 영암군",
+      "kind": "official_full",
+      "region_code": "4683000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 완도군",
+      "kind": "official_full",
+      "region_code": "4689000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 장성군",
+      "kind": "official_full",
+      "region_code": "4688000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 장흥군",
+      "kind": "official_full",
+      "region_code": "4680000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 진도군",
+      "kind": "official_full",
+      "region_code": "4690000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 함평군",
+      "kind": "official_full",
+      "region_code": "4686000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 해남군",
+      "kind": "official_full",
+      "region_code": "4682000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라남도 화순군",
+      "kind": "official_full",
+      "region_code": "4679000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도",
+      "kind": "official_full",
+      "region_code": "4500000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도",
+      "kind": "official_short",
+      "region_code": "4500000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 고창군",
+      "kind": "official_full",
+      "region_code": "4579000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 군산시",
+      "kind": "official_full",
+      "region_code": "4513000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 금산군",
+      "kind": "official_full",
+      "region_code": "4505000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 김제군",
+      "kind": "official_full",
+      "region_code": "4581000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 김제시",
+      "kind": "official_full",
+      "region_code": "4521000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 남원군",
+      "kind": "official_full",
+      "region_code": "4576000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 남원시",
+      "kind": "official_full",
+      "region_code": "4519000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 무주군",
+      "kind": "official_full",
+      "region_code": "4573000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 부안군",
+      "kind": "official_full",
+      "region_code": "4580000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 순창군",
+      "kind": "official_full",
+      "region_code": "4577000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 옥구군",
+      "kind": "official_full",
+      "region_code": "4582000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 완주군",
+      "kind": "official_full",
+      "region_code": "4571000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 이리시",
+      "kind": "official_full",
+      "region_code": "4515000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 익산군",
+      "kind": "official_full",
+      "region_code": "4583000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 익산시",
+      "kind": "official_full",
+      "region_code": "4514000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 임실군",
+      "kind": "official_full",
+      "region_code": "4575000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 장수군",
+      "kind": "official_full",
+      "region_code": "4574000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 전주시",
+      "kind": "official_full",
+      "region_code": "4511000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 전주시 덕진구",
+      "kind": "official_full",
+      "region_code": "4511300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 전주시 완산구",
+      "kind": "official_full",
+      "region_code": "4511100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 정읍군",
+      "kind": "official_full",
+      "region_code": "4578000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 정읍시",
+      "kind": "official_full",
+      "region_code": "4518000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 정주시",
+      "kind": "official_full",
+      "region_code": "4517000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전라북도 진안군",
+      "kind": "official_full",
+      "region_code": "4572000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도",
+      "kind": "official_full",
+      "region_code": "5200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도",
+      "kind": "official_short",
+      "region_code": "5200000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 고창군",
+      "kind": "official_full",
+      "region_code": "5279000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 군산시",
+      "kind": "official_full",
+      "region_code": "5213000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 김제시",
+      "kind": "official_full",
+      "region_code": "5221000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 남원시",
+      "kind": "official_full",
+      "region_code": "5219000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 무주군",
+      "kind": "official_full",
+      "region_code": "5273000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 부안군",
+      "kind": "official_full",
+      "region_code": "5280000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 순창군",
+      "kind": "official_full",
+      "region_code": "5277000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 완주군",
+      "kind": "official_full",
+      "region_code": "5271000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 익산시",
+      "kind": "official_full",
+      "region_code": "5214000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 임실군",
+      "kind": "official_full",
+      "region_code": "5275000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 장수군",
+      "kind": "official_full",
+      "region_code": "5274000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 전주시",
+      "kind": "official_full",
+      "region_code": "5211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 전주시 덕진구",
+      "kind": "official_full",
+      "region_code": "5211300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 전주시 완산구",
+      "kind": "official_full",
+      "region_code": "5211100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 정읍시",
+      "kind": "official_full",
+      "region_code": "5218000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전북특별자치도 진안군",
+      "kind": "official_full",
+      "region_code": "5272000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전주시",
+      "kind": "official_short",
+      "region_code": "4511000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전주시",
+      "kind": "official_short",
+      "region_code": "5211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전주시 덕진구",
+      "kind": "official_short",
+      "region_code": "5211300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "전주시 완산구",
+      "kind": "official_short",
+      "region_code": "5211100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "점촌시",
+      "kind": "official_short",
+      "region_code": "4727000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "정선군",
+      "kind": "official_short",
+      "region_code": "4277000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "정선군",
+      "kind": "official_short",
+      "region_code": "5177000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "정읍군",
+      "kind": "official_short",
+      "region_code": "4578000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "정읍시",
+      "kind": "official_short",
+      "region_code": "4518000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "정읍시",
+      "kind": "official_short",
+      "region_code": "5218000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "정주시",
+      "kind": "official_short",
+      "region_code": "4517000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제물포구",
+      "kind": "official_short",
+      "region_code": "2812500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제원군",
+      "kind": "official_short",
+      "region_code": "4379000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주도",
+      "kind": "official_full",
+      "region_code": "4900000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주도",
+      "kind": "official_short",
+      "region_code": "4900000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주도 남제주군",
+      "kind": "official_full",
+      "region_code": "4972000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주도 북제주군",
+      "kind": "official_full",
+      "region_code": "4971000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주도 서귀포시",
+      "kind": "official_full",
+      "region_code": "4913000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주도 제주시",
+      "kind": "official_full",
+      "region_code": "4911000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주시",
+      "kind": "official_short",
+      "region_code": "4911000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주시",
+      "kind": "official_short",
+      "region_code": "5011000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주특별자치도",
+      "kind": "official_full",
+      "region_code": "5000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주특별자치도",
+      "kind": "official_short",
+      "region_code": "5000000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주특별자치도 서귀포시",
+      "kind": "official_full",
+      "region_code": "5013000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제주특별자치도 제주시",
+      "kind": "official_full",
+      "region_code": "5011000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제천군",
+      "kind": "official_short",
+      "region_code": "4305000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제천군",
+      "kind": "official_short",
+      "region_code": "4379500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "제천시",
+      "kind": "official_short",
+      "region_code": "4315000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "종로구",
+      "kind": "official_short",
+      "region_code": "1111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "1114000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2311000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2514000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2611000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2711000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "2811000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "3014000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중구",
+      "kind": "official_short",
+      "region_code": "3111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중랑구",
+      "kind": "official_short",
+      "region_code": "1126000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중원구",
+      "kind": "official_short",
+      "region_code": "4113300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "중원군",
+      "kind": "official_short",
+      "region_code": "4378000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "증평군",
+      "kind": "official_short",
+      "region_code": "4374500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진도군",
+      "kind": "official_short",
+      "region_code": "1286000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진도군",
+      "kind": "official_short",
+      "region_code": "4690000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진안군",
+      "kind": "official_short",
+      "region_code": "4572000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진안군",
+      "kind": "official_short",
+      "region_code": "5272000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진양군",
+      "kind": "official_short",
+      "region_code": "4871000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진주시",
+      "kind": "official_short",
+      "region_code": "4817000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진천군",
+      "kind": "official_short",
+      "region_code": "4375000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진해구",
+      "kind": "official_short",
+      "region_code": "4812900000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "진해시",
+      "kind": "official_short",
+      "region_code": "4819000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "창녕군",
+      "kind": "official_short",
+      "region_code": "4874000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "창원군",
+      "kind": "official_short",
+      "region_code": "4805000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "창원군",
+      "kind": "official_short",
+      "region_code": "4879500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "창원시",
+      "kind": "official_short",
+      "region_code": "4811000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "창원시",
+      "kind": "official_short",
+      "region_code": "4812000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "처인구",
+      "kind": "official_short",
+      "region_code": "4146100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "천안",
+      "kind": "curated",
+      "region_code": "4413000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "천안군",
+      "kind": "official_short",
+      "region_code": "4405000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "천안군",
+      "kind": "official_short",
+      "region_code": "4486000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "천안시",
+      "kind": "official_short",
+      "region_code": "4413000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "천원군",
+      "kind": "official_short",
+      "region_code": "4485000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "철원군",
+      "kind": "official_short",
+      "region_code": "4278000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "철원군",
+      "kind": "official_short",
+      "region_code": "5178000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "청도군",
+      "kind": "official_short",
+      "region_code": "4782000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "청송군",
+      "kind": "official_short",
+      "region_code": "4775000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "청양군",
+      "kind": "official_short",
+      "region_code": "4479000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "청원구",
+      "kind": "official_short",
+      "region_code": "4311400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "청원군",
+      "kind": "official_short",
+      "region_code": "4371000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "청주시",
+      "kind": "official_short",
+      "region_code": "4311000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "춘성군",
+      "kind": "official_short",
+      "region_code": "4271000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "춘천군",
+      "kind": "official_short",
+      "region_code": "4271500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "춘천시",
+      "kind": "official_short",
+      "region_code": "4211000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "춘천시",
+      "kind": "official_short",
+      "region_code": "5111000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충남",
+      "kind": "curated",
+      "region_code": "4400000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충무시",
+      "kind": "official_short",
+      "region_code": "4821000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충주시",
+      "kind": "official_short",
+      "region_code": "4313000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도",
+      "kind": "official_full",
+      "region_code": "4400000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도",
+      "kind": "official_short",
+      "region_code": "4400000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 계룡시",
+      "kind": "official_full",
+      "region_code": "4425000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 공주군",
+      "kind": "official_full",
+      "region_code": "4474000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 공주시",
+      "kind": "official_full",
+      "region_code": "4415000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 금산군",
+      "kind": "official_full",
+      "region_code": "4471000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 논산군",
+      "kind": "official_full",
+      "region_code": "4475000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 논산시",
+      "kind": "official_full",
+      "region_code": "4423000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 당진군",
+      "kind": "official_full",
+      "region_code": "4483000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 당진시",
+      "kind": "official_full",
+      "region_code": "4427000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 대덕군",
+      "kind": "official_full",
+      "region_code": "4472000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 대전시",
+      "kind": "official_full",
+      "region_code": "4411000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 대전시 동구",
+      "kind": "official_full",
+      "region_code": "4411100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 대전시 서구",
+      "kind": "official_full",
+      "region_code": "4411500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 대전시 중구",
+      "kind": "official_full",
+      "region_code": "4411300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 대천시",
+      "kind": "official_full",
+      "region_code": "4417000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 보령군",
+      "kind": "official_full",
+      "region_code": "4478000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 보령시",
+      "kind": "official_full",
+      "region_code": "4418000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 부여군",
+      "kind": "official_full",
+      "region_code": "4476000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 서산군",
+      "kind": "official_full",
+      "region_code": "4482000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 서산시",
+      "kind": "official_full",
+      "region_code": "4421000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 서천군",
+      "kind": "official_full",
+      "region_code": "4477000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 아산군",
+      "kind": "official_full",
+      "region_code": "4484000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 아산시",
+      "kind": "official_full",
+      "region_code": "4420000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 연기군",
+      "kind": "official_full",
+      "region_code": "4473000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 예산군",
+      "kind": "official_full",
+      "region_code": "4481000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 온양시",
+      "kind": "official_full",
+      "region_code": "4419000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 천안군",
+      "kind": "official_full",
+      "region_code": "4405000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 천안군",
+      "kind": "official_full",
+      "region_code": "4486000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 천안시",
+      "kind": "official_full",
+      "region_code": "4413000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 천안시 동남구",
+      "kind": "official_full",
+      "region_code": "4413100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 천안시 서북구",
+      "kind": "official_full",
+      "region_code": "4413300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 천원군",
+      "kind": "official_full",
+      "region_code": "4485000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 청양군",
+      "kind": "official_full",
+      "region_code": "4479000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 태안군",
+      "kind": "official_full",
+      "region_code": "4482500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청남도 홍성군",
+      "kind": "official_full",
+      "region_code": "4480000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도",
+      "kind": "official_full",
+      "region_code": "4300000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도",
+      "kind": "official_short",
+      "region_code": "4300000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 괴산군",
+      "kind": "official_full",
+      "region_code": "4376000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 단양군",
+      "kind": "official_full",
+      "region_code": "4380000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 보은군",
+      "kind": "official_full",
+      "region_code": "4372000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 영동군",
+      "kind": "official_full",
+      "region_code": "4374000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 옥천군",
+      "kind": "official_full",
+      "region_code": "4373000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 음성군",
+      "kind": "official_full",
+      "region_code": "4377000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 제원군",
+      "kind": "official_full",
+      "region_code": "4379000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 제천군",
+      "kind": "official_full",
+      "region_code": "4305000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 제천군",
+      "kind": "official_full",
+      "region_code": "4379500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 제천시",
+      "kind": "official_full",
+      "region_code": "4315000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 중원군",
+      "kind": "official_full",
+      "region_code": "4378000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 증평군",
+      "kind": "official_full",
+      "region_code": "4374500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 진천군",
+      "kind": "official_full",
+      "region_code": "4375000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 청원군",
+      "kind": "official_full",
+      "region_code": "4371000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 청주시",
+      "kind": "official_full",
+      "region_code": "4311000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 청주시 상당구",
+      "kind": "official_full",
+      "region_code": "4311100000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 청주시 서원구",
+      "kind": "official_full",
+      "region_code": "4311200000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 청주시 청원구",
+      "kind": "official_full",
+      "region_code": "4311400000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 청주시 흥덕구",
+      "kind": "official_full",
+      "region_code": "4311300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "충청북도 충주시",
+      "kind": "official_full",
+      "region_code": "4313000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "칠곡군",
+      "kind": "official_short",
+      "region_code": "4785000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "태백시",
+      "kind": "official_short",
+      "region_code": "4219000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "태백시",
+      "kind": "official_short",
+      "region_code": "5119000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "태안군",
+      "kind": "official_short",
+      "region_code": "4482500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "통영군",
+      "kind": "official_short",
+      "region_code": "4880000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "통영시",
+      "kind": "official_short",
+      "region_code": "4822000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "파주군",
+      "kind": "official_short",
+      "region_code": "4177000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "파주시",
+      "kind": "official_short",
+      "region_code": "4148000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "팔달구",
+      "kind": "official_short",
+      "region_code": "4111500000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "평창군",
+      "kind": "official_short",
+      "region_code": "4276000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "평창군",
+      "kind": "official_short",
+      "region_code": "5176000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "평택군",
+      "kind": "official_short",
+      "region_code": "4174000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "평택시",
+      "kind": "official_short",
+      "region_code": "4122000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "평택시",
+      "kind": "official_short",
+      "region_code": "4133000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "포천군",
+      "kind": "official_short",
+      "region_code": "4181000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "포천시",
+      "kind": "official_short",
+      "region_code": "4165000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "포항시",
+      "kind": "official_short",
+      "region_code": "4711000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "하남시",
+      "kind": "official_short",
+      "region_code": "4145000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "하동군",
+      "kind": "official_short",
+      "region_code": "4885000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "함안군",
+      "kind": "official_short",
+      "region_code": "4873000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "함양군",
+      "kind": "official_short",
+      "region_code": "4887000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "함평군",
+      "kind": "official_short",
+      "region_code": "1282000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "함평군",
+      "kind": "official_short",
+      "region_code": "4686000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "합천군",
+      "kind": "official_short",
+      "region_code": "4889000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "해남군",
+      "kind": "official_short",
+      "region_code": "1279000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "해남군",
+      "kind": "official_short",
+      "region_code": "4682000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "해운대구",
+      "kind": "official_short",
+      "region_code": "2135000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "해운대구",
+      "kind": "official_short",
+      "region_code": "2635000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "홍성군",
+      "kind": "official_short",
+      "region_code": "4480000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "홍천군",
+      "kind": "official_short",
+      "region_code": "4272000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "홍천군",
+      "kind": "official_short",
+      "region_code": "5172000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "화성군",
+      "kind": "official_short",
+      "region_code": "4175000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "화성시",
+      "kind": "official_short",
+      "region_code": "4159000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "화순군",
+      "kind": "official_short",
+      "region_code": "1276000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "화순군",
+      "kind": "official_short",
+      "region_code": "4679000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "화천군",
+      "kind": "official_short",
+      "region_code": "4279000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "화천군",
+      "kind": "official_short",
+      "region_code": "5179000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "횡성군",
+      "kind": "official_short",
+      "region_code": "4273000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "횡성군",
+      "kind": "official_short",
+      "region_code": "5173000000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "효행구",
+      "kind": "official_short",
+      "region_code": "4159300000",
+      "scheme": "kr-bjd-20260803"
+    },
+    {
+      "alias": "흥덕구",
+      "kind": "official_short",
+      "region_code": "4311300000",
+      "scheme": "kr-bjd-20260803"
+    }
+  ],
+  "license_name": "이용허락범위 제한 없음",
+  "license_url": "https://www.data.go.kr/data/15077871/openapi.do",
+  "schema_version": "1.0.0",
+  "scheme": "kr-bjd-20260803",
+  "snapshot_date": "2026-08-03",
+  "source_page_url": "https://www.code.go.kr/stdcode/regCodeL.do"
+}

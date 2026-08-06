@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import socket
+import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +19,8 @@ from collectors.runtime import (
     _latest_batch,
     replay_runtime_raw,
 )
+from collectors.snapshot import SnapshotManifest, SnapshotManifestStore
+from collectors.storage import RawDocumentStore
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +28,69 @@ RAW_ROOT = ROOT / "data" / "fixtures" / "raw"
 
 
 class RuntimeReplayTests(unittest.TestCase):
+    def test_complete_manifest_replays_multiple_list_pages(self) -> None:
+        existing = tuple(
+            RawPolicyDocument.from_dict(
+                json.loads(path.read_text(encoding="utf-8"))
+            )
+            for path in sorted(
+                (RAW_ROOT / "youthcenter-api").glob("*.json")
+            )
+        )
+        first_response = next(
+            document
+            for document in existing
+            if document.document_role is RawDocumentRole.LIST_RESPONSE
+        )
+        items = [
+            document
+            for document in existing
+            if document.document_role is RawDocumentRole.LIST_ITEM
+        ]
+        second_response_value = first_response.to_dict()
+        second_response_value["document_id"] = "2" * 32
+        second_response = RawPolicyDocument.from_dict(second_response_value)
+        moved_item_value = items[-1].to_dict()
+        moved_item_value["parent_document_id"] = second_response.document_id
+        moved_item = RawPolicyDocument.from_dict(moved_item_value)
+        manifest = SnapshotManifest(
+            snapshot_id="3" * 32,
+            source_id="youthcenter-api",
+            started_at=datetime(2026, 8, 4, tzinfo=timezone.utc),
+            completed_at=datetime(2026, 8, 4, 0, 1, tzinfo=timezone.utc),
+            page_size=2,
+            detail_limit=0,
+            request_budget=2,
+            request_count=2,
+            total_count=3,
+            item_count=3,
+            list_response_document_ids=(
+                first_response.document_id,
+                second_response.document_id,
+            ),
+            detail_document_ids=(),
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            raw_store = RawDocumentStore(temp_dir)
+            for document in (
+                first_response,
+                second_response,
+                *items[:-1],
+                moved_item,
+            ):
+                raw_store.save(document)
+            SnapshotManifestStore(temp_dir).save(manifest)
+            replay = replay_runtime_raw(
+                raw_root=temp_dir,
+                source_id="youthcenter-api",
+                limit=5000,
+            )
+
+        self.assertEqual(5, replay.raw_document_count)
+        self.assertEqual(3, replay.extracted_count)
+        self.assertEqual(2, replay.accepted_count)
+
     def test_synthetic_raw_replays_without_external_network(self) -> None:
         with patch.object(
             socket,
@@ -60,6 +126,10 @@ class RuntimeReplayTests(unittest.TestCase):
         self.assertEqual(2, bokjiro.partial_count)
         self.assertEqual(0, bokjiro.invalid_count)
         self.assertEqual(2, bokjiro.accepted_count)
+        self.assertEqual(2, len(bokjiro.normalization_issues))
+        self.assertTrue(
+            all(issues for issues in bokjiro.normalization_issues)
+        )
 
     def test_limit_keeps_parent_and_matching_detail(self) -> None:
         replay = replay_runtime_raw(
@@ -75,15 +145,16 @@ class RuntimeReplayTests(unittest.TestCase):
         self.assertEqual(3, len(replay.programs[0]["provenance"]))
 
     def test_missing_source_raw_fails_safely(self) -> None:
-        with self.assertRaisesRegex(
-            RuntimeReplayError,
-            "no stored Raw documents",
-        ):
-            replay_runtime_raw(
-                raw_root=ROOT / "runtime" / "raw",
-                source_id="youthcenter-api",
-                limit=10,
-            )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaisesRegex(
+                RuntimeReplayError,
+                "no stored Raw documents",
+            ):
+                replay_runtime_raw(
+                    raw_root=Path(temp_dir),
+                    source_id="youthcenter-api",
+                    limit=10,
+                )
 
     def test_latest_batch_does_not_mix_older_details(self) -> None:
         existing = tuple(

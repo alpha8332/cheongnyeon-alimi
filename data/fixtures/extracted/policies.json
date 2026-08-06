@@ -5,6 +5,7 @@
     "application_period_text": "2026. 1. 1. ~ 2026. 6. 30.",
     "category_text": "주거",
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope_hint": "unknown",
     "eligibility_text": "합성 청년 대상",
     "external_id": "SYN-YOUTH-001",
     "extra": {
@@ -16,8 +17,11 @@
           "aplyUrlAddr": "",
           "aplyYmd": "2026. 1. 1. ~ 2026. 6. 30.",
           "lclsfNm": "주거",
+          "mclsfNm": "주거비 지원",
           "operInstCdNm": "합성 주거기관",
           "plcyAplyMthdCn": "온라인 신청",
+          "plcyExplnCn": "합성 청년 주거 정책 요약",
+          "plcyKywdNm": "월세,보조금",
           "plcyNm": "<b>합성 청년 주거 지원</b>",
           "plcyNo": "SYN-YOUTH-001",
           "plcySprtCn": "<p>합성 월 지원</p>",
@@ -32,28 +36,37 @@
         }
       }
     },
+    "keywords": [
+      "주거비 지원",
+      "월세",
+      "보조금"
+    ],
+    "life_stages": [],
     "organization": "합성 주거기관",
     "provenance": [
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+        "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
         "document_role": "list_response",
         "raw_document_id": "10000000000000000000000000000000",
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       },
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:02dfcff3dbe823a51fddc106dfea263c0a8edb6d142c93e95ea1921fd3534d7b",
+        "content_hash": "sha256:d2d2de4c10a3eb1b62f3390418c75c3439a71e0f142b5854e0c7c2408e7b8a03",
         "document_role": "list_item",
         "raw_document_id": "11000000000000000000000000000001",
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       }
     ],
+    "region_evidence": [],
     "region_text": "서울시",
     "source_id": "youthcenter-api",
     "source_name": "온통청년 청년정책 API",
     "source_url": "https://fixture.invalid/youth/001",
+    "summary": "합성 청년 주거 정책 요약",
     "support_content": "<p>합성 월 지원</p>",
+    "target_groups": [],
     "title": "<b>합성 청년 주거 지원</b>"
   },
   {
@@ -62,6 +75,7 @@
     "application_period_text": "상시",
     "category_text": "금융･복지･문화",
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope_hint": "nationwide",
     "eligibility_text": null,
     "external_id": "SYN-YOUTH-002",
     "extra": {
@@ -73,8 +87,11 @@
           "aplyUrlAddr": "",
           "aplyYmd": "",
           "lclsfNm": "금융･복지･문화",
+          "mclsfNm": "생활지원",
           "operInstCdNm": "",
           "plcyAplyMthdCn": "",
+          "plcyExplnCn": "합성 상시 생활 정책 요약",
+          "plcyKywdNm": "생활비",
           "plcyNm": "합성 상시 생활 지원",
           "plcyNo": "SYN-YOUTH-002",
           "plcySprtCn": "합성 생활 지원",
@@ -89,28 +106,36 @@
         }
       }
     },
+    "keywords": [
+      "생활지원",
+      "생활비"
+    ],
+    "life_stages": [],
     "organization": "합성 등록기관",
     "provenance": [
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+        "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
         "document_role": "list_response",
         "raw_document_id": "10000000000000000000000000000000",
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       },
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:9c536a8b315e01159d3e65d66fa842edaf18c7097cbcf5c60eb44cf0fc4ebf03",
+        "content_hash": "sha256:5cbe2b93336f6435bb0d3dc5e300c11f0c22fe0eab3be73fe18b44c9fa7f1af2",
         "document_role": "list_item",
         "raw_document_id": "11000000000000000000000000000002",
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       }
     ],
+    "region_evidence": [],
     "region_text": "전국",
     "source_id": "youthcenter-api",
     "source_name": "온통청년 청년정책 API",
     "source_url": "https://fixture.invalid/youth/002",
+    "summary": "합성 상시 생활 정책 요약",
     "support_content": "합성 생활 지원",
+    "target_groups": [],
     "title": "합성 상시 생활 지원"
   },
   {
@@ -119,6 +144,7 @@
     "application_period_text": "마감",
     "category_text": "기타",
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope_hint": "nationwide",
     "eligibility_text": null,
     "external_id": "SYN-YOUTH-REJECTED",
     "extra": {
@@ -130,8 +156,11 @@
           "aplyUrlAddr": "",
           "aplyYmd": "",
           "lclsfNm": "기타",
+          "mclsfNm": "기타지원",
           "operInstCdNm": "합성 오류기관",
           "plcyAplyMthdCn": "",
+          "plcyExplnCn": "필수 제목이 없는 합성 정책 요약",
+          "plcyKywdNm": "합성오류",
           "plcyNm": "",
           "plcyNo": "SYN-YOUTH-REJECTED",
           "plcySprtCn": "필수 제목이 없는 합성 실패 사례",
@@ -146,43 +175,54 @@
         }
       }
     },
+    "keywords": [
+      "기타지원",
+      "합성오류"
+    ],
+    "life_stages": [],
     "organization": "합성 오류기관",
     "provenance": [
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:b41c169c40e34980ce584769ac9fcbe805bf16aa545128c328b3a22a35c0fcff",
+        "content_hash": "sha256:2b3fe0c43ce44aeaeec80dc712e4c8efe9c30b2289b091ac5de2dc54feefe403",
         "document_role": "list_response",
         "raw_document_id": "10000000000000000000000000000000",
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       },
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:00b2c8e707b259299c48a4e983a9e0d5ac3af1a0e124beca5efbb82f2b283af2",
+        "content_hash": "sha256:40212bfb9e6e4d222233731452b0a96c41e252600c58122c4fe8d8f98fe8e1d7",
         "document_role": "list_item",
         "raw_document_id": "11000000000000000000000000000003",
         "source_url": "https://fixture.invalid/youthcenter/getPlcy"
       }
     ],
+    "region_evidence": [],
     "region_text": "전국",
     "source_id": "youthcenter-api",
     "source_name": "온통청년 청년정책 API",
     "source_url": "https://fixture.invalid/youth/rejected",
+    "summary": "필수 제목이 없는 합성 정책 요약",
     "support_content": "필수 제목이 없는 합성 실패 사례",
+    "target_groups": [],
     "title": null
   },
   {
     "age_text": null,
     "application_method": null,
     "application_period_text": null,
-    "category_text": "서민금융,생활지원",
+    "category_text": "주거,서민금융",
     "collected_at": "2026-07-26T06:01:00+00:00",
+    "coverage_scope_hint": "unknown",
     "eligibility_text": "합성 지원 대상\n합성 선정 기준",
     "external_id": "SYN-BOK-001",
     "extra": {
       "source_fields": {
         "detail_response": {
           "alwServCn": "합성 상세 지원 내용",
+          "intrsThemaArray": "주거, 서민금융",
           "jurMnofNm": "합성 복지부처",
+          "lifeArray": "청년",
           "servId": "SYN-BOK-001",
           "servNm": "합성 청년 자산 지원 상세",
           "servSeCode": [
@@ -190,47 +230,63 @@
             "02"
           ],
           "slctCritCn": "합성 선정 기준",
-          "tgtrDtlCn": "합성 지원 대상"
+          "tgtrDtlCn": "합성 지원 대상",
+          "trgterIndvdlArray": "저소득 청년",
+          "wlfareInfoOutlCn": "합성 상세 정책 개요"
         },
         "list_item": {
           "intrsThemaArray": "서민금융,생활지원",
           "jurMnofNm": "합성 복지부처",
+          "lifeArray": "청년",
           "servDgst": "합성 목록 요약",
           "servDtlLink": "https://fixture.invalid/bokjiro/001",
           "servId": "SYN-BOK-001",
-          "servNm": "합성 청년 자산 지원"
+          "servNm": "합성 청년 자산 지원",
+          "trgterIndvdlArray": "저소득"
         }
       }
     },
+    "keywords": [
+      "주거",
+      "서민금융"
+    ],
+    "life_stages": [
+      "청년"
+    ],
     "organization": "합성 복지부처",
     "provenance": [
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:7d64e81c498ec1ba442c28c44c0b8092e7b7ea21e5db398c4f3430629cf256c6",
+        "content_hash": "sha256:06b41052833f1e2a755fc52bb8a1b51420bf9ec451f636e55368a296d8b5869e",
         "document_role": "list_response",
         "raw_document_id": "20000000000000000000000000000000",
         "source_url": "https://fixture.invalid/bokjiro/list"
       },
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:5510c01d1ccb614d254cd6c4e49d8c5fdc215b27bf0954873be3c392526a82c7",
+        "content_hash": "sha256:58d9cc0b7ba2a16f73bea234d9e1a1c927fd984132f5f35848a738c2eec28a26",
         "document_role": "list_item",
         "raw_document_id": "21000000000000000000000000000001",
         "source_url": "https://fixture.invalid/bokjiro/list"
       },
       {
         "collected_at": "2026-07-26T06:01:00+00:00",
-        "content_hash": "sha256:dd1671eec158beb0847a62adb1d734a1d699c0a8e7131debaef32ba697b634e4",
+        "content_hash": "sha256:fcb900c875f107ca0493e1a677356bdbcb6696f9de6c09ae73bb5259412933e4",
         "document_role": "detail_response",
         "raw_document_id": "22000000000000000000000000000001",
         "source_url": "https://fixture.invalid/bokjiro/detail"
       }
     ],
+    "region_evidence": [],
     "region_text": null,
     "source_id": "bokjiro-central-welfare-api",
     "source_name": "복지로 중앙부처 복지서비스 API",
     "source_url": "https://fixture.invalid/bokjiro/001",
+    "summary": "합성 상세 정책 개요",
     "support_content": "합성 상세 지원 내용",
+    "target_groups": [
+      "저소득 청년"
+    ],
     "title": "합성 청년 자산 지원 상세"
   },
   {
@@ -239,6 +295,7 @@
     "application_period_text": null,
     "category_text": null,
     "collected_at": "2026-07-26T06:00:00+00:00",
+    "coverage_scope_hint": "unknown",
     "eligibility_text": null,
     "external_id": "SYN-BOK-002",
     "extra": {
@@ -253,11 +310,13 @@
         }
       }
     },
+    "keywords": [],
+    "life_stages": [],
     "organization": "합성 복지부처",
     "provenance": [
       {
         "collected_at": "2026-07-26T06:00:00+00:00",
-        "content_hash": "sha256:7d64e81c498ec1ba442c28c44c0b8092e7b7ea21e5db398c4f3430629cf256c6",
+        "content_hash": "sha256:06b41052833f1e2a755fc52bb8a1b51420bf9ec451f636e55368a296d8b5869e",
         "document_role": "list_response",
         "raw_document_id": "20000000000000000000000000000000",
         "source_url": "https://fixture.invalid/bokjiro/list"
@@ -270,11 +329,14 @@
         "source_url": "https://fixture.invalid/bokjiro/list"
       }
     ],
+    "region_evidence": [],
     "region_text": null,
     "source_id": "bokjiro-central-welfare-api",
     "source_name": "복지로 중앙부처 복지서비스 API",
     "source_url": "https://fixture.invalid/bokjiro/002",
+    "summary": "상세가 없는 합성 목록 사례",
     "support_content": "상세가 없는 합성 목록 사례",
+    "target_groups": [],
     "title": "합성 목록 전용 지원"
   }
 ]

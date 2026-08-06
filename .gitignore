@@ -5,6 +5,14 @@
 APIkey.txt
 opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx
 
+# Local database credentials and artifacts
+.pgpass
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.backup
+
 # Runtime collection artifacts
 runtime/raw/
 data/runtime/raw/

@@ -19,24 +19,27 @@
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
 - [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
-  NormalizedProgram 31개 필드의 PostgreSQL·Importer·공개 API 매핑
+  NormalizedProgram 1.1.0의 36개 논리 필드, 행정구역·검색 projection
+  PostgreSQL·Importer·공개 API 경계
 - [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
   Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
 - [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
-  실제 응답 구조와 호출 제약
+  실제 응답 구조·검색 필드 mapping과 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
-  데이터 계약 원칙
+  데이터 계약과 Source Adapter 원칙
 - [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
   원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
 - [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
   정규화 필드, provenance와 품질 분류의 실행 가능한 계약
-- [정규화 규칙](data/normalization_rules.md): 날짜, 지역, 연령과 카테고리
-  변환 기준
+- [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
+  카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
+- [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
+  versioned 지역·계층·별칭·유효기간 Seed와 exact code 해석 경계
 - [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터
   canonical Seed까지의 재생성·소비자 검토 기준
 - [Forest 개발 계획](development/develop_plan/README.md): Forest별 범위,
@@ -53,13 +56,21 @@
   실데이터 정책 검색과 `v0.1.0` 실행 순서
 - [3주차 Data·Team Leader 실행 계획](development/weekly_plan/week_03_data_team_leader.md):
   실데이터 수집·적재와 통합·릴리스 판정 Slice
+- [3주차 검색 계약 Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md):
+  Backend 06·Frontend 04 공통 시작 커밋, 고정 계약, 역할별 초안과 공동 승인 기준
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
+- [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
+  Release 1 실제 정책 수집·PostgreSQL 적재와 품질 기준선
+- [Release 1 실데이터 품질 Profile](data/release_dataset_profile.md):
+  실제 snapshot 품질·검색 분포와 Backend·Frontend 안전 인계
 - [Policy Discovery Forest 계획](development/develop_plan/frontend/01_policy_discovery.md)
 - [React Router Advisory Review Forest 계획](development/develop_plan/frontend/02_react_router_advisory.md):
   현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
 - [CollectionRun Admin UI Forest 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md):
   관리자 실행 이력·수동 실행의 Frontend 소비 계획
+- [Policy Search Forest 계획](development/develop_plan/frontend/04_policy_search.md):
+  Gate G1 승인 `GET /api/v1/policies/search` flat query 소비, Filter Chip·Reason UI
 - [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
   기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
@@ -70,22 +81,41 @@
   관리자 API 공통 인증·권한 기준선 계획
 - [Backend CollectionRun Admin API Forest 계획](development/develop_plan/backend/05_collection_run_admin_api.md):
   실행 이력 조회·수동 실행의 관리자 API 계획
+- [Backend Policy Search Forest 계획](development/develop_plan/backend/06_policy_search.md):
+  Gate G1 승인 PostgreSQL 기반 정책 검색 API·파서 및 W3-B0 계약
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
+- [Policy Search Data Foundation Forest 계획](development/develop_plan/integration/03_policy_search_data_foundation.md):
+  Source 중립 검색 필드, 행정구역 계층·적용 관계, search projection과
+  Migration의 Release 1 공통 기반
+- [Release 1 Acceptance Forest 계획](development/develop_plan/integration/04_release_1_acceptance.md):
+  실제 snapshot DB → 검색 API → Frontend Browser 인수와 Release 1 판정
+- [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
+  장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
+- [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):
+  DT0 실행 환경과 실데이터 수집·적재 검증 결과
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
+- [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
+  Gate G1 search contract TypeScript types promote (FE4-11)
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
 - [Backend Policy Runtime Safety Forest 개발 기록](development/development_notes/backend/policy_runtime_safety.md):
   Policy timestamp·SQL logging 현재 동작, 결정과 검증 결과
+- [Backend Policy Search Forest 개발 기록](development/development_notes/backend/policy_search.md):
+  PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
+- [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
+  검색 데이터 lineage·ADR Gate와 Schema·지역·DB·Source Adapter 검증 결과
+- [Release 1 Acceptance Forest 개발 기록](development/development_notes/integration/release_1_acceptance.md):
+  DT5 실제 snapshot 복구·PostgreSQL·HTTP·Browser 통합과 결함 수정 결과
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
@@ -97,14 +127,25 @@
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
+- [Release 1 검증 증거 안내](contest/release_1_evidence_guide.md):
+  DT7E actual snapshot·contract hash 기반 경량 QA·사용성 검증 절차
+- [Release 1 기술 증거](contest/release_1_technical_evidence.json):
+  실제 PostgreSQL golden·control acceptance의 안전한 실행 결과
+- [Release 1 경량 리뷰 근거](contest/release_1_review_summary.md):
+  제공된 Word 리뷰의 QA·사용성 관찰과 Release 2 후속사항
+- [Release 1 수동 증거](contest/release_1_evidence.json):
+  G4 경량 QA·사용성 판정의 contract 고정 JSON
+- [Release 1 Gate 결정](contest/release_1_gate_decision.json):
+  Team Leader G4 `pass`, 비차단 후속과 릴리스 publication 상태
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
 
 ## 공동 확인 및 인계 보드
 
-Normalized 1.0.0 Schema와 canonical Seed의 Data·Backend·Frontend 소비 검토는
-2주차 Integration 02에서 완료됐다. 검토 증거와 현재 규칙은
+기존 Normalized 1.0.0의 Data·Backend·Frontend 소비 검토는 2주차
+Integration 02에서 완료됐다. PSF1은 1.1.0 검색 데이터 계약과 전환 경계를
+추가했으며 검토 증거와 현재 규칙은
 [Fixture와 Seed 계약](data/fixture_seed_contract.md),
 [Policy DB 매핑](architecture/policy_database_mapping.md)과
 [Policy API 계약](api/policies.md)을 따른다.
@@ -113,11 +154,25 @@ Normalized 1.0.0 Schema와 canonical Seed의 Data·Backend·Frontend 소비 검�
 변경하면 Data 담당이 단독으로 확정하지 않고 Backend·Frontend 영향과 소비
 테스트를 같은 Forest에서 다시 확인한다.
 
-2주차 완료 시점에 다른 영역으로 넘겨야 할 활성 인계사항은 없다. 다음
-작업은 [전체 Forest 로드맵](development/develop_plan/forest_roadmap.md)과
-[주차별 실행 계획](development/develop_plan/weekly_delivery_plan.md)에 따라
-새 Forest로 시작한다. 미래 계획 자체나 아직 발생하지 않은 위험을 인계사항으로
-등록하지 않는다.
+2주차 완료 시점에는 활성 인계사항이 없었다. 3주차 Data 02 DT1 실데이터
+preflight에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 DT2A~DT2D 공동 검토와
+Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 활성 인계사항은 없다.
+
+`R1-RELEASE-EVIDENCE`는 `2026-08-06` 경량 QA·사용성 리뷰와 새 contract hash
+기술 재검증을 통과해 종료했다. 보고서와 API 오류 UX는 Release 1을 완료한
+것처럼 기록하지 않고 `v0.5.0` 계획에서 다시 다룬다.
+
+기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
+confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unknown 회귀
+근거로 보존하며 현재 Source 추가 차단사항으로 사용하지 않는다.
+`R1-SEARCH-RELEVANCE`도 DT7B에서 자연어·control 모두 1건 중 1위와 응답시간
+예산을 통과해 종료했다.
+`R1-POLICY-PERIOD-EXTRACTION`은 DT7C에서 Source mapping을 재감사해 종료했다.
+복지로 계약에는 신청기간 전용 필드가 없으므로 본문 날짜 2건은 원문만 보존하고
+기간·상태를 null로 유지한다. Source 근거 없는 승격과 상태 불일치는 0건이며
+golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사를 통과했다.
+
+미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 
 ### 인계사항 발생 시 기록 방법
 

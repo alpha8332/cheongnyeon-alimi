@@ -10,7 +10,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/policy-contract.test.js",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/**/*.test.js",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.51.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",

@@ -1,0 +1,61 @@
+{
+  "scenario": "M2",
+  "description": "q=전국 청년 — region unknown mixed results",
+  "total": 2,
+  "interpreted_conditions": {
+    "q_raw": "전국 청년",
+    "q_clean": "전국 청년",
+    "conditions": [
+      {
+        "dimension": "region",
+        "value": "전국",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "keyword",
+        "value": "청년",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      }
+    ],
+    "override_fields": [],
+    "uninterpreted_terms": []
+  },
+  "items": [
+    {
+      "policy_id": 2,
+      "score": 0.88,
+      "verdicts": {
+        "region": "unknown",
+        "age": null,
+        "status": "match",
+        "category": null
+      },
+      "reason_codes": ["REGION_UNKNOWN", "STATUS_MATCH"],
+      "message": "전국 단위로 안내되나 지역 근거가 제한적입니다.",
+      "unconfirmed_conditions": [
+        {
+          "field": "region",
+          "reason_code": "DATA_MISSING_REGION",
+          "message": "정책 원문에 지역 제한 근거가 없어 판단할 수 없습니다."
+        }
+      ]
+    },
+    {
+      "policy_id": 1,
+      "score": 0.72,
+      "verdicts": {
+        "region": "mismatch",
+        "age": "match",
+        "status": "mismatch",
+        "category": "match"
+      },
+      "reason_codes": ["REGION_MISMATCH", "AGE_MATCH"],
+      "message": "청년·주거 키워드는 관련 있으나 전국 조건과 지역 정보가 다릅니다.",
+      "unconfirmed_conditions": []
+    }
+  ]
+}

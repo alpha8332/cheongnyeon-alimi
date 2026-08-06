@@ -11,6 +11,11 @@ from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
 from collectors.raw import RawDocumentRole, RawPolicyDocument
+from collectors.snapshot import (
+    SnapshotError,
+    SnapshotManifest,
+    SnapshotManifestStore,
+)
 from collectors.storage import RawDocumentStore, RawStorageError
 from collectors.validation import ValidationResult
 from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
@@ -51,6 +56,7 @@ class RuntimeReplayResult:
     invalid_count: int
     programs: tuple[dict[str, Any], ...]
     issues: tuple[RuntimeValidationIssue, ...]
+    normalization_issues: tuple[tuple[ValidationIssue, ...], ...] = ()
 
     @property
     def accepted_count(self) -> int:
@@ -62,6 +68,7 @@ def replay_runtime_raw(
     raw_root: str | Path,
     source_id: str,
     limit: int,
+    snapshot_id: str | None = None,
     normalizer: Normalizer | None = None,
 ) -> RuntimeReplayResult:
     """Load the latest source batch and normalize its policies."""
@@ -70,12 +77,25 @@ def replay_runtime_raw(
     if (
         not isinstance(limit, int)
         or isinstance(limit, bool)
-        or not 1 <= limit <= 500
+        or not 1 <= limit <= 5000
     ):
-        raise RuntimeReplayError("limit must be an integer from 1 to 500")
+        raise RuntimeReplayError("limit must be an integer from 1 to 5000")
 
     documents = _load_source_documents(raw_root, source_id)
-    selected_documents = _latest_batch(documents, limit)
+    try:
+        manifest_store = SnapshotManifestStore(raw_root)
+        manifest = (
+            manifest_store.load(source_id, snapshot_id)
+            if snapshot_id is not None
+            else manifest_store.latest(source_id)
+        )
+    except SnapshotError as exc:
+        raise RuntimeReplayError(str(exc)) from None
+    selected_documents = (
+        _snapshot_batch(documents, manifest, limit)
+        if manifest is not None
+        else _latest_batch(documents, limit)
+    )
     try:
         extracted = _EXTRACTOR_TYPES[source_id]().extract(
             selected_documents
@@ -90,9 +110,12 @@ def replay_runtime_raw(
         selected_normalizer.normalize(policy)
         for policy in extracted
     ]
+    accepted_results = tuple(
+        result for result in results if result.program is not None
+    )
     programs = tuple(
         result.program.to_dict()
-        for result in results
+        for result in accepted_results
         if result.program is not None
     )
     issues = tuple(
@@ -118,6 +141,9 @@ def replay_runtime_raw(
         ),
         programs=programs,
         issues=issues,
+        normalization_issues=tuple(
+            result.issues for result in accepted_results
+        ),
     )
 
 
@@ -211,6 +237,73 @@ def _latest_batch(
         for external_id in sorted(details_by_external_id)
     )
     return (latest_response, *selected_items, *selected_details)
+
+
+def _snapshot_batch(
+    documents: tuple[RawPolicyDocument, ...],
+    manifest: SnapshotManifest,
+    limit: int,
+) -> tuple[RawPolicyDocument, ...]:
+    documents_by_id = {
+        document.document_id: document for document in documents
+    }
+    try:
+        list_responses = tuple(
+            documents_by_id[document_id]
+            for document_id in manifest.list_response_document_ids
+        )
+        manifest_details = tuple(
+            documents_by_id[document_id]
+            for document_id in manifest.detail_document_ids
+        )
+    except KeyError:
+        raise RuntimeReplayError(
+            "snapshot references a missing Raw document"
+        ) from None
+    if any(
+        document.document_role is not RawDocumentRole.LIST_RESPONSE
+        for document in list_responses
+    ) or any(
+        document.document_role is not RawDocumentRole.DETAIL_RESPONSE
+        for document in manifest_details
+    ):
+        raise RuntimeReplayError("snapshot document roles do not match")
+
+    response_order = {
+        document.document_id: index
+        for index, document in enumerate(list_responses)
+    }
+    items = sorted(
+        (
+            document
+            for document in documents
+            if document.document_role is RawDocumentRole.LIST_ITEM
+            and document.parent_document_id in response_order
+        ),
+        key=lambda document: (
+            response_order[document.parent_document_id or ""],
+            document.external_id or "",
+            document.document_id,
+        ),
+    )
+    external_ids = [document.external_id for document in items]
+    if (
+        len(items) != manifest.item_count
+        or any(external_id is None for external_id in external_ids)
+        or len(set(external_ids)) != len(external_ids)
+    ):
+        raise RuntimeReplayError("snapshot list items are incomplete or duplicate")
+
+    selected_items = tuple(items[:limit])
+    selected_external_ids = {
+        document.external_id for document in selected_items
+    }
+    selected_details = tuple(
+        document
+        for document in manifest_details
+        if document.external_id in selected_external_ids
+    )
+    return (*list_responses, *selected_items, *selected_details)
 
 
 def _validation_issue(

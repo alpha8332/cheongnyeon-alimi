@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "release": "v0.1.0",
+  "gate": "G4",
+  "dataset_baseline": {
+    "accepted": 3156,
+    "snapshots": {
+      "youthcenter-api": "6add34f7aad9456ab0abb19175b7621c",
+      "bokjiro-central-welfare-api": "ffa74ef47e6048109f11bf40d1ac5e15"
+    }
+  },
+  "required_manual_evidence": [
+    "qa",
+    "usability-review"
+  ],
+  "manual_review_policy": {
+    "mode": "lightweight-team-review",
+    "independence_required": false,
+    "report_review_required": false,
+    "deferred_to": "v0.5.0",
+    "deferred_checks": [
+      "api-error-retry",
+      "report-review"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "golden-natural-language-short-stay",
+      "purpose": "사용자 자연어에서 신청 가능한 천안 청년 단기숙소 정책을 첫 페이지에 노출한다.",
+      "params": {
+        "q": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
+        "page": 1,
+        "limit": 100
+      },
+      "required_conditions": {
+        "age": 27,
+        "region": "충청남도 천안시"
+      },
+      "expected_policy": {
+        "source_id": "youthcenter-api",
+        "external_id": "20260430005400212969",
+        "title": "청년단기숙소 지원사업",
+        "required_fields": {
+          "data_quality_status": "valid",
+          "application_status": "open",
+          "application_schedule": "always"
+        },
+        "required_categories": [
+          "housing"
+        ]
+      },
+      "required_verdicts": {
+        "age": "match",
+        "region": "match"
+      },
+      "maximum_unknown_count": 0,
+      "maximum_rank": 20,
+      "maximum_elapsed_ms": 2000
+    },
+    {
+      "id": "control-explicit-short-stay",
+      "purpose": "데이터와 구조화 조건 자체가 기대 정책을 유일하게 찾는지 확인한다.",
+      "params": {
+        "q": "단기숙소",
+        "region": "천안",
+        "age": 27,
+        "page": 1,
+        "limit": 20
+      },
+      "required_conditions": {
+        "age": 27,
+        "region": "충청남도 천안시"
+      },
+      "expected_policy": {
+        "source_id": "youthcenter-api",
+        "external_id": "20260430005400212969",
+        "title": "청년단기숙소 지원사업",
+        "required_fields": {
+          "data_quality_status": "valid",
+          "application_status": "open",
+          "application_schedule": "always"
+        },
+        "required_categories": [
+          "housing"
+        ]
+      },
+      "required_verdicts": {
+        "age": "match",
+        "region": "match"
+      },
+      "maximum_unknown_count": 0,
+      "maximum_rank": 1,
+      "maximum_elapsed_ms": 1000
+    }
+  ]
+}

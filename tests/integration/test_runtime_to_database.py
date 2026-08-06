@@ -22,6 +22,7 @@ for import_root in (ROOT, BACKEND_ROOT):
 from app.core.database import create_db_engine  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.services.runtime_importer import import_runtime_raw  # noqa: E402
+from collectors.normalized import NormalizedProgram  # noqa: E402
 
 
 RAW_ROOT = ROOT / "data" / "fixtures" / "raw"
@@ -69,6 +70,7 @@ def _serialized_policy(policy: Policy) -> dict[str, Any]:
 
 def _normalized_seed(program: dict[str, Any]) -> dict[str, Any]:
     selected = dict(program)
+    selected.pop("region_rules")
     selected["collected_at"] = (
         datetime.fromisoformat(
             selected["collected_at"].replace("Z", "+00:00")

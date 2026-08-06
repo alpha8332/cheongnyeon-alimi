@@ -54,8 +54,13 @@ export default function SearchPage() {
   );
 
   return (
-    <div>
-      <h2>정책 검색 및 목록</h2>
+    <div className="page">
+      <header className="greeting">
+        <h1 className="greeting__title">정책 목록</h1>
+        <p className="greeting__subtitle">
+          필터와 키워드로 원하는 청년 정책을 찾아보세요
+        </p>
+      </header>
 
       <PolicyFilters
         filters={effectiveFilters}
@@ -64,10 +69,15 @@ export default function SearchPage() {
       />
 
       {effectiveFilters.search ? (
-        <p style={{ fontWeight: 'bold' }}>
-          &apos;{effectiveFilters.search}&apos; 검색 결과 목록입니다.
+        <p className="chips-label">
+          검색어: <span className="chip">{effectiveFilters.search}</span>
         </p>
       ) : null}
+
+      <div className="section-head">
+        <h2 className="section-title">검색 결과</h2>
+        <span className="section-badge">{filteredPolicies.length}건</span>
+      </div>
 
       {isLoading ? <LoadingState message="정책 목록을 불러오는 중입니다." /> : null}
 
@@ -83,13 +93,7 @@ export default function SearchPage() {
       ) : null}
 
       {!isLoading && !isError && filteredPolicies.length > 0 ? (
-        <div
-          style={{
-            display: 'grid',
-            gap: '12px',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          }}
-        >
+        <div className="cards-grid">
           {filteredPolicies.map((policy) => (
             <PolicyCard key={policy.id} policy={policy} />
           ))}

@@ -1,0 +1,41 @@
+{
+  "scenario": "M6",
+  "description": "q=지원금&keyword=지원금 — explicit keyword with required q",
+  "total": 1,
+  "interpreted_conditions": {
+    "q_raw": "지원금",
+    "q_clean": "지원금",
+    "conditions": [
+      {
+        "dimension": "keyword",
+        "value": "지원금",
+        "source": "explicit",
+        "resolution": "resolved",
+        "candidates": []
+      }
+    ],
+    "override_fields": ["keyword"],
+    "uninterpreted_terms": []
+  },
+  "items": [
+    {
+      "policy_id": 3,
+      "score": 0.77,
+      "verdicts": {
+        "region": "unknown",
+        "age": null,
+        "status": null,
+        "category": "match"
+      },
+      "reason_codes": ["KEYWORD_MATCH", "PARTIAL_POLICY_DATA"],
+      "message": "지원금 키워드와 부분 일치하는 partial 정책입니다.",
+      "unconfirmed_conditions": [
+        {
+          "field": "region",
+          "reason_code": "DATA_MISSING_REGION",
+          "message": "지역 정보가 없어 지원 가능 여부를 확정할 수 없습니다."
+        }
+      ]
+    }
+  ]
+}

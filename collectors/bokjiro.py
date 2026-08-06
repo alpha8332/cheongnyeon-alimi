@@ -92,6 +92,7 @@ class BokjiroCollector:
             list_root,
             list_response,
         )[: selected.limit]
+        total_count = self._total_count(list_root, list_response)
         collected_at = self._now()
         list_document = RawPolicyDocument.from_bytes(
             source_id=self.source_id,
@@ -135,6 +136,7 @@ class BokjiroCollector:
                 service_ids.append(service_id)
 
         detail_count = min(selected.detail_limit, len(service_ids))
+        detail_document_ids: list[str] = []
         for service_id in service_ids[:detail_count]:
             detail_response = self._http_client.get(
                 source_id=self.source_id,
@@ -181,6 +183,7 @@ class BokjiroCollector:
                 collector_version=COLLECTOR_VERSION,
             )
             stored_paths.append(self._store.save(detail_document))
+            detail_document_ids.append(detail_document.document_id)
 
         return CollectionResult(
             source_id=self.source_id,
@@ -188,7 +191,36 @@ class BokjiroCollector:
             item_count=len(service_elements),
             detail_count=detail_count,
             stored_paths=tuple(stored_paths),
+            page=selected.page,
+            page_size=selected.limit,
+            total_count=total_count,
+            external_ids=tuple(service_ids),
+            list_response_document_id=list_document.document_id,
+            detail_document_ids=tuple(detail_document_ids),
         )
+
+    def _total_count(
+        self,
+        root: ElementTree.Element,
+        response: TransportResponse,
+    ) -> int:
+        try:
+            total_count = int(_first_text(root, "totalCount") or "")
+        except ValueError:
+            raise safe_parse_error(
+                source_id=self.source_id,
+                source_url=LIST_URL,
+                response=response,
+                reason="response has invalid total count",
+            ) from None
+        if total_count < 0:
+            raise safe_parse_error(
+                source_id=self.source_id,
+                source_url=LIST_URL,
+                response=response,
+                reason="response has invalid total count",
+            )
+        return total_count
 
     def _parse_success_xml(
         self,

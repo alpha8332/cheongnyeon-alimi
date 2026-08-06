@@ -28,6 +28,10 @@ JSON_COLUMNS = {
     "excluded_conditions",
     "provenance",
 }
+RELATIONAL_STORAGE_FIELDS = {
+    "region_rules",
+}
+JSON_COLUMNS.update({"keywords", "life_stages", "target_groups"})
 
 
 def policy_values(**overrides):
@@ -61,7 +65,7 @@ def policy_values(**overrides):
     return values
 
 
-def test_policy_columns_cover_normalized_program_contract():
+def test_policy_columns_cover_current_normalized_storage_contract():
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     model_columns = set(Policy.__table__.columns.keys()) - {
         "id",
@@ -69,8 +73,8 @@ def test_policy_columns_cover_normalized_program_contract():
         "updated_at",
     }
 
-    assert len(schema["required"]) == 31
-    assert model_columns == set(schema["properties"])
+    assert len(schema["required"]) == 36
+    assert model_columns == set(schema["properties"]) - RELATIONAL_STORAGE_FIELDS
 
 
 def test_json_columns_use_jsonb_only_for_postgresql():
@@ -138,6 +142,7 @@ def test_policy_constraint_and_index_names_are_stable():
         "policy_application_schedule",
         "policy_application_status",
         "policy_data_quality_status",
+        "policy_coverage_scope",
     }
     assert index_names == {
         "ix_policies_source_id",
@@ -145,6 +150,10 @@ def test_policy_constraint_and_index_names_are_stable():
         "ix_policies_data_quality_status",
         "ix_policies_categories_gin",
         "ix_policies_regions_gin",
+        "ix_policies_keywords_gin",
+        "ix_policies_life_stages_gin",
+        "ix_policies_target_groups_gin",
+        "ix_policies_coverage_scope",
     }
 
 

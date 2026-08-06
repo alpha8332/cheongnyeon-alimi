@@ -2,11 +2,12 @@
 
 ## 계획 정보
 
-- 상태: approved
+- 상태: completed (`2026-08-06`)
 - 대상 주차: 3주차
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
+- 현재 Slice: DT7F completed (`Gate G4 pass`)
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -20,7 +21,7 @@
 2. 실제 정책 snapshot을 PostgreSQL에 재현 가능하게 적재한다.
 3. 실제 데이터 근거로 Data·Backend·Frontend 검색 계약을 조정한다.
 4. 각 담당자의 결과를 실제 DB → API → UI로 연결한다.
-5. golden query와 독립 검증 증거를 확인해 `v0.1.0` 후보 여부를 결정한다.
+5. golden query와 승인된 수동 검증 증거를 확인해 `v0.1.0` 후보 여부를 결정한다.
 
 ## 전체 실행 순서
 
@@ -28,6 +29,8 @@
 DT0 시작 기준·담당·Forest 확인
   ↓
 DT1 Source preflight·대표 표본·릴리스 범위
+  ↓
+PSF0~PSF8 검색 데이터·지역·DB 기반
   ↓
 DT2 검색 계약 공동 승인
   ├──────────────┬──────────────┐
@@ -39,13 +42,17 @@ DT4 실제 DB·품질 인계
                  ↓
 DT5 실제 데이터 통합·결함 조정
                  ↓
-DT6 golden query·Release 1 판정
+DT6 기존 golden query·Release 1 판정
+                 ↓
+DT7 신청 가능한 golden 교체·차단 해소·재판정
 ```
 
-DT1을 수행하는 동안 Backend의 자연어 해석 코드 조사·테스트 골격과
-Frontend의 해석 조건·검색 이유 UI prototype은 병렬로 진행할 수 있다.
-DT2 검색 계약이 승인된
-뒤에는 세 영역이 본 구현을 병렬로 진행한다.
+DT1을 수행하는 동안 Backend의 현재 코드·API 구조 조사와 Frontend의
+현재 API Client·query state 소비 구조 조사는 병렬로 진행할 수 있다.
+DT1에서 현재 지역·검색 필드 구조의 실제 충돌이 확인됐으므로
+[Integration 03 검색 데이터 기반](../develop_plan/integration/03_policy_search_data_foundation.md)을
+먼저 수행한다. 이 기반과 DT2 검색 계약이 승인된 뒤 세 영역이 본 구현을
+병렬로 진행한다.
 
 ## Slice DT0 - 시작 기준과 실행 경계 확정
 
@@ -73,16 +80,19 @@ DT2 검색 계약이 승인된
 
 #### Team Leader 역할
 
-- Data 02, Backend 06, Frontend 04, Integration 03 상세 Forest 계획 작성
+- Data 02, Integration 03, Backend 06, Frontend 04, Integration 04 상세
+  Forest 계획 작성
   필요 여부와 담당자를 확인한다.
 - Backend·Frontend 담당자에게 3주차 시작 기준과 Critical Path를 공유한다.
 - 보고서 담당, 사용성 리뷰어와 QA가 사용할 증빙·결함 기록 위치를 정한다.
-- 각 Forest 브랜치는 최신 `develop`에서 시작하고 Slice마다 브랜치를 만들지
-  않는다는 기준을 확인한다.
+- 각 Forest는 원칙적으로 최신 `develop`에서 시작하되, 완료된 검색 기반이 아직
+  `develop`에 없으므로 Backend 06·Frontend 04는 합의된 공통 커밋
+  SHA를 [Gate G1 인수인계](week_03_search_contract_handoff.md)의 명령으로 확인한
+  뒤 시작한다. Slice마다 브랜치를 만들지 않는다.
 
 ### 병렬 가능한 다른 담당 작업
 
-- Backend: 현재 Policy Repository·Service·API 분석과 테스트 골격
+- Backend: 현재 Policy Repository·Service·API 구조 분석
 - Frontend: Backend 해석 조건·검색 이유 표시와 query state 조사
 - QA: 검색 정상·빈 결과·경계값·실패 smoke 초안
 - 보고서: Release 1 증빙 목차와 수집 양식
@@ -150,8 +160,8 @@ DT0 완료 후 DT1 Source preflight와 각 담당자의 준비 작업을 시작�
 
 DT1 전체가 끝나기 전에 Backend와 Frontend는 다음을 진행할 수 있다.
 
-- Backend `W3-B0`: query DTO, Repository 변경 지점과 테스트 골격
-- Frontend `W3-F0`: Backend 해석 조건·검색 이유 표시 prototype
+- Backend `W3-B0`: query DTO·Repository 변경 지점의 문서 초안
+- Frontend `W3-F0`: Backend 해석 조건·검색 이유 표시 의미의 문서 초안
 
 다만 지역 계층, 연령 조건 미상, 기본 status와 partial 의미는 확정 구현하지
 않는다.
@@ -178,22 +188,117 @@ DT1 전체가 끝나기 전에 Backend와 Frontend는 다음을 진행할 수 �
 - Backend의 지역·연령 검색 의미와 index 설계
 - golden query에 맞는 실제 정책 후보 조사
 
+## 독립 Forest PSF0~PSF8 - 검색 데이터 기반
+
+### 목적
+
+DT1에서 확인한 Source 검색 key 유실, 온통청년 지역 code 미매핑, 복지로
+지역·연령·기간 미상과 현재 JSONB exact region 구조를 해결한다. 상세 Slice,
+Gate와 검증은
+[Policy Search Data Foundation 계획](../develop_plan/integration/03_policy_search_data_foundation.md)을
+따른다.
+
+현재 PSF0~PSF8의 계약 Gate, Normalized 1.1.0 실행 계약·지역 경계 Fixture,
+공식 행정구역 기준정보, 두 Source mapping과 Policy·관계·projection 원자적
+적재, 지역·조건 판정 primitive와 기존 소비 호환·성능·실데이터 재생 검증이
+완료됐다. Mock UI partial 배지 표시 문제는 Frontend·Integration 04에 인계하고
+Forest 전체 Gate와 Data 02 인계를 완료했다.
+
+### 내가 수행할 역할
+
+#### Data
+
+- Source key lineage와 summary·keywords·생애주기·대상자 mapping
+- 권위 있는 행정구역 code·계층·별칭·유효기간 기준정보
+- coverage와 포함·제외 지역의 Schema·Fixture·Seed
+- 실제 DT1 Raw 오프라인 재생과 품질 분포
+
+#### Team Leader
+
+- Data·Backend·Frontend의 Schema·DB·API 소비 Gate
+- Backend의 Migration·관계 모델·search projection 결과 확인
+- `nationwide|regional|unknown`과 `match|mismatch|unknown` 의미 승인
+- stacked 브랜치의 기반·merge target·검증 범위 관리
+
+### 선행·후속
+
+- 선행: DT1 completed
+- 완료: PSF7 기존 소비 호환, 합성 query plan과 actual Raw DB dry-run
+- 완료: PSF8 전체 Gate, Git·비밀·Runtime 경계와 Data 02 인계
+- 병렬 가능: Backend·Frontend 현재 구조 분석과 계획·계약 문서 초안
+- 완료: DT2 최종 지역·partial 노출 계약과 Gate G1 공동 승인
+- 후속: DT3 실제 bootstrap, Backend 06 B1과 Frontend 04 FE4-11 병렬 시작
+
 ## Slice DT2 - 검색 계약 공동 결정과 Gate G1 주관
 
 ### 목적
 
-Data 표본, Backend 자연어 해석 초안과 Frontend 표시 prototype을 하나의 검색 계약으로
+Data 표본, Backend 자연어·API 계약 초안과 Frontend 타입·표시 의미
+초안을 하나의 검색 계약으로
 정리하고 세 영역의 본 구현을 해제한다.
 
 ### 선행 조건
 
 - DT1의 대표 표본·분포와 릴리스 범위 초안
+- Integration 03 PSF0~PSF8 검색 데이터 기반 완료
 - Backend `W3-B0`의 API·Repository 초안
 - Frontend `W3-F0`의 해석 조건 표시·query state 초안
 
 Backend나 Frontend 초안이 준비되지 않았다면 Data 계약을 단독 승인하지
 않는다. 기다리는 동안 DT3의 pagination·수집 실행 구조 중 검색 계약과
 독립적인 부분을 준비할 수 있다.
+
+현재 상태는 `completed`다. PSF 이후 actual profile, Data 권고안과 Schema
+영향 판정, Backend `W3-B0`·Frontend `W3-F0` 병합, 계약 불일치 보완과
+소비 검증을 모두 완료하고 `2026-08-04`에 G1을 승인했다.
+
+### DT2 세부 실행 순서
+
+#### DT2A - 병합 계약 정합성 보완
+
+- 상태: completed (`2026-08-04`)
+- Backend plan의 실제 Schema import 경로와 `application_status=null` 상태
+  bucket을 현재 코드에 맞춘다.
+- query-level 해석 경고는 `interpreted_conditions.conditions[]`, row-level
+  데이터 미확인은 `items[].unconfirmed_conditions[]`로 분리한다.
+- Frontend draft `PolicySearchHit`에 `unknown_count: number`를 반영하고 폐기된
+  FE4 Slice 참조를 현재 FE4-14·FE4-19로 고친다.
+- 계획·draft type만 수정하며 G1 전 본 구현·Mock·테스트 코드는 만들지 않는다.
+- 정적 parity 검사, 문서 검증 테스트 10건, `validate_docs.py`와
+  `git diff --check`를 통과했다. Frontend build·lint는 DT2C에서 실행한다.
+
+#### DT2B - Data 근거 기반 G1 결정 동결
+
+- 상태: completed (`2026-08-04`)
+- 실제 온통청년 10건·복지로 10건 분포를 endpoint, parameter, unknown,
+  partial, 상태, 정렬, pagination, reason·오류 결정에 연결한다.
+- `G1-REASON`, `G1-UNK`, `G1-ROUTE`를 해소하고 category 다중 선택과 지역
+  ambiguous 정확도는 Release 1 blocker인지 후속 구현 위험인지 분류한다.
+- Schema·Fixture·Seed·DB enum·`null`·빈 배열 계약은 바꾸지 않는다고
+  세 영역 영향표에 기록한다.
+- G1 결정 정적 검사, 문서 검증 테스트 10건과 최종 `validate_docs.py`·
+  `git diff --check`를 통과했다. 최초 문서 검증의 필수 제목 오류 2건은
+  제목을 정책에 맞게 복원한 뒤 재검증했다.
+
+#### DT2C - 소비 계약 검증과 증거 기록
+
+- 상태: completed (`2026-08-04`)
+- 호스트에 Node/npm이 없어 Node `22.22.0` Docker 컨테이너에 저장소를
+  read-only로 연결하고 Frontend build·lint를 검증했다.
+- 수정된 검증 환경에서 build·lint, Frontend 계약 테스트 7건, 문서 검증
+  테스트 10건, `validate_docs.py`와 `git diff --check`가 통과했다.
+- 전체 npm 의존성 audit에는 개발 의존성 high 1건이 남았지만 production
+  dependency audit은 0건이다. DT2C에서 lockfile을 임의 변경하지 않는다.
+- 비밀·Runtime Raw·로컬 DB credential과 산출물의 Git 비추적 경계를
+  확인했다. PostgreSQL·외부 API·pgpass는 이 Slice에서 사용하지 않았다.
+
+#### DT2D - Gate 승인과 후속 해제
+
+- 상태: completed (`2026-08-04`)
+- 인수인계 결정표와 검증 결과를 최종화하고 `G1_APPROVED`를 기록했다.
+- Data DT2, W3-B0·W3-F0 준비 상태, 주차 체크리스트와 `docs/index.md` 인계
+  상태를 동기화했다.
+- DT3, Backend B1과 Frontend FE4-11의 시작 조건을 병렬 해제했다.
 
 ### 수행 작업
 
@@ -230,11 +335,13 @@ Data·Backend·Frontend와 다음을 확정한다.
 - Frontend: TypeScript query·화면 소비 기준
 - Integration: golden query와 전체 인수 기준
 
-### 병렬 가능 작업
+### Gate G1 전 병렬 준비
 
-- Data: 승인 전에도 pagination 종료 탐지와 안전한 호출 제어 구현 가능
-- Backend: 계약 독립적인 테스트 fixture와 query builder 골격 가능
-- Frontend: 해석 조건·검색 이유 UI component 가능
+- Data: actual profile과 Source 호출·pagination 제약 근거 정리
+- Backend: 현재 구조 분석과 API·Repository 계약·Forest 계획 초안
+- Frontend: 현재 구조 분석과 TypeScript 타입·표시 의미·Forest 계획 초안
+
+G1 전에는 세 영역의 본 구현과 테스트 코드를 작성하지 않는다.
 
 ### Gate G1 승인 조건
 
@@ -243,6 +350,7 @@ Data·Backend·Frontend와 다음을 확정한다.
 - Schema, `null`, 빈 배열과 enum 변경 여부가 확인됨
 - 미확정 항목이 본 구현 또는 Release 1을 막는지 분류됨
 - Data·Backend·Frontend 담당자가 소비 관점에서 확인함
+- DT2A 계약 불일치가 모두 해소되고 DT2C의 실행 가능한 검증이 통과함
 
 ### 후속 해제
 
@@ -253,6 +361,8 @@ G1 승인 후 다음 본 구현을 병렬로 시작한다.
 - Frontend `W3-F1`~`W3-F2A` 자연어 전달·해석 결과·Mock 검색 UI
 
 ## Slice DT3 - 릴리스 데이터 수집과 PostgreSQL bootstrap
+
+- 상태: completed (`2026-08-04`)
 
 ### 목적
 
@@ -265,8 +375,8 @@ PostgreSQL에 적재한다.
 - pagination 종료, 중단·재시도와 API 이용 조건 확인
 - Migration 적용 PostgreSQL과 Runtime Raw root 준비
 
-G1 전체 검색 계약이 아직 승인되지 않아도 Source pagination·Raw 저장
-구현은 진행할 수 있다. 다만 지역·연령 정규화 규칙 변경은 G1 없이 확정하지
+DT3 구현은 DT2·Gate G1 승인 뒤 시작한다. G1 전에는 Source
+pagination·Raw 저장의 현재 구조와 제약만 분석하고 새 구현을 완료로 처리하지
 않는다.
 
 ### 수행 작업
@@ -309,6 +419,16 @@ G1 전체 검색 계약이 아직 승인되지 않아도 Source pagination·Raw 
 - Source별 품질·실패·적재 집계 제공
 - 비밀키, Runtime Raw와 DB 파일 Git 비추적 확인
 
+### 완료 결과
+
+- 온통청년 6 page 2,698건과 복지로 목록 461건·상세 5건을 완료 manifest로
+  수집하고 오프라인 replay에서 invalid 0을 확인했다.
+- Runtime PostgreSQL에 지역 538건·alias 1,080건과 정책 3,159건을 적재했다.
+- 동일 snapshot 재실행은 전건 unchanged였고 Source별 row와 distinct
+  external ID 수가 일치했다.
+- 실제 호출 실패 1회, Runtime DB 부재와 psycopg2 지역화 오류를 포함한 실패·
+  복구 이력은 Data 02 개발 기록에 남겼다.
+
 ### 후속 해제
 
 - DT4 실제 데이터 품질·검색 후보 인계
@@ -316,6 +436,8 @@ G1 전체 검색 계약이 아직 승인되지 않아도 Source pagination·Raw 
 - 실제 DB 기반 golden query 기대 정책 확정
 
 ## Slice DT4 - 실제 데이터 품질 판정과 담당자 인계
+
+- 상태: completed (`2026-08-04`)
 
 ### 목적
 
@@ -369,6 +491,18 @@ Raw payload와 비밀정보는 인계하지 않는다.
 - Backend·Frontend가 사용할 안전한 실제 사례와 경계값이 준비됨
 - golden query 후보 존재 또는 Source 범위 결정 필요가 명확함
 
+### 완료 결과
+
+- 실제 정책 3,159건을 오프라인 재생해 valid 1,462·partial 1,697·invalid 0,
+  기본 노출 1,187건의 품질·검색 분포를 재현했다.
+- Source placeholder인 `0세 ~ 0세` 631건을 원문 보존·구조화 연령 null·
+  partial로 보정하고 Runtime DB 재적재와 전건 unchanged 재실행을 확인했다.
+- 일반 월세 검색에는 실제 후보가 있지만 `27세 천안 청년 월세 지원`의
+  confirmed 정책은 0건이며, 복지로 unknown 후보 2건만 남는다고 판정했다.
+- Backend·Frontend 안전 인계와 Integration 04 선택 사항은
+  [Release 1 실데이터 품질 Profile](../../data/release_dataset_profile.md)에
+  기록했다.
+
 ### 후속 해제와 대기
 
 - Backend `W3-B2`가 검색 endpoint를 완료하면 DT5 HTTP 통합을 시작할 수 있다.
@@ -377,6 +511,10 @@ Raw payload와 비밀정보는 인계하지 않는다.
 - 기다리는 동안 Data 오류 수정, 품질 재검증과 보고서 근거 정리를 진행한다.
 
 ## Slice DT5 - Integration Gate G2·G3 주관
+
+### 상태
+
+completed (`2026-08-06`)
 
 ### 목적
 
@@ -432,7 +570,24 @@ Data·Backend·Frontend의 영역별 결과를 실제 snapshot으로 연결하�
 
 G3 통과 후 DT6 golden query·Release 1 최종 판정을 시작한다.
 
+### 완료 결과
+
+- 다른 PC의 Git 제외 Runtime Raw·DB가 이 PC에 없음을 확인하고 승인 호출
+  예산으로 최신 snapshot 3,156건을 복구했다.
+- 실제 PostgreSQL 전체 Backend 114건, Frontend unit 43건·build·lint와 실제
+  API Playwright E2E 10건을 통과했다.
+- 검색·pagination·빈 결과·422·503·partial 상세와 Browser console을
+  검증하고 통합 중 발견한 Backend test fixture와 Frontend URL·E2E 결함을
+  수정했다.
+- golden query confirmed 정책 0건과 일반 term 후보 확대는 DT6 판정
+  항목으로 남겼다. 상세 근거는
+  [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
+  따른다.
+
 ## Slice DT6 - golden query와 `v0.1.0` 판정
+
+- 상태: completed (`2026-08-06`)
+- 판정: `blocked`
 
 ### 목적
 
@@ -496,26 +651,130 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 - `pass` 또는 허용 가능한 `conditional`인 `develop`만 릴리스 PR 후보
 - 미해결 위험, 범위 제약과 후속 작업이 Release 문서에 기록됨
 
+### 완료 결과
+
+- exact golden query는 천안·27세·주거를 해석했지만 48건으로 확대됐고, 첫
+  `청년월세 지원사업`의 지역·연령·상태는 확정할 수 없었다.
+- `월세` 단일어와 천안·27세·주거 명시 조건으로 좁힌 3건도 모두
+  복지로 partial이며 지역·연령 unknown이라 confirmed 정책은 0건이다.
+- 첫 후보의 지원 내용에는 `2026-03-30 ~ 2026-05-29` 신청기간이 있으나
+  구조화 기간·상태가 없어 현재 신청 가능성을 설명하지 못한다.
+- 실제 API Browser에서 48건·3페이지, 조건 Chip, unknown 경고와 상세를
+  확인하고 상세에 기존 데이터 출처·KST 수집 시각 표시를 추가했다.
+- QA·사용성 리뷰어·보고서 근거가 없고 actual 정책도 확정할 수 없으므로
+  Gate G4를 `blocked`로 기록했다. 해소 전 `v0.1.0` 릴리스 PR을 만들지 않는다.
+
+## Slice DT7 - 신청 가능한 golden query와 Release 1 재인수
+
+- 상태: completed (`DT7A~F`, `2026-08-06`)
+- 판정: `Gate G4 pass`
+
+### 목적
+
+신청기간이 지난 DT6 월세 정책 대신 현재 snapshot에서 신청 가능 상태와
+조건이 확인되는 정책을 golden으로 고정하고, 관련성·성능·UI·승인된 수동 증거를
+동일 계약으로 재검증한다.
+
+### 현재 golden query와 기대 정책
+
+```text
+천안 사는 27살 청년 단기숙소 지원 받을 수 있나?
+```
+
+- 온통청년 `20260430005400212969`, `청년단기숙소 지원사업`
+- `valid/open/always/housing`, 천안·27세 match, unknown 0
+- 자연어: 20위 이내·2초 이내
+- `단기숙소` + 천안·27세 control: 1위·1초 이내
+
+### DT7A - 데이터·인수 기반
+
+- 상태: completed
+- 현재 snapshot offline profile에서 기대 정책 confirmed 1건을 확인했다.
+- `data/release_1_acceptance.json`에 snapshot·identity·자동 기준을 고정했다.
+- `scripts/audit_release_1.py`로 실제 HTTP 기술 증거를 재현 가능하게 만들었다.
+- 현재 자연어 결과는 495건 중 49위·약 9.3초로 차단, control은 1건 중
+  1위·약 0.1초로 통과했다.
+
+### DT7B - Backend 관련성·성능
+
+- 상태: completed (`2026-08-06`)
+- `단기숙소`를 housing·keyword로 보존하고 대화형 filler를 제외했다.
+- 구체 term anchor는 AND, 필드 검색은 OR, 일반어 전용 탐색은 OR fallback으로
+  고정했다.
+- actual snapshot에서 자연어·control 모두 1건 중 1위였고 cold
+  317.04ms·109.92ms, warm 5회 최대 91.89ms·109.16ms로 예산을 통과했다.
+- Backend 전체 PostgreSQL 119건과 Frontend API 소비 unit 45건이 통과했다.
+
+### DT7C - Data 신청기간·상태 안전성
+
+- 상태: completed (`2026-08-06`)
+- `profile_release_dataset.py` 1.2.0에 Source 신청기간 mapping, 기간·상태 일치,
+  일반 본문 날짜 미승격과 golden 정책 근거 감사를 추가했다.
+- 전체 3,156건과 기본 노출 1,184건에서 Source 근거 없는 기간 승격과 상태
+  불일치는 0건이다.
+- 복지로 461건은 현재 Source 계약에 신청기간 전용 필드가 없어 기간·상태를
+  null로 유지했다. 본문 날짜 표기 2건은 관찰만 하고 승격하지 않았다.
+- golden 정책은 온통청년의 명시적 `상시` 근거와 `open` 상태가 일치하며,
+  후보 노출만 허용하고 자격 확정 표현은 계속 금지한다.
+
+### DT7D - Frontend 실제 API 재검증
+
+- 상태: completed (`2026-08-06`)
+- actual API E2E 11건에서 검색·상세·오류·partial 계약과 새 golden 첫 결과를
+  검증했다.
+- desktop·390px Browser에서 `청년단기숙소 지원사업` 1위, 조건 근거, 출처,
+  KST 수집 시각, 접수 상태와 자격 비확정 안내를 확인했다.
+- 통합 중 발견한 자격 단정 위험은 검색·상세 공통 안내와 회귀 테스트로
+  범위 안에서 수정했다.
+
+### DT7E - 경량 팀 리뷰 증거 수집
+
+- 상태: completed (`2026-08-06`)
+- actual 기술 증거를 `docs/contest/release_1_technical_evidence.json`에
+  고정하고 QA·사용성 경량 리뷰와 검증 절차를 제공했다.
+- 역할 독립·보고서 대조·API 오류 UX는 Release 1 필수 Gate에서 제외하고
+  `v0.5.0`으로 이관했다.
+- `scripts/verify_release_1_evidence.py`는 contract hash·snapshot·exact query와
+  필수 check를 대조하며 DT7F 전에는 Gate를 `blocked`로 유지한다.
+- 범용 Windows `run.bat`는 실제 PostgreSQL 기반 Backend·Frontend를 같은
+  터미널에 실행하고 홈 화면을 연다. 특정 acceptance·golden query는 자동
+  실행하지 않으며 검토자가 직접 검색하고 `Ctrl+C`로 종료한다.
+- 최종 검증 결과는 technical·QA·사용성 `pass`, readiness
+  `ready-for-team-leader-decision`, blocker 0건이다.
+
+### DT7F - Gate G4 재판정
+
+Team Leader가 자동 기준과 승인된 경량 리뷰 증거를 확인해 Gate G4를
+`pass`로 재판정했다.
+
+기대 정책이 현 Source에 있으므로 Source 추가는 현재 차단사항이 아니다.
+보고서와 API 오류 토스트 검증은 실행한 것으로 간주하지 않고 `v0.5.0`으로
+이관했다.
+
 ## 다른 담당자 의존성 요약
 
 | 내가 수행할 작업 | 기다려야 하는 다른 담당 결과 | 기다리는 동안 가능한 내 작업 |
 | --- | --- | --- |
-| DT2 검색 계약 승인 | Backend `W3-B0` API 초안, Frontend `W3-F0` query·UI 초안 | DT3 pagination·호출 제어 준비 |
+| PSF0~PSF8 검색 데이터 기반 | Backend Migration·projection, Frontend 소비 검토 | Data Schema·지역 기준정보·Source mapping |
+| DT2 검색 계약 승인 | Integration 03 완료, Backend `W3-B0` API 초안, Frontend `W3-F0` query·UI 초안 | DT3 pagination·호출 제어 준비 |
 | Backend 실제 분포·index 인계 | Backend 담당이 소비할 query 설계 질문 | Data 분포·cardinality와 경계 사례 정리 |
 | DT5 실제 검색 HTTP | Backend `W3-B2` endpoint·테스트 | Data 품질 수정·재적재·문서화 |
 | DT5 Frontend Browser | Frontend `W3-F2` 실제 API 연결 | Backend HTTP 결과와 golden 후보 검증 |
 | DT6 Release 판정 | BE·FE 전체 테스트, QA, 리뷰어, 보고서 근거 | Data 최종 품질·보안·Git 경계 점검 |
+| DT7 Release 재인수 | BE 관련성·성능, FE 실제 API, QA·리뷰어·보고서 증거 | Data 기간·상태 감사, acceptance 자동화 유지 |
 
 ## 내가 먼저 제공해야 하는 산출물
 
 Backend·Frontend가 기다리지 않게 다음 순서로 공유한다.
 
 1. 대표 데이터의 지역·연령·상태·품질 분포
-2. 릴리스 수집 범위와 예상 데이터 규모
-3. 검색 계약 결정 질문과 Data 권고안
-4. 실제 snapshot DB 준비 여부
-5. 경계 사례와 golden query 후보
-6. 통합 중 Data 결함 수정 결과
+2. Source key lineage와 검색 데이터 기반 계약
+3. 행정구역 기준정보·coverage·지역 판정 사례
+4. 릴리스 수집 범위와 예상 데이터 규모
+5. 검색 계약 결정 질문과 Data 권고안
+6. 실제 snapshot DB 준비 여부
+7. 경계 사례와 golden query 후보
+8. 통합 중 Data 결함 수정 결과
 
 ## 테스트와 검증
 
@@ -568,31 +827,42 @@ git status --short
 
 ### Data
 
-- [ ] Source preflight·호출 예산·릴리스 범위 승인
-- [ ] 대표 실데이터 분포와 검색 계약 질문 공유
-- [ ] Gate G1 Data 계약 공동 승인
-- [ ] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
-- [ ] 재실행 idempotency·transaction·중복 방지 검증
-- [ ] 지역·연령·상태·품질과 golden query 후보 검증
-- [ ] Backend·Frontend에 안전한 실제 사례 인계
-- [ ] 비밀·Raw·DB Git 비추적 확인
+- [x] Source preflight·호출 예산·릴리스 범위 승인
+- [x] 대표 실데이터 분포와 검색 계약 질문 공유
+- [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
+- [x] Gate G1 Data 계약 공동 승인
+- [x] 실제 릴리스 snapshot 수집·정규화·PostgreSQL 적재
+- [x] 재실행 idempotency·transaction·중복 방지 검증
+- [x] 지역·연령·상태·품질과 golden query 후보 검증
+- [x] Backend·Frontend에 안전한 실제 사례 인계
+- [x] 비밀·Raw·DB Git 비추적 확인
 
 ### Team Leader
 
-- [ ] 2주차 병합 기준과 3주차 Forest·담당 확인
-- [ ] Gate G0 시작 승인
-- [ ] Gate G1 검색 계약 승인
-- [ ] Gate G2 세 영역 준비 증거 확인
-- [ ] Gate G3 실제 DB → API → UI 통합 확인
-- [ ] QA·리뷰어·보고서 근거 확인
-- [ ] golden query와 변형·실패 시나리오 확인
-- [ ] Gate G4 `v0.1.0` 판정과 남은 위험 기록
+- [x] 2주차 병합 기준과 3주차 Forest·담당 확인
+- [x] Gate G0 시작 승인
+- [x] Integration 03 PSF0~PSF8 완료
+- [x] Integration 03 기반 브랜치 병합 승인
+- [x] Gate G1 검색 계약 승인
+- [x] Gate G2 세 영역 준비 증거 확인
+- [x] Gate G3 실제 DB → API → UI 통합 확인
+- [x] 경량 QA·사용성 근거와 `v0.5.0` 이관 범위 확인
+- [x] golden query와 변형·실패 시나리오 확인
+- [x] Gate G4 `v0.1.0` `pass` 판정과 비차단 후속 기록
+- [x] 신청 가능한 단기숙소 golden 기대 정책·자동 기준 고정
+- [x] Backend 관련성·성능 기준 통과
+- [x] Frontend 실제 API 재검증
+- [x] DT7E actual 기술 증거·경량 QA·사용성 증거 정합성 통과
+- [x] 보고서·API 오류 UX 검증의 `v0.5.0` 이관 기록
+- [x] DT7F Gate G4 재판정
 
 ## 관련 문서
 
 - [3주차 전체 상세 계획](week_03_release_1.md)
+- [검색 계약 Gate G1 인수인계](week_03_search_contract_handoff.md)
 - [주차별 상세 실행 계획 안내](README.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
+- [Policy Search Data Foundation](../develop_plan/integration/03_policy_search_data_foundation.md)
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
 - [Data Pipeline 개발 기록](../development_notes/data/data_pipeline.md)
 - [Policy Data Database Integration 개발 기록](../development_notes/integration/policy_data_database_integration.md)

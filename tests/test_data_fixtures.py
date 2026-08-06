@@ -24,6 +24,9 @@ EXTRACTED_PATH = ROOT / "data/fixtures/extracted/policies.json"
 NORMALIZED_PATH = ROOT / "data/fixtures/normalized/programs.json"
 REJECTED_PATH = ROOT / "data/fixtures/rejected/programs.json"
 SEED_PATH = ROOT / "data/seeds/initial_programs.json"
+SEARCH_CONTRACT_PATH = (
+    ROOT / "data/fixtures/contracts/policy_search_region_cases.json"
+)
 
 
 def load_json(path: Path) -> object:
@@ -50,7 +53,7 @@ class DataFixtureContractTests(unittest.TestCase):
         ) as connection:
             outputs = build_outputs()
 
-        self.assertEqual(12, len(outputs))
+        self.assertEqual(13, len(outputs))
         connection.assert_not_called()
 
     def test_raw_fixtures_are_synthetic_and_contract_valid(self) -> None:
@@ -203,6 +206,40 @@ class DataFixtureContractTests(unittest.TestCase):
             )
         )
         self.assertTrue(
+            all(candidate["schema_version"] == "1.1.0" for candidate in seed)
+        )
+        by_external_id = {
+            candidate["external_id"]: candidate
+            for candidate in seed
+        }
+        self.assertEqual(
+            ["주거비 지원", "월세", "보조금"],
+            by_external_id["SYN-YOUTH-001"]["keywords"],
+        )
+        self.assertEqual(
+            ["생활지원", "생활비"],
+            by_external_id["SYN-YOUTH-002"]["keywords"],
+        )
+        self.assertEqual(
+            ["주거", "서민금융"],
+            by_external_id["SYN-BOK-001"]["keywords"],
+        )
+        self.assertEqual(
+            ["청년"],
+            by_external_id["SYN-BOK-001"]["life_stages"],
+        )
+        self.assertEqual(
+            ["저소득 청년"],
+            by_external_id["SYN-BOK-001"]["target_groups"],
+        )
+        self.assertEqual(
+            "nationwide",
+            by_external_id["SYN-YOUTH-002"]["coverage_scope"],
+        )
+        self.assertTrue(
+            all(candidate["region_rules"] == [] for candidate in seed)
+        )
+        self.assertTrue(
             any(candidate["application_start"] is None for candidate in seed)
         )
         self.assertTrue(any(candidate["regions"] == [] for candidate in seed))
@@ -241,6 +278,68 @@ class DataFixtureContractTests(unittest.TestCase):
             SEED_PATH.read_bytes(),
         )
         self.assertEqual([], list((ROOT / "data").rglob("*.csv")))
+
+    def test_search_region_contract_cases_cover_approved_boundaries(
+        self,
+    ) -> None:
+        cases = load_json(SEARCH_CONTRACT_PATH)
+        assert isinstance(cases, list)
+        self.assertEqual(
+            {
+                "nationwide",
+                "regional_parent",
+                "regional_exact",
+                "regional_exclusion",
+                "unknown",
+                "ambiguous",
+                "retired_code",
+            },
+            {case["case_id"] for case in cases},
+        )
+
+        validator = NormalizedProgramValidator()
+        for case in cases:
+            result = validator.validate(case["program"])
+            self.assertIsNotNone(
+                result.program,
+                msg=(
+                    case["case_id"],
+                    [issue.to_dict() for issue in result.issues],
+                ),
+            )
+
+        by_id = {
+            case["case_id"]: case["program"]
+            for case in cases
+        }
+        self.assertEqual(
+            "nationwide",
+            by_id["nationwide"]["coverage_scope"],
+        )
+        self.assertEqual([], by_id["nationwide"]["region_rules"])
+        self.assertEqual("unknown", by_id["unknown"]["coverage_scope"])
+        self.assertEqual([], by_id["unknown"]["region_rules"])
+        self.assertEqual(
+            "ambiguous",
+            by_id["ambiguous"]["region_rules"][0][
+                "resolution_status"
+            ],
+        )
+        self.assertEqual(
+            {"include", "exclude"},
+            {
+                rule["relation"]
+                for rule in by_id["regional_exclusion"][
+                    "region_rules"
+                ]
+            },
+        )
+        self.assertEqual(
+            "kr-bjd-20260803",
+            by_id["retired_code"]["region_rules"][0][
+                "region_scheme"
+            ],
+        )
 
     def test_rejected_fixture_records_exact_failure_reason(self) -> None:
         rejected = load_json(REJECTED_PATH)

@@ -1,9 +1,10 @@
 import { createBrowserRouter } from 'react-router';
-import Layout from '@/layouts/RootLayout';
+import AppShellLayout from '@/layouts/AppShellLayout';
 
 // user 페이지
 import HomePage from '@/pages/user/HomePage';
 import SearchPage from '@/pages/user/SearchPage';
+import PolicySearchPage from '@/pages/user/PolicySearchPage';
 import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import FavoritesPage from '@/pages/user/FavoritesPage';
 import NotificationsPage from '@/pages/user/NotificationsPage';
@@ -20,17 +21,15 @@ import NotFoundPage from '@/components/common/NotFoundPage';
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <AppShellLayout />,
     errorElement: <NotFoundPage />,
     children: [
-      // User 라우트
       { index: true, element: <HomePage /> },
+      { path: 'search', element: <PolicySearchPage /> },
       { path: 'programs', element: <SearchPage /> },
       { path: 'programs/:id', element: <ProgramDetailPage /> },
       { path: 'favorites', element: <FavoritesPage /> },
       { path: 'notifications', element: <NotificationsPage /> },
-
-      // Admin 라우트
       { path: 'admin', element: <DashboardPage /> },
       { path: 'admin/collectors', element: <CollectorPage /> },
       { path: 'admin/runs', element: <CollectionRunsPage /> },

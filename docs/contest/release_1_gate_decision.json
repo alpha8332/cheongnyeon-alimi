@@ -1,0 +1,40 @@
+{
+  "decision_version": "1.0.0",
+  "release": "v0.1.0",
+  "gate": "G4",
+  "decided_at": "2026-08-06T13:50:34+09:00",
+  "decided_by_role": "team-leader",
+  "decision": "pass",
+  "candidate_status": "release-candidate-ready",
+  "contract_sha256": "53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c",
+  "dataset_baseline": {
+    "accepted": 3156,
+    "snapshots": {
+      "youthcenter-api": "6add34f7aad9456ab0abb19175b7621c",
+      "bokjiro-central-welfare-api": "ffa74ef47e6048109f11bf40d1ac5e15"
+    }
+  },
+  "evidence": {
+    "technical": "docs/contest/release_1_technical_evidence.json",
+    "manual": "docs/contest/release_1_evidence.json",
+    "review_summary": "docs/contest/release_1_review_summary.md"
+  },
+  "criteria": {
+    "technical_verdict": "pass",
+    "qa_verdict": "pass",
+    "usability_verdict": "pass",
+    "verification_blockers": 0
+  },
+  "deferred_to_v0_5_0": [
+    "api-error-retry-toast-browser-review",
+    "report-evidence-review",
+    "eligibility-and-application-data-enrichment",
+    "long-region-list-collapsing"
+  ],
+  "publication": {
+    "develop_merge_completed": false,
+    "main_release_pr_completed": false,
+    "version_tag_created": false
+  },
+  "decision_note": "G4 and the Release 1 implementation candidate are complete. Publication remains subject to the repository merge and tag workflow."
+}

@@ -3,7 +3,7 @@ import type {
   ApplicationStatus,
   PolicyDto,
   PolicyCategory,
-} from '@/types/policy';
+} from '../types/policy.js';
 
 const CATEGORY_LABELS: Record<PolicyCategory, string> = {
   housing: '주거',
@@ -26,6 +26,9 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   closed: '마감',
   scheduled: '예정',
 };
+
+export const POLICY_ELIGIBILITY_NOTICE =
+  '검색 결과는 신청 가능한 정책 후보를 안내하며, 실제 자격 충족을 확정하지 않습니다. 신청 전 원문과 세부 요건을 확인해 주세요.';
 
 export function getCategoryLabel(category: PolicyCategory): string {
   return CATEGORY_LABELS[category];
@@ -109,6 +112,17 @@ export function formatApplicationPeriod(policy: PolicyDto): string {
   }
 
   return '신청 기간 미정';
+}
+
+export function formatCollectedAt(value: string): string {
+  const collectedAt = new Date(value);
+  if (Number.isNaN(collectedAt.getTime())) {
+    return '수집 시각 미확인';
+  }
+
+  const kst = new Date(collectedAt.getTime() + 9 * 60 * 60 * 1000);
+  const [date, time] = kst.toISOString().slice(0, 16).split('T');
+  return `${date} ${time} KST`;
 }
 
 function startOfDay(date: Date): Date {

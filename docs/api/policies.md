@@ -6,12 +6,114 @@
 - 인증: 현재 없음
 - 응답 형식: JSON
 - 정렬: `id` 오름차순
-- 데이터 기준: `NormalizedProgram` 1.0.0
+- 데이터 기준: `NormalizedProgram` 1.0.0·1.1.0 전환 호환
 
 일반 사용자 Policy API는 Raw provenance를 반환하지 않는다. 목록과 상세는
 기본적으로 `valid` 정책만 노출하며 `include_partial=true`일 때
 `valid`·`partial`을 함께 허용한다. `invalid` 정책은 어떤 경우에도 공개하지
 않는다.
+
+## 정책 자연어 검색
+
+```http
+GET /api/v1/policies/search
+```
+
+### Query
+
+| 이름 | 타입 | 기본값 | 규칙 |
+| --- | --- | --- | --- |
+| `q` | string | **필수** | 자연어 검색어 (공백 제거 후 1자 이상 200자 이하, 필수) |
+| `keyword` | string | 없음 | 명시적 키워드 필터 (최대 100자) |
+| `region` | string | 없음 | 명시적 지역 alias/name 문자열 (최대 100자) |
+| `age` | integer | 없음 | 명시적 만 연령 (0~150세) |
+| `category` | enum | 없음 | 명시적 카테고리 |
+| `status` | enum | 없음 | 명시적 신청 상태 (`open`, `closed`, `scheduled`) |
+| `include_partial` | boolean | `true` | partial 정책 포함 여부 (기본값: true) |
+| `page` | integer | `1` | 1 이상 |
+| `limit` | integer | `20` | 1~100 |
+
+### 응답
+
+```json
+{
+  "total": 1,
+  "page": 1,
+  "limit": 20,
+  "interpreted_conditions": {
+    "q_raw": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
+    "q_clean": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
+    "conditions": [
+      {
+        "dimension": "age",
+        "value": 27,
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "category",
+        "value": "housing",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "keyword",
+        "value": "단기숙소",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "region",
+        "value": "충청남도 천안시",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": ["충청남도 천안시"]
+      }
+    ],
+    "override_fields": [],
+    "uninterpreted_terms": ["청년", "지원"]
+  },
+  "items": [
+    {
+      "policy": {
+        "schema_version": "1.1.0",
+        "id": 1,
+        "title": "청년단기숙소 지원사업"
+      },
+      "verdicts": {
+        "region": "match",
+        "age": "match",
+        "category": "match",
+        "status": null
+      },
+      "unconfirmed_conditions": [],
+      "reason_codes": ["AGE_MATCH", "CATEGORY_MATCH", "REGION_MATCH"],
+      "message": "청년단기숙소 지원사업 - 판정 완료",
+      "score": 15.0,
+      "unknown_count": 0
+    }
+  ]
+}
+```
+
+### 자연어 term 결합과 관련도
+
+- `사는`, `받을`, `수`, `있나`처럼 검색 대상을 특정하지 않는 대화형 filler는
+  `uninterpreted_terms`와 검색 후보 조건에서 제외한다. filler만 있고 구조화
+  조건·검색 term이 하나도 없으면 `400 Bad Request`를 반환한다.
+- `단기숙소`, `월세`, `적금`처럼 category를 구조화하는 구체 표현은 같은
+  `source="q"`의 `keyword` 조건으로도 보존한다. 명시적 `keyword`가 있으면
+  기존 override 규칙에 따라 자연어 keyword를 대체한다.
+- 구체 keyword 또는 일반어가 아닌 독립 term이 있으면 각 구체 term은 모두
+  정책의 search projection·제목·요약 중 하나에 일치해야 한다. 한 term은 세
+  필드 중 하나만 일치해도 된다.
+- `청년`, `지원`, `정책`, `사업` 같은 일반 term만 있는 탐색은 기존 발견
+  가능성을 위해 term 중 하나가 일치하는 후보를 허용한다.
+- 이 규칙은 후보 집합만 제한하며 `score DESC`, `unknown_count ASC`, 상태,
+  `policy.id ASC`의 최종 결정적 정렬 순서는 바꾸지 않는다.
 
 ## 정책 목록
 
@@ -46,7 +148,7 @@ GET /api/v1/policies
   "limit": 10,
   "items": [
     {
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "external_id": "SYN-YOUTH-001",
@@ -136,7 +238,7 @@ GET /api/v1/policies/{policy_id}
 
 ## 저장·검색 경계
 
-- Normalized 31개 필드의 DB 저장과 공개 DTO 노출 관계는
+- Normalized 1.1.0의 36개 논리 필드와 현재 31개 DB 저장 필드의 전환 관계는
   [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
   따른다.
 - PostgreSQL category·region 필터는 JSONB `@>` 연산자를 사용해 배열 원소를
@@ -145,6 +247,8 @@ GET /api/v1/policies/{policy_id}
   원소 일치 의미를 검증한다.
 - 자유 키워드, 원문 부분 문자열, 정렬 선택과 추천은 이 계약 범위가 아니다.
 - `provenance`는 DB에 보존하지만 목록·상세 공개 DTO에서 제외한다.
+- `keywords`, `life_stages`, `target_groups`, `coverage_scope`, `region_rules`는
+  검색 내부 계약이며 이 기존 목록·상세 DTO에는 추가하지 않는다.
 
 ## Frontend D6 인계
 
@@ -173,7 +277,7 @@ export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 export type PublicDataQualityStatus = 'valid' | 'partial';
 
 export interface PolicyDto {
-  schema_version: '1.0.0';
+  schema_version: '1.0.0' | '1.1.0';
   source_id: string;
   source_name: string;
   external_id: string | null;

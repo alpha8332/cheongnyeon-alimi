@@ -78,7 +78,8 @@ class YouthCenterCollector:
             response=response,
             secret=self._api_key,
         )
-        items = self._parse_items(response)[: selected.limit]
+        parsed_items, total_count = self._parse_items(response)
+        items = parsed_items[: selected.limit]
         prepared_items: list[tuple[str, bytes]] = []
         for item in items:
             external_id = item.get("plcyNo")
@@ -149,12 +150,19 @@ class YouthCenterCollector:
             item_count=len(items),
             detail_count=0,
             stored_paths=tuple(stored_paths),
+            page=selected.page,
+            page_size=selected.limit,
+            total_count=total_count,
+            external_ids=tuple(
+                external_id for external_id, _ in prepared_items
+            ),
+            list_response_document_id=list_document.document_id,
         )
 
     def _parse_items(
         self,
         response: TransportResponse,
-    ) -> list[dict[str, object]]:
+    ) -> tuple[list[dict[str, object]], int]:
         try:
             payload = json.loads(response.body)
         except (UnicodeDecodeError, json.JSONDecodeError):
@@ -205,7 +213,31 @@ class YouthCenterCollector:
                 response=response,
                 reason="policy list contains a non-object item",
             )
-        return raw_items
+        pagination = result.get("pagging")
+        if not isinstance(pagination, dict):
+            raise safe_parse_error(
+                source_id=self.source_id,
+                source_url=SOURCE_URL,
+                response=response,
+                reason="response is missing pagination metadata",
+            )
+        try:
+            total_count = int(pagination.get("totCount"))
+        except (TypeError, ValueError):
+            raise safe_parse_error(
+                source_id=self.source_id,
+                source_url=SOURCE_URL,
+                response=response,
+                reason="response has invalid total count",
+            ) from None
+        if total_count < len(raw_items):
+            raise safe_parse_error(
+                source_id=self.source_id,
+                source_url=SOURCE_URL,
+                response=response,
+                reason="response total count is smaller than item count",
+            )
+        return raw_items, total_count
 
     def _raise_application_error(
         self,

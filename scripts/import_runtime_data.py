@@ -56,8 +56,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--limit",
         type=int,
-        default=100,
-        help="maximum latest-batch list items, from 1 to 500",
+        default=5000,
+        help="maximum snapshot list items, from 1 to 5000",
+    )
+    parser.add_argument(
+        "--snapshot-id",
+        help="specific completed snapshot ID (default: latest manifest)",
     )
     parser.add_argument(
         "--dry-run",
@@ -78,9 +82,9 @@ def main(
     stderr: TextIO = sys.stderr,
 ) -> int:
     args = build_parser().parse_args(argv)
-    if not 1 <= args.limit <= 500:
+    if not 1 <= args.limit <= 5000:
         print(
-            "runtime import failed: limit must be from 1 to 500",
+            "runtime import failed: limit must be from 1 to 5000",
             file=stderr,
         )
         return 2
@@ -111,6 +115,7 @@ def main(
             raw_root=args.raw_root,
             source_id=args.source,
             limit=args.limit,
+            snapshot_id=args.snapshot_id,
             dry_run=args.dry_run,
         )
         if run_writer is not None and run_id is not None:

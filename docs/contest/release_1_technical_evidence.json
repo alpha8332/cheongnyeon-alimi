@@ -1,0 +1,134 @@
+{
+  "evidence_version": "1.0.0",
+  "generated_at": "2026-08-06T04:41:17.367838+00:00",
+  "release": "v0.1.0",
+  "gate": "G4",
+  "contract_sha256": "53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c",
+  "base_url": "http://127.0.0.1:8000",
+  "dataset_baseline": {
+    "accepted": 3156,
+    "snapshots": {
+      "youthcenter-api": "6add34f7aad9456ab0abb19175b7621c",
+      "bokjiro-central-welfare-api": "ffa74ef47e6048109f11bf40d1ac5e15"
+    }
+  },
+  "technical_verdict": "pass",
+  "gate_verdict": "blocked",
+  "gate_readiness": "technical-pass-evidence-pending",
+  "required_manual_evidence": [
+    "qa",
+    "usability-review"
+  ],
+  "manual_review_policy": {
+    "mode": "lightweight-team-review",
+    "independence_required": false,
+    "report_review_required": false,
+    "deferred_to": "v0.5.0",
+    "deferred_checks": [
+      "api-error-retry",
+      "report-review"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "golden-natural-language-short-stay",
+      "status": "pass",
+      "elapsed_ms": 95.95,
+      "total": 1,
+      "query": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
+      "target": {
+        "rank": 1,
+        "source_id": "youthcenter-api",
+        "external_id": "20260430005400212969",
+        "title": "청년단기숙소 지원사업",
+        "data_quality_status": "valid",
+        "application_status": "open",
+        "application_schedule": "always",
+        "categories": [
+          "housing"
+        ],
+        "unknown_count": 0,
+        "verdicts": {
+          "region": "match",
+          "age": "match",
+          "status": null,
+          "category": "match"
+        },
+        "score": 15.0
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_id": "youthcenter-api",
+          "external_id": "20260430005400212969",
+          "title": "청년단기숙소 지원사업",
+          "data_quality_status": "valid",
+          "application_status": "open",
+          "application_schedule": "always",
+          "categories": [
+            "housing"
+          ],
+          "unknown_count": 0,
+          "verdicts": {
+            "region": "match",
+            "age": "match",
+            "status": null,
+            "category": "match"
+          },
+          "score": 15.0
+        }
+      ],
+      "blockers": []
+    },
+    {
+      "id": "control-explicit-short-stay",
+      "status": "pass",
+      "elapsed_ms": 78.68,
+      "total": 1,
+      "query": "단기숙소",
+      "target": {
+        "rank": 1,
+        "source_id": "youthcenter-api",
+        "external_id": "20260430005400212969",
+        "title": "청년단기숙소 지원사업",
+        "data_quality_status": "valid",
+        "application_status": "open",
+        "application_schedule": "always",
+        "categories": [
+          "housing"
+        ],
+        "unknown_count": 0,
+        "verdicts": {
+          "region": "match",
+          "age": "match",
+          "status": null,
+          "category": "match"
+        },
+        "score": 7.0
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_id": "youthcenter-api",
+          "external_id": "20260430005400212969",
+          "title": "청년단기숙소 지원사업",
+          "data_quality_status": "valid",
+          "application_status": "open",
+          "application_schedule": "always",
+          "categories": [
+            "housing"
+          ],
+          "unknown_count": 0,
+          "verdicts": {
+            "region": "match",
+            "age": "match",
+            "status": null,
+            "category": "match"
+          },
+          "score": 7.0
+        }
+      ],
+      "blockers": []
+    }
+  ]
+}

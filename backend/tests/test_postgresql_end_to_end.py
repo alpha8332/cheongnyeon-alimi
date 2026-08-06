@@ -21,6 +21,7 @@ from app.core.database import (
 from app.main import app
 from app.models.policy import Policy
 from app.services.seed_importer import import_programs
+from collectors.normalized import NormalizedProgram
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
@@ -63,6 +64,12 @@ def serialized_policy(policy: Policy) -> dict[str, Any]:
             value = value.isoformat()
         values[column.name] = value
     return values
+
+
+def current_storage_program(program: dict[str, Any]) -> dict[str, Any]:
+    selected = copy.deepcopy(program)
+    selected.pop("region_rules")
+    return selected
 
 
 def test_postgresql_seed_repository_api_end_to_end():
@@ -112,7 +119,10 @@ def test_postgresql_seed_repository_api_end_to_end():
         }
         for program in programs:
             identity = (program["source_id"], program["external_id"])
-            assert stored_by_identity[identity] == program
+            assert stored_by_identity[identity] == current_storage_program(
+                program
+            )
+            assert program["region_rules"] == []
 
         rejected_batch = copy.deepcopy(programs[:2])
         rejected_batch[1].pop("regions")

@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-07-31
+- 기준일: 2026-08-03
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -29,7 +29,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1주차 | Source·Schema·Fixture·Seed 기준선 | FastAPI·DB 기반과 Policy 계약 | React·TypeScript·Mock UI 기반 | 공통 계약·문서 체계와 병렬 개발 조정 | 목표·구조·초기 근거 정리 | 미배정, 사용자 시나리오 후보 검토 | 미배정, 테스트 가능성 검토 |
 | 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
-| 3주차 | 실데이터 릴리스 범위 수집·DB bootstrap·품질 보고 | 자연어 해석·구조화 조건·서버 검색·관련도와 성능 | 자연어 전달·해석 조건·검색 이유·미확인 조건 UI와 pagination | 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
+| 3주차 | 실데이터 근거·Source 검색 필드·지역 정규화·DB bootstrap·품질 보고 | 지역 관계·search projection 공동 기반, 자연어 해석·서버 검색·성능 | 데이터·API 소비 검토, 자연어 조건·검색 이유·미확인 조건 UI | 검색 데이터 기반 Gate, 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
 | 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 기능별 설계 결정·화면·테스트 근거 정리 | 5주차 사용자 시나리오와 평가 항목 준비 | `v0.5.0` 테스트 계획·데이터·환경 준비 |
 | 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 동결, 결함 triage와 `v0.5.0` 결정 | 리뷰·QA 결과와 수정 근거를 Release 2 자료에 반영 | 실제 사용자 시나리오 수행·재확인 | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
 | 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
@@ -39,7 +39,7 @@
 ```text
 1주차 기반 계약
   → 2주차 DB·API·UI 통합과 안전성
-  → 3주차 실데이터 검색 MVP
+  → 3주차 검색 데이터 기반·실데이터 검색 MVP
   → v0.1.0
   → 4주차 사용자·관리자 기능
   → 5주차 전체 기능 통합·리뷰어 안정화
@@ -83,8 +83,8 @@ completed
 
 ### 남은 차이
 
-- 이 PC에는 운영 `runtime/raw`가 없어 실제 Runtime DB 적재 smoke를 성공으로
-  기록하지 않았다.
+- Data 02 DT1에서 `runtime/raw` 실제 표본 25개를 수집했지만 Runtime DB에는
+  아직 적재하지 않았다.
 - 전체 또는 릴리스 범위 수집과 자동 주기 적재는 미구현이다.
 - Backend keyword·age 검색은 미구현이며 Frontend 검색은 client-only다.
 
@@ -101,6 +101,8 @@ completed
 
 ### Data
 
+- 완료된 Integration 03 검색 데이터 기반으로 DT2 actual profile·Data 권고를
+  Backend·Frontend 초안과 공동 검토하고 Gate G1을 지원한다.
 - Source별 pagination, 할당량과 릴리스 수집 범위를 확정한다.
 - 실제 정책 Raw를 수집하고 정규화·검증·PostgreSQL에 초기 적재한다.
 - 수동 재수집·재처리의 idempotency와 실패 복구를 검증한다.
@@ -109,6 +111,10 @@ completed
 
 ### Backend
 
+- 완료된 Source 중립 search projection, 행정구역·정책 관계, Migration과
+  3값 판정 primitive를 기준선으로 사용한다.
+- Gate G1을 위해 자연어 request·구조화 조건·검색 이유·미확인 조건 API
+  초안을 먼저 Data·Frontend와 검토한다.
 - 자연어 원문 `q`를 결정적인 한국어 규칙으로 해석해 지역, 나이,
   주거·월세 등 카테고리와 핵심어를 구조화한다.
 - `keyword`, region, age, category, status, pagination과 기본 정렬 계약을
@@ -122,6 +128,8 @@ completed
 
 ### Frontend
 
+- Gate G1을 위해 Backend request·response와 일치하는 TypeScript query·응답,
+  해석 조건·검색 이유·미확인 조건 소비 초안을 먼저 검토한다.
 - 자연어 원문을 `q`로 Backend에 전달하고 별도 자연어 parser를 두지 않는다.
 - Backend가 반환한 해석 조건을 표시하고 수정 가능하게 한다.
 - Backend 검색 결과, 검색 이유, 미확인 조건, pagination과 정렬 결과를
@@ -130,14 +138,19 @@ completed
 
 ### Team Leader - Integration
 
+- [Policy Search Data Foundation](integration/03_policy_search_data_foundation.md)의
+  완료된 ADR·Schema·Migration·소비 호환 Gate를 기준선으로 관리한다.
+- DT2 Data 권고, Backend 06·Frontend 04 초안을 대조해 Gate G1을 승인하거나
+  차단사항과 다음 담당을 기록한다.
 - 실제 DB → FastAPI → React 흐름을 로컬 HTTP와 Browser로 검증한다.
 - 다음 golden query의 실제 기대 정책과 이유를 snapshot 기준으로 기록한다.
 
 ```text
-천안 사는 27살 청년 월세 지원 받을 수 있나?
+천안 사는 27살 청년 단기숙소 지원 받을 수 있나?
 ```
 
-- 지원 Source에 기대 정책이 없으면 Source 추가 또는 릴리스 범위를 결정한다.
+- 기대 정책 identity와 순위·unknown·응답시간 예산을 실행 가능한 acceptance
+  계약으로 고정하고 actual snapshot에서 재검증한다.
 - 단위·통합·Browser 테스트와 `python scripts/validate_docs.py`를 실행한다.
 
 ### 보고서·리뷰어·QA
@@ -153,6 +166,12 @@ completed
 
 [Release 1 완료 조건](release_roadmap.md#릴리스-완료-조건)을 모두 충족한
 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보로 삼는다.
+
+`2026-08-06` Gate G4는 `pass`다. 새 contract hash의 actual 자연어·control은
+모두 1건 중 1위·unknown 0·응답시간 예산 이내이고, 신청기간 안전성,
+Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도 통과했다. 보고서와
+API 오류 UX 검증은 실행하지 않은 채 `v0.5.0` 후속으로 이관했으며 Release 1
+완료 범위에 포함하지 않는다.
 
 ## 4주차 - 사용자·관리자 핵심 기능
 
@@ -298,5 +317,6 @@ completed
 
 - [Release와 Milestone 계획](release_roadmap.md)
 - [전체 Forest 로드맵](forest_roadmap.md)
+- [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
 - [개발 계획 안내](README.md)
 - [문서화 정책](../../governance/documentation_policy.md)

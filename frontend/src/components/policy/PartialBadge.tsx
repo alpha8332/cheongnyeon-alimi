@@ -1,4 +1,8 @@
 import type { PolicyDto } from '@/types/policy';
+import {
+  PARTIAL_QUALITY_BADGE_HELP,
+  PARTIAL_QUALITY_BADGE_LABEL,
+} from '@/constants/policySearchDisplay';
 
 interface PartialBadgeProps {
   policy: PolicyDto;
@@ -10,15 +14,8 @@ export default function PartialBadge({ policy }: PartialBadgeProps) {
   }
 
   return (
-    <span
-      style={{
-        border: '1px solid black',
-        padding: '2px 6px',
-        marginLeft: '8px',
-        fontSize: '12px',
-      }}
-    >
-      정보 일부 누락
+    <span className="badge-partial" title={PARTIAL_QUALITY_BADGE_HELP}>
+      {PARTIAL_QUALITY_BADGE_LABEL}
     </span>
   );
 }

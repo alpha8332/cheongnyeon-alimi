@@ -31,3 +31,19 @@
 [주차별 실행 계획](../development/develop_plan/weekly_delivery_plan.md),
 역할 겸임과 독립성 기준은
 [역할과 책임](../governance/role_assignment.md)을 따른다.
+
+## 현재 Release 증거
+
+- [Release 1 검증 증거 안내](release_1_evidence_guide.md): DT7E 경량 QA·사용성 수행 절차와 정합성 검증
+- [Release 1 수동 증거 템플릿](release_1_evidence_template.json): 현재 contract hash·actual snapshot에 고정된 작성 시작점
+- [Release 1 기술 증거](release_1_technical_evidence.json): 실제 PostgreSQL 검색 acceptance의 안전한 JSON 결과
+- [Release 1 경량 리뷰 근거](release_1_review_summary.md): 제공된 Word 리뷰의
+  QA·사용성 관찰과 `v0.5.0` 비차단 후속사항
+- [Release 1 수동 증거](release_1_evidence.json): 경량 QA·사용성 판정의
+  contract 고정 JSON
+- [Release 1 Gate 결정](release_1_gate_decision.json): Team Leader의 G4
+  `pass`, 비차단 후속과 릴리스 publication 상태
+
+템플릿 자체는 Gate 통과를 뜻하지 않는다. 실제 QA·사용성 결과는
+`release_1_evidence.json`에 기록했고 Team Leader가 DT7F에서 기술 증거와
+대조해 Gate G4를 `pass`로 판정했다.

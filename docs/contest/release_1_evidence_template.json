@@ -1,0 +1,85 @@
+{
+  "evidence_version": "1.0.0",
+  "release": "v0.1.0",
+  "gate": "G4",
+  "contract_sha256": "53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c",
+  "dataset_baseline": {
+    "accepted": 3156,
+    "snapshots": {
+      "youthcenter-api": "6add34f7aad9456ab0abb19175b7621c",
+      "bokjiro-central-welfare-api": "ffa74ef47e6048109f11bf40d1ac5e15"
+    }
+  },
+  "manual_review_policy": {
+    "mode": "lightweight-team-review",
+    "independence_required": false,
+    "report_review_required": false,
+    "deferred_to": "v0.5.0",
+    "deferred_checks": [
+      "api-error-retry",
+      "report-review"
+    ]
+  },
+  "reviews": [
+    {
+      "role": "qa",
+      "reviewer": "TBD",
+      "performed_at": null,
+      "independence_confirmed": false,
+      "verdict": "pending",
+      "checks": [
+        {
+          "id": "basic-search-and-detail",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        },
+        {
+          "id": "empty-results",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        },
+        {
+          "id": "partial-unknown-boundary",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        }
+      ]
+    },
+    {
+      "role": "usability-review",
+      "reviewer": "TBD",
+      "performed_at": null,
+      "independence_confirmed": false,
+      "verdict": "pending",
+      "checks": [
+        {
+          "id": "query-and-condition-understanding",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        },
+        {
+          "id": "result-reason-understanding",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        },
+        {
+          "id": "source-and-freshness-understanding",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        },
+        {
+          "id": "eligibility-guidance-understanding",
+          "status": "pending",
+          "notes": "",
+          "evidence_refs": []
+        }
+      ]
+    }
+  ]
+}

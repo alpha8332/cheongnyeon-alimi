@@ -26,6 +26,7 @@ APPLICATION_SCHEDULE_VALUES = (
 )
 APPLICATION_STATUS_VALUES = ("open", "closed", "scheduled")
 DATA_QUALITY_STATUS_VALUES = ("valid", "partial", "invalid")
+COVERAGE_SCOPE_VALUES = ("nationwide", "regional", "unknown")
 
 JSON_DOCUMENT = JSON().with_variant(JSONB(), "postgresql")
 
@@ -35,7 +36,7 @@ def utc_now() -> datetime:
 
 
 class Policy(Base):
-    """Database representation of the NormalizedProgram 1.0.0 contract."""
+    """Database representation of the NormalizedProgram 1.1.0 contract."""
 
     __tablename__ = "policies"
 
@@ -44,8 +45,8 @@ class Policy(Base):
     schema_version = Column(
         String(32),
         nullable=False,
-        default="1.0.0",
-        server_default="1.0.0",
+        default="1.1.0",
+        server_default="1.1.0",
     )
     source_id = Column(Text, nullable=False)
     source_name = Column(String(255), nullable=False)
@@ -57,6 +58,24 @@ class Policy(Base):
 
     category_text = Column(Text, nullable=True)
     categories = Column(JSON_DOCUMENT, nullable=False, default=list)
+    keywords = Column(
+        JSON_DOCUMENT,
+        nullable=False,
+        default=list,
+        server_default=text("'[]'"),
+    )
+    life_stages = Column(
+        JSON_DOCUMENT,
+        nullable=False,
+        default=list,
+        server_default=text("'[]'"),
+    )
+    target_groups = Column(
+        JSON_DOCUMENT,
+        nullable=False,
+        default=list,
+        server_default=text("'[]'"),
+    )
 
     application_period_text = Column(Text, nullable=True)
     application_start = Column(Date, nullable=True)
@@ -82,6 +101,17 @@ class Policy(Base):
 
     region_text = Column(Text, nullable=True)
     regions = Column(JSON_DOCUMENT, nullable=False, default=list)
+    coverage_scope = Column(
+        Enum(
+            *COVERAGE_SCOPE_VALUES,
+            name="policy_coverage_scope",
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        nullable=False,
+        default="unknown",
+        server_default="unknown",
+    )
 
     age_min = Column(Integer, nullable=True)
     age_max = Column(Integer, nullable=True)
@@ -164,4 +194,20 @@ class Policy(Base):
             "regions",
             postgresql_using="gin",
         ),
+        Index(
+            "ix_policies_keywords_gin",
+            "keywords",
+            postgresql_using="gin",
+        ),
+        Index(
+            "ix_policies_life_stages_gin",
+            "life_stages",
+            postgresql_using="gin",
+        ),
+        Index(
+            "ix_policies_target_groups_gin",
+            "target_groups",
+            postgresql_using="gin",
+        ),
+        Index("ix_policies_coverage_scope", "coverage_scope"),
     )

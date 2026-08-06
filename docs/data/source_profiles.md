@@ -4,7 +4,7 @@
 
 - 상태: 기준선
 - 마지막 공식 자료 확인: 2026-07-26
-- 마지막 실호출 확인: 2026-07-26
+- 마지막 실호출 확인: 2026-08-04
 - 범위: 온통청년 청년정책 API, 복지로 중앙부처 복지서비스 API
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
@@ -15,8 +15,8 @@
 
 | Source ID | 표시 이름 | 공식 요청 계약 | 실응답 |
 | --- | --- | --- | --- |
-| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 목록 10건 Raw 확인 |
-| `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 목록 10건·상세 3건 Raw 확인 |
+| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
+| `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
@@ -195,6 +195,71 @@ page 1 응답 내용이 달라진 것으로 관찰했다. 고정된 빈 값 비�
 - `/opi/youthPlcyList.do`의 302 redirect는 현재 Collector에서 따라가지
   않는다.
 
+### 2026-07-31 Release 1 DT1 표본
+
+재시도 없이 `pageNum=1`, `pageSize=10` 목록 1회를 호출해 Raw 11개와
+정책 10건을 재처리했다. 응답의 `total_count`는 2,696이었다.
+
+- 10건 모두 `partial`, invalid는 0건
+- `zipCd` 원문은 10건 모두 존재하지만 정규화 `regions`는 모두 빈 배열
+- 최소·최대 연령은 9건, 연령 원문은 10건에 존재
+- 신청 상태는 open 6건, closed 3건, scheduled 1건
+- 신청기간 형태는 fixed 5건, always 2건, 미상 3건
+- 카테고리 원문은 10건 모두 존재하고 2건은 미매핑 경고 포함
+- 표본 제목·지원·자격 text에서 주거·월세 직접 표현은 탐지되지 않음
+
+보유 `온통청년 API코드정보.xlsx`에는 정책·자격·분류 코드가 있지만
+`zipCd` 행정구역 code-to-name 표는 없다. PSF4는 DT1 Raw의 `zipCd` 373개,
+고유 260개를 별도 공식 법정동 기준정보의 `kr-bjd-prefix5` exact crosswalk와
+대조했고 260개가 모두 유일하게 일치했다. 이 증거를 바탕으로 Adapter는
+쉼표 구분 5자리 code만 exact resolver에 전달한다. 앞자리·기관명이나 code
+개수로 지역·전국을 추정하지 않는다.
+
+표본에는 인천광역시 개편 전 code `28110`, `28140`, `28260`과 현행 code가
+함께 존재한다. 폐지 code는 후계 code로 자동 치환하지 않고 당시 canonical
+identity와 Source code를 보존한다. 새로운 code가 crosswalk에 없으면
+`unmapped`, 여러 후보면 `ambiguous`로 남긴다. 집계·과거 code와 현재 세부
+code는 [행정구역 기준정보](administrative_regions.md)의 원천 parent·aggregate
+parent·폐지 보존 규칙을 따른다.
+
+DT1 당시 2,696건을 전체 수집하려면 page size와 종료 조건 확인이 필요했다.
+공개 자료에서 `/go/ythip/getPlcy`의 최대 `pageSize`와 숫자 호출 한도를
+확인하지 못했으므로 DT3에서 `pageSize=500`을 실제 응답으로 검증했다.
+
+### 2026-08-03 PSF4 오프라인 재생
+
+DT1의 같은 Raw 11개를 네트워크 없이 새 Adapter로 재생했다.
+
+- 정책 10건 중 valid 8건, partial 2건, invalid 0건
+- `plcyExplnCn` summary와 `mclsfNm`·`plcyKywdNm` keywords 10건 모두 채움
+- 10건 모두 `regional`, region rule 373개 모두 exact `matched`
+- `zipCd` 원문과 전체 Source field·Raw provenance 유지
+- Source에 명시되지 않은 life stage·target group은 모두 빈 배열 유지
+
+### 2026-08-04 Release 1 전체 목록 snapshot
+
+`pageSize=500`을 실제로 수용함을 확인하고 6개 page를 재시도 없이 순회했다.
+첫 응답부터 마지막 응답까지 `total_count=2698`이 유지됐고, 고유 `plcyNo`
+2,698개가 보고 건수와 일치했다. Raw는 목록 응답 6개와 목록 항목 2,698개,
+합계 2,704개다.
+
+- 실제 성공 호출 6회, 상세 호출 없음
+- snapshot ID: `4580234be1df46cbbe4a700fc4e02630`
+- DT4 연령 placeholder 보정 후 오프라인 재생:
+  valid 1,462·partial 1,236·invalid 0, accepted 2,698
+- `0세 ~ 0세` 631건은 실제 0세 한정으로 확정하지 않고 원문 보존,
+  구조화 연령 null과 `placeholder_age_range` 경고로 처리함
+- Source URL 후보 3건에 literal 공백이 있었으며, URL 계약에 맞지 않는 후보를
+  사용하지 않고 query 없는 공식 Raw source endpoint로 fallback함
+- Source 원문 URL 값은 `extra.source_fields`와 Raw에 그대로 보존함
+
+전체 품질·검색 분포와 소비 경계는
+[Release 1 실데이터 품질 Profile](release_dataset_profile.md)을 따른다.
+
+Source가 cursor나 시점 고정 token을 제공하지 않으므로 이 snapshot은 6회
+응답 사이 변경 가능성을 완전히 제거하지 못한다. manifest의 시작·완료 시각,
+각 응답 Raw ID와 고정 total을 재현 경계로 사용한다.
+
 ## 복지로 중앙부처 복지서비스 API
 
 ### 현재 공식 요청 계약
@@ -336,6 +401,63 @@ Normalizer가 명시적으로 변환하기 전에는 Raw string으로 보존한�
   HTTPS 목록·상세 호출이 모두 성공했다. 구현은 HTTPS를 사용한다.
 - [2025년 변경 공지][bokjiro-change]는 온라인 신청 가능 여부와 관심주제를
   추가하고 장애 유형·정도, 법령 링크 등 미사용 필드를 제거했다고 안내한다.
+
+### 2026-07-31 Release 1 DT1 표본
+
+재시도 없이 `pageNo=1`, `numOfRows=10` 목록 1회와 첫 3건의 상세를 호출해
+Raw 14개와 정책 10건을 재처리했다. 응답의 `total_count`는 461이었다.
+
+- 10건 모두 `partial`, invalid는 0건
+- 지역, 최소·최대 연령, 연령 원문과 신청기간·상태는 10건 모두 없음
+- 카테고리 원문은 9건, 지원 내용은 10건에 존재
+- 상세가 결합된 3건에서 자격 text가 보강됨
+- 표본 제목·지원·자격 text에서 주거·월세 직접 표현은 탐지되지 않음
+
+현재 목록·상세 응답 계약만으로는 지역·연령·신청기간을 정규화할 수 없다.
+상세 호출도 이 세 누락을 해소하지 않았으므로 값을 추정하지 않는다.
+명세상 목록 최대 500건으로 현재 461건 전체 목록은 한 요청 후보지만,
+개발계정 트래픽 100의 기간 단위가 불명확해 461건 전체 상세 호출은
+승인 범위가 아니다. 상세 대상은 검색 가치와 실제 보강 효과를 기준으로
+결정론적으로 제한하고 호출 상한을 실행 전에 기록해야 한다.
+
+### 2026-08-03 PSF4 오프라인 재생
+
+DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
+
+- 정책 10건 모두 partial, invalid 0건
+- summary 10건, interests 기반 keywords 9건
+- life stages 8건, target groups 5건
+- 지역 근거가 없어 10건 모두 `coverage_scope=unknown`, region rule 0건
+- 상세 3건은 상세 값을 우선하고 목록 값은 fallback으로 유지했으며 양쪽
+  Source field와 Raw provenance를 모두 보존
+
+### 2026-08-04 Release 1 전체 목록 snapshot
+
+명세상 최대 `numOfRows=500`으로 목록 1회를 호출해 `total_count=461`과 고유
+`servId` 461개가 일치함을 확인했다. 승인된 상세 상한 5건만 같은 회차에서
+추가 호출했다. Raw는 목록 응답 1개, 목록 항목 461개와 상세 5개, 합계
+467개다.
+
+- 실제 성공 호출 6회: 목록 1회·상세 5회
+- snapshot ID: `2e0b8100348544b3b023b27017025218`
+- 오프라인 재생: valid 0·partial 461·invalid 0, accepted 461
+- 전체 상세 461건은 호출 상한 밖이며 수행하지 않음
+
+### 2026-08-06 DT7C 신청기간 Source mapping 재감사
+
+현재 Release 1 snapshot `ffa74ef47e6048109f11bf40d1ac5e15`의 복지로
+461건을 외부 호출 없이 재생했다. 목록·상세 leaf 계약에는 신청기간 전용 필드가
+없으며 Extractor도 `application_period_text`를 만들지 않는다.
+
+- 461건 모두 신청기간 원문·시작일·종료일·일정·상태가 null
+- Source 근거 없는 구조화 승격 0건, 기간·상태 불일치 0건
+- `청년내일저축계좌`, `청년월세 지원사업` 2건의 일반 본문에서 날짜 표기 관찰
+- 두 정책 모두 원문을 summary·support content에 보존하고 신청기간으로는
+  승격하지 않음
+
+온통청년은 같은 감사에서 `aplyYmd`와 검증된 `aplyPrdSeCd`만 신청기간 근거로
+사용했다. 일반 본문 날짜 탐지는 Source mapping을 대체하지 않으며 관찰 건수만
+profile에 남긴다.
 
 ## 공통 비밀정보 경계
 
