@@ -149,6 +149,35 @@ explicit override와 `PolicyRead` 응답 DTO는 유지했다. 기술 acceptance�
 `pass`지만 자동 도구는 독립 증거를 승인하지 않으므로 Gate G4는
 `technical-pass-evidence-pending`, 최종 `blocked`를 유지한다.
 
+### DT7C 신청기간·상태 안전성 감사 결과
+
+`scripts/profile_release_dataset.py`를 1.2.0으로 올리고 Release snapshot의
+신청기간 Source mapping, 기간·상태 일치, 일반 본문 날짜 미승격과 golden 정책
+근거를 한 번에 감사하도록 확장했다. `--require-period-safety`를 사용하면
+Source 근거 없는 승격·상태 불일치·golden 근거 누락 중 하나라도 발견할 때
+실패 종료한다.
+
+| 감사 cohort | 전체 | 기본 노출 |
+| --- | ---: | ---: |
+| 정책 | 3,156 | 1,184 |
+| Source 신청기간 원문 | 2,695 | 723 |
+| 일정 또는 상태 구조화 | 2,694 | 722 |
+| 기간·상태 모두 unknown | 461 | 461 |
+| 일반 본문 날짜 표기 관찰·미승격 | 2 | 2 |
+| Source 근거 없는 승격 | 0 | 0 |
+| 기간·상태 불일치 | 0 | 0 |
+
+온통청년은 `aplyYmd`와 검증된 `aplyPrdSeCd`만 기간 근거로 사용한다. 복지로
+현재 목록·상세 계약에는 기간 전용 필드가 없으므로 461건 모두 기간·상태를
+null로 유지했다. `청년내일저축계좌`와 `청년월세 지원사업` 일반 본문의 날짜
+표기는 원문으로만 보존하고 구조화하지 않았다.
+
+golden 정책은 Source 원문 `상시`, 일정 `always`, 상태 `open`이 일치하고 본문
+승격을 사용하지 않아 안전성 감사 `passed=true`다. 후보 노출은 허용하지만
+자동 감사 결과만으로 사용자 자격을 확정하지 않는다. 이 결과로 Data 기간
+차단사항은 해소됐지만 Frontend 실제 API 재검증과 독립 증거가 남아 Gate G4는
+계속 `blocked`다.
+
 ## 주요 변경 파일
 
 - `backend/tests/test_postgresql_policy_search_integration.py`
@@ -163,6 +192,9 @@ explicit override와 `PolicyRead` 응답 DTO는 유지했다. 기술 acceptance�
 - `scripts/profile_release_dataset.py`
 - `tests/test_release_1_acceptance_audit.py`
 - `tests/test_release_dataset_profile.py`
+- `docs/data/normalization_rules.md`
+- `docs/data/release_dataset_profile.md`
+- `docs/data/source_profiles.md`
 - `frontend/src/pages/user/PolicySearchPage.tsx`
 - `frontend/e2e/policy-search-audit.spec.ts`
 - `frontend/.gitignore`
@@ -220,6 +252,10 @@ explicit override와 `PolicyRead` 응답 DTO는 유지했다. 기술 acceptance�
 | DT7B Frontend API 소비 unit | 45건 통과 |
 | DT7B Frontend build·lint | 통과 |
 | DT7B actual acceptance | cold 317.04/109.92ms, warm 최대 91.89/109.16ms, 모두 1위 |
+| DT7C strict period safety profile | 3,156건 재생, `passed=true` |
+| DT7C Data 전체 unittest | 129건 통과 |
+| DT7C Data Integration pytest | 4건 skip, `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
+| DT7C Python compile·문서 검증·`git diff --check` | 통과 |
 
 폐기한 IA2 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,
@@ -230,6 +266,11 @@ Profile의 confirmed match는 0건이다. 실제 적용 가능성을 단정하�
 package 설치가 성공했다. `npm audit`은 high 3건을 보고했으며 자동 수정은
 범위 밖이라 실행하지 않았다.
 
+DT7C Integration 4건 skip은 `TEST_DATABASE_URL`이 현재 process에 주입되지
+않아 기존 PostgreSQL 통합 테스트가 실행되지 않은 결과다. 성공으로 처리하지
+않는다. DT7C는 DB·API 계약을 변경하지 않았고, 실제 snapshot 안전성은 DB 없이
+고정 Raw를 재생하는 strict profile로 검증했다.
+
 ## 남은 작업
 
 ### Gate G4 차단사항과 재개 조건
@@ -238,8 +279,8 @@ package 설치가 성공했다. `npm audit`은 high 3건을 보고했으며 자�
   첫 페이지 결과를 실제 API·Browser에서 재검증해야 한다.
 - 새 golden의 기대 정책은 현 Source에서 confirmed 1건이므로 Source 추가
   결정은 현재 차단사항에서 제외한다.
-- 복지로 지원 내용의 신청기간 텍스트를 구조화 기간·상태로 안전하게 승격할
-  수 있는지 Data Source mapping 범위에서 검토한다.
+- 복지로 본문 날짜는 현재 Source 계약상 신청기간으로 승격하지 않으며, 향후
+  전용 Source 필드가 추가될 때만 mapping과 회귀 감사를 다시 검토한다.
 - QA smoke, 사용성 리뷰와 보고서 근거를 독립적으로 확보한 뒤 같은 snapshot과
   exact query로 Gate G4를 다시 판정한다.
 - 기존 Starlette deprecation warning 2건과 npm audit high 3건은 별도

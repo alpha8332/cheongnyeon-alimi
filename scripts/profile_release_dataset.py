@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +52,21 @@ GOLDEN_EXPECTED_IDENTITY = (
     YOUTHCENTER_SOURCE_ID,
     "20260430005400212969",
 )
+APPLICATION_PERIOD_SOURCE_FIELDS = {
+    YOUTHCENTER_SOURCE_ID: ("aplyYmd", "aplyPrdSeCd"),
+    BOKJIRO_SOURCE_ID: (),
+}
+FREE_TEXT_PERIOD_FIELDS = (
+    "summary",
+    "eligibility_text",
+    "support_content",
+    "application_method",
+)
+_FREE_TEXT_DATE = re.compile(
+    r"(?<!\d)(?:(?:19|20)\d{2}\s*[-./]\s*\d{1,2}\s*[-./]\s*"
+    r"\d{1,2}|(?:['’]?\d{2}|(?:19|20)\d{2})\s*년[^\n]{0,40}?"
+    r"\d{1,2}\s*(?:[./]|월\s*)\s*\d{1,2}(?:\s*일)?)(?!\d)"
+)
 CHEONAN_ALIAS = "천안시"
 CHEONAN_CODE = "4413000000"
 CHUNGNAM_ALIAS = "충청남도"
@@ -92,6 +109,14 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="optional JSON output path; stdout is used when omitted",
     )
+    parser.add_argument(
+        "--require-period-safety",
+        action="store_true",
+        help=(
+            "exit non-zero unless Source period mapping, status consistency, "
+            "and the release golden policy pass the period safety audit"
+        ),
+    )
     return parser
 
 
@@ -102,6 +127,218 @@ def _counter(values: Sequence[str | None]) -> dict[str, int]:
 
 def _default_visible(program: Mapping[str, Any]) -> bool:
     return program.get("application_status") in DEFAULT_VISIBLE_STATUSES
+
+
+def _period_values_present(program: Mapping[str, Any]) -> bool:
+    return any(
+        program.get(field_name) is not None
+        for field_name in (
+            "application_period_text",
+            "application_start",
+            "application_end",
+            "application_schedule",
+            "application_status",
+        )
+    )
+
+
+def _structured_period_present(program: Mapping[str, Any]) -> bool:
+    return any(
+        program.get(field_name) is not None
+        for field_name in (
+            "application_start",
+            "application_end",
+            "application_schedule",
+            "application_status",
+        )
+    )
+
+
+def _free_text_date_fields(program: Mapping[str, Any]) -> tuple[str, ...]:
+    return tuple(
+        field_name
+        for field_name in FREE_TEXT_PERIOD_FIELDS
+        if isinstance(program.get(field_name), str)
+        and _FREE_TEXT_DATE.search(program[field_name]) is not None
+    )
+
+
+def _parse_iso_date(value: Any) -> date | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _period_status_consistent(program: Mapping[str, Any]) -> bool:
+    period_text = program.get("application_period_text")
+    start = _parse_iso_date(program.get("application_start"))
+    end = _parse_iso_date(program.get("application_end"))
+    schedule = program.get("application_schedule")
+    status = program.get("application_status")
+
+    if not _period_values_present(program):
+        return True
+    if period_text is None:
+        return False
+    if start is not None and end is not None and start > end:
+        return False
+    if schedule == "always":
+        return start is None and end is None and status == "open"
+    if schedule == "until_budget_exhausted":
+        return start is None and end is None and status is None
+    if schedule == "fixed_period":
+        if start is None and end is None:
+            return status is None
+        if start is None:
+            return False
+        collected_at = program.get("collected_at")
+        if not isinstance(collected_at, str):
+            return False
+        try:
+            as_of = datetime.fromisoformat(collected_at).date()
+        except ValueError:
+            return False
+        if end is None:
+            expected_status = "scheduled" if as_of < start else None
+        else:
+            expected_status = (
+                "scheduled"
+                if as_of < start
+                else "closed" if as_of > end else "open"
+            )
+        return status == expected_status
+    if schedule is not None:
+        return False
+    if status == "closed":
+        return "마감" in period_text and start is None and end is None
+    return status is None and start is None and end is None
+
+
+def _period_safety_cohort(
+    programs: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "total": len(programs),
+        "source_period_text": sum(
+            program.get("application_period_text") is not None
+            for program in programs
+        ),
+        "structured_period_or_status": sum(
+            _structured_period_present(program) for program in programs
+        ),
+        "source_period_text_unstructured": sum(
+            program.get("application_period_text") is not None
+            and not _structured_period_present(program)
+            for program in programs
+        ),
+        "unknown_period_and_status": sum(
+            not _period_values_present(program) for program in programs
+        ),
+        "free_text_date_mentions_not_promoted": sum(
+            bool(_free_text_date_fields(program))
+            and program.get("application_period_text") is None
+            for program in programs
+        ),
+        "unsafe_source_promotions": sum(
+            _period_values_present(program)
+            and not APPLICATION_PERIOD_SOURCE_FIELDS.get(
+                program.get("source_id"), ()
+            )
+            for program in programs
+        ),
+        "period_status_inconsistencies": sum(
+            not _period_status_consistent(program) for program in programs
+        ),
+    }
+
+
+def _application_period_safety(
+    programs: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    visible = tuple(
+        program for program in programs if _default_visible(program)
+    )
+    golden = next(
+        (
+            program
+            for program in programs
+            if (program.get("source_id"), program.get("external_id"))
+            == GOLDEN_EXPECTED_IDENTITY
+        ),
+        None,
+    )
+    mentions_by_source = {
+        source_id: sum(
+            bool(_free_text_date_fields(program))
+            and program.get("application_period_text") is None
+            for program in programs
+            if program.get("source_id") == source_id
+        )
+        for source_id in SOURCE_IDS
+    }
+    golden_source_id = None if golden is None else golden.get("source_id")
+    all_cohort = _period_safety_cohort(programs)
+    visible_cohort = _period_safety_cohort(visible)
+    golden_safe = (
+        golden is not None
+        and bool(APPLICATION_PERIOD_SOURCE_FIELDS.get(golden_source_id, ()))
+        and golden.get("application_period_text") is not None
+        and _period_status_consistent(golden)
+    )
+    return {
+        "passed": (
+            all_cohort["unsafe_source_promotions"] == 0
+            and all_cohort["period_status_inconsistencies"] == 0
+            and golden_safe
+        ),
+        "free_text_date_promotion_allowed": False,
+        "unknown_representation": "null",
+        "source_mappings": {
+            source_id: {
+                "application_period_fields": list(
+                    APPLICATION_PERIOD_SOURCE_FIELDS[source_id]
+                ),
+                "structured_promotion_allowed": bool(
+                    APPLICATION_PERIOD_SOURCE_FIELDS[source_id]
+                ),
+            }
+            for source_id in SOURCE_IDS
+        },
+        "all": all_cohort,
+        "default_visible": visible_cohort,
+        "free_text_date_mentions_not_promoted_by_source": mentions_by_source,
+        "golden_policy": {
+            "found": golden is not None,
+            "source_mapping_evidence_available": bool(
+                APPLICATION_PERIOD_SOURCE_FIELDS.get(golden_source_id, ())
+            ),
+            "source_period_text_present": (
+                golden is not None
+                and golden.get("application_period_text") is not None
+            ),
+            "application_schedule": (
+                None if golden is None else golden.get("application_schedule")
+            ),
+            "application_status": (
+                None if golden is None else golden.get("application_status")
+            ),
+            "period_status_consistent": (
+                golden is not None and _period_status_consistent(golden)
+            ),
+            "safety_passed": golden_safe,
+            "free_text_promotion_used": (
+                golden is not None
+                and _structured_period_present(golden)
+                and golden.get("application_period_text") is None
+            ),
+            "eligibility_claim_allowed": False,
+        },
+    }
 
 
 def _contains_terms(program: Mapping[str, Any], terms: Sequence[str]) -> bool:
@@ -385,7 +622,7 @@ def build_report(
         title: count for title, count in title_counts.items() if count > 1
     }
     return {
-        "profile_version": "1.1.0",
+        "profile_version": "1.2.0",
         "offline_only": True,
         "snapshots": {
             source_id: {
@@ -419,6 +656,7 @@ def build_report(
             source_id: _source_profile(replays[source_id])
             for source_id in SOURCE_IDS
         },
+        "application_period_safety": _application_period_safety(programs),
         "search_terms": {
             term: {
                 "all": sum(_contains_terms(program, (term,)) for program in programs),
@@ -502,6 +740,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         sys.stdout.buffer.write(rendered.encode("utf-8"))
     else:
         args.output.write_text(rendered, encoding="utf-8", newline="\n")
+    if (
+        args.require_period_safety
+        and not report["application_period_safety"]["passed"]
+    ):
+        return 1
     return 0
 
 

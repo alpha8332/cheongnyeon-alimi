@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 기준일: 2026-08-06
-- Profile version: `1.1.0`
+- Profile version: `1.2.0`
 - 대상: Integration 04 DT7 Release 1 인수 snapshot
 - 용도: Backend·Frontend 검색 구현과 Integration 04 인수 검증 인계
 
@@ -17,7 +17,8 @@ query와 DB credential은 포함하지 않는다.
 표준 출력에 생성한다.
 
 ```powershell
-.\.venv\Scripts\python.exe -B scripts\profile_release_dataset.py
+.\.venv\Scripts\python.exe -B scripts\profile_release_dataset.py `
+  --require-period-safety
 ```
 
 기본값은 다음 완료 snapshot ID를 명시적으로 고정한다.
@@ -55,6 +56,37 @@ Source에서 현재 상태를 확정할 근거가 없다는 뜻이다.
 온통청년은 2,695건 모두 regional이고 복지로 461건은 모두 coverage unknown이다.
 현재 snapshot에는 nationwide로 정규화된 정책이 없다. 복지로는 목록·제한 상세
 계약만으로 지역·연령·신청기간을 확정할 수 없어 전건 partial이다.
+
+## DT7C 신청기간·상태 안전성 감사
+
+Release 1 profile 1.2.0은 신청기간을 일반 본문에서 추정하지 않고 Source별
+명시적 mapping만 허용하는 감사를 포함한다. `--require-period-safety`는 Source
+근거 없는 승격, 기간·상태 불일치 또는 golden 정책 근거 누락이 있으면 0이 아닌
+종료 코드를 반환한다.
+
+| 감사 항목 | 전체 3,156건 | 기본 노출 1,184건 |
+| --- | ---: | ---: |
+| Source 신청기간 원문 있음 | 2,695 | 723 |
+| 일정 또는 상태 구조화 | 2,694 | 722 |
+| 기간·상태 모두 unknown | 461 | 461 |
+| Source 원문은 있으나 구조화하지 않음 | 1 | 1 |
+| 일반 본문 날짜 표기 관찰·미승격 | 2 | 2 |
+| Source 근거 없는 승격 | 0 | 0 |
+| 기간·상태 불일치 | 0 | 0 |
+
+온통청년의 신청기간 근거는 `aplyYmd`와 검증된 `aplyPrdSeCd` 코드 mapping이다.
+복지로 목록·상세 응답에는 신청기간 전용 필드가 없으므로 461건을 모두
+`application_period_text`, 시작·종료일, 일정과 상태 `null`로 유지한다.
+
+복지로 `청년내일저축계좌`와 `청년월세 지원사업`의 summary·support content에는
+날짜처럼 보이는 표현이 있다. 이는 관찰·원문 보존 대상일 뿐 신청기간 필드라는
+계약 근거가 아니므로 구조화하지 않았다. 특히 월세 정책의 원문은 축약 연도와
+월·일 범위를 포함하지만 이를 현재 신청 가능 상태로 승격하지 않는다.
+
+golden 정책 `20260430005400212969`는 온통청년 Source 신청기간 원문 `상시`에서
+`application_schedule=always`, `application_status=open`으로 구조화됐고 상태
+불일치와 본문 승격은 없다. 후보 노출은 허용하지만 사용자 자격 확정 표현은
+계속 금지한다. DT7C 안전성 감사 결과는 `passed=true`다.
 
 ## DT4 연령 보정
 

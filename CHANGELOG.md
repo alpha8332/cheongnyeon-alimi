@@ -10,6 +10,10 @@
 
 ### Added
 
+- Release snapshot의 신청기간을 Source 전용 필드 근거로만 구조화하고 본문 날짜
+  미승격·기간 상태 일치·golden 정책 근거를 검증하는 오프라인 안전성 감사 추가
+  ([데이터 Profile](docs/data/release_dataset_profile.md))
+
 - 신청 가능한 `청년단기숙소 지원사업`을 Release 1 golden으로 고정하고 snapshot·정책 identity·순위·unknown·응답시간을 검증하는 HTTP acceptance 계약과 감사 도구 추가
 
 - 정책 상세에서 기존 공개 DTO의 데이터 출처와 수집 시각을 KST로 확인할 수

@@ -150,7 +150,6 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-POLICY-PERIOD-EXTRACTION` | action-needed | Data | 복지로 `청년월세 지원사업` 지원 내용에는 2026-03-30~05-29 신청기간이 있으나 구조화 기간·상태가 null임. 원문 보존 경계를 유지하며 Source mapping 가능 여부 검토 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
 | `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | 저장소에 독립 smoke·이해도·근거 대조 결과가 없음. 차단사항 수정본과 동일 snapshot·exact query를 각 역할이 검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
 
 기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
@@ -158,6 +157,10 @@ confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unkn
 근거로 보존하며 현재 Source 추가 차단사항으로 사용하지 않는다.
 `R1-SEARCH-RELEVANCE`도 DT7B에서 자연어·control 모두 1건 중 1위와 응답시간
 예산을 통과해 종료했다.
+`R1-POLICY-PERIOD-EXTRACTION`은 DT7C에서 Source mapping을 재감사해 종료했다.
+복지로 계약에는 신청기간 전용 필드가 없으므로 본문 날짜 2건은 원문만 보존하고
+기간·상태를 null로 유지한다. Source 근거 없는 승격과 상태 불일치는 0건이며
+golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사를 통과했다.
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA3B completed (`Gate G4 blocked`)
+- 현재 Slice: IA3C completed (`Gate G4 blocked`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -128,11 +128,19 @@ filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일�
 
 #### IA3C - Data 신청기간·상태 안전성 검토
 
-- 상태: pending
+- 상태: completed (`2026-08-06`)
 - 지원 내용의 임의 문장에서 날짜를 추정하지 않고 Source field mapping 근거가
   있을 때만 구조화 기간으로 승격한다.
 - 현재 golden 정책과 기본 노출 후보의 기간·상태를 재감사하고, 구조화할 수
   없는 값은 unknown으로 유지하며 자격 확정 표현을 금지한다.
+
+실제 snapshot 3,156건의 offline profile에 Source mapping·기간 상태 일치·본문
+날짜 미승격 감사를 추가했다. 기본 노출 1,184건 중 온통청년 723건은 신청기간
+원문이 있고 722건은 일정 또는 상태가 구조화됐다. 복지로 461건은 현재 계약에
+신청기간 전용 필드가 없어 기간·상태를 모두 null로 유지했다. 일반 본문의 날짜
+표기 2건은 관찰만 하고 승격하지 않았으며, Source 근거 없는 승격과 상태
+불일치는 0건이다. golden 정책은 명시적 `상시` 근거와 `open` 상태가 일치해
+안전성 감사를 통과했다. 후보 노출만 허용하고 자격 확정은 계속 금지한다.
 
 #### IA3D - Frontend 실제 API 재검증
 
@@ -154,6 +162,7 @@ filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일�
 
 ```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py" -v
+.\.venv\Scripts\python.exe -B scripts\profile_release_dataset.py --require-period-safety
 .\.venv\Scripts\python.exe -B scripts\audit_release_1.py --base-url http://127.0.0.1:8000
 $env:TEST_DATABASE_URL = '<dedicated-postgresql-test-url>'
 .\.venv\Scripts\python.exe -B -m pytest backend/tests -q
@@ -181,9 +190,11 @@ git diff --check
 - IA2 월세 golden query의 confirmed 정책은 0건이었고 현재 인수 기준에서
   폐기했다. 첫 후보의 지원 내용에는
   `2026-03-30 ~ 2026-05-29` 신청기간이 있으나 구조화 신청 기간·상태는
-  `null`이라 최신 수집만으로 신청 가능성을 설명할 수 없다.
-- 교체한 golden의 관련성·성능 기술 기준은 IA3B에서 통과했다. 다만
-  신청기간 안전성, Frontend 실제 API와 QA·사용성 리뷰어·보고서 독립 증거가
+  `null`이다. DT7C 재감사에서 복지로 계약에는 기간 전용 필드가 없음을 확인해
+  이 본문 날짜를 승격하지 않았으며 최신 수집만으로 신청 가능성을 설명하지
+  않는다.
+- 교체한 golden의 관련성·성능 기술 기준과 신청기간 안전성은 IA3B~C에서
+  통과했다. 다만 Frontend 실제 API와 QA·사용성 리뷰어·보고서 독립 증거가
   남아 있어 Gate G4는 계속 `blocked`다.
 - QA·사용성 리뷰어·보고서 근거가 아직 없다. Gate G4는 `blocked`로
   판정했으며, 차단사항 해소·독립 재검증 전에는 재판정하지 않는다.

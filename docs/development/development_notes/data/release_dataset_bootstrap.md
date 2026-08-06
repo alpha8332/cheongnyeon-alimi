@@ -2,7 +2,7 @@
 
 ## 작업 정보
 
-- 작업일: 2026-07-31, 2026-08-03, 2026-08-04
+- 작업일: 2026-07-31, 2026-08-03, 2026-08-04, 2026-08-06
 - 담당 영역: Data, Team Leader 시작 조정
 - 상태: completed
 - 브랜치: `feature/data/release-dataset-bootstrap`
@@ -720,6 +720,34 @@ Runtime DB 검증은 별도로 dry-run·실적재·재실행과 최종 SQL ident
 Integration 4건 skip은 테스트 DB credential을 현재 process에 주입하지 않은
 결과로 성공 처리하지 않는다. DT4의 변경된 Runtime DB 경계는 별도의 실제
 import·재실행과 SQL 집계로 검증했다.
+
+### DT7C Integration 04 신청기간 안전성 보강 (`2026-08-06`)
+
+Data 02의 수집·Schema 범위는 다시 열지 않고, 현재 Release snapshot을 반복
+감사할 수 있도록 기존 offline profile을 1.2.0으로 확장했다.
+
+- 온통청년 신청기간 근거를 `aplyYmd`, 검증된 `aplyPrdSeCd`로 명시함
+- 복지로 현재 계약은 기간 전용 필드가 없으므로 461건 전체를 unknown으로 유지
+- 일반 본문 날짜 표기 정책 2건을 원문 보존·미승격 대상으로 집계함
+- Source 근거 없는 승격과 기간·상태 불일치를 실패 조건으로 추가함
+- golden 정책의 `상시`·`always`·`open` 일치와 자격 비확정 경계를 검사함
+- `--require-period-safety`로 Release 감사 실패를 종료 코드에 반영함
+
+실제 snapshot 3,156건에서 기본 노출은 1,184건이고, Source 근거 없는 승격과
+기간·상태 불일치는 모두 0건이었다. 본문 날짜 표기 2건은 복지로 summary와
+support content에 남기고 `application_*`으로 옮기지 않았다. Schema, enum,
+nullability, Fixture, Seed, DB와 공개 API 계약 변경은 없다.
+
+| 검증 | 결과 |
+| --- | --- |
+| strict offline period safety profile | 3,156건 재생, `passed=true` |
+| Data 전체 unittest | 129건 통과 |
+| Data Integration pytest | 4건 skip, `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
+| Python compile·문서 검증·`git diff --check` | 통과 |
+
+Integration 4건 skip은 테스트 DB 자격이 현재 process에 없어 실행되지 않은
+결과이며 성공으로 기록하지 않는다. DT7C는 DB projection과 공개 API 계약을
+변경하지 않아 별도의 Runtime DB 적재는 수행하지 않았다.
 
 ## 남은 작업
 

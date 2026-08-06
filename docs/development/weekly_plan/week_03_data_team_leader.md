@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
-- 현재 Slice: DT7B completed (`Gate G4 blocked`)
+- 현재 Slice: DT7C completed (`Gate G4 blocked`)
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -666,7 +666,7 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 
 ## Slice DT7 - 신청 가능한 golden query와 Release 1 재인수
 
-- 상태: in-progress (`DT7A~B completed`)
+- 상태: in-progress (`DT7A~C completed`)
 - 판정: `Gate G4 blocked`
 
 ### 목적
@@ -705,15 +705,25 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
   317.04ms·109.92ms, warm 5회 최대 91.89ms·109.16ms로 예산을 통과했다.
 - Backend 전체 PostgreSQL 119건과 Frontend API 소비 unit 45건이 통과했다.
 
-### DT7C~DT7F - 남은 실행 순서
+### DT7C - Data 신청기간·상태 안전성
 
-1. Data가 golden 및 기본 노출 정책의 신청기간·상태를 Source field 근거로
-   재감사한다. 임의 텍스트 날짜 추정은 하지 않는다.
-2. Frontend가 수정 응답의 첫 페이지 노출, 근거·출처·수집 시각과 자격 비확정
+- 상태: completed (`2026-08-06`)
+- `profile_release_dataset.py` 1.2.0에 Source 신청기간 mapping, 기간·상태 일치,
+  일반 본문 날짜 미승격과 golden 정책 근거 감사를 추가했다.
+- 전체 3,156건과 기본 노출 1,184건에서 Source 근거 없는 기간 승격과 상태
+  불일치는 0건이다.
+- 복지로 461건은 현재 Source 계약에 신청기간 전용 필드가 없어 기간·상태를
+  null로 유지했다. 본문 날짜 표기 2건은 관찰만 하고 승격하지 않았다.
+- golden 정책은 온통청년의 명시적 `상시` 근거와 `open` 상태가 일치하며,
+  후보 노출만 허용하고 자격 확정 표현은 계속 금지한다.
+
+### DT7D~DT7F - 남은 실행 순서
+
+1. Frontend가 수정 응답의 첫 페이지 노출, 근거·출처·수집 시각과 자격 비확정
    안내를 unit·실제 API Browser·E2E로 검증한다.
-3. QA, 사용성 리뷰어와 보고서 담당이 같은 snapshot·contract hash를 독립
+2. QA, 사용성 리뷰어와 보고서 담당이 같은 snapshot·contract hash를 독립
    검증한다.
-4. Team Leader가 자동 기준과 독립 증거를 모두 확인해 Gate G4를 재판정한다.
+3. Team Leader가 자동 기준과 독립 증거를 모두 확인해 Gate G4를 재판정한다.
 
 기대 정책이 현 Source에 있으므로 Source 추가는 현재 차단사항이 아니다.
 자동 감사의 기술 통과만으로 독립 증거를 대신하거나 Gate를 통과시키지 않는다.

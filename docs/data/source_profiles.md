@@ -443,6 +443,22 @@ DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
 - 오프라인 재생: valid 0·partial 461·invalid 0, accepted 461
 - 전체 상세 461건은 호출 상한 밖이며 수행하지 않음
 
+### 2026-08-06 DT7C 신청기간 Source mapping 재감사
+
+현재 Release 1 snapshot `ffa74ef47e6048109f11bf40d1ac5e15`의 복지로
+461건을 외부 호출 없이 재생했다. 목록·상세 leaf 계약에는 신청기간 전용 필드가
+없으며 Extractor도 `application_period_text`를 만들지 않는다.
+
+- 461건 모두 신청기간 원문·시작일·종료일·일정·상태가 null
+- Source 근거 없는 구조화 승격 0건, 기간·상태 불일치 0건
+- `청년내일저축계좌`, `청년월세 지원사업` 2건의 일반 본문에서 날짜 표기 관찰
+- 두 정책 모두 원문을 summary·support content에 보존하고 신청기간으로는
+  승격하지 않음
+
+온통청년은 같은 감사에서 `aplyYmd`와 검증된 `aplyPrdSeCd`만 신청기간 근거로
+사용했다. 일반 본문 날짜 탐지는 Source mapping을 대체하지 않으며 관찰 건수만
+profile에 남긴다.
+
 ## 공통 비밀정보 경계
 
 - 인증키 값은 환경변수에서만 읽고 코드, 문서, Fixture와 테스트 snapshot에

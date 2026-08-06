@@ -67,6 +67,19 @@
   실제 소진 여부를 알 수 없어 상태는 null이다.
 - 알 수 없는 상태를 `"unknown"`으로 만들지 않고 null로 둔다.
 
+### Source 근거 경계
+
+- 신청기간 구조화 입력은 Extractor가 Source별로 명시한
+  `application_period_text`만 사용한다.
+- 온통청년은 `aplyYmd`를 우선하고 값이 없을 때 검증된 `aplyPrdSeCd` 코드
+  mapping만 사용한다.
+- summary, 지원 내용, 자격, 신청 방법 등 일반 본문에서 발견한 날짜는
+  신청기간으로 추정하거나 승격하지 않는다.
+- 복지로의 현재 목록·상세 계약에는 신청기간 전용 필드가 없으므로 일반 본문에
+  날짜가 있어도 기간·상태는 null로 유지한다.
+- Source 근거 없는 승격 여부는 Release 1 offline profile의
+  `application_period_safety`로 재검증한다.
+
 ## 연령
 
 지원할 대표 입력:
