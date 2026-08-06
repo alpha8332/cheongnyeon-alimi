@@ -150,7 +150,7 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | 저장소에 독립 smoke·이해도·근거 대조 결과가 없음. 차단사항 수정본과 동일 snapshot·exact query를 각 역할이 검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | DT7D 기술 재검증본과 동일 snapshot·exact query로 독립 smoke·이해도·근거 대조 결과를 각 역할이 검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
 
 기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
 confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unknown 회귀

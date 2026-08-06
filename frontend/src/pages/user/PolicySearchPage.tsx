@@ -26,6 +26,7 @@ import {
   mapPolicySearchError,
 } from '@/utils/policySearchErrors';
 import { findSelectedHit } from '@/utils/policySearchReason';
+import { POLICY_ELIGIBILITY_NOTICE } from '@/utils/policyDisplay';
 import {
   buildPolicySearchUrlParams,
   getPolicySearchTotalPages,
@@ -221,6 +222,9 @@ export default function PolicySearchPage() {
 
           {showResultCards && data ? (
             <section aria-label="검색 결과">
+              <p className="policy-eligibility-notice" role="note">
+                {POLICY_ELIGIBILITY_NOTICE}
+              </p>
               <div className="cards-grid">
                 {data.items.map((hit) => (
                   <PolicySearchResultCard

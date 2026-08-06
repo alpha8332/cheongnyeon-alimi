@@ -658,6 +658,18 @@ a.policy-card__arrow {
   border-radius: 4px;
 }
 
+.policy-eligibility-notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--r-xl);
+}
+
 /* ── Detail page ── */
 
 .detail-back {

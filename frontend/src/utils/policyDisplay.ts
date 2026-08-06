@@ -27,6 +27,9 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   scheduled: '예정',
 };
 
+export const POLICY_ELIGIBILITY_NOTICE =
+  '검색 결과는 신청 가능한 정책 후보를 안내하며, 실제 자격 충족을 확정하지 않습니다. 신청 전 원문과 세부 요건을 확인해 주세요.';
+
 export function getCategoryLabel(category: PolicyCategory): string {
   return CATEGORY_LABELS[category];
 }

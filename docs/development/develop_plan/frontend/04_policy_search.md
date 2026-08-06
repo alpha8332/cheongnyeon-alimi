@@ -3,7 +3,7 @@
 ## 계획 정보
 
 - 번호: Frontend 04
-- 상태: approved
+- 상태: completed
 - 승인: Gate G1 (`2026-08-04`)
 - 담당 영역: Frontend
 - Forest: Policy Search (자연어·조건 검색 UI)
@@ -12,7 +12,7 @@
   [`week_03_search_contract_handoff.md`](../../weekly_plan/week_03_search_contract_handoff.md)를
   마지막으로 변경한 커밋 (`d3fde3e0912a1a54a27f32d157941be58ecc8660`)
 - Gate: DT2·Gate G1 (Backend 06·Frontend 04·Data 권고안 공동 검토)
-- 현재 Slice: FE4-22 pending (Real API Client)
+- 현재 Slice: FE4-24 completed (DT7D integration correction)
 - 선행 Forest: Frontend 01 Policy Discovery (completed),
   Integration 03 Policy Search Data Foundation (completed)
 - 후속 Forest: Integration 04 Release 1 Acceptance (Team Leader)
@@ -490,6 +490,8 @@ checklist에 포함한다.
 
 ### FE4-22 — Real API Client / W3-F2 (G1 후)
 
+- 상태: completed (Integration 04 DT5·DT6 actual API 연결)
+
 | 항목 | 내용 |
 | --- | --- |
 | **목표** | `getPolicySearch()`, env gate, staging 연결 |
@@ -503,6 +505,8 @@ checklist에 포함한다.
 
 ### FE4-23 — Browser / a11y / 반응형 검증 실행 (G1 후)
 
+- 상태: completed (`2026-08-06`, Integration 04 DT7D)
+
 | 항목 | 내용 |
 | --- | --- |
 | **목표** | FE4-04 checklist 실행·개발 기록·golden query |
@@ -515,6 +519,8 @@ checklist에 포함한다.
 ---
 
 ### FE4-24 — W3-F3 통합 수정 및 회귀 (G1 후)
+
+- 상태: completed (`2026-08-06`, Integration 04 DT7D)
 
 | 항목 | 내용 |
 | --- | --- |

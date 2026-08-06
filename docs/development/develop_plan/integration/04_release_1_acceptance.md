@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA3C completed (`Gate G4 blocked`)
+- 현재 Slice: IA3D completed (`Gate G4 blocked`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -144,10 +144,13 @@ filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일�
 
 #### IA3D - Frontend 실제 API 재검증
 
-- 상태: pending
+- 상태: completed (`2026-08-06`)
 - 수정된 검색 응답으로 기대 정책이 첫 페이지에 노출되는지 확인한다.
 - 조건·근거·출처·수집 시각과 “후보이지 자격 확정이 아님” 안내가 응답
   계약과 일치하는지 unit·Browser·E2E로 검증한다.
+- actual API E2E 11건과 desktop·390px Browser에서 기대 정책
+  `청년단기숙소 지원사업`의 첫 페이지 1위, 상세 출처·수집 시각·접수 상태,
+  자격 비확정 안내를 확인했다.
 
 #### IA3E~IA3F - 독립 증거와 Gate G4 재판정
 
@@ -194,8 +197,8 @@ git diff --check
   이 본문 날짜를 승격하지 않았으며 최신 수집만으로 신청 가능성을 설명하지
   않는다.
 - 교체한 golden의 관련성·성능 기술 기준과 신청기간 안전성은 IA3B~C에서
-  통과했다. 다만 Frontend 실제 API와 QA·사용성 리뷰어·보고서 독립 증거가
-  남아 있어 Gate G4는 계속 `blocked`다.
+  통과했고 Frontend 실제 API 재검증도 IA3D에서 완료했다. 다만 QA·사용성
+  리뷰어·보고서 독립 증거가 남아 있어 Gate G4는 계속 `blocked`다.
 - QA·사용성 리뷰어·보고서 근거가 아직 없다. Gate G4는 `blocked`로
   판정했으며, 차단사항 해소·독립 재검증 전에는 재판정하지 않는다.
 

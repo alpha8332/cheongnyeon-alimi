@@ -142,7 +142,11 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     const uninterpreted = sidebar.locator('.policy-search-uninterpreted');
     await expect(uninterpreted).toBeVisible();
-    await expect(uninterpreted.getByText(/'생활'/)).toBeVisible();
+    await expect(
+      uninterpreted.getByText(
+        process.env.VITE_USE_MOCK === 'false' ? /'생활'/ : /'복지로'/,
+      ),
+    ).toBeVisible();
     await expect(sidebar.getByRole('heading', { name: /자격 조건/ })).toBeVisible();
   });
 
@@ -175,5 +179,54 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     await partialCard.click();
     await expect(page).toHaveURL(/\/programs\/\d+\?include_partial=true/);
+  });
+
+  test('8. 실제 API golden 첫 페이지·근거·상세·자격 비확정 안내', async ({
+    page,
+  }) => {
+    test.skip(
+      process.env.VITE_USE_MOCK !== 'false',
+      'VITE_USE_MOCK=false인 실제 API 감사에서만 실행합니다.',
+    );
+
+    await page.goto(
+      '/search?q=%EC%B2%9C%EC%95%88+%EC%82%AC%EB%8A%94+27%EC%82%B4+%EC%B2%AD%EB%85%84+%EB%8B%A8%EA%B8%B0%EC%88%99%EC%86%8C+%EC%A7%80%EC%9B%90+%EB%B0%9B%EC%9D%84+%EC%88%98+%EC%9E%88%EB%82%98%3F',
+    );
+
+    await waitForSearchSettled(page);
+
+    const resultRegion = page.getByRole('region', { name: '검색 결과' });
+    await expect(resultRegion).toBeVisible();
+    await expect(
+      resultRegion.locator('a.policy-card').first(),
+    ).toContainText('청년단기숙소 지원사업');
+    await expect(
+      resultRegion.getByRole('note'),
+    ).toContainText('실제 자격 충족을 확정하지 않습니다');
+
+    const sidebar = page.getByLabel('검색 조건 분석');
+    await expect(sidebar).toContainText('청년단기숙소 지원사업');
+    await expect(sidebar).toContainText(/27세|연령/);
+    await expect(sidebar).toContainText(/천안|지역/);
+
+    await resultRegion.locator('a.policy-card').first().click();
+    await expect(page).toHaveURL(
+      /\/programs\/\d+\?include_partial=true$/,
+    );
+    await expect(
+      page.getByRole('heading', { name: /청년단기숙소 지원사업/ }),
+    ).toBeVisible();
+    await expect(page.getByText('데이터 출처')).toBeVisible();
+    await expect(page.getByText('온통청년 청년정책 API')).toBeVisible();
+    await expect(page.getByText('수집 시각')).toBeVisible();
+    await expect(page.getByText(/KST$/)).toBeVisible();
+    await expect(page.getByText('상시', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('접수 중', { exact: true })).toBeVisible();
+    await expect(page.getByRole('note')).toContainText(
+      '실제 자격 충족을 확정하지 않습니다',
+    );
+    await expect(
+      page.getByRole('button', { name: '원문 링크 열기' }),
+    ).toBeVisible();
   });
 });

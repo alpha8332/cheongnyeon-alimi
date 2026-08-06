@@ -10,6 +10,9 @@
 
 ### Added
 
+- 정책 검색·상세에 실제 자격 충족을 확정하지 않는다는 공통 안내를 추가하고,
+  새 golden query의 actual API 첫 결과·근거·출처·수집 시각을 Browser·E2E로 검증
+  ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))
 - Release snapshot의 신청기간을 Source 전용 필드 근거로만 구조화하고 본문 날짜
   미승격·기간 상태 일치·golden 정책 근거를 검증하는 오프라인 안전성 감사 추가
   ([데이터 Profile](docs/data/release_dataset_profile.md))

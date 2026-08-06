@@ -18,6 +18,7 @@ import {
   formatOrganization,
   formatRegion,
   getDDayLabel,
+  POLICY_ELIGIBILITY_NOTICE,
 } from '@/utils/policyDisplay';
 import { parsePolicyId } from '@/utils/policyId';
 
@@ -115,6 +116,9 @@ export default function ProgramDetailPage() {
       </h1>
 
       <Card title="📄 정책 정보">
+        <p className="policy-eligibility-notice" role="note">
+          {POLICY_ELIGIBILITY_NOTICE}
+        </p>
         <DetailField label="기관" value={formatOrganization(policy)} />
         <DetailField label="데이터 출처" value={policy.source_name} />
         <DetailField

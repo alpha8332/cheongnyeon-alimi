@@ -31,7 +31,9 @@
 | IA2 / DT6 | completed | exact golden query 검증, Gate G4 `blocked` |
 | IA3A / DT7 | completed | 단기숙소 golden 계약·자동 감사 기준선, 기술 차단 구체화 |
 | IA3B / DT7 | completed | 구체 term anchor, golden 1위·응답시간 예산 통과 |
-| IA3C~F / DT7 | pending | 기간 안전성, FE·독립 검증, Gate G4 재판정 |
+| IA3C / DT7 | completed | 기간·상태 안전성 감사 통과 |
+| IA3D / DT7 | completed | Frontend actual API·Browser·E2E 재검증 통과 |
+| IA3E~F / DT7 | pending | 독립 증거 확보, Gate G4 재판정 |
 
 ## 구현 내용
 
@@ -175,8 +177,21 @@ null로 유지했다. `청년내일저축계좌`와 `청년월세 지원사업` 
 golden 정책은 Source 원문 `상시`, 일정 `always`, 상태 `open`이 일치하고 본문
 승격을 사용하지 않아 안전성 감사 `passed=true`다. 후보 노출은 허용하지만
 자동 감사 결과만으로 사용자 자격을 확정하지 않는다. 이 결과로 Data 기간
-차단사항은 해소됐지만 Frontend 실제 API 재검증과 독립 증거가 남아 Gate G4는
-계속 `blocked`다.
+차단사항은 해소됐고, DT7D에서 Frontend 실제 API 재검증도 완료했다. 독립
+증거가 남아 Gate G4는 계속 `blocked`다.
+
+### DT7D Frontend actual API 재검증
+
+actual API 모드에서 새 golden exact query를 실행해 첫 페이지의 첫 결과가
+`청년단기숙소 지원사업`이고 지역·연령·주거·단기숙소 조건이 match임을
+확인했다. 상세 화면은 기존 공개 DTO의 `온통청년 청년정책 API`, KST 수집 시각,
+`상시`, `접수 중`, 원문 링크를 표시한다.
+
+검색 결과와 상세에는 정책 후보 안내이며 실제 자격 충족을 확정하지 않는다는
+공통 `role=note` 문구를 추가했다. Frontend unit 46건, Mock E2E 10건과 actual
+E2E 11건이 통과했다. 인앱 Browser desktop과 390×844 viewport에서도 검색
+첫 결과·조건 근거·상세 출처·수집 시각·상태·안내를 확인했다. 이 검증은 기술
+증거이며 QA·사용성 리뷰·보고서 독립 증거를 대신하지 않는다.
 
 ## 주요 변경 파일
 
@@ -200,6 +215,7 @@ golden 정책은 Source 원문 `상시`, 일정 `always`, 상태 `open`이 일�
 - `frontend/.gitignore`
 - `frontend/src/pages/user/ProgramDetailPage.tsx`
 - `frontend/src/utils/policyDisplay.ts`
+- `frontend/src/styles/theme.css`
 - `frontend/tests/policyDisplay.test.ts`
 - `frontend/tsconfig.test.json`
 - `docs/development/develop_plan/integration/04_release_1_acceptance.md`
@@ -256,6 +272,12 @@ golden 정책은 Source 원문 `상시`, 일정 `always`, 상태 `open`이 일�
 | DT7C Data 전체 unittest | 129건 통과 |
 | DT7C Data Integration pytest | 4건 skip, `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
 | DT7C Python compile·문서 검증·`git diff --check` | 통과 |
+| DT7D Frontend unit | 46건 통과 |
+| DT7D Frontend build·lint | 통과 |
+| DT7D Mock Playwright 최종 | 10건 통과·actual 전용 1건 skip |
+| DT7D actual API Playwright 최종 | 11건 통과 |
+| DT7D actual acceptance 재감사 | technical `pass`, Gate `blocked`, natural 106.98ms·control 95.78ms |
+| DT7D 인앱 Browser | desktop·390×844 검색·상세·자격 비확정 안내 통과 |
 
 폐기한 IA2 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,
@@ -275,8 +297,7 @@ DT7C Integration 4건 skip은 `TEST_DATABASE_URL`이 현재 process에 주입되
 
 ### Gate G4 차단사항과 재개 조건
 
-- Backend 관련성·성능 차단사항은 해소했다. Frontend가 새 keyword 조건과
-  첫 페이지 결과를 실제 API·Browser에서 재검증해야 한다.
+- Backend 관련성·성능과 Frontend actual API 재검증 차단사항은 해소했다.
 - 새 golden의 기대 정책은 현 Source에서 confirmed 1건이므로 Source 추가
   결정은 현재 차단사항에서 제외한다.
 - 복지로 본문 날짜는 현재 Source 계약상 신청기간으로 승격하지 않으며, 향후
