@@ -127,6 +127,10 @@
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
+- [Release 1 독립 검증 증거 안내](contest/release_1_evidence_guide.md):
+  DT7E actual snapshot·contract hash 기반 QA·사용성·보고서 검증 절차
+- [Release 1 기술 증거](contest/release_1_technical_evidence.json):
+  실제 PostgreSQL golden·control acceptance의 안전한 실행 결과
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
@@ -150,7 +154,7 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | DT7D 기술 재검증본과 동일 snapshot·exact query로 독립 smoke·이해도·근거 대조 결과를 각 역할이 검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | [DT7E 안내](contest/release_1_evidence_guide.md)에 따라 동일 snapshot·contract hash·exact query의 독립 smoke·이해도·근거 대조 결과를 각 역할이 템플릿에 기록 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
 
 기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
 confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unknown 회귀

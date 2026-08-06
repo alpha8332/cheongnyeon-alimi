@@ -75,7 +75,8 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 기대 정책은 자연어·control 모두 1건 중 1위이고 cold 317.04ms·109.92ms로
 기술 기준을 통과했다. Source 신청기간 안전성도 근거 없는 승격·상태 불일치
 0건으로 통과했고, DT7D Frontend actual API E2E·Browser 재검증도 통과했다.
-QA·사용성 리뷰어·보고서 독립 근거는 아직 없다. 상세 근거와 재개 조건은
+DT7E actual 기술 증거·역할별 템플릿·정합성 검증 도구는 준비됐지만
+QA·사용성 리뷰어·보고서 독립 결과는 아직 없다. 상세 근거와 재개 조건은
 [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
 따른다.
 

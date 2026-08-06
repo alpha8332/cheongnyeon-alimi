@@ -343,6 +343,10 @@ Frontend actual API E2E·Browser 재검증도 통과했다. 다만 QA·사용성
 리뷰어·보고서 독립 근거가 남아 있어 같은 계약의 전체 증거가 모이기 전에는
 `v0.1.0` 후보로 진행하지 않는다.
 
+DT7E는 actual 기술 증거, 역할별 템플릿과 contract·snapshot·query 정합성
+검증 도구를 준비했다. 현재 세 독립 역할의 실행 결과는 `pending`이며 이 기반
+준비만으로 Gate G4 상태를 변경하지 않는다.
+
 모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
 
 ## 역할별 산출물

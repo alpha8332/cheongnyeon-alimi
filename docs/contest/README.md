@@ -31,3 +31,13 @@
 [주차별 실행 계획](../development/develop_plan/weekly_delivery_plan.md),
 역할 겸임과 독립성 기준은
 [역할과 책임](../governance/role_assignment.md)을 따른다.
+
+## 현재 Release 증거
+
+- [Release 1 독립 검증 증거 안내](release_1_evidence_guide.md): DT7E QA·사용성·보고서 역할별 수행 절차와 정합성 검증
+- [Release 1 독립 증거 템플릿](release_1_evidence_template.json): 현재 contract hash·actual snapshot에 고정된 작성 시작점
+- [Release 1 기술 증거](release_1_technical_evidence.json): 실제 PostgreSQL 검색 acceptance의 안전한 JSON 결과
+
+템플릿은 미작성 상태이며 독립 증거 완료나 Gate 통과를 뜻하지 않는다. 실제
+담당 결과는 템플릿을 복사한 별도 증거 파일에 기록하고 Team Leader가 DT7F에서
+대조한다.

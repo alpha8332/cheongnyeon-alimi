@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA3D completed (`Gate G4 blocked`)
+- 현재 Slice: IA3E in-progress (`Gate G4 blocked`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -152,11 +152,19 @@ filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일�
   `청년단기숙소 지원사업`의 첫 페이지 1위, 상세 출처·수집 시각·접수 상태,
   자격 비확정 안내를 확인했다.
 
-#### IA3E~IA3F - 독립 증거와 Gate G4 재판정
+#### IA3E - 독립 증거 수집과 정합성 검증
 
-- 상태: pending
+- 상태: in-progress (`2026-08-06`, 증거 기반 완료·담당자 실행 대기)
 - QA smoke, 사용성 리뷰와 보고서 근거 대조를 동일 snapshot·계약 hash로
   확보한다.
+- actual 기술 증거, 역할별 템플릿과 정합성 검증 도구를 제공하되 Team
+  Leader가 독립 역할의 관찰·판정을 대신 작성하지 않는다.
+- QA·사용성·보고서 세 역할이 필수 check를 실제 수행하고 증거 reference와
+  함께 `pass` 또는 `blocked`를 기록해야 완료한다.
+
+#### IA3F - Gate G4 재판정
+
+- 상태: pending
 - 자동 인수 검사는 기술 판정만 내리며 독립 증거 없이 Gate G4를 `pass`로
   만들지 않는다.
 - 모든 기술 기준과 독립 근거가 충족된 뒤 `v0.1.0` 후보를 재판정한다.

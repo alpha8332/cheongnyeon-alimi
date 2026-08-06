@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
-- 현재 Slice: DT7D completed (`Gate G4 blocked`)
+- 현재 Slice: DT7E in-progress (`Gate G4 blocked`)
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -727,11 +727,23 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 - 통합 중 발견한 자격 단정 위험은 검색·상세 공통 안내와 회귀 테스트로
   범위 안에서 수정했다.
 
-### DT7E~DT7F - 남은 실행 순서
+### DT7E - 독립 증거 수집
 
-1. QA, 사용성 리뷰어와 보고서 담당이 같은 snapshot·contract hash를 독립
-   검증한다.
-2. Team Leader가 자동 기준과 독립 증거를 모두 확인해 Gate G4를 재판정한다.
+- 상태: in-progress (`2026-08-06`, 담당자 실행 대기)
+- actual 기술 증거를 `docs/contest/release_1_technical_evidence.json`에
+  고정하고 QA·사용성·보고서 역할별 템플릿과 검증 절차를 제공했다.
+- `scripts/verify_release_1_evidence.py`는 contract hash·snapshot·exact query와
+  필수 check를 대조하며, 세 역할이 완료돼도 DT7F 전에는 Gate를 `blocked`로
+  유지한다.
+- 현재 검증 결과는 technical `pass`, 세 역할 `pending`, readiness
+  `independent-evidence-pending`이다.
+
+QA, 사용성 리뷰어와 보고서 담당이 같은 snapshot·contract hash를 독립
+검증하고 자신의 항목에 실제 관찰·증거 reference를 기록해야 DT7E를 완료한다.
+
+### DT7F - Gate G4 재판정
+
+Team Leader가 자동 기준과 독립 증거를 모두 확인해 Gate G4를 재판정한다.
 
 기대 정책이 현 Source에 있으므로 Source 추가는 현재 차단사항이 아니다.
 자동 감사의 기술 통과만으로 독립 증거를 대신하거나 Gate를 통과시키지 않는다.
@@ -837,7 +849,9 @@ git status --short
 - [x] 신청 가능한 단기숙소 golden 기대 정책·자동 기준 고정
 - [x] Backend 관련성·성능 기준 통과
 - [x] Frontend 실제 API 재검증
-- [ ] 독립 증거 확보와 Gate G4 재판정
+- [x] DT7E actual 기술 증거·역할별 템플릿·정합성 검증 기반 준비
+- [ ] QA·사용성·보고서 독립 증거 확보
+- [ ] DT7F Gate G4 재판정
 
 ## 관련 문서
 
