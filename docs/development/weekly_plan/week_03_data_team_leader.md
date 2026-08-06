@@ -7,6 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
+- 현재 Slice: DT5 completed, DT6 pending
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -509,6 +510,10 @@ Raw payload와 비밀정보는 인계하지 않는다.
 
 ## Slice DT5 - Integration Gate G2·G3 주관
 
+### 상태
+
+completed (`2026-08-06`)
+
 ### 목적
 
 Data·Backend·Frontend의 영역별 결과를 실제 snapshot으로 연결하고 결함을
@@ -562,6 +567,20 @@ Data·Backend·Frontend의 영역별 결과를 실제 snapshot으로 연결하�
 ### 후속 해제
 
 G3 통과 후 DT6 golden query·Release 1 최종 판정을 시작한다.
+
+### 완료 결과
+
+- 다른 PC의 Git 제외 Runtime Raw·DB가 이 PC에 없음을 확인하고 승인 호출
+  예산으로 최신 snapshot 3,156건을 복구했다.
+- 실제 PostgreSQL 전체 Backend 114건, Frontend unit 43건·build·lint와 실제
+  API Playwright E2E 10건을 통과했다.
+- 검색·pagination·빈 결과·422·503·partial 상세와 Browser console을
+  검증하고 통합 중 발견한 Backend test fixture와 Frontend URL·E2E 결함을
+  수정했다.
+- golden query confirmed 정책 0건과 일반 term 후보 확대는 DT6 판정
+  항목으로 남겼다. 상세 근거는
+  [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
+  따른다.
 
 ## Slice DT6 - golden query와 `v0.1.0` 판정
 
@@ -719,8 +738,8 @@ git status --short
 - [x] Integration 03 PSF0~PSF8 완료
 - [x] Integration 03 기반 브랜치 병합 승인
 - [x] Gate G1 검색 계약 승인
-- [ ] Gate G2 세 영역 준비 증거 확인
-- [ ] Gate G3 실제 DB → API → UI 통합 확인
+- [x] Gate G2 세 영역 준비 증거 확인
+- [x] Gate G3 실제 DB → API → UI 통합 확인
 - [ ] QA·리뷰어·보고서 근거 확인
 - [ ] golden query와 변형·실패 시나리오 확인
 - [ ] Gate G4 `v0.1.0` 판정과 남은 위험 기록

@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
 | Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | completed |
-| Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | in-progress |
+| Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | completed |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
@@ -23,6 +23,7 @@
 | Backend 06 | Policy Search | [개발 계획](backend/06_policy_search.md) | draft |
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 | Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
+| Integration 04 | Release 1 Acceptance | [개발 계획](integration/04_release_1_acceptance.md) | in-progress |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.

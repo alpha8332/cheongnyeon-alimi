@@ -277,6 +277,8 @@ Backend·Frontend 구현과 테스트 코드 작성은 G1 승인 뒤 별도 Slic
 
 #### Gate G2 - 영역별 준비
 
+- 상태: completed (`2026-08-06`)
+
 - Data: 실제 릴리스 범위 적재와 재실행 결과를 제시할 수 있음
 - Backend: 승인된 검색 계약의 자동 테스트와 실제 PostgreSQL 조회가 통과함
 - Frontend: Mock 소비 테스트가 통과하고 실제 API 연결 준비가 됨
@@ -292,6 +294,9 @@ Backend·Frontend 구현과 테스트 코드 작성은 G1 승인 뒤 별도 Slic
 - `W3-F3`: 조건 전달·표시·빈 결과·오류 UI 문제 수정
 
 #### Gate G3 - Release 1 후보
+
+- 상태: completed (`2026-08-06`)
+- 근거: [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)
 
 - 검색 요청 중 외부 Source API 호출이 발생하지 않음
 - 실제 진행 중 정책 snapshot이 PostgreSQL에 존재함

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.repositories.policy import PolicyRepository
 from app.schemas.policy import PolicyListResponse, PolicyRead
+from app.schemas.policy_search import PolicySearchResponse
 from app.services.policy import PolicyListRequest, PolicyService
 
 router = APIRouter()

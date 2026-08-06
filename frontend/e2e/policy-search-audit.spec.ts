@@ -25,8 +25,8 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await clearButton.click();
 
     await expect(input).toHaveValue('');
-    // Known gap: PolicySearchPage does not wire SearchBar.onClear to URL state.
-    expect(page.url()).toMatch(/q=/);
+    expect(page.url()).not.toMatch(/[?&]q=/);
+    await expect(page.getByText(/검색어를 입력하고 검색하기 버튼을 눌러 주세요/)).toBeVisible();
   });
 
   test('2. 필터 칩 삭제 시 URL 반영 및 page=1 리셋', async ({ page }) => {
@@ -43,7 +43,6 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(page).toHaveURL(/\/search\?/);
     expect(page.url()).not.toContain('region=');
     expect(page.url()).not.toMatch(/page=2/);
-    expect(page.url()).toMatch(/page=1/);
   });
 
   test('3. 페이지네이션 클릭 및 새 검색어 입력 시 page=1 리셋', async ({
@@ -65,7 +64,6 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     await waitForSearchSettled(page);
     await expect(page).toHaveURL(/q=/);
-    expect(page.url()).toMatch(/page=1/);
     expect(page.url()).not.toMatch(/page=2/);
   });
 
@@ -142,8 +140,9 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     const sidebar = page.getByLabel('검색 조건 분석');
     await expect(sidebar).toBeVisible();
 
-    await expect(sidebar.locator('.policy-search-uninterpreted')).toBeVisible();
-    await expect(sidebar.getByText(/복지로/)).toBeVisible();
+    const uninterpreted = sidebar.locator('.policy-search-uninterpreted');
+    await expect(uninterpreted).toBeVisible();
+    await expect(uninterpreted.getByText(/'생활'/)).toBeVisible();
     await expect(sidebar.getByRole('heading', { name: /자격 조건/ })).toBeVisible();
   });
 

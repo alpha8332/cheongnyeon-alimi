@@ -7,7 +7,7 @@
 - 상태: approved
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: B1 pending (W3-B0 completed)
+- 현재 Slice: in-progress (B1-B4 refinement & Golden Query testing)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -87,7 +87,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B1 - 자연어 해석 및 규칙 기반 구조화 서비스 구현
 
-- 상태: pending (Gate G1 approved)
+- 상태: completed (`2026-08-04`)
 - 목적: 한국어 자연어 `q` 및 명시적 파라미터를 파싱하고 override 규칙을 적용하는 Service 구현
 - 산출물:
   - `backend/app/services/policy_search_parser.py`
@@ -97,7 +97,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B2 - PostgreSQL 검색 Repository 및 Query Builder 구현
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: Search projection 테이블 조회, mismatch 제외, unknown/partial 처리 및 4단계 결정적 정렬 Builder 구현
 - 산출물:
   - `backend/app/repositories/policy_search_repository.py`
@@ -107,7 +107,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B3 - Policy Search API Endpoint 및 DTO 구현
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: `GET /api/v1/policies/search` Endpoint 및 Pydantic DTO, 예외 처리 핸들러 구현
 - 산출물:
   - `backend/app/api/v1/endpoints/policy_search.py`
@@ -118,7 +118,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 
 ### B4 - PostgreSQL 통합, 정렬/페이징 & API 호환성 검증
 
-- 상태: draft
+- 상태: completed (`2026-08-04`)
 - 목적: 실제 PostgreSQL 적재 데이터 대상 전체 통합 테스트 및 기존 API 호환성 검증
 - 산출물:
   - 통합 테스트 스위트 및 Backend 개발 기록 `docs/development/development_notes/backend/policy_search.md`

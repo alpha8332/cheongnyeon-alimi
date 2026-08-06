@@ -109,6 +109,19 @@ export default function PolicySearchPage() {
     );
   };
 
+  const handleSearchClear = () => {
+    applyUrlState(
+      withPolicySearchPage(
+        {
+          ...urlState,
+          q: '',
+        },
+        1,
+      ),
+    );
+    setSelectedPolicyId(null);
+  };
+
   const handleFilterRemove = (
     dimension: InterpretedFilterChip['dimension'],
   ) => {
@@ -170,6 +183,7 @@ export default function PolicySearchPage() {
             key={urlState.q}
             defaultQ={urlState.q}
             onSubmit={handleSearchSubmit}
+            onClear={handleSearchClear}
             isSubmitting={showLoading}
           />
 

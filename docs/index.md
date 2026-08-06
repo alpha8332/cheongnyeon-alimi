@@ -89,6 +89,8 @@
 - [Policy Search Data Foundation Forest 계획](development/develop_plan/integration/03_policy_search_data_foundation.md):
   Source 중립 검색 필드, 행정구역 계층·적용 관계, search projection과
   Migration의 Release 1 공통 기반
+- [Release 1 Acceptance Forest 계획](development/develop_plan/integration/04_release_1_acceptance.md):
+  실제 snapshot DB → 검색 API → Frontend Browser 인수와 Release 1 판정
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
@@ -106,10 +108,14 @@
 - [Backend Policy Persistence Hardening Forest 개발 기록](development/development_notes/backend/policy_persistence_hardening.md)
 - [Backend Policy Runtime Safety Forest 개발 기록](development/development_notes/backend/policy_runtime_safety.md):
   Policy timestamp·SQL logging 현재 동작, 결정과 검증 결과
+- [Backend Policy Search Forest 개발 기록](development/development_notes/backend/policy_search.md):
+  PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
   검색 데이터 lineage·ADR Gate와 Schema·지역·DB·Source Adapter 검증 결과
+- [Release 1 Acceptance Forest 개발 기록](development/development_notes/integration/release_1_acceptance.md):
+  DT5 실제 snapshot 복구·PostgreSQL·HTTP·Browser 통합과 결함 수정 결과
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
@@ -144,8 +150,8 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-IMPLEMENTATION` | action-needed | Backend·Frontend | Frontend FE4-11 types promote 완료; FE4-12 MSW·Backend endpoint 병렬 진행. Frontend 실제 API 연결은 Backend endpoint·계약 테스트 준비 후 진행 | [Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md), [Backend 06 계획](development/develop_plan/backend/06_policy_search.md), [Frontend 04 계획](development/develop_plan/frontend/04_policy_search.md), [Frontend 04 개발 기록](development/development_notes/frontend/policy_search.md) |
-| `R1-ACTUAL-DATA-BOUNDARIES` | action-needed | Backend·Frontend·Team Leader | unknown age·region·status 표시를 보존하고, `27세 천안 청년 월세 지원`에 confirmed 정책이 없음을 Integration 04 golden flow에서 반영 | [Release 1 실데이터 품질 Profile](data/release_dataset_profile.md) |
+| `R1-SEARCH-RELEVANCE` | action-needed | Backend·Team Leader | 일반 `지원` term 하나만 일치해도 후보가 넓어지는 현재 OR 의미와 score를 DT6에서 결정하고 actual snapshot으로 재검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-ACTUAL-DATA-BOUNDARIES` | review-pending | Backend·Frontend·Team Leader | unknown age·region·status 표시는 실제 API·Browser에서 보존됨. `27세 천안 청년 월세 지원` confirmed 0건과 최신 3,156건 snapshot을 QA·리뷰어·보고서 근거와 함께 DT6에서 판정 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

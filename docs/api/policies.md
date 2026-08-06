@@ -13,6 +13,85 @@
 `valid`·`partial`을 함께 허용한다. `invalid` 정책은 어떤 경우에도 공개하지
 않는다.
 
+## 정책 자연어 검색
+
+```http
+GET /api/v1/policies/search
+```
+
+### Query
+
+| 이름 | 타입 | 기본값 | 규칙 |
+| --- | --- | --- | --- |
+| `q` | string | **필수** | 자연어 검색어 (공백 제거 후 1자 이상 200자 이하, 필수) |
+| `keyword` | string | 없음 | 명시적 키워드 필터 (최대 100자) |
+| `region` | string | 없음 | 명시적 지역 alias/name 문자열 (최대 100자) |
+| `age` | integer | 없음 | 명시적 만 연령 (0~150세) |
+| `category` | enum | 없음 | 명시적 카테고리 |
+| `status` | enum | 없음 | 명시적 신청 상태 (`open`, `closed`, `scheduled`) |
+| `include_partial` | boolean | `true` | partial 정책 포함 여부 (기본값: true) |
+| `page` | integer | `1` | 1 이상 |
+| `limit` | integer | `20` | 1~100 |
+
+### 응답
+
+```json
+{
+  "total": 1,
+  "page": 1,
+  "limit": 20,
+  "interpreted_conditions": {
+    "q_raw": "27세 천안 청년 월세 지원",
+    "q_clean": "27세 천안 청년 월세 지원",
+    "conditions": [
+      {
+        "dimension": "age",
+        "value": 27,
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "region",
+        "value": "충청남도 천안시",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": ["충청남도 천안시"]
+      },
+      {
+        "dimension": "category",
+        "value": "housing",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      }
+    ],
+    "override_fields": [],
+    "uninterpreted_terms": ["청년", "지원"]
+  },
+  "items": [
+    {
+      "policy": {
+        "schema_version": "1.1.0",
+        "id": 1,
+        "title": "천안 청년 월세 지원금"
+      },
+      "verdicts": {
+        "region": "match",
+        "age": "match",
+        "category": "match",
+        "status": null
+      },
+      "unconfirmed_conditions": [],
+      "reason_codes": ["REGION_MATCH", "AGE_MATCH", "CATEGORY_MATCH"],
+      "message": "천안 청년 월세 지원금 - 판정 완료",
+      "score": 5.0,
+      "unknown_count": 0
+    }
+  ]
+}
+```
+
 ## 정책 목록
 
 ```http
