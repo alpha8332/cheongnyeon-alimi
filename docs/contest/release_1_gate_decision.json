@@ -32,9 +32,9 @@
     "long-region-list-collapsing"
   ],
   "publication": {
-    "develop_merge_completed": false,
+    "develop_merge_completed": true,
     "main_release_pr_completed": false,
     "version_tag_created": false
   },
-  "decision_note": "G4 and the Release 1 implementation candidate are complete. Publication remains subject to the repository merge and tag workflow."
+  "decision_note": "G4 and the Release 1 implementation are complete and merged into develop at 4629a61. Publication still requires the main release PR and v0.1.0 tag."
 }

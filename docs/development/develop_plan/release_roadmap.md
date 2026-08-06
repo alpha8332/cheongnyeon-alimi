@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-03
+- 기준일: 2026-08-06
 - 범위: `v0.1.0`, `v0.5.0`, `v1.0.0`
 - 역할: 여러 Forest의 릴리스 목표와 통합 완료 조건을 정하는 기준선
 
@@ -23,7 +23,7 @@
 
 ## 현재 기준선
 
-2주차 기반과 3주차 Integration 03까지 다음이 완료됐다.
+2주차 기반과 3주차 Release 1 구현까지 다음이 완료됐다.
 
 - 온통청년·복지로 제한 수집, Raw 저장, 정규화와 검증
 - 합성 canonical Seed의 PostgreSQL 적재와 Policy API 통합
@@ -32,21 +32,16 @@
 - PostgreSQL 안전성 보강과 React Router advisory 대응
 - `NormalizedProgram` 1.1.0, `kr-bjd-20260803` 행정구역 기준정보와
   Source 중립 지역 관계·검색 projection·3값 판정 primitive
+- 실제 정책 3,156건 snapshot의 PostgreSQL bootstrap과 멱등 재실행
+- Backend 자연어 해석·서버 검색, 검색 이유·미확인 조건 API
+- Frontend 자연어 검색·pagination·목록·상세와 actual API Browser E2E
+- 신청 가능한 golden 정책의 identity·순위·unknown·응답시간·신청기간 안전성
+- Gate G4 경량 QA·사용성 검토와 Release 1 blocker 0건 판정
 
-Data 02 DT1에서 Git 제외 `runtime/raw`에 온통청년 10건과 복지로 목록
-10건·상세 3건의 실제 표본을 저장하고 재처리했다. 온통청년 전체 건수는
-2,696, 복지로는 461로 보고됐다. PSF 이후 오프라인 재생에서 온통청년은
-exact 지역 규칙이 연결돼 valid 8·partial 2, 복지로는 지역·연령·신청기간
-근거가 없어 partial 10이었다. 전체 또는 릴리스 범위 수집과 자동 주기 적재는
-아직 구현하지 않았다.
-
-Integration 03은 공식 법정동 snapshot, 온통청년 exact 지역 crosswalk,
-`nationwide|regional|unknown`, 지역·연령·신청 상태 판정과 Source 중립 검색
-projection을 구현·검증했다. 복지로의 누락 조건과 온통청년 공개 `zipCd`
-code-to-name 표 부재는 추정하지 않고 lineage와 unknown으로 보존한다. 현재
-공개 Policy API에는 자유 키워드와 연령 query가 없고 Frontend 검색은
-client-only이므로, DT2 Gate G1의 Backend·Frontend 계약과 실제 릴리스
-snapshot·서버 검색·UI 연결 전에는 `v0.1.0`을 릴리스할 수 없다.
+Release 1 구현과 근거는 `2026-08-06` 커밋 `4629a61`로 `develop`에 병합됐다.
+`main` 릴리스 PR과 `v0.1.0` tag는 아직 완료하지 않았으며 저장소 publication
+절차로 남아 있다. 자동 주기 수집, 보고서 근거 대조와 API 오류 토스트 검증은
+`v0.5.0` 후속 범위다.
 
 ## 릴리스 역할과 승인 증거
 

@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-03
+- 기준일: 2026-08-06
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -95,6 +95,10 @@ completed
 상세 실행 순서, 병렬 작업과 Gate는
 [3주차 상세 계획](../weekly_plan/week_03_release_1.md)을 따른다.
 
+### 상태
+
+completed (`Gate G4 pass`, `develop` 병합 `4629a61`)
+
 ### 우선순위
 
 `v0.1.0` 완료 조건 외의 관리자·추천 기능을 먼저 추가하지 않는다.
@@ -172,6 +176,9 @@ completed
 Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도 통과했다. 보고서와
 API 오류 UX 검증은 실행하지 않은 채 `v0.5.0` 후속으로 이관했으며 Release 1
 완료 범위에 포함하지 않는다.
+
+Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐다. `main` 릴리스
+PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 
 ## 4주차 - 사용자·관리자 핵심 기능
 

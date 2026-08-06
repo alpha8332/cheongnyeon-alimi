@@ -85,8 +85,9 @@ Gate 통과 판정이 아니다. 검증 도구의 `gate_verdict`는 DT7F 전까�
 
 DT7F의 최종 Team Leader 판정은
 [`release_1_gate_decision.json`](release_1_gate_decision.json)에 별도로
-기록한다. 현재 G4는 `pass`이며 `develop`·`main` 병합과 `v0.1.0` tag는 저장소
-publication 절차로 남아 있다.
+기록한다. 현재 G4는 `pass`이며 `develop` 병합은 `2026-08-06` 커밋
+`4629a61`로 완료됐다. `main` 릴리스 PR과 `v0.1.0` tag는 저장소 publication
+절차로 남아 있다.
 
 ## QA 검증
 

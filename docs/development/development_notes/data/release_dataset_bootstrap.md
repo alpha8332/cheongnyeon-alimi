@@ -101,7 +101,7 @@ Integration 04 종단 인수 결과는 각 담당 Forest 기록에 남긴다.
 | Data 02 | `develop_plan/data/02_release_dataset_bootstrap.md`, 이 기록 | 생성·진행 중 |
 | Backend 06 | `develop_plan/backend/06_policy_search.md`, 대응 Backend 개발 기록 | Backend 담당이 구현 전 생성 필요 |
 | Frontend 04 | `develop_plan/frontend/04_policy_search.md`, 대응 Frontend 개발 기록 | Frontend 담당이 구현 전 생성 필요 |
-| Integration 03 | `develop_plan/integration/03_policy_search_data_foundation.md`, 대응 Integration 개발 기록 | PSF0~PSF8 구현·전체 Gate 완료, 기반 브랜치 병합 대기 |
+| Integration 03 | `develop_plan/integration/03_policy_search_data_foundation.md`, 대응 Integration 개발 기록 | PSF0~PSF8 구현·전체 Gate 완료, Release 1과 함께 `develop` 반영 완료 |
 | Integration 04 | Release 1 Acceptance 계획과 대응 Integration 개발 기록 | Team Leader가 DT5 전 생성 필요 |
 | 보고서 | `docs/contest/`의 Release 1 제출 근거 | 실제 증거가 생길 때 작성 |
 | 사용성 리뷰·QA | Integration 04 개발 기록의 독립 검증 절 | 시나리오·결함이 생길 때 기록 |

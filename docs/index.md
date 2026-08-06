@@ -53,7 +53,7 @@
 - [주차별 상세 실행 계획](development/weekly_plan/README.md): 주차별 선행
   관계, 병렬 작업, 역할과 검증 Gate
 - [3주차 상세 실행 계획](development/weekly_plan/week_03_release_1.md):
-  실데이터 정책 검색과 `v0.1.0` 실행 순서
+  실데이터 정책 검색과 `v0.1.0` 실행 순서, Gate G4와 `develop` 병합 완료 상태
 - [3주차 Data·Team Leader 실행 계획](development/weekly_plan/week_03_data_team_leader.md):
   실데이터 수집·적재와 통합·릴리스 판정 Slice
 - [3주차 검색 계약 Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md):
@@ -156,11 +156,17 @@ Integration 02에서 완료됐다. PSF1은 1.1.0 검색 데이터 계약과 전�
 
 2주차 완료 시점에는 활성 인계사항이 없었다. 3주차 Data 02 DT1 실데이터
 preflight에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 DT2A~DT2D 공동 검토와
-Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 활성 인계사항은 없다.
+Gate G1 승인으로 `2026-08-04`에 종료했다. Release 1 구현과 근거는
+`2026-08-06` 커밋 `4629a61`로 `develop`에 병합됐으며 현재 활성 영역 간
+인계사항은 없다.
 
 `R1-RELEASE-EVIDENCE`는 `2026-08-06` 경량 QA·사용성 리뷰와 새 contract hash
 기술 재검증을 통과해 종료했다. 보고서와 API 오류 UX는 Release 1을 완료한
 것처럼 기록하지 않고 `v0.5.0` 계획에서 다시 다룬다.
+
+`main` 릴리스 PR과 `v0.1.0` tag는 영역 간 인계가 아니라 저장소 publication
+절차이며 아직 완료되지 않았다. 실제 PR 병합과 tag 생성 전에는 Release 1
+publication 완료로 기록하지 않는다.
 
 기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
 confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unknown 회귀

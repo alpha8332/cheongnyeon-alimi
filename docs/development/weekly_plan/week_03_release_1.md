@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`Gate G4 pass`, `develop` 병합 대기)
+- 상태: completed (`Gate G4 pass`, `develop` 병합 `4629a61`)
 - 대상 Release: `v0.1.0`
 - 실행 주차: 3주차
 - 주 담당: Data, Backend, Frontend
@@ -348,6 +348,10 @@ Team Leader가 다음 증거를 확인한다.
 
 모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
 
+Release 1 구현과 Gate 근거는 `2026-08-06` 커밋 `4629a61`로 `develop`에
+병합됐다. `main` 릴리스 PR과 `v0.1.0` tag는 저장소 publication 절차로 남아
+있으며, 실제 완료 전에는 생성된 것으로 기록하지 않는다.
+
 ## 역할별 산출물
 
 | 역할 | 필수 산출물 |
@@ -443,7 +447,7 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03과 DT2·Gate G1
 
 ## 완료 체크리스트
 
-- [ ] 2주차 결과가 `develop`에 병합되고 3주차 Forest 계획이 승인됨
+- [x] 2주차 결과가 `develop`에 병합되고 3주차 Forest 계획이 승인됨
 - [x] 대표 실제 표본과 데이터 분포 확인
 - [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [x] Gate G1 검색 계약 공동 승인

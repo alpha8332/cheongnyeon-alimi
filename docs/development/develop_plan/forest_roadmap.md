@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-03
+- 기준일: 2026-08-06
 - 역할: 완료 Forest와 릴리스별 후속 Forest의 순서·의존성 조정
 
 이 문서는 포트폴리오 수준의 순서를 정한다. `draft`, `approved`,
@@ -37,6 +37,9 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 | 3 | [Backend 06 Policy Search](backend/06_policy_search.md) | Backend | Data 계약·Frontend 소비 검토 | completed | 구체 term anchor·일반어 fallback, 실제 golden 1위·2초 예산과 전체 PostgreSQL 회귀 통과 | Integration 03 판정 primitive, Data 02 DT2와 Gate G1 |
 | 4 | [Frontend 04 Policy Search](frontend/04_policy_search.md) | Frontend | Backend API 검토 | completed (`DT7D actual 재검증`) | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건·자격 비확정 안내, actual API Browser·E2E | Integration 03·Data 02 DT2·Gate G1, Integration 04 actual API |
 | 5 | [Integration 04 Release 1 Acceptance](integration/04_release_1_acceptance.md) | Team Leader - Integration | Data·Backend·Frontend, 경량 QA·사용성 리뷰 | completed (`IA3F`, `G4 pass`) | golden 기술·기간 안전성·FE actual 검증, 경량 팀 리뷰와 Release 1 후보 승인 | Data 02, Integration 03, Backend 06, Frontend 04 |
+
+위 Release 1 Forest 결과는 `2026-08-06` 커밋 `4629a61`로 `develop`에
+병합됐다. `main` 릴리스 PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
 API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.

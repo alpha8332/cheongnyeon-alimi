@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-06
+
 ### Added
 
 - Windows에서 실제 PostgreSQL·Backend·Frontend를 한 터미널에 실행하고 홈
