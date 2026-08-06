@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA1 completed, IA2 pending
+- 현재 Slice: IA2 completed (`Gate G4 blocked`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -72,12 +72,18 @@ Data 02의 실제 정책 snapshot, Backend 06 검색 API와 Frontend 04 검색 U
 
 ### IA2 - DT6 golden query와 Release 1 판정
 
-- 상태: pending
+- 상태: completed (`2026-08-06`, `Gate G4 blocked`)
 - 선행 조건: IA1, QA smoke, 사용성 리뷰어 확인과 보고서 근거
 - 완료 기준:
   - golden query의 실제 정책·근거·제약과 검색 정확도를 승인함
-  - 릴리스 차단 결함을 수정·재검증함
+  - 릴리스 차단 결함을 수정·재검증하거나 재개 조건과 함께 `blocked`로 기록함
   - Gate G4를 `pass`, `conditional` 또는 `blocked`로 근거와 함께 기록함
+
+실행 결과 actual snapshot에는 천안·27세·주거·월세를 모두 확정할 정책이
+없다. exact golden query는 48건을 반환하지만 첫 후보의 지역·연령은
+`unknown`이고, `월세`를 단일 필수어로 제한하면 3건 모두 `partial`이며
+지역·연령이 `unknown`이다. QA·사용성 리뷰어·보고서의 독립 근거도 아직
+없으므로 `v0.1.0` 후보로 승인하지 않는다.
 
 ## 검증 계획
 
@@ -106,11 +112,14 @@ git diff --check
 
 - `2026-08-06` snapshot은 이전 DT4보다 온통청년 3건이 줄어 외부 데이터가
   시간에 따라 변함을 재확인했다.
-- golden query의 confirmed 정책은 여전히 0건이다.
+- golden query의 confirmed 정책은 여전히 0건이다. 첫 후보의 지원 내용에는
+  `2026-03-30 ~ 2026-05-29` 신청기간이 있으나 구조화 신청 기간·상태는
+  `null`이라 최신 수집만으로 신청 가능성을 설명할 수 없다.
 - 현재 검색은 여러 미해석 term 중 하나만 일치해도 후보가 될 수 있어 일반적인
   `지원` term이 결과를 넓힌다. term 결합·score 의미 변경은 Gate G1 계약 보완
   결정이 필요하므로 IA1에서 임의 변경하지 않는다.
-- QA·사용성 리뷰어·보고서 근거가 아직 없으므로 `v0.1.0`을 판정하지 않는다.
+- QA·사용성 리뷰어·보고서 근거가 아직 없다. Gate G4는 `blocked`로
+  판정했으며, 차단사항 해소·독립 재검증 전에는 재판정하지 않는다.
 
 ## 관련 문서
 

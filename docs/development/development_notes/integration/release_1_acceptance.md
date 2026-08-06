@@ -4,7 +4,7 @@
 
 - 상태: in-progress
 - 작업일: `2026-08-06`
-- 영역: Team Leader - Integration, DT5 Gate G2·G3
+- 영역: Team Leader - Integration, DT5 Gate G2·G3와 DT6 Gate G4
 - 브랜치: `feature/data/release-dataset-bootstrap`
 - 계획: [Integration 04 Release 1 Acceptance](../../develop_plan/integration/04_release_1_acceptance.md)
 - 병합 대상: Frontend `b37752a1bb8bfe0043e9de8908de6529309c36ee`,
@@ -19,7 +19,7 @@
 
 - IA0 FE·BE 비커밋 병합과 로컬 환경 차이 확인
 - IA1 snapshot 복구, PostgreSQL 적재, HTTP·Browser 통합과 결함 수정
-- IA2 golden query·Release 1 판정은 후속
+- IA2 golden query·Release 1 판정과 차단사항·재개 조건 기록
 
 ## Slice 진행 현황
 
@@ -27,7 +27,7 @@
 | --- | --- | --- |
 | IA0 | completed | FE fast-forward, BE `--no-commit` 병합과 로컬 Runtime 부재 확인 |
 | IA1 / DT5 | completed | Gate G2·G3 실제 DB → API → UI 검증 통과 |
-| IA2 / DT6 | pending | QA·리뷰어·보고서와 golden query 판정 대기 |
+| IA2 / DT6 | completed | exact golden query 검증, Gate G4 `blocked` |
 
 ## 구현 내용
 
@@ -68,12 +68,43 @@ PostgreSQL이 Git 제외라는 다른 PC 작업 특성과 일치했다. 저장�
   검증하도록 수정했다.
 - Playwright 결과 파일을 Git 추적 대상에서 제거하고 ignore에 추가했다.
 
+### DT6 golden query와 Gate G4 판정
+
+동일한 PostgreSQL snapshot 3,156건에 세 가지 요청을 실제 검색 endpoint로
+실행했다. 검색 중 외부 Source API는 호출하지 않았다.
+
+| 요청 | 결과 | 판정 |
+| --- | ---: | --- |
+| `천안 사는 27살 청년 월세 지원 받을 수 있나?` | 48건 | 천안·27세·주거 해석 성공, 첫 후보 지역·연령 unknown |
+| `27세 천안 청년 월세 지원` | 46건 | 일반 `지원` term의 OR 일치로 비월세 후보 포함 |
+| `월세` + 천안·27세·주거 명시 | 3건 | 전부 복지로 partial, 지역·연령 unknown, confirmed 0건 |
+
+exact query의 첫 후보 `청년월세 지원사업` 상세에는 월 최대 20만원 지원과
+`2026-03-30 09:00 ~ 2026-05-29 16:00` 신규 신청기간이 텍스트로 존재한다.
+그러나 구조화 지역·연령·신청 기간·접수 상태는 미정이다. 현재 날짜
+`2026-08-06`에 신청 가능하다고 단정할 수 없으며, 검색 상위 48건 중에는
+장애인 자립지원·한부모가족시설 등 월세와 직접 관련 없는 후보도 포함됐다.
+
+실제 API 모드 Browser에서 exact 문장을 홈 검색으로 입력해 URL 원문 보존,
+연령 27세·카테고리 주거·충청남도 천안시 Chip, 48건·3페이지, partial·unknown
+경고와 첫 후보 상세·원문 링크를 확인했다. 기존 DTO의 `source_name`과
+`collected_at`이 상세 화면에 없던 Release 1 소비 누락은 데이터 출처와
+`KST` 수집 시각 표시로 보완했다.
+
+Gate G4 판정은 `blocked`다. confirmed 정책 부재는 DT6 기준의 필수 차단
+조건이며, QA smoke·사용성 리뷰·보고서 대조의 독립 증거도 저장소에 없다.
+Team Leader의 Browser·E2E 결과로 이 세 역할의 승인을 대신하지 않았다.
+
 ## 주요 변경 파일
 
 - `backend/tests/test_postgresql_policy_search_integration.py`
 - `frontend/src/pages/user/PolicySearchPage.tsx`
 - `frontend/e2e/policy-search-audit.spec.ts`
 - `frontend/.gitignore`
+- `frontend/src/pages/user/ProgramDetailPage.tsx`
+- `frontend/src/utils/policyDisplay.ts`
+- `frontend/tests/policyDisplay.test.ts`
+- `frontend/tsconfig.test.json`
 - `docs/development/develop_plan/integration/04_release_1_acceptance.md`
 - `docs/development/development_notes/integration/release_1_acceptance.md`
 
@@ -105,6 +136,13 @@ PostgreSQL이 Git 제외라는 다른 PC 작업 특성과 일치했다. 저장�
 | E2E 최종 | 10건 통과 |
 | 실제 검색 HTTP | health 200, 빈 q 422, 미일치 term 0건, pagination 확인 |
 | 인앱 Browser | 검색·지우기·빈 결과·pagination·partial 상세 통과, console warning/error 0건 |
+| DT6 exact golden API | 48건, 첫 후보 지역·연령 unknown |
+| DT6 월세 단일어+명시 조건 | 3건, partial 3·confirmed 0 |
+| DT6 Frontend unit 1·2차 | test 전용 alias 미해석으로 compile 실패 |
+| DT6 Frontend 최종 unit | 45건 통과 |
+| DT6 Frontend build·lint | 통과 |
+| DT6 실제 API Playwright | 10건 통과 |
+| DT6 인앱 Browser | exact query 48건·Chip·경고·상세 출처·수집 시각 확인 |
 
 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,
@@ -117,9 +155,15 @@ package 설치가 성공했다. `npm audit`은 high 3건을 보고했으며 자�
 
 ## 남은 작업
 
-- IA2에서 일반 term의 OR 후보 확대와 score 의미를 Backend·Frontend·Data
-  계약으로 결정하고 실제 검색 정확도를 재검증한다.
-- confirmed golden 정책 부재를 유지할지 Source 범위를 바꿀지 결정한다.
-- QA smoke, 사용성 리뷰어와 보고서 근거를 확보한 뒤 Gate G4를 판정한다.
+### Gate G4 차단사항과 재개 조건
+
+- Backend·Team Leader가 일반 term OR 후보 확대와 score 의미를 결정하고 actual
+  snapshot 정확도를 재검증한다.
+- Data·Team Leader가 confirmed golden 정책 부재를 허용할지, Source 범위를
+  추가할지 결정한다. 현재 계획상 결정 전까지 릴리스 차단이다.
+- 복지로 지원 내용의 신청기간 텍스트를 구조화 기간·상태로 안전하게 승격할
+  수 있는지 Data Source mapping 범위에서 검토한다.
+- QA smoke, 사용성 리뷰와 보고서 근거를 독립적으로 확보한 뒤 같은 snapshot과
+  exact query로 Gate G4를 다시 판정한다.
 - 기존 Starlette deprecation warning 2건과 npm audit high 3건은 별도
   의존성 검토가 필요하다.

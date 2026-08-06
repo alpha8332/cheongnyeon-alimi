@@ -69,6 +69,13 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 
 `v0.1.0`
 
+### 현재 판정
+
+`2026-08-06` Gate G4는 `blocked`다. actual snapshot의 golden query confirmed
+정책이 0건이고 QA·사용성 리뷰어·보고서 독립 근거가 없다. 상세 근거와 재개
+조건은 [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
+따른다.
+
 ### 목표
 
 실제로 진행 중인 정책 데이터가 PostgreSQL에 적재돼 있고, 사용자가 일반적인

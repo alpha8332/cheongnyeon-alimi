@@ -3,7 +3,7 @@ import type {
   ApplicationStatus,
   PolicyDto,
   PolicyCategory,
-} from '@/types/policy';
+} from '../types/policy.js';
 
 const CATEGORY_LABELS: Record<PolicyCategory, string> = {
   housing: '주거',
@@ -109,6 +109,17 @@ export function formatApplicationPeriod(policy: PolicyDto): string {
   }
 
   return '신청 기간 미정';
+}
+
+export function formatCollectedAt(value: string): string {
+  const collectedAt = new Date(value);
+  if (Number.isNaN(collectedAt.getTime())) {
+    return '수집 시각 미확인';
+  }
+
+  const kst = new Date(collectedAt.getTime() + 9 * 60 * 60 * 1000);
+  const [date, time] = kst.toISOString().slice(0, 16).split('T');
+  return `${date} ${time} KST`;
 }
 
 function startOfDay(date: Date): Date {

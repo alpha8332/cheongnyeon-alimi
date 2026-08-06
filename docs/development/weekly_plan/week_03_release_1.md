@@ -336,6 +336,11 @@ Team Leader가 다음 증거를 확인한다.
 - 보고서 담당의 데이터·검색·검증 근거
 - 문서 검증, 비밀·Runtime 산출물과 Git 상태
 
+`2026-08-06` 판정은 `blocked`다. exact golden query의 confirmed 정책이
+0건이고 QA·사용성 리뷰어·보고서 독립 근거도 없다. 기술 통합은 통과했지만
+Source 범위·검색 관련도·신청기간 구조화 차단사항을 해소하고 같은 시나리오를
+재검증하기 전에는 `v0.1.0` 후보로 진행하지 않는다.
+
 모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
 
 ## 역할별 산출물
@@ -437,18 +442,18 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03과 DT2·Gate G1
 - [x] 대표 실제 표본과 데이터 분포 확인
 - [x] Gate GF 검색 데이터 기반·Migration·소비 호환 승인
 - [x] Gate G1 검색 계약 공동 승인
-- [ ] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
-- [ ] 재수집·재처리 idempotency와 품질 보고 검증
-- [ ] Backend 서버 검색과 실제 PostgreSQL 테스트
-- [ ] Frontend 자연어 전달·Backend 해석 결과·실제 API·pagination 연결
-- [ ] 실제 DB → FastAPI → React E2E
-- [ ] golden query와 변형·빈 결과·실패 시나리오
-- [ ] Browser·console 확인
-- [ ] 관련 단위·통합·Frontend 테스트 통과
-- [ ] 문서 검증과 `git diff --check` 통과
-- [ ] 비밀키·Runtime Raw·DB 파일 Git 비추적 확인
+- [x] 릴리스 범위 실제 정책 snapshot PostgreSQL 적재
+- [x] 재수집·재처리 idempotency와 품질 보고 검증
+- [x] Backend 서버 검색과 실제 PostgreSQL 테스트
+- [x] Frontend 자연어 전달·Backend 해석 결과·실제 API·pagination 연결
+- [x] 실제 DB → FastAPI → React E2E
+- [x] golden query와 변형·빈 결과·실패 시나리오 (`confirmed 0`, 차단)
+- [x] Browser·console 확인
+- [x] 관련 단위·통합·Frontend 테스트 통과
+- [x] 문서 검증과 `git diff --check` 통과
+- [x] 비밀키·Runtime Raw·DB 파일 Git 비추적 확인
 - [ ] 보고서·사용성 리뷰·QA 근거 확인
-- [ ] Team Leader의 Gate G4 Release 1 판정
+- [x] Team Leader의 Gate G4 Release 1 `blocked` 판정
 
 ## 관련 문서
 

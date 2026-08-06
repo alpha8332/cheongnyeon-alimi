@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
-- 현재 Slice: DT5 completed, DT6 pending
+- 현재 Slice: DT6 completed (`Gate G4 blocked`)
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -584,6 +584,9 @@ G3 통과 후 DT6 golden query·Release 1 최종 판정을 시작한다.
 
 ## Slice DT6 - golden query와 `v0.1.0` 판정
 
+- 상태: completed (`2026-08-06`)
+- 판정: `blocked`
+
 ### 목적
 
 사용자 기대 시나리오와 모든 독립 증거를 확인해 `v0.1.0` 후보 여부를
@@ -645,6 +648,19 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 - Gate G4 판정과 근거가 Integration 개발 기록에 남음
 - `pass` 또는 허용 가능한 `conditional`인 `develop`만 릴리스 PR 후보
 - 미해결 위험, 범위 제약과 후속 작업이 Release 문서에 기록됨
+
+### 완료 결과
+
+- exact golden query는 천안·27세·주거를 해석했지만 48건으로 확대됐고, 첫
+  `청년월세 지원사업`의 지역·연령·상태는 확정할 수 없었다.
+- `월세` 단일어와 천안·27세·주거 명시 조건으로 좁힌 3건도 모두
+  복지로 partial이며 지역·연령 unknown이라 confirmed 정책은 0건이다.
+- 첫 후보의 지원 내용에는 `2026-03-30 ~ 2026-05-29` 신청기간이 있으나
+  구조화 기간·상태가 없어 현재 신청 가능성을 설명하지 못한다.
+- 실제 API Browser에서 48건·3페이지, 조건 Chip, unknown 경고와 상세를
+  확인하고 상세에 기존 데이터 출처·KST 수집 시각 표시를 추가했다.
+- QA·사용성 리뷰어·보고서 근거가 없고 actual 정책도 확정할 수 없으므로
+  Gate G4를 `blocked`로 기록했다. 해소 전 `v0.1.0` 릴리스 PR을 만들지 않는다.
 
 ## 다른 담당자 의존성 요약
 
@@ -741,8 +757,8 @@ git status --short
 - [x] Gate G2 세 영역 준비 증거 확인
 - [x] Gate G3 실제 DB → API → UI 통합 확인
 - [ ] QA·리뷰어·보고서 근거 확인
-- [ ] golden query와 변형·실패 시나리오 확인
-- [ ] Gate G4 `v0.1.0` 판정과 남은 위험 기록
+- [x] golden query와 변형·실패 시나리오 확인
+- [x] Gate G4 `v0.1.0` `blocked` 판정과 남은 위험 기록
 
 ## 관련 문서
 

@@ -10,6 +10,9 @@
 
 ### Added
 
+- 정책 상세에서 기존 공개 DTO의 데이터 출처와 수집 시각을 KST로 확인할 수
+  있게 표시
+  ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))
 - 실제 정책 3,156건 snapshot을 PostgreSQL 검색 API와 Frontend 실제 API
   모드로 연결하고 검색·pagination·상세·상태 E2E 10건을 검증
   ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))

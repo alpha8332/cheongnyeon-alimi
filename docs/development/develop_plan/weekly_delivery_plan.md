@@ -166,6 +166,10 @@ completed
 [Release 1 완료 조건](release_roadmap.md#릴리스-완료-조건)을 모두 충족한
 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보로 삼는다.
 
+`2026-08-06` Gate G4는 golden query confirmed 정책 0건과 독립
+QA·사용성 리뷰·보고서 근거 부재로 `blocked`다. Integration 04의 차단사항을
+해소하고 재검증하기 전에는 4주차 기능으로 완료 범위를 대체하지 않는다.
+
 ## 4주차 - 사용자·관리자 핵심 기능
 
 ### 목표

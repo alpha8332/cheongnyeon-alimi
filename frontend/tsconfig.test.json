@@ -29,6 +29,7 @@
     "src/types/policySearch.ts",
     "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",
+    "src/utils/policyDisplay.ts",
     "tests/**/*.ts"
   ]
 }

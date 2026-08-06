@@ -13,6 +13,7 @@ import {
   formatApplicationSchedule,
   formatApplicationStatus,
   formatCategoryTags,
+  formatCollectedAt,
   formatNullableText,
   formatOrganization,
   formatRegion,
@@ -115,6 +116,11 @@ export default function ProgramDetailPage() {
 
       <Card title="📄 정책 정보">
         <DetailField label="기관" value={formatOrganization(policy)} />
+        <DetailField label="데이터 출처" value={policy.source_name} />
+        <DetailField
+          label="수집 시각"
+          value={formatCollectedAt(policy.collected_at)}
+        />
         <DetailField label="지역" value={formatRegion(policy)} />
         <DetailField label="연령" value={formatAge(policy)} />
 

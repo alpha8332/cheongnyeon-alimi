@@ -150,8 +150,10 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다�
 
 | ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
 | --- | --- | --- | --- | --- |
-| `R1-SEARCH-RELEVANCE` | action-needed | Backend·Team Leader | 일반 `지원` term 하나만 일치해도 후보가 넓어지는 현재 OR 의미와 score를 DT6에서 결정하고 actual snapshot으로 재검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
-| `R1-ACTUAL-DATA-BOUNDARIES` | review-pending | Backend·Frontend·Team Leader | unknown age·region·status 표시는 실제 API·Browser에서 보존됨. `27세 천안 청년 월세 지원` confirmed 0건과 최신 3,156건 snapshot을 QA·리뷰어·보고서 근거와 함께 DT6에서 판정 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-SEARCH-RELEVANCE` | action-needed | Backend·Team Leader | exact golden query가 일반 term OR 일치로 48건까지 확대됨. term 결합·score 의미를 결정하고 actual snapshot으로 재검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-ACTUAL-DATA-BOUNDARIES` | action-needed | Data·Team Leader | `월세` 단일어+천안·27세·주거 후보 3건 전부 지역·연령 unknown이고 confirmed 0건. Source 추가 또는 릴리스 범위 제약을 결정한 뒤 Gate G4 재검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-POLICY-PERIOD-EXTRACTION` | action-needed | Data | 복지로 `청년월세 지원사업` 지원 내용에는 2026-03-30~05-29 신청기간이 있으나 구조화 기간·상태가 null임. 원문 보존 경계를 유지하며 Source mapping 가능 여부 검토 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+| `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | 저장소에 독립 smoke·이해도·근거 대조 결과가 없음. 차단사항 수정본과 동일 snapshot·exact query를 각 역할이 검증 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 
