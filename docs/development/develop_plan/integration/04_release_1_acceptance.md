@@ -3,11 +3,11 @@
 ## 계획 정보
 
 - 번호: Integration 04
-- 상태: in-progress
+- 상태: completed (`2026-08-06`)
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA3E in-progress (`Gate G4 blocked`)
+- 현재 Slice: IA3F completed (`Gate G4 pass`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -15,7 +15,7 @@
 
 Data 02의 실제 정책 snapshot, Backend 06 검색 API와 Frontend 04 검색 UI를
 하나의 PostgreSQL → HTTP → Browser 흐름으로 연결하고 Release 1 후보 여부를
-독립 검증 근거와 함께 판정한다.
+승인된 기술·경량 팀 리뷰 근거와 함께 판정한다.
 
 ## 범위
 
@@ -24,14 +24,14 @@ Data 02의 실제 정책 snapshot, Backend 06 검색 API와 Frontend 04 검색 U
 - 실제 PostgreSQL 대상 검색 HTTP, pagination·validation·빈 결과 검증
 - Frontend 실제 API 모드의 검색·상세·loading·empty·error·partial 검증
 - Browser console과 Backend 요청 로그 확인
-- golden query 결과, 검색 정확도 제약과 독립 QA·리뷰어·보고서 근거 대조
+- golden query 결과, 검색 정확도 제약과 승인된 경량 QA·사용성 근거 대조
 
 ## 범위 밖
 
 - 새로운 Source 추가 또는 현재 호출 예산 확대
 - 검색 의미·정렬 계약의 임의 변경
 - 추천, 즐겨찾기, 알림, 관리자와 배포 기능
-- QA·사용성 리뷰어·보고서 담당을 Team Leader가 대신 승인하는 작업
+- 실행하지 않은 검증이나 관찰을 Team Leader가 통과로 대신 기록하는 작업
 
 ## 선행 조건
 
@@ -82,12 +82,12 @@ Data 02의 실제 정책 snapshot, Backend 06 검색 API와 Frontend 04 검색 U
 실행 결과 actual snapshot에는 천안·27세·주거·월세를 모두 확정할 정책이
 없다. exact golden query는 48건을 반환하지만 첫 후보의 지역·연령은
 `unknown`이고, `월세`를 단일 필수어로 제한하면 3건 모두 `partial`이며
-지역·연령이 `unknown`이다. QA·사용성 리뷰어·보고서의 독립 근거도 아직
-없으므로 `v0.1.0` 후보로 승인하지 않는다.
+지역·연령이 `unknown`이다. 당시 QA·사용성 리뷰어·보고서 근거도 없었으므로
+IA2에서는 `v0.1.0` 후보로 승인하지 않았다.
 
 ### IA3 - golden query 교체와 Release 1 차단 해소
 
-- 상태: in-progress (`2026-08-06`)
+- 상태: completed (`2026-08-06`, `Gate G4 pass`)
 - 배경: 신청기간이 지난 기존 월세 정책을 현재 신청 가능한 정책의 인수
   기준으로 사용할 수 없어 golden query를 교체한다. IA2 결과는 당시의
   실행 이력으로 보존한다.
@@ -152,24 +152,25 @@ filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일�
   `청년단기숙소 지원사업`의 첫 페이지 1위, 상세 출처·수집 시각·접수 상태,
   자격 비확정 안내를 확인했다.
 
-#### IA3E - 독립 증거 수집과 정합성 검증
+#### IA3E - 수동 증거 수집과 정합성 검증
 
-- 상태: in-progress (`2026-08-06`, 증거 기반 완료·담당자 실행 대기)
-- QA smoke, 사용성 리뷰와 보고서 근거 대조를 동일 snapshot·계약 hash로
-  확보한다.
-- actual 기술 증거, 역할별 템플릿과 정합성 검증 도구를 제공하되 Team
-  Leader가 독립 역할의 관찰·판정을 대신 작성하지 않는다.
+- 상태: completed (`2026-08-06`, 경량 팀 리뷰 정책)
+- QA와 사용성 리뷰를 동일 snapshot·계약 hash로 확보한다.
+- `v0.1.0` 기본 검색 MVP는 역할 독립과 보고서 대조를 필수 Gate에서 제외하고,
+  API 오류 UX·보고서·확장 시나리오를 `v0.5.0`으로 이관한다.
+- actual 기술 증거, 역할별 템플릿과 정합성 검증 도구를 제공한다.
 - Windows reviewer는 범용 `run.bat`로 actual DB·API·UI를 실행하고 웹 UI에서
   exact query를 직접 입력해 검증한다.
-- QA·사용성·보고서 세 역할이 필수 check를 실제 수행하고 증거 reference와
-  함께 `pass` 또는 `blocked`를 기록해야 완료한다.
+- QA·사용성 두 역할이 필수 check를 실제 수행하고 증거 reference와 함께
+  `pass` 또는 `blocked`를 기록해야 완료한다.
 
 #### IA3F - Gate G4 재판정
 
-- 상태: pending
-- 자동 인수 검사는 기술 판정만 내리며 독립 증거 없이 Gate G4를 `pass`로
-  만들지 않는다.
-- 모든 기술 기준과 독립 근거가 충족된 뒤 `v0.1.0` 후보를 재판정한다.
+- 상태: completed (`2026-08-06`, `Gate G4 pass`)
+- 자동 인수 검사는 기술 판정만 내리고 Team Leader가 수동 증거와 비차단
+  후속사항을 대조해 최종 판정한다.
+- actual 기술 `pass`, QA·사용성 `pass`, evidence readiness
+  `ready-for-team-leader-decision`을 확인해 `v0.1.0` 후보로 승인했다.
 
 ## 검증 계획
 
@@ -193,7 +194,7 @@ git diff --check
 
 - IA1 Gate G2·G3와 IA2 Gate G4가 모두 실제 실행 증거를 가짐
 - Data·Backend·Frontend 코드, 계약 문서와 실행 결과가 일치함
-- QA·리뷰어·보고서의 독립 근거와 남은 위험이 기록됨
+- 승인된 QA·사용성 근거와 `v0.5.0` 이관 위험이 기록됨
 - Release 1 차단 결함이 없거나 판정이 명시적으로 `blocked`임
 
 ## 위험과 미확정 사항
@@ -207,10 +208,11 @@ git diff --check
   이 본문 날짜를 승격하지 않았으며 최신 수집만으로 신청 가능성을 설명하지
   않는다.
 - 교체한 golden의 관련성·성능 기술 기준과 신청기간 안전성은 IA3B~C에서
-  통과했고 Frontend 실제 API 재검증도 IA3D에서 완료했다. 다만 QA·사용성
-  리뷰어·보고서 독립 증거가 남아 있어 Gate G4는 계속 `blocked`다.
-- QA·사용성 리뷰어·보고서 근거가 아직 없다. Gate G4는 `blocked`로
-  판정했으며, 차단사항 해소·독립 재검증 전에는 재판정하지 않는다.
+  통과했고 Frontend 실제 API 재검증도 IA3D에서 완료했다.
+- 제공된 Word 리뷰에서 자격·신청 정보 보강, 긴 지역 목록 축약과 오류 토스트
+  의견이 확인됐다. 실제 검색 MVP를 막지 않는 `v0.5.0` 후속으로 분류했다.
+- 경량 리뷰 정책으로 보고서 대조와 API 오류 UX 검증을 `v0.5.0`으로 이관했다.
+  Release 1에서 수행한 것처럼 기록하지 않는다.
 
 ## 관련 문서
 

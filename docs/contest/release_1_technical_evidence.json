@@ -1,9 +1,9 @@
 {
   "evidence_version": "1.0.0",
-  "generated_at": "2026-08-06T03:34:01.252823+00:00",
+  "generated_at": "2026-08-06T04:41:17.367838+00:00",
   "release": "v0.1.0",
   "gate": "G4",
-  "contract_sha256": "c4d49caa90a8773a94e7e14b1e9dee30ebdfd3316d8144b9efc27ffd6462a327",
+  "contract_sha256": "53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c",
   "base_url": "http://127.0.0.1:8000",
   "dataset_baseline": {
     "accepted": 3156,
@@ -17,14 +17,23 @@
   "gate_readiness": "technical-pass-evidence-pending",
   "required_manual_evidence": [
     "qa",
-    "usability-review",
-    "report-review"
+    "usability-review"
   ],
+  "manual_review_policy": {
+    "mode": "lightweight-team-review",
+    "independence_required": false,
+    "report_review_required": false,
+    "deferred_to": "v0.5.0",
+    "deferred_checks": [
+      "api-error-retry",
+      "report-review"
+    ]
+  },
   "scenarios": [
     {
       "id": "golden-natural-language-short-stay",
       "status": "pass",
-      "elapsed_ms": 136.91,
+      "elapsed_ms": 95.95,
       "total": 1,
       "query": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
       "target": {
@@ -74,7 +83,7 @@
     {
       "id": "control-explicit-short-stay",
       "status": "pass",
-      "elapsed_ms": 155.4,
+      "elapsed_ms": 78.68,
       "total": 1,
       "query": "단기숙소",
       "target": {

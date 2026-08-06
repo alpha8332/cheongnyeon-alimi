@@ -158,8 +158,12 @@ class Release1AcceptanceAuditTests(unittest.TestCase):
             report["gate_readiness"],
         )
         self.assertEqual(
-            ["qa", "usability-review", "report-review"],
+            ["qa", "usability-review"],
             report["required_manual_evidence"],
+        )
+        self.assertEqual(
+            "lightweight-team-review",
+            report["manual_review_policy"]["mode"],
         )
 
     def test_base_url_rejects_credentials(self) -> None:

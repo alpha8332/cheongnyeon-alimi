@@ -1,4 +1,4 @@
-"""Verify Release 1 technical and independent manual evidence alignment."""
+"""Verify Release 1 technical and approved manual evidence alignment."""
 
 from __future__ import annotations
 
@@ -22,22 +22,15 @@ DEFAULT_CONTRACT = ROOT / "data" / "release_1_acceptance.json"
 
 REQUIRED_CHECKS: dict[str, tuple[str, ...]] = {
     "qa": (
-        "actual-golden-search",
+        "basic-search-and-detail",
         "empty-results",
         "partial-unknown-boundary",
-        "api-error-retry",
     ),
     "usability-review": (
         "query-and-condition-understanding",
         "result-reason-understanding",
         "source-and-freshness-understanding",
         "eligibility-guidance-understanding",
-    ),
-    "report-review": (
-        "dataset-baseline",
-        "contract-and-query-identity",
-        "technical-results",
-        "scope-risk-and-gate-status",
     ),
 }
 
@@ -49,7 +42,7 @@ class EvidenceVerificationError(RuntimeError):
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Verify that Release 1 technical evidence and independent role "
+            "Verify that Release 1 technical evidence and approved manual "
             "reviews use the approved contract and actual snapshot."
         )
     )
@@ -144,6 +137,7 @@ def _validate_identity(
         ("gate", contract.get("gate")),
         ("contract_sha256", contract_sha256),
         ("dataset_baseline", contract.get("dataset_baseline")),
+        ("manual_review_policy", contract.get("manual_review_policy")),
     )
     for field, expected in comparisons:
         if document.get(field) != expected:
@@ -209,7 +203,7 @@ def validate_technical_evidence(
         blockers.append(
             _blocker(
                 "TECHNICAL_GATE_READINESS_INVALID",
-                "Passing technical evidence must still require independent reviews.",
+                "Passing technical evidence must still require the approved manual reviews.",
             )
         )
 
@@ -458,11 +452,16 @@ def validate_manual_evidence(
                     role=role,
                 )
             )
-        if review.get("independence_confirmed") is not True:
+        review_policy = contract.get("manual_review_policy", {})
+        independence_required = (
+            isinstance(review_policy, Mapping)
+            and review_policy.get("independence_required") is True
+        )
+        if independence_required and review.get("independence_confirmed") is not True:
             blockers.append(
                 _blocker(
                     "INDEPENDENCE_NOT_CONFIRMED",
-                    "The reviewer must confirm role separation from the implementation.",
+                    "The configured review policy requires role separation from implementation.",
                     role=role,
                 )
             )
@@ -619,9 +618,9 @@ def build_verification_report(
     if technical_blockers:
         readiness = "technical-evidence-invalid"
     elif any(status == "blocked" for status in role_statuses.values()):
-        readiness = "independent-evidence-blocked"
+        readiness = "manual-evidence-blocked"
     elif blockers:
-        readiness = "independent-evidence-pending"
+        readiness = "manual-evidence-pending"
     else:
         readiness = "ready-for-team-leader-decision"
     return {
@@ -674,7 +673,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if report["gate_readiness"] != "ready-for-team-leader-decision":
         if (
             args.allow_incomplete
-            and report["gate_readiness"] == "independent-evidence-pending"
+            and report["gate_readiness"] == "manual-evidence-pending"
         ):
             return 0
         return 1

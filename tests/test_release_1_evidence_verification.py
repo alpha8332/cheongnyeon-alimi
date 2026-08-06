@@ -38,6 +38,9 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
             "required_manual_evidence": self.contract[
                 "required_manual_evidence"
             ],
+            "manual_review_policy": self.contract[
+                "manual_review_policy"
+            ],
             "scenarios": [
                 {
                     "id": scenario["id"],
@@ -104,11 +107,11 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
     def test_pending_template_cannot_reach_team_leader_decision(self) -> None:
         report = self.build(copy.deepcopy(self.template))
 
-        self.assertEqual("independent-evidence-pending", report["gate_readiness"])
+        self.assertEqual("manual-evidence-pending", report["gate_readiness"])
         self.assertEqual("blocked", report["gate_verdict"])
         self.assertIn("REVIEW_PENDING", report["blocker_codes"])
 
-    def test_complete_independent_reviews_are_ready_but_do_not_pass_gate(self) -> None:
+    def test_complete_manual_reviews_are_ready_but_do_not_pass_gate(self) -> None:
         report = self.build(self.completed_manual_evidence())
 
         self.assertEqual(
@@ -118,13 +121,26 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
         self.assertEqual("blocked", report["gate_verdict"])
         self.assertEqual([], report["blockers"])
 
+    def test_lightweight_review_does_not_require_role_independence(self) -> None:
+        manual = self.completed_manual_evidence()
+        for review in manual["reviews"]:
+            review["independence_confirmed"] = False
+
+        report = self.build(manual)
+
+        self.assertEqual(
+            "ready-for-team-leader-decision",
+            report["gate_readiness"],
+        )
+        self.assertEqual([], report["blockers"])
+
     def test_contract_hash_mismatch_is_rejected(self) -> None:
         manual = self.completed_manual_evidence()
         manual["contract_sha256"] = "0" * 64
 
         report = self.build(manual)
 
-        self.assertEqual("independent-evidence-pending", report["gate_readiness"])
+        self.assertEqual("manual-evidence-pending", report["gate_readiness"])
         self.assertIn("EVIDENCE_IDENTITY_MISMATCH", report["blocker_codes"])
 
     def test_blocked_qa_check_blocks_readiness(self) -> None:
@@ -137,7 +153,7 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
         report = self.build(manual)
 
         self.assertEqual(
-            "independent-evidence-blocked",
+            "manual-evidence-blocked",
             report["gate_readiness"],
         )
         self.assertEqual("blocked", report["gate_verdict"])
@@ -177,7 +193,7 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
 
         report = self.build(manual)
 
-        self.assertEqual("independent-evidence-pending", report["gate_readiness"])
+        self.assertEqual("manual-evidence-pending", report["gate_readiness"])
         self.assertIn("CHECK_EVIDENCE_MISSING", report["blocker_codes"])
 
 

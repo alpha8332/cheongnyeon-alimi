@@ -1,14 +1,16 @@
-# Release 1 독립 검증 증거 안내
+# Release 1 검증 증거 안내
 
 ## 목적
 
-이 문서는 `v0.1.0` Gate G4의 DT7E에서 QA, 사용성 리뷰어와 보고서 담당이
-동일한 실제 snapshot과 acceptance 계약을 독립적으로 검증하는 절차를 정한다.
-합성 Seed나 Frontend Mock은 이 증거의 데이터 기준으로 사용하지 않는다.
+이 문서는 `v0.1.0` Gate G4의 DT7E에서 QA와 사용성 리뷰가 동일한 실제
+snapshot과 acceptance 계약을 확인하는 절차를 정한다. 합성 Seed나 Frontend
+Mock은 이 증거의 데이터 기준으로 사용하지 않는다.
 
-기술 검증은 Team Leader가 준비할 수 있지만 각 독립 역할의 관찰·판정과
-증거를 대신 작성하거나 승인하지 않는다. 세 역할의 증거가 모두 정합하더라도
-Gate G4 최종 판정은 DT7F에서 별도로 수행한다.
+`v0.1.0`은 기본 정책 검색 MVP이므로 `2026-08-06` Team Leader 결정에 따라
+경량 팀 리뷰를 허용하고 역할 독립성과 보고서 대조를 필수 Gate에서 제외했다.
+보고서와 API 오류 토스트 검증은 `v0.5.0`으로 이관한다. exact query와 기대
+정책은 수동 리뷰가 아니라 실제 PostgreSQL 기술 증거로 계속 엄격하게
+검증하며, Gate G4 최종 판정은 DT7F에서 별도로 수행한다.
 
 ## 고정 기준
 
@@ -18,7 +20,7 @@ Gate G4 최종 판정은 DT7F에서 별도로 수행한다.
 | 실제 정책 수 | 3,156건 |
 | 온통청년 snapshot | `6add34f7aad9456ab0abb19175b7621c` |
 | 복지로 snapshot | `ffa74ef47e6048109f11bf40d1ac5e15` |
-| acceptance contract SHA-256 | `c4d49caa90a8773a94e7e14b1e9dee30ebdfd3316d8144b9efc27ffd6462a327` |
+| acceptance contract SHA-256 | `53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c` |
 | exact query | `천안 사는 27살 청년 단기숙소 지원 받을 수 있나?` |
 | 기대 정책 | 온통청년 `20260430005400212969`, `청년단기숙소 지원사업` |
 
@@ -36,8 +38,8 @@ Frontend를 같은 터미널에서 실행하고 기본 브라우저의 홈 화�
 `VITE_USE_MOCK=false`인 actual API 모드로 실행된다.
 
 이 실행기는 특정 검토나 검색어에 종속되지 않는다. acceptance 검사를 대신
-수행하거나 golden query를 미리 검색하지 않으므로, 독립 검증 담당자는 실행된
-웹 UI에서 위의 exact query를 직접 입력해 관찰한다. API key는 필요하지 않으며
+수행하거나 golden query를 미리 검색하지 않으므로, 검토자는 실행된 웹 UI에서
+필요한 검색을 직접 입력해 관찰한다. API key는 필요하지 않으며
 외부 Source API를 다시 호출하지 않는다.
 
 pgpass는 `PGPASSFILE`,
@@ -65,7 +67,7 @@ run.bat "C:\path\to\pgpass.conf"
 
 2. 템플릿을 `docs/contest/release_1_evidence.json`으로 복사한다. 원본 템플릿은
    수정하지 않는다.
-3. QA, 사용성 리뷰어와 보고서 담당은 자신의 `reviews` 항목만 작성한다.
+3. QA와 사용성 리뷰어는 자신의 `reviews` 항목을 작성한다.
 4. 모든 check는 실제 수행 뒤 `pass` 또는 `blocked`로 기록하고, 관찰 내용과
    검증 시 존재하는 저장소 상대 파일 경로 또는 검토 가능한 HTTP(S) URL을
    `evidence_refs`에 남긴다.
@@ -77,9 +79,14 @@ run.bat "C:\path\to\pgpass.conf"
      --manual-evidence docs/contest/release_1_evidence.json
    ```
 
-`ready-for-team-leader-decision`은 세 역할의 필수 증거가 정합하다는 뜻일 뿐
+`ready-for-team-leader-decision`은 현재 계약의 두 필수 리뷰가 정합하다는 뜻일 뿐
 Gate 통과 판정이 아니다. 검증 도구의 `gate_verdict`는 DT7F 전까지 항상
 `blocked`를 유지한다.
+
+DT7F의 최종 Team Leader 판정은
+[`release_1_gate_decision.json`](release_1_gate_decision.json)에 별도로
+기록한다. 현재 G4는 `pass`이며 `develop`·`main` 병합과 `v0.1.0` tag는 저장소
+publication 절차로 남아 있다.
 
 ## QA 검증
 
@@ -87,10 +94,9 @@ QA는 실제 API 모드에서 다음을 확인한다.
 
 | check ID | 확인 내용 |
 | --- | --- |
-| `actual-golden-search` | exact query의 첫 결과·정책 identity·조건·상태 |
+| `basic-search-and-detail` | 검색 결과·정책 상세의 기본 흐름과 안전한 정보 표시 |
 | `empty-results` | 미일치 검색의 빈 결과 안내와 조건 유지 |
 | `partial-unknown-boundary` | partial·unknown 정책의 경고와 자격 비확정 표현 |
-| `api-error-retry` | API 실패 표시, 재시도와 복구 흐름 |
 
 결함이 있으면 `blocked`로 기록하고 재현 절차·영향·증거를 notes와
 `evidence_refs`에 남긴다. QA가 직접 수정한 결함은 다른 담당자 또는 Team
@@ -98,7 +104,8 @@ Leader가 재확인할 때까지 종료하지 않는다.
 
 ## 사용성 검증
 
-사용성 리뷰어는 구현에 참여하지 않은 사용자 관점에서 다음을 확인한다.
+사용성 리뷰어는 사용자 관점에서 다음을 확인한다. Release 1 경량 정책은 역할
+독립성을 필수로 요구하지 않지만 실제 관찰과 개선 의견을 구분해 기록한다.
 
 | check ID | 확인 내용 |
 | --- | --- |
@@ -109,18 +116,13 @@ Leader가 재확인할 때까지 종료하지 않는다.
 
 리뷰어가 말한 표현과 혼란 지점을 요약하되 개인정보를 저장하지 않는다.
 
-## 보고서 근거 대조
+## `v0.5.0` 이관 항목
 
-보고서 담당은 구현을 새로 승인하지 않고 다음 근거가 서로 일치하는지 확인한다.
+- API 오류·재시도 토스트와 닫기 동작의 실제 Browser 검증
+- 데이터·contract·기술 결과·범위·위험의 보고서 근거 대조
+- 더 넓은 사용자 시나리오와 역할 독립성을 갖춘 QA·사용성 검증
 
-| check ID | 확인 내용 |
-| --- | --- |
-| `dataset-baseline` | 실제 건수와 두 Source snapshot identity |
-| `contract-and-query-identity` | contract hash, exact query와 기대 정책 identity |
-| `technical-results` | 기술 감사·단위·통합·Browser 결과의 출처와 실제 실행 여부 |
-| `scope-risk-and-gate-status` | 자격 비확정, 외부 데이터 변동 위험, 독립 증거와 Gate 상태 |
-
-실행하지 않은 검증이나 미완료 기능을 성과로 기록하지 않는다.
+이번 Release에서 실행하지 않은 검증을 통과로 기록하지 않는다.
 
 ## 증거 보안과 보존
 

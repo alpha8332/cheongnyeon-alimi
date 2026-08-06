@@ -167,12 +167,11 @@ completed
 [Release 1 완료 조건](release_roadmap.md#릴리스-완료-조건)을 모두 충족한
 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보로 삼는다.
 
-`2026-08-06` Gate G4는 `blocked`다. DT7C에서 golden 자연어·control은 모두
-1건 중 1위이고 cold 317.04ms·109.92ms로 기술 기준을 통과했다. 신청기간
-안전성도 Source 근거 없는 승격·상태 불일치 0건으로 통과했다. DT7D Frontend
-actual API E2E·Browser 재검증도 통과했다. DT7E 증거 양식과 정합성 검증은
-준비됐지만 독립 QA·사용성 리뷰·보고서 근거를 확보하기 전에는 4주차 기능으로
-완료 범위를 대체하지 않는다.
+`2026-08-06` Gate G4는 `pass`다. 새 contract hash의 actual 자연어·control은
+모두 1건 중 1위·unknown 0·응답시간 예산 이내이고, 신청기간 안전성,
+Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도 통과했다. 보고서와
+API 오류 UX 검증은 실행하지 않은 채 `v0.5.0` 후속으로 이관했으며 Release 1
+완료 범위에 포함하지 않는다.
 
 ## 4주차 - 사용자·관리자 핵심 기능
 

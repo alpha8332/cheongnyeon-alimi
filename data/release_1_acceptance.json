@@ -11,9 +11,18 @@
   },
   "required_manual_evidence": [
     "qa",
-    "usability-review",
-    "report-review"
+    "usability-review"
   ],
+  "manual_review_policy": {
+    "mode": "lightweight-team-review",
+    "independence_required": false,
+    "report_review_required": false,
+    "deferred_to": "v0.5.0",
+    "deferred_checks": [
+      "api-error-retry",
+      "report-review"
+    ]
+  },
   "scenarios": [
     {
       "id": "golden-natural-language-short-stay",

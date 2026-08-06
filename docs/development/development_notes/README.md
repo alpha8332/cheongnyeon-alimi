@@ -20,7 +20,7 @@
 | Backend Policy Search | [개발 기록](backend/policy_search.md) | W3-B0~B4 | PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 |
 | Policy Data Database Integration | [개발 기록](integration/policy_data_database_integration.md) | D0~D6 | Seed·Runtime의 PostgreSQL 적재와 Policy API 통합 검증·Frontend 인계 |
 | Policy Search Data Foundation | [개발 기록](integration/policy_search_data_foundation.md) | PSF0~PSF8 | Source 중립 검색 데이터·지역 관계·projection 기반과 소비 검증 |
-| Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA2 | 실제 snapshot DB → API → UI 인수와 Release 1 판정 |
+| Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA3F | 실제 snapshot DB → API → UI 인수, 경량 팀 리뷰와 Release 1 G4 통과 |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
 함께 갱신한다.

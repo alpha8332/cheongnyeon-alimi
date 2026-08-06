@@ -127,10 +127,16 @@
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
-- [Release 1 독립 검증 증거 안내](contest/release_1_evidence_guide.md):
-  DT7E actual snapshot·contract hash 기반 QA·사용성·보고서 검증 절차
+- [Release 1 검증 증거 안내](contest/release_1_evidence_guide.md):
+  DT7E actual snapshot·contract hash 기반 경량 QA·사용성 검증 절차
 - [Release 1 기술 증거](contest/release_1_technical_evidence.json):
   실제 PostgreSQL golden·control acceptance의 안전한 실행 결과
+- [Release 1 경량 리뷰 근거](contest/release_1_review_summary.md):
+  제공된 Word 리뷰의 QA·사용성 관찰과 Release 2 후속사항
+- [Release 1 수동 증거](contest/release_1_evidence.json):
+  G4 경량 QA·사용성 판정의 contract 고정 JSON
+- [Release 1 Gate 결정](contest/release_1_gate_decision.json):
+  Team Leader G4 `pass`, 비차단 후속과 릴리스 publication 상태
 
 아직 생성하지 않은 문서는 색인에 미리 등록하지 않는다. 문서를 추가하거나
 이동할 때 이 목록과 관련 문서의 링크를 함께 갱신한다.
@@ -150,11 +156,11 @@ Integration 02에서 완료됐다. PSF1은 1.1.0 검색 데이터 계약과 전�
 
 2주차 완료 시점에는 활성 인계사항이 없었다. 3주차 Data 02 DT1 실데이터
 preflight에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 DT2A~DT2D 공동 검토와
-Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 후속 인계는 다음과 같다.
+Gate G1 승인으로 `2026-08-04`에 종료했다. 현재 활성 인계사항은 없다.
 
-| ID | 상태 | 다음 담당 | 완료 또는 재개 조건 | 권위 문서 |
-| --- | --- | --- | --- | --- |
-| `R1-RELEASE-EVIDENCE` | review-pending | QA·사용성 리뷰어·보고서 | [DT7E 안내](contest/release_1_evidence_guide.md)에 따라 동일 snapshot·contract hash·exact query의 독립 smoke·이해도·근거 대조 결과를 각 역할이 템플릿에 기록 | [Release 1 Acceptance 개발 기록](development/development_notes/integration/release_1_acceptance.md) |
+`R1-RELEASE-EVIDENCE`는 `2026-08-06` 경량 QA·사용성 리뷰와 새 contract hash
+기술 재검증을 통과해 종료했다. 보고서와 API 오류 UX는 Release 1을 완료한
+것처럼 기록하지 않고 `v0.5.0` 계획에서 다시 다룬다.
 
 기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
 confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unknown 회귀

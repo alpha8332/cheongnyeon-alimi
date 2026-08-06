@@ -383,6 +383,7 @@ def build_report(
         "required_manual_evidence": contract.get(
             "required_manual_evidence", []
         ),
+        "manual_review_policy": contract.get("manual_review_policy", {}),
         "scenarios": list(results),
     }
 

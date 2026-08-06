@@ -71,12 +71,11 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 
 ### 현재 판정
 
-`2026-08-06` Gate G4는 `blocked`다. DT7C actual snapshot에서 교체한 golden
-기대 정책은 자연어·control 모두 1건 중 1위이고 cold 317.04ms·109.92ms로
-기술 기준을 통과했다. Source 신청기간 안전성도 근거 없는 승격·상태 불일치
-0건으로 통과했고, DT7D Frontend actual API E2E·Browser 재검증도 통과했다.
-DT7E actual 기술 증거·역할별 템플릿·정합성 검증 도구는 준비됐지만
-QA·사용성 리뷰어·보고서 독립 결과는 아직 없다. 상세 근거와 재개 조건은
+`2026-08-06` Gate G4는 `pass`다. 새 contract hash의 actual 기술 재검증에서
+golden 자연어·control은 모두 1건 중 1위·unknown 0이며 95.95ms·78.68ms로
+기술 기준을 통과했다. Source 신청기간 안전성, Frontend actual API
+E2E·Browser와 경량 QA·사용성 리뷰도 통과했고 evidence verifier blocker는
+0건이다. 보고서와 API 오류 토스트 검증은 `v0.5.0`으로 이관했다. 상세 근거는
 [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
 따른다.
 
@@ -152,8 +151,9 @@ unknown 0, 응답 2초 이내여야 한다. `단기숙소`와 천안·27세를 �
 control은 1위·1초 이내를 유지한다.
 
 snapshot, 기대 identity와 자동 기준은 `data/release_1_acceptance.json`에
-고정한다. 후보가 확인되더라도 실제 자격을 단정하지 않으며 QA·사용성
-리뷰어·보고서 독립 증거가 없으면 Gate G4를 통과시키지 않는다.
+고정한다. 후보가 확인되더라도 실제 자격을 단정하지 않는다. `v0.1.0` 수동
+Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대조·API 오류 UX는
+`v0.5.0`으로 이관한다.
 
 ### 릴리스 완료 조건
 

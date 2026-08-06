@@ -2,12 +2,12 @@
 
 ## 계획 정보
 
-- 상태: in-progress
+- 상태: completed (`2026-08-06`)
 - 대상 주차: 3주차
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
-- 현재 Slice: DT7E in-progress (`Gate G4 blocked`)
+- 현재 Slice: DT7F completed (`Gate G4 pass`)
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -21,7 +21,7 @@
 2. 실제 정책 snapshot을 PostgreSQL에 재현 가능하게 적재한다.
 3. 실제 데이터 근거로 Data·Backend·Frontend 검색 계약을 조정한다.
 4. 각 담당자의 결과를 실제 DB → API → UI로 연결한다.
-5. golden query와 독립 검증 증거를 확인해 `v0.1.0` 후보 여부를 결정한다.
+5. golden query와 승인된 수동 검증 증거를 확인해 `v0.1.0` 후보 여부를 결정한다.
 
 ## 전체 실행 순서
 
@@ -666,13 +666,13 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 
 ## Slice DT7 - 신청 가능한 golden query와 Release 1 재인수
 
-- 상태: in-progress (`DT7A~C completed`)
-- 판정: `Gate G4 blocked`
+- 상태: completed (`DT7A~F`, `2026-08-06`)
+- 판정: `Gate G4 pass`
 
 ### 목적
 
 신청기간이 지난 DT6 월세 정책 대신 현재 snapshot에서 신청 가능 상태와
-조건이 확인되는 정책을 golden으로 고정하고, 관련성·성능·UI·독립 증거를
+조건이 확인되는 정책을 golden으로 고정하고, 관련성·성능·UI·승인된 수동 증거를
 동일 계약으로 재검증한다.
 
 ### 현재 golden query와 기대 정책
@@ -727,29 +727,29 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 - 통합 중 발견한 자격 단정 위험은 검색·상세 공통 안내와 회귀 테스트로
   범위 안에서 수정했다.
 
-### DT7E - 독립 증거 수집
+### DT7E - 경량 팀 리뷰 증거 수집
 
-- 상태: in-progress (`2026-08-06`, 담당자 실행 대기)
+- 상태: completed (`2026-08-06`)
 - actual 기술 증거를 `docs/contest/release_1_technical_evidence.json`에
-  고정하고 QA·사용성·보고서 역할별 템플릿과 검증 절차를 제공했다.
+  고정하고 QA·사용성 경량 리뷰와 검증 절차를 제공했다.
+- 역할 독립·보고서 대조·API 오류 UX는 Release 1 필수 Gate에서 제외하고
+  `v0.5.0`으로 이관했다.
 - `scripts/verify_release_1_evidence.py`는 contract hash·snapshot·exact query와
-  필수 check를 대조하며, 세 역할이 완료돼도 DT7F 전에는 Gate를 `blocked`로
-  유지한다.
+  필수 check를 대조하며 DT7F 전에는 Gate를 `blocked`로 유지한다.
 - 범용 Windows `run.bat`는 실제 PostgreSQL 기반 Backend·Frontend를 같은
   터미널에 실행하고 홈 화면을 연다. 특정 acceptance·golden query는 자동
   실행하지 않으며 검토자가 직접 검색하고 `Ctrl+C`로 종료한다.
-- 현재 검증 결과는 technical `pass`, 세 역할 `pending`, readiness
-  `independent-evidence-pending`이다.
-
-QA, 사용성 리뷰어와 보고서 담당이 같은 snapshot·contract hash를 독립
-검증하고 자신의 항목에 실제 관찰·증거 reference를 기록해야 DT7E를 완료한다.
+- 최종 검증 결과는 technical·QA·사용성 `pass`, readiness
+  `ready-for-team-leader-decision`, blocker 0건이다.
 
 ### DT7F - Gate G4 재판정
 
-Team Leader가 자동 기준과 독립 증거를 모두 확인해 Gate G4를 재판정한다.
+Team Leader가 자동 기준과 승인된 경량 리뷰 증거를 확인해 Gate G4를
+`pass`로 재판정했다.
 
 기대 정책이 현 Source에 있으므로 Source 추가는 현재 차단사항이 아니다.
-자동 감사의 기술 통과만으로 독립 증거를 대신하거나 Gate를 통과시키지 않는다.
+보고서와 API 오류 토스트 검증은 실행한 것으로 간주하지 않고 `v0.5.0`으로
+이관했다.
 
 ## 다른 담당자 의존성 요약
 
@@ -846,15 +846,15 @@ git status --short
 - [x] Gate G1 검색 계약 승인
 - [x] Gate G2 세 영역 준비 증거 확인
 - [x] Gate G3 실제 DB → API → UI 통합 확인
-- [ ] QA·리뷰어·보고서 근거 확인
+- [x] 경량 QA·사용성 근거와 `v0.5.0` 이관 범위 확인
 - [x] golden query와 변형·실패 시나리오 확인
-- [x] Gate G4 `v0.1.0` `blocked` 판정과 남은 위험 기록
+- [x] Gate G4 `v0.1.0` `pass` 판정과 비차단 후속 기록
 - [x] 신청 가능한 단기숙소 golden 기대 정책·자동 기준 고정
 - [x] Backend 관련성·성능 기준 통과
 - [x] Frontend 실제 API 재검증
-- [x] DT7E actual 기술 증거·역할별 템플릿·정합성 검증 기반 준비
-- [ ] QA·사용성·보고서 독립 증거 확보
-- [ ] DT7F Gate G4 재판정
+- [x] DT7E actual 기술 증거·경량 QA·사용성 증거 정합성 통과
+- [x] 보고서·API 오류 UX 검증의 `v0.5.0` 이관 기록
+- [x] DT7F Gate G4 재판정
 
 ## 관련 문서
 

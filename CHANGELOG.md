@@ -33,6 +33,10 @@
 
 ### Fixed
 
+- 실제 Release snapshot 검색의 빈 결과 화면이 합성 canonical Seed 기반이라고
+  잘못 안내하던 문구를 실제 snapshot·수집 범위·수집 시점 경계와 일치하도록
+  수정
+  ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))
 - 자연어 정책 검색에서 대화형·일반 term의 OR 일치가 결과를 과도하게
   넓히던 문제를 구체 term anchor로 수정해 Release 1 golden을 1위·2초
   이내로 안정화

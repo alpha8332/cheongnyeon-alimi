@@ -18,19 +18,19 @@
 
 | 주차 | 목표 | 문서 상태 | 상세 계획 |
 | --- | --- | --- | --- |
-| 3주차 | 실데이터 정책 검색과 `v0.1.0` | in-progress | [3주차 상세 계획](week_03_release_1.md) |
+| 3주차 | 실데이터 정책 검색과 `v0.1.0` | in-progress (`G4 pass`, 병합 대기) | [3주차 상세 계획](week_03_release_1.md) |
 
 ## 현재 역할별 실행 계획
 
 | 주차 | 역할 | 문서 상태 | 실행 계획 |
 | --- | --- | --- | --- |
-| 3주차 | Data·Team Leader | in-progress | [Data·Team Leader 계획](week_03_data_team_leader.md) |
+| 3주차 | Data·Team Leader | completed | [Data·Team Leader 계획](week_03_data_team_leader.md) |
 
 ## 현재 인수인계
 
 | 주차 | Gate | 상태 | 인수인계 |
 | --- | --- | --- | --- |
-| 3주차 | DT2·Gate G1 | action-needed | [Backend 06·Frontend 04 검색 계약 인수인계](week_03_search_contract_handoff.md) |
+| 3주차 | DT2·Gate G1 | completed | [Backend 06·Frontend 04 검색 계약 인수인계](week_03_search_contract_handoff.md) |
 
 1·2주차는 완료된 Forest 계획과 개발 기록이 권위 자료이므로 별도 주차 파일을
 소급 생성하지 않았다. 4~6주차는 해당 주차의 선행 Release 결과와 상세 Forest

@@ -2,7 +2,8 @@
 
 ## 작업 정보
 
-- 상태: in-progress
+- 상태: completed
+- 최종 판정: `Gate G4 pass`
 - 작업일: `2026-08-06`
 - 영역: Team Leader - Integration, DT5 Gate G2·G3, DT6 Gate G4와 DT7 IA3
 - 브랜치: `feature/data/release-dataset-bootstrap`
@@ -20,7 +21,7 @@
 - IA0 FE·BE 비커밋 병합과 로컬 환경 차이 확인
 - IA1 snapshot 복구, PostgreSQL 적재, HTTP·Browser 통합과 결함 수정
 - IA2 golden query·Release 1 판정과 차단사항·재개 조건 기록
-- IA3 현재 신청 가능한 golden query 교체와 실행 가능한 재인수 기반 구축
+- IA3 현재 신청 가능한 golden query 교체, 경량 팀 리뷰와 Gate G4 재판정
 
 ## Slice 진행 현황
 
@@ -33,8 +34,8 @@
 | IA3B / DT7 | completed | 구체 term anchor, golden 1위·응답시간 예산 통과 |
 | IA3C / DT7 | completed | 기간·상태 안전성 감사 통과 |
 | IA3D / DT7 | completed | Frontend actual API·Browser·E2E 재검증 통과 |
-| IA3E / DT7 | in-progress | actual 증거·역할별 템플릿·검증 도구 준비, 독립 담당자 실행 대기 |
-| IA3F / DT7 | pending | 독립 증거 대조와 Gate G4 재판정 |
+| IA3E / DT7 | completed | 새 contract hash actual 증거와 경량 QA·사용성 리뷰 정합성 통과 |
+| IA3F / DT7 | completed | 비차단 후속 분류, Gate G4 `pass`, `v0.1.0` 후보 승인 |
 
 ## 구현 내용
 
@@ -128,8 +129,9 @@ golden 대상으로 부적합하다는 결정에 따라 IA2 증거는 역사로 
 정렬과 그에 따른 응답시간을 IA3B의 차단사항으로 좁혔다.
 `data/release_1_acceptance.json`은 snapshot과 기대 정책, 순위·unknown·응답시간
 예산을 기계 판독 가능한 계약으로 고정한다. `scripts/audit_release_1.py`는 실제
-HTTP 결과를 민감정보 없이 JSON 증거로 만들며, 기술 기준이 모두 통과해도
-QA·사용성 리뷰어·보고서 근거가 없으면 Gate G4를 항상 `blocked`로 둔다.
+HTTP 결과를 민감정보 없이 JSON 증거로 만든다. 최종 수동 Gate 범위는
+DT7E에서 경량 QA·사용성 리뷰로 조정했지만 exact query·snapshot·기대 정책의
+기술 기준은 낮추지 않았다.
 
 ### DT7B 검색 관련성·성능 보완 결과
 
@@ -192,29 +194,51 @@ actual API 모드에서 새 golden exact query를 실행해 첫 페이지의 첫
 공통 `role=note` 문구를 추가했다. Frontend unit 46건, Mock E2E 10건과 actual
 E2E 11건이 통과했다. 인앱 Browser desktop과 390×844 viewport에서도 검색
 첫 결과·조건 근거·상세 출처·수집 시각·상태·안내를 확인했다. 이 검증은 기술
-증거이며 QA·사용성 리뷰·보고서 독립 증거를 대신하지 않는다.
+증거이며 제공된 수동 리뷰 관찰과 별도로 보존한다.
 
-### DT7E 독립 증거 기반
+### DT7E 경량 팀 리뷰와 증거 정합성
 
 `audit_release_1.py`로 동일 actual snapshot의 안전한 기술 증거 JSON을
 `docs/contest/release_1_technical_evidence.json`에 생성했다. contract SHA-256은
-`c4d49caa90a8773a94e7e14b1e9dee30ebdfd3316d8144b9efc27ffd6462a327`이고
-3,156건 baseline과 두 Source snapshot identity가 계약과 일치한다. 자연어
-golden은 136.91ms, control은 155.40ms로 모두 1건 중 1위·technical `pass`다.
+`53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c`이고
+3,156건 baseline과 두 Source snapshot identity가 계약과 일치한다. 최종
+재감사에서 자연어 golden은 95.95ms, control은 78.68ms로 모두 1건 중
+1위·technical `pass`다.
 
-QA·사용성 리뷰·보고서 담당이 각자 작성할 JSON 템플릿과 check별 수행 안내를
-추가했다. `verify_release_1_evidence.py`는 다음 항목을 기계적으로 대조한다.
+제공된 `v0.1.0 리뷰.docx`의 본문과 화면 3개를 확인해 QA·사용성 관찰을
+`release_1_review_summary.md`에 비밀정보 없이 요약했다. Team Leader는 Release
+1을 기본 검색 MVP 확인 범위로 마감하도록 수동 증거 정책을 경량 팀 리뷰로
+조정했다. 역할 독립과 보고서 대조, API 오류 토스트 검증은 필수 Gate에서
+제외하고 `v0.5.0` 후속으로 이관했다.
+
+`verify_release_1_evidence.py`는 다음 항목을 기계적으로 대조한다.
 
 - 기술 증거의 release·Gate·contract hash·snapshot·exact query·기대 정책
-- QA의 golden·empty·partial/unknown·API 오류 smoke
+- QA의 기본 검색·상세, empty와 partial/unknown 관찰
 - 사용성 리뷰의 조건·이유·출처/최신성·자격 비확정 이해도
-- 보고서의 dataset·contract·기술 결과·범위/위험/Gate 대조
-- reviewer, timezone 포함 수행 시각, 역할 독립 확인, 관찰 notes와 증거 reference
+- reviewer, timezone 포함 수행 시각, 관찰 notes와 저장소 증거 reference
 
-미작성 템플릿을 실제 기술 증거와 검증한 결과 technical은 `pass`지만 세 역할은
-모두 `pending`, readiness는 `independent-evidence-pending`, Gate는 `blocked`다.
-검증 도구는 완성된 세 증거가 정합해도 `ready-for-team-leader-decision`만
-반환하며 Gate 통과는 DT7F에서 별도로 판정한다.
+최종 검증 결과 technical·QA·사용성은 모두 `pass`, readiness는
+`ready-for-team-leader-decision`, blocker는 0건이다. 검증 도구는 증거 정합성만
+판정하고 Gate 통과는 DT7F에서 별도로 결정했다.
+
+리뷰 화면의 빈 결과 안내가 actual snapshot 환경에서도 `canonical Seed
+기반`이라고 표시되는 계약 불일치를 발견했다. 이를 `고정된 실제 정책
+snapshot 기반`과 수집 범위·시점 제약 안내로 수정하고 Frontend unit 회귀를
+추가했다. 자격·신청 정보 보강, 긴 지역 목록 축약과 오류 토스트는 기본 검색
+MVP를 막지 않는 `v0.5.0` 후속으로 분류했다.
+
+### DT7F Gate G4 재판정
+
+Team Leader는 새 contract hash의 actual 기술 증거, 경량 QA·사용성 리뷰,
+비차단 후속사항과 비밀·Runtime 경계를 대조했다. 자연어·control acceptance는
+모두 기대 정책 1위·unknown 0·응답시간 예산 이내이고 manual evidence verifier
+blocker는 0건이다. 이에 Gate G4를 `pass`로 판정하고 현재 커밋 계열을
+`v0.1.0` Release 1 후보로 승인했다.
+
+이 판정은 Production 배포, 전체 Source 수집, 자동 Scheduler, 추천·즐겨찾기,
+보고서 완성을 포함하지 않는다. 해당 범위는 기존 로드맵대로 `v0.5.0` 이후
+Forest에서 수행한다.
 
 Windows에서 환경변수를 직접 구성하지 않아도 전체 시스템을 사용할 수 있도록
 저장소 루트에 범용 `run.bat`와 PowerShell 실행기를 추가했다. 실행기는
@@ -238,6 +262,7 @@ Runtime 상태 파일과 전용 로그를 만들지 않으며 같은 터미널�
 - `backend/tests/test_policy_search_repository_builder.py`
 - `backend/tests/test_policy_search_api_endpoint.py`
 - `data/release_1_acceptance.json`
+- `.gitattributes`
 - `scripts/audit_release_1.py`
 - `scripts/profile_release_dataset.py`
 - `tests/test_release_1_acceptance_audit.py`
@@ -250,14 +275,19 @@ Runtime 상태 파일과 전용 로그를 만들지 않으며 같은 터미널�
 - `frontend/.gitignore`
 - `frontend/src/pages/user/ProgramDetailPage.tsx`
 - `frontend/src/utils/policyDisplay.ts`
+- `frontend/src/utils/policySearchErrors.ts`
 - `frontend/src/styles/theme.css`
 - `frontend/tests/policyDisplay.test.ts`
+- `frontend/tests/policySearch.errors.test.ts`
 - `frontend/tsconfig.test.json`
 - `scripts/verify_release_1_evidence.py`
 - `tests/test_release_1_evidence_verification.py`
 - `docs/contest/release_1_evidence_guide.md`
 - `docs/contest/release_1_evidence_template.json`
 - `docs/contest/release_1_technical_evidence.json`
+- `docs/contest/release_1_review_summary.md`
+- `docs/contest/release_1_evidence.json`
+- `docs/contest/release_1_gate_decision.json`
 - `run.bat`
 - `scripts/run_local.ps1`
 - `docs/development/develop_plan/integration/04_release_1_acceptance.md`
@@ -271,8 +301,9 @@ Runtime 상태 파일과 전용 로그를 만들지 않으며 같은 터미널�
   역사적 기록을 덮어쓰지 않는다.
 - 검색 term 결합·score는 API 의미 변경이므로 DT5에서 임의 수정하지 않고
   DT6 결정 대상으로 남긴다.
-- 실제 API Browser 통과는 QA·리뷰어·보고서 승인이나 Release 판정을 대신하지
-  않는다.
+- actual 기술 기준은 exact query·snapshot·contract hash로 유지하고 수동 Gate만
+  경량 QA·사용성 리뷰로 조정한다. 보고서와 API 오류 UX는 실행한 것으로
+  간주하지 않고 `v0.5.0`으로 이관한다.
 
 ## 검증 결과
 
@@ -325,8 +356,17 @@ Runtime 상태 파일과 전용 로그를 만들지 않으며 같은 터미널�
 | DT7E strict period safety profile | 3,156건 재생, `passed=true` |
 | DT7E actual 기술 증거 | 3,156건, natural 136.91ms·control 155.40ms, 모두 1위·technical `pass` |
 | DT7E actual 기술 재검증 | natural 84.47ms·control 77.58ms, 모두 1위·technical `pass` |
-| DT7E pending 템플릿 검증 | 세 역할 `pending`, readiness `independent-evidence-pending`, Gate `blocked` |
+| DT7F 새 contract actual 기술 증거 | natural 95.95ms·control 78.68ms, 모두 1위·unknown 0·technical `pass` |
+| DT7F 경량 수동 증거 검증 | QA·사용성 `pass`, readiness `ready-for-team-leader-decision`, blocker 0건 |
+| DT7F Gate G4 | `pass`, `v0.1.0` Release 1 후보 승인 |
 | Windows 범용 실행기 | 실제 Backend/Frontend HTTP 준비 확인 및 종료 후 포트 정리 통과 |
+| DT7F 리뷰 Word 확인 | 본문 25개·포함 화면 3개 전체 확인, LibreOffice 미설치로 페이지 render 미수행 |
+| DT7F evidence 집중 unittest | 18건 통과 |
+| DT7F Data 전체 unittest | 139건 통과 |
+| DT7F Backend PostgreSQL·Integration | 123건 통과, 기존 deprecation warning 2건 |
+| DT7F Frontend unit·build·lint | unit 46건, build·lint 통과 |
+| DT7F actual API Playwright | 서버 중단 상태를 재사용한 첫 실행 4건 통과·7건 실패, 전용 actual 서버 재실행 후 11건 통과 |
+| DT7F 문서·JSON·diff 검증 | `validate_docs.py`, Release JSON parse, `git diff --check` 통과 |
 
 폐기한 IA2 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,
@@ -342,17 +382,20 @@ DT7C Integration 4건 skip은 `TEST_DATABASE_URL`이 현재 process에 주입되
 않는다. DT7C는 DB·API 계약을 변경하지 않았고, 실제 snapshot 안전성은 DB 없이
 고정 Raw를 재생하는 strict profile로 검증했다.
 
+DT7F Playwright 첫 실행은 기존 3000·8000 프로세스를 재사용했지만 실행 중 두
+listener가 사라져 검색 결과 영역을 찾지 못한 7건이 실패했다. 성공으로
+처리하지 않고 이번 검증에서 소유한 actual 서버를 새로 실행해 같은 11건을
+전부 재검증했으며 종료 후 두 포트도 정리했다.
+
 ## 남은 작업
 
-### Gate G4 차단사항과 재개 조건
+### `v0.5.0` 후속 작업
 
-- Backend 관련성·성능과 Frontend actual API 재검증 차단사항은 해소했다.
-- 새 golden의 기대 정책은 현 Source에서 confirmed 1건이므로 Source 추가
-  결정은 현재 차단사항에서 제외한다.
-- 복지로 본문 날짜는 현재 Source 계약상 신청기간으로 승격하지 않으며, 향후
-  전용 Source 필드가 추가될 때만 mapping과 회귀 감사를 다시 검토한다.
-- QA smoke, 사용성 리뷰와 보고서 담당은 DT7E 템플릿에 같은 snapshot과 exact
-  query의 실제 관찰·증거를 독립적으로 기록해야 한다. 세 역할 결과가 정합한
-  뒤 DT7F에서 Gate G4를 다시 판정한다.
+- Source에 없는 자격·신청 정보의 추가 수집 또는 보강 경계를 검토한다.
+- 긴 지역 목록을 축약하고 전체 보기 동작을 제공한다.
+- API 오류·재시도 흐름을 토스트와 닫기 동작으로 구현·Browser 검증한다.
+- 보고서 근거 대조와 더 넓은 독립 QA·사용성 시나리오를 수행한다.
+- 복지로에 신청기간 전용 Source 필드가 추가될 때만 mapping과 회귀 감사를
+  다시 검토한다.
 - 기존 Starlette deprecation warning 2건과 npm audit high 3건은 별도
   의존성 검토가 필요하다.

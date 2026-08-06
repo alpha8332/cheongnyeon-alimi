@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress
+- 상태: in-progress (`Gate G4 pass`, `develop` 병합 대기)
 - 대상 Release: `v0.1.0`
 - 실행 주차: 3주차
 - 주 담당: Data, Backend, Frontend
@@ -333,19 +333,18 @@ Team Leader가 다음 증거를 확인한다.
 - 실제 데이터 E2E와 Browser 검증
 - QA smoke와 릴리스 차단 결함 재검증
 - 사용성 리뷰어의 조건·결과 이해도 확인
-- 보고서 담당의 데이터·검색·검증 근거
+- `v0.1.0` 경량 정책에 따른 QA·사용성 수동 근거와 후속 분류
 - 문서 검증, 비밀·Runtime 산출물과 Git 상태
 
-`2026-08-06` 판정은 `blocked`다. DT7C에서 새 기대 정책은 자연어·control
-모두 1건 중 1위이며 cold 317.04ms·109.92ms로 기술 acceptance를 통과했다.
-신청기간 안전성도 Source 근거 없는 승격·상태 불일치 0건으로 통과했고 DT7D
-Frontend actual API E2E·Browser 재검증도 통과했다. 다만 QA·사용성
-리뷰어·보고서 독립 근거가 남아 있어 같은 계약의 전체 증거가 모이기 전에는
-`v0.1.0` 후보로 진행하지 않는다.
+`2026-08-06` 판정은 `pass`다. 새 contract hash의 actual 자연어·control은
+모두 1건 중 1위·unknown 0이고 95.95ms·78.68ms로 기술 acceptance를 통과했다.
+신청기간 안전성, Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도
+통과했다. evidence verifier는 `ready-for-team-leader-decision`, blocker 0건을
+반환했다.
 
-DT7E는 actual 기술 증거, 역할별 템플릿과 contract·snapshot·query 정합성
-검증 도구를 준비했다. 현재 세 독립 역할의 실행 결과는 `pending`이며 이 기반
-준비만으로 Gate G4 상태를 변경하지 않는다.
+보고서 대조와 API 오류 토스트 Browser 검증은 실제 수행하지 않았으며
+`v0.5.0` 후속으로 이관했다. 기본 정책 검색 MVP의 Gate 통과 근거로 안내하지
+않는다.
 
 모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
 
@@ -460,8 +459,8 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03과 DT2·Gate G1
 - [x] 관련 단위·통합·Frontend 테스트 통과
 - [x] 문서 검증과 `git diff --check` 통과
 - [x] 비밀키·Runtime Raw·DB 파일 Git 비추적 확인
-- [ ] 보고서·사용성 리뷰·QA 근거 확인
-- [x] Team Leader의 Gate G4 Release 1 `blocked` 판정
+- [x] 경량 QA·사용성 리뷰 근거 확인, 보고서·API 오류 UX는 `v0.5.0` 이관
+- [x] Team Leader의 Gate G4 Release 1 `pass` 판정
 
 ## 관련 문서
 

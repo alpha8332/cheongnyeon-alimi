@@ -55,5 +55,7 @@ describe('policySearchErrors mapper', () => {
     assert.equal(presentation.preserve_filter_chips, true);
     assert.match(presentation.message, /존재하지 않는다는 뜻이 아닙니다/);
     assert.match(presentation.message, /미해석 키워드/);
+    assert.match(presentation.message, /고정된 실제 정책 snapshot 기반/);
+    assert.doesNotMatch(presentation.message, /canonical Seed 기반/);
   });
 });

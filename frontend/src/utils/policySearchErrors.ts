@@ -14,8 +14,8 @@ export const POLICY_SEARCH_EMPTY_RESULTS_COPY = {
     '이는 해당 정책이 존재하지 않는다는 뜻이 아닙니다. ' +
     '검색어·지역·연령 등 조건을 바꿔 다시 시도해 보세요.',
   scopeNote:
-    'Release 1 검색 데이터는 canonical Seed 기반이며, 실제 전국·전체 정책과 ' +
-    '차이가 있을 수 있습니다.',
+    'Release 1 검색 데이터는 고정된 실제 정책 snapshot 기반이며, 수집 범위와 ' +
+    '수집 시점 이후의 외부 데이터 변경에 따라 현재 전체 정책과 차이가 있을 수 있습니다.',
 } as const;
 
 const VALIDATION_COPY: PolicySearchErrorPresentation = {
