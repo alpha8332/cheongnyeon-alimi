@@ -216,16 +216,17 @@ QA·사용성 리뷰·보고서 담당이 각자 작성할 JSON 템플릿과 che
 검증 도구는 완성된 세 증거가 정합해도 `ready-for-team-leader-decision`만
 반환하며 Gate 통과는 DT7F에서 별도로 판정한다.
 
-독립 담당자가 Windows에서 환경변수를 직접 구성하지 않아도 되도록 저장소
-루트에 시작·종료 BAT와 공통 PowerShell launcher를 추가했다. 시작 launcher는
-`.venv`·Vite·PostgreSQL·pgpass를 확인하고 Backend actual acceptance가
-통과한 뒤에만 Frontend를 actual API 모드로 실행해 golden query URL을 기본
-브라우저에서 연다. API key와 외부 Source 호출은 사용하지 않는다.
+Windows에서 환경변수를 직접 구성하지 않아도 전체 시스템을 사용할 수 있도록
+저장소 루트에 범용 `run.bat`와 PowerShell 실행기를 추가했다. 실행기는
+`.venv`·Vite·PostgreSQL·pgpass를 확인하고 Backend를 실제 PostgreSQL에,
+Frontend를 actual API 모드로 연결한 뒤 홈 화면을 기본 브라우저에서 연다.
+특정 acceptance나 golden query를 자동 실행하지 않으며 API key와 외부 Source
+호출도 사용하지 않는다.
 
-실행 PID는 Git 제외 Runtime 상태 파일에 저장한다. 중복 시작은 기존 정상
-프로세스를 재사용하고, 포트가 다른 프로세스에 점유되면 종료하지 않고
-실패한다. 종료 launcher는 저장된 listener PID·port가 일치하는 프로세스만
-종료하고 Runtime 상태와 로그를 삭제한다.
+Backend와 Frontend 출력은 실행한 터미널에 함께 표시한다. 별도 종료 BAT,
+Runtime 상태 파일과 전용 로그를 만들지 않으며 같은 터미널에서 `Ctrl+C`를
+누르면 이번 실행에서 추적한 두 프로세스를 정리한다. 포트가 이미 다른
+프로세스에 점유돼 있으면 임의로 종료하지 않고 실패한다.
 
 ## 주요 변경 파일
 
@@ -257,10 +258,8 @@ QA·사용성 리뷰·보고서 담당이 각자 작성할 JSON 템플릿과 che
 - `docs/contest/release_1_evidence_guide.md`
 - `docs/contest/release_1_evidence_template.json`
 - `docs/contest/release_1_technical_evidence.json`
-- `start_release_1_review.bat`
-- `stop_release_1_review.bat`
-- `scripts/release_1_review.ps1`
-- `.gitignore`
+- `run.bat`
+- `scripts/run_local.ps1`
 - `docs/development/develop_plan/integration/04_release_1_acceptance.md`
 - `docs/development/development_notes/integration/release_1_acceptance.md`
 
@@ -327,7 +326,7 @@ QA·사용성 리뷰·보고서 담당이 각자 작성할 JSON 템플릿과 che
 | DT7E actual 기술 증거 | 3,156건, natural 136.91ms·control 155.40ms, 모두 1위·technical `pass` |
 | DT7E actual 기술 재검증 | natural 84.47ms·control 77.58ms, 모두 1위·technical `pass` |
 | DT7E pending 템플릿 검증 | 세 역할 `pending`, readiness `independent-evidence-pending`, Gate `blocked` |
-| DT7E Windows launcher | start·중복 start·status·stop, Backend/Frontend HTTP 200, Runtime 파일 정리 통과 |
+| Windows 범용 실행기 | 실제 Backend/Frontend HTTP 준비 확인 및 종료 후 포트 정리 통과 |
 
 폐기한 IA2 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,

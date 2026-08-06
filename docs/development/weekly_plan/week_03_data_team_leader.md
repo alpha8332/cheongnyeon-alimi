@@ -735,9 +735,9 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 - `scripts/verify_release_1_evidence.py`는 contract hash·snapshot·exact query와
   필수 check를 대조하며, 세 역할이 완료돼도 DT7F 전에는 Gate를 `blocked`로
   유지한다.
-- Windows 원클릭 launcher는 실제 PostgreSQL acceptance를 사전 검사하고
-  Backend·Frontend actual API와 golden 화면을 열며, 종료 BAT는 기록된
-  프로세스만 정리한다.
+- 범용 Windows `run.bat`는 실제 PostgreSQL 기반 Backend·Frontend를 같은
+  터미널에 실행하고 홈 화면을 연다. 특정 acceptance·golden query는 자동
+  실행하지 않으며 검토자가 직접 검색하고 `Ctrl+C`로 종료한다.
 - 현재 검증 결과는 technical `pass`, 세 역할 `pending`, readiness
   `independent-evidence-pending`이다.
 

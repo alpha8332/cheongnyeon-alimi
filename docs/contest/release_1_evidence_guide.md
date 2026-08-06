@@ -28,30 +28,30 @@ Gate G4 최종 판정은 DT7F에서 별도로 수행한다.
 계약 hash나 snapshot identity가 다르면 기존 결과를 재사용하지 않고 Team
 Leader에게 변경 이유와 재검증 필요 여부를 먼저 확인한다.
 
-## Windows 원클릭 실행
+## Windows 로컬 시스템 실행
 
-저장소 루트의 `start_release_1_review.bat`를 더블클릭하면 다음 순서로 검토
-환경을 실행한다.
+저장소 루트의 `run.bat`를 더블클릭하면 로컬 `.venv`, Frontend
+`node_modules`, PostgreSQL `127.0.0.1:5432`와 pgpass를 확인한 뒤 Backend와
+Frontend를 같은 터미널에서 실행하고 기본 브라우저의 홈 화면을 연다. Frontend는
+`VITE_USE_MOCK=false`인 actual API 모드로 실행된다.
 
-1. 로컬 `.venv`, Frontend `node_modules`, PostgreSQL `127.0.0.1:5432` 확인
-2. `PGPASSFILE`, `%LOCALAPPDATA%\Temp\cheongnyeon-alimi-pgpass.conf` 또는
-   `%APPDATA%\postgresql\pgpass.conf`에서 Runtime DB 역할 확인
-3. Backend를 실제 PostgreSQL에 연결하고 acceptance contract 사전 검사
-4. Frontend를 `VITE_USE_MOCK=false` actual API 모드로 실행
-5. 기본 브라우저에서 exact golden query 검색 화면 열기
+이 실행기는 특정 검토나 검색어에 종속되지 않는다. acceptance 검사를 대신
+수행하거나 golden query를 미리 검색하지 않으므로, 독립 검증 담당자는 실행된
+웹 UI에서 위의 exact query를 직접 입력해 관찰한다. API key는 필요하지 않으며
+외부 Source API를 다시 호출하지 않는다.
 
-API key는 필요하지 않으며 외부 Source API를 다시 호출하지 않는다. `.venv`,
-Frontend 의존성 또는 pgpass가 없으면 임의 설치·인증정보 생성을 하지 않고
-안전하게 실패한다. 별도 pgpass를 사용하려면 명령 프롬프트에서 다음처럼
-경로를 첫 인자로 전달한다.
+pgpass는 `PGPASSFILE`,
+`%LOCALAPPDATA%\Temp\cheongnyeon-alimi-pgpass.conf`,
+`%APPDATA%\postgresql\pgpass.conf` 순으로 찾는다. 별도 경로를 사용하려면 첫
+번째 인자로 전달한다.
 
 ```bat
-start_release_1_review.bat "C:\path\to\pgpass.conf"
+run.bat "C:\path\to\pgpass.conf"
 ```
 
-검토가 끝나면 `stop_release_1_review.bat`를 더블클릭한다. 이 파일은 launcher가
-기록한 Backend·Frontend PID와 포트가 일치할 때만 종료하고 Runtime 상태·로그를
-정리한다. 브라우저 창이나 탭은 임의로 닫지 않는다.
+종료할 때는 실행 중인 터미널에서 `Ctrl+C`를 누른다. 별도 종료 BAT, Runtime
+상태 파일이나 전용 로그 파일은 만들지 않으며 브라우저 창이나 탭은 임의로
+닫지 않는다.
 
 ## 준비 절차
 

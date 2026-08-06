@@ -18,9 +18,10 @@ Windows에서 Backend와 PostgreSQL 통합 테스트를 실행하는 절차는
 [Backend Windows 로컬 환경](docs/development/backend_local_setup.md)을
 따른다.
 
-Release 1의 실제 PostgreSQL → Backend → Frontend 화면을 검토하려면 저장소
-루트의 `start_release_1_review.bat`를 실행한다. 검토 후에는
-`stop_release_1_review.bat`로 작업용 프로세스를 종료한다. 필요한 pgpass와
-역할별 확인 항목은
+Windows에서 실제 PostgreSQL을 사용하는 전체 시스템을 실행하려면 저장소
+루트의 `run.bat`를 실행한다. Backend와 Frontend가 같은 터미널에서 실행되고
+홈 화면이 열리며, 종료할 때는 해당 터미널에서 `Ctrl+C`를 누른다. 별도
+pgpass 경로가 필요하면 첫 번째 인자로 전달할 수 있다. Release 1 역할별 확인
+항목은
 [Release 1 독립 검증 증거 안내](docs/contest/release_1_evidence_guide.md)를
 따른다.

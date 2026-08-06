@@ -16,11 +16,6 @@ opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx
 # Runtime collection artifacts
 runtime/raw/
 data/runtime/raw/
-runtime/release_1_review_processes.json
-runtime/release_1_review_backend.stdout.log
-runtime/release_1_review_backend.stderr.log
-runtime/release_1_review_frontend.stdout.log
-runtime/release_1_review_frontend.stderr.log
 
 # Python local artifacts
 __pycache__/

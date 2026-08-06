@@ -159,8 +159,8 @@ filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일�
   확보한다.
 - actual 기술 증거, 역할별 템플릿과 정합성 검증 도구를 제공하되 Team
   Leader가 독립 역할의 관찰·판정을 대신 작성하지 않는다.
-- Windows reviewer가 actual DB·API·UI를 같은 조건으로 바로 실행하고 안전하게
-  종료할 수 있는 launcher를 제공한다.
+- Windows reviewer는 범용 `run.bat`로 actual DB·API·UI를 실행하고 웹 UI에서
+  exact query를 직접 입력해 검증한다.
 - QA·사용성·보고서 세 역할이 필수 check를 실제 수행하고 증거 reference와
   함께 `pass` 또는 `blocked`를 기록해야 완료한다.
 
