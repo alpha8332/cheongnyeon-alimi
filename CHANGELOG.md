@@ -10,6 +10,9 @@
 
 ### Added
 
+- Windows에서 Release 1 실제 PostgreSQL·Backend·Frontend 검토 환경과 golden
+  검색 화면을 한 번에 열고 안전하게 종료하는 reviewer launcher 추가
+  ([검증 안내](docs/contest/release_1_evidence_guide.md))
 - 정책 검색·상세에 실제 자격 충족을 확정하지 않는다는 공통 안내를 추가하고,
   새 golden query의 actual API 첫 결과·근거·출처·수집 시각을 Browser·E2E로 검증
   ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))

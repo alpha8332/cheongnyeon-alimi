@@ -28,6 +28,31 @@ Gate G4 최종 판정은 DT7F에서 별도로 수행한다.
 계약 hash나 snapshot identity가 다르면 기존 결과를 재사용하지 않고 Team
 Leader에게 변경 이유와 재검증 필요 여부를 먼저 확인한다.
 
+## Windows 원클릭 실행
+
+저장소 루트의 `start_release_1_review.bat`를 더블클릭하면 다음 순서로 검토
+환경을 실행한다.
+
+1. 로컬 `.venv`, Frontend `node_modules`, PostgreSQL `127.0.0.1:5432` 확인
+2. `PGPASSFILE`, `%LOCALAPPDATA%\Temp\cheongnyeon-alimi-pgpass.conf` 또는
+   `%APPDATA%\postgresql\pgpass.conf`에서 Runtime DB 역할 확인
+3. Backend를 실제 PostgreSQL에 연결하고 acceptance contract 사전 검사
+4. Frontend를 `VITE_USE_MOCK=false` actual API 모드로 실행
+5. 기본 브라우저에서 exact golden query 검색 화면 열기
+
+API key는 필요하지 않으며 외부 Source API를 다시 호출하지 않는다. `.venv`,
+Frontend 의존성 또는 pgpass가 없으면 임의 설치·인증정보 생성을 하지 않고
+안전하게 실패한다. 별도 pgpass를 사용하려면 명령 프롬프트에서 다음처럼
+경로를 첫 인자로 전달한다.
+
+```bat
+start_release_1_review.bat "C:\path\to\pgpass.conf"
+```
+
+검토가 끝나면 `stop_release_1_review.bat`를 더블클릭한다. 이 파일은 launcher가
+기록한 Backend·Frontend PID와 포트가 일치할 때만 종료하고 Runtime 상태·로그를
+정리한다. 브라우저 창이나 탭은 임의로 닫지 않는다.
+
 ## 준비 절차
 
 1. Team Leader는 현재 계약과 실제 PostgreSQL snapshot으로 기술 증거를 만든다.

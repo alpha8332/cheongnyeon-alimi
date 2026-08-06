@@ -17,3 +17,10 @@ PostgreSQL 재처리, Seed·Runtime 최소 실행 이력 기반이 구현되어 
 Windows에서 Backend와 PostgreSQL 통합 테스트를 실행하는 절차는
 [Backend Windows 로컬 환경](docs/development/backend_local_setup.md)을
 따른다.
+
+Release 1의 실제 PostgreSQL → Backend → Frontend 화면을 검토하려면 저장소
+루트의 `start_release_1_review.bat`를 실행한다. 검토 후에는
+`stop_release_1_review.bat`로 작업용 프로세스를 종료한다. 필요한 pgpass와
+역할별 확인 항목은
+[Release 1 독립 검증 증거 안내](docs/contest/release_1_evidence_guide.md)를
+따른다.
