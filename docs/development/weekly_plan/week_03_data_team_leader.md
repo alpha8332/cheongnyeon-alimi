@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend, 보고서, 사용성 리뷰어, QA
-- 현재 Slice: DT6 completed (`Gate G4 blocked`)
+- 현재 Slice: DT7 in-progress (`DT7A completed`, `Gate G4 blocked`)
 - 상위 계획: [3주차 전체 상세 계획](week_03_release_1.md)
 
 이 문서는 Data 담당과 Team Leader를 같은 사람이 수행하는 현재 역할 배정을
@@ -42,7 +42,9 @@ DT4 실제 DB·품질 인계
                  ↓
 DT5 실제 데이터 통합·결함 조정
                  ↓
-DT6 golden query·Release 1 판정
+DT6 기존 golden query·Release 1 판정
+                 ↓
+DT7 신청 가능한 golden 교체·차단 해소·재판정
 ```
 
 DT1을 수행하는 동안 Backend의 현재 코드·API 구조 조사와 Frontend의
@@ -662,6 +664,52 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 - QA·사용성 리뷰어·보고서 근거가 없고 actual 정책도 확정할 수 없으므로
   Gate G4를 `blocked`로 기록했다. 해소 전 `v0.1.0` 릴리스 PR을 만들지 않는다.
 
+## Slice DT7 - 신청 가능한 golden query와 Release 1 재인수
+
+- 상태: in-progress (`DT7A completed`)
+- 판정: `Gate G4 blocked`
+
+### 목적
+
+신청기간이 지난 DT6 월세 정책 대신 현재 snapshot에서 신청 가능 상태와
+조건이 확인되는 정책을 golden으로 고정하고, 관련성·성능·UI·독립 증거를
+동일 계약으로 재검증한다.
+
+### 현재 golden query와 기대 정책
+
+```text
+천안 사는 27살 청년 단기숙소 지원 받을 수 있나?
+```
+
+- 온통청년 `20260430005400212969`, `청년단기숙소 지원사업`
+- `valid/open/always/housing`, 천안·27세 match, unknown 0
+- 자연어: 20위 이내·2초 이내
+- `단기숙소` + 천안·27세 control: 1위·1초 이내
+
+### DT7A - 데이터·인수 기반
+
+- 상태: completed
+- 현재 snapshot offline profile에서 기대 정책 confirmed 1건을 확인했다.
+- `data/release_1_acceptance.json`에 snapshot·identity·자동 기준을 고정했다.
+- `scripts/audit_release_1.py`로 실제 HTTP 기술 증거를 재현 가능하게 만들었다.
+- 현재 자연어 결과는 495건 중 49위·약 9.3초로 차단, control은 1건 중
+  1위·약 0.1초로 통과했다.
+
+### DT7B~DT7F - 남은 실행 순서
+
+1. Backend가 구체 term과 일반·대화 term의 후보 확대·정렬을 보완하고
+   PostgreSQL 회귀와 2초 예산을 검증한다.
+2. Data가 golden 및 기본 노출 정책의 신청기간·상태를 Source field 근거로
+   재감사한다. 임의 텍스트 날짜 추정은 하지 않는다.
+3. Frontend가 수정 응답의 첫 페이지 노출, 근거·출처·수집 시각과 자격 비확정
+   안내를 unit·실제 API Browser·E2E로 검증한다.
+4. QA, 사용성 리뷰어와 보고서 담당이 같은 snapshot·contract hash를 독립
+   검증한다.
+5. Team Leader가 자동 기준과 독립 증거를 모두 확인해 Gate G4를 재판정한다.
+
+기대 정책이 현 Source에 있으므로 Source 추가는 현재 차단사항이 아니다.
+자동 감사의 기술 통과만으로 독립 증거를 대신하거나 Gate를 통과시키지 않는다.
+
 ## 다른 담당자 의존성 요약
 
 | 내가 수행할 작업 | 기다려야 하는 다른 담당 결과 | 기다리는 동안 가능한 내 작업 |
@@ -672,6 +720,7 @@ Data 담당과 Team Leader가 같은 사람이므로 다음 증거 없이 자신
 | DT5 실제 검색 HTTP | Backend `W3-B2` endpoint·테스트 | Data 품질 수정·재적재·문서화 |
 | DT5 Frontend Browser | Frontend `W3-F2` 실제 API 연결 | Backend HTTP 결과와 golden 후보 검증 |
 | DT6 Release 판정 | BE·FE 전체 테스트, QA, 리뷰어, 보고서 근거 | Data 최종 품질·보안·Git 경계 점검 |
+| DT7 Release 재인수 | BE 관련성·성능, FE 실제 API, QA·리뷰어·보고서 증거 | Data 기간·상태 감사, acceptance 자동화 유지 |
 
 ## 내가 먼저 제공해야 하는 산출물
 
@@ -759,6 +808,9 @@ git status --short
 - [ ] QA·리뷰어·보고서 근거 확인
 - [x] golden query와 변형·실패 시나리오 확인
 - [x] Gate G4 `v0.1.0` `blocked` 판정과 남은 위험 기록
+- [x] 신청 가능한 단기숙소 golden 기대 정책·자동 기준 고정
+- [ ] Backend 관련성·성능 기준과 Frontend 실제 API 재검증
+- [ ] 독립 증거 확보와 Gate G4 재판정
 
 ## 관련 문서
 

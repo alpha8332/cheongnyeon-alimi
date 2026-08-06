@@ -10,6 +10,8 @@
 
 ### Added
 
+- 신청 가능한 `청년단기숙소 지원사업`을 Release 1 golden으로 고정하고 snapshot·정책 identity·순위·unknown·응답시간을 검증하는 HTTP acceptance 계약과 감사 도구 추가
+
 - 정책 상세에서 기존 공개 DTO의 데이터 출처와 수집 시각을 KST로 확인할 수
   있게 표시
   ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))

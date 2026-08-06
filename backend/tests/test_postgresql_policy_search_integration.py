@@ -85,17 +85,18 @@ def postgresql_session(postgresql_session_factory):
             session.rollback()
 
 
-def test_postgresql_golden_query_27_cheonan_rent(postgresql_session):
+def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
     session = postgresql_session
     now = utc_now()
 
-    # 테스트 정책 적재 (천안 27세 월세 지원)
+    # 테스트 정책 적재 (천안 27세 청년 단기숙소 지원)
     p1 = Policy(
         source_id="pg_test_cheonan_1",
         source_name="온통청년",
-        title="천안 청년 월세 지원금",
-        summary="충남 천안시 청년 월세 주거 지원",
+        title="청년단기숙소 지원사업",
+        summary="충남 천안시 청년 단기숙소 주거 지원",
         categories=["housing"],
+        application_schedule="always",
         application_status="open",
         region_text="충청남도 천안시",
         regions=["4413000000"],
@@ -120,23 +121,24 @@ def test_postgresql_golden_query_27_cheonan_rent(postgresql_session):
     )
     doc1 = PolicySearchDocument(
         policy_id=p1.id,
-        title_text="천안 청년 월세 지원금",
-        keyword_text="천안 월세 주거 지원금 청년",
-        summary_text="충남 천안시 청년 월세 주거 지원",
+        title_text="청년단기숙소 지원사업",
+        keyword_text="천안 단기숙소 주거 지원 청년",
+        summary_text="충남 천안시 청년 단기숙소 주거 지원",
         eligibility_text="19세~39세 청년",
-        support_text="월세 20만원 지원",
-        search_text="천안 청년 월세 지원금 천안 월세 주거 지원금 청년",
+        support_text="청년 단기숙소 상시 지원",
+        search_text="청년단기숙소 지원사업 천안 단기숙소 주거 지원 청년",
         projection_version="1.1.0",
         updated_at=now,
     )
     session.add_all([r1, doc1])
     session.commit()
 
-    # Golden query 1: "27세 천안 청년 월세 지원"
-    interpreted = parse_search_query(q="27세 천안 청년 월세 지원", db=session)
+    golden_query = "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?"
+    interpreted = parse_search_query(q=golden_query, db=session)
 
     # 1. 지역 '천안'이 지역 조건으로 파싱 및 resolution 되었는지 assert (Blocker 2 해결 검증)
     cond_map = {cond.dimension: cond for cond in interpreted.conditions}
+    assert interpreted.q_raw == golden_query
     assert "region" in cond_map
     assert cond_map["region"].resolution == "resolved"
 

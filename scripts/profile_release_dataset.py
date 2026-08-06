@@ -39,12 +39,17 @@ from collectors.youthcenter import (  # noqa: E402
 
 SOURCE_IDS = (YOUTHCENTER_SOURCE_ID, BOKJIRO_SOURCE_ID)
 DEFAULT_SNAPSHOT_IDS = {
-    YOUTHCENTER_SOURCE_ID: "4580234be1df46cbbe4a700fc4e02630",
-    BOKJIRO_SOURCE_ID: "2e0b8100348544b3b023b27017025218",
+    YOUTHCENTER_SOURCE_ID: "6add34f7aad9456ab0abb19175b7621c",
+    BOKJIRO_SOURCE_ID: "ffa74ef47e6048109f11bf40d1ac5e15",
 }
 DEFAULT_VISIBLE_STATUSES = {None, "open", "scheduled"}
 SEARCH_TERMS = ("월세", "주거", "주거비", "전세", "임대", "청년")
-GOLDEN_TERMS = ("청년", "월세", "지원")
+GOLDEN_QUERY = "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?"
+GOLDEN_TERMS = ("청년", "단기숙소", "지원")
+GOLDEN_EXPECTED_IDENTITY = (
+    YOUTHCENTER_SOURCE_ID,
+    "20260430005400212969",
+)
 CHEONAN_ALIAS = "천안시"
 CHEONAN_CODE = "4413000000"
 CHUNGNAM_ALIAS = "충청남도"
@@ -288,6 +293,17 @@ def _decision_counts(decisions: Sequence[Any]) -> dict[str, Any]:
     }
 
 
+def _golden_confirmed(row: Mapping[str, Any]) -> bool:
+    return (
+        row["age"]["state"] == "match"
+        and row["region"]["state"] == "match"
+        and row["data_quality_status"] == "valid"
+        and row["application_status"] == "open"
+        and row["application_schedule"] == "always"
+        and "housing" in row["categories"]
+    )
+
+
 def build_report(
     *,
     raw_root: Path,
@@ -354,6 +370,8 @@ def build_report(
                 "source_url": program["source_url"],
                 "data_quality_status": program["data_quality_status"],
                 "application_status": program["application_status"],
+                "application_schedule": program["application_schedule"],
+                "categories": list(program["categories"]),
                 "age": {"state": age.state.value, "reason": age.reason.value},
                 "region": {
                     "state": region.state.value,
@@ -367,7 +385,7 @@ def build_report(
         title: count for title, count in title_counts.items() if count > 1
     }
     return {
-        "profile_version": "1.0.0",
+        "profile_version": "1.1.0",
         "offline_only": True,
         "snapshots": {
             source_id: {
@@ -424,17 +442,29 @@ def build_report(
             },
         },
         "golden_query": {
-            "query": "27세 천안 청년 월세 지원",
+            "query": GOLDEN_QUERY,
             "terms": list(GOLDEN_TERMS),
+            "expected_identity": {
+                "source_id": GOLDEN_EXPECTED_IDENTITY[0],
+                "external_id": GOLDEN_EXPECTED_IDENTITY[1],
+            },
             "default_visible_term_matches": sum(
                 _contains_terms(program, GOLDEN_TERMS) for program in visible
             ),
-            "confirmed_matches": sum(
-                row["age"]["state"] == "match"
-                and row["region"]["state"] == "match"
+            "confirmed_matches": sum(_golden_confirmed(row) for row in golden_rows),
+            "expected_policy_confirmed": any(
+                (row["source_id"], row["external_id"])
+                == GOLDEN_EXPECTED_IDENTITY
+                and _golden_confirmed(row)
                 for row in golden_rows
             ),
             "non_mismatch_candidates": golden_rows,
+            "candidate_exposure_allowed": any(
+                (row["source_id"], row["external_id"])
+                == GOLDEN_EXPECTED_IDENTITY
+                and _golden_confirmed(row)
+                for row in golden_rows
+            ),
             "eligibility_claim_allowed": False,
         },
         "identity_and_provenance": {

@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA2 completed (`Gate G4 blocked`)
+- 현재 Slice: IA3 in-progress (`IA3A completed`, `Gate G4 blocked`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -85,10 +85,70 @@ Data 02의 실제 정책 snapshot, Backend 06 검색 API와 Frontend 04 검색 U
 지역·연령이 `unknown`이다. QA·사용성 리뷰어·보고서의 독립 근거도 아직
 없으므로 `v0.1.0` 후보로 승인하지 않는다.
 
+### IA3 - golden query 교체와 Release 1 차단 해소
+
+- 상태: in-progress (`2026-08-06`)
+- 배경: 신청기간이 지난 기존 월세 정책을 현재 신청 가능한 정책의 인수
+  기준으로 사용할 수 없어 golden query를 교체한다. IA2 결과는 당시의
+  실행 이력으로 보존한다.
+
+#### IA3A - 실행 가능한 인수 기준선
+
+- 상태: completed
+- golden query:
+  `천안 사는 27살 청년 단기숙소 지원 받을 수 있나?`
+- 기대 정책: 온통청년 `20260430005400212969`,
+  `청년단기숙소 지원사업`
+- 데이터 기준: `valid`, `open`, `always`, `housing`, 27세·천안 `match`
+- 자동 기준: 기대 정책 20위 이내, unknown 0, 응답 2,000ms 이내
+- control 기준: `단기숙소`와 천안·27세 명시 조건으로 1위, 1,000ms 이내
+- 산출물: `data/release_1_acceptance.json`과
+  `scripts/audit_release_1.py`
+
+현재 snapshot의 offline profile은 기대 정책 1건을 확정했다. 실제 HTTP에서
+control은 1건 중 1위였지만 자연어 query는 495건 중 49위였고 약 9.3초가
+걸렸다. 따라서 Source 추가는 현재 차단 해소안이 아니며 검색 관련성과
+응답시간이 기술 차단사항이다.
+
+#### IA3B - Backend 검색 관련성·성능 보완
+
+- 상태: pending
+- `단기숙소` 같은 구체 term과 `청년`, `지원`, `사는`, `받을 수 있나` 같은
+  일반·대화 term의 후보 확대 기여도를 분리한다.
+- 지역·연령 구조화 조건과 구체 term을 보존하면서 기대 정책을 20위 이내로
+  올리고 2초 예산을 만족한다.
+- 빈 query, validation, pagination, partial·unknown과 기존 parser 계약의
+  회귀가 없는지 PostgreSQL 통합 테스트로 확인한다.
+
+#### IA3C - Data 신청기간·상태 안전성 검토
+
+- 상태: pending
+- 지원 내용의 임의 문장에서 날짜를 추정하지 않고 Source field mapping 근거가
+  있을 때만 구조화 기간으로 승격한다.
+- 현재 golden 정책과 기본 노출 후보의 기간·상태를 재감사하고, 구조화할 수
+  없는 값은 unknown으로 유지하며 자격 확정 표현을 금지한다.
+
+#### IA3D - Frontend 실제 API 재검증
+
+- 상태: pending
+- 수정된 검색 응답으로 기대 정책이 첫 페이지에 노출되는지 확인한다.
+- 조건·근거·출처·수집 시각과 “후보이지 자격 확정이 아님” 안내가 응답
+  계약과 일치하는지 unit·Browser·E2E로 검증한다.
+
+#### IA3E~IA3F - 독립 증거와 Gate G4 재판정
+
+- 상태: pending
+- QA smoke, 사용성 리뷰와 보고서 근거 대조를 동일 snapshot·계약 hash로
+  확보한다.
+- 자동 인수 검사는 기술 판정만 내리며 독립 증거 없이 Gate G4를 `pass`로
+  만들지 않는다.
+- 모든 기술 기준과 독립 근거가 충족된 뒤 `v0.1.0` 후보를 재판정한다.
+
 ## 검증 계획
 
 ```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -p "test_*.py" -v
+.\.venv\Scripts\python.exe -B scripts\audit_release_1.py --base-url http://127.0.0.1:8000
 $env:TEST_DATABASE_URL = '<dedicated-postgresql-test-url>'
 .\.venv\Scripts\python.exe -B -m pytest backend/tests -q
 npm.cmd test
@@ -112,12 +172,13 @@ git diff --check
 
 - `2026-08-06` snapshot은 이전 DT4보다 온통청년 3건이 줄어 외부 데이터가
   시간에 따라 변함을 재확인했다.
-- golden query의 confirmed 정책은 여전히 0건이다. 첫 후보의 지원 내용에는
+- IA2 월세 golden query의 confirmed 정책은 0건이었고 현재 인수 기준에서
+  폐기했다. 첫 후보의 지원 내용에는
   `2026-03-30 ~ 2026-05-29` 신청기간이 있으나 구조화 신청 기간·상태는
   `null`이라 최신 수집만으로 신청 가능성을 설명할 수 없다.
-- 현재 검색은 여러 미해석 term 중 하나만 일치해도 후보가 될 수 있어 일반적인
-  `지원` term이 결과를 넓힌다. term 결합·score 의미 변경은 Gate G1 계약 보완
-  결정이 필요하므로 IA1에서 임의 변경하지 않는다.
+- 교체한 golden 정책은 데이터상 확정됐지만 현재 검색이 일반 term 하나의
+  일치만으로 후보를 넓혀 49위·약 9.3초다. IA3B에서 관련성·성능을 함께
+  보완하기 전 Gate G4를 통과시키지 않는다.
 - QA·사용성 리뷰어·보고서 근거가 아직 없다. Gate G4는 `blocked`로
   판정했으며, 차단사항 해소·독립 재검증 전에는 재판정하지 않는다.
 

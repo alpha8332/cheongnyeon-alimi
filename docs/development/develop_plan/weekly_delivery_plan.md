@@ -146,10 +146,11 @@ completed
 - 다음 golden query의 실제 기대 정책과 이유를 snapshot 기준으로 기록한다.
 
 ```text
-천안 사는 27살 청년 월세 지원 받을 수 있나?
+천안 사는 27살 청년 단기숙소 지원 받을 수 있나?
 ```
 
-- 지원 Source에 기대 정책이 없으면 Source 추가 또는 릴리스 범위를 결정한다.
+- 기대 정책 identity와 순위·unknown·응답시간 예산을 실행 가능한 acceptance
+  계약으로 고정하고 actual snapshot에서 재검증한다.
 - 단위·통합·Browser 테스트와 `python scripts/validate_docs.py`를 실행한다.
 
 ### 보고서·리뷰어·QA
@@ -166,9 +167,10 @@ completed
 [Release 1 완료 조건](release_roadmap.md#릴리스-완료-조건)을 모두 충족한
 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보로 삼는다.
 
-`2026-08-06` Gate G4는 golden query confirmed 정책 0건과 독립
-QA·사용성 리뷰·보고서 근거 부재로 `blocked`다. Integration 04의 차단사항을
-해소하고 재검증하기 전에는 4주차 기능으로 완료 범위를 대체하지 않는다.
+`2026-08-06` Gate G4는 교체한 golden 정책이 confirmed 1건이어도 자연어
+검색 49위·약 9.3초이며 독립 QA·사용성 리뷰·보고서 근거가 없어 `blocked`다.
+Integration 04의 관련성·성능 차단사항을 해소하고 재검증하기 전에는 4주차
+기능으로 완료 범위를 대체하지 않는다.
 
 ## 4주차 - 사용자·관리자 핵심 기능
 

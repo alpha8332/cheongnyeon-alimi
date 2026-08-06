@@ -4,7 +4,7 @@
 
 - 상태: in-progress
 - 작업일: `2026-08-06`
-- 영역: Team Leader - Integration, DT5 Gate G2·G3와 DT6 Gate G4
+- 영역: Team Leader - Integration, DT5 Gate G2·G3, DT6 Gate G4와 DT7 IA3
 - 브랜치: `feature/data/release-dataset-bootstrap`
 - 계획: [Integration 04 Release 1 Acceptance](../../develop_plan/integration/04_release_1_acceptance.md)
 - 병합 대상: Frontend `b37752a1bb8bfe0043e9de8908de6529309c36ee`,
@@ -20,6 +20,7 @@
 - IA0 FE·BE 비커밋 병합과 로컬 환경 차이 확인
 - IA1 snapshot 복구, PostgreSQL 적재, HTTP·Browser 통합과 결함 수정
 - IA2 golden query·Release 1 판정과 차단사항·재개 조건 기록
+- IA3 현재 신청 가능한 golden query 교체와 실행 가능한 재인수 기반 구축
 
 ## Slice 진행 현황
 
@@ -28,6 +29,8 @@
 | IA0 | completed | FE fast-forward, BE `--no-commit` 병합과 로컬 Runtime 부재 확인 |
 | IA1 / DT5 | completed | Gate G2·G3 실제 DB → API → UI 검증 통과 |
 | IA2 / DT6 | completed | exact golden query 검증, Gate G4 `blocked` |
+| IA3A / DT7 | completed | 단기숙소 golden 계약·자동 감사 기준선, 기술 차단 구체화 |
+| IA3B~F / DT7 | pending | 관련성·성능 수정, FE·독립 검증, Gate G4 재판정 |
 
 ## 구현 내용
 
@@ -95,9 +98,43 @@ Gate G4 판정은 `blocked`다. confirmed 정책 부재는 DT6 기준의 필수 
 조건이며, QA smoke·사용성 리뷰·보고서 대조의 독립 증거도 저장소에 없다.
 Team Leader의 Browser·E2E 결과로 이 세 역할의 승인을 대신하지 않았다.
 
+### DT7 golden query 교체와 자동 재인수 기반
+
+신청기간이 종료된 기존 `청년월세 지원사업`은 현재 신청 가능한 정책을 찾는
+golden 대상으로 부적합하다는 결정에 따라 IA2 증거는 역사로 보존하고 현재
+인수 query를 다음과 같이 교체했다.
+
+```text
+천안 사는 27살 청년 단기숙소 지원 받을 수 있나?
+```
+
+기대 정책은 온통청년 `20260430005400212969`의
+`청년단기숙소 지원사업`이다. 현재 snapshot profile에서 이 정책은
+`valid/open/always/housing`, 27세·천안 `match`, unknown 0으로 확인됐다.
+따라서 후보 노출은 허용하지만 이 결과만으로 사용자 자격을 확정하지 않는다.
+
+동일 PostgreSQL·HTTP 기준 결과는 다음과 같다.
+
+| 시나리오 | 결과 | 자동 기준 | 판정 |
+| --- | ---: | ---: | --- |
+| 자연어 golden, limit 100 | 495건, 기대 정책 49위, 약 9.3초 | 20위 이내·2초 이내 | blocked |
+| `단기숙소` + 천안·27세 control | 1건, 기대 정책 1위, 약 0.1초 | 1위·1초 이내 | pass |
+
+이 차이로 데이터·Source 부재가 아니라 일반·대화 term의 OR 후보 확대,
+정렬과 그에 따른 응답시간을 IA3B의 차단사항으로 좁혔다.
+`data/release_1_acceptance.json`은 snapshot과 기대 정책, 순위·unknown·응답시간
+예산을 기계 판독 가능한 계약으로 고정한다. `scripts/audit_release_1.py`는 실제
+HTTP 결과를 민감정보 없이 JSON 증거로 만들며, 기술 기준이 모두 통과해도
+QA·사용성 리뷰어·보고서 근거가 없으면 Gate G4를 항상 `blocked`로 둔다.
+
 ## 주요 변경 파일
 
 - `backend/tests/test_postgresql_policy_search_integration.py`
+- `data/release_1_acceptance.json`
+- `scripts/audit_release_1.py`
+- `scripts/profile_release_dataset.py`
+- `tests/test_release_1_acceptance_audit.py`
+- `tests/test_release_dataset_profile.py`
 - `frontend/src/pages/user/PolicySearchPage.tsx`
 - `frontend/e2e/policy-search-audit.spec.ts`
 - `frontend/.gitignore`
@@ -143,8 +180,14 @@ Team Leader의 Browser·E2E 결과로 이 세 역할의 승인을 대신하지 �
 | DT6 Frontend build·lint | 통과 |
 | DT6 실제 API Playwright | 10건 통과 |
 | DT6 인앱 Browser | exact query 48건·Chip·경고·상세 출처·수집 시각 확인 |
+| DT7 offline profile | 3,156건, 단기숙소 기대 정책 confirmed 1건 |
+| DT7 자연어 acceptance | 495건·49위·약 9.3초, 순위·2초 예산 차단 |
+| DT7 명시 조건 control | 1건·1위·약 0.1초, 기술 기준 통과 |
+| DT7 Data 전체 unittest | 122건 통과 |
+| DT7 Backend 전체 PostgreSQL pytest | 114건 통과, 기존 deprecation warning 2건 |
+| DT7 문서 검증 | 통과 |
 
-golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
+폐기한 IA2 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,
 Profile의 confirmed match는 0건이다. 실제 적용 가능성을 단정하지 않는다.
 
@@ -157,10 +200,10 @@ package 설치가 성공했다. `npm audit`은 high 3건을 보고했으며 자�
 
 ### Gate G4 차단사항과 재개 조건
 
-- Backend·Team Leader가 일반 term OR 후보 확대와 score 의미를 결정하고 actual
-  snapshot 정확도를 재검증한다.
-- Data·Team Leader가 confirmed golden 정책 부재를 허용할지, Source 범위를
-  추가할지 결정한다. 현재 계획상 결정 전까지 릴리스 차단이다.
+- Backend·Team Leader가 일반 term OR 후보 확대와 score 의미를 보완하고 새
+  acceptance 계약으로 20위·2초 예산을 재검증한다.
+- 새 golden의 기대 정책은 현 Source에서 confirmed 1건이므로 Source 추가
+  결정은 현재 차단사항에서 제외한다.
 - 복지로 지원 내용의 신청기간 텍스트를 구조화 기간·상태로 안전하게 승격할
   수 있는지 Data Source mapping 범위에서 검토한다.
 - QA smoke, 사용성 리뷰와 보고서 근거를 독립적으로 확보한 뒤 같은 snapshot과

@@ -6,6 +6,7 @@ from scripts.profile_release_dataset import (
     _contains_terms,
     _counter,
     _default_visible,
+    _golden_confirmed,
 )
 
 
@@ -45,6 +46,20 @@ class ReleaseDatasetProfileTests(unittest.TestCase):
 
         self.assertTrue(_contains_terms(program, ("청년", "월세", "지원")))
         self.assertFalse(_contains_terms(program, ("전세",)))
+
+    def test_golden_confirmation_requires_open_housing_age_and_region(self) -> None:
+        row = {
+            "data_quality_status": "valid",
+            "application_status": "open",
+            "application_schedule": "always",
+            "categories": ["housing"],
+            "age": {"state": "match"},
+            "region": {"state": "match"},
+        }
+
+        self.assertTrue(_golden_confirmed(row))
+        row["application_status"] = None
+        self.assertFalse(_golden_confirmed(row))
 
 
 if __name__ == "__main__":
