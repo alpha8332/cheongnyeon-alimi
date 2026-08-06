@@ -7,7 +7,7 @@
 - 대상 Release: `v0.1.0`
 - 담당 영역: Team Leader - Integration
 - 작업 브랜치: `feature/data/release-dataset-bootstrap`
-- 현재 Slice: IA3 in-progress (`IA3A completed`, `Gate G4 blocked`)
+- 현재 Slice: IA3B completed (`Gate G4 blocked`)
 - 개발 기록:
   [Release 1 Acceptance 개발 기록](../../development_notes/integration/release_1_acceptance.md)
 
@@ -112,13 +112,19 @@ control은 1건 중 1위였지만 자연어 query는 495건 중 49위였고 약 
 
 #### IA3B - Backend 검색 관련성·성능 보완
 
-- 상태: pending
+- 상태: completed (`2026-08-06`)
 - `단기숙소` 같은 구체 term과 `청년`, `지원`, `사는`, `받을 수 있나` 같은
   일반·대화 term의 후보 확대 기여도를 분리한다.
 - 지역·연령 구조화 조건과 구체 term을 보존하면서 기대 정책을 20위 이내로
   올리고 2초 예산을 만족한다.
 - 빈 query, validation, pagination, partial·unknown과 기존 parser 계약의
   회귀가 없는지 PostgreSQL 통합 테스트로 확인한다.
+
+구현 결과 `단기숙소`를 housing과 자연어 keyword로 함께 보존하고 대화형
+filler를 제외했다. 구체 term은 term 간 AND·검색 필드 간 OR, 일반 term만
+있는 탐색은 OR fallback을 사용한다. actual snapshot에서 자연어와 control
+모두 1건 중 1위였고, cold 317.04ms·109.92ms와 warm 5회 최대
+91.89ms·109.16ms로 예산을 충족했다. 공개 DTO와 4단계 최종 정렬은 유지했다.
 
 #### IA3C - Data 신청기간·상태 안전성 검토
 
@@ -176,9 +182,9 @@ git diff --check
   폐기했다. 첫 후보의 지원 내용에는
   `2026-03-30 ~ 2026-05-29` 신청기간이 있으나 구조화 신청 기간·상태는
   `null`이라 최신 수집만으로 신청 가능성을 설명할 수 없다.
-- 교체한 golden 정책은 데이터상 확정됐지만 현재 검색이 일반 term 하나의
-  일치만으로 후보를 넓혀 49위·약 9.3초다. IA3B에서 관련성·성능을 함께
-  보완하기 전 Gate G4를 통과시키지 않는다.
+- 교체한 golden의 관련성·성능 기술 기준은 IA3B에서 통과했다. 다만
+  신청기간 안전성, Frontend 실제 API와 QA·사용성 리뷰어·보고서 독립 증거가
+  남아 있어 Gate G4는 계속 `blocked`다.
 - QA·사용성 리뷰어·보고서 근거가 아직 없다. Gate G4는 `blocked`로
   판정했으며, 차단사항 해소·독립 재검증 전에는 재판정하지 않는다.
 

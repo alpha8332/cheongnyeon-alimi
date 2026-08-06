@@ -336,10 +336,11 @@ Team Leader가 다음 증거를 확인한다.
 - 보고서 담당의 데이터·검색·검증 근거
 - 문서 검증, 비밀·Runtime 산출물과 Git 상태
 
-`2026-08-06` 판정은 `blocked`다. 새 기대 정책은 confirmed 1건이지만 exact
-자연어 query에서 495건 중 49위·약 9.3초이고 QA·사용성 리뷰어·보고서 독립
-근거도 없다. 검색 관련도·성능과 신청기간 안전성 차단사항을 해소하고 같은
-계약으로 재검증하기 전에는 `v0.1.0` 후보로 진행하지 않는다.
+`2026-08-06` 판정은 `blocked`다. DT7B에서 새 기대 정책은 자연어·control
+모두 1건 중 1위이며 cold 317.04ms·109.92ms로 기술 acceptance를 통과했다.
+다만 신청기간 안전성, Frontend 실제 API와 QA·사용성 리뷰어·보고서 독립
+근거가 남아 있어 같은 계약의 전체 증거가 모이기 전에는 `v0.1.0` 후보로
+진행하지 않는다.
 
 모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
 
@@ -449,7 +450,7 @@ DT1에서 확인한 `R1-SEARCH-DATA-SEMANTICS`는 Integration 03과 DT2·Gate G1
 - [x] 실제 DB → FastAPI → React E2E
 - [x] 폐기한 월세 golden query와 변형·빈 결과·실패 시나리오 기록
 - [x] 신청 가능한 단기숙소 golden 기대 정책·자동 acceptance 기준 고정
-- [ ] 단기숙소 자연어 golden 순위·응답시간 기준 통과
+- [x] 단기숙소 자연어 golden 순위·응답시간 기준 통과
 - [x] Browser·console 확인
 - [x] 관련 단위·통합·Frontend 테스트 통과
 - [x] 문서 검증과 `git diff --check` 통과

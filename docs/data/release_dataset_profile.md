@@ -120,10 +120,11 @@ path에 있는 정책 규칙만 match로 보는 계약 결과다. 천안시·다
 | 온통청년 / `20260430005400212969` | 청년단기숙소 지원사업 | open·always | match | match | valid·housing |
 
 기본 노출 중 `청년`, `단기숙소`, `지원`을 모두 포함하는 정책과 모든 필수
-조건이 confirmed인 정책은 각각 1건이다. 현재 DB·API의 명시 조건 control은
-이 정책을 1건 중 1위로 반환하지만 자연어 문장은 일반 term의 OR 후보 확대
-때문에 495건 중 49위이며 약 9.3초가 걸렸다. 데이터·Source 부재가 아니라
-검색 관련성과 성능이 Release 1 차단사항이다.
+조건이 confirmed인 정책은 각각 1건이다. DT7A 기준 자연어 문장은 일반
+term의 OR 후보 확대로 495건 중 49위·약 9.3초였지만, DT7B의 구체 term
+anchor 적용 뒤 자연어와 명시 조건 control 모두 1건 중 1위가 됐다. cold
+실행은 각각 317.04ms·109.92ms, warm 5회 최대는 91.89ms·109.16ms로
+Release 1 응답시간 예산을 통과했다.
 
 후보 노출은 허용하지만 연령·지역·상태 match만으로 실제 자격을 확정하지
 않는다. 신청 전 원문과 세부 요건을 확인하도록 안내해야 한다.
@@ -149,8 +150,9 @@ confirmed mismatch를 피했지만 둘 다 연령·지역·상태가 unknown인 
 - `application_status=null` 462건을 open으로 바꾸지 않는다.
 - 0~0 placeholder 631건은 연령 unknown이며 DB 재적재 후 0~0 structured
   bound가 남아 있으면 안 된다.
-- 새 golden의 기대 정책은 confirmed 1건이다. 자연어 query에서 20위 이내와
-  2초 예산을 충족해야 하며 명시 조건 control은 1위를 유지해야 한다.
+- 새 golden의 기대 정책은 confirmed 1건이며 DT7B 자연어 query와 명시 조건
+  control에서 모두 1위를 확인했다. 이후 변경도 같은 acceptance 계약으로
+  순위·응답시간을 회귀 검증한다.
 - 폐기한 월세 query의 두 복지로 후보는 age·region·status unknown을 response
   reason에 계속 보존한다.
 - 제목 중복이 있으므로 identity는 `(source_id, external_id)`를 사용한다.

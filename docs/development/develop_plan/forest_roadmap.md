@@ -34,9 +34,9 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 | ---: | --- | --- | --- | --- | --- | --- |
 | 1 | [Data 02 Release Dataset Bootstrap](data/02_release_dataset_bootstrap.md) | Data | Backend·Frontend 소비 검토 | completed | 실제 정책 3,159건 bootstrap, 멱등 재실행, 품질 Profile과 안전한 검색 사례 인계 | Data 01, Integration 02, DT2부터 Integration 03 |
 | 2 | [Integration 03 Policy Search Data Foundation](integration/03_policy_search_data_foundation.md) | Data·Backend 공동 | Frontend 소비·Team Leader Gate | completed | PSF0~PSF8 Source 중립 계약·지역 기준정보·mapping·원자적 적재·판정·소비·성능·actual 재생과 전체 Gate 완료 | Data 02 DT1 |
-| 3 | [Backend 06 Policy Search](backend/06_policy_search.md) | Backend | Data 계약·Frontend 소비 검토 | in-progress | 자연어 검색 해석, 구조화 조건, PostgreSQL 검색·관련도 정렬, 검색 이유·미확인 조건과 API 계약 | Integration 03 판정 primitive, Data 02 DT2와 Gate G1 |
+| 3 | [Backend 06 Policy Search](backend/06_policy_search.md) | Backend | Data 계약·Frontend 소비 검토 | in-progress (`DT7B 완료`) | 구체 term anchor·일반어 fallback, 실제 golden 1위·2초 예산과 전체 PostgreSQL 회귀 통과 | Integration 03 판정 primitive, Data 02 DT2와 Gate G1 |
 | 4 | [Frontend 04 Policy Search](frontend/04_policy_search.md) | Frontend | Backend API 검토 | approved | 자연어 원문 전달, Backend 해석 조건·검색 이유·미확인 조건 표시, 조건 수정·빈 결과·pagination | Integration 03·Data 02 DT2·Gate G1, 실제 API 연결은 Backend endpoint 대기 |
-| 5 | [Integration 04 Release 1 Acceptance](integration/04_release_1_acceptance.md) | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | in-progress (`IA3A 완료`, `G4 blocked`) | 새 golden 데이터 confirmed 1, 자연어 49위·약 9.3초와 독립 근거 부재로 릴리스 차단 | Data 02, Integration 03, Backend 06, Frontend 04 |
+| 5 | [Integration 04 Release 1 Acceptance](integration/04_release_1_acceptance.md) | Team Leader - Integration | Data·Backend·Frontend, 리뷰어 사전 확인, QA smoke | in-progress (`IA3B 완료`, `G4 blocked`) | golden 기술 acceptance 통과, 기간·FE 실제 API·독립 근거 부재로 릴리스 차단 | Data 02, Integration 03, Backend 06, Frontend 04 |
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
 API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.

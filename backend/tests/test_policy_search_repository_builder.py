@@ -2,7 +2,10 @@ import pytest
 from datetime import datetime, timezone
 from app.models.policy import Policy
 from app.models.policy_search import PolicySearchDocument
-from app.repositories.policy_search import PolicySearchRepository
+from app.repositories.policy_search import (
+    PolicySearchRepository,
+    _candidate_search_terms,
+)
 from app.services.policy_search_parser import parse_search_query
 
 
@@ -176,3 +179,40 @@ def test_repository_search_policies_unmatched_term_returns_zero(db, sample_polic
 
     assert total == 0
     assert items == []
+
+
+def test_specific_anchor_excludes_generic_terms_from_candidate_expansion():
+    terms, require_all = _candidate_search_terms(
+        ["청년", "지원", "단기숙소"],
+        None,
+    )
+
+    assert terms == ["단기숙소"]
+    assert require_all is True
+
+
+def test_generic_only_query_preserves_discovery_fallback():
+    terms, require_all = _candidate_search_terms(["청년", "지원"], None)
+
+    assert terms == ["청년", "지원"]
+    assert require_all is False
+
+
+def test_repository_generic_only_query_keeps_or_discovery(db, sample_policies):
+    repo = PolicySearchRepository(db)
+    interpreted = parse_search_query(q="청년 지원", db=db)
+
+    items, total = repo.search_policies(interpreted, page=1, limit=10)
+
+    assert total == 2
+    assert {item.policy.id for item in items} == {
+        sample_policies[0].id,
+        sample_policies[1].id,
+    }
+
+
+def test_explicit_generic_keyword_is_still_a_required_anchor():
+    terms, require_all = _candidate_search_terms(["청년"], "지원")
+
+    assert terms == ["지원"]
+    assert require_all is True

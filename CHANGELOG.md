@@ -23,6 +23,11 @@
 
 ### Fixed
 
+- 자연어 정책 검색에서 대화형·일반 term의 OR 일치가 결과를 과도하게
+  넓히던 문제를 구체 term anchor로 수정해 Release 1 golden을 1위·2초
+  이내로 안정화
+  ([개발 기록](docs/development/development_notes/integration/release_1_acceptance.md))
+
 - Backend를 문서화된 `backend` 작업 디렉터리에서 실행할 때 검색 판정
   서비스가 저장소 루트 Data 패키지를 요구하던 import 회귀를 제거하고,
   Frontend Mock의 welfare 기대값을 현재 canonical Seed와 동기화

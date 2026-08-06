@@ -30,7 +30,8 @@
 | IA1 / DT5 | completed | Gate G2·G3 실제 DB → API → UI 검증 통과 |
 | IA2 / DT6 | completed | exact golden query 검증, Gate G4 `blocked` |
 | IA3A / DT7 | completed | 단기숙소 golden 계약·자동 감사 기준선, 기술 차단 구체화 |
-| IA3B~F / DT7 | pending | 관련성·성능 수정, FE·독립 검증, Gate G4 재판정 |
+| IA3B / DT7 | completed | 구체 term anchor, golden 1위·응답시간 예산 통과 |
+| IA3C~F / DT7 | pending | 기간 안전성, FE·독립 검증, Gate G4 재판정 |
 
 ## 구현 내용
 
@@ -127,9 +128,36 @@ golden 대상으로 부적합하다는 결정에 따라 IA2 증거는 역사로 
 HTTP 결과를 민감정보 없이 JSON 증거로 만들며, 기술 기준이 모두 통과해도
 QA·사용성 리뷰어·보고서 근거가 없으면 Gate G4를 항상 `blocked`로 둔다.
 
+### DT7B 검색 관련성·성능 보완 결과
+
+Parser는 `단기숙소`를 `housing` category와 `source="q"` keyword로 함께
+보존하고 `사는`, `받을`, `수`, `있나`를 대화형 filler로 제외한다.
+Repository는 구체 term이 있으면 term 간 AND, search projection·제목·요약
+필드 간 OR로 후보를 제한한다. 일반 term만 있는 검색은 기존 OR 발견 흐름을
+유지하며 explicit keyword는 일반어여도 항상 후보 anchor로 사용한다.
+
+동일 actual snapshot 3,156건의 재검증 결과는 다음과 같다.
+
+| 실행 | 자연어 golden | 명시 조건 control | 기술 판정 |
+| --- | ---: | ---: | --- |
+| cold acceptance | 1건·1위·317.04ms | 1건·1위·109.92ms | pass |
+| warm 5회 최대 | 1건·1위·91.89ms | 1건·1위·109.16ms | pass |
+
+기존 495건·49위·약 9.3초와 비교해 후보 확대와 N개 정책별 평가 비용이
+제거됐다. `score` 최종 정렬, nullable verdict, partial·unknown, pagination,
+explicit override와 `PolicyRead` 응답 DTO는 유지했다. 기술 acceptance는
+`pass`지만 자동 도구는 독립 증거를 승인하지 않으므로 Gate G4는
+`technical-pass-evidence-pending`, 최종 `blocked`를 유지한다.
+
 ## 주요 변경 파일
 
 - `backend/tests/test_postgresql_policy_search_integration.py`
+- `backend/app/services/policy_search_parser.py`
+- `backend/app/repositories/policy_search.py`
+- `backend/app/api/v1/endpoints/policy_search.py`
+- `backend/tests/test_policy_search_parser.py`
+- `backend/tests/test_policy_search_repository_builder.py`
+- `backend/tests/test_policy_search_api_endpoint.py`
 - `data/release_1_acceptance.json`
 - `scripts/audit_release_1.py`
 - `scripts/profile_release_dataset.py`
@@ -186,6 +214,12 @@ QA·사용성 리뷰어·보고서 근거가 없으면 Gate G4를 항상 `blocke
 | DT7 Data 전체 unittest | 122건 통과 |
 | DT7 Backend 전체 PostgreSQL pytest | 114건 통과, 기존 deprecation warning 2건 |
 | DT7 문서 검증 | 통과 |
+| DT7B parser·Repository·API 집중 pytest | 18건 통과 |
+| DT7B PostgreSQL golden 통합 | 3건 통과 |
+| DT7B Backend 전체 PostgreSQL pytest | 119건 통과, 기존 warning 2건 |
+| DT7B Frontend API 소비 unit | 45건 통과 |
+| DT7B Frontend build·lint | 통과 |
+| DT7B actual acceptance | cold 317.04/109.92ms, warm 최대 91.89/109.16ms, 모두 1위 |
 
 폐기한 IA2 golden query `27세 천안 청년 월세 지원`은 실제 API에서 46건의 후보를
 반환했다. 첫 후보 `청년월세 지원사업`은 연령·지역 unknown으로 표시됐고,
@@ -200,8 +234,8 @@ package 설치가 성공했다. `npm audit`은 high 3건을 보고했으며 자�
 
 ### Gate G4 차단사항과 재개 조건
 
-- Backend·Team Leader가 일반 term OR 후보 확대와 score 의미를 보완하고 새
-  acceptance 계약으로 20위·2초 예산을 재검증한다.
+- Backend 관련성·성능 차단사항은 해소했다. Frontend가 새 keyword 조건과
+  첫 페이지 결과를 실제 API·Browser에서 재검증해야 한다.
 - 새 golden의 기대 정책은 현 Source에서 confirmed 1건이므로 Source 추가
   결정은 현재 차단사항에서 제외한다.
 - 복지로 지원 내용의 신청기간 텍스트를 구조화 기간·상태로 안전하게 승격할

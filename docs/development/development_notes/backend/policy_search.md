@@ -2,13 +2,14 @@
 
 ## 작업 정보
 
-- 기간: 2026-08-04
+- 기간: 2026-08-04, DT7B follow-up 2026-08-06
 - 담당 영역: Backend
 - 상태: in-progress
 - 브랜치: `feature/backend/policy-search-impl`
+- DT7B 통합 브랜치: `feature/data/release-dataset-bootstrap`
 - 선행 Forest: [Policy Search Data Foundation](../../develop_plan/integration/03_policy_search_data_foundation.md)
 - 관련 계획: [Backend 06 Policy Search Forest 개발 계획](../../develop_plan/backend/06_policy_search.md)
-- 현재 Slice: in-progress (Refinement for Golden Queries & SQL Query Builder)
+- 현재 Slice: DT7B completed (`2026-08-06`)
 
 ## 목적
 
@@ -32,6 +33,7 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
 | **B2** | PostgreSQL 검색 Repository 및 Query Builder 구현 | completed | `PolicySearchRepository.search_policies` 및 4단계 정렬 테스트 통과 (3 passed) |
 | **B3** | Policy Search API Endpoint 및 DTO 구현 | completed | `GET /api/v1/policies/search` 엔드포인트 및 HTTP 400/422/200 OK 테스트 통과 (4 passed) |
 | **B4** | PostgreSQL 통합, 정렬/페이징 & API 호환성 검증 | completed | PostgreSQL DB 통합 및 기존 API 회귀 테스트 통과 (110 passed/skipped) |
+| **DT7B** | Release 1 golden 관련성·성능 보완 | completed (`2026-08-06`) | 실제 3,156건에서 기대 정책 1위, cold 317.04ms·warm 최대 91.89ms |
 
 ## 구현 내용
 
@@ -75,10 +77,29 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
    - Alembic 마이그레이션 적용 및 `import_region_reference`로 행정구역 데이터 세팅 후 `search_policies` 전체 엔드투엔드 흐름 검증.
    - 기존 목록 API (`PolicyRepository.list`) 및 상세 API (`PolicyRepository.get_by_id`) 호환성 및 회귀 검증 완료.
 
+### Slice DT7B - 구체 term anchor와 Release 1 성능
+
+- `단기숙소`를 `housing` category와 자연어 `keyword`로 함께 해석해 구체
+  검색 의미가 category 구조화 과정에서 사라지지 않게 했다.
+- `사는`, `받을`, `수`, `있나` 등 대화형 filler를 미해석·후보 term에서
+  제외했다.
+- 구체 term이 있으면 term 간 AND, search projection·제목·요약 필드 간 OR로
+  후보를 제한한다. `청년`, `지원`, `정책`, `사업` 등 일반 term만 있는
+  탐색은 기존 OR 발견 흐름을 유지한다.
+- 4단계 최종 정렬, nullable verdict, partial·unknown, explicit override와
+  공개 DTO는 변경하지 않았다.
+- actual snapshot acceptance 첫 실행은 자연어 1건·1위·317.04ms, control
+  1건·1위·109.92ms였다. 이어진 warm 5회는 자연어 최대 91.89ms, control
+  최대 109.16ms로 계약의 2초·1초 예산을 모두 만족했다.
+
 ## 주요 변경 파일
 
-- `backend/app/api/v1/endpoints/policies.py`: `GET /search` API 라우터 엔드포인트 핸들러 추가
+- `backend/app/api/v1/endpoints/policy_search.py`: `GET /search` API 라우터와 filler-only 400 경계
 - `backend/app/repositories/policy_search.py`: `search_policies` Repository Query Builder 메서드
+- `backend/app/services/policy_search_parser.py`: 단기숙소 category·keyword 해석과 대화형 filler 제외
+- `backend/tests/test_policy_search_parser.py`: golden 자연어 해석 회귀 테스트
+- `backend/tests/test_policy_search_repository_builder.py`: 구체 anchor·일반어 fallback 테스트
+- `backend/tests/test_policy_search_api_endpoint.py`: filler-only 검색 400 회귀 테스트
 - `backend/tests/test_policy_search_api_endpoint.py`: API Endpoint HTTP 응답 통합 테스트
 - `backend/tests/test_postgresql_policy_search_integration.py`: PostgreSQL E2E 통합 테스트
 - `docs/development/development_notes/backend/policy_search.md`: Backend 06 개발 기록 (최종 완료)
@@ -94,9 +115,15 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 구현을
 
 - `python -m pytest tests/test_policy_search_parser.py`: 4 passed (100% 통과)
 - `python -m pytest`: 90 passed, 12 skipped (전체 백엔드 테스트 스위트 회귀 없음)
+- DT7B parser·Repository·API 집중 테스트: 18건 통과
+- DT7B 전용 PostgreSQL golden 통합 테스트: 3건 통과
+- DT7B 전체 Backend PostgreSQL 테스트: 119건 통과, 기존 deprecation warning 2건
+- Frontend API 소비 unit 45건, build와 lint 통과
+- actual snapshot acceptance: cold 자연어 317.04ms·control 109.92ms,
+  warm 5회 자연어 최대 91.89ms·control 최대 109.16ms, 모두 1건 중 1위
 
 ## 남은 작업
 
-- **Slice B2**: PostgreSQL 검색 Repository 및 4단계 결정적 정렬 Builder 구현
-- **Slice B3**: Policy Search API Endpoint (`GET /api/v1/policies/search`) 핸들러 구현
-- **Slice B4**: PostgreSQL 통합 검증 및 전체 회귀 테스트
+- Backend 06과 DT7B의 기술 완료 기준은 충족했다.
+- Frontend 실제 API·Browser 재검증, Data 신청기간 안전성 감사와 독립
+  QA·사용성·보고서 증거는 Integration 04의 DT7C~F에서 수행한다.

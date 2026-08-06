@@ -87,6 +87,7 @@ AMBIGUOUS_REGION_CANDIDATES: dict[str, list[str]] = {
 }
 
 CATEGORY_KEYWORD_MAP: dict[str, PolicyCategory] = {
+    "단기숙소": "housing",
     "주거": "housing",
     "월세": "housing",
     "전세": "housing",
@@ -145,6 +146,23 @@ STATUS_KEYWORD_MAP: dict[str, ApplicationStatus] = {
     "마감됨": "closed",
 }
 
+QUERY_FILLER_TERMS = frozenset(
+    {
+        "사는",
+        "거주하는",
+        "받는",
+        "받을",
+        "수",
+        "있나",
+        "있나요",
+        "있어",
+        "있을까",
+        "알려줘",
+        "찾아줘",
+        "추천해줘",
+    }
+)
+
 
 def parse_search_query(
     *,
@@ -163,6 +181,7 @@ def parse_search_query(
     override_fields: list[SearchDimension] = []
     conditions: list[ConditionItem] = []
     consumed_tokens: list[str] = []
+    parsed_category_token: str | None = None
 
     # 명시적 파라미터 유무 체크 및 override
     explicit_override_keys: set[SearchDimension] = set()
@@ -283,6 +302,7 @@ def parse_search_query(
         parsed_cat = _extract_category_from_query(q_clean_normalized)
         if parsed_cat is not None:
             cat_token, cat_val = parsed_cat
+            parsed_category_token = cat_token
             consumed_tokens.append(cat_token)
             conditions.append(
                 ConditionItem(
@@ -293,6 +313,21 @@ def parse_search_query(
                     candidates=[],
                 )
             )
+
+    # 구체 카테고리 표현은 구조화 category와 함께 text anchor로 보존한다.
+    if (
+        parsed_category_token is not None
+        and "keyword" not in explicit_override_keys
+    ):
+        conditions.append(
+            ConditionItem(
+                dimension="keyword",
+                value=parsed_category_token,
+                source="q",
+                resolution="resolved",
+                candidates=[],
+            )
+        )
 
     # 6-4. 자연어 지역 파싱 (DB 기반 동적 해석 적용)
     if "region" not in explicit_override_keys:
@@ -317,6 +352,8 @@ def parse_search_query(
     for token in tokens:
         clean_token = token.strip(",.!?~[]()")
         if not clean_token:
+            continue
+        if clean_token in QUERY_FILLER_TERMS:
             continue
         # 이미 파싱에 소비된 단어인지 확인
         is_consumed = False

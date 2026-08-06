@@ -71,10 +71,11 @@ PR 승인, 사용성 리뷰, QA 통과와 팀장의 릴리스 결정은 서로 �
 
 ### 현재 판정
 
-`2026-08-06` Gate G4는 `blocked`다. 교체한 golden 기대 정책은 actual
-snapshot에서 confirmed 1건이지만 자연어 검색 49위·약 9.3초로 순위·응답시간
-기준을 넘었고 QA·사용성 리뷰어·보고서 독립 근거도 없다. 상세 근거와 재개
-조건은 [Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
+`2026-08-06` Gate G4는 `blocked`다. DT7B actual snapshot에서 교체한 golden
+기대 정책은 자연어·control 모두 1건 중 1위이고 cold 317.04ms·109.92ms로
+기술 기준을 통과했다. 신청기간 안전성, Frontend 실제 API와
+QA·사용성 리뷰어·보고서 독립 근거가 아직 없다. 상세 근거와 재개 조건은
+[Release 1 Acceptance 개발 기록](../development_notes/integration/release_1_acceptance.md)을
 따른다.
 
 ### 목표

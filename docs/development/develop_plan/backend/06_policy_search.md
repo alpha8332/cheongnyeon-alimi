@@ -4,10 +4,10 @@
 
 - 번호: Backend 06
 - 담당 영역: Backend
-- 상태: approved
+- 상태: in-progress
 - 승인: Gate G1 (`2026-08-04`)
 - 작업 브랜치: `feature/backend/policy-search`
-- 현재 Slice: in-progress (B1-B4 refinement & Golden Query testing)
+- 현재 Slice: DT7B completed (`2026-08-06`)
 - 공유 Forest:
   Frontend Policy Search (Frontend 04 초안),
   [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md),
@@ -72,6 +72,9 @@ PostgreSQL 기반 실데이터 정책 검색 Backend 서비스 및 API 계약(W3
 - **명시 필터 Override**: 쿼리 파라미터로 명시 전달된 `region`, `age`, `category`, `status`, `keyword` 등은 `q`에서 해석된 동등 차원의 조건을 덮어쓴다.
 - **Nullable 4값 판정 및 Partial 보존**: Confirmed `mismatch`는 DB level에서 항상 제외하고, `unknown`은 포함하되 match보다 낮게 정렬한다. 적용되지 않은 차원은 `null`로 표현한다. 복지로 표본 보존을 위해 검색 API의 `include_partial` 기본값은 `true`로 설정한다.
 - **기존 공개 DTO 재사용**: 검색 결과 아이템은 기존 정책 DTO인 `policy: PolicyRead`를 100% 재사용하여 하위 호환성을 유지한다.
+- **구체 term anchor**: 자연어 category 표현은 keyword 조건으로 함께 보존하고,
+  구체 term은 term 간 AND·검색 필드 간 OR로 후보 집합을 제한한다. 대화형
+  filler는 제외하며 일반 term만 있는 탐색은 기존 OR 발견 흐름을 유지한다.
 
 ## Slice 계획
 
@@ -315,7 +318,7 @@ query-level 해석 경고와 row-level 정책 근거 부족은 서로 다른 위
 - **해석 오류 처리 규칙**:
   1. **명시적 region 해석 실패**: 명시적 쿼리 파라미터 `region`이 기준 행정구역에 매핑되지 않거나(`unmapped`), 둘 이상의 행정구역으로 모호한 경우(`ambiguous`) ➔ **HTTP `400 Bad Request`** 반환 (`details`에 candidates 또는 error 이유 포함).
   2. **자연어 `q` 추출 region 해석 경고**: `q`에서 파싱된 region이 `unmapped` 또는 `ambiguous`인 경우 ➔ 임의로 단일 지역을 선택하지 않고, **HTTP `200 OK` 응답 내 `interpreted_conditions.conditions[]`의 `resolution="unmapped"`/`"ambiguous"` 및 `candidates[]`로 query-level 경고를 전달**하며 정상 검색 진행. 개별 정책 근거 부족만 `items[].unconfirmed_conditions[]`로 전달함.
-  3. **유효한 검색 term 전무**: 자연어 `q`가 무의미한 특수문자/공백으로만 이루어져 파싱된 키워드나 조건이 전혀 없고, 명시적 필터도 지정되지 않은 경우 ➔ **HTTP `400 Bad Request`** 반환.
+  3. **유효한 검색 term 전무**: 자연어 `q`가 무의미한 특수문자나 대화형 filler로만 이루어져 파싱된 키워드·조건이 없고, 명시적 필터도 지정되지 않은 경우 ➔ **HTTP `400 Bad Request`** 반환. 빈 공백 자체는 query validation 단계에서 `422`를 반환함.
   4. **검색 결과 없음**: 검색 조건이 정상 해석되었으나 조건을 충족하는 정책이 없는 경우 ➔ HTTP 404가 아닌 **HTTP `200 OK` (`total: 0`, `items: []`)** 반환.
 - **HTTP Error Response Models**:
   - **400 Bad Request / 404 Not Found**:

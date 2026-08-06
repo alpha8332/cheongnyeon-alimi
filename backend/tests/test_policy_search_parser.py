@@ -26,6 +26,10 @@ def test_parse_search_query_basic():
     assert dim_map["category"].value == "housing"
     assert dim_map["category"].source == "q"
 
+    assert "keyword" in dim_map
+    assert dim_map["keyword"].value == "월세"
+    assert dim_map["keyword"].source == "q"
+
     assert "status" in dim_map
     assert dim_map["status"].value == "open"
     assert dim_map["status"].source == "q"
@@ -96,7 +100,7 @@ def test_parse_search_query_unmapped_explicit_region():
     assert dim_map["region"].candidates == []
 
 
-def test_parse_search_query_cheonan_region_parsing(db):
+def test_parse_search_query_cheonan_short_stay_anchor(db):
     from app.models.administrative_region import AdministrativeRegion, AdministrativeRegionAlias
     reg = AdministrativeRegion(
         scheme="kr-bjd-20260803",
@@ -115,15 +119,19 @@ def test_parse_search_query_cheonan_region_parsing(db):
     db.add_all([reg, alias])
     db.commit()
 
-    query = "   27세 천안 청년 월세 지원   "
+    query = "   천안 사는 27살 청년 단기숙소 지원 받을 수 있나?   "
     res = parse_search_query(q=query, db=db)
 
     # q_raw 보존 검증 (공백 포함 원문 유지)
     assert res.q_raw == query
-    assert res.q_clean == "27세 천안 청년 월세 지원"
+    assert res.q_clean == "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?"
 
     dim_map = {cond.dimension: cond for cond in res.conditions}
     assert "region" in dim_map
     assert dim_map["region"].source == "q"
     assert dim_map["region"].resolution == "resolved"
     assert "충청남도 천안시" in dim_map["region"].candidates
+    assert dim_map["age"].value == 27
+    assert dim_map["category"].value == "housing"
+    assert dim_map["keyword"].value == "단기숙소"
+    assert res.uninterpreted_terms == ["청년", "지원"]

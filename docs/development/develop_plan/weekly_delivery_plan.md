@@ -167,10 +167,10 @@ completed
 [Release 1 완료 조건](release_roadmap.md#릴리스-완료-조건)을 모두 충족한
 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보로 삼는다.
 
-`2026-08-06` Gate G4는 교체한 golden 정책이 confirmed 1건이어도 자연어
-검색 49위·약 9.3초이며 독립 QA·사용성 리뷰·보고서 근거가 없어 `blocked`다.
-Integration 04의 관련성·성능 차단사항을 해소하고 재검증하기 전에는 4주차
-기능으로 완료 범위를 대체하지 않는다.
+`2026-08-06` Gate G4는 `blocked`다. DT7B에서 golden 자연어·control은 모두
+1건 중 1위이고 cold 317.04ms·109.92ms로 기술 기준을 통과했다. 신청기간
+안전성, Frontend 실제 API와 독립 QA·사용성 리뷰·보고서 근거를 확보하기
+전에는 4주차 기능으로 완료 범위를 대체하지 않는다.
 
 ## 4주차 - 사용자·관리자 핵심 기능
 

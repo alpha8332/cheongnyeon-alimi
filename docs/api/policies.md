@@ -41,12 +41,26 @@ GET /api/v1/policies/search
   "page": 1,
   "limit": 20,
   "interpreted_conditions": {
-    "q_raw": "27세 천안 청년 월세 지원",
-    "q_clean": "27세 천안 청년 월세 지원",
+    "q_raw": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
+    "q_clean": "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?",
     "conditions": [
       {
         "dimension": "age",
         "value": 27,
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "category",
+        "value": "housing",
+        "source": "q",
+        "resolution": "resolved",
+        "candidates": []
+      },
+      {
+        "dimension": "keyword",
+        "value": "단기숙소",
         "source": "q",
         "resolution": "resolved",
         "candidates": []
@@ -57,13 +71,6 @@ GET /api/v1/policies/search
         "source": "q",
         "resolution": "resolved",
         "candidates": ["충청남도 천안시"]
-      },
-      {
-        "dimension": "category",
-        "value": "housing",
-        "source": "q",
-        "resolution": "resolved",
-        "candidates": []
       }
     ],
     "override_fields": [],
@@ -74,7 +81,7 @@ GET /api/v1/policies/search
       "policy": {
         "schema_version": "1.1.0",
         "id": 1,
-        "title": "천안 청년 월세 지원금"
+        "title": "청년단기숙소 지원사업"
       },
       "verdicts": {
         "region": "match",
@@ -83,14 +90,30 @@ GET /api/v1/policies/search
         "status": null
       },
       "unconfirmed_conditions": [],
-      "reason_codes": ["REGION_MATCH", "AGE_MATCH", "CATEGORY_MATCH"],
-      "message": "천안 청년 월세 지원금 - 판정 완료",
-      "score": 5.0,
+      "reason_codes": ["AGE_MATCH", "CATEGORY_MATCH", "REGION_MATCH"],
+      "message": "청년단기숙소 지원사업 - 판정 완료",
+      "score": 15.0,
       "unknown_count": 0
     }
   ]
 }
 ```
+
+### 자연어 term 결합과 관련도
+
+- `사는`, `받을`, `수`, `있나`처럼 검색 대상을 특정하지 않는 대화형 filler는
+  `uninterpreted_terms`와 검색 후보 조건에서 제외한다. filler만 있고 구조화
+  조건·검색 term이 하나도 없으면 `400 Bad Request`를 반환한다.
+- `단기숙소`, `월세`, `적금`처럼 category를 구조화하는 구체 표현은 같은
+  `source="q"`의 `keyword` 조건으로도 보존한다. 명시적 `keyword`가 있으면
+  기존 override 규칙에 따라 자연어 keyword를 대체한다.
+- 구체 keyword 또는 일반어가 아닌 독립 term이 있으면 각 구체 term은 모두
+  정책의 search projection·제목·요약 중 하나에 일치해야 한다. 한 term은 세
+  필드 중 하나만 일치해도 된다.
+- `청년`, `지원`, `정책`, `사업` 같은 일반 term만 있는 탐색은 기존 발견
+  가능성을 위해 term 중 하나가 일치하는 후보를 허용한다.
+- 이 규칙은 후보 집합만 제한하며 `score DESC`, `unknown_count ASC`, 상태,
+  `policy.id ASC`의 최종 결정적 정렬 순서는 바꾸지 않는다.
 
 ## 정책 목록
 

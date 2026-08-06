@@ -110,6 +110,26 @@ def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
     session.add(p1)
     session.flush()
 
+    distractor = Policy(
+        source_id="pg_test_cheonan_generic",
+        source_name="온통청년",
+        title="천안 청년 생활지원 사업",
+        summary="충남 천안시 청년을 위한 일반 생활 지원",
+        categories=["housing"],
+        application_schedule="always",
+        application_status="open",
+        region_text="충청남도 천안시",
+        regions=["4413000000"],
+        age_min=19,
+        age_max=39,
+        coverage_scope="regional",
+        data_quality_status="valid",
+        source_url="https://example.com/pg_cheonan_generic",
+        collected_at=now,
+    )
+    session.add(distractor)
+    session.flush()
+
     r1 = PolicyRegionRule(
         policy_id=p1.id,
         relation="include",
@@ -130,7 +150,27 @@ def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
         projection_version="1.1.0",
         updated_at=now,
     )
-    session.add_all([r1, doc1])
+    distractor_rule = PolicyRegionRule(
+        policy_id=distractor.id,
+        relation="include",
+        resolution_status="matched",
+        region_scheme="kr-bjd-20260803",
+        region_code="4413000000",
+        source_code="4413000000",
+        source_text="충청남도 천안시",
+    )
+    distractor_doc = PolicySearchDocument(
+        policy_id=distractor.id,
+        title_text="천안 청년 생활지원 사업",
+        keyword_text="천안 청년 지원 주거 생활",
+        summary_text="충남 천안시 청년을 위한 일반 생활 지원",
+        eligibility_text="19세~39세 청년",
+        support_text="청년 생활 지원",
+        search_text="천안 청년 생활지원 사업 주거 일반 생활 지원",
+        projection_version="1.1.0",
+        updated_at=now,
+    )
+    session.add_all([r1, doc1, distractor_rule, distractor_doc])
     session.commit()
 
     golden_query = "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?"
@@ -147,7 +187,7 @@ def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
         interpreted, include_partial=True, page=1, limit=10
     )
 
-    assert total >= 1
+    assert total == 1
     top_item = items[0]
     assert top_item.policy.id == p1.id
     assert top_item.verdicts.status is None

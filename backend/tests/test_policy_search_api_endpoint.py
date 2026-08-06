@@ -88,6 +88,16 @@ def test_search_api_empty_q_422(client):
     assert "detail" in data
 
 
+def test_search_api_filler_only_q_400(client):
+    response = client.get("/api/v1/policies/search?q=찾아줘 받을 수 있나?")
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["error"]["message"] == (
+        "유효한 검색어 또는 구조화 조건이 제공되지 않았습니다."
+    )
+
+
 def test_search_api_explicit_region_unmapped_400(client):
     response = client.get("/api/v1/policies/search?q=청년지원&region=무지개시 이상구")
     assert response.status_code == 400

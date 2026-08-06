@@ -107,7 +107,7 @@ def search_policies_api(
             )
 
     # 사용할 수 있는 검색 조건/토큰이 전혀 없음 -> 400 Bad Request
-    if not interpreted.conditions and not interpreted.uninterpreted_terms and not interpreted.q_clean:
+    if not interpreted.conditions and not interpreted.uninterpreted_terms:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={

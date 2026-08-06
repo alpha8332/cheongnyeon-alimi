@@ -29,6 +29,47 @@ SEARCH_DOCUMENT_FIELDS = (
     "search_text",
     "projection_version",
 )
+GENERIC_RELEVANCE_TERMS = frozenset(
+    {
+        "청년",
+        "지원",
+        "지원금",
+        "정책",
+        "사업",
+        "혜택",
+        "프로그램",
+        "정보",
+    }
+)
+
+
+def _deduplicated_search_terms(values: Sequence[str]) -> list[str]:
+    terms: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        term = value.strip()
+        folded = term.casefold()
+        if term and folded not in seen:
+            seen.add(folded)
+            terms.append(term)
+    return terms
+
+
+def _candidate_search_terms(
+    uninterpreted_terms: Sequence[str],
+    keyword: str | None,
+) -> tuple[list[str], bool]:
+    all_terms = _deduplicated_search_terms(
+        [*uninterpreted_terms, *([keyword] if keyword is not None else [])]
+    )
+    anchor_terms = [
+        term
+        for term in all_terms
+        if term.casefold() not in GENERIC_RELEVANCE_TERMS
+    ]
+    if keyword is not None and keyword not in anchor_terms:
+        anchor_terms.append(keyword)
+    return (anchor_terms or all_terms), bool(anchor_terms)
 
 
 def _rule_key(value: Mapping[str, Any]) -> tuple[str, ...]:
@@ -233,30 +274,48 @@ class PolicySearchRepository:
         req_keyword = cond_map.get("keyword")
 
         # 2. 기본 정책 쿼리 생성
-        from sqlalchemy import or_
+        from sqlalchemy import and_, or_
         query = select(Policy).where(Policy.data_quality_status != "invalid")
         if not include_partial:
             query = query.where(Policy.data_quality_status == "valid")
 
-        # 2-1. 검색 토큰(uninterpreted_terms 및 explicit keyword) SQL Level Exclusion 필터링
-        search_terms = list(interpreted.uninterpreted_terms)
-        if req_keyword is not None:
-            search_terms.append(str(req_keyword.value))
+        # 2-1. 미해석 term과 q/explicit keyword의 SQL 후보 필터링
+        keyword_value = (
+            str(req_keyword.value) if req_keyword is not None else None
+        )
+        search_terms = _deduplicated_search_terms(
+            [
+                *interpreted.uninterpreted_terms,
+                *([keyword_value] if keyword_value is not None else []),
+            ]
+        )
+        candidate_terms, require_all_terms = _candidate_search_terms(
+            interpreted.uninterpreted_terms,
+            keyword_value,
+        )
 
-        if search_terms:
+        if candidate_terms:
             term_clauses = []
-            for term in search_terms:
+            for term in candidate_terms:
                 term_clean = term.strip()
                 if term_clean:
                     pattern = f"%{term_clean}%"
-                    term_clauses.append(PolicySearchDocument.search_text.ilike(pattern))
-                    term_clauses.append(Policy.title.ilike(pattern))
-                    term_clauses.append(Policy.summary.ilike(pattern))
+                    term_clauses.append(
+                        or_(
+                            PolicySearchDocument.search_text.ilike(pattern),
+                            Policy.title.ilike(pattern),
+                            Policy.summary.ilike(pattern),
+                        )
+                    )
 
             if term_clauses:
                 query = query.outerjoin(
                     PolicySearchDocument, PolicySearchDocument.policy_id == Policy.id
-                ).where(or_(*term_clauses))
+                ).where(
+                    and_(*term_clauses)
+                    if require_all_terms
+                    else or_(*term_clauses)
+                )
 
         policies = tuple(self.db.scalars(query).all())
 
@@ -404,10 +463,6 @@ class PolicySearchRepository:
             unknown_count = sum(1 for v in v_list if v == "unknown")
 
             # --- Score 및 relevance 계산 ---
-            search_terms = list(interpreted.uninterpreted_terms)
-            if req_keyword is not None:
-                search_terms.append(str(req_keyword.value))
-
             score = 1.0
             if search_terms:
                 doc = self.search_document(policy.id)
