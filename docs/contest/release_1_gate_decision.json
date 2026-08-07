@@ -5,7 +5,7 @@
   "decided_at": "2026-08-06T13:50:34+09:00",
   "decided_by_role": "team-leader",
   "decision": "pass",
-  "candidate_status": "release-candidate-ready",
+  "candidate_status": "published",
   "contract_sha256": "53bc5ee18e028a050079559064eaf88a332d917099a9bad8f696d312838a411c",
   "dataset_baseline": {
     "accepted": 3156,
@@ -33,8 +33,10 @@
   ],
   "publication": {
     "develop_merge_completed": true,
-    "main_release_pr_completed": false,
-    "version_tag_created": false
+    "main_release_pr_completed": true,
+    "main_release_commit": "2b33ed7d8d4e281487b5734bd88cfd73b6d60175",
+    "version_tag_created": true,
+    "version_tag": "v0.1.0"
   },
-  "decision_note": "G4 and the Release 1 implementation are complete and merged into develop at 4629a61. Publication still requires the main release PR and v0.1.0 tag."
+  "decision_note": "Release 1 passed G4, was published on main at 2b33ed7, tagged v0.1.0, and synchronized back to develop."
 }

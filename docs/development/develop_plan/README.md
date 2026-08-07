@@ -11,10 +11,13 @@
 | Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
 | Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | completed |
 | Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | completed |
+| Data 03 | Recurrent Collection and Quality Operations | [개발 계획](data/03_recurrent_collection_quality_operations.md) | draft |
+| Data 04 | Public HTTPS Policy Ingestion | [개발 계획](data/04_public_https_policy_ingestion.md) | draft |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
 | Frontend 04 | Policy Search | [개발 계획](frontend/04_policy_search.md) | completed |
+| Frontend 05 | User Service Features | [개발 계획](frontend/05_user_service_features.md) | draft |
 | Backend 01 | Backend Baseline | [개발 계획](backend/01_policy_baseline.md) | completed |
 | Backend 02 | Policy Persistence Hardening | [개발 계획](backend/02_policy_persistence_hardening.md) | completed |
 | Backend 03 | Policy Runtime Safety | [개발 계획](backend/03_policy_runtime_safety.md) | completed |
@@ -24,6 +27,11 @@
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 | Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 | Integration 04 | Release 1 Acceptance | [개발 계획](integration/04_release_1_acceptance.md) | completed |
+| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | draft |
+| Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
+| Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | draft |
+| Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | draft |
+| Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.
@@ -44,9 +52,9 @@
 
 ## 다음 Forest 실행 순서
 
-2주차 안전성 작업 뒤에는 관리자 기능보다 `v0.1.0`의 실데이터 검색 차단
-조건을 먼저 처리한다. 상세 범위와 완료 조건은 Release·Forest 로드맵을
-따른다.
+`v0.1.0`은 `main` 커밋 `2b33ed7`과 tag `v0.1.0`으로 발행됐다. 다음 작업은
+Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, 웹 Source·
+자격요건·추천·사용자·품질 Forest를 의존성에 맞게 실행한다.
 
 | 우선순위 | 작업 또는 조건부 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
@@ -55,7 +63,14 @@
 | 완료 | `R1-SEARCH-DATA-FOUNDATION` | Source 중립 검색 필드·지역 계층·DB 관계·projection | `feature/database/policy-search-foundation` |
 | 완료 | `R1-POLICY-SEARCH` | Backend 서버 검색 → Frontend 자연어 조건 연결 | `feature/backend/policy-search`, `feature/frontend/policy-search` |
 | 완료 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수, G4 통과 | `feature/data/release-dataset-bootstrap` |
-| 다음 | `BE-ADMIN-RUN-HISTORY` | `v0.1.0` 뒤 Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
+| 다음 | `R2-CONTRACT-BASELINE` | 저장·인증·웹 Source·자격요건·추천·수동 실행·품질 노출 W4-G0 승인 | `docs/docs/v0-5-contract-baseline` |
+| W4-G0 뒤 | `BE-ADMIN-RUN-HISTORY` | Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
+| W4-G0 뒤 필수 | `R2-ADMIN-DATA-LOG` | 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사 | Backend·Frontend observability 브랜치 |
+| W4-G0 뒤 필수 | `R2-PUBLIC-WEB-SOURCE` | 공식 HTTPS Source 1곳 목록·상세 → DB 적재 | `feature/data/public-web-policy-source` |
+| W4-G0 뒤 필수 | `R2-ELIGIBILITY-SUMMARY` | 원문 근거 → 상세 API → 핵심 신청 조건 UI | 영역별 브랜치, 병합 순서는 W4-G0 확정 |
+| W4-G0 뒤 | `R2-RECOMMENDATION` | 결정적 추천 API → 이유·미확정 조건 UI | Backend·Frontend 추천 브랜치 |
+| W4-G0 뒤 | `R2-USER-SERVICE` | localStorage 조건·즐겨찾기·D-Day·알림·`.ics` | `feature/frontend/user-service-features` |
+| W4-G0 뒤 | `R2-DATA-QUALITY` | 반복 수집·수정·중복·실패 통계 | `feature/data/recurrent-quality-operations` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text
@@ -69,9 +84,15 @@ fix/backend/week2-hardening
   ├→ Backend 06 서버 검색
   └→ Frontend 04 승인 Mock·검색 UI → Backend endpoint 뒤 실제 API 연결
   → Integration 04 실데이터 인수
-  → v0.1.0
-  → Backend 04·05와 Frontend 03 관리자 기능
-  → 나머지 v0.5.0 사용자·품질 Forest
+  → v0.1.0 (`main` 2b33ed7)
+  → Integration 05 W4-G0
+  ├→ Backend 04 → Backend 05 → Frontend 03
+  ├→ Backend 04 → Integration 09 Admin Data and Log Console
+  ├→ Data 04 Public Web → Integration 08 Eligibility Summary
+  ├→ Integration 08 → Integration 06 Recommendation
+  ├→ Frontend 05 User Service Features
+  └→ Data 03 Quality Operations
+  → Integration 07 midpoint·리뷰·Release 2 Gate
 ```
 
 Data 02와 Integration 04에서 실제 Release snapshot 3,156건의 Runtime DB

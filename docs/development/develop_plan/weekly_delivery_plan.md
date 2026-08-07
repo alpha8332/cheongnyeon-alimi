@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-07
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -30,8 +30,8 @@
 | 1주차 | Source·Schema·Fixture·Seed 기준선 | FastAPI·DB 기반과 Policy 계약 | React·TypeScript·Mock UI 기반 | 공통 계약·문서 체계와 병렬 개발 조정 | 목표·구조·초기 근거 정리 | 미배정, 사용자 시나리오 후보 검토 | 미배정, 테스트 가능성 검토 |
 | 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
 | 3주차 | 실데이터 근거·Source 검색 필드·지역 정규화·DB bootstrap·품질 보고 | 지역 관계·search projection 공동 기반, 자연어 해석·서버 검색·성능 | 데이터·API 소비 검토, 자연어 조건·검색 이유·미확인 조건 UI | 검색 데이터 기반 Gate, 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
-| 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 기능별 설계 결정·화면·테스트 근거 정리 | 5주차 사용자 시나리오와 평가 항목 준비 | `v0.5.0` 테스트 계획·데이터·환경 준비 |
-| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 동결, 결함 triage와 `v0.5.0` 결정 | 리뷰·QA 결과와 수정 근거를 Release 2 자료에 반영 | 실제 사용자 시나리오 수행·재확인 | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
+| 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 4주차 수행 없음 | 4주차 수행 없음 | 4주차 수행 없음 |
+| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 구현·통합 종료, 결함 triage와 `v0.5.0` 결정 | 기능 연결 종료 뒤 리뷰·QA·수정 근거 정리 | 기능 연결 종료 뒤 실제 사용자 시나리오 수행·재확인 | 기능 연결 종료 뒤 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
 | 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
 
 ## 전체 흐름
@@ -177,17 +177,29 @@ Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도 통과했다.
 API 오류 UX 검증은 실행하지 않은 채 `v0.5.0` 후속으로 이관했으며 Release 1
 완료 범위에 포함하지 않는다.
 
-Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐다. `main` 릴리스
-PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
+Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐고 PR #15의 `main`
+커밋 `2b33ed7`과 `v0.1.0` tag로 발행됐다. `develop`도 같은 커밋으로
+fast-forward해 4주차의 공통 시작점으로 사용한다.
 
-## 4주차 - 사용자·관리자 핵심 기능
+## 4주차 - 공식 웹 Source·자격요건과 사용자·관리자 기반
+
+상세 실행 순서, 병렬 작업과 Gate는
+[4주차 상세 계획](../weekly_plan/week_04_v0_5_0.md)을 따른다.
+
+### 상태
+
+draft (`W4-G0 계약 승인 대기`)
 
 ### 목표
 
-`v0.5.0`의 기능 완성을 시작하되, API·DB·UI 계약을 기능별로 끝까지 연결한다.
+`v0.5.0`의 설계된 기본 기능을 모두 구현한다. 공공 API 보강과 핵심 신청
+조건을 추가하되 추천·즐겨찾기·D-Day·내부 알림·`.ics`, 관리자와 품질 기능도
+동일한 4주차 필수 범위로 유지하고 API·DB·UI를 끝까지 연결한다.
 
 ### Backend·Frontend
 
+- 정책 상세의 필수·제외·우대·서류·확인 필요 구조와 근거
+- 핵심 신청 조건 상세 API·UI와 자격 비단정 문구
 - 조건 기반 추천, 추천 점수와 추천 이유
 - 사용자 조건 저장 경계
 - 즐겨찾기와 D-Day
@@ -197,36 +209,52 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 
 ### Admin
 
-다음 기존 Forest 순서를 유지한다.
+관리자 인증 기준선 뒤 실행·데이터·로그 기능을 병렬로 연결한다.
 
 1. Backend 04 Admin Access Control
 2. Backend 05 CollectionRun Admin API
 3. Frontend 03 CollectionRun Admin UI
+4. Integration 09 Admin Data and Log Console
+
+- 승인 Policy projection의 읽기 전용 CSV형 표·row 상세·pagination·filter
+- 구조화 파일 로그, rotation·retention·redaction과 run/request correlation
+- 관리자 로그 조회·필터·상세와 회전 archive 삭제·별도 감사 기록
 
 ### Data
 
+- 승인된 공식 HTTPS Source 한 곳의 목록·상세 제한 수집과 DB 적재
+- 기존 API의 소득·추가 자격·제외·서류 원문 필드 재매핑
+- 자격요건 항목의 Source URL·수집 시각·원문 evidence
 - 실제 갱신 반복 실행과 실패 데이터 분리
 - 중복·수정 감지와 품질 통계
 - 관리자 화면에 필요한 안전한 품질 DTO 검토
 
 ### 주 후반 통합
 
+- 공식 HTTPS Source → Raw·정규화·DB → 핵심 신청 조건 상세 UI
 - 사용자 조건 → 검색·추천 → 이유 → 즐겨찾기·알림·캘린더
 - 관리자 인증 → 실행 이력 → 수동 실행 → 상태·오류 확인
+- 관리자 인증 → 정책 데이터 표·row 상세 → 오류 로그 검색·archive 삭제 확인
 
-### Team Leader·보고서·리뷰어·QA
+공식 웹 Source·자격요건, 추천, 즐겨찾기·D-Day·내부 알림·`.ics`, 관리자
+실행·데이터 표·영속 로그 기본 기능은 모두 W4-G4 필수다. 하나라도 미구현이면
+4주차 완료로 판정하지 않고 5주차 기본 기능으로 이월하지 않는다.
+
+### Team Leader와 후속 역할
 
 - Team Leader는 사용자 인증·저장 경계와 관리자 권한 계약을 조정하고 중간
   E2E를 확인한다.
-- 보고서 담당은 기능별 결정, 화면과 실제 테스트 근거를 누적한다.
-- 사용성 리뷰어는 5주차에 수행할 독립 시나리오와 질문을 준비한다.
-- QA는 요구사항별 테스트 항목, 실제·경계 데이터와 지원 환경을 준비한다.
+- 보고서 담당·사용성 리뷰어·QA는 4주차에 수행하지 않는다. 5주차 추가 기능,
+  오류 수정과 UI/UX 최적화 및 담당자 자체 검증이 끝난 뒤 Integration 07
+  A2에서 독립 근거를 만들고 Release 2 Gate 전에 완료한다.
 
-## 5주차 - 전체 기능 통합, 리뷰어 테스트와 Release 2
+## 5주차 - 추가 기능·오류 수정·UI/UX 최적화와 Release 2
 
-### 기능 동결
+### 기본 기능 기준선
 
-승인되지 않은 새 기능 추가보다 검증과 오류 수정에 집중한다.
+4주차 W4-G4에서 설계한 기본 기능이 모두 구현된 기준선을 사용한다. 기본 기능
+미완료분을 5주차 작업으로 넘기지 않는다. 추가 기능은 Release 2 안정성을
+해치지 않는 범위에서 승인하고, 오류 수정·UI/UX 최적화와 검증을 우선한다.
 
 ### 안정화
 
@@ -325,5 +353,6 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 - [Release와 Milestone 계획](release_roadmap.md)
 - [전체 Forest 로드맵](forest_roadmap.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [4주차 상세 실행 계획](../weekly_plan/week_04_v0_5_0.md)
 - [개발 계획 안내](README.md)
 - [문서화 정책](../../governance/documentation_policy.md)

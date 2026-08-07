@@ -53,11 +53,16 @@
 - [주차별 상세 실행 계획](development/weekly_plan/README.md): 주차별 선행
   관계, 병렬 작업, 역할과 검증 Gate
 - [3주차 상세 실행 계획](development/weekly_plan/week_03_release_1.md):
-  실데이터 정책 검색과 `v0.1.0` 실행 순서, Gate G4와 `develop` 병합 완료 상태
+  실데이터 정책 검색과 `v0.1.0` 실행 순서, Gate G4와 publication 완료 상태
 - [3주차 Data·Team Leader 실행 계획](development/weekly_plan/week_03_data_team_leader.md):
   실데이터 수집·적재와 통합·릴리스 판정 Slice
 - [3주차 검색 계약 Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md):
   Backend 06·Frontend 04 공통 시작 커밋, 고정 계약, 역할별 초안과 공동 승인 기준
+- [4주차 상세 실행 계획](development/weekly_plan/week_04_v0_5_0.md):
+  공식 웹 Source·자격요건과 사용자·관리자 기본 기능 전체의 W4-G0 계약,
+  병렬 실행과 Release 2 midpoint
+- [4주차 Data·Team Leader 실행 계획](development/weekly_plan/week_04_data_team_leader.md):
+  Data 03·04, 자격요건 evidence, 공동 계약과 W4-G0~G4 actual 통합·판정
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
@@ -91,6 +96,22 @@
   Migration의 Release 1 공통 기반
 - [Release 1 Acceptance Forest 계획](development/develop_plan/integration/04_release_1_acceptance.md):
   실제 snapshot DB → 검색 API → Frontend Browser 인수와 Release 1 판정
+- [v0.5.0 Contract Baseline Forest 계획](development/develop_plan/integration/05_v0_5_0_contract_baseline.md):
+  사용자 저장·관리자 인증·추천·수동 실행·품질 노출의 W4-G0 공동 계약
+- [Recommendation Vertical Slice Forest 계획](development/develop_plan/integration/06_recommendation_vertical_slice.md):
+  결정적 추천 API와 이유·미확정 조건 UI의 실제 세로 연결
+- [Release 2 Feature Acceptance Forest 계획](development/develop_plan/integration/07_release_2_feature_acceptance.md):
+  4주차 midpoint와 5주차 리뷰·QA·Release 2 Gate
+- [User Service Features Forest 계획](development/develop_plan/frontend/05_user_service_features.md):
+  브라우저 로컬 조건·즐겨찾기·D-Day·내부 알림·`.ics`
+- [Recurrent Collection and Quality Operations Forest 계획](development/develop_plan/data/03_recurrent_collection_quality_operations.md):
+  반복 수집의 수정·중복·실패 격리와 안전한 품질 통계
+- [Public HTTPS Policy Ingestion Forest 계획](development/develop_plan/data/04_public_https_policy_ingestion.md):
+  승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
+- [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
+  정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
+- [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
+  관리자 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
@@ -164,9 +185,9 @@ Gate G1 승인으로 `2026-08-04`에 종료했다. Release 1 구현과 근거는
 기술 재검증을 통과해 종료했다. 보고서와 API 오류 UX는 Release 1을 완료한
 것처럼 기록하지 않고 `v0.5.0` 계획에서 다시 다룬다.
 
-`main` 릴리스 PR과 `v0.1.0` tag는 영역 간 인계가 아니라 저장소 publication
-절차이며 아직 완료되지 않았다. 실제 PR 병합과 tag 생성 전에는 Release 1
-publication 완료로 기록하지 않는다.
+Release 1은 PR #15의 `main` 커밋 `2b33ed7`과 `v0.1.0` tag로 발행됐고,
+`develop`도 같은 커밋으로 fast-forward됐다. publication은 완료됐으며 현재
+활성 영역 간 인계사항은 없다.
 
 기존 `R1-ACTUAL-DATA-BOUNDARIES`는 신청 가능한 단기숙소 정책을 현 Source에서
 confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unknown 회귀
