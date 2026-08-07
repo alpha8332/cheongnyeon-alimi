@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     # Admin Access Control (Backend 04)
     ADMIN_PIN_HASH: Optional[str] = None
+    ADMIN_TOKEN_SECRET: Optional[str] = None
     ADMIN_SESSION_EXPIRE_MINUTES: int = 60
     ADMIN_MAX_LOGIN_ATTEMPTS: int = 5
     ADMIN_LOCKOUT_SECONDS: int = 300

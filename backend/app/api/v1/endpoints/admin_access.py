@@ -1,6 +1,3 @@
-import hashlib
-import hmac
-import time
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
@@ -12,21 +9,13 @@ from app.schemas.admin_access import (
 )
 from app.services.admin_access import (
     verify_admin_pin,
+    create_admin_session_token,
     is_rate_limited,
     record_failed_attempt,
     reset_failed_attempts,
 )
 
 router = APIRouter()
-
-
-def create_admin_session_token() -> str:
-    """짧은 수명의 관리자 서명 토큰 생성."""
-    timestamp = str(int(time.time()))
-    secret = settings.SECRET_KEY.encode("utf-8")
-    msg = f"admin_session:{timestamp}".encode("utf-8")
-    sig = hmac.new(secret, msg, hashlib.sha256).hexdigest()[:16]
-    return f"admin_token_{timestamp}_{sig}"
 
 
 @router.post(
@@ -37,7 +26,7 @@ def create_admin_session_token() -> str:
     responses={
         401: {"model": AdminErrorResponse, "description": "인증 실패 (잘못된 PIN 또는 fail-closed)"},
         403: {"model": AdminErrorResponse, "description": "권한 부족"},
-        429: {"model": AdminErrorResponse, "description": "반복 실패로 인한 요청 제한"},
+        429: {"model": AdminErrorResponse, "description": "반복 실패로 인한 점진적 요청 제한 (5->10->30->60->120->300초)"},
         422: {"description": "PIN 형식 유효성 검사 실패 (4자리 숫자 아님)"},
     },
 )
@@ -63,17 +52,18 @@ def create_admin_session(
     # 2. PIN 검증 (fail-closed 및 로컬 0000 규칙 포함)
     is_valid = verify_admin_pin(body.pin)
     if not is_valid:
-        attempts, locked = record_failed_attempt(client_ip)
+        attempts, locked, cooldown_sec = record_failed_attempt(client_ip)
         if locked:
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={
                     "error": {
-                        "message": "Too many failed login attempts. Account temporarily locked.",
-                        "details": {"cooldown_seconds": settings.ADMIN_LOCKOUT_SECONDS},
+                        "message": f"Too many failed login attempts. Account temporarily locked for {cooldown_sec} seconds.",
+                        "details": {"cooldown_seconds": cooldown_sec},
                     }
                 },
             )
+        # 구체적 오류 사유(비밀번호 틀림 vs 서비스 미설정)를 외부 노출하지 않고 일관되게 401 반환
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={
@@ -84,10 +74,10 @@ def create_admin_session(
             },
         )
 
-    # 3. 로그인 성공: 카운터 리셋 및 토큰 발급
+    # 3. 로그인 성공: 카운터 리셋 및 서명 토큰 발급
     reset_failed_attempts(client_ip)
     expires_in_sec = settings.ADMIN_SESSION_EXPIRE_MINUTES * 60
-    token = create_admin_session_token()
+    token = create_admin_session_token(expires_minutes=settings.ADMIN_SESSION_EXPIRE_MINUTES)
 
     return AdminSessionResponse(
         access_token=token,
