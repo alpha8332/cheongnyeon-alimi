@@ -4,8 +4,8 @@
 
 - 번호: Backend 04
 - 담당 영역: Backend
-- 상태: draft
-- 작업 브랜치: `feature/backend/admin-run-management`
+- 상태: in-progress
+- 작업 브랜치: `feature/backend/admin-access-control`
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
@@ -26,7 +26,7 @@
 
 ## 범위
 
-- 아이디 없이 4자리 숫자 PIN만 받는 관리자 session endpoint
+- 아이디 없는 4자리 숫자 PIN만 받는 관리자 session endpoint
 - `development`·localhost 전용 최초 PIN `0000` 경계
 - 배포 환경의 관리자 PIN hash·서명 secret 필수 설정과 fail-closed
 - 검증 성공 시 짧은 수명의 서명 관리자 token 발급
@@ -70,7 +70,7 @@
 
 ### A0 - 인증·권한 계약 결정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   비밀번호-only 단일 관리자 identity, 4자리 PIN과 role 판정 경계를 확정한다.
 - 산출물:
