@@ -391,8 +391,10 @@ listener가 사라져 검색 결과 영역을 찾지 못한 7건이 실패했다
 
 Release 1 구현과 Gate 근거는 `2026-08-06T14:14:52+09:00` 커밋
 `4629a618f5b4ac0295a46277a82da60483a28ec5`로 `develop`과
-`origin/develop`에 병합됐다. 이 기록 갱신 시점에는 `main` 릴리스 PR과
-`v0.1.0` tag가 아직 없으므로 publication 완료로 기록하지 않는다.
+`origin/develop`에 병합됐다. 이후 PR #15가 `main` 커밋
+`2b33ed7d8d4e281487b5734bd88cfd73b6d60175`로 병합되고 같은 커밋에
+`v0.1.0` annotated tag가 생성됐다. `develop`과 `origin/develop`도 해당
+릴리스 커밋으로 fast-forward해 Release 1 publication을 완료했다.
 
 ## 남은 작업
 

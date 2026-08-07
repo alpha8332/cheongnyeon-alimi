@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-07
 - 역할: 완료 Forest와 릴리스별 후속 Forest의 순서·의존성 조정
 
 이 문서는 포트폴리오 수준의 순서를 정한다. `draft`, `approved`,
@@ -39,7 +39,8 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 | 5 | [Integration 04 Release 1 Acceptance](integration/04_release_1_acceptance.md) | Team Leader - Integration | Data·Backend·Frontend, 경량 QA·사용성 리뷰 | completed (`IA3F`, `G4 pass`) | golden 기술·기간 안전성·FE actual 검증, 경량 팀 리뷰와 Release 1 후보 승인 | Data 02, Integration 03, Backend 06, Frontend 04 |
 
 위 Release 1 Forest 결과는 `2026-08-06` 커밋 `4629a61`로 `develop`에
-병합됐다. `main` 릴리스 PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
+병합됐고 PR #15의 `main` 커밋 `2b33ed7`과 `v0.1.0` tag로 발행됐다.
+`develop`도 같은 커밋으로 fast-forward해 후속 Forest의 기준점을 맞췄다.
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
 API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.
@@ -80,38 +81,34 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 
 ## `v0.5.0` Forest
 
-기존 관리자 계획은 폐기하지 않고 `v0.1.0` 이후에 실행한다.
+기존 관리자 계획은 폐기하지 않고 Integration 05 W4-G0 승인 뒤 실행한다.
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | Backend 04 Admin Access Control | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | v0.1.0 계약 동결 |
-| 2 | Backend 05 CollectionRun Admin API | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
-| 3 | Frontend 03 CollectionRun Admin UI | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
-| 4 | Recommendation | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | 계획 필요 | 조건 기반 추천, 점수·추천 이유와 정확도 검증 | v0.1.0 검색 |
-| 5 | User Service Features | Backend·Frontend | Team Leader 계약 조정, 리뷰어·QA 검증 | 계획 필요 | 사용자 조건, 즐겨찾기, D-Day, 웹 알림, `.ics` | 인증·저장 경계 결정 |
-| 6 | Data Quality Operations | Data·Backend·Frontend | Team Leader 통합, QA 검증 | 계획 필요 | 실패·partial·invalid·중복 후보 확인과 운영 처리 | 관리자 기준선 |
-| 7 | Release 2 Reviewer Hardening | Team Leader - Integration | 사용성 리뷰어·QA, 보고서 담당 | 계획 필요 | 외부 리뷰어 테스트, 결함 수정, 전체 회귀와 Release 2 근거 | 모든 v0.5.0 기능 |
+| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | draft | 저장·인증·추천·날짜·수동 실행·품질 노출 W4-G0 | `v0.1.0` publication |
+| 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
+| 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
+| 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
+| 5 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05, v0.1.0 검색 |
+| 6 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
+| 7 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | draft | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
+| 8 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능 |
 
-Recommendation, User Service Features와 Data Quality Operations는 구현 전에
-영역별로 분리할지 Integration Forest 하나로 묶을지 확정한다. 다음 조건을
-따른다.
-
-- API·DB·UI가 하나의 완료 시나리오로 함께 바뀌면 Integration Forest로 묶는다.
-- 한 영역의 독립 산출물과 완료 기준이 명확하면 영역별 Forest로 나눈다.
-- 사용자 계정과 즐겨찾기 저장 위치, 알림 생성 주체는 구현 전에 공동 계약으로
-  확정한다.
-- Schema, `null`, 빈 배열 또는 enum을 변경하면 Data·Backend·Frontend
-  소비 검토와 기준 문서를 같은 Forest에서 갱신한다.
+Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
+다루므로 Frontend 독립 Forest로 둔다. Integration 06은 API와 UI가 하나의
+추천 시나리오로 함께 바뀌므로 Integration Forest로 관리한다. Schema,
+`null`, 빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와 기준
+문서를 같은 Forest에서 갱신한다.
 
 ### `v0.5.0` 의존 흐름
 
 ```text
-v0.1.0
+v0.1.0 → W4-G0
   ├→ 관리자 인증 → 실행 API → 관리자 UI ─┐
-  ├→ 추천 ────────────────────────────────┤
-  ├→ 사용자 부가 기능 ───────────────────┤
+  ├→ 추천 API·UI ─────────────────────────┤
+  ├→ Frontend 로컬 사용자 기능 ──────────┤
   └→ 데이터 품질 운영 ───────────────────┘
-                  → 리뷰어 검증·수정 → v0.5.0
+                  → midpoint → 리뷰·수정 → v0.5.0
 ```
 
 ## `v1.0.0` Forest
@@ -143,7 +140,12 @@ feature/data/release-dataset-bootstrap
 feature/database/policy-search-foundation
 feature/backend/policy-search
 feature/frontend/policy-search
+docs/docs/v0-5-contract-baseline
 feature/backend/admin-run-management
+feature/backend/recommendation
+feature/frontend/recommendation
+feature/frontend/user-service-features
+feature/data/recurrent-quality-operations
 feature/deploy/open-source-runtime
 ```
 
@@ -156,6 +158,11 @@ Data 02가 `develop`에 병합되기 전에는 stacked 의존 관계와 병합 �
 
 Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표나 독립 완료
 기준을 한 브랜치에 장기간 누적하지 않는다.
+
+Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함께 다루지만
+현재 브랜치 전략에는 `integration` domain이 없다. 착수 전 기존 domain 중
+하나로 귀속할지 `integration` domain을 추가할지 합의하고, 그 전에는 임의의
+브랜치를 만들지 않는다.
 
 ## 범위 변경 규칙
 
@@ -173,7 +180,13 @@ Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표
 - [Release와 Milestone 계획](release_roadmap.md)
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
+- [4주차 상세 실행 계획](../weekly_plan/week_04_v0_5_0.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md)
+- [Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md)
+- [User Service Features](frontend/05_user_service_features.md)
+- [Data Quality Operations](data/03_recurrent_collection_quality_operations.md)
+- [Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
 - [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)

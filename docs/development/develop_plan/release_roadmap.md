@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-07
 - 범위: `v0.1.0`, `v0.5.0`, `v1.0.0`
 - 역할: 여러 Forest의 릴리스 목표와 통합 완료 조건을 정하는 기준선
 
@@ -39,9 +39,9 @@
 - Gate G4 경량 QA·사용성 검토와 Release 1 blocker 0건 판정
 
 Release 1 구현과 근거는 `2026-08-06` 커밋 `4629a61`로 `develop`에 병합됐다.
-`main` 릴리스 PR과 `v0.1.0` tag는 아직 완료하지 않았으며 저장소 publication
-절차로 남아 있다. 자동 주기 수집, 보고서 근거 대조와 API 오류 토스트 검증은
-`v0.5.0` 후속 범위다.
+PR #15의 `main` 커밋 `2b33ed7`에 `v0.1.0` tag를 생성해 publication을
+완료했고 `develop`도 같은 커밋으로 fast-forward했다. 자동 주기 수집,
+보고서 근거 대조와 API 오류 토스트 검증은 `v0.5.0` 후속 범위다.
 
 ## 릴리스 역할과 승인 증거
 
@@ -181,6 +181,12 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 
 사용자 기능과 관리자 기능을 모두 연결하고, 팀 외 리뷰어가 실제 시스템을
 사용한 결과를 반영해 시연 가능한 서비스 수준으로 안정화한다.
+
+4주차 구현 전 계약은
+[Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md),
+기능 연결과 최종 Gate는
+[Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)를
+따른다.
 
 ### 필수 범위
 

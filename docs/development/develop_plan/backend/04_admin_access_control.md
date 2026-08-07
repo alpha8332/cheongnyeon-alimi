@@ -6,11 +6,14 @@
 - 담당 영역: Backend
 - 상태: draft
 - 작업 브랜치: `feature/backend/admin-run-management`
+- 공통 선행 계약:
+  [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
   [CollectionRun Admin API](05_collection_run_admin_api.md),
   [Frontend CollectionRun Admin UI](../frontend/03_collection_run_admin_ui.md)
 - 선행 Forest:
-  [Backend Policy Runtime Safety](03_policy_runtime_safety.md)
+  [Backend Policy Runtime Safety](03_policy_runtime_safety.md),
+  [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 후속 Forest:
   [CollectionRun Admin API](05_collection_run_admin_api.md)
 

@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-07
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -177,10 +177,18 @@ Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도 통과했다.
 API 오류 UX 검증은 실행하지 않은 채 `v0.5.0` 후속으로 이관했으며 Release 1
 완료 범위에 포함하지 않는다.
 
-Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐다. `main` 릴리스
-PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
+Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐고 PR #15의 `main`
+커밋 `2b33ed7`과 `v0.1.0` tag로 발행됐다. `develop`도 같은 커밋으로
+fast-forward해 4주차의 공통 시작점으로 사용한다.
 
 ## 4주차 - 사용자·관리자 핵심 기능
+
+상세 실행 순서, 병렬 작업과 Gate는
+[4주차 상세 계획](../weekly_plan/week_04_v0_5_0.md)을 따른다.
+
+### 상태
+
+draft (`W4-G0 계약 승인 대기`)
 
 ### 목표
 
@@ -325,5 +333,6 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 - [Release와 Milestone 계획](release_roadmap.md)
 - [전체 Forest 로드맵](forest_roadmap.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [4주차 상세 실행 계획](../weekly_plan/week_04_v0_5_0.md)
 - [개발 계획 안내](README.md)
 - [문서화 정책](../../governance/documentation_policy.md)
