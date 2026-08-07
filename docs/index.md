@@ -108,6 +108,8 @@
   승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
 - [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
   정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
+- [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
+  관리자 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별

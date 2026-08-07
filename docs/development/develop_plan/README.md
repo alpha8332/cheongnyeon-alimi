@@ -31,6 +31,7 @@
 | Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
 | Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | draft |
 | Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | draft |
+| Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.
@@ -52,8 +53,8 @@
 ## 다음 Forest 실행 순서
 
 `v0.1.0`은 `main` 커밋 `2b33ed7`과 tag `v0.1.0`으로 발행됐다. 다음 작업은
-Integration 05의 W4-G0 계약 승인 뒤 관리자·웹 Source·자격요건·추천·사용자·
-품질 Forest를 의존성에 맞게 실행한다.
+Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, 웹 Source·
+자격요건·추천·사용자·품질 Forest를 의존성에 맞게 실행한다.
 
 | 우선순위 | 작업 또는 조건부 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
@@ -64,6 +65,7 @@ Integration 05의 W4-G0 계약 승인 뒤 관리자·웹 Source·자격요건·�
 | 완료 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수, G4 통과 | `feature/data/release-dataset-bootstrap` |
 | 다음 | `R2-CONTRACT-BASELINE` | 저장·인증·웹 Source·자격요건·추천·수동 실행·품질 노출 W4-G0 승인 | `docs/docs/v0-5-contract-baseline` |
 | W4-G0 뒤 | `BE-ADMIN-RUN-HISTORY` | Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
+| W4-G0 뒤 필수 | `R2-ADMIN-DATA-LOG` | 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사 | Backend·Frontend observability 브랜치 |
 | W4-G0 뒤 필수 | `R2-PUBLIC-WEB-SOURCE` | 공식 HTTPS Source 1곳 목록·상세 → DB 적재 | `feature/data/public-web-policy-source` |
 | W4-G0 뒤 필수 | `R2-ELIGIBILITY-SUMMARY` | 원문 근거 → 상세 API → 핵심 신청 조건 UI | 영역별 브랜치, 병합 순서는 W4-G0 확정 |
 | W4-G0 뒤 | `R2-RECOMMENDATION` | 결정적 추천 API → 이유·미확정 조건 UI | Backend·Frontend 추천 브랜치 |
@@ -85,6 +87,7 @@ fix/backend/week2-hardening
   → v0.1.0 (`main` 2b33ed7)
   → Integration 05 W4-G0
   ├→ Backend 04 → Backend 05 → Frontend 03
+  ├→ Backend 04 → Integration 09 Admin Data and Log Console
   ├→ Data 04 Public Web → Integration 08 Eligibility Summary
   ├→ Integration 08 → Integration 06 Recommendation
   ├→ Frontend 05 User Service Features

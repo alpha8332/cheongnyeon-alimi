@@ -209,11 +209,16 @@ draft (`W4-G0 계약 승인 대기`)
 
 ### Admin
 
-다음 기존 Forest 순서를 유지한다.
+관리자 인증 기준선 뒤 실행·데이터·로그 기능을 병렬로 연결한다.
 
 1. Backend 04 Admin Access Control
 2. Backend 05 CollectionRun Admin API
 3. Frontend 03 CollectionRun Admin UI
+4. Integration 09 Admin Data and Log Console
+
+- 승인 Policy projection의 읽기 전용 CSV형 표·row 상세·pagination·filter
+- 구조화 파일 로그, rotation·retention·redaction과 run/request correlation
+- 관리자 로그 조회·필터·상세와 회전 archive 삭제·별도 감사 기록
 
 ### Data
 
@@ -229,10 +234,11 @@ draft (`W4-G0 계약 승인 대기`)
 - 공식 HTTPS Source → Raw·정규화·DB → 핵심 신청 조건 상세 UI
 - 사용자 조건 → 검색·추천 → 이유 → 즐겨찾기·알림·캘린더
 - 관리자 인증 → 실행 이력 → 수동 실행 → 상태·오류 확인
+- 관리자 인증 → 정책 데이터 표·row 상세 → 오류 로그 검색·archive 삭제 확인
 
-공식 웹 Source·자격요건, 추천, 즐겨찾기·D-Day·내부 알림·`.ics`와 관리자
-기본 기능은 모두 W4-G4 필수다. 하나라도 미구현이면 4주차 완료로 판정하지
-않고 5주차 기본 기능으로 이월하지 않는다.
+공식 웹 Source·자격요건, 추천, 즐겨찾기·D-Day·내부 알림·`.ics`, 관리자
+실행·데이터 표·영속 로그 기본 기능은 모두 W4-G4 필수다. 하나라도 미구현이면
+4주차 완료로 판정하지 않고 5주차 기본 기능으로 이월하지 않는다.
 
 ### Team Leader와 후속 역할
 

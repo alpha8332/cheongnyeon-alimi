@@ -25,8 +25,9 @@
 
 ## 범위
 
-- W4-G0이 서명 토큰 방식을 승인할 때 최소 관리자 로그인·세션 획득·로그아웃과
-  보호 route; 다른 방식을 승인하면 해당 소비 경계로 교체
+- 아이디 없이 4자리 숫자 PIN 한 칸을 사용하는 관리자 로그인
+- PIN session 요청, 짧은 수명 token 보관·만료·로그아웃과 보호 route
+- 잘못된 PIN·형식 오류·반복 실패 `429`와 관리자 미설정 상태
 - 관리자 실행 이력 목록·상세 route와 API Client
 - pagination, source·status·기간 필터와 기본 정렬 소비
 - 상태·집계·안전한 오류 정보 표시
@@ -54,6 +55,9 @@
 ## 공통 설계 원칙
 
 - 관리자 route는 인증·권한 상태를 명시적으로 처리한다.
+- PIN과 token을 URL·Browser log·오류 message·영구 localStorage에 남기지 않는다.
+- PIN 입력은 숫자 키패드를 유도하되 DOM이나 접근성 label에 실제 값을 노출하지
+  않는다.
 - API DTO에 없는 내부 DB·provenance 필드를 화면 타입에 추가하지 않는다.
 - 수동 실행은 명시적인 사용자 확인과 중복 제출 방지를 요구한다.
 - `running`, terminal, stale 상태를 임의로 합치지 않는다.
@@ -66,16 +70,17 @@
 
 - 상태: draft
 - 목적:
-  Backend OpenAPI를 기준으로 TypeScript DTO와 인증 상태·route·권한 경계를
-  확정한다.
+  Backend OpenAPI를 기준으로 4자리 PIN session DTO와 인증 상태·route·권한
+  경계를 확정한다.
 - 산출물:
   - DTO·API Client·route·Mock 계약
-  - W4-G0 승인 방식의 최소 세션 획득·보관·만료·로그아웃 계약
+  - password-only PIN 입력, 세션 획득·보관·만료·로그아웃 계약
 - 선행 조건:
   - Backend CollectionRun Admin API 완료
 - 완료 기준:
   - 목록·상세·pagination·오류·권한 계약이 OpenAPI와 일치
   - credential·token이 URL·로그·오류 UI에 노출되지 않음
+  - 숫자 4자리·오류·`429`·관리자 미설정 상태가 Backend 계약과 일치
 
 ### U1 - 실행 이력 목록·상세 UI
 
@@ -128,6 +133,7 @@
 - DTO·Mock·API Client 소비 테스트
 - pagination·filter·status 표시 테스트
 - loading·empty·error·401·403·404 UI 테스트
+- PIN 4자리 형식·잘못된 PIN·`429` cooldown·token 만료·로그아웃 테스트
 - 수동 실행 확인·중복 제출 방지 테스트
 - `npm ci`
 - `npm test`
