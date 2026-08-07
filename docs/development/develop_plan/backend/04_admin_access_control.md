@@ -4,7 +4,7 @@
 
 - 번호: Backend 04
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 작업 브랜치: `feature/backend/admin-access-control`
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
@@ -113,10 +113,9 @@
 
 ### A3 - OpenAPI·회귀·문서 동기화
 
-- 상태: draft
+- 상태: completed
 - 목적:
-  보안 계약과 실제 Backend 동작을 일치시키고 후속 API가 사용할 기준선을
-  확정한다.
+  OpenAPI 명세, 회귀 테스트, 보안 가이드를 한 묶음으로 맞추어 Forest를 마감한다.
 - 산출물:
   - OpenAPI 보안 정의와 Backend 개발 기록
   - `.env.example`의 안전한 placeholder와 README PIN hash 생성·설정·교체 방법

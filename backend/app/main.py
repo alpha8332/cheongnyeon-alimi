@@ -2,6 +2,7 @@ import time
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 from app.core.config import settings
 from app.core.logging import setup_logging, logger
@@ -19,6 +20,32 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+
+def custom_openapi():
+    """Custom OpenAPI schema to register HTTPBearer security scheme for Admin Access Control."""
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=settings.APP_NAME,
+        version="0.5.0",
+        description="Cheongnyeon-alimi API with Admin Access Control",
+        routes=app.routes,
+    )
+    openapi_schema.setdefault("components", {})
+    openapi_schema["components"]["securitySchemes"] = {
+        "HTTPBearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter your admin session token (admin.<expires_at>.<sig>)",
+        }
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
 # CORS Middleware
 if settings.CORS_ORIGINS:
     app.add_middleware(
@@ -29,6 +56,7 @@ if settings.CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+
 # Logging & Process Time Middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -37,6 +65,7 @@ async def log_requests(request: Request, call_next):
     process_time = (time.time() - start_time) * 1000
     logger.info(f"{request.method} {request.url.path} - Status: {response.status_code} - Completed in {process_time:.2f}ms")
     return response
+
 
 # Custom Exception Handler
 @app.exception_handler(AppException)
@@ -51,6 +80,7 @@ async def app_exception_handler(request: Request, exc: AppException):
             }
         }
     )
+
 
 # Unhandled Exception Handler
 @app.exception_handler(Exception)
@@ -69,13 +99,16 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         }
     )
 
+
 # Include Routers
 app.include_router(api_router, prefix="/api/v1")
+
 
 # Root Health Check Shortcut (GET /health)
 @app.get("/health", tags=["Health Check"], summary="Root Health Check Shortcut")
 def root_health(response: JSONResponse):
     return check_health(response)
+
 
 @app.get("/", include_in_schema=False)
 def root():

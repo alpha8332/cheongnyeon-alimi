@@ -4,15 +4,15 @@
 
 - 기간: `2026-08-07`
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/backend/admin-access-control`
 - 선행 Forest: [Backend Policy Runtime Safety](policy_runtime_safety.md)
 - 관련 계획: [Backend Admin Access Control Plan](../../develop_plan/backend/04_admin_access_control.md)
-- 현재 Slice: A2 completed (`2026-08-07`)
+- 현재 Slice: Forest completed (`2026-08-07`)
 
 ## 목적
 
-비밀번호(4자리 PIN) 기반 단일 관리자 세션 생성 및 접근 제어 기준선을 구축하기 위한 개발 기록이다. 로컬 개발 환경에서는 최초 PIN `0000`을 제공하되, 프로덕션 배포 환경에서는 명시적 해시/시크릿 미설정 시 자동 거부(fail-closed)하도록 보안 계약을 준수하며 점진적 락아웃(5, 10, 30, 60, 120, 300초) 및 공통 관리자 권한 검증 Dependency(`get_current_admin_payload`)를 구축한다.
+비밀번호(4자리 PIN) 기반 단일 관리자 세션 생성 및 접근 제어 기준선을 구축하기 위한 개발 기록이다. 로컬 개발 환경에서는 최초 PIN `0000`을 제공하되, 프로덕션 배포 환경에서는 명시적 해시/시크릿 미설정 시 자동 거부(fail-closed)하도록 보안 계약을 준수하며 점진적 락아웃(5, 10, 30, 60, 120, 300초) 및 공통 관리자 권한 검증 Dependency(`get_current_admin_payload`)를 완료했다.
 
 ## Forest 범위
 
@@ -24,6 +24,7 @@
 - 관리자 권한 판정 경계와 공통 FastAPI dependency (`get_current_admin_payload`)
 - 인증 실패 `401`과 권한 부족 `403`, rate limit `429`, 파라미터 유효성 `422` 계약
 - 비밀정보·credential의 설정·로그·오류 비노출 및 보호 라우트 누락 방지 테스트
+- OpenAPI Bearer Security Scheme 표기 및 전체 백엔드 회귀 검증
 
 ## Slice 진행 현황
 
@@ -31,8 +32,8 @@
 | --- | --- | --- | --- |
 | **A0** | **인증·권한 계약 결정 (Contract & Specification)** | **completed** | `POST /api/v1/admin/session` DTO, HTTP 401/403/429/422 상태코드 및 로컬 `0000` / production fail-closed 계약 구현 및 테스트 완료 |
 | **A1** | **관리자 인증 경계 구현 (Admin Authentication Boundary)** | **completed** | PIN 해시 검증, HMAC-SHA256 세션 토큰 생성/검증 서비스(`create_admin_session_token`, `verify_admin_session_token`), 점진적 Rate Limit 락아웃(5->10->30->60->120->300초) 및 Credential 비노출 테스트 완료 |
-| **A2** | **관리자 권한 경계 구현 (Admin Authorization Boundary)** | **completed** | 공통 관리자 권한 검증 FastAPI Dependency (`get_current_admin_payload`), `GET /api/v1/admin/me` 샘플 라우트, HTTP 401/403 구분 및 라우트 보호 누락 탐지 테스트 완료 (19 passed) |
-| **A3** | OpenAPI·회귀·문서 동기화 | draft | 보안 정의 명세 및 README/env 가이드 작성 예정 |
+| **A2** | **관리자 권한 경계 구현 (Admin Authorization Boundary)** | **completed** | 공통 관리자 권한 검증 FastAPI Dependency (`get_current_admin_payload`), `GET /api/v1/admin/me` 샘플 라우트, HTTP 401/403 구분 및 라우트 보호 누락 탐지 테스트 완료 |
+| **A3** | **OpenAPI·회귀·문서 동기화 (OpenAPI, Regression & Docs Sync)** | **completed** | OpenAPI HTTPBearer Security Scheme 표기, `.env.example` 갱신, 백엔드 전체 회귀 테스트 통과(124 passed) 및 Forest 최종 마감 완료 |
 
 ## 구현 내용
 
@@ -70,34 +71,45 @@
 2. **관리자 보호 라우트 샘플 ([admin_access.py](../../../../backend/app/api/v1/endpoints/admin_access.py))**
    - `GET /api/v1/admin/me`: `get_current_admin_payload` 의존성을 적용하여 라우터 보호 및 토큰 정보 조회 기능 제공.
 
+### Slice A3 - OpenAPI·회귀·문서 동기화
+
+1. **FastAPI OpenAPI Security Scheme 등록 ([main.py](../../../../backend/app/main.py))**
+   - `custom_openapi()`를 적용하여 OpenAPI JSON 및 Swagger UI(`/docs`)에 `HTTPBearer` securityScheme 등록.
+2. **환경변수 가이드 문서화 ([.env.example](../../../../backend/.env.example))**
+   - `ADMIN_PIN_HASH`, `ADMIN_TOKEN_SECRET`, `ADMIN_SESSION_EXPIRE_MINUTES` 관련 안내 추가.
+
 ## 주요 변경 파일
 
+- `backend/app/main.py`: custom_openapi()를 통한 HTTPBearer Security Scheme 등록
 - `backend/app/api/deps.py`: 공통 관리자 권한 검증 Dependency (`get_current_admin_payload`) 구현
-- `backend/app/api/v1/endpoints/admin_access.py`: `GET /api/v1/admin/me` 보호 라우트 추가 및 `get_current_admin_payload` 연동
-- `backend/tests/test_admin_access_control.py`: Slice A2 보호 라우트 테스트 (401 헤더누락/토큰오류, 403 비관리자, 200 성공 및 dependency 누락 탐지 테스트) (19 passed)
-- `docs/api/admin_access.md`: `GET /api/v1/admin/me` 및 401/403 계약 명세 추가
-- `docs/development/develop_plan/backend/04_admin_access_control.md`: Slice A2 completed 갱신
+- `backend/app/core/config.py`: ADMIN_TOKEN_SECRET 등 Pydantic Settings 추가
+- `backend/app/services/admin_access.py`: PIN 해시 비교, fail-closed, HMAC 세션 토큰 생성/검증, 점진적 rate limit (5->10->30->60->120->300s)
+- `backend/app/api/v1/endpoints/admin_access.py`: `POST /api/v1/admin/session` 및 `GET /api/v1/admin/me` 구현
+- `backend/tests/test_admin_access_control.py`: 20개 관리자 접근 제어 단위/통합 테스트 (OpenAPI 등록 검증 포함)
+- `backend/.env.example`: 관리자 PIN 및 토큰 관련 샘플 설정 추가
+- `docs/api/admin_access.md`: 관리자 API 계약 전체 명세서 작성
+- `docs/development/develop_plan/backend/04_admin_access_control.md`: Forest completed 갱신
 
 ## 설계 결정
 
 1. **FastAPI Dependency 기반 공통 권한 제어**:
-   - 개별 라우터 내부에서 토큰 검증 로직을 중복 구현하지 않고 `app/api/deps.py`의 `get_current_admin_payload` dependency로 분리하여 후속 Backend 05(CollectionRun Admin API)에서 즉시 재사용할 수 있도록 설계함.
-2. **HTTP 401과 403의 명확한 경계 구분**:
-   - 토큰 누락/변조/만료는 `401 Unauthorized`로, 토큰은 유효하나 관리자 권한이 없는 접근은 `403 Forbidden`으로 명확히 구분하여 디버깅 및 프론트엔드 처리 용이성을 보장함.
-3. **보호 라우트 누락 탐지 테스트**:
-   - 관리자 라우트 등록 시 `get_current_admin_payload` 의존성이 누락되어 관리자 기능이 실수로 공개되는 것을 방지하기 위해 파이썬 inspect 기반의 라우트 의존성 탐지 테스트를 추가함.
+   - `app/api/deps.py`의 `get_current_admin_payload` dependency로 분리하여 후속 Backend 05(CollectionRun Admin API)에서 즉시 재사용할 수 있도록 함.
+2. **점진적 락아웃 (Progressive Lockout)**:
+   - 로그인 5회 연속 실패 시 바로 고정 300초 락아웃을 적용하지 않고 5초 ➔ 10초 ➔ 30초 ➔ 60초 ➔ 120초 ➔ 300초로 점진적으로 대기 시간을 증가시켜 브루트포스 대입 공격을 차단함.
+3. **OpenAPI Security Scheme 명시**:
+   - Swagger UI (`/docs`)에서 `Authorization: Bearer <token>` 헤더를 인터랙티브하게 시험할 수 있도록 OpenAPI 명세에 `HTTPBearer` 스키마를 동적으로 구성함.
 
 ## 검증 결과
 
 - **단위 및 통합 테스트**: `pytest backend/tests/test_admin_access_control.py` 실행
-  - 19개 테스트 케이스 전원 통과 (Pass)
-  - `test_protected_route_missing_token_401` (토큰 누락 401 반환 검증)
-  - `test_protected_route_invalid_token_401` (변조 토큰 401 반환 검증)
-  - `test_protected_route_non_admin_role_403` (비관리자 403 Forbidden 거부 검증)
+  - 20개 테스트 케이스 전원 통과 (Pass)
+  - `test_openapi_security_scheme_registered` (HTTPBearer 등록 검증)
   - `test_protected_route_valid_admin_token_200` (정상 토큰 200 OK 성공 검증)
-  - `test_protected_route_dependency_leak_detection` (라우트 보호 dependency 누락 탐지 검증)
-- **전체 백엔드 회귀 테스트**: `pytest backend/tests` 실행 -> **123 Passed, 15 Skipped**
+  - `test_protected_route_non_admin_role_403` (비관리자 403 Forbidden 거부 검증)
+  - `test_admin_session_progressive_rate_limit_429` (5회 실패 시 5초 락아웃 429 적용 검증)
+- **전체 백엔드 회귀 테스트**: `pytest backend/tests` 실행 -> **124 Passed, 15 Skipped**
+- **문서 무결성 검증**: `python scripts/validate_docs.py` 실행 -> **Pass**
 
 ## 남은 작업
 
-- Slice A3: OpenAPI security scheme 명세 업데이트, README 가이드 및 문서 최종 검증
+- Backend 04 Forest 전체 완료. 후속 Forest인 **Backend 05 CollectionRun Admin API (`feature/backend/collection-run-admin-api`)** 진행 준비.

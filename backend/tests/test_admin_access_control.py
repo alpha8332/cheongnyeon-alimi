@@ -168,7 +168,7 @@ def test_credential_non_exposure_in_errors():
     assert settings.SECRET_KEY not in resp_text
 
 
-# --- Slice A2: 권한 경계 및 보호 라우트 테스트 ---
+# --- Slice A2 & A3: 권한 경계 및 OpenAPI 보안 명세 테스트 ---
 
 
 def test_protected_route_missing_token_401():
@@ -188,7 +188,6 @@ def test_protected_route_invalid_token_401():
 
 def test_protected_route_non_admin_role_403(monkeypatch):
     """서명은 유효하지만 역할(role)이 admin이 아닌 사용자 접근 시 403 Forbidden 반환."""
-    # 비관리자(user) 토큰 임의 생성 및 검증 모의
     expires_at = int(time.time()) + 3600
     non_admin_payload = {"sub": "user123", "role": "user", "expires_at": expires_at}
 
@@ -212,12 +211,10 @@ def test_protected_route_valid_admin_token_200():
     settings.ENVIRONMENT = "development"
     settings.ADMIN_PIN_HASH = None
 
-    # 1. 로그인
     login_resp = client.post("/api/v1/admin/session", json={"pin": "0000"})
     assert login_resp.status_code == 200
     token = login_resp.json()["access_token"]
 
-    # 2. 보호 라우트 접근
     me_resp = client.get(
         "/api/v1/admin/me",
         headers={"Authorization": f"Bearer {token}"},
@@ -236,3 +233,15 @@ def test_protected_route_dependency_leak_detection():
     route = protected_routes[0]
     dep_functions = [dep.call for dep in route.dependant.dependencies]
     assert get_current_admin_payload in dep_functions
+
+
+def test_openapi_security_scheme_registered():
+    """OpenAPI 명세에 HTTPBearer security scheme이 정상 등록되어 있는지 검사."""
+    response = client.get("/api/v1/openapi.json")
+    assert response.status_code == 200
+    schema = response.json()
+
+    assert "components" in schema
+    assert "securitySchemes" in schema["components"]
+    assert "HTTPBearer" in schema["components"]["securitySchemes"]
+    assert schema["components"]["securitySchemes"]["HTTPBearer"]["scheme"] == "bearer"
