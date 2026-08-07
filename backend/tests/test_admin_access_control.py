@@ -1,5 +1,6 @@
 import hashlib
 import time
+import hmac
 import pytest
 from fastapi.testclient import TestClient
 
@@ -9,9 +10,11 @@ from app.services.admin_access import (
     clear_rate_limit_state,
     create_admin_session_token,
     verify_admin_session_token,
-    PROGRESSIVE_LOCKOUT_STEPS,
+    get_admin_token_secret,
     calculate_cooldown_seconds,
 )
+from app.api.deps import get_current_admin_payload
+from app.api.v1.endpoints.admin_access import router as admin_router
 
 client = TestClient(app)
 
@@ -163,3 +166,73 @@ def test_credential_non_exposure_in_errors():
 
     assert secret_pin not in resp_text
     assert settings.SECRET_KEY not in resp_text
+
+
+# --- Slice A2: 권한 경계 및 보호 라우트 테스트 ---
+
+
+def test_protected_route_missing_token_401():
+    """Authorization 헤더 없이 보호 라우트 GET /api/v1/admin/me 접근 시 401 Unauthorized 반환."""
+    response = client.get("/api/v1/admin/me")
+    assert response.status_code == 401
+
+
+def test_protected_route_invalid_token_401():
+    """변조되거나 유효하지 않은 Bearer 토큰으로 GET /api/v1/admin/me 접근 시 401 Unauthorized 반환."""
+    response = client.get(
+        "/api/v1/admin/me",
+        headers={"Authorization": "Bearer invalid_admin_token_xyz"},
+    )
+    assert response.status_code == 401
+
+
+def test_protected_route_non_admin_role_403(monkeypatch):
+    """서명은 유효하지만 역할(role)이 admin이 아닌 사용자 접근 시 403 Forbidden 반환."""
+    # 비관리자(user) 토큰 임의 생성 및 검증 모의
+    expires_at = int(time.time()) + 3600
+    non_admin_payload = {"sub": "user123", "role": "user", "expires_at": expires_at}
+
+    monkeypatch.setattr(
+        "app.api.deps.verify_admin_session_token",
+        lambda token: non_admin_payload,
+    )
+
+    response = client.get(
+        "/api/v1/admin/me",
+        headers={"Authorization": "Bearer fake_user_token"},
+    )
+    assert response.status_code == 403
+    data = response.json()
+    assert "detail" in data
+    assert data["detail"] == "Admin authorization required."
+
+
+def test_protected_route_valid_admin_token_200():
+    """정상 세션 생성 후 발급받은 Bearer 토큰으로 GET /api/v1/admin/me 접근 시 200 OK 성공."""
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+
+    # 1. 로그인
+    login_resp = client.post("/api/v1/admin/session", json={"pin": "0000"})
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+
+    # 2. 보호 라우트 접근
+    me_resp = client.get(
+        "/api/v1/admin/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert me_resp.status_code == 200
+    data = me_resp.json()
+    assert data["role"] == "admin"
+    assert data["status"] == "authenticated"
+
+
+def test_protected_route_dependency_leak_detection():
+    """관리자 전용 보호 라우트에 get_current_admin_payload dependency가 누락되지 않고 등록되었는지 검사."""
+    protected_routes = [route for route in admin_router.routes if route.path == "/me"]
+    assert len(protected_routes) == 1
+
+    route = protected_routes[0]
+    dep_functions = [dep.call for dep in route.dependant.dependencies]
+    assert get_current_admin_payload in dep_functions

@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Request, status
+from typing import Dict, Any
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.api.deps import get_current_admin_payload
 from app.schemas.admin_access import (
     AdminSessionCreate,
     AdminSessionResponse,
@@ -85,3 +87,26 @@ def create_admin_session(
         expires_in=expires_in_sec,
         role="admin",
     )
+
+
+@router.get(
+    "/me",
+    summary="관리자 세션 및 권한 상태 확인 (보호 라우트)",
+    responses={
+        200: {"description": "관리자 세션 유효"},
+        401: {"description": "인증 토큰 누락 또는 유효하지 않음/만료됨"},
+        403: {"description": "관리자 권한 부족"},
+    },
+)
+def get_current_admin_info(
+    admin_payload: Dict[str, Any] = Depends(get_current_admin_payload),
+) -> Dict[str, Any]:
+    """
+    관리자 세션 토큰 유효성 및 권한을 검증하는 샘플/확인용 보호 엔드포인트.
+    get_current_admin_payload dependency를 사용하여 401/403 권한 경계를 보장한다.
+    """
+    return {
+        "role": admin_payload.get("role", "admin"),
+        "expires_at": admin_payload.get("expires_at"),
+        "status": "authenticated",
+    }
