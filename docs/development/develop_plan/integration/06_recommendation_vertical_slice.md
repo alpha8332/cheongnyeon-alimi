@@ -7,7 +7,7 @@
 - 상태: draft
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
-- 선행 Forest: Integration 05 Contract Baseline
+- 선행 Forest: Integration 05 Contract Baseline, Integration 08의 승인 조건 계약
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/backend/recommendation`, `feature/frontend/recommendation`
 
@@ -21,6 +21,7 @@
 
 - 승인된 사용자 조건과 추천 request·response DTO
 - 기존 지역·연령·카테고리·신청상태 판정 primitive 재사용
+- Integration 08의 구조화된 조건·확인 필요 의미 재사용
 - 요청 내부 추천 순서와 결정적인 동률 처리
 - 추천 이유, 제외 이유와 데이터로 확인할 수 없는 조건
 - 검색 결과와 추천 결과의 의미·route 구분
@@ -33,10 +34,12 @@
 - 사용자 행동 학습과 개인 프로필 서버 저장
 - 서로 다른 요청의 점수 비교와 자격 확률 표시
 - 정책 데이터에 없는 조건을 추정하거나 자동 보강
+- 자격요건 Source 수집·구조화와 정책 상세 조건 UI 구현
 
 ## 선행 조건
 
-- Integration 05의 `W4-G0_APPROVED`와 추천 DTO 소비 검토가 완료돼야 한다.
+- Integration 05의 `W4-G0_APPROVED`와 Integration 08의 조건 구조·비단정
+  문구 소비 검토가 완료돼야 한다.
 - 기존 검색 판정 primitive와 Release 1 golden 회귀가 통과하는 기준선을 쓴다.
 - 추천 평가에 사용할 실제·경계 표본과 기대 이유가 승인돼야 한다.
 
@@ -108,6 +111,7 @@ git diff --check
 ## 관련 문서
 
 - [v0.5.0 Contract Baseline](05_v0_5_0_contract_baseline.md)
+- [Eligibility Evidence and Summary](08_eligibility_evidence_summary.md)
 - [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
 - [Policy Search 계획](../backend/06_policy_search.md)
 - [Policy API 계약](../../../api/policies.md)

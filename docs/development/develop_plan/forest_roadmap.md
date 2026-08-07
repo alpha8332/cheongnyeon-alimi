@@ -85,29 +85,34 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | draft | 저장·인증·추천·날짜·수동 실행·품질 노출 W4-G0 | `v0.1.0` publication |
+| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | draft | 저장·인증·웹 Source·자격요건·추천·날짜·수동 실행·품질 노출 W4-G0 | `v0.1.0` publication |
 | 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
 | 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
 | 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
-| 5 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05, v0.1.0 검색 |
-| 6 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
-| 7 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | draft | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
-| 8 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능 |
+| 5 | [Data 04 Public HTTPS Policy Ingestion](data/04_public_https_policy_ingestion.md) | Data | Team Leader Source 승인, Backend 소비 검토 | draft | 공식 HTTPS Source 1곳의 목록·상세·조건 근거 수집과 DB 적재 | Integration 05, Data 01 |
+| 6 | [Integration 08 Eligibility Evidence and Summary](integration/08_eligibility_evidence_summary.md) | Data·Backend·Frontend | Team Leader 계약·실제 E2E | draft | 핵심 신청 조건·제외·서류·확인 필요와 근거 있는 상세 UI | Integration 05, Data 04 병렬 보강 |
+| 7 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05·08, v0.1.0 검색 |
+| 8 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
+| 9 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | draft | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
+| 10 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능 |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
-다루므로 Frontend 독립 Forest로 둔다. Integration 06은 API와 UI가 하나의
-추천 시나리오로 함께 바뀌므로 Integration Forest로 관리한다. Schema,
-`null`, 빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와 기준
-문서를 같은 Forest에서 갱신한다.
+다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
+독립 완료 기준이 있어 Data 03 품질 운영에 섞지 않는다. Integration 08은
+Data Schema·Backend 상세 DTO·Frontend 상세 UI가 함께 바뀌므로 Integration
+Forest로 관리한다. Integration 06은 승인된 조건 구조를 추천에 소비한다.
+Schema, `null`, 빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와
+기준 문서를 같은 Forest에서 갱신한다.
 
 ### `v0.5.0` 의존 흐름
 
 ```text
 v0.1.0 → W4-G0
   ├→ 관리자 인증 → 실행 API → 관리자 UI ─┐
-  ├→ 추천 API·UI ─────────────────────────┤
-  ├→ Frontend 로컬 사용자 기능 ──────────┤
-  └→ 데이터 품질 운영 ───────────────────┘
+  ├→ 공식 웹 Source → 자격요건 상세 API·UI ┤
+  ├→ 자격요건 → 추천 API·UI ──────────────┤
+  ├→ Frontend 로컬 사용자 기능 ───────────┤
+  └→ 데이터 품질 운영 ────────────────────┘
                   → midpoint → 리뷰·수정 → v0.5.0
 ```
 
@@ -146,6 +151,7 @@ feature/backend/recommendation
 feature/frontend/recommendation
 feature/frontend/user-service-features
 feature/data/recurrent-quality-operations
+feature/data/public-web-policy-source
 feature/deploy/open-source-runtime
 ```
 

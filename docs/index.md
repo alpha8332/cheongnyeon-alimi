@@ -59,7 +59,8 @@
 - [3주차 검색 계약 Gate G1 인수인계](development/weekly_plan/week_03_search_contract_handoff.md):
   Backend 06·Frontend 04 공통 시작 커밋, 고정 계약, 역할별 초안과 공동 승인 기준
 - [4주차 상세 실행 계획](development/weekly_plan/week_04_v0_5_0.md):
-  사용자·관리자 기능의 W4-G0 계약, 병렬 실행과 Release 2 midpoint
+  공식 웹 Source·자격요건과 사용자·관리자 기본 기능 전체의 W4-G0 계약,
+  병렬 실행과 Release 2 midpoint
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
@@ -103,6 +104,10 @@
   브라우저 로컬 조건·즐겨찾기·D-Day·내부 알림·`.ics`
 - [Recurrent Collection and Quality Operations Forest 계획](development/develop_plan/data/03_recurrent_collection_quality_operations.md):
   반복 수집의 수정·중복·실패 격리와 안전한 품질 통계
+- [Public HTTPS Policy Ingestion Forest 계획](development/develop_plan/data/04_public_https_policy_ingestion.md):
+  승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
+- [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
+  정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
