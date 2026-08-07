@@ -32,7 +32,7 @@
 
 ```json
 {
-  "access_token": "admin_token_1770475800_a1b2c3d4e5f67890",
+  "access_token": "admin.1770475800.a1b2c3d4e5f67890",
   "token_type": "bearer",
   "expires_in": 3600,
   "role": "admin"
@@ -41,7 +41,7 @@
 
 | 필드명 | 타입 | 설명 |
 | --- | --- | --- |
-| `access_token` | `string` | 세션 발급 관리자 토큰 |
+| `access_token` | `string` | 세션 발급 관리자 서명 토큰 (`admin.<expires_at>.<sig>`) |
 | `token_type` | `string` | 토큰 인증 타입 (`"bearer"`) |
 | `expires_in` | `integer` | 토큰 유효 기간 (초 단위, 기본 3600초/60분) |
 | `role` | `string` | 부여된 역할 (`"admin"`) |
@@ -76,16 +76,16 @@ PIN이 일치하지 않거나, 배포 환경에서 관리자 PIN 설정이 누�
 }
 ```
 
-#### 429 Too Many Requests (Rate Limit 및 Lockout)
+#### 429 Too Many Requests (점진적 Rate Limit 및 Lockout)
 
-동일 IP에서 5회 연속 로그인 실패 시 차단된다. (기본 300초 Cooldown)
+동일 IP에서 5회 연속 로그인 실패 시 단계별 점진적 락아웃(5초 ➔ 10초 ➔ 30초 ➔ 60초 ➔ 120초 ➔ 300초)을 적용한다.
 
 ```json
 {
   "error": {
-    "message": "Too many failed login attempts. Account temporarily locked.",
+    "message": "Too many failed login attempts. Account temporarily locked for 5 seconds.",
     "details": {
-      "cooldown_seconds": 300
+      "cooldown_seconds": 5
     }
   }
 }
