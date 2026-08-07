@@ -25,6 +25,8 @@
 
 ## 범위
 
+- W4-G0이 서명 토큰 방식을 승인할 때 최소 관리자 로그인·세션 획득·로그아웃과
+  보호 route; 다른 방식을 승인하면 해당 소비 경계로 교체
 - 관리자 실행 이력 목록·상세 route와 API Client
 - pagination, source·status·기간 필터와 기본 정렬 소비
 - 상태·집계·안전한 오류 정보 표시
@@ -36,6 +38,7 @@
 ## 범위 밖
 
 - 관리자 인증·권한 Backend 구현
+- 관리자 계정 생성·비밀번호 변경·refresh token과 일반 사용자 로그인
 - CollectionRun DB·Backend API 계약 변경
 - Raw payload·정책 본문·provenance·credential 표시
 - Scheduler·실시간 WebSocket·알림 시스템
@@ -63,13 +66,16 @@
 
 - 상태: draft
 - 목적:
-  Backend OpenAPI를 기준으로 TypeScript DTO와 route·권한 경계를 확정한다.
+  Backend OpenAPI를 기준으로 TypeScript DTO와 인증 상태·route·권한 경계를
+  확정한다.
 - 산출물:
   - DTO·API Client·route·Mock 계약
+  - W4-G0 승인 방식의 최소 세션 획득·보관·만료·로그아웃 계약
 - 선행 조건:
   - Backend CollectionRun Admin API 완료
 - 완료 기준:
   - 목록·상세·pagination·오류·권한 계약이 OpenAPI와 일치
+  - credential·token이 URL·로그·오류 UI에 노출되지 않음
 
 ### U1 - 실행 이력 목록·상세 UI
 
