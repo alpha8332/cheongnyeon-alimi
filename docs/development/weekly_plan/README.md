@@ -26,6 +26,7 @@
 | 주차 | 역할 | 문서 상태 | 실행 계획 |
 | --- | --- | --- | --- |
 | 3주차 | Data·Team Leader | completed | [Data·Team Leader 계획](week_03_data_team_leader.md) |
+| 4주차 | Data·Team Leader | draft | [Data·Team Leader 계획](week_04_data_team_leader.md) |
 
 ## 현재 인수인계
 
