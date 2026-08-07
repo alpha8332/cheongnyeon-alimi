@@ -48,31 +48,51 @@
 
 ---
 
-### 오류 응답 (Error Responses)
+## 2. 관리자 권한 상태 확인 (보호 라우트 샘플)
 
-#### 401 Unauthorized (인증 실패 / Fail-closed)
+- **Endpoint**: `GET /api/v1/admin/me`
+- **인증**: Bearer 토큰 필요 (`Authorization: Bearer <access_token>`)
 
-PIN이 일치하지 않거나, 배포 환경에서 관리자 PIN 설정이 누락되어 접근이 비활성화된 경우 반환한다. (보안을 위해 내부 실패 사유는 상세 노출하지 않음)
+### 요청 헤더 (Headers)
+
+```text
+Authorization: Bearer admin.1770475800.a1b2c3d4e5f67890
+```
+
+### 응답 (Response)
+
+#### 200 OK (인증 및 권한 확인 성공)
 
 ```json
 {
-  "error": {
-    "message": "Invalid admin PIN or authentication disabled.",
-    "details": {}
-  }
+  "role": "admin",
+  "expires_at": 1770475800,
+  "status": "authenticated"
+}
+```
+
+---
+
+## 3. 오류 응답 표준 (Error Responses)
+
+#### 401 Unauthorized (인증 실패 / 헤더 누락 / 토큰 만료)
+
+- 세션 생성 시: 잘못된 PIN 또는 배포 환경의 인증 비활성화 (Fail-closed)
+- 보호 라우트 접근 시: Authorization 헤더 누락, 서명 변조, 또는 토큰 만료
+
+```json
+{
+  "detail": "Invalid or expired admin session token."
 }
 ```
 
 #### 403 Forbidden (권한 부족)
 
-인증되지 않았거나 비관리자 역할로 보호된 관리자 라우트에 접근 시 반환한다.
+유효한 토큰이지만 관리자 역할(`role == "admin"`)이 아니거나 관리자 API 접근 권한이 부족한 경우 반환한다.
 
 ```json
 {
-  "error": {
-    "message": "Admin authorization required.",
-    "details": {}
-  }
+  "detail": "Admin authorization required."
 }
 ```
 
@@ -97,7 +117,7 @@ PIN이 4자리 숫자가 아니거나 유효하지 않은 JSON 요청인 경우 
 
 ---
 
-## 2. 환경별 PIN 검증 규칙
+## 4. 환경별 PIN 검증 규칙
 
 1. **로컬 / 개발 환경 (`ENVIRONMENT` = `development` / `local` / `test`)**:
    - `ADMIN_PIN_HASH` 환경변수가 설정되지 않은 경우, 로컬 시연 편의를 위해 최초 기본 PIN `0000` (SHA-256 해시)을 허용한다.
