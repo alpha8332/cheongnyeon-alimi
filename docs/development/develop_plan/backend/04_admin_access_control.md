@@ -4,8 +4,8 @@
 
 - 번호: Backend 04
 - 담당 영역: Backend
-- 상태: draft
-- 작업 브랜치: `feature/backend/admin-run-management`
+- 상태: completed
+- 작업 브랜치: `feature/backend/admin-access-control`
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
@@ -26,7 +26,7 @@
 
 ## 범위
 
-- 아이디 없이 4자리 숫자 PIN만 받는 관리자 session endpoint
+- 아이디 없는 4자리 숫자 PIN만 받는 관리자 session endpoint
 - `development`·localhost 전용 최초 PIN `0000` 경계
 - 배포 환경의 관리자 PIN hash·서명 secret 필수 설정과 fail-closed
 - 검증 성공 시 짧은 수명의 서명 관리자 token 발급
@@ -70,7 +70,7 @@
 
 ### A0 - 인증·권한 계약 결정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   비밀번호-only 단일 관리자 identity, 4자리 PIN과 role 판정 경계를 확정한다.
 - 산출물:
@@ -83,7 +83,7 @@
 
 ### A1 - 관리자 인증 경계 구현
 
-- 상태: draft
+- 상태: completed
 - 목적:
   Backend가 PIN hash를 검증하고 단일 관리자 주체를 안전하게 식별하게 한다.
 - 산출물:
@@ -100,7 +100,7 @@
 
 ### A2 - 관리자 권한 경계 구현
 
-- 상태: draft
+- 상태: completed
 - 목적:
   인증된 비관리자의 관리자 API 접근을 차단한다.
 - 산출물:
@@ -113,10 +113,9 @@
 
 ### A3 - OpenAPI·회귀·문서 동기화
 
-- 상태: draft
+- 상태: completed
 - 목적:
-  보안 계약과 실제 Backend 동작을 일치시키고 후속 API가 사용할 기준선을
-  확정한다.
+  OpenAPI 명세, 회귀 테스트, 보안 가이드를 한 묶음으로 맞추어 Forest를 마감한다.
 - 산출물:
   - OpenAPI 보안 정의와 Backend 개발 기록
   - `.env.example`의 안전한 placeholder와 README PIN hash 생성·설정·교체 방법

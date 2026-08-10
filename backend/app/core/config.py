@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+    # Admin Access Control (Backend 04)
+    ADMIN_PIN_HASH: Optional[str] = None
+    ADMIN_TOKEN_SECRET: Optional[str] = None
+    ADMIN_SESSION_EXPIRE_MINUTES: int = 60
+    ADMIN_MAX_LOGIN_ATTEMPTS: int = 5
+    ADMIN_LOCKOUT_SECONDS: int = 300
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
