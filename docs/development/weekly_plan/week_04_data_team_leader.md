@@ -9,7 +9,7 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: `DTL4-4B` 진행 중 (Data 소비 인계 완료, BE·FE parity 대기)
+- 현재 Slice: `DTL4-4` 완료 (`ES4` actual 세로 인수 통과)
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -360,7 +360,9 @@ parity와 충돌하지 않도록 독립 nested 계약으로 먼저 승인했고,
 상세 API를 구현하고 PostgreSQL actual을 통과했다. 목록 payload는 유지한다.
 ES3는 Frontend 상세 TypeScript·Mock과 신청·제외·우대 조건, 필요 서류, 문의처,
 공개 evidence UI를 구현했다. 승인 웹 표본 Browser 주입으로 키보드·모바일까지
-검증했지만 실제 PostgreSQL → API → Browser 대조는 ES4까지 완료 처리하지 않는다.
+검증했다. ES4는 승인 천안 fixture를 실제 PostgreSQL에 적재해 상세 API와
+Browser의 조건·서류·문의처·evidence를 대조하고, Release 1 snapshot 3,156건의
+HTTP 기술 감사와 실제 Browser golden 회귀까지 통과했다.
 
 ### 완료 기준
 
@@ -662,7 +664,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] DTL4-1 Data inventory와 `W4-G0_APPROVED`
 - [x] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
 - [x] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
-- [ ] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
+- [x] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
 - [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과

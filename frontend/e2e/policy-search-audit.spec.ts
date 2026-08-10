@@ -222,9 +222,11 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(page.getByText(/KST$/)).toBeVisible();
     await expect(page.getByText('상시', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('접수 중', { exact: true })).toBeVisible();
-    await expect(page.getByRole('note')).toContainText(
-      '실제 자격 충족을 확정하지 않습니다',
-    );
+    await expect(
+      page
+        .getByRole('note')
+        .filter({ hasText: '실제 자격 충족을 확정하지 않습니다' }),
+    ).toBeVisible();
     await expect(
       page.getByRole('button', { name: '원문 링크 열기' }),
     ).toBeVisible();

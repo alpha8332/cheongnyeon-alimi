@@ -216,3 +216,76 @@ test('ES3 상세 API 오류에서 기존 재시도 상태를 유지한다', asyn
   ).toBeVisible();
   await expect(page.getByRole('button', { name: '다시 시도' })).toBeVisible();
 });
+
+test('ES4 실제 PostgreSQL 상세 API 응답과 Browser 표시가 일치한다', async ({
+  page,
+  request,
+}) => {
+  const policyId = process.env.ES4_POLICY_ID;
+  const apiBaseUrl = process.env.ES4_API_BASE_URL;
+  test.skip(
+    process.env.VITE_USE_MOCK !== 'false' || !policyId || !apiBaseUrl,
+    'ES4 전용 PostgreSQL·Backend 환경에서만 실행합니다.',
+  );
+
+  const apiResponse = await request.get(
+    `${apiBaseUrl}/api/v1/policies/${policyId}?include_partial=true`,
+  );
+  expect(apiResponse.status()).toBe(200);
+  const policy = (await apiResponse.json()) as Record<string, unknown> & {
+    eligibility_summary: EligibilitySummaryDto;
+  };
+  expect('provenance' in policy).toBeFalsy();
+
+  await page.goto(`/programs/${policyId}?include_partial=true`);
+  const summary = page.getByRole('region', { name: '핵심 신청 조건' });
+  await expect(summary).toBeVisible();
+  await expect(summary).toHaveAttribute(
+    'data-coverage',
+    policy.eligibility_summary.coverage,
+  );
+
+  const textGroups = [
+    policy.eligibility_summary.requirements,
+    policy.eligibility_summary.exclusions,
+    policy.eligibility_summary.preferences,
+    policy.eligibility_summary.documents,
+    policy.eligibility_summary.unknowns,
+  ];
+  for (const items of textGroups) {
+    for (const item of items) {
+      await expect(summary.getByText(item.text, { exact: true }).first()).toBeVisible();
+    }
+  }
+
+  for (const contact of policy.eligibility_summary.institutional_contacts) {
+    if (contact.kind === 'phone') {
+      const phoneLink = summary
+        .getByRole('link', { name: /전화 걸기/ })
+        .first();
+      await expect(phoneLink).toContainText(contact.value);
+      await expect(phoneLink).toHaveAttribute('href', /^tel:/);
+    } else {
+      await expect(
+        summary.getByText(contact.value, { exact: true }).first(),
+      ).toBeVisible();
+    }
+  }
+
+  const apiEvidenceUrls = new Set(
+    [
+      ...policy.eligibility_summary.requirements,
+      ...policy.eligibility_summary.exclusions,
+      ...policy.eligibility_summary.preferences,
+      ...policy.eligibility_summary.documents,
+      ...policy.eligibility_summary.unknowns,
+      ...policy.eligibility_summary.institutional_contacts,
+    ].flatMap((item) => item.evidence.map((evidence) => evidence.source_url)),
+  );
+  const browserEvidenceUrls = new Set(
+    await summary
+      .getByRole('link', { name: /근거 \d+ 원문 열기/ })
+      .evaluateAll((links) => links.map((link) => (link as HTMLAnchorElement).href)),
+  );
+  expect(browserEvidenceUrls).toEqual(apiEvidenceUrls);
+});

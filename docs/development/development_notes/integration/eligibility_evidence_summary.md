@@ -2,8 +2,8 @@
 
 ## 작업 정보
 
-- 기간: `2026-08-10`~
-- 상태: in-progress
+- 기간: `2026-08-10`
+- 상태: completed
 - 담당 영역: Data, Team Leader - Integration
 - 브랜치: `feature/schema/eligibility-evidence-contract`
 - 병합 대상: `develop`
@@ -37,7 +37,7 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 | DTL4-4B / ES1 actual 인계 | 완료 | Source dispatcher·정책 identity 기반 5건 소비 fixture 완료 |
 | ES2 Backend 상세 API | 완료 | NormalizedProgram 1.2.0·Migration 0006·JSONB·상세 DTO·PostgreSQL actual 완료 |
 | ES3 Frontend 핵심 조건 UI | 완료 | 상세 타입·Mock·제외조건·서류·문의처·근거·반응형·접근성 검증 완료 |
-| ES4 actual 세로 인수 | 미착수 | 실제 PostgreSQL → API → Browser 대조 대기 |
+| ES4 actual 세로 인수 | 완료 | 승인 웹 표본 DB→API→Browser parity와 Release 1 golden 회귀 통과 |
 
 ## 구현 내용
 
@@ -144,6 +144,27 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
   승인 천안 표본은 HTTP 응답 주입 Browser 테스트로 제외조건·서류·문의처를
   검증하며 실제 DB 연결 완료로 소급하지 않는다.
 
+### ES4 actual 세로 인수
+
+- 승인 천안 목록·상세 HTML fixture를 Runtime Raw로 만든 뒤 전용
+  `cheongnyeon_alimi_test` PostgreSQL에 실제 importer로 적재했다. 생성된 partial
+  정책은 requirement·exclusion·document·unknown 각 1건과 공개 시설 연락처
+  2건을 가졌다.
+- DB JSONB와 `GET /api/v1/policies/{id}?include_partial=true`의 요약은 수집 시각의
+  동등한 UTC 표현을 정규화한 뒤 exact 일치했다. 상세 응답은 200이었고 내부
+  `provenance`는 노출되지 않았다.
+- 실제 API를 소비한 Chromium에서 coverage와 모든 항목 문자열, 전화 `tel:` 링크,
+  공식 채널, 6개 evidence URL을 API 응답과 대조했다. ES3 주입 사례 3건을 함께
+  실행해 4건 모두 통과했다.
+- Release 1 승인 snapshot을 외부 호출 없이 같은 테스트 DB에 재생했다. 행정구역
+  Seed 538건·alias 1,080건 뒤 온통청년 2,695건과 복지로 461건을 적재했고,
+  HTTP 기술 감사 2개 시나리오와 실제 Browser golden이 통과했다.
+- 첫 Browser golden 실행에서 ES3가 추가한 두 번째 `role="note"` 때문에 기존
+  locator가 모호해진 것을 발견했다. 비확정 문구가 있는 note로 locator 범위를
+  좁힌 뒤 재실행해 통과했으며 UI 동작이나 계약 값은 변경하지 않았다.
+- 검증에 사용한 Uvicorn을 종료하고 테스트 DB를 Alembic base로 되돌려 정책
+  테이블이 남지 않은 것을 확인했다.
+
 ## 주요 변경 파일
 
 - `collectors/eligibility.py`
@@ -178,6 +199,7 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 - `frontend/src/utils/eligibilitySummary.ts`
 - `frontend/tests/eligibilitySummary.test.ts`
 - `frontend/e2e/eligibility-summary.spec.ts`
+- `frontend/e2e/policy-search-audit.spec.ts`
 - `docs/development/develop_plan/forest_roadmap.md`
 - `docs/development/develop_plan/README.md`
 
@@ -201,7 +223,9 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 | 전체 Frontend 단위 계약 (`npm.cmd test`) | 통과: 50건 |
 | Frontend production build·lint | 통과: TypeScript·Vite build와 ESLint |
 | ES3 승인 표본 Browser (`VITE_USE_MOCK=false`) | 통과: 3건, 제외·서류·문의처·unknown·긴 문장·오류·키보드·모바일 검증 |
-| 기존 Frontend Browser 회귀 | 통과: 10건, ES3 HTTP 주입 3건과 실제 API golden 1건은 환경 조건에 따라 skip |
+| 기본 Frontend Browser 회귀 | 통과: 10건, 조건부 actual 5건은 기본 Mock 환경에서 정상 skip |
+| ES4 승인 웹 actual Browser | 통과: 실제 API parity 포함 4건 |
+| Release 1 실제 HTTP·Browser golden | 통과: 기술 감사 2개 시나리오, Chromium 1건 |
 | Backend exact field parity pytest | 통과: Normalized 37필드·ORM·Importer·목록/상세 API 계약 회귀 없음 |
 | DTL4-4B Source 소비 fixture | 통과: 승인 Source 3종·적재 후보 5건, Schema issue 0건 |
 | 천안 승인 공지 actual mapper | 통과: 요청 2회, Raw 3건, 정책 1건, Schema issue 0건 |
@@ -217,8 +241,9 @@ Starlette 1.3.1 `TestClient`가 우선 사용하는 `httpx2`를 테스트 의존
 
 ## 남은 작업
 
-- Data output과 Backend DTO·DB·Migration·상세 API는 ES2에서 확정했다.
-- Frontend 상세 타입·Mock·제외 조건·필요 서류·문의처와 접근성은 ES3에서
-  확정했다.
-- Team Leader는 현재 Integration 브랜치에서 실제 PostgreSQL → API → Browser를
-  대조하는 ES4를 수행한다.
+- Integration 08의 Data 계약, Backend 저장·상세 API, Frontend 상세 UI와 actual
+  세로 인수는 완료했다.
+- 사용자 로컬 조건과의 실제 비교·추천 이유 생성은 이 Forest 범위가 아니며
+  후속 Integration 06에서 승인 문구와 비확률화 경계를 소비한다.
+- W4-G1 이후 공통 parity와 Release 2 Gate는 별도 주차 Slice이므로 이번 완료로
+  소급 승인하지 않는다.

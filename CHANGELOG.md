@@ -11,8 +11,9 @@
 ### Added
 
 - 정책 상세에 Source 근거가 있는 신청 조건·제외 조건·필요 서류·공개 시설
-  문의처 요약을 추가하고 NormalizedProgram 1.2·PostgreSQL JSONB·반응형 UI로 연결
-  ([계약](docs/data/eligibility_summary_contract.md))
+  문의처 요약을 추가하고 NormalizedProgram 1.2·PostgreSQL JSONB·반응형 UI와
+  실제 세로 인수로 연결
+  ([개발 기록](docs/development/development_notes/integration/eligibility_evidence_summary.md))
 - 승인한 천안청년센터 공개 공지를 제한 수집하고 Runtime Raw → 정규화 →
   PostgreSQL → partial 정책 상세 API까지 재처리하는 첫 공식 웹 Source 기반 추가
   ([개발 기록](docs/development/development_notes/data/public_https_policy_ingestion.md))

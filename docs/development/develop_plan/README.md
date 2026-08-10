@@ -30,7 +30,7 @@
 | Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | approved |
 | Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
 | Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | draft |
-| Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | in-progress |
+| Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | completed |
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께

@@ -452,6 +452,12 @@ API 모드 브라우저 캡처에서 홈·목록의 기본 valid 2건과 공개 
 `PolicyDetailDto`, 제외 조건·필요 서류·문의처·공개 evidence UI 소비를
 구현했다. 목록 Mock과 실제 목록 응답에는 요약을 추가하지 않는다.
 
+ES4는 승인 천안 fixture를 실제 PostgreSQL에 Runtime 적재해 DB JSONB와 상세
+응답의 요약을 exact 대조하고, Chromium에서 모든 항목·시설 전화 `tel:` 링크·
+공식 채널·6개 evidence URL이 API와 일치함을 확인했다. 공개 상세 응답에는 내부
+`provenance`가 없었고 Release 1 실제 API golden 검색·상세 Browser 회귀도
+통과했다.
+
 ## 통합 검증
 
 `tests/integration/test_seed_to_policy_api.py`는 canonical Seed 4건을 실제

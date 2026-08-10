@@ -4,8 +4,8 @@
 
 - 번호: Integration 08
 - 담당 영역: Data·Backend·Frontend
-- 상태: in-progress
-- 진행: `ES0`·`ES1`·`ES2`·`ES3` 완료, `ES4` actual 세로 인수 대기
+- 상태: completed
+- 진행: `ES0`~`ES4` 완료
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline
@@ -177,11 +177,18 @@ ES2에서 actual 편입 완료)
 - 승인 웹 표본을 주입한 Chromium 검증으로 제외조건·서류·문의처·근거 링크·
   키보드 focus와 모바일 1열 배치를 확인한다.
 
-### ES4 - actual 세로 인수
+### ES4 - actual 세로 인수 (완료)
 
 - 실제 PostgreSQL → 정책 상세 API → Browser에서 대표 사례를 검증한다.
 - UI 항목이 DB evidence와 일치하고 공식 원문으로 이동 가능한지 대조한다.
 - 기존 목록·상세·검색과 Release 1 golden 회귀를 실행한다.
+
+승인 천안 HTML fixture를 전용 PostgreSQL에 Runtime 적재한 뒤 상세 API와
+Browser를 대조했다. partial 요약의 필수·제외·서류·unknown·시설 문의처와
+6개 공개 evidence URL이 일치했고 공개 응답에는 내부 provenance가 없었다.
+Release 1 승인 snapshot 3,156건도 같은 테스트 DB에 재생해 HTTP 기술 감사
+2개 시나리오와 실제 Browser golden을 통과했다. 검증 뒤 Uvicorn을 종료하고
+테스트 DB는 Alembic base로 되돌렸다.
 
 ## 검증 계획
 
