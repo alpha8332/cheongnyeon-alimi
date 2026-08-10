@@ -4,12 +4,13 @@
 
 - 번호: Data 03
 - 담당 영역: Data
-- 상태: draft
+- 상태: in-progress
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline, Data 02 Release Dataset Bootstrap
 - 후속 Forest: Backend 05, Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/data/recurrent-quality-operations`
+- 현재 진행: DTL4-2A fixture·판정·실패 단계 기반 구현 완료, DTL4-2B 대기
 
 ## 목적
 
@@ -48,6 +49,20 @@
 - Source 근거 없는 필드 승격과 오류 자동 보정을 하지 않는다.
 - 같은 identity에 대한 재실행은 중복 row를 만들지 않는다.
 - 관리자 소비에는 분류·건수·안전한 요약만 제공한다.
+
+## DTL4-2A 구현 기준
+
+- business 변경 비교에서 `collected_at`과 `provenance`를 제외한다. 이 두 값만
+  달라진 재실행은 저장 row를 바꾸지 않고 `unchanged`로 판정한다.
+- 실행 내 같은 `(source_id, external_id)`는 첫 후보만 canonical 입력으로
+  사용하고 이후 후보는 `duplicate`로 별도 집계한다.
+- importer가 다루는 오류 단계는 `validate`와 `persist`로 제한하며 예외
+  메시지·Raw·credential 대신 안전한 code·exception class만 유지한다.
+- canonical Seed의 invalid·identity admission 실패 시 전체 batch를 쓰지 않는
+  기존 원자성은 유지한다. Runtime의 invalid 격리는 replay 단계에서 accepted
+  program만 importer로 넘기는 기존 경계를 사용한다.
+- `duplicate_count`와 `rejected_count`의 CollectionRun 컬럼·Migration·관리자
+  소비 연결은 DTL4-2B PostgreSQL 작업에서 구현한다.
 
 ## Slice 계획
 

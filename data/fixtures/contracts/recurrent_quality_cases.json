@@ -1,0 +1,81 @@
+{
+  "base_seed_indexes": [
+    0,
+    1
+  ],
+  "cases": [
+    {
+      "expected": {
+        "duplicate": 0,
+        "unchanged": 2,
+        "updated": 0
+      },
+      "id": "same_snapshot",
+      "operation": "rerun"
+    },
+    {
+      "expected": {
+        "duplicate": 0,
+        "unchanged": 2,
+        "updated": 0
+      },
+      "id": "collection_metadata_only",
+      "operation": "patch",
+      "patch": {
+        "collected_at": "2026-08-10T03:00:00+00:00",
+        "provenance_collected_at": "2026-08-10T03:00:00+00:00"
+      },
+      "target_index": 0
+    },
+    {
+      "expected": {
+        "duplicate": 0,
+        "unchanged": 1,
+        "updated": 1
+      },
+      "id": "single_business_field",
+      "operation": "patch",
+      "patch": {
+        "title": "변경된 합성 반복 수집 정책"
+      },
+      "target_index": 0
+    },
+    {
+      "expected": {
+        "accepted": 2,
+        "duplicate": 1,
+        "inserted": 2,
+        "issue_code": "duplicate_identity",
+        "issue_stage": "validate",
+        "stored": 2
+      },
+      "id": "duplicate_in_run",
+      "operation": "append_duplicate",
+      "target_index": 0
+    },
+    {
+      "expected": {
+        "committed": false,
+        "inserted": 0,
+        "issue_stage": "validate",
+        "rejected": 1
+      },
+      "field": "application_start",
+      "id": "invalid_batch",
+      "operation": "remove_required_field",
+      "target_index": 1
+    },
+    {
+      "expected": {
+        "committed": false,
+        "failed": 1,
+        "inserted": 0,
+        "issue_code": "database_write_failed",
+        "issue_stage": "persist"
+      },
+      "id": "persist_failure",
+      "operation": "fail_second_write"
+    }
+  ],
+  "schema_version": "1.0.0"
+}

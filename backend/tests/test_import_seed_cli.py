@@ -39,6 +39,7 @@ def test_cli_prints_all_import_outcomes(capsys):
         inserted=1,
         updated=1,
         unchanged=1,
+        duplicate=1,
         skipped=2,
         rejected=1,
         failed=1,
@@ -74,6 +75,7 @@ def test_cli_prints_all_import_outcomes(capsys):
     assert "Inserted: 1" in output
     assert "Updated: 1" in output
     assert "Unchanged: 1" in output
+    assert "Duplicate: 1" in output
     assert "Skipped: 2" in output
     assert "Rejected: 1" in output
     assert "Failed: 1" in output

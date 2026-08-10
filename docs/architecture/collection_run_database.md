@@ -59,6 +59,19 @@ start
   관리자 기능은 이를 진행 중 또는 중단 확인 필요 상태로 구분해야 하며
   임의로 성공 처리하면 안 된다.
 
+### DTL4-2A importer 판정과 DTL4-2B 저장 경계
+
+Importer 결과는 `inserted`, `updated`, `unchanged`, `duplicate`, `rejected`,
+`failed`를 구분한다. `collected_at`·provenance만 달라진 입력은 business 변경이
+아니므로 `unchanged`이며, 실행 내 같은 source-scoped identity는 첫 후보만
+처리하고 이후 후보를 `duplicate`로 센다. 안전한 오류 단계는 `validate` 또는
+`persist`와 exception class만 제공한다.
+
+현재 `collection_runs` 물리 테이블에는 `duplicate_count`와 `rejected_count`가
+없어 두 집계를 아직 영속하지 않는다. 기존 `skipped_count`나 `invalid_count`로
+의미를 바꿔 저장하지 않으며, 두 컬럼과 Migration·관리자 DTO 연결은 DTL4-2B
+완료 조건이다.
+
 ## Transaction과 보안 경계
 
 실행 이력의 시작·종료 write는 Policy import와 별도 session/transaction을

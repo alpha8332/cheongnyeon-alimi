@@ -35,6 +35,7 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 | `data/fixtures/normalized/programs.json` | valid·partial 결과 | 4 |
 | `data/fixtures/rejected/programs.json` | invalid와 실패 사유 | 1 |
 | `data/fixtures/contracts/policy_search_region_cases.json` | 검색 범위·지역 관계 경계 사례 | 7 |
+| `data/fixtures/contracts/recurrent_quality_cases.json` | 반복·수정·중복·실패 판정 사례 | 6 |
 | `data/seeds/initial_programs.json` | canonical 개발 Seed | 4 |
 | `data/seeds/administrative_regions.json` | versioned 지역 Seed | 538 |
 | `data/seeds/administrative_region_aliases.json` | 지역 별칭 Seed | 1,080 |
@@ -75,6 +76,11 @@ Raw Fixture는 실제 응답에서 확인한 JSON·XML 문서 역할과 필드 �
 partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 일부
 부족하다는 품질 상태를 보존하며, invalid만 정상 Fixture와 Seed에서
 분리한다.
+
+반복 품질 계약 Fixture는 canonical Seed의 0·1번 합성 정책을 참조하고 실제
+정책 객체를 복제하지 않는다. 동일 snapshot, 수집 metadata만 변경, business
+field 1개 변경, 실행 내 duplicate, invalid batch와 persist 실패의 기대 집계를
+고정한다. 외부 네트워크와 Runtime Raw를 사용하지 않는다.
 
 ## canonical JSON 소비 계약
 
@@ -181,7 +187,7 @@ uv run python -B scripts/build_data_fixtures.py --check
 ```
 
 `--check`는 외부 API와 `runtime/raw/`를 사용하지 않는다. 이 생성기가 소유한
-Fixture 12개와 `initial_programs.json`의 누락·추가·byte 차이가 있으면
+Fixture 13개와 `initial_programs.json`의 누락·추가·byte 차이가 있으면
 실패한다. 행정구역 Seed는 별도 생성기의 `--check`로 검증한다.
 
 ```powershell

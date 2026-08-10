@@ -11,7 +11,7 @@
 | Integration 01 | Docs System | [개발 계획](integration/01_docs_system.md) | completed |
 | Data 01 | Data Pipeline | [개발 계획](data/01_data_pipeline.md) | completed |
 | Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | completed |
-| Data 03 | Recurrent Collection and Quality Operations | [개발 계획](data/03_recurrent_collection_quality_operations.md) | draft |
+| Data 03 | Recurrent Collection and Quality Operations | [개발 계획](data/03_recurrent_collection_quality_operations.md) | in-progress |
 | Data 04 | Public HTTPS Policy Ingestion | [개발 계획](data/04_public_https_policy_ingestion.md) | draft |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |

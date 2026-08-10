@@ -11,6 +11,7 @@
 | Docs System | [개발 기록](integration/docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
 | Data Pipeline | [개발 기록](data/data_pipeline.md) | Data 0 | API Source Preflight와 비밀정보 경계 |
 | Release Dataset Bootstrap | [개발 기록](data/release_dataset_bootstrap.md) | DT0~DT4 | Release 1 실제 정책 수집·적재 기준선과 검증 |
+| Recurrent Collection and Quality Operations | [개발 기록](data/recurrent_collection_quality_operations.md) | DTL4-2A~ | 반복·수정·중복·실패 판정과 품질 운영 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
 | React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |

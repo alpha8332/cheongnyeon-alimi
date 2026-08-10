@@ -132,6 +132,7 @@ class RuntimeImportCliTests(unittest.TestCase):
         self.assertIn("raw=4", stdout.getvalue())
         self.assertIn("invalid=1", stdout.getvalue())
         self.assertIn("inserted=1", stdout.getvalue())
+        self.assertIn("duplicate=0", stdout.getvalue())
         self.assertIn("raw_document_ids=", stdout.getvalue())
         self.assertIn(
             "run_id=22222222-2222-4222-8222-222222222222",
