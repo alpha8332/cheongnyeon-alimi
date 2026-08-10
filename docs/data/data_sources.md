@@ -3,7 +3,8 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 온통청년·복지로 Collector 구현 및 제한 실호출 확인
+- 현재 구현 상태: 온통청년·복지로 API와 천안청년센터 승인 웹 Collector 구현,
+  제한 실호출 확인
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -18,15 +19,15 @@
 | --- | --- | --- | --- |
 | 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 Raw 수집 확인 |
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
-| 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | W4-G0 승인, 공지 674번 preflight 확인 |
+| 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 목록·상세 actual Raw·Extractor 확인 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
 자료이므로 Fixture나 커밋 대상이 아니다. 웹 Source의 실제 원문 HTML·이미지도
 Git에 넣지 않고 합성·최소 구조 Fixture만 사용한다.
 
-현재 구현은 두 공식 API만 포함한다. 승인 웹 Source 구현은 Data 04 Forest에서
-진행한다.
+현재 구현은 두 공식 API와 승인 웹 Source의 제한 Collector·Extractor 기반을
+포함한다. 웹 Source의 정규화·PostgreSQL 연결은 Data 04 DTL4-3B에서 진행한다.
 구체적인 수집 건수와 결정 게이트는
 [Data Pipeline Forest 계획](../development/develop_plan/data/01_data_pipeline.md)을
 따른다.
@@ -196,10 +197,15 @@ detail: /NationalWelfaredetailedV001
 
 `/robots.txt`는 directive 대신 404 페이지를 반환했고 별도 사이트 이용약관은
 찾지 못했으며 footer에는 `all rights reserved`가 표시된다. 로그인·회원·신청·
-CAPTCHA·첨부·이미지·이메일·전화번호·개인정보 페이지는 수집하지 않는다.
-actual HTML은 `runtime/html/`에만 두고 Git Fixture는 원문을 복제하지 않은
-합성·최소 구조로 만든다. Selector는 Data 04 구현 시 actual DOM을 다시 확인해
-Source module에만 확정한다.
+CAPTCHA·첨부·이미지·개인정보 페이지는 따라가지 않는다. 공개 시설 대표전화와
+공식 문의 채널은 기관 정보로 구분해 Runtime Raw와 Source 전용 필드에 보존하고,
+개인 휴대전화·개인 이메일·성명은 구조화 추출하지 않는다. actual HTML Raw는
+`runtime/raw/`에만 두고 Git Fixture는 원문을 복제하지 않은 합성·최소 구조로
+만든다.
+
+DTL4-3A actual 확인에서 목록은 `#bo_list`, 상세는 `#bo_v`·`#bo_v_title`·
+`#bo_v_info`·`#bo_v_con`을 사용했다. Source HTML의 비표준 `</img>` 종료 태그는
+void element로 처리하며 selector 누락은 정상 빈 값이 아닌 drift로 분류한다.
 
 ## 소스 등록 시 기록할 정보
 
