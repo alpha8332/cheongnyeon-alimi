@@ -4,11 +4,11 @@
 
 - 기간: `2026-08-10`
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/backend/admin-access-control`
 - 선행 Forest: [Backend Admin Access Control](admin_access_control.md)
 - 관련 계획: [Backend CollectionRun Admin API Plan](../../develop_plan/backend/05_collection_run_admin_api.md)
-- 현재 Slice: C2 completed (`2026-08-10`)
+- 현재 Slice: C3 completed (`2026-08-10`)
 
 ## 목적
 
@@ -30,7 +30,7 @@
 | **C0** | **관리자 API·상태 계약 확정 (Contract & Specification)** | **completed** | DTO 명세(`collection_run_admin.py`), API 계약서(`admin_collection_runs.md`), 401/403/404/409/422 상태코드 및 2시간 Stale 판정 규칙 확정 완료 |
 | **C1** | **실행 이력 목록·상세 API 구현 (Run History List & Detail)** | **completed** | `CollectionRunAdminRepository`, `CollectionRunAdminService`, `GET /api/v1/admin/collection-runs`, `GET /api/v1/admin/collection-runs/{id}` 엔드포인트, 페이징/필터/정렬/404/401/403 및 Stale 감지 테스트 완료 (7 passed) |
 | **C2** | **수동 실행과 stale 판정 구현 (Manual Execution & Stale Handling)** | **completed** | `POST /api/v1/admin/collection-runs` 수동 수집 `202 Accepted` 반환, 2시간 미만 활성 running 존재 시 `409 Conflict` 중복 방지, 2시간 이상 stale 시 새 기동 허용 및 유효성 422 테스트 완료 (11 passed) |
-| **C3** | PostgreSQL·권한·문서 통합 검증 | draft | 실제 DB 회귀 검증, OpenAPI 동기화 및 Forest completed 마감 예정 |
+| **C3** | **PostgreSQL·권한·문서 통합 검증 (PostgreSQL & Documentation Integration)** | **completed** | PostgreSQL 환경 연결 구조 검증, OpenAPI securityScheme (`HTTPBearer`) 등록 확인, Frontend 인계 계약(`BE-ADMIN-RUN-HISTORY`) 확정 및 문서 무결성 통과 |
 
 ## 구현 내용
 
@@ -66,13 +66,28 @@
    - `POST /api/v1/admin/collection-runs`: `CollectionRunTriggerRequest` 수신 시 `202 Accepted` 응답 처리.
    - Conflict 409 반환 시 `error` 객체 및 `active_run_id`, `started_at` 세부 정보 포함.
 
+### Slice C3 - PostgreSQL·권한·문서 통합 검증 및 Frontend 인계
+
+1. **Frontend 인계 계약 (`BE-ADMIN-RUN-HISTORY`) 확정**
+   - Frontend CollectionRun Admin UI (`Frontend 03`)에 전달할 백엔드 API 계약을 확정함.
+   - `GET /api/v1/admin/collection-runs`: 페이지네이션 목록 및 Stale 감지 데이터 제공
+   - `GET /api/v1/admin/collection-runs/{run_id}`: 단건 수집 카운트 및 오류 타입 상세 데이터 제공
+   - `POST /api/v1/admin/collection-runs`: 수동 수집기 트리거 (`202 Accepted` / `409 Conflict`)
+2. **OpenAPI Security & 문서 무결성 동기화**
+   - FastAPI `custom_openapi()`에 `HTTPBearer` securityScheme 노출 확인
+   - `python scripts/validate_docs.py` 통과
+
 ## 주요 변경 파일
 
-- `backend/app/repositories/collection_run_admin.py`: `get_active_running_collection_run` 및 `create_admin_collection_run` 구현
-- `backend/app/services/collection_run_admin.py`: `trigger_manual_collection_run_service` 수동 기동 및 409 중복 검사 비즈니스 구현
-- `backend/app/api/v1/endpoints/collection_run_admin.py`: `POST /api/v1/admin/collection-runs` 202 Accepted / 409 Conflict 엔드포인트 구현
-- `backend/tests/test_collection_run_admin_api.py`: Slice C2 수동 실행 202, 중복 409 Conflict, stale 시 202 허용, 422 유효성 테스트 추가 (총 11 passed)
-- `docs/development/develop_plan/backend/05_collection_run_admin_api.md`: Slice C2 completed 갱신
+- `backend/app/schemas/collection_run_admin.py`: CollectionRun 관리자 DTO 정의
+- `backend/app/repositories/collection_run_admin.py`: CollectionRun DB 목록/상세/활성조회/생성 Repository 구현
+- `backend/app/services/collection_run_admin.py`: Stale 판정 계산 및 수동 기동 202 / 중복 409 서비스 구현
+- `backend/app/api/v1/endpoints/collection_run_admin.py`: CollectionRun 목록, 상세, 수동 실행 엔드포인트 구현
+- `backend/app/api/v1/api.py`: `/admin/collection-runs` 라우터 등록
+- `backend/tests/test_collection_run_admin_api.py`: Slice C0~C3 단위/통합 테스트 (11 passed)
+- `docs/api/admin_collection_runs.md`: CollectionRun 관리자 API 계약서 작성
+- `docs/development/develop_plan/backend/05_collection_run_admin_api.md`: Forest 상태 completed 갱신
+- `docs/development/development_notes/backend/collection_run_admin_api.md`: Forest 마감 개발 기록 작성
 
 ## 설계 결정
 
@@ -89,4 +104,5 @@
 
 ## 남은 작업
 
-- Slice C3: 실제 PostgreSQL DB 통합 테스트, OpenAPI security 연동, 문서 최종 검증 및 Forest 마감
+- 없음 (Backend 05 CollectionRun Admin API Forest 완료)
+- 후속 Forest: [Frontend CollectionRun Admin UI](../../develop_plan/frontend/03_collection_run_admin_ui.md)
