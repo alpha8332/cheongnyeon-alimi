@@ -115,6 +115,131 @@ Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 �
 | 파일 로그 | UTF-8 JSON Lines, stdout 병행, component level·rotation·retention |
 | 로그 삭제 | 회전 archive만 확인 절차 뒤 삭제, path containment와 별도 감사 기록 |
 
+## DTL4-1 검토 중 계약 (`2026-08-10`)
+
+현재 Gate 상태는 `W4-G0_REVIEW_PENDING`이다. 다음 표는 Data inventory와
+Backend 구현 대조 및 공식 웹 Source preflight를 반영한 소비 검토안이며,
+Frontend TypeScript·Mock 검토와 아래 action item이 끝나기 전에는 현재 API·DB
+계약이 아니다.
+
+### 반복 수집·품질 의미
+
+| 결과 | 검토안 |
+| --- | --- |
+| `inserted` | `(source_id, external_id)`가 없는 새 Policy identity를 처음 저장 |
+| `updated` | 승인한 business field 또는 검색 projection이 기존 값과 다름 |
+| `unchanged` | business field와 검색 projection이 같음. `collected_at`, Raw hash·ID, run ID, 저장 시각만 달라진 경우 포함 |
+| `duplicate` | 한 실행 또는 같은 snapshot에 같은 source-scoped identity가 반복됨. 첫 canonical 후보 외에는 저장하지 않고 별도 집계 |
+| `partial` | Policy는 저장 가능하지만 필수 검색·조건 coverage 일부가 근거 부족이며 사용자에게 partial로 노출 |
+| `invalid` | Normalized Schema 또는 값 불변식을 위반해 저장 불가 |
+| `rejected` | invalid 또는 승인하지 않은 identity 경계로 import 대상에서 제외 |
+| `failed` | fetch·extract·normalize·validate·persist 단계의 실행 실패. 안전한 stage·error type만 노출 |
+
+현재 importer는 `collected_at`과 provenance도 mutable 비교에 포함하므로 동일
+business payload의 재수집이 거짓 `updated`가 될 수 있다. Data 03은 business
+비교 field와 실행 metadata를 분리하고 `duplicate_count`·`rejected_count`의
+CollectionRun 저장 여부를 Backend 05 소비 계약과 함께 확정한다.
+
+### 공식 웹 Source와 identity
+
+| 항목 | 검토안 |
+| --- | --- |
+| 사이트 | [온통청년](https://www.youthcenter.go.kr/), 대한민국 공식 전자정부 누리집 |
+| Source ID | `youthcenter-web` 후보 |
+| 목록 | `/youthPolicy/ythPlcyTotalSearch`, 익명 공개 정책 목록 |
+| 상세 | `/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/{policy_number}` |
+| identity | 상세 `정책번호`; API `plcyNo`와 exact 일치할 때만 같은 발행기관의 관련 identity 후보 |
+| 충돌 | 번호 불일치·제목/기관 불일치는 자동 병합하지 않고 별도 source identity와 conflict로 격리 |
+| 허용 경계 후보 | 로그인·개인정보·스크랩·CAPTCHA 없음, 동시 요청 1개, 첫 목록 1회와 상세 최대 3건, 요청 시작 간격 최소 2초 |
+| 보존 | actual HTML은 `runtime/html/`에만 보존, Git fixture는 최소 구조를 비식별·축소해 별도 검토 |
+
+[현행 이용약관](https://www.youthcenter.go.kr/cmnFooter/termsInfo)은
+`2026-06-23` 시행본이며 대량 이용은 별도 계약으로 두고, 사전 협의 없는
+자동화 도구의 로그인·개인정보 scraping·과도한 트래픽·CAPTCHA 우회를 제한한다.
+`/robots.txt`는 확인 시 기계 판독 규칙 대신 온통청년 오류 shell을 반환했다.
+따라서 위 최소 공개 요청 경계가 약관상 대량 이용이 아닌지 Team Leader가
+재확인하거나 제공기관 확인을 받아야 Data 04 actual 수집을 승인할 수 있다.
+
+공개 상세에서 정책번호, 지원 내용·기간, 연령·혼인·지역·소득·학력·전공·
+취업·특화·추가·참여제한, 신청절차·심사·사이트·제출서류와 변경일을 확인했다.
+Release 1 golden 정책번호 `20260430005400212969`가 웹 상세와 API external ID에
+exact 일치함도 확인했다. 웹 응답은 최초 shell 뒤 비동기로 값이 채워지므로
+Data 04에서 정적 HTML 또는 이용 조건이 허용하는 공개 요청만으로 재현 가능한지
+확인하며 Playwright 기본 도입은 승인하지 않는다.
+
+### 자격요건 evidence 호환 확장
+
+기존 `eligibility_text`, `required_conditions`, `preferred_conditions`,
+`excluded_conditions`는 유지한다. 새 구조는 기존 소비자를 깨지 않는
+`eligibility_summary` 후보로 검토한다.
+
+| 필드 | 의미 |
+| --- | --- |
+| `coverage` | `complete`, `partial`, `unknown` |
+| `requirements` | 필수 조건 evidence item 배열 |
+| `exclusions` | 참여 제한·제외 evidence item 배열 |
+| `preferences` | 우대 조건 evidence item 배열 |
+| `documents` | 제출 서류 evidence item 배열 |
+| `unknowns` | 자동 구조화·비교하지 못한 원문 evidence item 배열 |
+
+각 evidence item은 `category`, 원문을 훼손하지 않은 `text`와 하나 이상의
+evidence를 가진다. evidence는 `source_id`, `source_url`, `collected_at`,
+`locator_type`(`source_field` 또는 `css_selector`)과 `locator`를 포함한다.
+개인 비교 verdict는 저장 Data가 아니라 Backend 응답에서 `match`, `mismatch`,
+`unknown`으로 계산하며 UI 문구는 각각 `조건상 일치`, `조건상 불일치`,
+`추가 확인 필요`로 제한한다.
+
+Release 1 snapshot의 현재 구조화 배열은 두 Source 모두
+`required/preferred/excluded`, education·employment coverage가 0건이다.
+`eligibility_text`는 온통청년 2,695건 중 1,024건, 복지로 461건 중 5건만
+존재하며 제출 서류 전용 구조와 항목별 evidence는 없다. 따라서 이 확장은
+호환 추가 Schema·DB·API 작업이며 기존 문자열을 새 구조로 추정 변환하지 않는다.
+
+### 사용자·추천·날짜 소비 경계
+
+- localStorage 후보 key는 `cheongnyeon-alimi:user-state`, payload `version=1`로
+  고정하고 이름·연락처·생년월일·상세 주소를 저장하지 않는다.
+- 조건은 나이 정수, canonical 지역 code, 승인 enum과 free-text keyword의 최소
+  집합만 저장한다. 즐겨찾기는 source-scoped identity를 저장한다.
+- 알 수 없는 version·손상 payload는 별도 migration이 없으면 안전하게 초기화하고
+  사용자에게 알린다. 설정 화면에서 조건·즐겨찾기·알림 상태 전체 삭제를 제공한다.
+- 추천은 기존 검색·3값 판정 primitive를 재사용하고 점수는 같은 요청 안의
+  정렬용이다. 응답은 이유와 `unknown` 조건을 우선하며 자격 확률을 표시하지 않는다.
+- D-Day는 `application_end`가 있는 fixed period만 `Asia/Seoul` calendar date로
+  계산한다. `always`, `until_budget_exhausted`, null·불일치 기간에는 생성하지 않는다.
+- 앱 내부 알림과 정책별 all-day `.ics`는 브라우저가 생성하며 외부 전송·서버
+  캘린더 계정 연동을 하지 않는다.
+
+### 관리자 계약 대조 결과
+
+Backend `f7ffca4254a52cc94666a575567cbf73b7cb92de`의 4자리 PIN DTO,
+`POST /api/v1/admin/session`, 60분 bearer token, `admin` role,
+`401`·`403`·`422`·점진적 `429`와 공통 dependency는 기준선과 일치한다.
+브랜치명과 Backend의 구현 시점은 Gate 차단 사유가 아니다.
+
+다음 두 항목은 W4-G0 전에 Backend 확인 또는 수정이 필요하다.
+
+1. 기본 `0000`은 `ENVIRONMENT` 값만 검사하고 실제 localhost host·bind 경계를
+   검사하지 않아 development 설정의 외부 bind에서도 허용될 수 있다.
+2. `ADMIN_TOKEN_SECRET`이 없으면 `SECRET_KEY`로 fallback하며 기본
+   `dev-secret-key-change-in-production`도 사용할 수 있어, production의 별도
+   token secret 미설정 fail-closed 기준과 다르다.
+
+IP별 rate limit은 process memory 기준이므로 현재 단일 process 로컬·시연
+기준선으로만 검토한다. 다중 worker·reverse proxy production 보장은 범위 밖이며
+외부 배포 전 별도 보강 조건으로 기록한다.
+
+### Gate 미완료 항목
+
+| ID | 상태 | 다음 담당 | 완료 조건 |
+| --- | --- | --- | --- |
+| `W4-G0-BE-AUTH` | action-needed | Backend | localhost `0000` 경계와 production 별도 token secret fail-closed 대조·수정 근거 |
+| `W4-G0-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 소비 검토 |
+| `W4-G0-WEB-BOUNDARY` | action-needed | Data·Team Leader | robots 미제공과 현행 약관에서 제한 actual 요청·보존 경계 승인 또는 제공기관 확인 |
+
+세 항목이 끝나고 Data·Backend·Frontend가 자신의 소비 관점에서 확인한 뒤에만
+`W4-G0_APPROVED`를 기록한다.
+
 ## Slice 계획
 
 ### C0 - 현재 계약 inventory
@@ -172,7 +297,8 @@ Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 �
 - 관리자 credential 저장·검증 방식과 token library는 W4-G0 승인 전 미확정이다.
 - 공개 README에는 실제 PIN·hash·secret이 아니라 설정·hash 생성·교체 방법만
   기록한다.
-- 대표 공식 HTTPS 사이트가 아직 선정되지 않아 Data 04 구현은 W4-G0 승인 전
+- 온통청년을 대표 공식 HTTPS Source 후보로 확인했지만 robots·현행 약관의
+  제한 actual 요청·보존 경계가 미승인이므로 Data 04 구현은 W4-G0 승인 전
   시작할 수 없다.
 - Runtime log directory, 보존 상한과 삭제 감사 저장소는 W4-G0 승인 전
   미확정이다.

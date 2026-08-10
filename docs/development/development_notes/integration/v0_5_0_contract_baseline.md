@@ -5,7 +5,7 @@
 - 기간: `2026-08-10`~
 - 상태: in-progress
 - 담당 영역: Data, Team Leader - Integration
-- 현재 작업 브랜치: `develop` (작업 브랜치 미생성)
+- 현재 작업 브랜치: `docs/docs/v0-5-contract-baseline`
 - 권장 Forest 브랜치: `docs/docs/v0-5-contract-baseline`
 - merge target: `develop`
 - 시작 SHA: `e5ff8c81e0e902723c5b79dee1267be7e5e2e66c`
@@ -30,7 +30,7 @@
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | DTL4-0 | 완료 | 시작 SHA·환경·Forest 소유·merge target과 비추적 경계 확인 |
-| DTL4-1 / C0~C4 | 대기 | Data inventory와 소비 초안 대조 뒤에만 `W4-G0` 판정 |
+| DTL4-1 / C0~C4 | in-progress | Data·Backend·웹 Source preflight 완료, FE 소비 검토와 action item 대기 |
 
 ## 구현 내용
 
@@ -105,6 +105,72 @@ OpenAPI 초안을, Frontend에는 PIN·관리자·핵심 조건·추천·로컬 
 TypeScript·Mock 초안을 DTL4-1 소비 검토 입력으로 요구한다. 계획에 정한 역할을
 기록한 것이며 아직 두 담당의 공동 승인 증거는 아니다.
 
+### DTL4-1 Data inventory
+
+- 현재 Policy upsert는 identity·immutable field 외 모든 write field를 mutable로
+  비교한다. `collected_at`과 provenance도 포함돼 재수집 metadata만 달라진
+  동일 policy가 `updated`로 집계될 수 있다.
+- CollectionRun은 requested·Raw·extracted·accepted·partial·invalid·inserted·
+  updated·unchanged·skipped·failed count를 저장하지만 duplicate·rejected 전용
+  count는 없다.
+- 현재 Normalized Schema는 `eligibility_text`와 required·preferred·excluded
+  string 배열을 제공하지만 항목별 evidence·제출서류·coverage 구조가 없다.
+- Release 1 offline replay에서 온통청년 2,695건 중 `eligibility_text` 1,024건,
+  복지로 461건 중 5건만 존재했다. 두 Source 모두 required·preferred·excluded,
+  education·employment 구조화 배열은 0건이었다.
+- 기존 field를 제거하거나 의미를 바꾸지 않고 `eligibility_summary` 호환 확장
+  후보와 business 비교 field 분리를 Integration 05 계획에 기록했다.
+
+### DTL4-1 Backend 소비 대조
+
+`f7ffca4254a52cc94666a575567cbf73b7cb92de`의 실제 문서·Schema·service·endpoint·
+dependency를 정적으로 대조했다. 4자리 PIN, session 응답, 60분 token, role,
+오류 상태와 progressive cooldown은 계획 후보와 일치한다.
+
+다음 차이는 Backend action item으로 분류했다.
+
+- 기본 `0000` 허용이 localhost host·bind가 아니라 `ENVIRONMENT` 문자열에만
+  의존한다.
+- production에서도 `ADMIN_TOKEN_SECRET`이 없으면 기본값이 있는 `SECRET_KEY`로
+  fallback할 수 있다.
+- process-local rate limit은 단일 process 로컬·시연 기준으로만 유효하고
+  다중 worker·reverse proxy 보장은 하지 않는다.
+
+Backend 브랜치명이나 W4-G0 전 구현 시작 자체는 계약 차이로 분류하지 않았다.
+
+### DTL4-1 공식 웹 Source preflight
+
+`2026-08-10`에 [온통청년](https://www.youthcenter.go.kr/) 익명 공개 화면을
+Browser로 확인했다.
+
+- 대한민국 공식 전자정부 누리집 표시와 운영 주체를 확인함
+- 공개 목록 `/youthPolicy/ythPlcyTotalSearch`에서 정책번호 기반 상세 경로 확인
+- 상세에서 지원·기간, 신청자격 10개 항목, 신청절차·심사·사이트·제출서류,
+  기관·참고 URL·변경일 확인
+- Release 1 golden API external ID `20260430005400212969`와 웹 정책번호가
+  exact 일치하고 같은 정책 제목·내용임을 확인
+- 상세 값은 최초 HTML shell 뒤 비동기로 채워져 정적 HTTP만으로 추출 가능한지는
+  아직 확인하지 않음
+- `/robots.txt`는 기계 판독 directive 대신 온통청년 오류 shell을 반환함
+
+[현행 이용약관](https://www.youthcenter.go.kr/cmnFooter/termsInfo)은
+`2026-06-23` 시행본이다. 대량 이용은 별도 계약으로 두며 사전 협의 없는
+자동화 도구의 로그인·개인정보 scraping, 과도한 트래픽과 CAPTCHA 우회를
+제한한다. 비로그인 공개 정책의 극소수 요청이 명시적으로 금지됐다고 단정할
+근거도, robots가 허용한다고 볼 근거도 충분하지 않다. 이에 Source는 후보로
+유지하고 Data 04 actual 실행 전 제한 범위 승인 또는 제공기관 확인을 남겼다.
+
+### DTL4-1 Gate 상태
+
+`W4-G0_REVIEW_PENDING`으로 판정했다. Data inventory와 Backend·웹 Source
+preflight는 완료했지만 다음 근거가 없다.
+
+- FE가 아직 4주차 구현을 시작하지 않아 TypeScript·Mock 소비 검토 미수행
+- Backend localhost `0000`·별도 token secret action item 미해소
+- 웹 Source actual 요청·보존 경계 최종 승인 미완료
+
+따라서 DTL4-2·3·4 본 구현 해제와 `W4-G0_APPROVED`를 기록하지 않았다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
@@ -138,14 +204,21 @@ TypeScript·Mock 초안을 DTL4-1 소비 검토 입력으로 요구한다. 계�
 | Data Integration pytest | 4건 skip: `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
 | 문서 검증 | 통과: `scripts/validate_docs.py` |
 | diff 검사 | 통과: `git diff --check` |
+| DTL4-1 Release snapshot coverage replay | 통과: 3,156건 offline, eligibility field 존재 건수 집계 |
+| DTL4-1 runtime replay·release profile 집중 unittest | 16건 통과 |
+| DTL4-1 Data Integration pytest | 4건 skip: `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
+| DTL4-1 Backend contract static review | 완료: BE commit의 문서·Schema·service·endpoint·dependency 대조 |
+| DTL4-1 공식 웹 Source preflight | 부분 완료: 공개 목록·상세·약관 확인, robots·허용 경계 action item |
+| DTL4-1 Frontend 소비 검토 | 미실행: FE 미착수 |
 
 ## 남은 작업
 
-- DTL4-1에서 Data 03·04·Integration 08 inventory와 실제 Source 이용 조건을
-  확인하고 Backend OpenAPI·Frontend TypeScript·Mock 후보를 대조한다.
+- DTL4-1의 FE TypeScript·Mock 소비 검토를 FE 커밋 전달 뒤 수행한다.
+- Backend localhost `0000`·production 별도 token secret action item을
+  Backend 결과와 다시 대조한다.
+- 온통청년 제한 actual 요청·보존 경계를 승인하거나 제공기관 확인 근거를
+  연결한다.
 - PostgreSQL 통합 검증 전에 별도 `_test` DB용 credential과 `TEST_DATABASE_URL`
   을 명시적으로 주입한다. 준비 전 skip을 성공으로 간주하지 않는다.
-- Backend 04 선행 구현의 브랜치명·계획 상태·W4-G0 순서 차이를 Backend와
-  공동 검토하고, 충돌이 있으면 계약을 먼저 갱신한다.
 - `W4-G0_APPROVED`는 Data·Backend·Frontend 소비 검토 증거가 생긴 뒤에만
   기록한다.

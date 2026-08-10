@@ -201,6 +201,19 @@ confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unkn
 기간·상태를 null로 유지한다. Source 근거 없는 승격과 상태 불일치는 0건이며
 golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사를 통과했다.
 
+4주차 DTL4-1에서 다음 실제 소비 검토·계약 차이를 확인했다. 상세 근거와
+검토안은 [v0.5.0 Contract Baseline 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md)과
+[계획](development/develop_plan/integration/05_v0_5_0_contract_baseline.md)에 둔다.
+
+| ID | 상태 | 다음 담당 | 완료·재개 조건 |
+| --- | --- | --- | --- |
+| `W4-G0-BE-AUTH` | action-needed | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
+| `W4-G0-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 초안을 소비 관점에서 확인 |
+| `W4-G0-WEB-BOUNDARY` | action-needed | Data·Team Leader | 온통청년 robots 미제공·현행 약관을 반영한 제한 actual 요청·보존 경계를 승인하거나 제공기관 확인 |
+
+세 항목이 끝나기 전 Integration 05는 `W4-G0_REVIEW_PENDING`이며 Data 03·04,
+Integration 08의 본 구현 해제나 `W4-G0_APPROVED`로 기록하지 않는다.
+
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 
 ### 인계사항 발생 시 기록 방법
