@@ -68,6 +68,8 @@
 - 조건 입력·수정, loading·empty·error·partial 상태를 제공한다.
 - 추천 이유와 확인 필요 조건을 숫자보다 우선해 표시한다.
 - 긴 지역 목록 축약과 API 오류·재시도 UX를 함께 검증한다.
+- 세부 Slice: [Frontend 06 Recommendation UI](../frontend/06_recommendation_ui.md) FE6-xx;
+  회귀: [Frontend 09 Integration and Regression](../frontend/09_integration_and_regression.md) FE9-xx
 
 ### R3 - 실제 세로 인수
 

@@ -73,9 +73,19 @@
 - [React Router Advisory Review Forest 계획](development/develop_plan/frontend/02_react_router_advisory.md):
   현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
 - [CollectionRun Admin UI Forest 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md):
-  관리자 실행 이력·수동 실행의 Frontend 소비 계획
+  관리자 PIN·실행 이력·수동 실행 UI (FE3-xx Slice)
 - [Policy Search Forest 계획](development/develop_plan/frontend/04_policy_search.md):
   Gate G1 승인 `GET /api/v1/policies/search` flat query 소비, Filter Chip·Reason UI
+- [User Service Features Forest 계획](development/develop_plan/frontend/05_user_service_features.md):
+  브라우저 로컬 조건·즐겨찾기·D-Day·내부 알림·`.ics` (FE5-xx Slice)
+- [Recommendation UI Forest 계획](development/develop_plan/frontend/06_recommendation_ui.md):
+  결정적 추천 조건·결과·이유 UI (FE6-xx Slice)
+- [Eligibility Summary UI Forest 계획](development/develop_plan/frontend/07_eligibility_summary_ui.md):
+  정책 상세 핵심 신청 조건 카드 (FE7-xx Slice)
+- [Admin Observability UI Forest 계획](development/develop_plan/frontend/08_admin_observability_ui.md):
+  관리자 정책 데이터 표·로그 콘솔 UI (FE8-xx Slice)
+- [Integration Fix and Regression Forest 계획](development/develop_plan/frontend/09_integration_and_regression.md):
+  W4-F9 통합 수정·W4-F10 전체 회귀 (FE9-xx Slice)
 - [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
   기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
@@ -100,18 +110,19 @@
   사용자 저장·관리자 인증·추천·수동 실행·품질 노출의 W4-G0 공동 계약
 - [Recommendation Vertical Slice Forest 계획](development/develop_plan/integration/06_recommendation_vertical_slice.md):
   결정적 추천 API와 이유·미확정 조건 UI의 실제 세로 연결
+  (Frontend UI Slice: [FE6-xx](development/develop_plan/frontend/06_recommendation_ui.md))
 - [Release 2 Feature Acceptance Forest 계획](development/develop_plan/integration/07_release_2_feature_acceptance.md):
   4주차 midpoint와 5주차 리뷰·QA·Release 2 Gate
-- [User Service Features Forest 계획](development/develop_plan/frontend/05_user_service_features.md):
-  브라우저 로컬 조건·즐겨찾기·D-Day·내부 알림·`.ics`
 - [Recurrent Collection and Quality Operations Forest 계획](development/develop_plan/data/03_recurrent_collection_quality_operations.md):
   반복 수집의 수정·중복·실패 격리와 안전한 품질 통계
 - [Public HTTPS Policy Ingestion Forest 계획](development/develop_plan/data/04_public_https_policy_ingestion.md):
   승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
 - [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
   정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
+  (Frontend UI Slice: [FE7-xx](development/develop_plan/frontend/07_eligibility_summary_ui.md))
 - [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
   관리자 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사
+  (Frontend UI Slice: [FE8-xx](development/develop_plan/frontend/08_admin_observability_ui.md))
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별

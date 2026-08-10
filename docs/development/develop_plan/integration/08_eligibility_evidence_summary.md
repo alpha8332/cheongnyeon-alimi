@@ -107,6 +107,8 @@
 - 필수·제외·우대·서류·확인 필요를 시각적으로 구분한다.
 - 모바일·키보드·긴 문장·빈 값·partial·error 상태를 제공한다.
 - 로컬 사용자 조건이 있으면 비교 상태를 표시하되 최종 자격을 단정하지 않는다.
+- 세부 Slice: [Frontend 07 Eligibility Summary UI](../frontend/07_eligibility_summary_ui.md) FE7-xx;
+  회귀: [Frontend 09 Integration and Regression](../frontend/09_integration_and_regression.md) FE9-xx
 
 ### ES4 - actual 세로 인수
 
