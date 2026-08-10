@@ -44,6 +44,21 @@ class ValidationIssue:
         }
 
 
+class JsonSchemaValidator:
+    """Validate any repository contract with the supported Schema subset."""
+
+    def __init__(self, schema_path: str | Path) -> None:
+        self.schema_path = Path(schema_path)
+        self.schema = json.loads(
+            self.schema_path.read_text(encoding="utf-8")
+        )
+
+    def schema_issues(self, candidate: Any) -> tuple[ValidationIssue, ...]:
+        return tuple(
+            _schema_issues(candidate, self.schema, self.schema, "$")
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class ValidationResult:
     status: DataQualityStatus

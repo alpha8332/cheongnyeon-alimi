@@ -34,6 +34,10 @@
   원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
 - [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
   정규화 필드, provenance와 품질 분류의 실행 가능한 계약
+- [Eligibility Summary 공통 계약](data/eligibility_summary_contract.md):
+  제외 조건·필요 서류·공개 시설 연락처와 Source evidence의 승인 의미
+- [EligibilitySummary JSON Schema](../data/schema/eligibility_summary.schema.json):
+  Data·Backend·Frontend가 공유하는 실행 가능한 nested 계약
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
@@ -124,6 +128,8 @@
   DTL4-2A~2B 반복·수정·중복·실패 판정, CollectionRun 영속과 PostgreSQL 검증
 - [Public HTTPS Policy Ingestion Forest 개발 기록](development/development_notes/data/public_https_policy_ingestion.md):
   DTL4-3A 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증
+- [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
+  DTL4-4A 조건·서류·시설 연락처 공통 계약과 Source evidence mapping
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)

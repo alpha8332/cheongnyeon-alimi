@@ -481,6 +481,13 @@ profile에 남긴다.
 카카오채널은 기관 문의 정보로 Runtime Raw와 `institutional_contact`에 보존하고,
 개인 휴대전화·개인 이메일·성명은 구조화 추출하지 않는다.
 
+DTL4-4A에서 세 Source의 자격요건 승격 규칙을
+[Eligibility Summary 공통 계약](eligibility_summary_contract.md)으로 고정했다.
+온통청년 `ptcpPrpTrgtCn`과 복지로 `slctCritCn`은 실제 원문 의미가 필수·제외·
+우대로 단일하지 않아 자동 분류하지 않고 `unknowns`로 보존한다. 천안 웹은
+승인 section과 `#bo_v_con` evidence를 사용하며 대표전화·공식 채널만
+`institutional_contacts`로 승격한다.
+
 표본 게시일은 `2026-07-24`, 본문 신청기간은
 `2026-04-22`~`2026-05-06 23:00`인데 제목에는 “곧 마감”이 있어 서로
 충돌한다. Extractor는 신청 상태를 보정하지 않고 `data_quality_status=partial`,

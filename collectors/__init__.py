@@ -17,6 +17,23 @@ from collectors.cheonan_youthcenter import (
 )
 from collectors.extracted import ExtractedPolicy, SourceProvenance
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
+from collectors.eligibility import (
+    EligibilityCategory,
+    EligibilityContractError,
+    EligibilityCoverage,
+    EligibilityEvidenceItem,
+    EligibilitySummary,
+    EvidenceLocatorType,
+    EvidenceReference,
+    InstitutionalContact,
+    InstitutionalContactKind,
+    RequiredDocument,
+)
+from collectors.eligibility_mapping import (
+    map_bokjiro_eligibility,
+    map_cheonan_eligibility,
+    map_youthcenter_eligibility,
+)
 from collectors.http import HttpClient, HttpClientConfig
 from collectors.normalized import (
     ApplicationSchedule,
@@ -40,6 +57,7 @@ from collectors.raw import (
 from collectors.registry import CollectorRegistry, default_registry
 from collectors.storage import RawDocumentStore
 from collectors.validation import (
+    JsonSchemaValidator,
     NormalizedProgramValidator,
     ValidationIssue,
     ValidationPartition,
@@ -76,10 +94,20 @@ __all__ = [
     "CoverageScope",
     "CheonanYouthCenterExtractor",
     "DataQualityStatus",
+    "EligibilityCategory",
+    "EligibilityContractError",
+    "EligibilityCoverage",
+    "EligibilityEvidenceItem",
+    "EligibilitySummary",
+    "EvidenceLocatorType",
+    "EvidenceReference",
     "ExtractedPolicy",
     "FieldStatistics",
     "HttpClient",
     "HttpClientConfig",
+    "InstitutionalContact",
+    "InstitutionalContactKind",
+    "JsonSchemaValidator",
     "NormalizedProgram",
     "NormalizedProgramValidator",
     "Normalizer",
@@ -91,6 +119,7 @@ __all__ = [
     "RegionRelation",
     "RegionResolutionStatus",
     "RegionRule",
+    "RequiredDocument",
     "SourceType",
     "SourceFieldProfile",
     "SourceProvenance",
@@ -99,4 +128,7 @@ __all__ = [
     "ValidationResult",
     "YouthCenterExtractor",
     "default_registry",
+    "map_bokjiro_eligibility",
+    "map_cheonan_eligibility",
+    "map_youthcenter_eligibility",
 ]

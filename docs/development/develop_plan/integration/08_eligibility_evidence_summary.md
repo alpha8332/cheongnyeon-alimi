@@ -4,14 +4,15 @@
 
 - 번호: Integration 08
 - 담당 영역: Data·Backend·Frontend
-- 상태: draft
+- 상태: in-progress
+- 진행: `DTL4-4A`·`ES0` 완료
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline
 - 병렬·보강 Forest: Data 04 Public HTTPS Policy Ingestion
 - 후속 Forest: Integration 06 Recommendation, Integration 07 Release 2 Acceptance
 - 역할·브랜치 분담: `2026-08-10` 승인
-- 계약 상태: ES0 공통 Schema·API·UI 상세 계약 대기
+- 계약 상태: Eligibility Summary `1.0.0` 공통 Schema 승인, DB·API·UI 편입 대기
 - 권장 브랜치:
   `feature/schema/eligibility-evidence-contract`,
   `feature/backend/eligibility-evidence-api`,
@@ -68,25 +69,29 @@
   않는다.
 - 구조화할 수 없는 조건을 삭제하지 않고 확인 필요 원문으로 보존한다.
 
-## W4-G0 계약 후보
+## DTL4-4A 승인 계약
 
-다음은 승인 전 제안이며 현재 API·DB 계약이 아니다.
+다음 nested 구조를 Eligibility Summary `1.0.0` 공통 계약으로 승인했다. 실행
+Schema와 세부 의미는
+[Eligibility Summary 공통 계약](../../../data/eligibility_summary_contract.md)을
+따른다. 현재 Policy DB·공개 API·Frontend 완료 기능을 뜻하지 않는다.
 
 | 필드 | 의미 |
 | --- | --- |
-| `eligibility_summary.status` | `complete`, `partial`, `unknown` |
+| `eligibility_summary.coverage` | `complete`, `partial`, `unknown` |
 | `requirements[]` | 신청자가 충족해야 하는 구조화 또는 원문 조건 |
 | `exclusions[]` | 해당하면 제외될 수 있는 조건 |
 | `preferences[]` | 우대·가점 조건이며 필수 조건과 구분 |
-| `required_documents[]` | Source에 명시된 제출 서류 |
-| `unknown_conditions[]` | 자동 비교 또는 구조화가 불가능한 확인 필요 조건 |
+| `documents[]` | Source에 명시된 제출 서류 |
+| `unknowns[]` | 자동 비교 또는 구조화가 불가능한 확인 필요 조건 |
 | `institutional_contacts[]` | 공개 시설 대표전화·공식 문의 채널; 개인 연락처 제외 |
 | 항목 `category` | age·region·income·asset·employment·education·housing·household·other |
-| 항목 `evidence` | source ID·URL·수집 시각·원문·source field 또는 selector |
+| 항목 `evidence` | source ID·URL·수집 시각·source field 또는 selector |
 
-개인 조건 비교 상태는 정책 데이터의 완전성과 별개로 관리한다. 필드 이름과
-중첩 구조는 Backend OpenAPI·Frontend TypeScript·Data Schema 초안을 함께
-검토한 뒤 확정한다.
+condition의 원문은 `text`에 두고 evidence는 공개 가능한 근거 포인터만 가진다.
+내부 Raw ID·hash·경로는 공개 evidence에서 제외한다. 모든 복수 필드는 required
+배열이고 값이 없으면 `[]`이며 `null`·생략은 허용하지 않는다. 개인 조건 비교
+상태는 정책 데이터의 coverage와 별개로 관리한다.
 
 ## 역할 분담과 충돌 방지
 
@@ -127,7 +132,7 @@ commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한�
 
 ## Slice 계획
 
-### ES0 - 원문 coverage와 계약 Gate
+### ES0 - 원문 coverage와 계약 Gate (`DTL4-4A` 완료)
 
 - 현재 snapshot에서 자격·소득·추가 조건·제외·서류 원문 coverage를 측정한다.
 - 대표 정상·부분·미상·충돌 사례를 고정하고 세 영역이 구조 초안을 대조한다.
@@ -135,7 +140,7 @@ commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한�
   연락처 제외 경계를 확정한다.
 - 사용자에게 허용할 문구와 금지할 단정 표현을 승인한다.
 
-### ES1 - Data 구조화와 provenance
+### ES1 - Data 구조화와 provenance (`DTL4-4A` 기반 완료, actual 편입 대기)
 
 - 기존 API Source의 풍부한 조건 필드를 우선 매핑한다.
 - 확실한 category와 원문 조건을 분리하고 필드별 evidence를 보존한다.
@@ -186,8 +191,10 @@ commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한�
 
 ## 위험과 미확정 사항
 
-- 현재 정규화 계약은 자격 원문을 재작성하지 않으므로 구조화 필드 추가는
-  W4-G0 소비자 승인과 Schema version 검토가 필요하다.
+- 현재 `NormalizedProgram 1.1.0`과 Backend 저장 계약은 exact field parity를
+  사용한다. DTL4-4A는 충돌을 피하도록 독립 nested Schema를 먼저 승인했으며,
+  정규화 편입은 기존 객체를 허용하는 `1.2.0` 호환 추가와 Backend Migration을
+  영역별 브랜치에서 검토한다.
 - 조건 문장은 예외·가구 단위·기준연도에 따라 복잡해 단순 숫자 비교가 잘못된
   결론을 낼 수 있다. 계산 불가능한 조건은 확인 필요로 남긴다.
 - API와 웹 원문이 충돌하면 최신이라고 추정해 덮어쓰지 않고 Source·수집 시각을
@@ -203,4 +210,5 @@ commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한�
 - [Policy API 계약](../../../api/policies.md)
 - [데이터 Schema](../../../data/data_schema.md)
 - [Policy DB 매핑](../../../architecture/policy_database_mapping.md)
+- [Eligibility Summary 공통 계약](../../../data/eligibility_summary_contract.md)
 - [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)

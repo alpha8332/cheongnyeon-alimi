@@ -9,7 +9,7 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: `DTL4-3B` 완료 (`DTL4-4A` 미착수)
+- 현재 Slice: `DTL4-4A` 완료 (`DTL4-4B` 미착수)
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -324,6 +324,13 @@ Backend·Frontend가 같은 의미를 소비하게 한다.
 - 각 항목에 category·원문·source ID·URL·수집 시각·field/selector evidence 보존
 - 수치·단위를 추정·반올림하지 않고 계산 불가능 조건은 unknown으로 유지
 - API와 웹 충돌 시 임의 최신 우선 덮어쓰기를 하지 않음
+
+완료 결과(`2026-08-10`): Eligibility Summary `1.0.0` 독립 JSON Schema·Python
+모델과 정상·경계·긴 문장·누락·충돌 fixture를 고정했다. 온통청년·복지로·
+천안 웹 Source mapping은 명확한 원문만 requirements·documents·exclusions로
+승격하고 의미가 혼재한 field는 unknowns로 보존한다. 현재 Backend exact field
+parity와 충돌하지 않도록 `NormalizedProgram`·DB·API·TypeScript 편입은 담당
+영역별 후속 구현으로 분리했다.
 
 #### DTL4-4 역할·브랜치 분리
 

@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:eligibility-summary:1.0.0",
+  "title": "EligibilitySummary",
+  "description": "Source-backed eligibility, document, and public institutional contact contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "coverage",
+    "requirements",
+    "exclusions",
+    "preferences",
+    "documents",
+    "unknowns",
+    "institutional_contacts"
+  ],
+  "properties": {
+    "coverage": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "unknown"
+      ]
+    },
+    "requirements": {
+      "$ref": "#/$defs/eligibilityItems"
+    },
+    "exclusions": {
+      "$ref": "#/$defs/eligibilityItems"
+    },
+    "preferences": {
+      "$ref": "#/$defs/eligibilityItems"
+    },
+    "documents": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/requiredDocument"
+      }
+    },
+    "unknowns": {
+      "$ref": "#/$defs/eligibilityItems"
+    },
+    "institutional_contacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/institutionalContact"
+      }
+    }
+  },
+  "$defs": {
+    "eligibilityItems": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/eligibilityItem"
+      }
+    },
+    "eligibilityItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "text",
+        "evidence"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "age",
+            "region",
+            "income",
+            "asset",
+            "employment",
+            "education",
+            "housing",
+            "household",
+            "other"
+          ]
+        },
+        "text": {
+          "$ref": "#/$defs/sourceText"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidenceArray"
+        }
+      }
+    },
+    "requiredDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "evidence"
+      ],
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/documentText"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidenceArray"
+        }
+      }
+    },
+    "institutionalContact": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Only public facility phone numbers or official channels. Personal names, mobile numbers, and email addresses are excluded before promotion.",
+      "required": [
+        "kind",
+        "label",
+        "value",
+        "evidence"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "phone",
+            "official_channel"
+          ]
+        },
+        "label": {
+          "$ref": "#/$defs/contactLabel"
+        },
+        "value": {
+          "$ref": "#/$defs/contactValue"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidenceArray"
+        }
+      }
+    },
+    "evidenceArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "source_url",
+        "collected_at",
+        "locator_type",
+        "locator"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://(?![^/?#]*@)[^\\s]+$"
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "locator_type": {
+          "type": "string",
+          "enum": [
+            "source_field",
+            "css_selector"
+          ]
+        },
+        "locator": {
+          "$ref": "#/$defs/locatorText"
+        }
+      }
+    },
+    "sourceText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+    },
+    "documentText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+    },
+    "contactLabel": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "contactValue": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^(?!.*@)(?!.*(?:^|\\D)(?:\\+?82[- .]?)?0?1(?:0|1|6|7|8|9)[- .]?\\d{3,4}[- .]?\\d{4}(?:\\D|$))\\S(?:.*\\S)?$"
+    },
+    "locatorText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^\\S(?:.*\\S)?$"
+    }
+  }
+}

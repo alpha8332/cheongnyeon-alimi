@@ -86,6 +86,7 @@ def build_outputs() -> dict[Path, bytes]:
     ]
     search_contract_cases = _search_contract_cases(accepted)
     recurrent_quality_cases = _recurrent_quality_cases()
+    eligibility_contract_cases = _eligibility_contract_cases()
 
     return {
         **raw_outputs,
@@ -107,10 +108,295 @@ def build_outputs() -> dict[Path, bytes]:
         Path(
             "data/fixtures/contracts/recurrent_quality_cases.json"
         ): _json_bytes(recurrent_quality_cases, pretty=True),
+        Path(
+            "data/fixtures/contracts/eligibility_evidence_cases.json"
+        ): _json_bytes(eligibility_contract_cases, pretty=True),
         Path("data/seeds/initial_programs.json"): _json_bytes(
             accepted,
             pretty=True,
         ),
+    }
+
+
+def _eligibility_contract_cases() -> dict[str, Any]:
+    def evidence(
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+        locator_type: str,
+        locator: str,
+    ) -> list[dict[str, str]]:
+        return [
+            {
+                "source_id": source_id,
+                "source_url": source_url,
+                "collected_at": collected_at,
+                "locator_type": locator_type,
+                "locator": locator,
+            }
+        ]
+
+    def condition(
+        category: str,
+        text: str,
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+        locator_type: str,
+        locator: str,
+    ) -> dict[str, Any]:
+        return {
+            "category": category,
+            "text": text,
+            "evidence": evidence(
+                source_id,
+                source_url,
+                collected_at,
+                locator_type,
+                locator,
+            ),
+        }
+
+    def document(
+        text: str,
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+        locator_type: str,
+        locator: str,
+    ) -> dict[str, Any]:
+        return {
+            "text": text,
+            "evidence": evidence(
+                source_id,
+                source_url,
+                collected_at,
+                locator_type,
+                locator,
+            ),
+        }
+
+    def contact(
+        kind: str,
+        label: str,
+        value: str,
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+    ) -> dict[str, Any]:
+        return {
+            "kind": kind,
+            "label": label,
+            "value": value,
+            "evidence": evidence(
+                source_id,
+                source_url,
+                collected_at,
+                "css_selector",
+                "#bo_v_con",
+            ),
+        }
+
+    contract_source_id = "eligibility-contract-fixture"
+    contract_source = "https://fixture.invalid/eligibility/complete"
+    web_source = "https://fixture.invalid/cheonan/notice/674"
+    return {
+        "contract_version": "1.0.0",
+        "cases": [
+            {
+                "case_id": "complete_contract_fixture",
+                "profile": "normal",
+                "summary": {
+                    "coverage": "complete",
+                    "requirements": [
+                        condition(
+                            "age",
+                            "만 19세 이상 34세 이하",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.requirements.age",
+                        ),
+                        condition(
+                            "region",
+                            "합성시 거주 청년",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.requirements.region",
+                        ),
+                    ],
+                    "exclusions": [
+                        condition(
+                            "education",
+                            "합성 재학생은 지원 대상에서 제외",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.exclusions.education",
+                        )
+                    ],
+                    "preferences": [],
+                    "documents": [
+                        document(
+                            "합성 거주 확인서",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.documents",
+                        )
+                    ],
+                    "unknowns": [],
+                    "institutional_contacts": [],
+                },
+            },
+            {
+                "case_id": "partial_web_source",
+                "profile": "boundary",
+                "summary": {
+                    "coverage": "partial",
+                    "requirements": [
+                        condition(
+                            "other",
+                            "합성시에 거주하는 1인가구 청년",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "exclusions": [
+                        condition(
+                            "other",
+                            "타 지역 이사 시 합성 지원 종료",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "preferences": [],
+                    "documents": [
+                        document(
+                            "합성 거주 사실 확인서류",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "unknowns": [
+                        condition(
+                            "other",
+                            "설치 환경에 따라 합성 지원이 제한될 수 있음",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "institutional_contacts": [
+                        contact(
+                            "phone",
+                            "대표전화",
+                            "041-000-0000",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                        ),
+                        contact(
+                            "official_channel",
+                            "공식 문의 채널",
+                            "카카오채널",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                        ),
+                    ],
+                },
+            },
+            {
+                "case_id": "unknown_missing_source_fields",
+                "profile": "missing",
+                "summary": {
+                    "coverage": "unknown",
+                    "requirements": [],
+                    "exclusions": [],
+                    "preferences": [],
+                    "documents": [],
+                    "unknowns": [],
+                    "institutional_contacts": [],
+                },
+            },
+            {
+                "case_id": "partial_long_condition",
+                "profile": "long",
+                "summary": {
+                    "coverage": "partial",
+                    "requirements": [],
+                    "exclusions": [],
+                    "preferences": [],
+                    "documents": [],
+                    "unknowns": [
+                        condition(
+                            "household",
+                            (
+                                "합성 기준연도의 가구 구성과 소득 산정 범위가 "
+                                "신청자의 세대 분리 시점 및 주민등록 상태에 따라 "
+                                "달라질 수 있으므로 공식 안내문과 접수 기관의 "
+                                "확인이 필요합니다."
+                            ),
+                            BOKJIRO_SOURCE_ID,
+                            "https://fixture.invalid/welfare/SYN-LONG-001",
+                            "2026-08-10T05:00:00+00:00",
+                            "source_field",
+                            "tgtrDtlCn",
+                        )
+                    ],
+                    "institutional_contacts": [],
+                },
+            },
+            {
+                "case_id": "partial_source_conflict",
+                "profile": "conflict",
+                "summary": {
+                    "coverage": "partial",
+                    "requirements": [],
+                    "exclusions": [],
+                    "preferences": [],
+                    "documents": [],
+                    "unknowns": [
+                        condition(
+                            "other",
+                            "합성 API 원문: 신청기간은 8월 31일까지",
+                            YOUTHCENTER_SOURCE_ID,
+                            "https://fixture.invalid/policies/SYN-CONFLICT-001",
+                            "2026-08-10T06:00:00+00:00",
+                            "source_field",
+                            "aplyYmd",
+                        ),
+                        condition(
+                            "other",
+                            "합성 웹 원문: 신청기간은 8월 20일까지",
+                            "cheonan-youthcenter-web",
+                            "https://fixture.invalid/cheonan/notice/conflict",
+                            "2026-08-10T06:05:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        ),
+                    ],
+                    "institutional_contacts": [],
+                },
+            },
+        ],
     }
 
 

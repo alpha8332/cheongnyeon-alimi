@@ -384,6 +384,20 @@ transaction은 PSF5에서 완성했다.
 
 ## JSON Schema 동기화 규칙
 
+### Eligibility Summary 1.0.0 독립 nested 계약
+
+정책 상세 자격요건 확장은
+[Eligibility Summary 공통 계약](eligibility_summary_contract.md)과
+`data/schema/eligibility_summary.schema.json`을 실행 기준으로 사용한다.
+`coverage`, 조건·제외·우대·서류·unknown·공개 시설 연락처와 각 항목의 공개
+evidence를 별도 객체로 고정하며 배열은 required이고 값이 없으면 `[]`다.
+
+이 계약은 DTL4-4A에서 Backend·Frontend와 충돌하지 않도록
+`NormalizedProgram 1.1.0`에 아직 삽입하지 않았다. 현재 Normalized Schema,
+Fixture·Seed와 기존 DB·API field parity는 그대로 유지한다. 후속 Data 편입은
+기존 1.0.0·1.1.0 객체를 계속 허용하는 minor version과 compatibility adapter,
+Backend Migration·API 소비 검토를 같은 Integration Forest에서 수행한다.
+
 구현된 계층은 `data/schema/*.schema.json`이 기계 검증의 기준이고 이 문서는
 사람을 위한 설명이다. 둘은 같은 변경에서 함께 수정한다.
 
