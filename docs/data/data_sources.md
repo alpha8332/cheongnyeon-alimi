@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 온통청년·복지로 API와 천안청년센터 승인 웹 Collector 구현,
-  제한 실호출 확인
+- 현재 구현 상태: 온통청년·복지로 API와 천안청년센터 승인 웹 Collector,
+  Runtime replay·PostgreSQL 적재와 제한 actual 검증 완료
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -19,15 +19,16 @@
 | --- | --- | --- | --- |
 | 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 Raw 수집 확인 |
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
-| 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 목록·상세 actual Raw·Extractor 확인 |
+| 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 actual Raw → PostgreSQL·API 확인 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
 자료이므로 Fixture나 커밋 대상이 아니다. 웹 Source의 실제 원문 HTML·이미지도
 Git에 넣지 않고 합성·최소 구조 Fixture만 사용한다.
 
-현재 구현은 두 공식 API와 승인 웹 Source의 제한 Collector·Extractor 기반을
-포함한다. 웹 Source의 정규화·PostgreSQL 연결은 Data 04 DTL4-3B에서 진행한다.
+현재 구현은 두 공식 API와 승인 웹 Source의 제한 Collector·Extractor·Runtime
+replay·정규화·PostgreSQL 적재를 포함한다. 웹 Source의 Source 전용 section을
+공통 조건 필드로 승격하는 작업은 Integration 08 DTL4-4에서 진행한다.
 구체적인 수집 건수와 결정 게이트는
 [Data Pipeline Forest 계획](../development/develop_plan/data/01_data_pipeline.md)을
 따른다.
@@ -206,6 +207,13 @@ CAPTCHA·첨부·이미지·개인정보 페이지는 따라가지 않는다. �
 DTL4-3A actual 확인에서 목록은 `#bo_list`, 상세는 `#bo_v`·`#bo_v_title`·
 `#bo_v_info`·`#bo_v_con`을 사용했다. Source HTML의 비표준 `</img>` 종료 태그는
 void element로 처리하며 selector 누락은 정상 빈 값이 아닌 drift로 분류한다.
+
+DTL4-3B는 저장된 actual Raw 3건을 외부 재호출 없이 replay해 `partial` 정책
+1건과 provenance 3건을 PostgreSQL에 적재했다. 동일 Raw 재실행은 `unchanged`
+1건이었고 중복 row를 만들지 않았다. 신청기간 한글 표기는 현재 공통 파서가
+추정하지 않아 신청 상태를 `unknown`으로 유지한다. Source 전용 제외조건·서류와
+기관 연락처는 공통 Schema 계약 전이므로 Raw·Extractor 근거에만 남기고 DB/API
+공통 필드로 자동 승격하지 않는다.
 
 ## 소스 등록 시 기록할 정보
 

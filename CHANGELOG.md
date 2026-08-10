@@ -10,6 +10,9 @@
 
 ### Added
 
+- 승인한 천안청년센터 공개 공지를 제한 수집하고 Runtime Raw → 정규화 →
+  PostgreSQL → partial 정책 상세 API까지 재처리하는 첫 공식 웹 Source 기반 추가
+  ([개발 기록](docs/development/development_notes/data/public_https_policy_ingestion.md))
 - 반복 수집에서 metadata-only 재실행·business 변경·실행 내 중복·실패
   rollback을 구분하고 품질 집계를 CollectionRun에 영속하는 Data 03 기반 추가
   ([개발 기록](docs/development/development_notes/data/recurrent_collection_quality_operations.md))

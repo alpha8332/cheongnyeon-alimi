@@ -17,7 +17,7 @@
 | --- | --- | --- | --- |
 | `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
-| `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 목록 1회·공지 674 상세 1건 HTML Raw 확인 |
+| `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
@@ -492,6 +492,20 @@ pagination·대량 순회·원문 HTML 또는 이미지의 Git 재배포는 승�
 actual DOM은 목록 `#bo_list`, 상세 `#bo_v`·`#bo_v_title`·`#bo_v_info`·
 `#bo_v_con`으로 확인했다. `</img>` 비표준 종료 태그를 허용하되 필수 selector
 누락은 drift로 실패한다.
+
+### 2026-08-10 DTL4-3B actual replay
+
+DTL4-3A의 actual Raw 3건을 외부 요청 없이 replay했다. Extractor·Normalizer는
+정책 1건을 `partial`, 신청 상태 `unknown`으로 분류하고 provenance 3건을
+유지했다. 전용 PostgreSQL 최초 적재는 `inserted=1`, 동일 Raw 재실행은
+`unchanged=1`이었으며 CollectionRun 2건과 정책 row 1건이 일치했다. 공개 정책
+상세 API는 기본 partial 비노출 `404`, `include_partial=true`에서 `200`을
+반환했고 Raw provenance는 공개 DTO에 포함하지 않았다.
+
+합성 HTML PostgreSQL 통합 테스트에서는 최초 `inserted`, 동일 `unchanged`,
+지원 내용 변경 `updated`와 후속 selector drift 실패 뒤 기존 row 보존을
+확인했다. Source 전용 section의 제외조건·필요서류와 기관 연락처는 DTL4-4의
+공통 조건·소비 계약 전까지 자동 승격하지 않는다.
 
 ## 공통 비밀정보 경계
 

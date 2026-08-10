@@ -11,8 +11,9 @@
 - 후속 Forest: Integration 08 Eligibility Evidence and Summary
 - 권장 브랜치: `feature/data/public-web-policy-source`
 - W4-G0 승인 Source: `cheonan-youthcenter-web`, 공지 `notice:674`
-- 현재 진행: DTL4-3A 호출 안전·합성 HTML·Collector·Extractor actual 검증 완료,
-  DTL4-3B 정규화·PostgreSQL 적재 대기
+- 현재 진행: DTL4-3A 호출 안전·합성 HTML·Collector·Extractor와 DTL4-3B
+  Runtime replay·정규화·PostgreSQL·API actual 검증 완료. Source 전용 상세
+  조건의 공통 Schema 승격은 Integration 08 DTL4-4로 인계
 
 ## 목적
 

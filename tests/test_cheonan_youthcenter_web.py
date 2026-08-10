@@ -25,6 +25,8 @@ from collectors.errors import (
 )
 from collectors.extracted import ExtractionError
 from collectors.http import TransportResponse
+from collectors.normalized import DataQualityStatus
+from collectors.normalizer import Normalizer
 from collectors.raw import (
     RawDocumentRole,
     RawFormat,
@@ -268,6 +270,32 @@ class CheonanExtractorTests(unittest.TestCase):
             "institutional_contact"
         ]
         self.assertEqual([], contact["phone_numbers"])
+
+    def test_normalizes_existing_fields_without_promoting_source_sections(
+        self,
+    ) -> None:
+        extracted = CheonanYouthCenterExtractor().extract(
+            extraction_documents()
+        )[0]
+
+        result = Normalizer().normalize(extracted)
+
+        self.assertEqual(DataQualityStatus.PARTIAL, result.status)
+        self.assertIsNotNone(result.program)
+        assert result.program is not None
+        self.assertEqual(APPROVED_EXTERNAL_ID, result.program.external_id)
+        self.assertIsNone(result.program.application_status)
+        self.assertIn(
+            "unparsed_application_period",
+            {issue.code for issue in result.issues},
+        )
+        self.assertEqual(
+            "천안시에 거주하는 1인가구 청년",
+            result.program.eligibility_text,
+        )
+        self.assertEqual((), result.program.required_conditions)
+        self.assertEqual((), result.program.excluded_conditions)
+        self.assertEqual(3, len(result.program.provenance))
 
     def test_missing_optional_fields_remain_null(self) -> None:
         policy = CheonanYouthCenterExtractor().extract(

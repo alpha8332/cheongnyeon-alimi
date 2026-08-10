@@ -4,8 +4,8 @@
 
 - 상태: 기준선
 - 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API와 승인 웹
-  Collector·Extractor, 공통 Normalizer·Validator와 합성 Fixture·canonical
-  Seed 구현
+  Collector·Extractor·Runtime replay, 공통 Normalizer·Validator와 PostgreSQL
+  적재 경계 구현
 
 이 문서는 외부 정책 데이터를 안전하고 재현 가능하게 수집하기 위한 공통
 원칙을 정의한다.
@@ -55,8 +55,8 @@ origin이나 비표준 포트로 전달되는 일을 막고 3xx를 명시적 오
 information을 `<redacted>`로 바꾼다. 응답 본문과 하위 전송 예외 메시지는
 공통 예외에 포함하지 않는다.
 
-HTML Collector는 Data 04 DTL4-3A에서 `cheonan-youthcenter-web`의 승인 표본만
-구현했다. 정규화·PostgreSQL actual 적재는 DTL4-3B 범위이며 아래 최소 경계
+HTML Collector는 Data 04 DTL4-3A~3B에서 `cheonan-youthcenter-web`의 승인
+표본만 구현하고 저장된 actual Raw를 PostgreSQL까지 검증했다. 아래 최소 경계
 밖의 확대 수집은 승인하지 않았다.
 
 ## 웹 수집 원칙

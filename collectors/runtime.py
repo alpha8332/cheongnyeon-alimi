@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from collectors.bokjiro import SOURCE_ID as BOKJIRO_SOURCE_ID
+from collectors.cheonan_youthcenter import (
+    SOURCE_ID as CHEONAN_YOUTHCENTER_SOURCE_ID,
+    CheonanYouthCenterExtractor,
+)
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
@@ -23,11 +27,13 @@ from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
 
 SUPPORTED_SOURCE_IDS = (
     BOKJIRO_SOURCE_ID,
+    CHEONAN_YOUTHCENTER_SOURCE_ID,
     YOUTHCENTER_SOURCE_ID,
 )
 
 _EXTRACTOR_TYPES = {
     BOKJIRO_SOURCE_ID: BokjiroExtractor,
+    CHEONAN_YOUTHCENTER_SOURCE_ID: CheonanYouthCenterExtractor,
     YOUTHCENTER_SOURCE_ID: YouthCenterExtractor,
 }
 
