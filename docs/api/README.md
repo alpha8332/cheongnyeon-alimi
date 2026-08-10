@@ -24,3 +24,5 @@ API 문서는 실제 구현 및 자동화된 Schema와 일치해야 한다. 엔�
 
 - [Policy API](policies.md): 정책 목록·상세, pagination, 정확한 배열 필터,
   품질 노출과 오류 계약
+- [관리자 인증 API](admin_access.md): 관리자 PIN 세션 생성 및 토큰 인증/권한 계약
+- [CollectionRun 관리자 API](admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 수집 실행 및 stale 판정 계약

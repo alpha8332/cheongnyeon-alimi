@@ -137,6 +137,8 @@
   PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 결과
 - [Backend Admin Access Control Forest 개발 기록](development/development_notes/backend/admin_access_control.md):
   관리자 4자리 PIN 세션 인증, fail-closed 및 401/403/429/422 상태코드 검증 결과
+- [Backend CollectionRun Admin API Forest 개발 기록](development/development_notes/backend/collection_run_admin_api.md):
+  CollectionRun 실행 이력 목록·상세, 수동 실행 202 및 Stale 판정 계약 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
@@ -148,6 +150,7 @@
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약
+- [CollectionRun 관리자 API 계약](api/admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 실행 및 stale 판정 계약
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
 - [Backend Windows 로컬 환경](development/backend_local_setup.md):
