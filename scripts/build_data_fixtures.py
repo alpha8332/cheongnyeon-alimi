@@ -85,6 +85,7 @@ def build_outputs() -> dict[Path, bytes]:
         if result.program is None
     ]
     search_contract_cases = _search_contract_cases(accepted)
+    recurrent_quality_cases = _recurrent_quality_cases()
 
     return {
         **raw_outputs,
@@ -103,10 +104,94 @@ def build_outputs() -> dict[Path, bytes]:
         Path(
             "data/fixtures/contracts/policy_search_region_cases.json"
         ): _json_bytes(search_contract_cases, pretty=True),
+        Path(
+            "data/fixtures/contracts/recurrent_quality_cases.json"
+        ): _json_bytes(recurrent_quality_cases, pretty=True),
         Path("data/seeds/initial_programs.json"): _json_bytes(
             accepted,
             pretty=True,
         ),
+    }
+
+
+def _recurrent_quality_cases() -> dict[str, Any]:
+    return {
+        "schema_version": "1.0.0",
+        "base_seed_indexes": [0, 1],
+        "cases": [
+            {
+                "id": "same_snapshot",
+                "operation": "rerun",
+                "expected": {
+                    "updated": 0,
+                    "unchanged": 2,
+                    "duplicate": 0,
+                },
+            },
+            {
+                "id": "collection_metadata_only",
+                "operation": "patch",
+                "target_index": 0,
+                "patch": {
+                    "collected_at": "2026-08-10T03:00:00+00:00",
+                    "provenance_collected_at": (
+                        "2026-08-10T03:00:00+00:00"
+                    ),
+                },
+                "expected": {
+                    "updated": 0,
+                    "unchanged": 2,
+                    "duplicate": 0,
+                },
+            },
+            {
+                "id": "single_business_field",
+                "operation": "patch",
+                "target_index": 0,
+                "patch": {"title": "변경된 합성 반복 수집 정책"},
+                "expected": {
+                    "updated": 1,
+                    "unchanged": 1,
+                    "duplicate": 0,
+                },
+            },
+            {
+                "id": "duplicate_in_run",
+                "operation": "append_duplicate",
+                "target_index": 0,
+                "expected": {
+                    "accepted": 2,
+                    "inserted": 2,
+                    "duplicate": 1,
+                    "stored": 2,
+                    "issue_code": "duplicate_identity",
+                    "issue_stage": "validate",
+                },
+            },
+            {
+                "id": "invalid_batch",
+                "operation": "remove_required_field",
+                "target_index": 1,
+                "field": "application_start",
+                "expected": {
+                    "inserted": 0,
+                    "rejected": 1,
+                    "committed": False,
+                    "issue_stage": "validate",
+                },
+            },
+            {
+                "id": "persist_failure",
+                "operation": "fail_second_write",
+                "expected": {
+                    "inserted": 0,
+                    "failed": 1,
+                    "committed": False,
+                    "issue_code": "database_write_failed",
+                    "issue_stage": "persist",
+                },
+            },
+        ],
     }
 
 

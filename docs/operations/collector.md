@@ -5,6 +5,7 @@
 ```text
 youthcenter-api
 bokjiro-central-welfare-api
+cheonan-youthcenter-web
 ```
 
 현재 Collector는 명시적 CLI 실행만 지원한다. 단일 페이지 제한 수집과
@@ -49,7 +50,7 @@ python -m collectors --help
 | --- | --- | --- | --- |
 | `--page` | `1` | 1~1000 | 요청 페이지 |
 | `--limit` | `10` | 1~500 | 목록 요청·저장 최대 항목 수 |
-| `--detail-limit` | `3` | 0~5 | 복지로 상세 요청 최대 수 |
+| `--detail-limit` | `3` | 0~5 | 복지로 상세 수, 천안청년센터 상세 사용 여부 |
 
 온통청년은 `--detail-limit`을 사용하지 않는다.
 
@@ -66,6 +67,15 @@ python -m collectors --source youthcenter-api --page 1 --limit 10 --detail-limit
 ```powershell
 python -m collectors --source bokjiro-central-welfare-api --page 1 --limit 10 --detail-limit 3
 ```
+
+천안청년센터 승인 목록 1회와 공지 674번 상세 1건:
+
+```powershell
+python -m collectors --source cheonan-youthcenter-web --page 1 --limit 1 --detail-limit 1
+```
+
+이 Source는 `page=1`만 허용하고 `limit`과 `detail-limit`이 더 커도 승인 정책
+1건·상세 1건을 넘기지 않는다. 요청 시작 간격은 최소 2초다.
 
 성공 출력에는 source ID, 실제 요청 수, 항목·상세·Raw 문서 수만 포함된다.
 요청 URL, query, 인증키, payload와 저장 파일명은 출력하지 않는다.
@@ -195,9 +205,19 @@ write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projectio
 `bokjiro-central-welfare-api`로 지정한다. 재현할 snapshot을 고정하려면
 완료 출력의 ID를 `--snapshot-id`에 전달한다.
 
+천안청년센터 저장 Raw도 같은 경로로 재처리한다. 이 명령은 외부 사이트를
+다시 호출하지 않는다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
+  --source cheonan-youthcenter-web `
+  --raw-root runtime/raw `
+  --limit 1
+```
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
-| `--source` | 필수 | 현재 지원하는 두 source ID 중 하나 |
+| `--source` | 필수 | 현재 지원하는 세 source ID 중 하나 |
 | `--raw-root` | `runtime/raw` | Git 제외 Runtime Raw root |
 | `--limit` | `5000` | snapshot에서 처리할 list item 수, 1~5000 |
 | `--snapshot-id` | 최신 완료 manifest | 특정 완료 snapshot ID |
@@ -223,7 +243,7 @@ write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projectio
   `unchanged` 또는 명시적인 `updated`로 집계하며 중복 row를 만들지 않는다.
 
 성공 요약은 source, Raw·추출·valid·partial·invalid·accepted 수와
-inserted·updated·unchanged·skipped·rejected·failed 수만 출력한다. 실패
+inserted·updated·unchanged·duplicate·skipped·rejected·failed 수만 출력한다. 실패
 항목은 source ID, external ID, 안전한 오류 코드·경로·오류 타입과 기여 Raw
 document ID만 출력하며 Raw payload, source URL query와 인증키를 출력하지
 않는다.
@@ -251,6 +271,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 않는다. 실제 호출은 환경변수가 준비된 상태에서 `--source`를 지정한 CLI
 명령을 별도로 실행할 때만 발생한다.
 
-Runtime 재처리 자동 테스트는 `data/fixtures/raw`의 합성 Raw를 사용하고 외부
-API를 호출하지 않는다. 운영 `runtime/raw`는 Git에 포함하지 않으며, 경로가
-없는 환경의 smoke 결과를 성공적인 Runtime 적재로 기록하지 않는다.
+Runtime 재처리 자동 테스트는 `data/fixtures/raw`의 합성 API Raw와 검토된 합성
+HTML을 사용하고 외부 Source를 호출하지 않는다. 운영 `runtime/raw`는 Git에
+포함하지 않으며, 경로가 없는 환경의 smoke 결과를 성공적인 Runtime 적재로
+기록하지 않는다.

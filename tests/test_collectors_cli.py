@@ -123,7 +123,9 @@ class CollectorCliTests(unittest.TestCase):
 
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(
-            "bokjiro-central-welfare-api\nyouthcenter-api\n",
+            "bokjiro-central-welfare-api\n"
+            "cheonan-youthcenter-web\n"
+            "youthcenter-api\n",
             result.stdout,
         )
         self.assertEqual("", result.stderr)

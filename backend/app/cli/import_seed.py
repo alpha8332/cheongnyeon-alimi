@@ -68,6 +68,7 @@ def main():
             f"Total: {result.total}, Validated: {result.validated}, "
             f"Inserted: {result.inserted}, "
             f"Updated: {result.updated}, Unchanged: {result.unchanged}, "
+            f"Duplicate: {result.duplicate}, "
             f"Skipped: {result.skipped}, Rejected: {result.rejected}, "
             f"Failed: {result.failed}, Run ID: {run_id}"
         )
@@ -90,6 +91,7 @@ def main():
                 "[ISSUE] "
                 f"index={issue.index} source_id={issue.source_id} "
                 f"external_id={issue.external_id} code={issue.code} "
+                f"stage={issue.stage} "
                 f"path={issue.path} "
                 f"error_type={issue.error_type}"
             )
@@ -111,6 +113,8 @@ def _seed_run_counts(result):
         accepted_count=result.accepted,
         partial_count=result.partial,
         invalid_count=result.invalid,
+        duplicate_count=result.duplicate,
+        rejected_count=result.rejected,
         inserted_count=result.inserted,
         updated_count=result.updated,
         unchanged_count=result.unchanged,

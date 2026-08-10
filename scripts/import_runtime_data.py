@@ -175,6 +175,7 @@ def _print_summary(
         f"inserted={database.inserted} "
         f"updated={database.updated} "
         f"unchanged={database.unchanged} "
+        f"duplicate={database.duplicate} "
         f"skipped={database.skipped} "
         f"rejected={database.rejected} "
         f"failed={database.failed} "
@@ -218,6 +219,7 @@ def _print_issues(
             f"source_id={issue.source_id} "
             f"external_id={issue.external_id} "
             f"code={issue.code} "
+            f"stage={issue.stage} "
             f"path={issue.path} "
             f"error_type={issue.error_type} "
             f"raw_document_ids={','.join(raw_document_ids)}",
@@ -257,7 +259,9 @@ def _runtime_run_counts(
         extracted_count=replay.extracted_count,
         accepted_count=replay.accepted_count,
         partial_count=replay.partial_count,
-        invalid_count=replay.invalid_count,
+        invalid_count=replay.invalid_count + database.invalid,
+        duplicate_count=database.duplicate,
+        rejected_count=replay.invalid_count + database.rejected,
         inserted_count=database.inserted,
         updated_count=database.updated,
         unchanged_count=database.unchanged,

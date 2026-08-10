@@ -26,8 +26,8 @@
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
-- [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
-  실제 응답 구조·검색 필드 mapping과 호출 제약
+- [Source Profile](data/source_profiles.md): 온통청년·복지로 API와 천안청년센터
+  공개 공지의 요청 계약, 실제 응답·표본 구조와 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
   데이터 계약과 Source Adapter 원칙
 - [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
@@ -120,6 +120,10 @@
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):
   DT0 실행 환경과 실데이터 수집·적재 검증 결과
+- [Recurrent Collection and Quality Operations Forest 개발 기록](development/development_notes/data/recurrent_collection_quality_operations.md):
+  DTL4-2A~2B 반복·수정·중복·실패 판정, CollectionRun 영속과 PostgreSQL 검증
+- [Public HTTPS Policy Ingestion Forest 개발 기록](development/development_notes/data/public_https_policy_ingestion.md):
+  DTL4-3A 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)
@@ -137,6 +141,8 @@
   검색 데이터 lineage·ADR Gate와 Schema·지역·DB·Source Adapter 검증 결과
 - [Release 1 Acceptance Forest 개발 기록](development/development_notes/integration/release_1_acceptance.md):
   DT5 실제 snapshot 복구·PostgreSQL·HTTP·Browser 통합과 결함 수정 결과
+- [v0.5.0 Contract Baseline Forest 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md):
+  DTL4-0 시작 SHA·환경·Forest 소유 경계와 W4-G0 진행 근거
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
@@ -198,6 +204,19 @@ confirmed 1건으로 승인해 종료했다. DT6 월세 결과는 역사적 unkn
 복지로 계약에는 신청기간 전용 필드가 없으므로 본문 날짜 2건은 원문만 보존하고
 기간·상태를 null로 유지한다. Source 근거 없는 승격과 상태 불일치는 0건이며
 golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사를 통과했다.
+
+4주차 DTL4-1에서 다음 실제 소비 검토·계약 차이를 확인했다. 상세 근거와
+검토안은 [v0.5.0 Contract Baseline 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md)과
+[계획](development/develop_plan/integration/05_v0_5_0_contract_baseline.md)에 둔다.
+
+| ID | 상태 | 다음 담당 | 완료·재개 조건 |
+| --- | --- | --- | --- |
+| `W4-G1-BE-AUTH` | review-pending | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
+| `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock을 승인 계약과 대조 |
+
+Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
+`W4-G0_APPROVED`로 판정했다. 두 후속 항목은 W4-G1 구현 적합성 확인이며 Data
+03·04와 Integration 08의 기반 구현을 막지 않는다.
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

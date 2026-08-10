@@ -14,6 +14,10 @@ from collectors.raw import (
     RawPolicyDocument,
     SourceType,
 )
+from collectors.cheonan_youthcenter import (
+    BOARD_URL,
+    SOURCE_ID as CHEONAN_SOURCE_ID,
+)
 from collectors.runtime import (
     RuntimeReplayError,
     _latest_batch,
@@ -28,6 +32,77 @@ RAW_ROOT = ROOT / "data" / "fixtures" / "raw"
 
 
 class RuntimeReplayTests(unittest.TestCase):
+    def test_cheonan_html_raw_replays_to_partial_program(self) -> None:
+        collected_at = datetime(2026, 8, 10, tzinfo=timezone.utc)
+        fixture_root = (
+            ROOT / "data" / "fixtures" / "html"
+            / "cheonan-youthcenter-web"
+        )
+        list_payload = (fixture_root / "list_normal.html").read_bytes()
+        detail_payload = (fixture_root / "detail_normal.html").read_bytes()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            response = RawPolicyDocument.from_bytes(
+                source_id=CHEONAN_SOURCE_ID,
+                source_type=SourceType.WEB,
+                document_role=RawDocumentRole.LIST_RESPONSE,
+                external_id=None,
+                parent_document_id=None,
+                source_url=BOARD_URL,
+                collected_at=collected_at,
+                content_type="text/html; charset=utf-8",
+                raw_format=RawFormat.HTML,
+                raw_payload=list_payload,
+                http_status=200,
+                collector_version="test/1.0",
+            )
+            item = RawPolicyDocument.from_bytes(
+                source_id=CHEONAN_SOURCE_ID,
+                source_type=SourceType.WEB,
+                document_role=RawDocumentRole.LIST_ITEM,
+                external_id="notice:674",
+                parent_document_id=response.document_id,
+                source_url=BOARD_URL,
+                collected_at=collected_at,
+                content_type="text/html; charset=utf-8",
+                raw_format=RawFormat.HTML,
+                raw_payload=list_payload,
+                http_status=200,
+                collector_version="test/1.0",
+            )
+            detail = RawPolicyDocument.from_bytes(
+                source_id=CHEONAN_SOURCE_ID,
+                source_type=SourceType.WEB,
+                document_role=RawDocumentRole.DETAIL_RESPONSE,
+                external_id="notice:674",
+                parent_document_id=None,
+                source_url=BOARD_URL,
+                collected_at=collected_at,
+                content_type="text/html; charset=utf-8",
+                raw_format=RawFormat.HTML,
+                raw_payload=detail_payload,
+                http_status=200,
+                collector_version="test/1.0",
+            )
+            for document in (response, item, detail):
+                store.save(document)
+
+            replay = replay_runtime_raw(
+                raw_root=temp_dir,
+                source_id=CHEONAN_SOURCE_ID,
+                limit=1,
+            )
+
+        self.assertEqual(3, replay.raw_document_count)
+        self.assertEqual(1, replay.extracted_count)
+        self.assertEqual(0, replay.valid_count)
+        self.assertEqual(1, replay.partial_count)
+        self.assertEqual(0, replay.invalid_count)
+        self.assertEqual(1, replay.accepted_count)
+        self.assertEqual("notice:674", replay.programs[0]["external_id"])
+        self.assertEqual(3, len(replay.programs[0]["provenance"]))
+
     def test_complete_manifest_replays_multiple_list_pages(self) -> None:
         existing = tuple(
             RawPolicyDocument.from_dict(

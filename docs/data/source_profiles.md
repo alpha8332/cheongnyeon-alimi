@@ -1,11 +1,11 @@
-# API Source Profile
+# Source Profile
 
 ## 문서 상태
 
 - 상태: 기준선
-- 마지막 공식 자료 확인: 2026-07-26
-- 마지막 실호출 확인: 2026-08-04
-- 범위: 온통청년 청년정책 API, 복지로 중앙부처 복지서비스 API
+- 마지막 공식 자료 확인: 2026-08-10
+- 마지막 실호출 확인: 2026-08-10
+- 범위: 온통청년·복지로 API, 천안청년센터 승인 공개 웹 공지
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
 제약을 기록한다. 공식 자료의 명세, 실제 응답과 로컬 과거 샘플을 구분하며,
@@ -17,6 +17,7 @@
 | --- | --- | --- | --- |
 | `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
+| `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
@@ -459,6 +460,53 @@ DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
 사용했다. 일반 본문 날짜 탐지는 Source mapping을 대체하지 않으며 관찰 건수만
 profile에 남긴다.
 
+## 천안청년센터 이음 공개 공지
+
+### W4-G0 승인 요청 계약
+
+| 항목 | 확인·승인 값 |
+| --- | --- |
+| Source ID | `cheonan-youthcenter-web` |
+| 운영 근거 | 천안시 청년지원기관 천안청년센터 이음 공개 공지 |
+| 목록 | `https://www.ch2030youth.kr/bbs/board.php?bo_table=notice` |
+| 상세 | `/bbs/board.php?bo_table=notice&wr_id={positive_integer}` |
+| identity | `notice:{wr_id}` |
+| 표본 | `notice:674` |
+| 요청 예산 | 동시 1개, 시작 간격 최소 2초, 목록 1회·표본 상세 1건 |
+| 보존 | actual HTML은 Runtime 전용, Git은 합성·최소 구조 Fixture만 허용 |
+
+`2026-08-10` 익명 공개 상세에서 제목·게시일·대상·지원 내용·제출서류와
+유의사항을 확인했다. 회원가입·로그인이 필요한 신청 단계는 수집 범위가 아니다.
+첨부·이미지·개인정보 페이지는 따라가지 않는다. 공개 시설 대표전화와 공식
+카카오채널은 기관 문의 정보로 Runtime Raw와 `institutional_contact`에 보존하고,
+개인 휴대전화·개인 이메일·성명은 구조화 추출하지 않는다.
+
+표본 게시일은 `2026-07-24`, 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`인데 제목에는 “곧 마감”이 있어 서로
+충돌한다. Extractor는 신청 상태를 보정하지 않고 `data_quality_status=partial`,
+신청 상태 `unknown`과 확인 필요 evidence를 만든다.
+
+`/robots.txt`는 directive가 아닌 404 페이지였고 별도 이용약관은 찾지 못했다.
+footer의 `all rights reserved`를 고려해 공개 사실의 최소 추출만 승인하며,
+pagination·대량 순회·원문 HTML 또는 이미지의 Git 재배포는 승인하지 않는다.
+actual DOM은 목록 `#bo_list`, 상세 `#bo_v`·`#bo_v_title`·`#bo_v_info`·
+`#bo_v_con`으로 확인했다. `</img>` 비표준 종료 태그를 허용하되 필수 selector
+누락은 drift로 실패한다.
+
+### 2026-08-10 DTL4-3B actual replay
+
+DTL4-3A의 actual Raw 3건을 외부 요청 없이 replay했다. Extractor·Normalizer는
+정책 1건을 `partial`, 신청 상태 `unknown`으로 분류하고 provenance 3건을
+유지했다. 전용 PostgreSQL 최초 적재는 `inserted=1`, 동일 Raw 재실행은
+`unchanged=1`이었으며 CollectionRun 2건과 정책 row 1건이 일치했다. 공개 정책
+상세 API는 기본 partial 비노출 `404`, `include_partial=true`에서 `200`을
+반환했고 Raw provenance는 공개 DTO에 포함하지 않았다.
+
+합성 HTML PostgreSQL 통합 테스트에서는 최초 `inserted`, 동일 `unchanged`,
+지원 내용 변경 `updated`와 후속 selector drift 실패 뒤 기존 row 보존을
+확인했다. Source 전용 section의 제외조건·필요서류와 기관 연락처는 DTL4-4의
+공통 조건·소비 계약 전까지 자동 승격하지 않는다.
+
 ## 공통 비밀정보 경계
 
 - 인증키 값은 환경변수에서만 읽고 코드, 문서, Fixture와 테스트 snapshot에
@@ -477,11 +525,14 @@ profile에 남긴다.
 ## Collector 실행 계약
 
 - 기본 Registry source ID:
-  `youthcenter-api`, `bokjiro-central-welfare-api`
+  `youthcenter-api`, `bokjiro-central-welfare-api`,
+  `cheonan-youthcenter-web`
 - 공통 옵션: `page` 1~1000, `limit` 1~500, `detail_limit` 0~5
 - CLI 기본값: page 1, limit 10, 복지로 상세 3건
 - 온통청년 요청 수: 목록 1회
 - 복지로 요청 수: 목록 1회와 선택한 상세 수
+- 천안청년센터 요청 수: page 1의 승인 목록 1회와 `notice:674` 상세 최대 1회,
+  같은 실행의 요청 시작 간격 최소 2초
 - 테스트는 주입한 HTTP Client와 임시 Raw root를 사용하며 외부 호출하지 않음
 - 실제 호출은 환경변수를 주입한 명시적 CLI 실행으로만 수행
 - 응답 payload에서 요청 인증키가 발견되면 Raw 저장 전에 파싱 오류로 중단

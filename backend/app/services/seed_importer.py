@@ -36,6 +36,10 @@ MUTABLE_FIELDS = tuple(
     for field in POLICY_WRITE_FIELDS
     if field not in IDENTITY_FIELDS | {"updated_at"}
 )
+COLLECTION_METADATA_FIELDS = frozenset({"collected_at", "provenance"})
+BUSINESS_MUTABLE_FIELDS = tuple(
+    field for field in MUTABLE_FIELDS if field not in COLLECTION_METADATA_FIELDS
+)
 
 
 @dataclass(frozen=True)
@@ -44,6 +48,7 @@ class ImportIssue:
     source_id: str | None
     external_id: str | None
     code: str
+    stage: str | None = None
     path: str | None = None
     error_type: str | None = None
 
@@ -58,6 +63,7 @@ class ImportResult:
     inserted: int = 0
     updated: int = 0
     unchanged: int = 0
+    duplicate: int = 0
     skipped: int = 0
     rejected: int = 0
     failed: int = 0
@@ -102,6 +108,7 @@ def _identity_issue(
             source_id=None,
             external_id=external_id,
             code="missing_source_id",
+            stage="validate",
             path=f"$[{index}].source_id",
         )
     if external_id is None and source_id in EXTERNAL_ID_REQUIRED_SOURCES:
@@ -110,6 +117,7 @@ def _identity_issue(
             source_id=source_id,
             external_id=None,
             code="missing_external_id",
+            stage="validate",
             path=f"$[{index}].external_id",
         )
     if external_id is None:
@@ -118,6 +126,7 @@ def _identity_issue(
             source_id=source_id,
             external_id=None,
             code="unsupported_null_external_id",
+            stage="validate",
             path=f"$[{index}].external_id",
         )
     return None
@@ -176,7 +185,7 @@ def _postgresql_upsert(
             Policy.__table__.c[field].is_distinct_from(
                 getattr(statement.excluded, field)
             )
-            for field in MUTABLE_FIELDS
+            for field in BUSINESS_MUTABLE_FIELDS
         )
     )
     update_values = {
@@ -255,7 +264,7 @@ def _portable_upsert(
 
     if all(
         _values_equal(getattr(existing, field), values[field])
-        for field in MUTABLE_FIELDS
+        for field in BUSINESS_MUTABLE_FIELDS
     ):
         return "unchanged", existing.id
 
@@ -290,17 +299,23 @@ def _preflight_programs(
     int,
     int,
     int,
+    int,
+    int,
     list[ImportIssue],
 ]:
     accepted: list[tuple[int, Mapping[str, Any]]] = []
     issues: list[ImportIssue] = []
     validated = 0
     partial = 0
+    invalid = 0
     skipped = 0
     rejected = 0
+    duplicate = 0
+    seen_identities: set[tuple[str, str]] = set()
 
     for index, item in enumerate(items):
         if not isinstance(item, Mapping):
+            invalid += 1
             rejected += 1
             issues.append(
                 ImportIssue(
@@ -308,6 +323,7 @@ def _preflight_programs(
                     source_id=None,
                     external_id=None,
                     code="item_not_object",
+                    stage="validate",
                     path=f"$[{index}]",
                 )
             )
@@ -322,6 +338,7 @@ def _preflight_programs(
             validation.status is DataQualityStatus.INVALID
             or validation.program is None
         ):
+            invalid += 1
             rejected += 1
             error_issues = tuple(
                 issue
@@ -337,6 +354,7 @@ def _preflight_programs(
                             item.get("external_id")
                         ),
                         code=issue.code,
+                        stage="validate",
                         path=_item_path(index, issue.path),
                     )
                 )
@@ -349,6 +367,7 @@ def _preflight_programs(
                             item.get("external_id")
                         ),
                         code="normalized_program_invalid",
+                        stage="validate",
                         path=f"$[{index}]",
                     )
                 )
@@ -357,14 +376,38 @@ def _preflight_programs(
         candidate = validation.program.to_dict()
         identity_issue = _identity_issue(candidate, index)
         if identity_issue is not None:
-            skipped += 1
+            rejected += 1
             issues.append(identity_issue)
             continue
+        identity = (candidate["source_id"], candidate["external_id"])
+        if identity in seen_identities:
+            duplicate += 1
+            issues.append(
+                ImportIssue(
+                    index=index,
+                    source_id=identity[0],
+                    external_id=identity[1],
+                    code="duplicate_identity",
+                    stage="validate",
+                    path=f"$[{index}]",
+                )
+            )
+            continue
+        seen_identities.add(identity)
         accepted.append((index, candidate))
         if validation.status is DataQualityStatus.PARTIAL:
             partial += 1
 
-    return accepted, validated, partial, skipped, rejected, issues
+    return (
+        accepted,
+        validated,
+        partial,
+        invalid,
+        skipped,
+        rejected,
+        duplicate,
+        issues,
+    )
 
 
 def import_programs(
@@ -390,8 +433,10 @@ def import_programs(
         accepted,
         validated,
         partial,
+        invalid,
         skipped,
         rejected,
+        duplicate,
         issues,
     ) = _preflight_programs(
         items,
@@ -404,9 +449,10 @@ def import_programs(
             validated=validated,
             accepted=len(accepted),
             partial=partial,
-            invalid=rejected,
+            invalid=invalid,
             skipped=skipped,
             rejected=rejected,
+            duplicate=duplicate,
             dry_run=dry_run,
             issues=tuple(issues),
         )
@@ -459,8 +505,9 @@ def import_programs(
             validated=validated,
             accepted=len(accepted),
             partial=partial,
-            invalid=rejected,
+            invalid=invalid,
             failed=1,
+            duplicate=duplicate,
             dry_run=dry_run,
             issues=(
                 ImportIssue(
@@ -472,6 +519,7 @@ def import_programs(
                         current_values.get("external_id")
                     ),
                     code="database_write_failed",
+                    stage="persist",
                     path=(
                         f"$[{current_index}]"
                         if current_index >= 0
@@ -487,10 +535,11 @@ def import_programs(
         validated=validated,
         accepted=len(accepted),
         partial=partial,
-        invalid=rejected,
+        invalid=invalid,
         committed=not dry_run,
         dry_run=dry_run,
         issues=tuple(issues),
+        duplicate=duplicate,
         **counts,
     )
 
@@ -519,6 +568,7 @@ def import_seed_data(
                     source_id=None,
                     external_id=None,
                     code="seed_root_not_array",
+                    stage="validate",
                     path="$",
                 ),
             ),

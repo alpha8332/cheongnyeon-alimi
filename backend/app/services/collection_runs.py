@@ -32,6 +32,8 @@ class CollectionRunCounts:
     accepted_count: int = 0
     partial_count: int = 0
     invalid_count: int = 0
+    duplicate_count: int = 0
+    rejected_count: int = 0
     inserted_count: int = 0
     updated_count: int = 0
     unchanged_count: int = 0
