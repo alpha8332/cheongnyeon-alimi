@@ -18,14 +18,15 @@
 | --- | --- | --- | --- |
 | 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 Raw 수집 확인 |
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
-| 대표 HTTPS 정책 사이트 | `sample-web` | 공개 웹 | 후속 Forest 후보 |
+| 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | W4-G0 승인, 공지 674번 preflight 확인 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
-자료이므로 Fixture나 커밋 대상이 아니다. `sample-web`은 공통 구조 검증을
-위한 계획 식별자이며 실제 서비스 source ID로 확정된 이름이 아니다.
+자료이므로 Fixture나 커밋 대상이 아니다. 웹 Source의 실제 원문 HTML·이미지도
+Git에 넣지 않고 합성·최소 구조 Fixture만 사용한다.
 
-현재 Forest는 두 공식 API를 우선하고 Web Collector는 범위에서 제외한다.
+현재 구현은 두 공식 API만 포함한다. 승인 웹 Source 구현은 Data 04 Forest에서
+진행한다.
 구체적인 수집 건수와 결정 게이트는
 [Data Pipeline Forest 계획](../development/develop_plan/data/01_data_pipeline.md)을
 따른다.
@@ -154,6 +155,14 @@ detail: /NationalWelfaredetailedV001
 
 ### 확정된 기준
 
+- Source ID는 `cheonan-youthcenter-web`이다.
+- 목록 allowlist는 `/bbs/board.php?bo_table=notice` 한 페이지다.
+- 상세 allowlist는
+  `/bbs/board.php?bo_table=notice&wr_id={positive_integer}`이며 첫 승인 표본은
+  [공지 674번](https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674)이다.
+- external identity는 `notice:{wr_id}`이며 표본은 `notice:674`다.
+- 동시 요청은 1개, 요청 시작 간격은 최소 2초로 하고 목록 1회·승인 상세 1건
+  외 pagination·대량 순회를 하지 않는다.
 - 목록 페이지와 상세 페이지 파서를 분리한다.
 - 정적 HTML과 공개 내부 API를 우선 검토한다.
 - CSS Selector는 소스별 설정에 모으고 공통 코드에 흩어놓지 않는다.
@@ -178,7 +187,19 @@ detail: /NationalWelfaredetailedV001
 3. 두 방법으로 데이터를 얻을 수 없을 때만 Playwright 같은 브라우저 자동화를
    별도 결정으로 검토한다.
 
-현재 대표 웹사이트와 Selector는 확정되지 않았다.
+### 2026-08-10 표본과 보존 경계
+
+공지 674번에서 공개 제목·게시일·지원 대상·지원 내용·제출서류·유의사항을
+확인했다. 게시일은 `2026-07-24`인데 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`이고 제목은 “곧 마감”으로 표시돼 충돌한다.
+신청 상태는 추정하지 않고 `unknown`, 데이터 품질은 `partial`로 기록한다.
+
+`/robots.txt`는 directive 대신 404 페이지를 반환했고 별도 사이트 이용약관은
+찾지 못했으며 footer에는 `all rights reserved`가 표시된다. 로그인·회원·신청·
+CAPTCHA·첨부·이미지·이메일·전화번호·개인정보 페이지는 수집하지 않는다.
+actual HTML은 `runtime/html/`에만 두고 Git Fixture는 원문을 복제하지 않은
+합성·최소 구조로 만든다. Selector는 Data 04 구현 시 actual DOM을 다시 확인해
+Source module에만 확정한다.
 
 ## 소스 등록 시 기록할 정보
 
@@ -201,7 +222,6 @@ Collector 문서를 함께 갱신한다.
 
 ## 현재 미확정 사항
 
-- 대표 HTTPS 웹사이트
 - 온통청년 API의 오류 payload
 - 복지로 선택 필드의 누락·빈 element 경계 사례
 - 온통청년 API 원문의 명시적인 비상업적 재배포·출처 표시 조건

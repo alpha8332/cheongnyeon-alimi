@@ -2,8 +2,8 @@
 
 ## 작업 정보
 
-- 기간: `2026-08-10`~
-- 상태: in-progress
+- 기간: `2026-08-10`
+- 상태: completed
 - 담당 영역: Data, Team Leader - Integration
 - 현재 작업 브랜치: `docs/docs/v0-5-contract-baseline`
 - 권장 Forest 브랜치: `docs/docs/v0-5-contract-baseline`
@@ -15,8 +15,8 @@
 ## 목적
 
 4주차 구현 전에 실제 Release 1 기준선과 로컬 실행 환경을 확인하고, 각 Forest의
-구현·소비 검토·actual E2E 책임과 merge 경계를 고정한다. 이 기록은 아직
-`W4-G0_APPROVED`를 뜻하지 않는다.
+구현·소비 검토·actual E2E 책임과 merge 경계를 고정하고 Team Leader가
+`W4-G0_APPROVED`를 판정한 근거를 남긴다.
 
 ## Forest 범위
 
@@ -30,7 +30,7 @@
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | DTL4-0 | 완료 | 시작 SHA·환경·Forest 소유·merge target과 비추적 경계 확인 |
-| DTL4-1 / C0~C4 | in-progress | Data·Backend·웹 Source preflight 완료, FE 소비 검토와 action item 대기 |
+| DTL4-1 / C0~C4 | 완료 | Data inventory·Backend 대조·웹 Source 경계 승인, `W4-G0_APPROVED` |
 
 ## 구현 내용
 
@@ -96,14 +96,14 @@ Backend 담당 결과는 별도 원격 브랜치
 `origin/feature/backend/admin-access-control`의
 `f7ffca4254a52cc94666a575567cbf73b7cb92de`까지 진행돼 있다. 여기에는 PIN
 session·token·rate limit·관리자 dependency와 계약·테스트가 포함되지만,
-Integration 05는 아직 `W4-G0` 미승인이다. 따라서 DTL4-1에서 실제 OpenAPI
-후보로 대조하고 Data·Frontend 소비 검토 전에는 승인 계약 또는 `develop`
-완료 기능으로 취급하지 않는다.
+Integration 05 승인 전에는 실제 OpenAPI 후보로만 대조했다. Team Leader의
+W4-G0 승인 뒤에도 해당 구현을 완료 기능으로 소급하지 않으며 승인 계약과의
+적합성은 W4-G1에서 확인한다.
 
 Backend에는 이 구현과 함께 CollectionRun·관리자 데이터·로그·자격요건·추천
-OpenAPI 초안을, Frontend에는 PIN·관리자·핵심 조건·추천·로컬 기능
-TypeScript·Mock 초안을 DTL4-1 소비 검토 입력으로 요구한다. 계획에 정한 역할을
-기록한 것이며 아직 두 담당의 공동 승인 증거는 아니다.
+OpenAPI를, Frontend에는 PIN·관리자·핵심 조건·추천·로컬 기능 TypeScript·Mock을
+W4-G1 소비 검토 입력으로 요구한다. FE 미착수 상태를 승인 증거로 기록하지
+않았으며, 구현 차이는 계약 변경 없이 임의 수용하지 않는다.
 
 ### DTL4-1 Data inventory
 
@@ -140,36 +140,29 @@ Backend 브랜치명이나 W4-G0 전 구현 시작 자체는 계약 차이로 �
 
 ### DTL4-1 공식 웹 Source preflight
 
-`2026-08-10`에 [온통청년](https://www.youthcenter.go.kr/) 익명 공개 화면을
-Browser로 확인했다.
+`2026-08-10`에 [천안청년센터 이음 공지 674번](https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674)을
+익명 공개 화면으로 확인했다.
 
-- 대한민국 공식 전자정부 누리집 표시와 운영 주체를 확인함
-- 공개 목록 `/youthPolicy/ythPlcyTotalSearch`에서 정책번호 기반 상세 경로 확인
-- 상세에서 지원·기간, 신청자격 10개 항목, 신청절차·심사·사이트·제출서류,
-  기관·참고 URL·변경일 확인
-- Release 1 golden API external ID `20260430005400212969`와 웹 정책번호가
-  exact 일치하고 같은 정책 제목·내용임을 확인
-- 상세 값은 최초 HTML shell 뒤 비동기로 채워져 정적 HTTP만으로 추출 가능한지는
-  아직 확인하지 않음
-- `/robots.txt`는 기계 판독 directive 대신 온통청년 오류 shell을 반환함
+- Source ID `cheonan-youthcenter-web`, identity `notice:674`로 확정
+- 제목·게시일·대상·지원 내용·제출서류·유의사항이 공개 정적 본문에 존재
+- 신청 링크는 회원가입·로그인이 필요하므로 crawler 추적 대상에서 제외
+- 첨부·이미지·이메일·전화번호·개인정보를 추출·저장하지 않음
+- 목록 1회·승인 상세 1건, 동시 요청 1개·최소 2초 간격만 승인
+- `/robots.txt`는 directive가 아닌 404 페이지를 반환하고 별도 이용약관은
+  찾지 못했으며 footer는 `all rights reserved`를 표시
+- actual HTML은 Runtime 전용, Git에는 합성·최소 구조 Fixture만 허용
 
-[현행 이용약관](https://www.youthcenter.go.kr/cmnFooter/termsInfo)은
-`2026-06-23` 시행본이다. 대량 이용은 별도 계약으로 두며 사전 협의 없는
-자동화 도구의 로그인·개인정보 scraping, 과도한 트래픽과 CAPTCHA 우회를
-제한한다. 비로그인 공개 정책의 극소수 요청이 명시적으로 금지됐다고 단정할
-근거도, robots가 허용한다고 볼 근거도 충분하지 않다. 이에 Source는 후보로
-유지하고 Data 04 actual 실행 전 제한 범위 승인 또는 제공기관 확인을 남겼다.
+게시일은 `2026-07-24`지만 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`이고 제목에는 “곧 마감”이 있어 충돌한다.
+표본은 `data_quality_status=partial`, 신청 상태 `unknown`으로 승인했으며
+Extractor가 현재 신청 가능 여부를 추정하거나 원문을 덮어쓰지 않도록 했다.
 
 ### DTL4-1 Gate 상태
 
-`W4-G0_REVIEW_PENDING`으로 판정했다. Data inventory와 Backend·웹 Source
-preflight는 완료했지만 다음 근거가 없다.
-
-- FE가 아직 4주차 구현을 시작하지 않아 TypeScript·Mock 소비 검토 미수행
-- Backend localhost `0000`·별도 token secret action item 미해소
-- 웹 Source actual 요청·보존 경계 최종 승인 미완료
-
-따라서 DTL4-2·3·4 본 구현 해제와 `W4-G0_APPROVED`를 기록하지 않았다.
+Team Leader가 `W4-G0_APPROVED`로 판정했다. FE TypeScript·Mock 미착수와 Backend
+localhost `0000`·별도 token secret 차이는 승인 계약의 미확정이 아니라
+`W4-G1` 구현 적합성 항목으로 이관했다. 이에 DTL4-2A·3A·4A 기반 구현을
+해제하며 실제 Schema·Migration·actual 구현은 각 후속 Forest에서 수행한다.
 
 ## 주요 변경 파일
 
@@ -179,6 +172,11 @@ preflight는 완료했지만 다음 근거가 없다.
 - `docs/development/development_notes/integration/v0_5_0_contract_baseline.md`
 - `docs/development/development_notes/README.md`
 - `docs/index.md`
+- `docs/data/data_sources.md`
+- `docs/data/collection_policy.md`
+- `docs/data/source_profiles.md`
+- `docs/development/develop_plan/data/04_public_https_policy_ingestion.md`
+- `CHANGELOG.md`
 
 ## 설계 결정
 
@@ -186,8 +184,12 @@ preflight는 완료했지만 다음 근거가 없다.
 - Release 1 offline snapshot은 재사용하되 인증하지 않은 Runtime PostgreSQL의
   현재 상태를 추정하지 않는다.
 - 외부 API key·pgpass 값은 문서·명령 출력·Git에 포함하지 않는다.
-- BE 선행 구현은 되돌리거나 소급 승인하지 않고 DTL4-1 계약 후보로 검토한다.
-- `CHANGELOG.md`는 사용자 기능이나 Forest 완료가 아니므로 갱신하지 않는다.
+- BE 선행 구현은 되돌리거나 완료 기능으로 소급하지 않고 W4-G1에서 적합성을
+  검토한다.
+- FE 사전 구현 없이 Team Leader가 W4-G0을 승인하고 FE TypeScript·Mock parity는
+  W4-G1 완료 조건으로 이관한다.
+- 천안청년센터 원문 HTML·이미지는 Git에 재배포하지 않고 공개 사실과 최소
+  합성 Fixture만 사용한다.
 
 ## 검증 결과
 
@@ -208,17 +210,16 @@ preflight는 완료했지만 다음 근거가 없다.
 | DTL4-1 runtime replay·release profile 집중 unittest | 16건 통과 |
 | DTL4-1 Data Integration pytest | 4건 skip: `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
 | DTL4-1 Backend contract static review | 완료: BE commit의 문서·Schema·service·endpoint·dependency 대조 |
-| DTL4-1 공식 웹 Source preflight | 부분 완료: 공개 목록·상세·약관 확인, robots·허용 경계 action item |
-| DTL4-1 Frontend 소비 검토 | 미실행: FE 미착수 |
+| DTL4-1 공식 웹 Source preflight | 완료: 공지 674번 공개 사실·robots 404·이용 조건·요청/보존 경계 확인 |
+| DTL4-1 Frontend 소비 검토 | 미실행: FE 미착수, W4-G1 적합성 확인으로 이관 |
+| DTL4-1 Gate 판정 | `W4-G0_APPROVED`: Team Leader 승인 |
 
 ## 남은 작업
 
-- DTL4-1의 FE TypeScript·Mock 소비 검토를 FE 커밋 전달 뒤 수행한다.
+- W4-G1에서 FE TypeScript·Mock을 전달받아 승인 계약과 대조한다.
 - Backend localhost `0000`·production 별도 token secret action item을
-  Backend 결과와 다시 대조한다.
-- 온통청년 제한 actual 요청·보존 경계를 승인하거나 제공기관 확인 근거를
-  연결한다.
+  W4-G1 Backend 결과와 다시 대조한다.
+- Data 04는 천안청년센터 승인 경계 안에서 합성 Fixture·Adapter·제한 actual
+  수집을 구현하고 착수 시 DOM·이용 조건을 재확인한다.
 - PostgreSQL 통합 검증 전에 별도 `_test` DB용 credential과 `TEST_DATABASE_URL`
   을 명시적으로 주입한다. 준비 전 skip을 성공으로 간주하지 않는다.
-- `W4-G0_APPROVED`는 Data·Backend·Frontend 소비 검토 증거가 생긴 뒤에만
-  기록한다.

@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- 천안청년센터 공개 공지 표본과 최소 수집·비재배포 경계를 포함한 v0.5.0
+  `W4-G0` 계약 기준선 승인
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+
 ## [0.1.0] - 2026-08-06
 
 ### Added

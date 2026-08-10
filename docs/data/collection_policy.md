@@ -54,11 +54,18 @@ origin이나 비표준 포트로 전달되는 일을 막고 3xx를 명시적 오
 information을 `<redacted>`로 바꾼다. 응답 본문과 하위 전송 예외 메시지는
 공통 예외에 포함하지 않는다.
 
-HTML Collector는 현재 Forest 범위 밖이다. 이후 별도 Forest에서 승인되면
-HTML 파서와 웹 수집 정책의 구현 범위를 다시 확정한다.
+HTML Collector는 현재 구현 범위 밖이며 Data 04 Forest에서 구현한다. W4-G0은
+`cheonan-youthcenter-web`의 아래 최소 경계만 승인했고 확대 수집은 승인하지
+않았다.
 
 ## 웹 수집 원칙
 
+- 허용 목록은 `/bbs/board.php?bo_table=notice` 1회, 허용 상세는
+  `/bbs/board.php?bo_table=notice&wr_id={positive_integer}` 중 승인 표본 1건이다.
+- 동시 요청은 1개, 요청 시작 간격은 최소 2초이며 pagination과 bulk 순회는
+  하지 않는다.
+- 로그인·회원·신청·CAPTCHA·첨부·이미지·연락처·개인정보 URL을 따라가지
+  않는다.
 - robots 정책과 이용약관을 확인한다.
 - 공개 목록과 필요한 상세 페이지만 제한적으로 요청한다.
 - 정적 HTML을 우선한다.
@@ -67,6 +74,8 @@ HTML 파서와 웹 수집 정책의 구현 범위를 다시 확정한다.
 - Playwright나 Selenium은 정적 HTML과 공개 요청으로 데이터를 얻을 수 없을
   때만 별도 검토한다.
 - 로그인 우회, CAPTCHA 우회와 접근 통제 회피를 구현하지 않는다.
+- robots directive와 별도 이용약관을 확인하지 못한 현재 상태에서는 승인
+  예산을 넘기지 않고 실제 원문·이미지를 Git에 재배포하지 않는다.
 
 ## 인증정보
 

@@ -4,8 +4,8 @@
 
 - 번호: Integration 05
 - 담당 영역: Team Leader - Integration
-- 상태: in-progress
-- 진행: `C0` 시작 기준 확인 완료, `W4-G0` 미승인
+- 상태: approved
+- 진행: `C0`~`C4` 완료, Team Leader가 `W4-G0_APPROVED` 판정
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 공통 시작점: `2b33ed7` (`v0.1.0`)
@@ -18,7 +18,7 @@
 - DTL4-0 확인일: `2026-08-10`
 - 실제 시작 SHA: `e5ff8c81e0e902723c5b79dee1267be7e5e2e66c`
 - 시작 브랜치·merge target: `develop`
-- 권장 작업 브랜치: `docs/docs/v0-5-contract-baseline`이며 아직 생성하지 않음
+- 현재 작업 브랜치: `docs/docs/v0-5-contract-baseline`
 - Release 기준: `main`·`origin/main`·`v0.1.0`은
   `2b33ed7d8d4e281487b5734bd88cfd73b6d60175`, `develop`·
   `origin/develop`은 실제 시작 SHA와 일치
@@ -28,9 +28,8 @@
 Backend 04는 공통 계약 승인 전에 별도 브랜치
 `origin/feature/backend/admin-access-control`의
 `f7ffca4254a52cc94666a575567cbf73b7cb92de`까지 구현됐다. 이 결과는
-`W4-G0_APPROVED`가 아니며 C1~C4에서 Data·Frontend 소비 초안과 대조할
-Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 상태를 소급해
-완료로 바꾸지 않는다.
+승인 전에는 Backend 제안 구현으로 취급했다. 브랜치명과 선행 구현 시점은
+계약 차이가 아니며, 아래 승인 계약과의 구현 적합성은 `W4-G1`에서 대조한다.
 
 ## 목적
 
@@ -75,7 +74,8 @@ Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 �
 
 - Release 1 publication과 `develop` fast-forward가 완료돼야 한다.
 - 현재 Policy·Search·CollectionRun 계약과 기존 관리자 Forest를 확인한다.
-- Data·Backend·Frontend 담당자가 W4-G0 소비 검토에 참여한다.
+- Team Leader가 Data inventory와 Backend 구현 대조를 근거로 W4-G0을 승인한다.
+- Frontend TypeScript·Mock과 Backend 구현 적합성은 W4-G1에서 확인한다.
 
 ## 공통 설계 원칙
 
@@ -88,9 +88,9 @@ Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 �
 - 정책 상세는 핵심 조건을 읽기 쉽게 제공하되 수혜·선정 가능성을 확정하지
   않는다.
 
-## W4-G0 결정 후보
+## W4-G0 승인 기준선
 
-다음은 승인 전 제안이며 현재 API·DB 계약이 아니다.
+다음 계약은 `2026-08-10` Team Leader가 `W4-G0_APPROVED`로 승인했다.
 
 | 항목 | 제안 기준선 |
 | --- | --- |
@@ -115,12 +115,12 @@ Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 �
 | 파일 로그 | UTF-8 JSON Lines, stdout 병행, component level·rotation·retention |
 | 로그 삭제 | 회전 archive만 확인 절차 뒤 삭제, path containment와 별도 감사 기록 |
 
-## DTL4-1 검토 중 계약 (`2026-08-10`)
+## DTL4-1 승인 계약 (`2026-08-10`)
 
-현재 Gate 상태는 `W4-G0_REVIEW_PENDING`이다. 다음 표는 Data inventory와
-Backend 구현 대조 및 공식 웹 Source preflight를 반영한 소비 검토안이며,
-Frontend TypeScript·Mock 검토와 아래 action item이 끝나기 전에는 현재 API·DB
-계약이 아니다.
+현재 Gate 상태는 `W4-G0_APPROVED`다. Team Leader가 Data inventory, Backend
+구현 대조와 공식 웹 Source preflight를 근거로 승인했다. Frontend 미착수로
+TypeScript·Mock 소비 대조는 실행하지 않았으며 `W4-G1` 적합성 확인으로
+이관한다. 이후 구현이 이 기준선과 다르면 계약을 먼저 변경한다.
 
 ### 반복 수집·품질 의미
 
@@ -144,28 +144,27 @@ CollectionRun 저장 여부를 Backend 05 소비 계약과 함께 확정한다.
 
 | 항목 | 검토안 |
 | --- | --- |
-| 사이트 | [온통청년](https://www.youthcenter.go.kr/), 대한민국 공식 전자정부 누리집 |
-| Source ID | `youthcenter-web` 후보 |
-| 목록 | `/youthPolicy/ythPlcyTotalSearch`, 익명 공개 정책 목록 |
-| 상세 | `/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/{policy_number}` |
-| identity | 상세 `정책번호`; API `plcyNo`와 exact 일치할 때만 같은 발행기관의 관련 identity 후보 |
-| 충돌 | 번호 불일치·제목/기관 불일치는 자동 병합하지 않고 별도 source identity와 conflict로 격리 |
-| 허용 경계 후보 | 로그인·개인정보·스크랩·CAPTCHA 없음, 동시 요청 1개, 첫 목록 1회와 상세 최대 3건, 요청 시작 간격 최소 2초 |
-| 보존 | actual HTML은 `runtime/html/`에만 보존, Git fixture는 최소 구조를 비식별·축소해 별도 검토 |
+| 사이트 | [천안청년센터 이음 공지](https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674), 천안시 청년지원기관 공개 게시판 |
+| Source ID | `cheonan-youthcenter-web` |
+| 목록 | `/bbs/board.php?bo_table=notice`, 익명 공개 공지 목록 1회만 허용 |
+| 상세 | `/bbs/board.php?bo_table=notice&wr_id={positive_integer}`, 승인 표본은 `wr_id=674` 1건 |
+| identity | `notice:{wr_id}`; 표본 external ID는 `notice:674` |
+| 충돌 | API와 자동 병합하지 않고 source-scoped identity를 유지하며 내용·기간 불일치는 conflict로 보존 |
+| 허용 경계 | 동시 요청 1개, 목록 1회와 승인 상세 1건, 요청 시작 간격 최소 2초, pagination·대량 순회 금지 |
+| 제외 | 로그인·회원·신청·CAPTCHA·첨부·이미지·이메일·전화번호·개인정보 페이지 |
+| 보존 | actual HTML은 `runtime/html/`에만 보존하고 Git에는 원문 복제 대신 합성·최소 구조 fixture만 허용 |
 
-[현행 이용약관](https://www.youthcenter.go.kr/cmnFooter/termsInfo)은
-`2026-06-23` 시행본이며 대량 이용은 별도 계약으로 두고, 사전 협의 없는
-자동화 도구의 로그인·개인정보 scraping·과도한 트래픽·CAPTCHA 우회를 제한한다.
-`/robots.txt`는 확인 시 기계 판독 규칙 대신 온통청년 오류 shell을 반환했다.
-따라서 위 최소 공개 요청 경계가 약관상 대량 이용이 아닌지 Team Leader가
-재확인하거나 제공기관 확인을 받아야 Data 04 actual 수집을 승인할 수 있다.
+`2026-08-10` 익명 공개 화면에서 게시물 제목·게시일·지원 대상·지원 내용·
+제출서류·유의사항을 확인했다. `/robots.txt`는 directive가 아닌 HTTP 404
+페이지를 반환했고 별도 사이트 이용약관은 찾지 못했으며 footer는
+`all rights reserved`를 표시한다. 따라서 공개 사실만 최소 추출하고 원문 HTML,
+이미지, 연락처와 첨부는 Git에 재배포하지 않는 위 경계를 Team Leader가 승인했다.
 
-공개 상세에서 정책번호, 지원 내용·기간, 연령·혼인·지역·소득·학력·전공·
-취업·특화·추가·참여제한, 신청절차·심사·사이트·제출서류와 변경일을 확인했다.
-Release 1 golden 정책번호 `20260430005400212969`가 웹 상세와 API external ID에
-exact 일치함도 확인했다. 웹 응답은 최초 shell 뒤 비동기로 값이 채워지므로
-Data 04에서 정적 HTML 또는 이용 조건이 허용하는 공개 요청만으로 재현 가능한지
-확인하며 Playwright 기본 도입은 승인하지 않는다.
+표본은 `2026-07-24` 게시됐지만 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`이고 제목에는 “곧 마감”이 있어 서로 충돌한다.
+수집 시 값을 임의 보정하지 않고 `data_quality_status=partial`, 신청 상태는
+`unknown`과 확인 필요 evidence로 기록한다. 신청 방법의 회원가입·로그인은
+수집기가 따라가지 않는다.
 
 ### 자격요건 evidence 호환 확장
 
@@ -217,7 +216,7 @@ Backend `f7ffca4254a52cc94666a575567cbf73b7cb92de`의 4자리 PIN DTO,
 `401`·`403`·`422`·점진적 `429`와 공통 dependency는 기준선과 일치한다.
 브랜치명과 Backend의 구현 시점은 Gate 차단 사유가 아니다.
 
-다음 두 항목은 W4-G0 전에 Backend 확인 또는 수정이 필요하다.
+다음 두 항목은 W4-G1에서 Backend 구현 적합성 확인 또는 수정이 필요하다.
 
 1. 기본 `0000`은 `ENVIRONMENT` 값만 검사하고 실제 localhost host·bind 경계를
    검사하지 않아 development 설정의 외부 bind에서도 허용될 수 있다.
@@ -229,16 +228,15 @@ IP별 rate limit은 process memory 기준이므로 현재 단일 process 로컬�
 기준선으로만 검토한다. 다중 worker·reverse proxy production 보장은 범위 밖이며
 외부 배포 전 별도 보강 조건으로 기록한다.
 
-### Gate 미완료 항목
+### W4-G1 적합성 후속 항목
 
 | ID | 상태 | 다음 담당 | 완료 조건 |
 | --- | --- | --- | --- |
-| `W4-G0-BE-AUTH` | action-needed | Backend | localhost `0000` 경계와 production 별도 token secret fail-closed 대조·수정 근거 |
-| `W4-G0-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 소비 검토 |
-| `W4-G0-WEB-BOUNDARY` | action-needed | Data·Team Leader | robots 미제공과 현행 약관에서 제한 actual 요청·보존 경계 승인 또는 제공기관 확인 |
+| `W4-G1-BE-AUTH` | review-pending | Backend | localhost `0000` 경계와 production 별도 token secret fail-closed 대조·수정 근거 |
+| `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 소비 검토 |
 
-세 항목이 끝나고 Data·Backend·Frontend가 자신의 소비 관점에서 확인한 뒤에만
-`W4-G0_APPROVED`를 기록한다.
+두 항목은 W4-G0 승인을 막지 않는다. W4-G1에서 실제 구현과 승인 계약의 parity를
+확인하며 차이가 있으면 구현을 임의 정답으로 삼지 않고 계약 변경을 먼저 기록한다.
 
 ## Slice 계획
 
@@ -273,7 +271,7 @@ IP별 rate limit은 process memory 기준이므로 현재 단일 process 로컬�
 
 - Data·Backend·Frontend 초안을 대조하고 Schema·API·UI 충돌을 해소한다.
 - 미확정 사항의 차단 여부, 담당과 재검토 조건을 기록한다.
-- 모두 합의되면 Team Leader가 `W4-G0_APPROVED`를 기록한다.
+- Team Leader가 근거와 후속 적합성 항목을 구분해 `W4-G0_APPROVED`를 기록한다.
 
 ## Forest 완료 기준
 
@@ -283,7 +281,7 @@ IP별 rate limit은 process memory 기준이므로 현재 단일 process 로컬�
 - Backend OpenAPI와 Frontend TypeScript 초안을 작성할 만큼 계약이 명확함
 - 일반 사용자 계정, 외부 알림, worker가 현재 범위 밖임이 명시됨
 - 기존 Backend 04·05와 Frontend 03 계획의 미확정 경계가 해소됨
-- Data·Backend·Frontend 소비 검토와 `W4-G0_APPROVED`가 기록됨
+- Team Leader 승인과 W4-G1 Backend·Frontend 소비 적합성 항목이 기록됨
 - `python scripts/validate_docs.py`와 `git diff --check` 통과
 
 ## 검증 계획
@@ -294,14 +292,14 @@ IP별 rate limit은 process memory 기준이므로 현재 단일 process 로컬�
 
 ## 위험과 미확정 사항
 
-- 관리자 credential 저장·검증 방식과 token library는 W4-G0 승인 전 미확정이다.
+- 관리자 credential 구현의 승인 계약 적합성은 W4-G1에서 확인한다.
 - 공개 README에는 실제 PIN·hash·secret이 아니라 설정·hash 생성·교체 방법만
   기록한다.
-- 온통청년을 대표 공식 HTTPS Source 후보로 확인했지만 robots·현행 약관의
-  제한 actual 요청·보존 경계가 미승인이므로 Data 04 구현은 W4-G0 승인 전
-  시작할 수 없다.
-- Runtime log directory, 보존 상한과 삭제 감사 저장소는 W4-G0 승인 전
-  미확정이다.
+- 천안청년센터 공지 674번을 대표 표본으로 승인했지만 robots directive와 별도
+  이용약관을 확인하지 못했다. 승인 요청 예산을 넘는 확대 수집은 제공기관
+  확인 또는 별도 계약 변경 전 시작하지 않는다.
+- Runtime log directory, 보존 상한과 삭제 감사 저장소의 구현값은 W4-G1에서
+  승인 기준선과 대조한다.
 - 수동 수집을 API process 안에서 실행할지 별도 process로 실행할지 결정이
   필요하며 worker 도입은 현재 범위 밖이다.
 - cross-area Acceptance Forest의 브랜치 domain이 현재 브랜치 전략에 없어

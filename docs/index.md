@@ -26,8 +26,8 @@
 - [아키텍처 결정 기록](architecture/decisions/README.md): ADR 작성 및 변경
   관리 규칙
 - [데이터 소스](data/data_sources.md): 데이터 소스 등록 기준과 현재 확인 상태
-- [API Source Profile](data/source_profiles.md): 온통청년·복지로 요청 계약,
-  실제 응답 구조·검색 필드 mapping과 호출 제약
+- [Source Profile](data/source_profiles.md): 온통청년·복지로 API와 천안청년센터
+  공개 공지의 요청 계약, 실제 응답·표본 구조와 호출 제약
 - [데이터 Schema 기준선](data/data_schema.md): Raw, Extracted와 Normalized
   데이터 계약과 Source Adapter 원칙
 - [RawPolicyDocument JSON Schema](../data/schema/raw_policy_document.schema.json):
@@ -207,12 +207,12 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 
 | ID | 상태 | 다음 담당 | 완료·재개 조건 |
 | --- | --- | --- | --- |
-| `W4-G0-BE-AUTH` | action-needed | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
-| `W4-G0-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 초안을 소비 관점에서 확인 |
-| `W4-G0-WEB-BOUNDARY` | action-needed | Data·Team Leader | 온통청년 robots 미제공·현행 약관을 반영한 제한 actual 요청·보존 경계를 승인하거나 제공기관 확인 |
+| `W4-G1-BE-AUTH` | review-pending | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
+| `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock을 승인 계약과 대조 |
 
-세 항목이 끝나기 전 Integration 05는 `W4-G0_REVIEW_PENDING`이며 Data 03·04,
-Integration 08의 본 구현 해제나 `W4-G0_APPROVED`로 기록하지 않는다.
+Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
+`W4-G0_APPROVED`로 판정했다. 두 후속 항목은 W4-G1 구현 적합성 확인이며 Data
+03·04와 Integration 08의 기반 구현을 막지 않는다.
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

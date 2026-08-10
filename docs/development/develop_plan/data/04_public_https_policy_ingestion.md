@@ -10,6 +10,7 @@
 - 선행 Forest: Integration 05 Contract Baseline, Data 01 Data Pipeline
 - 후속 Forest: Integration 08 Eligibility Evidence and Summary
 - 권장 브랜치: `feature/data/public-web-policy-source`
+- W4-G0 승인 Source: `cheonan-youthcenter-web`, 공지 `notice:674`
 
 ## 목적
 
@@ -45,7 +46,7 @@ Raw → Extract → Normalize → Validate → PostgreSQL 흐름에 연결한다
 
 ## 선행 조건
 
-- W4-G0에서 대표 사이트, 허용 경로, 요청 빈도와 보존 범위를 승인해야 한다.
+- W4-G0에서 천안청년센터 공지, 허용 경로, 요청 빈도와 보존 범위를 승인했다.
 - 실제 페이지와 robots·이용약관은 착수 시점에 다시 확인하고 근거 시각을
   기록해야 한다.
 - 대상 페이지가 정적 HTML인지 공개 내부 API인지 확인한 뒤 구현 방식을
@@ -68,10 +69,11 @@ Raw → Extract → Normalize → Validate → PostgreSQL 흐름에 연결한다
 
 ### DW0 - Source 선정과 수집 계약
 
-- 후보 사이트의 정책 범위, 공개 접근, 목록·상세 안정성과 보강 가능한 필드를
-  비교한다.
-- robots·이용약관·라이선스, 허용 경로, 요청 간격과 User-Agent 기준을 기록한다.
-- 한 Source를 승인하고 Source ID, canonical URL과 identity 후보를 확정한다.
+- 승인 Source `cheonan-youthcenter-web`과 표본 `notice:674`의 착수 시점 DOM·
+  robots·이용 조건이 W4-G0 근거에서 바뀌지 않았는지 재확인한다.
+- 목록 1회·승인 상세 1건, 동시 요청 1개·최소 2초 간격과 제외 URL을 구현
+  allowlist로 고정한다.
+- canonical URL과 `notice:{wr_id}` identity를 확정하고 API와 자동 병합하지 않는다.
 
 ### DW1 - 축소 fixture와 Source Adapter
 
@@ -119,8 +121,10 @@ Raw → Extract → Normalize → Validate → PostgreSQL 흐름에 연결한다
 
 ## 위험과 미확정 사항
 
-- 대표 사이트가 아직 정해지지 않아 DW1 구현은 W4-G0 Source 승인 전 시작할
-  수 없다.
+- Source는 승인됐지만 실제 DOM Selector와 정적 HTML 재현성은 Data 04 착수
+  시점에 다시 확인해야 한다.
+- 게시일·본문 신청기간·제목이 충돌하는 승인 표본은 `partial`·`unknown`으로
+  보존하고 현재 신청 가능 여부를 추정하지 않는다.
 - 정책 페이지 DOM·내부 API·이용 조건은 바뀔 수 있으므로 착수 시점의 실제
   확인이 필요하다.
 - 같은 정책이 API와 웹에 동시에 존재할 때 자동 병합 기준은 현재 미확정이다.

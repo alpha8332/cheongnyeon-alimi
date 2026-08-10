@@ -459,6 +459,35 @@ DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
 사용했다. 일반 본문 날짜 탐지는 Source mapping을 대체하지 않으며 관찰 건수만
 profile에 남긴다.
 
+## 천안청년센터 이음 공개 공지
+
+### W4-G0 승인 요청 계약
+
+| 항목 | 확인·승인 값 |
+| --- | --- |
+| Source ID | `cheonan-youthcenter-web` |
+| 운영 근거 | 천안시 청년지원기관 천안청년센터 이음 공개 공지 |
+| 목록 | `https://www.ch2030youth.kr/bbs/board.php?bo_table=notice` |
+| 상세 | `/bbs/board.php?bo_table=notice&wr_id={positive_integer}` |
+| identity | `notice:{wr_id}` |
+| 표본 | `notice:674` |
+| 요청 예산 | 동시 1개, 시작 간격 최소 2초, 목록 1회·표본 상세 1건 |
+| 보존 | actual HTML은 Runtime 전용, Git은 합성·최소 구조 Fixture만 허용 |
+
+`2026-08-10` 익명 공개 상세에서 제목·게시일·대상·지원 내용·제출서류와
+유의사항을 확인했다. 회원가입·로그인이 필요한 신청 단계는 수집 범위가 아니다.
+첨부·이미지·이메일·전화번호·개인정보도 추출·저장하지 않는다.
+
+표본 게시일은 `2026-07-24`, 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`인데 제목에는 “곧 마감”이 있어 서로
+충돌한다. Extractor는 신청 상태를 보정하지 않고 `data_quality_status=partial`,
+신청 상태 `unknown`과 확인 필요 evidence를 만든다.
+
+`/robots.txt`는 directive가 아닌 404 페이지였고 별도 이용약관은 찾지 못했다.
+footer의 `all rights reserved`를 고려해 공개 사실의 최소 추출만 승인하며,
+pagination·대량 순회·원문 HTML 또는 이미지의 Git 재배포는 승인하지 않는다.
+actual 수집 전 DOM과 이용 조건이 바뀌지 않았는지 다시 확인한다.
+
 ## 공통 비밀정보 경계
 
 - 인증키 값은 환경변수에서만 읽고 코드, 문서, Fixture와 테스트 snapshot에
