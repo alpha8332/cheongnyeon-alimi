@@ -85,7 +85,7 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | draft | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0 | `v0.1.0` publication |
+| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | approved | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0 | `v0.1.0` publication |
 | 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
 | 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
 | 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |

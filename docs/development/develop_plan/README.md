@@ -27,7 +27,7 @@
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 | Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 | Integration 04 | Release 1 Acceptance | [개발 계획](integration/04_release_1_acceptance.md) | completed |
-| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | draft |
+| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | approved |
 | Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
 | Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | draft |
 | Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | in-progress |

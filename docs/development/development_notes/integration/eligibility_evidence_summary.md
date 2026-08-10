@@ -93,6 +93,10 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정한�
 - `tests/test_eligibility_contract.py`
 - `tests/test_cheonan_youthcenter_web.py`
 - `docs/data/eligibility_summary_contract.md`
+- `backend/requirements.txt`
+- `backend/app/api/v1/endpoints/policy_search.py`
+- `docs/development/develop_plan/forest_roadmap.md`
+- `docs/development/develop_plan/README.md`
 
 ## 설계 결정
 
@@ -109,13 +113,18 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정한�
 
 | 검증 | 결과 |
 | --- | --- |
-| 전체 Data 단위·통합 pytest (`tests`) | 통과: 166건, subtest 27건, 기존 Starlette deprecation warning 1건 |
+| 전체 Data 단위·통합 pytest (`tests`) | 통과: 166건, subtest 27건, warning 0건 |
+| 전체 Backend pytest (`backend/tests`) | 통과: 125건, warning 0건 |
 | Backend exact field parity pytest | 통과: 4건, 현재 Normalized·ORM·Importer·API 계약 회귀 없음 |
 | Release snapshot strict offline replay | 통과: accepted 3,156, invalid 0, period safety pass |
 | PostgreSQL 통합 경계 | 통과: 임시 pgpass와 전용 `cheongnyeon_alimi_test`로 천안 Runtime 적재 포함 전체 Data integration 실행 |
 | 결정적 Fixture 재생성 검사 | 통과: 관리 대상 15개와 생성 결과 일치 |
 | 문서 검증 | 통과: `scripts/validate_docs.py` |
 | diff 검사 | 통과: `git diff --check` (Windows CRLF 안내만 출력) |
+
+Starlette 1.3.1 `TestClient`가 우선 사용하는 `httpx2`를 테스트 의존성에 추가했다.
+운영 수집 HTTP client인 `httpx`는 그대로 유지했으며, Integration 05의 Forest·계획 색인
+상태는 개별 승인 문서의 `approved`와 일치시켰다.
 
 ## 남은 작업
 
