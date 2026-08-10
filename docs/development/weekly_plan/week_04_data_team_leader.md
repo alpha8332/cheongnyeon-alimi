@@ -325,6 +325,22 @@ Backend·Frontend가 같은 의미를 소비하게 한다.
 - 수치·단위를 추정·반올림하지 않고 계산 불가능 조건은 unknown으로 유지
 - API와 웹 충돌 시 임의 최신 우선 덮어쓰기를 하지 않음
 
+#### DTL4-4 역할·브랜치 분리
+
+- Data·Team Leader는 `feature/schema/eligibility-evidence-contract`에서
+  제외조건·필요서류·공개 시설 연락처 계약과 provenance·fixture를 먼저
+  확정한다.
+- Backend는 현재 진행 중인 Forest와 섞지 않고 계약 병합 뒤
+  `feature/backend/eligibility-evidence-api`에서 DB·Migration·상세 API와
+  PostgreSQL 테스트를 구현한다.
+- Frontend도 현재 진행 중인 Forest와 섞지 않고 계약 병합 뒤
+  `feature/frontend/eligibility-evidence-ui`에서 TypeScript·Mock·상세 화면의
+  `제외 조건`·`필요 서류`·`문의처`와 접근성 테스트를 구현한다.
+- Backend API 병합 뒤 Frontend가 최신 `develop`으로 실제 API 소비를 확인하고,
+  Team Leader는 세 결과가 병합된 `develop`에서 DB → API → Browser E2E를
+  수행한다.
+- 개인 휴대전화·개인 이메일·성명은 시설 연락처 계약과 UI에 포함하지 않는다.
+
 #### DTL4-4B - actual 소비 인계
 
 - Backend DTO fixture와 Frontend TypeScript·Mock이 Data JSON과 일치하는지 확인
