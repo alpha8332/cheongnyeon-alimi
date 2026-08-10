@@ -4,7 +4,7 @@
 
 - 번호: Backend 05
 - 담당 영역: Backend
-- 상태: draft
+- 상태: completed
 - 작업 브랜치: `feature/backend/admin-run-management`
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
@@ -104,7 +104,7 @@
 
 ### C3 - PostgreSQL·권한·문서 통합 검증
 
-- 상태: draft
+- 상태: completed
 - 목적:
   실제 PostgreSQL과 관리자 권한 경계에서 전체 기능을 검증한다.
 - 산출물:
