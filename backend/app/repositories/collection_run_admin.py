@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Tuple, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -51,3 +51,43 @@ def get_admin_collection_run_by_id(
 ) -> Optional[CollectionRun]:
     """run_id 기준 CollectionRun 단건 상세 조회."""
     return db.query(CollectionRun).filter(CollectionRun.run_id == run_id).first()
+
+
+def get_active_running_collection_run(
+    db: Session,
+    source_id: Optional[str] = None,
+) -> Optional[CollectionRun]:
+    """
+    특정 source_id(또는 전체)에 대해 현재 status가 'running'이고 finished_at이 None인 수집건 조회.
+    최신 started_at 항목을 먼저 반환한다.
+    """
+    query = db.query(CollectionRun).filter(
+        CollectionRun.status == "running",
+        CollectionRun.finished_at.is_(None),
+    )
+    if source_id:
+        query = query.filter(CollectionRun.source_id == source_id)
+
+    return query.order_by(desc(CollectionRun.started_at)).first()
+
+
+def create_admin_collection_run(
+    db: Session,
+    source_id: Optional[str] = "youthcenter",
+    requested_count: int = 100,
+    run_type: str = "collection",
+    trigger_type: str = "admin",
+) -> CollectionRun:
+    """새로운 수동 수집 실행 기록(status='running')을 DB에 저장한다."""
+    new_run = CollectionRun(
+        source_id=source_id,
+        run_type=run_type,
+        trigger_type=trigger_type,
+        status="running",
+        requested_count=requested_count,
+        started_at=datetime.now(timezone.utc),
+    )
+    db.add(new_run)
+    db.commit()
+    db.refresh(new_run)
+    return new_run

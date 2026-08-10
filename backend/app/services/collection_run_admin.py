@@ -1,6 +1,6 @@
 import math
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Tuple
 from uuid import UUID
 from sqlalchemy.orm import Session
 
@@ -9,11 +9,56 @@ from app.schemas.collection_run_admin import (
     CollectionRunAdminItem,
     CollectionRunAdminDetail,
     CollectionRunAdminListResponse,
+    CollectionRunTriggerRequest,
+    CollectionRunTriggerResponse,
 )
 from app.repositories.collection_run_admin import (
     get_admin_collection_runs,
     get_admin_collection_run_by_id,
+    get_active_running_collection_run,
+    create_admin_collection_run,
 )
+
+
+def trigger_manual_collection_run_service(
+    db: Session,
+    request_dto: CollectionRunTriggerRequest,
+) -> Tuple[Optional[CollectionRunTriggerResponse], Optional[CollectionRun]]:
+    """
+    수동 수집 실행 요청을 처리한다.
+    - 동일 source_id에 active (non-stale) running 수집이 존재하는 경우 (None, active_run) 반환 (Conflict 409 사유).
+    - 수집 기동 가능한 경우 새 CollectionRun 생성 및 (trigger_response_dto, None) 반환 (202 Accepted).
+    """
+    source_id = request_dto.source_id or "youthcenter"
+    requested_count = request_dto.requested_count or 100
+
+    active_run = get_active_running_collection_run(db, source_id=source_id)
+    if active_run:
+        is_stale = check_is_stale(active_run.started_at, active_run.finished_at, str(active_run.status))
+        if not is_stale:
+            # 정상 진행 중인 2시간 미만의 수집건이 존재함 -> Conflict 409
+            return None, active_run
+
+    # 중복 진행 건이 없거나, 기존 건이 Stale인 경우 새 수동 수집건 시작
+    new_run = create_admin_collection_run(
+        db=db,
+        source_id=source_id,
+        requested_count=requested_count,
+        run_type="collection",
+        trigger_type="admin",
+    )
+
+    response_dto = CollectionRunTriggerResponse(
+        run_id=new_run.run_id,
+        source_id=new_run.source_id,
+        run_type=str(new_run.run_type),
+        trigger_type=str(new_run.trigger_type),
+        status=str(new_run.status),
+        started_at=new_run.started_at,
+        message="Manual collection run initiated successfully.",
+    )
+
+    return response_dto, None
 
 # Stale 판단 기준: running 상태에서 시작 후 2시간(7,200초) 이상 지연 시
 STALE_THRESHOLD_SECONDS = 7200

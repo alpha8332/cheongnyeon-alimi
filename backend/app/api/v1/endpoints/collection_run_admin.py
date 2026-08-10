@@ -9,13 +9,58 @@ from app.api.deps import get_current_admin_payload
 from app.schemas.collection_run_admin import (
     CollectionRunAdminListResponse,
     CollectionRunAdminDetail,
+    CollectionRunTriggerRequest,
+    CollectionRunTriggerResponse,
 )
 from app.services.collection_run_admin import (
     list_admin_collection_runs_service,
     get_admin_collection_run_detail_service,
+    trigger_manual_collection_run_service,
 )
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
+
+
+@router.post(
+    "",
+    response_model=CollectionRunTriggerResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="수동 수집 실행 요청 (202 Accepted)",
+    responses={
+        202: {"description": "수동 수집 요청 수신 및 기동 성공"},
+        401: {"description": "관리자 토큰 미제공 또는 유효하지 않음"},
+        403: {"description": "관리자 권한 부족"},
+        409: {"description": "동일 수집원에 이미 진행 중인 수집 존재"},
+        422: {"description": "요청 파라미터 유효성 검사 실패"},
+    },
+)
+def trigger_manual_collection_run(
+    request_dto: CollectionRunTriggerRequest = CollectionRunTriggerRequest(),
+    db: Session = Depends(get_db),
+    admin_payload: Dict[str, Any] = Depends(get_current_admin_payload),
+) -> Any:
+    """
+    관리자 전용 수동 수집 요청을 처리한다.
+    이미 정상 진행 중인 수집건이 있을 경우 409 Conflict를 반환한다.
+    """
+    trigger_resp, active_run = trigger_manual_collection_run_service(db, request_dto)
+
+    if active_run:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={
+                "error": {
+                    "message": f"A collection run for source '{request_dto.source_id or 'youthcenter'}' is currently in progress.",
+                    "details": {
+                        "active_run_id": str(active_run.run_id),
+                        "started_at": active_run.started_at.isoformat(),
+                    },
+                }
+            },
+        )
+
+    return trigger_resp
 
 
 @router.get(

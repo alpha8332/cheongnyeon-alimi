@@ -176,3 +176,94 @@ def test_collection_run_admin_route_protection_dependencies():
     for route in collection_run_admin_router.routes:
         dep_functions = [dep.call for dep in route.dependant.dependencies]
         assert get_current_admin_payload in dep_functions
+
+
+def test_trigger_collection_run_success_202(admin_token, db):
+    """POST /api/v1/admin/collection-runs 수동 수집 기동 요청 성공시 202 Accepted 반환 및 DB 레코드 생성."""
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "manual_source", "requested_count": 50},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert response.status_code == 202
+    data = response.json()
+    assert data["source_id"] == "manual_source"
+    assert data["status"] == "running"
+    assert data["run_type"] == "collection"
+    assert data["trigger_type"] == "admin"
+    assert "run_id" in data
+
+    # DB에 생성되었는지 검증
+    run_in_db = db.query(CollectionRun).filter(CollectionRun.run_id == uuid.UUID(data["run_id"])).first()
+    assert run_in_db is not None
+    assert run_in_db.status == "running"
+    assert run_in_db.requested_count == 50
+
+
+def test_trigger_collection_run_active_conflict_409(admin_token, db):
+    """동일 source_id에 2시간 미만의 진행 중인 running 수집이 존재할 경우 409 Conflict 반환."""
+    # 30분 전에 시작된 running 수집 생성
+    active_run = CollectionRun(
+        run_id=uuid.uuid4(),
+        source_id="conflict_source",
+        run_type="collection",
+        trigger_type="admin",
+        started_at=datetime.now(timezone.utc) - timedelta(minutes=30),
+        finished_at=None,
+        status="running",
+    )
+    db.add(active_run)
+    db.commit()
+
+    # 동일 source_id에 대해 수동 수집 요청
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "conflict_source"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert response.status_code == 409
+    data = response.json()
+    assert "error" in data
+    assert "currently in progress" in data["error"]["message"]
+    assert data["error"]["details"]["active_run_id"] == str(active_run.run_id)
+
+
+def test_trigger_collection_run_stale_active_allows_new_trigger(admin_token, db):
+    """3시간 전 시작되어 Stale 상태인 running 수집이 존재할 경우 409 없이 202 성공 처리."""
+    stale_run = CollectionRun(
+        run_id=uuid.uuid4(),
+        source_id="stale_source",
+        run_type="collection",
+        trigger_type="admin",
+        started_at=datetime.now(timezone.utc) - timedelta(hours=3),
+        finished_at=None,
+        status="running",
+    )
+    db.add(stale_run)
+    db.commit()
+
+    # 동일 source_id에 대해 수동 수집 요청
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "stale_source"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert response.status_code == 202
+    assert response.json()["source_id"] == "stale_source"
+
+
+def test_trigger_collection_run_invalid_payload_422(admin_token):
+    """requested_count가 범위 밖(0 또는 1001 이상)일 때 422 Unprocessable Entity 반환."""
+    resp_zero = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"requested_count": 0},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp_zero.status_code == 422
+
+    resp_too_large = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"requested_count": 1001},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp_too_large.status_code == 422
