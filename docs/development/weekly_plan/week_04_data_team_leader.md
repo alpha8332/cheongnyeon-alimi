@@ -2,14 +2,14 @@
 
 ## 계획 정보
 
-- 상태: draft (`DTL4-0 시작 대기`)
+- 상태: in progress (`DTL4-0 완료`, `DTL4-1 시작 가능`)
 - 대상 주차: 4주차
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: `DTL4-0`
+- 현재 Slice: `DTL4-1`
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -629,7 +629,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 
 ## 완료 체크리스트
 
-- [ ] DTL4-0 시작 SHA·환경·브랜치·담당 확인
+- [x] DTL4-0 시작 SHA·환경·브랜치·담당 확인
 - [ ] DTL4-1 Data inventory와 `W4-G0_APPROVED`
 - [ ] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
 - [ ] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료

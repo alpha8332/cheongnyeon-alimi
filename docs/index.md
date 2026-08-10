@@ -137,6 +137,8 @@
   검색 데이터 lineage·ADR Gate와 Schema·지역·DB·Source Adapter 검증 결과
 - [Release 1 Acceptance Forest 개발 기록](development/development_notes/integration/release_1_acceptance.md):
   DT5 실제 snapshot 복구·PostgreSQL·HTTP·Browser 통합과 결함 수정 결과
+- [v0.5.0 Contract Baseline Forest 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md):
+  DTL4-0 시작 SHA·환경·Forest 소유 경계와 W4-G0 진행 근거
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,

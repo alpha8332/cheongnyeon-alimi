@@ -4,13 +4,33 @@
 
 - 번호: Integration 05
 - 담당 영역: Team Leader - Integration
-- 상태: draft
+- 상태: in-progress
+- 진행: `C0` 시작 기준 확인 완료, `W4-G0` 미승인
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 공통 시작점: `2b33ed7` (`v0.1.0`)
 - 권장 브랜치: `docs/docs/v0-5-contract-baseline`
 - 후속 Forest: Backend 04·05, Frontend 03·05, Data 03·04,
   Integration 06·07·08·09
+
+## 실행 기준
+
+- DTL4-0 확인일: `2026-08-10`
+- 실제 시작 SHA: `e5ff8c81e0e902723c5b79dee1267be7e5e2e66c`
+- 시작 브랜치·merge target: `develop`
+- 권장 작업 브랜치: `docs/docs/v0-5-contract-baseline`이며 아직 생성하지 않음
+- Release 기준: `main`·`origin/main`·`v0.1.0`은
+  `2b33ed7d8d4e281487b5734bd88cfd73b6d60175`, `develop`·
+  `origin/develop`은 실제 시작 SHA와 일치
+- DTL4-0 환경·담당·브랜치 확인 결과:
+  [Integration 05 개발 기록](../../development_notes/integration/v0_5_0_contract_baseline.md)
+
+Backend 04는 공통 계약 승인 전에 별도 브랜치
+`origin/feature/backend/admin-access-control`의
+`f7ffca4254a52cc94666a575567cbf73b7cb92de`까지 구현됐다. 이 결과는
+`W4-G0_APPROVED`가 아니며 C1~C4에서 Data·Frontend 소비 초안과 대조할
+Backend 제안 구현으로 취급한다. 현재 `develop`의 계약과 계획 상태를 소급해
+완료로 바꾸지 않는다.
 
 ## 목적
 
