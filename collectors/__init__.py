@@ -30,6 +30,7 @@ from collectors.eligibility import (
     RequiredDocument,
 )
 from collectors.eligibility_mapping import (
+    map_eligibility,
     map_bokjiro_eligibility,
     map_cheonan_eligibility,
     map_youthcenter_eligibility,
@@ -130,5 +131,6 @@ __all__ = [
     "default_registry",
     "map_bokjiro_eligibility",
     "map_cheonan_eligibility",
+    "map_eligibility",
     "map_youthcenter_eligibility",
 ]

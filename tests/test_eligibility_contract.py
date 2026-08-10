@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from collectors.eligibility import (
@@ -10,6 +11,7 @@ from collectors.eligibility import (
     EligibilitySummary,
 )
 from collectors.eligibility_mapping import (
+    map_eligibility,
     map_bokjiro_eligibility,
     map_youthcenter_eligibility,
 )
@@ -65,6 +67,70 @@ class EligibilityContractTests(unittest.TestCase):
         self.assertEqual(
             {"normal", "boundary", "long", "missing", "conflict"},
             profiles,
+        )
+
+    def test_source_handoff_is_consumer_ready_for_all_approved_sources(
+        self,
+    ) -> None:
+        cases = self.fixture["source_handoff"]
+        self.assertEqual(
+            {
+                "youthcenter-api",
+                "bokjiro-central-welfare-api",
+                "cheonan-youthcenter-web",
+            },
+            {case["source_id"] for case in cases},
+        )
+        self.assertEqual(
+            len(cases),
+            len(
+                {
+                    (case["source_id"], case["external_id"])
+                    for case in cases
+                }
+            ),
+        )
+        for case in cases:
+            self.assertEqual(
+                {
+                    "source_id",
+                    "external_id",
+                    "title",
+                    "eligibility_summary",
+                },
+                set(case),
+            )
+            summary = case["eligibility_summary"]
+            self.assertEqual((), self.validator.schema_issues(summary))
+            self.assertEqual(
+                summary,
+                EligibilitySummary.from_dict(summary).to_dict(),
+            )
+            for field_name in (
+                "requirements",
+                "exclusions",
+                "preferences",
+                "documents",
+                "unknowns",
+                "institutional_contacts",
+            ):
+                for item in summary[field_name]:
+                    self.assertTrue(
+                        all(
+                            evidence["source_id"] == case["source_id"]
+                            for evidence in item["evidence"]
+                        )
+                    )
+
+        web_case = next(
+            case
+            for case in cases
+            if case["source_id"] == "cheonan-youthcenter-web"
+        )
+        self.assertTrue(web_case["eligibility_summary"]["exclusions"])
+        self.assertTrue(web_case["eligibility_summary"]["documents"])
+        self.assertTrue(
+            web_case["eligibility_summary"]["institutional_contacts"]
         )
 
     def test_arrays_are_required_and_never_nullable(self) -> None:
@@ -125,6 +191,10 @@ class EligibilityContractTests(unittest.TestCase):
         )
         youth = YouthCenterExtractor().extract(youth_documents)[0]
         youth_summary = map_youthcenter_eligibility(youth)
+        self.assertEqual(
+            youth_summary.to_dict(),
+            map_eligibility(youth).to_dict(),
+        )
         self.assertEqual("partial", youth_summary.coverage.value)
         self.assertIn(
             "sprtTrgtAgeLmtYn",
@@ -134,6 +204,10 @@ class EligibilityContractTests(unittest.TestCase):
                 for evidence in item.evidence
             },
         )
+        with self.assertRaisesRegex(ValueError, "not registered"):
+            map_eligibility(
+                replace(youth, source_id="unregistered-source")
+            )
 
         bokjiro_documents = tuple(
             RawPolicyDocument.from_dict(load_json(path))
@@ -143,6 +217,10 @@ class EligibilityContractTests(unittest.TestCase):
         )
         bokjiro = BokjiroExtractor().extract(bokjiro_documents)[0]
         bokjiro_summary = map_bokjiro_eligibility(bokjiro)
+        self.assertEqual(
+            bokjiro_summary.to_dict(),
+            map_eligibility(bokjiro).to_dict(),
+        )
         self.assertEqual(
             ["tgtrDtlCn"],
             [item.evidence[0].locator for item in bokjiro_summary.requirements],

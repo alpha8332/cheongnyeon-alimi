@@ -5,14 +5,15 @@
 - 번호: Integration 08
 - 담당 영역: Data·Backend·Frontend
 - 상태: in-progress
-- 진행: `DTL4-4A`·`ES0` 완료
+- 진행: `DTL4-4A`·`ES0` 완료, `DTL4-4B` Data 소비 인계 진행 중
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline
 - 병렬·보강 Forest: Data 04 Public HTTPS Policy Ingestion
 - 후속 Forest: Integration 06 Recommendation, Integration 07 Release 2 Acceptance
 - 역할·브랜치 분담: `2026-08-10` 승인
-- 계약 상태: Eligibility Summary `1.0.0` 공통 Schema 승인, DB·API·UI 편입 대기
+- 계약 상태: Eligibility Summary `1.0.0` 공통 Schema·Source 소비 fixture 승인,
+  DB·API·UI 편입 대기
 - 권장 브랜치:
   `feature/schema/eligibility-evidence-contract`,
   `feature/backend/eligibility-evidence-api`,
@@ -140,13 +141,17 @@ commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한�
   연락처 제외 경계를 확정한다.
 - 사용자에게 허용할 문구와 금지할 단정 표현을 승인한다.
 
-### ES1 - Data 구조화와 provenance (`DTL4-4A` 기반 완료, actual 편입 대기)
+### ES1 - Data 구조화와 provenance (`DTL4-4A` 기반·`DTL4-4B` 소비 인계 완료,
+actual 편입 대기)
 
 - 기존 API Source의 풍부한 조건 필드를 우선 매핑한다.
 - 확실한 category와 원문 조건을 분리하고 필드별 evidence를 보존한다.
 - Data 04 웹 Source의 승인 필드를 같은 추출 계약으로 연결한다.
 - 공개 시설 대표전화와 공식 문의 채널을 승인 연락처 계약으로 매핑하고 개인
   연락처는 승격하지 않는다.
+- DB 적재 가능한 API 정책 4건과 승인 웹 Source 합성 표본 1건을 identity와
+  `eligibility_summary`로 묶은 소비 fixture로 인계한다. 이 envelope는
+  `NormalizedProgram`·공개 API DTO로 간주하지 않는다.
 
 ### ES2 - Backend 상세 API
 

@@ -24,6 +24,18 @@ from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
 _DETAIL_SELECTOR = "#bo_v_con"
 
 
+def map_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:
+    """Dispatch one extracted policy to its source-owned mapper."""
+
+    if policy.source_id == YOUTHCENTER_SOURCE_ID:
+        return map_youthcenter_eligibility(policy)
+    if policy.source_id == BOKJIRO_SOURCE_ID:
+        return map_bokjiro_eligibility(policy)
+    if policy.source_id == CHEONAN_SOURCE_ID:
+        return map_cheonan_eligibility(policy)
+    raise ValueError("eligibility mapper is not registered for this source")
+
+
 def map_youthcenter_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:
     """Map only unambiguous OnTongYouth source fields."""
 

@@ -7,7 +7,7 @@ import json
 import sys
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +16,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from collectors.bokjiro import SOURCE_ID as BOKJIRO_SOURCE_ID
+from collectors.cheonan_youthcenter import (
+    APPROVED_EXTERNAL_ID as CHEONAN_EXTERNAL_ID,
+    BOARD_URL as CHEONAN_BOARD_URL,
+    SOURCE_ID as CHEONAN_SOURCE_ID,
+    CheonanYouthCenterExtractor,
+)
+from collectors.eligibility_mapping import map_eligibility
+from collectors.extracted import ExtractedPolicy
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.normalizer import Normalizer
 from collectors.raw import (
@@ -36,6 +44,10 @@ DETAIL_COLLECTED_AT = datetime(
     tzinfo=timezone.utc,
 )
 COLLECTOR_VERSION = "synthetic-fixture/1.0.0"
+CHEONAN_COLLECTED_AT = datetime(2026, 8, 10, 3, 0, tzinfo=timezone.utc)
+CHEONAN_FIXTURE_ROOT = (
+    ROOT / "data/fixtures/html/cheonan-youthcenter-web"
+)
 
 YOUTH_LIST_ID = "10000000000000000000000000000000"
 YOUTH_ITEM_IDS = (
@@ -86,7 +98,10 @@ def build_outputs() -> dict[Path, bytes]:
     ]
     search_contract_cases = _search_contract_cases(accepted)
     recurrent_quality_cases = _recurrent_quality_cases()
-    eligibility_contract_cases = _eligibility_contract_cases()
+    eligibility_contract_cases = _eligibility_contract_cases(
+        extracted,
+        accepted,
+    )
 
     return {
         **raw_outputs,
@@ -118,7 +133,10 @@ def build_outputs() -> dict[Path, bytes]:
     }
 
 
-def _eligibility_contract_cases() -> dict[str, Any]:
+def _eligibility_contract_cases(
+    extracted: Iterable[ExtractedPolicy],
+    accepted_programs: Iterable[dict[str, Any]],
+) -> dict[str, Any]:
     def evidence(
         source_id: str,
         source_url: str,
@@ -202,6 +220,10 @@ def _eligibility_contract_cases() -> dict[str, Any]:
     web_source = "https://fixture.invalid/cheonan/notice/674"
     return {
         "contract_version": "1.0.0",
+        "source_handoff": _eligibility_source_handoff(
+            extracted,
+            accepted_programs,
+        ),
         "cases": [
             {
                 "case_id": "complete_contract_fixture",
@@ -398,6 +420,82 @@ def _eligibility_contract_cases() -> dict[str, Any]:
             },
         ],
     }
+
+
+def _eligibility_source_handoff(
+    extracted: Iterable[ExtractedPolicy],
+    accepted_programs: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    accepted_identities = {
+        (program["source_id"], program["external_id"])
+        for program in accepted_programs
+    }
+    policies = [
+        policy
+        for policy in extracted
+        if (policy.source_id, policy.external_id) in accepted_identities
+    ]
+    policies.append(_cheonan_fixture_policy())
+    return [
+        {
+            "source_id": policy.source_id,
+            "external_id": policy.external_id,
+            "title": policy.title,
+            "eligibility_summary": map_eligibility(policy).to_dict(),
+        }
+        for policy in sorted(
+            policies,
+            key=lambda item: (item.source_id, item.external_id or ""),
+        )
+    ]
+
+
+def _cheonan_fixture_policy() -> ExtractedPolicy:
+    def document(
+        number: int,
+        role: RawDocumentRole,
+        fixture_name: str,
+        *,
+        external_id: str | None = None,
+        parent_document_id: str | None = None,
+        collected_at: datetime = CHEONAN_COLLECTED_AT,
+    ) -> RawPolicyDocument:
+        return RawPolicyDocument.from_bytes(
+            document_id=f"{number:032x}",
+            source_id=CHEONAN_SOURCE_ID,
+            source_type=SourceType.WEB,
+            document_role=role,
+            external_id=external_id,
+            parent_document_id=parent_document_id,
+            source_url=CHEONAN_BOARD_URL,
+            collected_at=collected_at,
+            content_type="text/html; charset=utf-8",
+            raw_format=RawFormat.HTML,
+            raw_payload=(CHEONAN_FIXTURE_ROOT / fixture_name).read_bytes(),
+            http_status=200,
+            collector_version=COLLECTOR_VERSION,
+        )
+
+    parent = document(
+        0x301,
+        RawDocumentRole.LIST_RESPONSE,
+        "list_normal.html",
+    )
+    item = document(
+        0x302,
+        RawDocumentRole.LIST_ITEM,
+        "list_normal.html",
+        external_id=CHEONAN_EXTERNAL_ID,
+        parent_document_id=parent.document_id,
+    )
+    detail = document(
+        0x303,
+        RawDocumentRole.DETAIL_RESPONSE,
+        "detail_normal.html",
+        external_id=CHEONAN_EXTERNAL_ID,
+        collected_at=CHEONAN_COLLECTED_AT + timedelta(minutes=1),
+    )
+    return CheonanYouthCenterExtractor().extract((parent, item, detail))[0]
 
 
 def _recurrent_quality_cases() -> dict[str, Any]:

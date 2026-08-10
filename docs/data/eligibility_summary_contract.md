@@ -20,10 +20,13 @@ Source mapper, Backend의 DB·API와 Frontend의 TypeScript·UI가 같은 필드
 빈 값 의미를 사용한다.
 
 DTL4-4A에서는 독립 Schema와 Python 모델, Source mapping 및 합성 fixture를
-확정했다. 현재 `NormalizedProgram 1.1.0`, Policy DB·Migration, 공개 API와
-Frontend 타입에는 아직 이 객체를 편입하지 않았다. 이 계약을 병합한 뒤
-Backend와 Frontend가 각 소유 브랜치에서 구현하고, Data의 정규화 편입은
-`NormalizedProgram 1.2.0` 호환 추가로 검토한다. 기존 `eligibility_text`,
+확정했다. DTL4-4B에서는 DB에 적재 가능한 합성 정책 4건과 승인 웹 Source
+`notice:674` 합성 표본 1건의 mapper 결과를 정책 identity와 묶은
+`source_handoff`를 대표 fixture에 추가했다. 현재 `NormalizedProgram 1.1.0`,
+Policy DB·Migration, 공개 API와 Frontend 타입에는 아직 이 객체를 편입하지
+않았다. 이 계약을 병합한 뒤 Backend와 Frontend가 각 소유 브랜치에서 구현하고,
+Data의 정규화 편입은 `NormalizedProgram 1.2.0` 호환 추가와 Backend Migration을
+같이 검증할 때 확정한다. 기존 `eligibility_text`,
 `required_conditions`, `preferred_conditions`, `excluded_conditions`는 제거하거나
 새 구조로 추정 변환하지 않는다.
 
@@ -120,6 +123,19 @@ document item으로 보존한다. 계산할 수 없거나 필수·제외를 안�
 추정하지 않는다. API와 웹의 source-scoped identity는 유지하며 서로 다른
 원문이 충돌하면 최신 시각을 근거로 덮어쓰지 않고 각각의 evidence와 함께
 `partial`·`unknowns` 사례로 보존한다.
+
+## 소비자 인계 fixture
+
+`eligibility_evidence_cases.json`의 `source_handoff`는 Backend DTO와 Frontend
+TypeScript·Mock이 같은 Data JSON을 소비하는지 확인하기 위한 결정적 입력이다.
+각 항목은 `source_id`, `external_id`, `title`, `eligibility_summary`를 가지며,
+온통청년 2건·복지로 2건·천안청년센터 웹 1건을 포함한다. invalid 정책은
+소비자 fixture에서 제외한다.
+
+이 envelope는 `NormalizedProgram`이나 공개 API DTO 자체가 아니다. Backend가
+승인 Migration으로 저장 필드를 추가하기 전에는 canonical Seed에 끼워 넣거나
+Importer가 무시하도록 만들지 않는다. Frontend도 이 파일의 바깥 필드를 공개
+API 응답으로 추정하지 않고 `eligibility_summary` 객체만 Mock 기준으로 사용한다.
 
 ## 소비자 문구
 

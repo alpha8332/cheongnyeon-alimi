@@ -245,5 +245,245 @@
       }
     }
   ],
-  "contract_version": "1.0.0"
+  "contract_version": "1.0.0",
+  "source_handoff": [
+    {
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:01:00+00:00",
+                "locator": "tgtrDtlCn",
+                "locator_type": "source_field",
+                "source_id": "bokjiro-central-welfare-api",
+                "source_url": "https://fixture.invalid/bokjiro/001"
+              }
+            ],
+            "text": "합성 지원 대상"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:01:00+00:00",
+                "locator": "slctCritCn",
+                "locator_type": "source_field",
+                "source_id": "bokjiro-central-welfare-api",
+                "source_url": "https://fixture.invalid/bokjiro/001"
+              }
+            ],
+            "text": "합성 선정 기준"
+          }
+        ]
+      },
+      "external_id": "SYN-BOK-001",
+      "source_id": "bokjiro-central-welfare-api",
+      "title": "합성 청년 자산 지원 상세"
+    },
+    {
+      "eligibility_summary": {
+        "coverage": "unknown",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [],
+        "unknowns": []
+      },
+      "external_id": "SYN-BOK-002",
+      "source_id": "bokjiro-central-welfare-api",
+      "title": "합성 목록 전용 지원"
+    },
+    {
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [
+          {
+            "evidence": [
+              {
+                "collected_at": "2026-08-10T03:01:00+00:00",
+                "locator": "#bo_v_con",
+                "locator_type": "css_selector",
+                "source_id": "cheonan-youthcenter-web",
+                "source_url": "https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674"
+              }
+            ],
+            "text": "거주 사실 확인서류"
+          }
+        ],
+        "exclusions": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-08-10T03:01:00+00:00",
+                "locator": "#bo_v_con",
+                "locator_type": "css_selector",
+                "source_id": "cheonan-youthcenter-web",
+                "source_url": "https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674"
+              }
+            ],
+            "text": "타 지역 이사 시 지원 종료"
+          }
+        ],
+        "institutional_contacts": [
+          {
+            "evidence": [
+              {
+                "collected_at": "2026-08-10T03:01:00+00:00",
+                "locator": "#bo_v_con",
+                "locator_type": "css_selector",
+                "source_id": "cheonan-youthcenter-web",
+                "source_url": "https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674"
+              }
+            ],
+            "kind": "phone",
+            "label": "대표전화",
+            "value": "041-000-0000"
+          },
+          {
+            "evidence": [
+              {
+                "collected_at": "2026-08-10T03:01:00+00:00",
+                "locator": "#bo_v_con",
+                "locator_type": "css_selector",
+                "source_id": "cheonan-youthcenter-web",
+                "source_url": "https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674"
+              }
+            ],
+            "kind": "official_channel",
+            "label": "공식 문의 채널",
+            "value": "카카오채널"
+          }
+        ],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-08-10T03:01:00+00:00",
+                "locator": "#bo_v_con",
+                "locator_type": "css_selector",
+                "source_id": "cheonan-youthcenter-web",
+                "source_url": "https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674"
+              }
+            ],
+            "text": "천안시에 거주하는 1인가구 청년"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-08-10T03:01:00+00:00",
+                "locator": "#bo_v_con",
+                "locator_type": "css_selector",
+                "source_id": "cheonan-youthcenter-web",
+                "source_url": "https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674"
+              }
+            ],
+            "text": "설치 환경에 따라 지원이 제한될 수 있음"
+          }
+        ]
+      },
+      "external_id": "notice:674",
+      "source_id": "cheonan-youthcenter-web",
+      "title": "2026년 합성 청년 주거안전 지원사업 신청자 모집"
+    },
+    {
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMinAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMaxAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "19세 ~ 34세"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "ptcpPrpTrgtCn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "합성 청년 대상"
+          }
+        ]
+      },
+      "external_id": "SYN-YOUTH-001",
+      "source_id": "youthcenter-api",
+      "title": "<b>합성 청년 주거 지원</b>"
+    },
+    {
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/002"
+              }
+            ],
+            "text": "연령 제한 없음"
+          }
+        ],
+        "unknowns": []
+      },
+      "external_id": "SYN-YOUTH-002",
+      "source_id": "youthcenter-api",
+      "title": "합성 상시 생활 지원"
+    }
+  ]
 }

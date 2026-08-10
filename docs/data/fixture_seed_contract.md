@@ -36,6 +36,7 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 | `data/fixtures/rejected/programs.json` | invalid와 실패 사유 | 1 |
 | `data/fixtures/contracts/policy_search_region_cases.json` | 검색 범위·지역 관계 경계 사례 | 7 |
 | `data/fixtures/contracts/recurrent_quality_cases.json` | 반복·수정·중복·실패 판정 사례 | 6 |
+| `data/fixtures/contracts/eligibility_evidence_cases.json` | 자격요건 계약 사례와 Source 소비 인계 | 5+5 |
 | `data/seeds/initial_programs.json` | canonical 개발 Seed | 4 |
 | `data/seeds/administrative_regions.json` | versioned 지역 Seed | 538 |
 | `data/seeds/administrative_region_aliases.json` | 지역 별칭 Seed | 1,080 |
@@ -81,6 +82,12 @@ partial도 JSON Schema를 통과한 정상 전달 객체다. 검색 정보가 �
 정책 객체를 복제하지 않는다. 동일 snapshot, 수집 metadata만 변경, business
 field 1개 변경, 실행 내 duplicate, invalid batch와 persist 실패의 기대 집계를
 고정한다. 외부 네트워크와 Runtime Raw를 사용하지 않는다.
+
+자격요건 계약 Fixture의 `cases`는 정상·경계·긴 문장·누락·충돌 의미를,
+`source_handoff`는 canonical Seed에 포함되는 API 정책 4건과 승인 웹 Source
+합성 표본 1건의 mapper 출력을 고정한다. `source_handoff` envelope는
+`NormalizedProgram`·공개 API DTO가 아니며 `eligibility_summary` nested 객체의
+Backend·Frontend 소비 대조에만 사용한다.
 
 ## canonical JSON 소비 계약
 

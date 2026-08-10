@@ -9,7 +9,7 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: `DTL4-4A` 완료 (`DTL4-4B` 미착수)
+- 현재 Slice: `DTL4-4B` 진행 중 (Data 소비 인계 완료, BE·FE parity 대기)
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -355,6 +355,14 @@ parity와 충돌하지 않도록 `NormalizedProgram`·DB·API·TypeScript 편입
   제공하도록 근거를 분리
 - 추천 이유가 구조화 조건을 자격 확률로 바꾸지 않는지 Integration 06 검토
 - 정책 상세에서 각 요약이 공식 원문으로 추적 가능한지 actual E2E 준비
+
+진행 결과(`2026-08-10`): 등록 Source dispatcher와 소비자 인계 fixture를
+추가했다. canonical Seed에 포함되는 API 정책 4건과 승인 웹 Source 합성 표본
+`notice:674` 1건의 identity·요약·evidence를 같은 JSON으로 고정했다. 현재
+Backend·Frontend Eligibility 구현 브랜치는 저장소에 없어 DTO·TypeScript·Mock
+parity와 실제 DB → API → Browser는 완료 처리하지 않는다. 기존 36필드 exact
+parity를 깨지 않도록 `NormalizedProgram 1.2.0`과 Migration은 Backend 소비
+구현과 함께 검증할 때까지 편입하지 않는다.
 
 ### 완료 기준
 
