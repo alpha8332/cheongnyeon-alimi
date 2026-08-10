@@ -448,8 +448,9 @@ API 모드 브라우저 캡처에서 홈·목록의 기본 valid 2건과 공개 
 확인해 D0·D6 Frontend 소비 검토를 완료했다.
 
 2026-08-10 ES2는 기존 목록 `PolicyDto`를 유지하면서 상세에만
-`eligibility_summary`를 추가했다. Frontend의 1.2.0 version union,
-`PolicyDetailDto`와 제외 조건·필요 서류·문의처 UI 소비는 ES3 인계사항이다.
+`eligibility_summary`를 추가했다. ES3는 1.2.0 version union과
+`PolicyDetailDto`, 제외 조건·필요 서류·문의처·공개 evidence UI 소비를
+구현했다. 목록 Mock과 실제 목록 응답에는 요약을 추가하지 않는다.
 
 ## 통합 검증
 

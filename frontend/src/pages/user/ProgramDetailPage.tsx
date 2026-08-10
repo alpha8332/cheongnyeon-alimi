@@ -6,6 +6,7 @@ import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PartialBadge from '@/components/policy/PartialBadge';
+import EligibilitySummary from '@/components/policy/EligibilitySummary';
 import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
 import {
   formatAge,
@@ -180,6 +181,8 @@ export default function ProgramDetailPage() {
           </Button>
         </div>
       </Card>
+
+      <EligibilitySummary summary={policy.eligibility_summary} />
     </div>
   );
 }

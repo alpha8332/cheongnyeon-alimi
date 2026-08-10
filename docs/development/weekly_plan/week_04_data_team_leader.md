@@ -358,8 +358,9 @@ parity와 충돌하지 않도록 독립 nested 계약으로 먼저 승인했고,
 `notice:674` 1건의 identity·요약·evidence를 같은 JSON으로 고정했다. ES2에서
 `NormalizedProgram 1.2.0` 37필드, Migration `20260810_0006`, JSONB 저장과
 상세 API를 구현하고 PostgreSQL actual을 통과했다. 목록 payload는 유지한다.
-Frontend TypeScript·Mock·UI와 실제 Browser 대조는 ES3·ES4까지 완료 처리하지
-않는다.
+ES3는 Frontend 상세 TypeScript·Mock과 신청·제외·우대 조건, 필요 서류, 문의처,
+공개 evidence UI를 구현했다. 승인 웹 표본 Browser 주입으로 키보드·모바일까지
+검증했지만 실제 PostgreSQL → API → Browser 대조는 ES4까지 완료 처리하지 않는다.
 
 ### 완료 기준
 

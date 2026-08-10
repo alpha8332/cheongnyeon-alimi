@@ -36,7 +36,8 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 | DTL4-4A / ES1 기반 | 완료 | API 두 Source와 승인 웹 Source의 보수적 mapping·evidence 검증 |
 | DTL4-4B / ES1 actual 인계 | 완료 | Source dispatcher·정책 identity 기반 5건 소비 fixture 완료 |
 | ES2 Backend 상세 API | 완료 | NormalizedProgram 1.2.0·Migration 0006·JSONB·상세 DTO·PostgreSQL actual 완료 |
-| ES3~ES4 | 미착수 | Frontend UI와 actual Browser E2E 대기 |
+| ES3 Frontend 핵심 조건 UI | 완료 | 상세 타입·Mock·제외조건·서류·문의처·근거·반응형·접근성 검증 완료 |
+| ES4 actual 세로 인수 | 미착수 | 실제 PostgreSQL → API → Browser 대조 대기 |
 
 ## 구현 내용
 
@@ -126,6 +127,23 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 - 실제 PostgreSQL에서 Migration 0005→0006 보존, canonical Seed→API, 천안
   Runtime Raw→DB→상세 API와 멱등 재수집을 검증했다.
 
+### ES3 Frontend 핵심 신청 조건 UI
+
+- 목록 `PolicyDto`에는 Eligibility Summary를 추가하지 않고
+  `PolicyDetailDto`와 상세 API Client·Mock만 1.2.0 nested 객체를 소비한다.
+- 정책 상세에 신청·제외·우대 조건, 필요 서류, 추가 확인 필요와 문의처를
+  독립된 semantic section으로 표시한다. 빈 배열도 빈 화면으로 숨기지 않는다.
+- coverage별 안내는 `원문 기준 주요 조건 확인`, `일부 조건만 확인됨`,
+  `구조화된 조건 미확인`으로 구분하고 실제 자격이나 선정 결과를 단정하지 않는다.
+- 각 항목은 공개 Source URL·수집 시각·locator 근거 링크를 제공한다. 내부 Raw
+  provenance는 Frontend 타입과 화면에 추가하지 않았다.
+- 시설 대표전화는 `tel:` 링크, 공식 채널은 HTTP(S)일 때만 외부 링크로 만든다.
+  키보드 focus와 최소 44px 터치 영역, 긴 문장 줄바꿈과 760px 이하 1열 배치를
+  적용했다.
+- canonical Seed Mock은 실제 요약을 상세에서 보존하고 목록에서는 제거한다.
+  승인 천안 표본은 HTTP 응답 주입 Browser 테스트로 제외조건·서류·문의처를
+  검증하며 실제 DB 연결 완료로 소급하지 않는다.
+
 ## 주요 변경 파일
 
 - `collectors/eligibility.py`
@@ -151,13 +169,22 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 - `tests/integration/test_seed_to_policy_api.py`
 - `tests/integration/test_cheonan_web_runtime_to_database.py`
 - `backend/tests/test_postgresql_migration.py`
+- `frontend/src/types/policy.ts`
+- `frontend/src/api/policies.ts`
+- `frontend/src/mocks/policyContract.ts`
+- `frontend/src/components/policy/EligibilitySummary.tsx`
+- `frontend/src/components/policy/EligibilitySummary.css`
+- `frontend/src/pages/user/ProgramDetailPage.tsx`
+- `frontend/src/utils/eligibilitySummary.ts`
+- `frontend/tests/eligibilitySummary.test.ts`
+- `frontend/e2e/eligibility-summary.spec.ts`
 - `docs/development/develop_plan/forest_roadmap.md`
 - `docs/development/develop_plan/README.md`
 
 ## 설계 결정
 
-- 독립 nested 계약을 먼저 승인하고 `NormalizedProgram`·DB·API 편입은 ES2의
-  한 통합 변경으로 검증한다. TypeScript·UI는 ES3에서 같은 계약을 소비한다.
+- 독립 nested 계약을 먼저 승인하고 `NormalizedProgram`·DB·API 편입은 ES2,
+  TypeScript·UI 소비는 ES3에서 같은 계약으로 검증한다.
 - 새 공통 객체가 편입돼도 기존 `eligibility_text`와 조건 문자열 배열을
   제거하거나 자동 변환하지 않는다.
 - Source field 이름만으로 필수·제외·우대를 단정하지 않고 실제 의미가
@@ -171,6 +198,10 @@ Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하�
 | --- | --- |
 | 전체 Data 단위·통합 pytest (`tests`) | 통과: 168건, subtest 27건, warning 0건 |
 | 전체 Backend pytest (`backend/tests`) | 통과: 126건, warning 0건 |
+| 전체 Frontend 단위 계약 (`npm.cmd test`) | 통과: 50건 |
+| Frontend production build·lint | 통과: TypeScript·Vite build와 ESLint |
+| ES3 승인 표본 Browser (`VITE_USE_MOCK=false`) | 통과: 3건, 제외·서류·문의처·unknown·긴 문장·오류·키보드·모바일 검증 |
+| 기존 Frontend Browser 회귀 | 통과: 10건, ES3 HTTP 주입 3건과 실제 API golden 1건은 환경 조건에 따라 skip |
 | Backend exact field parity pytest | 통과: Normalized 37필드·ORM·Importer·목록/상세 API 계약 회귀 없음 |
 | DTL4-4B Source 소비 fixture | 통과: 승인 Source 3종·적재 후보 5건, Schema issue 0건 |
 | 천안 승인 공지 actual mapper | 통과: 요청 2회, Raw 3건, 정책 1건, Schema issue 0건 |
@@ -187,7 +218,7 @@ Starlette 1.3.1 `TestClient`가 우선 사용하는 `httpx2`를 테스트 의존
 ## 남은 작업
 
 - Data output과 Backend DTO·DB·Migration·상세 API는 ES2에서 확정했다.
-- Frontend는 상세 API를 기준으로 화면의 제외 조건·필요 서류·문의처와
-  접근성 검증을 구현한다.
-- Team Leader는 ES3 결과가 반영된 현재 Integration 브랜치에서 실제 DB → API → Browser를
-  대조한다.
+- Frontend 상세 타입·Mock·제외 조건·필요 서류·문의처와 접근성은 ES3에서
+  확정했다.
+- Team Leader는 현재 Integration 브랜치에서 실제 PostgreSQL → API → Browser를
+  대조하는 ES4를 수행한다.

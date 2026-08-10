@@ -1,0 +1,214 @@
+.eligibility-summary {
+  margin-top: 20px;
+}
+
+.eligibility-summary__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.eligibility-summary__header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.eligibility-summary__eyebrow {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eligibility-summary__coverage {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  color: #92400e;
+  background: #fffbeb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.eligibility-summary[data-coverage='complete']
+  .eligibility-summary__coverage {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+
+.eligibility-summary__notice {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--sky-muted);
+  border-radius: var(--r-xl);
+  color: #075985;
+  background: var(--sky-soft);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.eligibility-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.eligibility-group {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: #f8fafc;
+}
+
+.eligibility-group--danger {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.eligibility-group--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.eligibility-group--contact {
+  border-color: var(--sky-muted);
+  background: #f0f9ff;
+}
+
+.eligibility-group__title {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.eligibility-group__empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.eligibility-items,
+.eligibility-evidence {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.eligibility-items {
+  display: grid;
+  gap: 12px;
+}
+
+.eligibility-items__item {
+  min-width: 0;
+}
+
+.eligibility-items__item + .eligibility-items__item {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.eligibility-items__category {
+  display: inline-flex;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #0369a1;
+  background: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.eligibility-items__text,
+.eligibility-contact__label {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.eligibility-contact__label {
+  margin-bottom: 4px;
+}
+
+.eligibility-contact__value,
+.eligibility-contact__action {
+  overflow-wrap: anywhere;
+  color: #0369a1;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.eligibility-contact__action {
+  display: inline-block;
+  min-height: 44px;
+  padding: 11px 0;
+}
+
+.eligibility-contact__action:focus-visible,
+.eligibility-evidence__link:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.3);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.eligibility-evidence {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.eligibility-evidence__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.eligibility-evidence__link {
+  color: #0369a1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.eligibility-evidence__unavailable {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.eligibility-evidence__meta {
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .eligibility-summary__header {
+    flex-direction: column;
+  }
+
+  .eligibility-summary__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .eligibility-summary__coverage {
+    white-space: normal;
+  }
+}

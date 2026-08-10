@@ -30,6 +30,7 @@
     "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",
     "src/utils/policyDisplay.ts",
+    "src/utils/eligibilitySummary.ts",
     "tests/**/*.ts"
   ]
 }

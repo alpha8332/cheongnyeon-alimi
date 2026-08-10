@@ -5,7 +5,7 @@
 - 번호: Integration 08
 - 담당 영역: Data·Backend·Frontend
 - 상태: in-progress
-- 진행: `ES0`·`ES1`·`ES2` 완료, `ES3` Frontend UI 대기
+- 진행: `ES0`·`ES1`·`ES2`·`ES3` 완료, `ES4` actual 세로 인수 대기
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline
@@ -13,7 +13,7 @@
 - 후속 Forest: Integration 06 Recommendation, Integration 07 Release 2 Acceptance
 - 역할·브랜치 분담: `2026-08-10` 승인, 같은 날 단일 Integration 브랜치로 조정
 - 계약 상태: Eligibility Summary `1.0.0` 공통 Schema·Source 소비 fixture 승인,
-  NormalizedProgram `1.2.0`·DB·상세 API 편입 완료, UI 편입 대기
+  NormalizedProgram `1.2.0`·DB·상세 API·Frontend UI 편입 완료
 - 구현 브랜치: `feature/schema/eligibility-evidence-contract`
 
 ## 목적
@@ -161,13 +161,21 @@ ES2에서 actual 편입 완료)
 - evidence의 수집 시각만 달라진 재수집은 변경으로 세지 않되, 조건·근거 위치·
   연락처 내용 변화는 update로 처리한다.
 
-### ES3 - Frontend 핵심 신청 조건 UI
+### ES3 - Frontend 핵심 신청 조건 UI (완료)
 
 - 필수·제외·우대·서류·확인 필요를 시각적으로 구분한다.
 - 상세 화면에 `제외 조건`, `필요 서류`, `문의처` 영역을 추가하고 시설
   전화번호·공식 채널을 키보드와 모바일에서도 사용할 수 있게 한다.
 - 모바일·키보드·긴 문장·빈 값·partial·error 상태를 제공한다.
 - 로컬 사용자 조건이 있으면 비교 상태를 표시하되 최종 자격을 단정하지 않는다.
+- 목록 `PolicyDto`와 상세 `PolicyDetailDto`를 분리하고 1.2.0 상세 응답에서만
+  Eligibility Summary를 소비한다.
+- 빈 배열도 누락으로 숨기지 않고 원문에서 구조화된 값을 확인하지 못했다는
+  문구로 표시한다. partial·unknown coverage는 신청 가능·불가로 바꾸지 않는다.
+- 시설 전화번호는 `tel:` 링크와 44px 이상 터치 영역을 제공한다. 공식 채널은
+  HTTP(S)일 때만 링크로 만들고 텍스트 채널명은 그대로 표시한다.
+- 승인 웹 표본을 주입한 Chromium 검증으로 제외조건·서류·문의처·근거 링크·
+  키보드 focus와 모바일 1열 배치를 확인한다.
 
 ### ES4 - actual 세로 인수
 
