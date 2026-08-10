@@ -137,7 +137,11 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
             program.regions,
         )
         self.assertEqual(2, len(program.provenance))
-        self.assertEqual("1.1.0", program.SCHEMA_VERSION)
+        self.assertEqual("1.2.0", program.SCHEMA_VERSION)
+        self.assertEqual(
+            "unknown",
+            program.eligibility_summary.coverage.value,
+        )
         self.assertEqual((), program.keywords)
         self.assertEqual((), program.life_stages)
         self.assertEqual((), program.target_groups)
@@ -452,6 +456,7 @@ class SchemaAndValidatorTests(unittest.TestCase):
         assert program is not None
         legacy = program.to_dict()
         legacy["schema_version"] = "1.0.0"
+        legacy.pop("eligibility_summary")
         for field in NormalizedProgram.SEARCH_FIELD_NAMES:
             legacy.pop(field)
 
@@ -459,16 +464,47 @@ class SchemaAndValidatorTests(unittest.TestCase):
 
         self.assertEqual(DataQualityStatus.VALID, result.status)
         self.assertIsNotNone(result.program)
-        self.assertEqual("1.1.0", result.candidate["schema_version"])
+        self.assertEqual("1.2.0", result.candidate["schema_version"])
         self.assertEqual([], result.candidate["keywords"])
         self.assertEqual([], result.candidate["life_stages"])
         self.assertEqual([], result.candidate["target_groups"])
         self.assertEqual("unknown", result.candidate["coverage_scope"])
         self.assertEqual([], result.candidate["region_rules"])
+        self.assertEqual(
+            {
+                "coverage": "unknown",
+                "requirements": [],
+                "exclusions": [],
+                "preferences": [],
+                "documents": [],
+                "unknowns": [],
+                "institutional_contacts": [],
+            },
+            result.candidate["eligibility_summary"],
+        )
         upgraded = result.program
         assert upgraded is not None
         self.assertEqual(CoverageScope.UNKNOWN, upgraded.coverage_scope)
         self.assertEqual((), upgraded.region_rules)
+
+    def test_legacy_1_1_input_is_upgraded_with_unknown_eligibility(
+        self,
+    ) -> None:
+        program = self.valid_result.program
+        assert program is not None
+        legacy = program.to_dict()
+        legacy["schema_version"] = "1.1.0"
+        legacy.pop("eligibility_summary")
+
+        result = self.validator.validate(legacy)
+
+        self.assertEqual(DataQualityStatus.VALID, result.status)
+        self.assertIsNotNone(result.program)
+        self.assertEqual("1.2.0", result.candidate["schema_version"])
+        self.assertEqual(
+            "unknown",
+            result.candidate["eligibility_summary"]["coverage"],
+        )
 
     def test_valid_partial_invalid_json_fixtures_are_classified(
         self,

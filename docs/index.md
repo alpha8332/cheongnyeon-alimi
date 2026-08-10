@@ -19,7 +19,7 @@
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
 - [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
-  NormalizedProgram 1.1.0의 36개 논리 필드, 행정구역·검색 projection
+  NormalizedProgram 1.2.0의 37개 논리 필드, Eligibility Summary와 행정구역·검색 projection
   PostgreSQL·Importer·공개 API 경계
 - [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
   Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
@@ -219,12 +219,13 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 | --- | --- | --- | --- |
 | `W4-G1-BE-AUTH` | review-pending | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
 | `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock을 승인 계약과 대조 |
-| `W4-ES2-BE-CONSUMER` | review-pending | Backend | Eligibility Summary 소비 fixture를 DB·Migration·상세 DTO와 PostgreSQL 테스트로 대조 |
 | `W4-ES3-FE-CONSUMER` | review-pending | Frontend | Eligibility Summary 타입·Mock·상세 UI와 `조건상 일치`·`조건상 불일치`·`추가 확인 필요` 문구를 대조 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
-`W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 또는 ES2·ES3 구현 적합성
+`W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 또는 ES3 구현 적합성
 확인이며 Data 03·04와 Integration 08의 기반 구현을 막지 않는다.
+`W4-ES2-BE-CONSUMER`는 NormalizedProgram 1.2.0, Migration `20260810_0006`,
+상세 DTO와 PostgreSQL actual 대조를 통과해 `2026-08-10` 완료 처리했다.
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

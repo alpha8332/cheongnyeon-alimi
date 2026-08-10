@@ -6,7 +6,7 @@
 - Data 검증: 완료
 - Backend 승인: 완료
 - Frontend 승인: 완료
-- 기준 Schema: `NormalizedProgram` 1.1.0
+- 기준 Schema: `NormalizedProgram` 1.2.0
 
 이 문서는 외부 네트워크 없이 Raw부터 Seed까지 재현하는 개발 데이터와
 Backend·Frontend 소비 규칙을 정의한다. 실제 API 응답을 배포하는 자료가
@@ -86,14 +86,15 @@ field 1개 변경, 실행 내 duplicate, invalid batch와 persist 실패의 기�
 자격요건 계약 Fixture의 `cases`는 정상·경계·긴 문장·누락·충돌 의미를,
 `source_handoff`는 canonical Seed에 포함되는 API 정책 4건과 승인 웹 Source
 합성 표본 1건의 mapper 출력을 고정한다. `source_handoff` envelope는
-`NormalizedProgram`·공개 API DTO가 아니며 `eligibility_summary` nested 객체의
-Backend·Frontend 소비 대조에만 사용한다.
+`NormalizedProgram`·공개 API DTO 전체가 아니며 `eligibility_summary` nested
+객체의 Backend·Frontend 소비 대조에만 사용한다. canonical Seed 자체에는 같은
+객체가 1.2.0 required 필드로 포함된다.
 
 ## canonical JSON 소비 계약
 
 `initial_programs.json`의 root는 `NormalizedProgram` 객체 배열이다.
 
-- 모든 객체는 Schema의 36개 key를 가진다.
+- 모든 객체는 Schema의 37개 key를 가진다.
 - 선택 단일 값 없음은 `null`, 복수 값 없음은 `[]`이다.
 - enum과 `YYYY-MM-DD` 날짜는 JSON string으로 유지한다.
 - `source_id + external_id`를 source-scoped 식별 경계로 사용한다.
@@ -102,6 +103,8 @@ Backend·Frontend 소비 대조에만 사용한다.
 - 배열을 단일 string으로, null을 빈 문자열로 바꾸지 않는다.
 - 검색 문자열 배열은 값이 없으면 `[]`, 범위를 확인하지 못하면
   `coverage_scope=unknown`, 지역 rule이 없으면 `region_rules=[]`이다.
+- `eligibility_summary`는 7개 required 필드를 가지며 근거가 없는 Source는
+  `coverage=unknown`과 빈 배열을 사용한다.
 
 PSF4 canonical Seed는 합성 Source 원문에서 확인되는 summary·keywords와
 복지로 life stages·target groups를 채운다. 합성 온통청년의 명시적 `전국`은
@@ -175,6 +178,9 @@ instant·provenance 손실 0건을 확인했다. PSF1의 1.1.0 canonical Seed는
 검색 필드가 안전한 기본값일 때 호환된다. PSF3는 정책 검색 컬럼과 지역·규칙·
 projection 구조의 PostgreSQL 왕복을 검증했다. PSF5는 실제 36개 입력의
 관계형 transaction·idempotency·rollback을 검증했다.
+ES2는 1.2.0의 37개 입력과 `eligibility_summary` JSONB·상세 API 왕복,
+1.0.0·1.1.0 compatibility를 검증했다. 목록·검색 공개 DTO에는 새 요약을
+추가하지 않는다.
 Frontend TypeScript 타입·Mock 소비 코드는 별도 원격 브랜치에 있으나 D6
 검토에서 현재 Policy API와의 계약 차이를 확인했다. Data 영역은 해당
 Frontend 코드를 대신 수정하거나 승인하지 않으며,
@@ -224,9 +230,9 @@ Fixture 13개와 `initial_programs.json`의 누락·추가·byte 차이가 있�
 
 | 영역 | 상태 | 확인 결과 또는 필요한 증거 |
 | --- | --- | --- |
-| Data | reviewed | 1.1.0 Schema·legacy adapter·결정적 재생성·검색 지역 경계 Fixture 테스트 완료 |
-| Backend | reviewed | 검색 배열·coverage와 지역·규칙·projection 구조, 원자적 importer·idempotency·rollback 검증 완료 |
-| Frontend | transitional | FE 2A 공개 `PolicyDto` 계약을 유지하고 `schema_version`만 1.0.0·1.1.0 union으로 소비하며 검색 5개 필드는 공개 DTO에서 제외 |
+| Data | reviewed | 1.2.0 Schema·1.0.0/1.1.0 adapter·결정적 재생성·Eligibility mapping 테스트 완료 |
+| Backend | reviewed | Eligibility JSONB·Migration·상세 DTO와 원자적 importer·idempotency·rollback 검증 완료 |
+| Frontend | transitional | 목록 `PolicyDto`는 기존 공개 경계를 유지하며 1.2.0 union과 상세 `eligibility_summary` 소비는 ES3에서 반영 |
 
 ### Frontend 초기 Mock 검토 결과 (2026-07-28)
 

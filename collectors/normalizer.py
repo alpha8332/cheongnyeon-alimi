@@ -13,6 +13,11 @@ from collectors.extracted import (
     ExtractedPolicy,
     ExtractedRegionRelation,
 )
+from collectors.eligibility import empty_eligibility_summary
+from collectors.eligibility_mapping import (
+    ELIGIBILITY_SOURCE_IDS,
+    map_eligibility,
+)
 from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
@@ -169,6 +174,12 @@ class Normalizer:
         )
         issues.extend(age_issues)
 
+        eligibility_summary = (
+            map_eligibility(policy)
+            if policy.source_id in ELIGIBILITY_SOURCE_IDS
+            else empty_eligibility_summary()
+        )
+
         candidate: dict[str, Any] = {
             "schema_version": NormalizedProgram.SCHEMA_VERSION,
             "source_id": policy.source_id,
@@ -215,6 +226,7 @@ class Normalizer:
             "age_max": age_max,
             "age_condition_text": age_condition_text,
             "eligibility_text": normalize_text(policy.eligibility_text),
+            "eligibility_summary": eligibility_summary.to_dict(),
             "support_content": normalize_text(policy.support_content),
             "application_method": normalize_text(
                 policy.application_method

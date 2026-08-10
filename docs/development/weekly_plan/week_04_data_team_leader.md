@@ -42,14 +42,14 @@ Integration 05·07·09의 계약과 실제 연결을 조정한다. 자신의 Dat
 | Integration 05 Contract Baseline | Team Leader 주관, Data 근거 제공 | `docs/docs/v0-5-contract-baseline` | `W4-G0_APPROVED` |
 | Data 03 Recurrent Quality Operations | Data 구현 | `feature/data/recurrent-quality-operations` | 반복·수정·중복·실패·품질 통계 검증 |
 | Data 04 Public HTTPS Ingestion | Data 구현 | `feature/data/public-web-policy-source` | 공식 Source 1곳 actual 수집·DB 적재 |
-| Integration 08 Eligibility Summary | Data 구현·공동 소비 검토 | Data 영역 브랜치는 착수 전 확정 | evidence 구조 → 상세 API → UI E2E |
+| Integration 08 Eligibility Summary | Data 구현·공동 소비 검토 | `feature/schema/eligibility-evidence-contract` 단일 Integration 브랜치 | evidence 구조 → 상세 API → UI E2E |
 | Integration 09 Admin Data and Log Console | Data 의미 검토, Team Leader 보안·E2E | Backend·Frontend observability 브랜치 | 읽기 전용 DB 표와 로그 조회·삭제 감사 E2E |
 | Integration 07 Release 2 Acceptance | Team Leader midpoint 주관 | cross-area domain 합의 전 생성 금지 | W4-G1~G4 근거와 5주차 시작 조건 |
 
 Slice마다 새 브랜치를 만들지 않는다. Data 03과 Data 04는 독립 목표와 완료
-기준이 있으므로 서로 다른 Forest 브랜치를 사용한다. Integration 08의 Data
-변경이 Data 04와 같은 Source Adapter·Schema에만 국한되는지 독립 계약 변경인지
-W4-G0에서 판단한 뒤 브랜치와 병합 순서를 정한다.
+기준이 있으므로 서로 다른 Forest 브랜치를 사용한다. Integration 08은 승인된
+한 브랜치에서 Data·Backend·Frontend 변경을 Conventional Commit 경계로
+구분하고 Slice별 추가 브랜치를 만들지 않는다.
 
 ## 전체 실행 순서
 
@@ -328,24 +328,21 @@ Backend·Frontend가 같은 의미를 소비하게 한다.
 완료 결과(`2026-08-10`): Eligibility Summary `1.0.0` 독립 JSON Schema·Python
 모델과 정상·경계·긴 문장·누락·충돌 fixture를 고정했다. 온통청년·복지로·
 천안 웹 Source mapping은 명확한 원문만 requirements·documents·exclusions로
-승격하고 의미가 혼재한 field는 unknowns로 보존한다. 현재 Backend exact field
-parity와 충돌하지 않도록 `NormalizedProgram`·DB·API·TypeScript 편입은 담당
-영역별 후속 구현으로 분리했다.
+승격하고 의미가 혼재한 field는 unknowns로 보존한다. 당시 Backend exact field
+parity와 충돌하지 않도록 독립 nested 계약으로 먼저 승인했고, ES2에서
+`NormalizedProgram`·DB·상세 API에 함께 편입했다.
 
-#### DTL4-4 역할·브랜치 분리
+#### DTL4-4 역할·commit 분리
 
-- Data·Team Leader는 `feature/schema/eligibility-evidence-contract`에서
-  제외조건·필요서류·공개 시설 연락처 계약과 provenance·fixture를 먼저
-  확정한다.
-- Backend는 현재 진행 중인 Forest와 섞지 않고 계약 병합 뒤
-  `feature/backend/eligibility-evidence-api`에서 DB·Migration·상세 API와
-  PostgreSQL 테스트를 구현한다.
-- Frontend도 현재 진행 중인 Forest와 섞지 않고 계약 병합 뒤
-  `feature/frontend/eligibility-evidence-ui`에서 TypeScript·Mock·상세 화면의
-  `제외 조건`·`필요 서류`·`문의처`와 접근성 테스트를 구현한다.
-- Backend API 병합 뒤 Frontend가 최신 `develop`으로 실제 API 소비를 확인하고,
-  Team Leader는 세 결과가 병합된 `develop`에서 DB → API → Browser E2E를
-  수행한다.
+- Integration 08 전체는 `feature/schema/eligibility-evidence-contract`에서
+  진행하고 Slice마다 브랜치를 추가하지 않는다.
+- Data·Team Leader 변경은 `feat(data)`, Backend 변경은 `feat(backend)`,
+  Frontend 변경은 `feat(frontend)`, 통합 검증·문서는 `test(integration)`·
+  `docs(integration)` Conventional Commit 경계로 구분한다.
+- Backend·Frontend 담당자가 별도 브랜치에서 작업한 경우 Team Leader가 승인
+  계약을 기준으로 commit을 현재 Integration 브랜치에 반영한다.
+- ES2 Backend API 뒤 ES3 Frontend가 실제 응답 소비를 확인하고, Team Leader는
+  같은 브랜치의 최종 결과에서 DB → API → Browser E2E를 수행한다.
 - 개인 휴대전화·개인 이메일·성명은 시설 연락처 계약과 UI에 포함하지 않는다.
 
 #### DTL4-4B - actual 소비 인계
@@ -358,11 +355,11 @@ parity와 충돌하지 않도록 `NormalizedProgram`·DB·API·TypeScript 편입
 
 진행 결과(`2026-08-10`): 등록 Source dispatcher와 소비자 인계 fixture를
 추가했다. canonical Seed에 포함되는 API 정책 4건과 승인 웹 Source 합성 표본
-`notice:674` 1건의 identity·요약·evidence를 같은 JSON으로 고정했다. 현재
-Backend·Frontend Eligibility 구현 브랜치는 저장소에 없어 DTO·TypeScript·Mock
-parity와 실제 DB → API → Browser는 완료 처리하지 않는다. 기존 36필드 exact
-parity를 깨지 않도록 `NormalizedProgram 1.2.0`과 Migration은 Backend 소비
-구현과 함께 검증할 때까지 편입하지 않는다.
+`notice:674` 1건의 identity·요약·evidence를 같은 JSON으로 고정했다. ES2에서
+`NormalizedProgram 1.2.0` 37필드, Migration `20260810_0006`, JSONB 저장과
+상세 API를 구현하고 PostgreSQL actual을 통과했다. 목록 payload는 유지한다.
+Frontend TypeScript·Mock·UI와 실제 Browser 대조는 ES3·ES4까지 완료 처리하지
+않는다.
 
 ### 완료 기준
 
@@ -662,8 +659,8 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 
 - [x] DTL4-0 시작 SHA·환경·브랜치·담당 확인
 - [x] DTL4-1 Data inventory와 `W4-G0_APPROVED`
-- [ ] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
-- [ ] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
+- [x] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
+- [x] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
 - [ ] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
 - [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과

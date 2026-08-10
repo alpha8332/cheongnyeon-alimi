@@ -22,11 +22,11 @@ Source mapper, Backend의 DB·API와 Frontend의 TypeScript·UI가 같은 필드
 DTL4-4A에서는 독립 Schema와 Python 모델, Source mapping 및 합성 fixture를
 확정했다. DTL4-4B에서는 DB에 적재 가능한 합성 정책 4건과 승인 웹 Source
 `notice:674` 합성 표본 1건의 mapper 결과를 정책 identity와 묶은
-`source_handoff`를 대표 fixture에 추가했다. 현재 `NormalizedProgram 1.1.0`,
-Policy DB·Migration, 공개 API와 Frontend 타입에는 아직 이 객체를 편입하지
-않았다. 이 계약을 병합한 뒤 Backend와 Frontend가 각 소유 브랜치에서 구현하고,
-Data의 정규화 편입은 `NormalizedProgram 1.2.0` 호환 추가와 Backend Migration을
-같이 검증할 때 확정한다. 기존 `eligibility_text`,
+`source_handoff`를 대표 fixture에 추가했다. ES2에서는 이 객체를
+`NormalizedProgram 1.2.0`의 37번째 required 필드로 편입하고 PostgreSQL
+`policies.eligibility_summary` JSONB와 정책 상세 API까지 연결했다. 기존 1.0.0·
+1.1.0 객체는 compatibility adapter가 조건을 추정하지 않고 `coverage=unknown`과
+빈 배열만 추가해 1.2.0으로 승격한다. 기존 `eligibility_text`,
 `required_conditions`, `preferred_conditions`, `excluded_conditions`는 제거하거나
 새 구조로 추정 변환하지 않는다.
 
@@ -132,10 +132,22 @@ TypeScript·Mock이 같은 Data JSON을 소비하는지 확인하기 위한 결�
 온통청년 2건·복지로 2건·천안청년센터 웹 1건을 포함한다. invalid 정책은
 소비자 fixture에서 제외한다.
 
-이 envelope는 `NormalizedProgram`이나 공개 API DTO 자체가 아니다. Backend가
-승인 Migration으로 저장 필드를 추가하기 전에는 canonical Seed에 끼워 넣거나
-Importer가 무시하도록 만들지 않는다. Frontend도 이 파일의 바깥 필드를 공개
-API 응답으로 추정하지 않고 `eligibility_summary` 객체만 Mock 기준으로 사용한다.
+이 envelope는 여전히 `NormalizedProgram`이나 공개 API DTO 전체가 아니라 소비자
+대조용 부분 fixture다. canonical Seed와 실제 정규화 출력은 동일한
+`eligibility_summary` 객체를 1.2.0 Schema 안에 포함한다. Frontend는 이 파일의
+바깥 필드를 API 응답으로 추정하지 않고 상세 API의 객체와 직접 대조한다.
+
+## 저장과 공개 API 경계
+
+- PostgreSQL은 Migration `20260810_0006`부터 요약 전체를 non-null JSONB로
+  저장한다. 기존 행의 `schema_version`은 소급 변경하지 않고 빈 unknown 요약만
+  backfill한다.
+- `GET /api/v1/policies/{policy_id}` 상세 응답은 `eligibility_summary`를 항상
+  노출한다. 목록·검색 응답은 payload 호환과 크기를 위해 이 필드를 노출하지 않는다.
+- 공개 evidence에는 이 문서의 5개 필드만 포함한다. 내부 provenance의 Raw ID·hash·
+  저장 경로는 상세 API에 노출하지 않는다.
+- evidence의 `collected_at`만 달라지고 조건·문서·연락처·locator가 같은 재수집은
+  정책 내용 변경으로 세지 않는다. 실제 요약 내용이나 근거 위치 변화는 update다.
 
 ## 소비자 문구
 

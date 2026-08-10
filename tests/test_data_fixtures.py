@@ -206,7 +206,7 @@ class DataFixtureContractTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            all(candidate["schema_version"] == "1.1.0" for candidate in seed)
+            all(candidate["schema_version"] == "1.2.0" for candidate in seed)
         )
         by_external_id = {
             candidate["external_id"]: candidate

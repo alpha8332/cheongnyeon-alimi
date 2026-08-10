@@ -5,19 +5,16 @@
 - 번호: Integration 08
 - 담당 영역: Data·Backend·Frontend
 - 상태: in-progress
-- 진행: `DTL4-4A`·`ES0` 완료, `DTL4-4B` Data 소비 인계 진행 중
+- 진행: `ES0`·`ES1`·`ES2` 완료, `ES3` Frontend UI 대기
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline
 - 병렬·보강 Forest: Data 04 Public HTTPS Policy Ingestion
 - 후속 Forest: Integration 06 Recommendation, Integration 07 Release 2 Acceptance
-- 역할·브랜치 분담: `2026-08-10` 승인
+- 역할·브랜치 분담: `2026-08-10` 승인, 같은 날 단일 Integration 브랜치로 조정
 - 계약 상태: Eligibility Summary `1.0.0` 공통 Schema·Source 소비 fixture 승인,
-  DB·API·UI 편입 대기
-- 권장 브랜치:
-  `feature/schema/eligibility-evidence-contract`,
-  `feature/backend/eligibility-evidence-api`,
-  `feature/frontend/eligibility-evidence-ui`
+  NormalizedProgram `1.2.0`·DB·상세 API 편입 완료, UI 편입 대기
+- 구현 브랜치: `feature/schema/eligibility-evidence-contract`
 
 ## 목적
 
@@ -96,17 +93,18 @@ condition의 원문은 `text`에 두고 evidence는 공개 가능한 근거 포�
 
 ## 역할 분담과 충돌 방지
 
-현재 Backend와 Frontend 담당자는 각자 진행 중인 Forest 브랜치가 있으므로
-Eligibility Evidence 구현을 기존 작업 브랜치에 섞지 않는다. 아래 세 구현
-브랜치는 Slice마다 추가하는 브랜치가 아니라 담당 영역과 완료 기준이 독립적인
-논리 작업 단위다.
+Integration 08은 Slice마다 브랜치를 늘리지 않고
+`feature/schema/eligibility-evidence-contract` 한 브랜치에서 완료한다. 담당별
+변경은 Conventional Commit 경계와 파일 소유권으로 구분한다. Backend·Frontend
+담당자가 별도 작업 브랜치에서 구현한 경우에도 계약 이름을 독자 변경하지 않고,
+Team Leader가 해당 commit을 이 Integration 브랜치에 반영해 전체 회귀를 확인한다.
 
-| 담당 | 브랜치 | 책임 | 이번 작업에서 건드리지 않는 영역 |
+| 담당 | Conventional Commit 경계 | 책임 | 이번 작업에서 건드리지 않는 영역 |
 | --- | --- | --- | --- |
-| Data·Team Leader | `feature/schema/eligibility-evidence-contract` | 제외조건·필요서류·시설 연락처의 공통 계약, Source mapping·provenance·fixture·Schema 검증 | Backend Migration·API 구현, Frontend 화면 |
-| Backend | `feature/backend/eligibility-evidence-api` | 승인 계약의 DB 저장·Migration·상세 DTO·직렬화·호환·PostgreSQL 테스트 | Source selector·Data 추정, Frontend 컴포넌트 |
-| Frontend | `feature/frontend/eligibility-evidence-ui` | 승인 TypeScript·Mock·API 소비와 `제외 조건`·`필요 서류`·`문의처` UI·접근성 테스트 | Data mapping, Backend DB·API 구현 |
-| Team Leader | 추가 상시 기능 브랜치 없음 | 병합 결과의 Schema parity와 실제 DB → API → Browser E2E 대조 | 다른 담당 구현을 통합 단계에서 임의 재작성 |
+| Data·Team Leader | `feat(data): ...` | 제외조건·필요서류·시설 연락처의 공통 계약, Source mapping·provenance·fixture·Schema 검증 | Frontend 화면 |
+| Backend | `feat(backend): ...` | 승인 계약의 DB 저장·Migration·상세 DTO·직렬화·호환·PostgreSQL 테스트 | Source selector·Data 추정, Frontend 컴포넌트 |
+| Frontend | `feat(frontend): ...` | 승인 TypeScript·Mock·API 소비와 `제외 조건`·`필요 서류`·`문의처` UI·접근성 테스트 | Data mapping, Backend DB·API 구현 |
+| Team Leader | `test(integration): ...`, `docs(integration): ...` | Schema parity와 실제 DB → API → Browser E2E 대조 | 승인 계약의 임의 재작성 |
 
 시설 연락처는 Data 04에서 추출한 공개 시설 대표전화와 공식 채널만 대상으로
 한다. 개인 휴대전화·개인 이메일·성명은 공통 계약과 UI에 포함하지 않는다.
@@ -114,22 +112,18 @@ Eligibility Evidence 구현을 기존 작업 브랜치에 섞지 않는다. 아�
 `institutional_contacts[]`의 type·label·value·evidence와 빈 배열 의미를
 Backend·Frontend와 함께 확정한다.
 
-### 병합 순서
+### 통합 순서
 
-1. 현재 진행 중인 Backend·Frontend Forest는 기존 범위대로 각각 완료·병합한다.
-2. Data·Team Leader가 공통 계약 브랜치를 최신 `develop`에서 만들고 ES0 계약,
-   Data mapping과 소비 fixture를 먼저 병합한다.
-3. Backend와 Frontend는 계약 병합 뒤 최신 `develop`에서 각 구현 브랜치를
-   만든다. 승인 fixture를 기준으로 병렬 개발할 수 있지만 계약 필드 이름을
-   각 브랜치에서 따로 변경하지 않는다.
-4. Backend API를 먼저 병합하고 Frontend는 최신 `develop`을 반영해 실제 API
-   소비 회귀를 확인한 뒤 병합한다.
-5. Team Leader는 세 결과가 병합된 `develop`에서 ES4 actual E2E를 수행한다.
-   결함 수정이 필요하면 해당 소유 영역의 별도 fix 브랜치로 되돌린다.
+1. ES0·ES1 Data 계약과 fixture를 기준 commit으로 고정한다.
+2. ES2 Backend 저장·Migration·상세 API를 같은 브랜치의 별도 Conventional
+   Commit으로 반영하고 PostgreSQL에서 검증한다.
+3. ES3 Frontend는 승인된 상세 응답과 fixture를 소비하며, 별도 작업 결과가
+   있으면 commit 단위로 현재 Integration 브랜치에 반영한다.
+4. Team Leader는 한 브랜치의 최종 결과에서 ES4 실제 DB → API → Browser를
+   대조한다.
 
-후속 구현 브랜치를 아직 병합되지 않은 현재 Data 04 또는 다른 담당자 작업
-브랜치에서 파생하지 않는다. 불가피하게 병렬 착수하면 계약 브랜치의 정확한
-commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한다.
+새 브랜치는 Integration 08과 독립된 목표·완료 기준이 생기거나 현재 브랜치와
+병렬 유지가 반드시 필요한 경우에만 제안한다.
 
 ## Slice 계획
 
@@ -141,8 +135,8 @@ commit 의존성을 PR에 기록하고 계약 병합 뒤 `develop`을 반영한�
   연락처 제외 경계를 확정한다.
 - 사용자에게 허용할 문구와 금지할 단정 표현을 승인한다.
 
-### ES1 - Data 구조화와 provenance (`DTL4-4A` 기반·`DTL4-4B` 소비 인계 완료,
-actual 편입 대기)
+### ES1 - Data 구조화와 provenance (`DTL4-4A`·`DTL4-4B` 완료,
+ES2에서 actual 편입 완료)
 
 - 기존 API Source의 풍부한 조건 필드를 우선 매핑한다.
 - 확실한 category와 원문 조건을 분리하고 필드별 evidence를 보존한다.
@@ -153,13 +147,19 @@ actual 편입 대기)
   `eligibility_summary`로 묶은 소비 fixture로 인계한다. 이 envelope는
   `NormalizedProgram`·공개 API DTO로 간주하지 않는다.
 
-### ES2 - Backend 상세 API
+### ES2 - Backend 상세 API (완료)
 
 - 정책 상세 DTO에 승인된 요약 구조를 추가하고 기존 소비 호환성을 검토한다.
 - complete·partial·unknown, 빈 배열과 누락 의미를 결정적으로 직렬화한다.
 - Source·수집 시각·원문 링크와 민감하지 않은 evidence만 노출한다.
 - 필요 서류와 시설 연락처 저장 필드·Migration을 추가하고 기존 조건 배열과
   호환되는 정책 상세 응답을 검증한다.
+- `NormalizedProgram 1.2.0`에 `eligibility_summary`를 required로 편입하고
+  1.0.0·1.1.0 입력은 추정 없이 `unknown` 빈 요약으로 승격한다.
+- PostgreSQL JSONB 저장과 Migration `20260810_0006`, 상세 API 노출을 구현한다.
+  목록·검색 DTO에는 요약을 추가하지 않아 기존 목록 payload를 유지한다.
+- evidence의 수집 시각만 달라진 재수집은 변경으로 세지 않되, 조건·근거 위치·
+  연락처 내용 변화는 update로 처리한다.
 
 ### ES3 - Frontend 핵심 신청 조건 UI
 
@@ -196,10 +196,9 @@ actual 편입 대기)
 
 ## 위험과 미확정 사항
 
-- 현재 `NormalizedProgram 1.1.0`과 Backend 저장 계약은 exact field parity를
-  사용한다. DTL4-4A는 충돌을 피하도록 독립 nested Schema를 먼저 승인했으며,
-  정규화 편입은 기존 객체를 허용하는 `1.2.0` 호환 추가와 Backend Migration을
-  영역별 브랜치에서 검토한다.
+- `NormalizedProgram 1.2.0`과 Backend 저장 계약은 37개 exact field parity로
+  편입됐다. 1.0.0·1.1.0 compatibility adapter는 source 근거가 없는 기존 객체에
+  조건을 추정하지 않고 `unknown` 빈 요약만 추가한다.
 - 조건 문장은 예외·가구 단위·기준연도에 따라 복잡해 단순 숫자 비교가 잘못된
   결론을 낼 수 있다. 계산 불가능한 조건은 확인 필요로 남긴다.
 - API와 웹 원문이 충돌하면 최신이라고 추정해 덮어쓰지 않고 Source·수집 시각을

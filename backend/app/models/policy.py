@@ -29,6 +29,27 @@ DATA_QUALITY_STATUS_VALUES = ("valid", "partial", "invalid")
 COVERAGE_SCOPE_VALUES = ("nationwide", "regional", "unknown")
 
 JSON_DOCUMENT = JSON().with_variant(JSONB(), "postgresql")
+EMPTY_ELIGIBILITY_SUMMARY = {
+    "coverage": "unknown",
+    "requirements": [],
+    "exclusions": [],
+    "preferences": [],
+    "documents": [],
+    "unknowns": [],
+    "institutional_contacts": [],
+}
+EMPTY_ELIGIBILITY_SUMMARY_SQL = (
+    "'{\"coverage\":\"unknown\",\"requirements\":[],"
+    "\"exclusions\":[],\"preferences\":[],\"documents\":[],"
+    "\"unknowns\":[],\"institutional_contacts\":[]}'"
+)
+
+
+def empty_eligibility_summary_document() -> dict[str, object]:
+    return {
+        key: list(value) if isinstance(value, list) else value
+        for key, value in EMPTY_ELIGIBILITY_SUMMARY.items()
+    }
 
 
 def utc_now() -> datetime:
@@ -36,7 +57,7 @@ def utc_now() -> datetime:
 
 
 class Policy(Base):
-    """Database representation of the NormalizedProgram 1.1.0 contract."""
+    """Database representation of the NormalizedProgram 1.2.0 contract."""
 
     __tablename__ = "policies"
 
@@ -45,8 +66,8 @@ class Policy(Base):
     schema_version = Column(
         String(32),
         nullable=False,
-        default="1.1.0",
-        server_default="1.1.0",
+        default="1.2.0",
+        server_default="1.2.0",
     )
     source_id = Column(Text, nullable=False)
     source_name = Column(String(255), nullable=False)
@@ -117,6 +138,12 @@ class Policy(Base):
     age_max = Column(Integer, nullable=True)
     age_condition_text = Column(Text, nullable=True)
     eligibility_text = Column(Text, nullable=True)
+    eligibility_summary = Column(
+        JSON_DOCUMENT,
+        nullable=False,
+        default=empty_eligibility_summary_document,
+        server_default=text(EMPTY_ELIGIBILITY_SUMMARY_SQL),
+    )
 
     support_content = Column(Text, nullable=True)
     application_method = Column(Text, nullable=True)

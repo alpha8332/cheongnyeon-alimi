@@ -360,6 +360,20 @@ class EligibilitySummary:
         }
 
 
+def empty_eligibility_summary() -> EligibilitySummary:
+    """Return the safe compatibility value for an unmapped legacy policy."""
+
+    return EligibilitySummary(
+        coverage=EligibilityCoverage.UNKNOWN,
+        requirements=(),
+        exclusions=(),
+        preferences=(),
+        documents=(),
+        unknowns=(),
+        institutional_contacts=(),
+    )
+
+
 def _require_exact_fields(
     value: Any,
     expected: frozenset[str],

@@ -7,7 +7,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.policy import Policy
-from app.schemas.policy import PolicyRead
+from app.schemas.policy import PolicyDetailRead, PolicyRead
 from app.services.seed_importer import (
     EXTERNAL_ID_REQUIRED_SOURCES,
     _policy_values,
@@ -32,6 +32,7 @@ JSON_ARRAY_FIELDS = frozenset(
         "required_conditions",
         "preferred_conditions",
         "excluded_conditions",
+        "eligibility_summary",
         "provenance",
     }
 )
@@ -74,21 +75,23 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     importer_fields = (
         frozenset(_policy_values(load_seed()[0])) - SYSTEM_FIELDS
     )
-    public_api_fields = frozenset(PolicyRead.model_fields)
+    list_api_fields = frozenset(PolicyRead.model_fields)
+    detail_api_fields = frozenset(PolicyDetailRead.model_fields)
 
     storage_candidate_fields = normalized_fields - {"region_rules"}
 
-    assert len(normalized_fields) == 36
+    assert len(normalized_fields) == 37
     assert frozenset(schema["required"]) == normalized_fields
     assert NormalizedProgram.FIELD_NAMES == normalized_fields
     assert orm_fields == storage_candidate_fields
     assert importer_fields == storage_candidate_fields
-    assert public_api_fields == (
+    assert list_api_fields == (
         normalized_fields
         - NormalizedProgram.SEARCH_FIELD_NAMES
-        - {"provenance"}
+        - {"eligibility_summary", "provenance"}
         | SYSTEM_FIELDS
     )
+    assert detail_api_fields == list_api_fields | {"eligibility_summary"}
 
 
 def test_nullable_and_jsonb_columns_match_the_normalized_contract():

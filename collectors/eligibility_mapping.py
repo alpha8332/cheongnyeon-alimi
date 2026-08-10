@@ -22,6 +22,13 @@ from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
 
 
 _DETAIL_SELECTOR = "#bo_v_con"
+ELIGIBILITY_SOURCE_IDS = frozenset(
+    {
+        YOUTHCENTER_SOURCE_ID,
+        BOKJIRO_SOURCE_ID,
+        CHEONAN_SOURCE_ID,
+    }
+)
 
 
 def map_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:
@@ -39,25 +46,31 @@ def map_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:
 def map_youthcenter_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:
     """Map only unambiguous OnTongYouth source fields."""
 
-    fields = _api_source_fields(policy, YOUTHCENTER_SOURCE_ID, "list_item")
+    fields = _api_source_fields(
+        policy,
+        YOUTHCENTER_SOURCE_ID,
+        "list_item",
+        allow_missing=True,
+    )
     requirements: list[EligibilityEvidenceItem] = []
     unknowns: list[EligibilityEvidenceItem] = []
 
     age_text = _source_text(policy.age_text)
-    if age_text is not None:
+    age_evidence = tuple(
+        _api_evidence(policy, field_name)
+        for field_name in (
+            "sprtTrgtAgeLmtYn",
+            "sprtTrgtMinAge",
+            "sprtTrgtMaxAge",
+        )
+        if _source_text(fields.get(field_name)) is not None
+    )
+    if age_text is not None and age_evidence:
         requirements.append(
             EligibilityEvidenceItem(
                 category=EligibilityCategory.AGE,
                 text=age_text,
-                evidence=tuple(
-                    _api_evidence(policy, field_name)
-                    for field_name in (
-                        "sprtTrgtAgeLmtYn",
-                        "sprtTrgtMinAge",
-                        "sprtTrgtMaxAge",
-                    )
-                    if _source_text(fields.get(field_name)) is not None
-                ),
+                evidence=age_evidence,
             )
         )
     additional = _source_text(fields.get("addAplyQlfcCndCn"))

@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.1.0 구현
+- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.2.0 구현
 
 정규화는 `ExtractedPolicy`의 소스별 표현을 공통
 `NormalizedProgram`으로 변환한다. 원문에 없는 값을 추정해 정확한 값처럼
@@ -264,6 +264,7 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 `region_rules`와 versioned projection을 Policy upsert와 같은 transaction에
 저장한다. Runtime replay는 Normalizer warning을 accepted program과 함께
 전달하므로 canonical 필드만으로 재구성할 수 없는 partial 분류도 유지한다.
-Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
-공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
-Slice에서 별도로 연결한다.
+Frontend는 ES3에서 `schema_version` 1.0.0·1.1.0·1.2.0을 허용해야 한다. 새
+검색 필드는 기존 공개 Policy DTO에 노출하지 않고, `eligibility_summary`는 상세
+DTO에서만 소비한다. Source별 Eligibility mapper는 등록 source ID에만 적용하며
+generic legacy 입력은 자격 원문을 구조화 조건으로 추정하지 않는다.

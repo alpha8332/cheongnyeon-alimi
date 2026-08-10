@@ -20,6 +20,29 @@
       "coverage_scope": "nationwide",
       "data_quality_status": "valid",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/002"
+              }
+            ],
+            "text": "연령 제한 없음"
+          }
+        ],
+        "unknowns": []
+      },
       "eligibility_text": null,
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -55,7 +78,7 @@
         "전국"
       ],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "source_url": "https://fixture.invalid/youth/002",
@@ -87,6 +110,57 @@
       "coverage_scope": "regional",
       "data_quality_status": "valid",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMinAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMaxAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "19세 ~ 34세"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "ptcpPrpTrgtCn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "합성 청년 대상"
+          }
+        ]
+      },
       "eligibility_text": "합성 청년 대상",
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -131,7 +205,7 @@
         "충청남도"
       ],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "source_url": "https://fixture.invalid/youth/001",
@@ -163,6 +237,57 @@
       "coverage_scope": "regional",
       "data_quality_status": "valid",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMinAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMaxAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "19세 ~ 34세"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "ptcpPrpTrgtCn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "합성 청년 대상"
+          }
+        ]
+      },
       "eligibility_text": "합성 청년 대상",
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -207,7 +332,7 @@
         "천안시"
       ],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "source_url": "https://fixture.invalid/youth/001",
@@ -239,6 +364,57 @@
       "coverage_scope": "regional",
       "data_quality_status": "valid",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMinAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMaxAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "19세 ~ 34세"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "ptcpPrpTrgtCn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "합성 청년 대상"
+          }
+        ]
+      },
       "eligibility_text": "합성 청년 대상",
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -291,7 +467,7 @@
         "충청남도"
       ],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "source_url": "https://fixture.invalid/youth/001",
@@ -324,6 +500,43 @@
       "coverage_scope": "unknown",
       "data_quality_status": "partial",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:01:00+00:00",
+                "locator": "tgtrDtlCn",
+                "locator_type": "source_field",
+                "source_id": "bokjiro-central-welfare-api",
+                "source_url": "https://fixture.invalid/bokjiro/001"
+              }
+            ],
+            "text": "합성 지원 대상"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:01:00+00:00",
+                "locator": "slctCritCn",
+                "locator_type": "source_field",
+                "source_id": "bokjiro-central-welfare-api",
+                "source_url": "https://fixture.invalid/bokjiro/001"
+              }
+            ],
+            "text": "합성 선정 기준"
+          }
+        ]
+      },
       "eligibility_text": "합성 지원 대상 합성 선정 기준",
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -364,7 +577,7 @@
       "region_text": null,
       "regions": [],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "bokjiro-central-welfare-api",
       "source_name": "복지로 중앙부처 복지서비스 API",
       "source_url": "https://fixture.invalid/bokjiro/001",
@@ -397,6 +610,43 @@
       "coverage_scope": "unknown",
       "data_quality_status": "partial",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:01:00+00:00",
+                "locator": "tgtrDtlCn",
+                "locator_type": "source_field",
+                "source_id": "bokjiro-central-welfare-api",
+                "source_url": "https://fixture.invalid/bokjiro/001"
+              }
+            ],
+            "text": "합성 지원 대상"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:01:00+00:00",
+                "locator": "slctCritCn",
+                "locator_type": "source_field",
+                "source_id": "bokjiro-central-welfare-api",
+                "source_url": "https://fixture.invalid/bokjiro/001"
+              }
+            ],
+            "text": "합성 선정 기준"
+          }
+        ]
+      },
       "eligibility_text": "합성 지원 대상 합성 선정 기준",
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -446,7 +696,7 @@
       "region_text": "광주",
       "regions": [],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "bokjiro-central-welfare-api",
       "source_name": "복지로 중앙부처 복지서비스 API",
       "source_url": "https://fixture.invalid/bokjiro/001",
@@ -478,6 +728,57 @@
       "coverage_scope": "regional",
       "data_quality_status": "valid",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMinAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              },
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtMaxAge",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "19세 ~ 34세"
+          }
+        ],
+        "unknowns": [
+          {
+            "category": "other",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "ptcpPrpTrgtCn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/001"
+              }
+            ],
+            "text": "합성 청년 대상"
+          }
+        ]
+      },
       "eligibility_text": "합성 청년 대상",
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -522,7 +823,7 @@
         "천안군"
       ],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "source_url": "https://fixture.invalid/youth/001",
