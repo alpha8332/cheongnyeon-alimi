@@ -300,12 +300,14 @@ def _preflight_programs(
     int,
     int,
     int,
+    int,
     list[ImportIssue],
 ]:
     accepted: list[tuple[int, Mapping[str, Any]]] = []
     issues: list[ImportIssue] = []
     validated = 0
     partial = 0
+    invalid = 0
     skipped = 0
     rejected = 0
     duplicate = 0
@@ -313,6 +315,7 @@ def _preflight_programs(
 
     for index, item in enumerate(items):
         if not isinstance(item, Mapping):
+            invalid += 1
             rejected += 1
             issues.append(
                 ImportIssue(
@@ -335,6 +338,7 @@ def _preflight_programs(
             validation.status is DataQualityStatus.INVALID
             or validation.program is None
         ):
+            invalid += 1
             rejected += 1
             error_issues = tuple(
                 issue
@@ -372,7 +376,7 @@ def _preflight_programs(
         candidate = validation.program.to_dict()
         identity_issue = _identity_issue(candidate, index)
         if identity_issue is not None:
-            skipped += 1
+            rejected += 1
             issues.append(identity_issue)
             continue
         identity = (candidate["source_id"], candidate["external_id"])
@@ -398,6 +402,7 @@ def _preflight_programs(
         accepted,
         validated,
         partial,
+        invalid,
         skipped,
         rejected,
         duplicate,
@@ -428,6 +433,7 @@ def import_programs(
         accepted,
         validated,
         partial,
+        invalid,
         skipped,
         rejected,
         duplicate,
@@ -443,7 +449,7 @@ def import_programs(
             validated=validated,
             accepted=len(accepted),
             partial=partial,
-            invalid=rejected,
+            invalid=invalid,
             skipped=skipped,
             rejected=rejected,
             duplicate=duplicate,
@@ -499,7 +505,7 @@ def import_programs(
             validated=validated,
             accepted=len(accepted),
             partial=partial,
-            invalid=rejected,
+            invalid=invalid,
             failed=1,
             duplicate=duplicate,
             dry_run=dry_run,
@@ -529,7 +535,7 @@ def import_programs(
         validated=validated,
         accepted=len(accepted),
         partial=partial,
-        invalid=rejected,
+        invalid=invalid,
         committed=not dry_run,
         dry_run=dry_run,
         issues=tuple(issues),

@@ -82,10 +82,11 @@ def test_postgresql_atomic_upsert_identity_and_outcomes():
         missing_identity = copy.deepcopy(programs[0])
         missing_identity["external_id"] = None
         with session_factory() as db:
-            skipped = import_programs(db, [missing_identity])
+            rejected = import_programs(db, [missing_identity])
 
-        assert skipped.skipped == 1
-        assert skipped.issues[0].code == "missing_external_id"
+        assert rejected.skipped == 0
+        assert rejected.rejected == 1
+        assert rejected.issues[0].code == "missing_external_id"
 
         invalid_age = copy.deepcopy(programs[0])
         invalid_age["external_id"] = "PG-B3-INVALID"

@@ -113,6 +113,8 @@ def _seed_run_counts(result):
         accepted_count=result.accepted,
         partial_count=result.partial,
         invalid_count=result.invalid,
+        duplicate_count=result.duplicate,
+        rejected_count=result.rejected,
         inserted_count=result.inserted,
         updated_count=result.updated,
         unchanged_count=result.unchanged,

@@ -13,7 +13,8 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 INITIAL_REVISION = "20260728_0001"
 COLLECTION_RUN_REVISION = "20260730_0002"
 TIMESTAMP_REVISION = "20260730_0003"
-HEAD_REVISION = "20260803_0004"
+SEARCH_REVISION = "20260803_0004"
+HEAD_REVISION = "20260810_0005"
 
 
 def alembic_config() -> Config:
@@ -44,13 +45,17 @@ def render_downgrade_sql() -> str:
     return output.getvalue()
 
 
-def test_policy_timestamp_revision_is_the_single_alembic_head():
+def test_collection_quality_revision_is_the_single_alembic_head():
     scripts = ScriptDirectory.from_config(alembic_config())
     revision = scripts.get_current_head()
 
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == SEARCH_REVISION
+    )
+    assert (
+        scripts.get_revision(SEARCH_REVISION).down_revision
         == TIMESTAMP_REVISION
     )
     assert (
@@ -124,14 +129,21 @@ def test_upgrade_sql_matches_collection_run_contract():
     assert "CONSTRAINT ck_collection_runs_counts_nonnegative CHECK" in sql
     assert "CONSTRAINT ck_collection_runs_terminal_finished_at CHECK" in sql
     assert "CREATE INDEX ix_collection_runs_started_at" in sql
+    assert "ADD COLUMN duplicate_count INTEGER DEFAULT '0' NOT NULL" in sql
+    assert "ADD COLUMN rejected_count INTEGER DEFAULT '0' NOT NULL" in sql
 
     for column in CollectionRun.__table__.columns:
-        assert f"\n    {column.name} " in sql
+        if column.name in {"duplicate_count", "rejected_count"}:
+            assert f"ADD COLUMN {column.name} " in sql
+        else:
+            assert f"\n    {column.name} " in sql
 
 
 def test_downgrade_sql_removes_table_indexes_and_enum_types():
     sql = render_downgrade_sql()
 
+    assert "DROP COLUMN rejected_count" in sql
+    assert "DROP COLUMN duplicate_count" in sql
     assert "DROP TABLE collection_runs" in sql
     assert "DROP CONSTRAINT ck_policies_timestamp_order" in sql
     assert "DROP TYPE collection_run_status" in sql

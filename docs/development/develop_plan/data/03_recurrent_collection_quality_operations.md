@@ -4,13 +4,14 @@
 
 - 번호: Data 03
 - 담당 영역: Data
-- 상태: in-progress
+- 상태: completed
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Integration 05 Contract Baseline, Data 02 Release Dataset Bootstrap
 - 후속 Forest: Backend 05, Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/data/recurrent-quality-operations`
-- 현재 진행: DTL4-2A fixture·판정·실패 단계 기반 구현 완료, DTL4-2B 대기
+- 현재 진행: DTL4-2B 컬럼·Migration·영속 연결과 전용 PostgreSQL 실제 검증
+  완료
 
 ## 목적
 
@@ -22,7 +23,7 @@
 
 - 같은 snapshot과 변경 snapshot의 반복 수집·재처리
 - `(source_id, external_id)` identity 기반 중복 방지
-- inserted·updated·unchanged·rejected·failed 집계
+- inserted·updated·unchanged·duplicate·rejected·failed 집계
 - partial·invalid와 실행 실패의 분리
 - 변경 감지의 비교 필드와 timestamp 의미
 - CollectionRun과 품질 통계 연결
@@ -61,8 +62,9 @@
 - canonical Seed의 invalid·identity admission 실패 시 전체 batch를 쓰지 않는
   기존 원자성은 유지한다. Runtime의 invalid 격리는 replay 단계에서 accepted
   program만 importer로 넘기는 기존 경계를 사용한다.
-- `duplicate_count`와 `rejected_count`의 CollectionRun 컬럼·Migration·관리자
-  소비 연결은 DTL4-2B PostgreSQL 작업에서 구현한다.
+- `duplicate_count`와 `rejected_count`는 DTL4-2B에서 CollectionRun 컬럼과
+  Migration, Seed·Runtime 영속 경로까지 연결한다. Backend 05 관리자 DTO
+  소비 대조와 전용 PostgreSQL 실제 검증은 완료 게이트로 유지한다.
 
 ## Slice 계획
 

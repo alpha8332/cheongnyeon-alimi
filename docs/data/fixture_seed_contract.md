@@ -156,7 +156,9 @@ Backend 02 B4에서는 기존 `NormalizedProgramValidator`로 전체 입력을 �
 검증하고 `valid`·`partial`만 허용한다. invalid·Schema 위반·DB admission
 거부·DB write 실패가 하나라도 있으면 canonical batch의 DB 변경은 0건이다.
 `--dry-run`도 실제 upsert 경로를 실행한 뒤 rollback하며 결과는
-validated·inserted·updated·unchanged·skipped·rejected·failed로 구분한다.
+validated·inserted·updated·unchanged·duplicate·skipped·rejected·failed로
+구분한다. invalid는 검증 실패이면서 rejected에 포함되고, identity admission
+거부는 rejected로 집계한다.
 Backend 02 B5에서는 category·region을 정규화 배열의 정확한 원소로 검색하고
 목록·상세 모두 기본 valid, `include_partial=true`일 때 valid·partial을
 노출한다. provenance는 DB에 보존하되 공개 Policy DTO에는 포함하지 않는다.

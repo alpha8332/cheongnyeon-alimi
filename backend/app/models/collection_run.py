@@ -41,6 +41,8 @@ COUNT_FIELDS = (
     "accepted_count",
     "partial_count",
     "invalid_count",
+    "duplicate_count",
+    "rejected_count",
     "inserted_count",
     "updated_count",
     "unchanged_count",
@@ -112,6 +114,8 @@ class CollectionRun(Base):
     accepted_count = Column(Integer, nullable=False, default=0, server_default="0")
     partial_count = Column(Integer, nullable=False, default=0, server_default="0")
     invalid_count = Column(Integer, nullable=False, default=0, server_default="0")
+    duplicate_count = Column(Integer, nullable=False, default=0, server_default="0")
+    rejected_count = Column(Integer, nullable=False, default=0, server_default="0")
     inserted_count = Column(Integer, nullable=False, default=0, server_default="0")
     updated_count = Column(Integer, nullable=False, default=0, server_default="0")
     unchanged_count = Column(Integer, nullable=False, default=0, server_default="0")

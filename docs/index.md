@@ -121,7 +121,7 @@
 - [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):
   DT0 실행 환경과 실데이터 수집·적재 검증 결과
 - [Recurrent Collection and Quality Operations Forest 개발 기록](development/development_notes/data/recurrent_collection_quality_operations.md):
-  DTL4-2A 반복·수정·중복·실패 판정과 안전한 품질 집계 기반
+  DTL4-2A~2B 반복·수정·중복·실패 판정, CollectionRun 영속과 PostgreSQL 검증
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)

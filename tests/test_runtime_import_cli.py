@@ -99,6 +99,10 @@ class RuntimeImportCliTests(unittest.TestCase):
             "partial_failure",
             run_writer.finish.call_args.kwargs["status"],
         )
+        counts = run_writer.finish.call_args.kwargs["counts"]
+        self.assertEqual(1, counts.invalid_count)
+        self.assertEqual(1, counts.rejected_count)
+        self.assertEqual(0, counts.duplicate_count)
 
     def test_cli_reports_safe_summary_and_validation_raw_ids(self) -> None:
         stdout = io.StringIO()

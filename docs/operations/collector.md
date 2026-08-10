@@ -223,7 +223,7 @@ write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projectio
   `unchanged` 또는 명시적인 `updated`로 집계하며 중복 row를 만들지 않는다.
 
 성공 요약은 source, Raw·추출·valid·partial·invalid·accepted 수와
-inserted·updated·unchanged·skipped·rejected·failed 수만 출력한다. 실패
+inserted·updated·unchanged·duplicate·skipped·rejected·failed 수만 출력한다. 실패
 항목은 source ID, external ID, 안전한 오류 코드·경로·오류 타입과 기여 Raw
 document ID만 출력하며 Raw payload, source URL query와 인증키를 출력하지
 않는다.

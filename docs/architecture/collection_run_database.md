@@ -28,10 +28,12 @@ payload, 상세 실패 목록, URL과 인증정보는 저장하지 않는다.
 | `accepted_count` | `INTEGER` | 불가 | 검증과 identity admission을 통과한 수 |
 | `partial_count` | `INTEGER` | 불가 | accepted 중 품질 상태가 `partial`인 수 |
 | `invalid_count` | `INTEGER` | 불가 | 품질·Schema 검증에서 제외된 입력 수 |
+| `duplicate_count` | `INTEGER` | 불가 | 실행 내 같은 source-scoped identity로 제외된 후속 후보 수 |
+| `rejected_count` | `INTEGER` | 불가 | 검증 또는 identity admission에서 저장 대상에서 제외된 입력 수 |
 | `inserted_count` | `INTEGER` | 불가 | 신규 정책 수 |
 | `updated_count` | `INTEGER` | 불가 | 값이 바뀐 기존 정책 수 |
 | `unchanged_count` | `INTEGER` | 불가 | 같은 값으로 재실행된 기존 정책 수 |
-| `skipped_count` | `INTEGER` | 불가 | DB admission에서 건너뛴 입력 수 |
+| `skipped_count` | `INTEGER` | 불가 | 기존 호환용 건너뜀 수. 현재 importer는 identity 거부에 사용하지 않음 |
 | `failed_count` | `INTEGER` | 불가 | DB write 또는 실행 실패 수 |
 | `error_type` | `VARCHAR(255)` | 가능 | 안전한 예외 class 이름. 오류 메시지는 저장하지 않음 |
 
@@ -59,7 +61,7 @@ start
   관리자 기능은 이를 진행 중 또는 중단 확인 필요 상태로 구분해야 하며
   임의로 성공 처리하면 안 된다.
 
-### DTL4-2A importer 판정과 DTL4-2B 저장 경계
+### 반복 품질 판정과 저장 경계
 
 Importer 결과는 `inserted`, `updated`, `unchanged`, `duplicate`, `rejected`,
 `failed`를 구분한다. `collected_at`·provenance만 달라진 입력은 business 변경이
@@ -67,10 +69,12 @@ Importer 결과는 `inserted`, `updated`, `unchanged`, `duplicate`, `rejected`,
 처리하고 이후 후보를 `duplicate`로 센다. 안전한 오류 단계는 `validate` 또는
 `persist`와 exception class만 제공한다.
 
-현재 `collection_runs` 물리 테이블에는 `duplicate_count`와 `rejected_count`가
-없어 두 집계를 아직 영속하지 않는다. 기존 `skipped_count`나 `invalid_count`로
-의미를 바꿔 저장하지 않으며, 두 컬럼과 Migration·관리자 DTO 연결은 DTL4-2B
-완료 조건이다.
+`invalid_count`는 Schema·품질 검증 실패만 세고, `rejected_count`는 invalid와
+identity admission 거부를 포함해 저장 대상에서 제외된 전체 입력을 센다.
+따라서 invalid는 rejected의 부분집합이며 두 수는 서로 더하지 않는다.
+`duplicate_count`는 오류가 아닌 실행 내 중복 후보 수다. `skipped_count`는 기존
+호환을 위해 유지하지만 현재 importer의 identity admission 거부에는 사용하지
+않는다. Seed·Runtime CLI는 이 의미를 그대로 `collection_runs`에 영속한다.
 
 ## Transaction과 보안 경계
 
@@ -93,7 +97,8 @@ Importer 결과는 `inserted`, `updated`, `unchanged`, `duplicate`, `rejected`,
 
 ## Migration과 소비 경계
 
-- Alembic revision: `20260730_0002`
+- CollectionRun 생성 revision: `20260730_0002`
+- 반복 품질 count revision: `20260810_0005`
 - ORM: `app.models.collection_run.CollectionRun`
 - write 경계: `app.services.collection_runs.CollectionRunWriter`
 
