@@ -1,3 +1,5 @@
+import type { EligibilitySummaryDto } from './eligibilitySummary.js';
+
 export type PolicyCategory =
   | 'housing'
   | 'finance'
@@ -50,7 +52,14 @@ export interface PolicyDto {
   id: number;
   created_at: string;
   updated_at: string;
+  /** Structured eligibility summary on detail responses (W4-G0 proposal). */
+  eligibility_summary?: EligibilitySummaryDto | null;
 }
+
+/** Policy detail envelope; list items may omit or null `eligibility_summary`. */
+export type PolicyDetailDto = PolicyDto & {
+  eligibility_summary?: EligibilitySummaryDto | null;
+};
 
 export interface PolicyListResponse {
   total: number;

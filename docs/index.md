@@ -138,6 +138,8 @@
   FE5-00 localStorage·FE5-01 즐겨찾기·FE5-02 저장 조건
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
   FE3-00 Admin DTO·Mock·`/admin` route shell
+- [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
+  FE7-00 eligibility_summary DTO·Mock detail fixtures
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)

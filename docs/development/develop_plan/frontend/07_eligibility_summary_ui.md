@@ -15,7 +15,7 @@
   (ES2 Backend DTO)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/eligibility-summary`
-- 현재 Slice: FE7-00 draft (계획 수립)
+- 현재 Slice: FE7-00 completed (FE7-01 draft)
 
 ## 목적
 
@@ -95,7 +95,7 @@
 
 ---
 
-### FE7-00 — Eligibility summary DTO·Mock — draft
+### FE7-00 — Eligibility summary DTO·Mock — completed
 
 | 항목 | 내용 |
 | --- | --- |
