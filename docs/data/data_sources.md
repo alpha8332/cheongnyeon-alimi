@@ -35,6 +35,26 @@ replay·정규화·PostgreSQL 적재를 포함한다. 웹 Source의 Source 전�
 요청 파라미터, 실제 응답 필드와 호출 결과는
 [API Source Profile](source_profiles.md)에서 관리한다.
 
+## 지역 청년정책 Source 후보 inventory
+
+Data 05는 사용자 제공 XLSX의 17개 지역 포털 URL을
+[`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)으로
+변환해 실행 기준으로 사용한다. 구조와 허용 상태는
+[`regional_youth_policy_source_inventory.schema.json`](../../data/schema/regional_youth_policy_source_inventory.schema.json)이
+검증한다.
+
+초기 17개 항목은 모두 `candidate`이며 현재 승인 Source가 아니다. `source_id`,
+목록·상세 allowlist, 요청 예산과 운영 주체·robots·약관·라이선스 preflight는
+RYP1에서 실제 확인한 뒤에만 채운다. 홈 URL은 Source 발견 시작점이고 운영
+Collector가 무제한 재귀 순회할 대상이 아니다.
+
+inventory의 관할 라벨은 제공 자료의 광주·전남 분리 17개를 보존한다. 현재
+행정구역 기준 `kr-bjd-20260803`은 광주 `2900000000`과 전남 `4600000000`을
+퇴역으로, `전남광주통합특별시(1200000000)`를 활성으로 관리한다. Source
+inventory는 이를 자동 successor mapping하지 않고 두 후보를
+`historical_review_required`로 둔다. 실제 Policy region rule은 공식 원문의
+시행·대상 관할을 확인한 뒤 기존 행정구역 계약에 따라 생성한다.
+
 ## 온통청년 API
 
 ### 현재 검증 요청 기준

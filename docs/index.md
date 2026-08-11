@@ -38,6 +38,10 @@
   제외 조건·필요 서류·공개 시설 연락처와 Source evidence의 승인 의미
 - [EligibilitySummary JSON Schema](../data/schema/eligibility_summary.schema.json):
   Data·Backend·Frontend가 공유하는 실행 가능한 nested 계약
+- [Regional Youth Policy Source Inventory JSON Schema](../data/schema/regional_youth_policy_source_inventory.schema.json):
+  지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태의 실행 계약
+- [지역 청년정책 Source inventory](../data/reference/regional_youth_policy_sources.json):
+  사용자 제공 XLSX에서 변환한 17개 지역 포털 후보와 탐색 seed
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
@@ -114,6 +118,8 @@
   승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
 - [Regional Youth Policy Ingestion Forest 계획](development/develop_plan/data/05_regional_youth_policy_ingestion.md):
   `v0.5.0` 지역 공식 포털 탐색, 지역 고유 정책 판정과 온통청년·복지로 중복 제외
+- [Supplemental Official Policy Ingestion Forest 계획](development/develop_plan/data/06_supplemental_official_policy_ingestion.md):
+  온통청년·복지로 누락 가능 중앙·공공기관 Source의 중복 감사와 실제 적재
 - [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
   정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
 - [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
@@ -130,6 +136,8 @@
   DTL4-2A~2B 반복·수정·중복·실패 판정, CollectionRun 영속과 PostgreSQL 검증
 - [Public HTTPS Policy Ingestion Forest 개발 기록](development/development_notes/data/public_https_policy_ingestion.md):
   DTL4-3A 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증
+- [Regional Youth Policy Ingestion Forest 개발 기록](development/development_notes/data/regional_youth_policy_ingestion.md):
+  RYP0 17개 Source inventory·Schema와 지역 기준정보 차이 처리 결과
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
   DTL4-4 조건·서류·시설 연락처 계약부터 실제 PostgreSQL·API·Browser 인수까지
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)

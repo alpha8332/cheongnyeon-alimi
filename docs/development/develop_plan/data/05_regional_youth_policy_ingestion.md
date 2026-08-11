@@ -4,7 +4,8 @@
 
 - 번호: Data 05
 - 담당 영역: Data
-- 상태: draft
+- 상태: in-progress
+- 현재 진행: `RYP0` 완료, 다음 `RYP1` 홈페이지 탐색·Source 승인
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -15,6 +16,8 @@
   교차 Source 관계 계약
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
+- 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
+- 현재 Slice: `RYP1`
 
 ## 목적
 
@@ -57,7 +60,7 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 
 ## 초기 Source 후보 inventory
 
-아래 URL은 `2026-08-11` 작업 입력으로 제공된 16개 탐색 시작점이다. 공식 운영 주체,
+아래 URL은 `2026-08-11` 작업 입력으로 제공된 17개 탐색 시작점이다. 공식 운영 주체,
 현재 접근 가능 여부, robots, 이용약관, 정책 목록·상세 endpoint와 재배포 허용
 범위를 아직 승인한 값으로 취급하지 않는다.
 
@@ -67,7 +70,7 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 | 부산 | `https://young.busan.go.kr/index.nm` | candidate-unverified |
 | 대구 | `https://www.dgjump.com/` | candidate-unverified |
 | 인천 | `https://youth.incheon.go.kr/` | candidate-unverified |
-| 광주 | `https://youth.gwangju.go.kr/www` | candidate-unverified |
+| 광주 | `https://gjyouthcenter.kr/main/` | candidate-unverified·canonical 지역 검토 필요 |
 | 대전 | `https://www.daejeonyouthportal.kr/index.do` | candidate-unverified |
 | 울산 | `https://www.ulsan.go.kr/s/ulsanyouth/main.ulsan` | candidate-unverified |
 | 세종 | `https://www.4242.or.kr/` | candidate-unverified |
@@ -76,14 +79,20 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 | 충북 | `https://www.chungbuk.go.kr/young/index.do` | candidate-unverified |
 | 충남 | `https://youth.chungnam.go.kr/web/main/customSupp/list` | 목록 후보·미승인 |
 | 전북 | `https://www.jb2030.or.kr/` | candidate-unverified |
-| 전남 | 미정 | inventory-missing |
+| 전남 | `https://www.jnyouthcenter.kr/index.php` | candidate-unverified·canonical 지역 검토 필요 |
 | 경북 | `https://gbyouth.go.kr/main.tc` | candidate-unverified |
 | 경남 | `https://youth.gyeongnam.go.kr/youth/index.es?sid=a1` | candidate-unverified |
 | 제주 | `https://jejuyouth.com/m/index.php` | candidate-unverified |
 
-전남의 공식 탐색 시작점을 보완하기 전에는 17개 광역자치단체 inventory를
-완료로 처리하지 않는다. 후보 사이트의 데이터가 테스트·데모이거나 이용 조건상
-수집할 수 없으면 다른 공식 Source를 검토하고, 우회 수집하지 않는다.
+실행 기준 inventory는
+`data/reference/regional_youth_policy_sources.json`이며
+`data/schema/regional_youth_policy_source_inventory.schema.json`으로 검증한다.
+XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
+`kr-bjd-20260803` 기준정보는 광주·전남을 퇴역 code로 관리한다. 두 후보는
+활성 통합 code로 자동 치환하지 않고 RYP1에서 현행 운영 주체와 관할 근거를
+확인할 때까지 `historical_review_required`로 둔다. 후보 사이트의 데이터가
+테스트·데모이거나 이용 조건상 수집할 수 없으면 다른 공식 Source를 검토하고,
+우회 수집하지 않는다.
 
 ## 용어와 승인 의미
 
@@ -255,18 +264,21 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 
 #### 작업
 
-- 제공 XLSX의 `전남광주` 행을 광주 후보로 해석하고 전남 공식 청년정책
-  탐색 시작점을 별도 보완
-- 17개 후보의 운영 주체, 공식 도메인과 HTTPS 확인
+- 제공 XLSX의 광주·전남 분리 행과 17개 HTTPS 탐색 시작점을 repository
+  inventory로 변환
+- 17개 후보의 운영 주체, 공식 도메인과 HTTPS 확인 경계를 Schema로 고정
 - `candidate`, `approved`, `blocked`, `rejected` 상태와 근거 형식 확정
 - Data 05를 `v0.5.0` 필수 범위와 DTL4-6~DTL4-8 Gate에 연결
 - 실제 구현 시작 SHA와 Forest 브랜치 한 개 확정
-- 사용자 제공 XLSX는 입력 근거로 보존하되 실행 기준 inventory는 diff와
-  검증이 가능한 repository JSON으로 변환할 경로·Schema를 확정
+- 사용자 제공 XLSX의 파일명·시트·범위·SHA-256을 입력 근거로 보존하되 실행
+  기준은 diff와 검증이 가능한 repository JSON과 JSON Schema로 고정
+- 현행 행정구역 기준과 광주·전남 17개 관할 라벨의 차이를 review 상태로 보존
 
 #### 완료 기준
 
 - 17개 지역 inventory에 빈 지역이 없음
+- 모든 후보가 `candidate`로 시작하고 승인 목록·상세·요청 예산을 선행 주장하지 않음
+- 광주·전남의 퇴역 code를 활성 통합 code로 자동 치환하지 않음
 - 완료 기준과 구현 순서가 Team Leader 승인을 받음
 - Forest·Release·4주차·Integration 07 로드맵이 `v0.5.0` 필수 범위로 일치함
 
@@ -282,12 +294,16 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 - 목록·상세·pagination·external identity·rate limit 후보 기록
 - robots·약관·라이선스·저장·변환·재배포 허용 범위 확인
 - API·HTML·JSON/XHR·Browser 필요 유형 분류
+- 승인 상태·Source ID·allowlist·요청 예산·지역 mapping의 교차 필드 조합을
+  검사하는 domain validator 추가
 - 접근 금지·로그인 전용·데모 Source를 `blocked` 또는 `rejected`로 판정
 
 #### 완료 기준
 
 - 각 지역에 승인 Source 또는 비승인 사유가 있음
 - 승인 Source는 목록·상세 allowlist와 요청 예산을 가짐
+- 공통 `JsonSchemaValidator`가 지원하지 않는 조건부 교차 필드 조합도 domain
+  validator에서 거부됨
 - 허용 여부가 불명확한 Source를 구현 대상으로 승인하지 않음
 
 ### RYP2 - 공통 실행 경계와 Source Adapter
@@ -503,8 +519,9 @@ inventory·Source preflight를 병렬 수행할 수 있다.
 
 ## 위험과 미확정 사항
 
-- 전남 공식 탐색 시작점이 현재 inventory에 없다. 제공 XLSX의 `전남광주`
-  한 행은 광주 URL이므로 두 광역자치단체를 함께 충족하지 않는다.
+- 17개 Source 관할 라벨과 현행 `kr-bjd-20260803`의 15개 활성 광역 단위가
+  다르다. 특히 광주·전남의 공식 원문 관할을 확인하기 전에는 통합 code나
+  퇴역 code를 정책 region rule로 확정할 수 없다.
 - 홈페이지에서 발견한 정책 메뉴가 공식 원문이 아니라 다른 포털 재게시일 수 있다.
 - 사이트별 HTML·JSON·pagination·인코딩과 동적 렌더링 방식이 서로 다르다.
 - robots가 허용해도 이용약관이 저장·변환·재배포를 제한할 수 있다.
@@ -523,6 +540,7 @@ inventory·Source preflight를 병렬 수행할 수 있다.
 - [Release Dataset Bootstrap](02_release_dataset_bootstrap.md)
 - [Recurrent Collection and Quality Operations](03_recurrent_collection_quality_operations.md)
 - [Public HTTPS Policy Ingestion](04_public_https_policy_ingestion.md)
+- [Supplemental Official Policy Ingestion](06_supplemental_official_policy_ingestion.md)
 - [Policy Search Data Foundation](../integration/03_policy_search_data_foundation.md)
 - [Eligibility Evidence and Summary](../integration/08_eligibility_evidence_summary.md)
 - [전체 Forest 로드맵](../forest_roadmap.md)

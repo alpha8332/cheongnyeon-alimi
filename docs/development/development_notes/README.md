@@ -13,6 +13,7 @@
 | Release Dataset Bootstrap | [개발 기록](data/release_dataset_bootstrap.md) | DT0~DT4 | Release 1 실제 정책 수집·적재 기준선과 검증 |
 | Recurrent Collection and Quality Operations | [개발 기록](data/recurrent_collection_quality_operations.md) | DTL4-2A~2B | 반복·수정·중복·실패 판정과 품질 운영 |
 | Public HTTPS Policy Ingestion | [개발 기록](data/public_https_policy_ingestion.md) | DTL4-3A~ | 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증 |
+| Regional Youth Policy Ingestion | [개발 기록](data/regional_youth_policy_ingestion.md) | RYP0~ | 17개 Source inventory·지역 mapping 검토 경계와 후속 수집 검증 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
 | React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |

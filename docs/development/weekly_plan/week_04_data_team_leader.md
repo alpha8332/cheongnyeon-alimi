@@ -9,8 +9,8 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: `DTL4-4` 완료 (`DTL4-4B`·`ES4` actual 세로 인수 통과),
-  다음 `DTL4-5`와 Data 05 `RYP0~RYP1` 병렬 준비
+- 현재 Slice: Data 05 `RYP0` 완료·`RYP1` 준비 (`DTL4-4B`·`ES4` actual
+  세로 인수 통과), Data 05·06 구현 뒤 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -26,8 +26,9 @@ Integration 05·07·09의 계약과 실제 연결을 조정한다. 자신의 Dat
    품질 계약을 Data·Backend·Frontend 공동 기준으로 동결한다.
 2. 반복 수집에서 unchanged·updated·duplicate·failed와 partial·invalid를
    재현 가능하게 구분한다.
-3. 승인된 공식 HTTPS Source 한 곳의 세로 기준선과 광역자치단체 지역 고유
-   정책 Source를 기존 파이프라인과 PostgreSQL에 실제 연결한다.
+3. 승인된 공식 HTTPS Source 한 곳의 세로 기준선, 광역자치단체 지역 고유
+   정책과 온통청년·복지로 누락 중앙·공공기관 Source를 기존 파이프라인과
+   PostgreSQL에 실제 연결한다.
 4. API·웹 원문의 신청 조건을 근거 있는 구조로 만들고 Backend 상세 API와
    Frontend `핵심 신청 조건` UI에 인계한다.
 5. 관리자 데이터 화면의 읽기 projection과 파일 로그·correlation·삭제 감사
@@ -44,11 +45,12 @@ Integration 05·07·09의 계약과 실제 연결을 조정한다. 자신의 Dat
 | Data 03 Recurrent Quality Operations | Data 구현 | `feature/data/recurrent-quality-operations` | 반복·수정·중복·실패·품질 통계 검증 |
 | Data 04 Public HTTPS Ingestion | Data 구현 | `feature/data/public-web-policy-source` | 공식 Source 1곳 actual 수집·DB 적재 |
 | Data 05 Regional Youth Policy Ingestion | Data 구현 | `feature/data/regional-youth-policy-ingestion` | 지역 고유 정책 수집·온통청년/복지로 중복 제외·actual 적재 |
+| Data 06 Supplemental Official Policy Ingestion | Data 계획·후속 구현 | Data 05 공통 Gate 뒤 Forest 브랜치 한 개 | 중앙·공공기관 후보 정제·중복 감사·actual 적재 |
 | Integration 08 Eligibility Summary | Data 구현·공동 소비 검토 | `feature/schema/eligibility-evidence-contract` 단일 Integration 브랜치 | evidence 구조 → 상세 API → UI E2E |
 | Integration 09 Admin Data and Log Console | Data 의미 검토, Team Leader 보안·E2E | Backend·Frontend observability 브랜치 | 읽기 전용 DB 표와 로그 조회·삭제 감사 E2E |
 | Integration 07 Release 2 Acceptance | Team Leader midpoint 주관 | cross-area domain 합의 전 생성 금지 | W4-G1~G4 근거와 5주차 시작 조건 |
 
-Slice마다 새 브랜치를 만들지 않는다. Data 03, Data 04와 Data 05는 독립 목표와
+Slice마다 새 브랜치를 만들지 않는다. Data 03, Data 04, Data 05와 Data 06은 독립 목표와
 완료 기준이 있으므로 Forest별 브랜치를 사용한다. Data 05에서도 지역별
 브랜치를 만들지 않고 Source별 Conventional Commit으로 검토 지점을 나눈다.
 Integration 08은 승인된
@@ -86,7 +88,8 @@ W4-G1 뒤 DTL4-2B·3B·4B actual 구현과 Backend·Frontend actual 연결을 �
 
 DTL4-4B와 ES4가 완료된 현재부터 Data 05 RYP0~RYP1을 DTL4-5와 병렬로
 진행한다. RYP0~RYP4는 DTL4-6 W4-G2, RYP5 actual은 DTL4-7 W4-G3, RYP6
-지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다.
+지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06 SOP0~SOP3,
+SOP4 actual과 SOP5 최종 상태도 각각 같은 W4-G2~G4의 필수 입력으로 둔다.
 
 ## 권장 5일 배치
 
@@ -94,9 +97,9 @@ DTL4-4B와 ES4가 완료된 현재부터 Data 05 RYP0~RYP1을 DTL4-5와 병렬�
 | --- | --- | --- | --- |
 | 1일차 | 현재 Source·field coverage·품질 inventory, 웹 Source 후보 preflight | 역할·브랜치·OpenAPI·TypeScript 초안 대조, PIN·로그·저장·날짜 계약 동결 | W4-G0 |
 | 2일차 | Data 03 fixture, Data 04 Adapter, 자격 mapping, Data 05 inventory·Source 승인 | Backend·Frontend Mock 소비 대조, 병합 충돌·계약 변경 관리 | W4-G1 |
-| 3일차 | 공식 Source actual·DB, 반복 통계, Data 05 Adapter·지역·중복 제외 | 관리자 데이터·로그와 자격요건·추천 actual API 소비 확인 | W4-G2 |
-| 4일차 | actual 결함 수정, Data 05 대표 Source DB·API·Browser | 관리자·웹 Source·사용자 세 E2E, 최초 실패·수정·재검증 기록 | W4-G3 |
-| 5일차 | Data 03·04·05 전체 회귀·지역별 최종 상태·문서 | 전 담당 회귀·문서·비밀 경계 대조와 W4-G4 판정 | W4-G4 |
+| 3일차 | Data 05 Adapter·지역·중복 제외, Data 06 후보 정제·중복 감사 | 관리자 데이터·로그와 자격요건·추천 actual API 소비 확인 | W4-G2 |
+| 4일차 | Data 05 대표 지역·Data 06 우선 Source DB·API·Browser | 관리자·웹 Source·사용자 세 E2E, 최초 실패·수정·재검증 기록 | W4-G3 |
+| 5일차 | Data 03~06 전체 회귀·Source별 최종 상태·문서 | 전 담당 회귀·문서·비밀 경계 대조와 W4-G4 판정 | W4-G4 |
 
 기본 기능이 밀리면 5주차 범위로 바꾸지 않는다. 완료하지 못한 기능과 원인을
 기록하고 W4-G4를 `BLOCKED`로 판정한다.
@@ -431,6 +434,7 @@ actual 통합 전에 각 영역의 단위·통합 결과와 Data 실제 수집·
 - Data 04 HTML fixture·HTTP 경계·actual 제한 수집·DB 적재
 - Data 05 RYP0~RYP4 inventory·Source 승인·Adapter·지역 고유성·온통청년/복지로
   중복 제외 단위·통합 준비
+- Data 06 SOP0~SOP3 후보 정제·snapshot 중복 감사·Source 승인·Adapter 단위·통합 준비
 - Integration 08 Schema·mapping·provenance·호환 테스트
 - Runtime Raw·HTML·로그와 비밀·DB 파일 Git 비추적 확인
 
@@ -488,6 +492,8 @@ Critical Path를 검증한다.
 
 - API·웹 evidence, source URL·수집 시각과 UI 항목 일치
 - Data 05 대표 지역 Source의 실제 정책만 적재되고 전국 재게시·확정 중복은
+  사용자 검색·상세에 나타나지 않음
+- Data 06 우선 Source의 실제 정책만 적재되고 온통청년·복지로·Data 05 확정 중복은
   사용자 검색·상세에 나타나지 않음
 - missing·partial·selector drift와 실패 격리
 - 실제 자격을 확정하지 않고 추가 확인 필요 표시
@@ -681,10 +687,14 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
 - [x] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
 - [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
-- [ ] Data 05 RYP0~RYP4 inventory·승인·Adapter·지역·중복 제외 Gate 통과
+- [x] Data 05 RYP0 후보 inventory·검증 계약 완료
+- [ ] Data 05 RYP1~RYP4 preflight·승인·Adapter·지역·중복 제외 Gate 통과
+- [ ] Data 06 SOP0~SOP3 후보 정제·중복 감사·승인·Adapter Gate 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [ ] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
 - [ ] Data 05 RYP6 지역별 최종 상태·전체 회귀 완료
+- [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과
+- [ ] Data 06 SOP5 Source군별 최종 상태·전체 회귀 완료
 - [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
 - [ ] Release 1 golden 검색·상세 회귀 통과
 - [ ] Data·Backend·Frontend 전체 담당자 회귀 결과 대조
@@ -702,6 +712,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [Data 03 Recurrent Quality Operations](../develop_plan/data/03_recurrent_collection_quality_operations.md)
 - [Data 04 Public HTTPS Ingestion](../develop_plan/data/04_public_https_policy_ingestion.md)
 - [Data 05 Regional Youth Policy Ingestion](../develop_plan/data/05_regional_youth_policy_ingestion.md)
+- [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - [Integration 08 Eligibility Evidence and Summary](../develop_plan/integration/08_eligibility_evidence_summary.md)
 - [Integration 09 Admin Data and Log Console](../develop_plan/integration/09_admin_data_log_console.md)
 - [Integration 07 Release 2 Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)

@@ -95,8 +95,9 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 | 8 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05·08, v0.1.0 검색 |
 | 9 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
 | 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
-| 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | draft | 광역자치단체 공식 포털 탐색, 지역 고유 정책 판정, 온통청년·복지로 중복 제외와 실제 DB 적재 | Data 03·04, Integration 08 |
-| 12 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05 |
+| 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | in-progress | 광역자치단체 공식 포털 탐색, 지역 고유 정책 판정, 온통청년·복지로 중복 제외와 실제 DB 적재 | Data 03·04, Integration 08 |
+| 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | draft | 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 RYP2~RYP4, Data 02·04 |
+| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
 다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
@@ -106,6 +107,9 @@ Forest로 관리한다. Integration 06은 승인된 조건 구조를 추천에 �
 Data 05는 Data 04의 단일 웹 Source 세로 기준선을 재사용하되 지역 고유성·
 교차 Source 중복 제외와 광역 inventory라는 별도 완료 기준을 가지며,
 Integration 07 전에 완료해야 하는 `v0.5.0` Data Forest로 둔다.
+Data 06은 Data 05의 공통 실행·중복 Gate를 재사용하지만 지역 고유 정책이 아닌
+중앙·공공기관 누락 정책을 대상으로 하므로 별도 Source inventory·신청 가능성·
+actual 완료 기준을 가진 독립 Data Forest로 둔다.
 Integration 09는 관리자 인증 위에서 DB projection·파일 보존·API·UI와 삭제
 감사 경계가 함께 바뀌므로 독립 Integration Forest로 둔다. Schema, `null`,
 빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와 기준 문서를
@@ -120,7 +124,8 @@ v0.1.0 → W4-G0
   ├→ 자격요건 → 추천 API·UI ──────────────┤
   ├→ Frontend 로컬 사용자 기능 ───────────┤
   ├→ 데이터 품질 운영 ────────────────────┤
-  └→ 지역 Source 탐색·중복 제외·actual ───┘
+  ├→ 지역 Source 탐색·중복 제외·actual ───┤
+  └→ 보완 공식 Source 중복 감사·actual ───┘
                   → midpoint → 리뷰·수정 → v0.5.0
 ```
 

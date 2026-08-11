@@ -7,7 +7,7 @@
 - 상태: draft
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
-- 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05,
+- 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05·06,
   Integration 06·08·09
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
 - 작업 브랜치: 착수 전에 현재 브랜치 전략에 맞는 cross-area domain 합의 필요
@@ -27,6 +27,7 @@ Forest에서 관리한다.
   archive 삭제·감사 E2E
 - 공식 HTTPS Source → Raw·정규화·DB → 핵심 신청 조건 상세 UI E2E
 - 지역 공식 Source → 지역 고유성·온통청년/복지로 중복 제외 → DB·검색·상세 E2E
+- 중앙·공공기관 보완 Source → 중복·마감·근거 부족 제외 → DB·검색·상세 E2E
 - 사용자 조건 → 추천 → 이유 → 즐겨찾기 → D-Day·알림·`.ics` E2E
 - 기존 검색·상세·Release 1 golden 회귀
 - 실제·경계·실패 데이터와 loading·empty·error·partial 상태
@@ -65,6 +66,7 @@ Forest에서 관리한다.
 ### A1 - 4주차 전체 기본 기능 midpoint acceptance
 
 - 관리자 실행·데이터·영속 로그, 웹 Source·자격요건·지역 고유 정책 수집,
+  중앙·공공기관 보완 Source 수집,
   추천·즐겨찾기·D-Day·알림·`.ics` E2E와 기존 검색 회귀를 실제 환경에서
   실행한다.
 - 설계한 기본 기능 중 하나라도 미구현이면 W4-G4를 통과시키지 않는다.
@@ -85,7 +87,7 @@ Forest에서 관리한다.
 
 ## Forest 완료 기준
 
-- 웹 Source·자격요건·지역 고유 정책, 사용자·관리자 E2E와 기존 검색 회귀가
+- 웹 Source·자격요건·지역 고유·보완 공식 정책, 사용자·관리자 E2E와 기존 검색 회귀가
   Release 2 Gate
   전 실제 환경에서 통과함
 - 관리자 데이터가 읽기 전용이고 로그 archive 삭제가 path 보호·감사를 거침
@@ -98,7 +100,7 @@ Forest에서 관리한다.
 
 - Data 전체 단위·통합, Backend PostgreSQL, Frontend unit·lint·build·Browser
   명령을 각 Forest의 확정 명령으로 실행한다.
-- 실제 웹 Source·자격요건·지역 고유 정책, 사용자·관리자 데이터·로그 E2E와
+- 실제 웹 Source·자격요건·지역 고유·보완 공식 정책, 사용자·관리자 데이터·로그 E2E와
   Release 1 golden
   검색 회귀를 수행한다.
 - `python scripts/validate_docs.py`, 증거 JSON parse와 `git diff --check`를
@@ -121,6 +123,8 @@ Forest에서 관리한다.
 - [User Service Features](../frontend/05_user_service_features.md)
 - [Data Quality Operations](../data/03_recurrent_collection_quality_operations.md)
 - [Public HTTPS Policy Ingestion](../data/04_public_https_policy_ingestion.md)
+- [Regional Youth Policy Ingestion](../data/05_regional_youth_policy_ingestion.md)
+- [Supplemental Official Policy Ingestion](../data/06_supplemental_official_policy_ingestion.md)
 - [Eligibility Evidence and Summary](08_eligibility_evidence_summary.md)
 - [Admin Data and Log Console](09_admin_data_log_console.md)
 - [Backend Admin Access Control](../backend/04_admin_access_control.md)
