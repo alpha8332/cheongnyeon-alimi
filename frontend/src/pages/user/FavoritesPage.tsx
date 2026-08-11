@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { getPolicyById } from '@/api/policies';
@@ -5,6 +6,7 @@ import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
+import UserDataResetPanel from '@/components/user/UserDataResetPanel';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { PolicyDto } from '@/types/policy';
 
@@ -50,6 +52,9 @@ export default function FavoritesPage() {
           </p>
         </header>
         <EmptyState message="저장한 정책이 없습니다. 정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요." />
+        <div className="favorites-page__footer">
+          <UserDataResetPanel />
+        </div>
       </div>
     );
   }
@@ -59,7 +64,8 @@ export default function FavoritesPage() {
       <header className="greeting">
         <h1 className="greeting__title">북마크</h1>
         <p className="greeting__subtitle">
-          저장한 정책 {favorites.length}건 · 브라우저에만 저장됩니다
+          저장한 정책 {favorites.length}건 · 브라우저에만 저장됩니다 ·{' '}
+          <Link to="/calendar">마감 달력</Link>
         </p>
       </header>
 
@@ -89,6 +95,10 @@ export default function FavoritesPage() {
           </div>
         </>
       ) : null}
+
+      <div className="favorites-page__footer">
+        <UserDataResetPanel />
+      </div>
     </div>
   );
 }

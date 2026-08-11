@@ -10,6 +10,7 @@ import {
   formatRegion,
   getDDayLabel,
 } from '@/utils/policyDisplay';
+import { isImminentDeadline } from '@/utils/policyDeadline';
 
 interface PolicyCardProps {
   policy: PolicyDto;
@@ -20,12 +21,8 @@ function getCardTag(policy: PolicyDto): { label: string; variant: '' | 'warn' | 
     return { label: '정보 미확인', variant: 'warn' };
   }
 
-  const dDay = getDDayLabel(policy);
-  if (dDay.startsWith('D-')) {
-    const days = Number(dDay.replace('D-', ''));
-    if (!Number.isNaN(days) && days <= 7) {
-      return { label: '마감 임박', variant: 'hot' };
-    }
+  if (isImminentDeadline(policy)) {
+    return { label: '마감 임박', variant: 'hot' };
   }
 
   if (policy.application_status === 'open') {

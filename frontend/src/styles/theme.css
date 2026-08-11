@@ -602,6 +602,144 @@ a.policy-card {
   margin-bottom: 12px;
 }
 
+.favorites-page__footer {
+  margin-top: 24px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.calendar-scope-toggle {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.calendar-scope-toggle__btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.calendar-scope-toggle__btn--active {
+  border-color: var(--sky);
+  color: var(--sky);
+  font-weight: 600;
+}
+
+.calendar-deadline-list {
+  display: grid;
+  gap: 20px;
+}
+
+.calendar-deadline-list__date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.calendar-deadline-list__today-badge {
+  font-size: 12px;
+  color: var(--sky);
+  font-weight: 600;
+}
+
+.calendar-deadline-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-deadline-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.calendar-deadline-list__dday {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.notification-alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.notification-alert-list__item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+}
+
+.notification-alert-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.notification-alert-list__badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #d9480f;
+}
+
+.notification-alert-list__date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.notification-alert-list__title {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.notification-alert-list__title:hover,
+.notification-alert-list__title:focus-visible {
+  color: var(--sky);
+}
+
+.notification-alert-list__copy {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.user-data-reset-panel__actions {
+  margin-top: 12px;
+}
+
+.user-data-reset-panel__status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .admin-shell {
   display: grid;
   gap: 16px;

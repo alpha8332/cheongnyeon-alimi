@@ -25,6 +25,9 @@
 - Frontend 홈 저장 조건 UI(FE5-02): region·age·category 브라우저 localStorage
   저장·복원·조건-only 초기화(북마크 유지)
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- Frontend KST D-Day·마감 달력·in-app 알림·`.ics`·전체 데이터 삭제 (FE5-03~05,
+  FE5-08): `/calendar`, `/notifications`, detail `.ics` download
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - Frontend eligibility summary DTO·Mock detail fixtures (FE7-00): complete·
   partial·unknown 표본 envelope와 contract tests
   ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))

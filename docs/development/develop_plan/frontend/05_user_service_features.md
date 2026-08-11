@@ -14,7 +14,7 @@
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
-- 현재 Slice: FE5-03 draft (FE5-02 completed)
+- 현재 Slice: FE5-05 completed (FE5-06 draft)
 
 ## 목적
 
@@ -63,11 +63,11 @@
 | U0 | FE5-00 | F4 | versioned localStorage 계약 | completed |
 | U1 | FE5-01 | F4 | 즐겨찾기 UI·State | completed |
 | U1 | FE5-02 | F4 | 저장 조건 UI·State | completed |
-| U2 | FE5-03 | F4 | KST D-Day·달력 보기 |
-| U2 | FE5-04 | F4 | 앱 내부 마감 임박 알림 |
-| U3 | FE5-05 | F4 | `.ics` 다운로드 |
+| U2 | FE5-03 | F4 | KST D-Day·달력 보기 | completed |
+| U2 | FE5-04 | F4 | 앱 내부 마감 임박 알림 | completed |
+| U3 | FE5-05 | F4 | `.ics` 다운로드 | completed |
 | U1~U3 | FE5-06 | F4 | route 간 상태 일치 |
-| U0 | FE5-08 | F4 | 사용자 localStorage 전체 초기화 UX |
+| U0 | FE5-08 | F4 | 사용자 localStorage 전체 초기화 UX | completed |
 | W4-F5 | FE5-07 | F5 | Browser·a11y·Release 1 회귀 |
 
 **W4-G0 미승인:** localStorage key·version·KST 날짜 규칙은 Integration 05
@@ -137,7 +137,7 @@ Browser reload 검증은 FE5-07 범위.
 
 ---
 
-### FE5-03 — D-Day·달력 보기 — draft
+### FE5-03 — D-Day·달력 보기 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -148,9 +148,13 @@ Browser reload 검증은 FE5-07 범위.
 | **검증** | unit KST boundary; Browser |
 | **완료 기준** | week_04 날짜 미상·상시 규칙 준수 |
 
+2026-08-11 구현: `policyDeadline.ts`(KST `Intl`), `CalendarPage` `/calendar`,
+`policyDisplay.getDDayLabel` 통합, `PolicyCard` 마감 임박 tag. unit
+`policyDeadline.test.ts`. Browser 검증은 FE5-07.
+
 ---
 
-### FE5-04 — 앱 내부 알림 — draft
+### FE5-04 — 앱 내부 알림 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -161,9 +165,12 @@ Browser reload 검증은 FE5-07 범위.
 | **검증** | unit intersection logic; Browser |
 | **완료 기준** | 비즐겨찾기·무기한 정책 알림 없음 |
 
+2026-08-11 구현: `favoriteDeadlineAlerts.ts`, `NotificationsPage` in-app 목록.
+unit `favoriteDeadlineAlerts.test.ts`. Browser 검증은 FE5-07.
+
 ---
 
-### FE5-05 — `.ics` 다운로드 — draft
+### FE5-05 — `.ics` 다운로드 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -172,6 +179,10 @@ Browser reload 검증은 FE5-07 범위.
 | **선행** | FE5-03, W4-G0 날짜 계약 |
 | **검증** | unit escape; 대표 calendar client import |
 | **완료 기준** | 종료일 없으면 버튼 disabled |
+
+2026-08-11 구현: `policyIcs.ts`, `PolicyIcsDownloadButton`, `ProgramDetailPage`
+detail action. favorites 목록 action은 FE5-07 Browser 회귀와 함께 검토.
+unit `policyIcs.test.ts`.
 
 ---
 
@@ -199,7 +210,7 @@ Browser reload 검증은 FE5-07 범위.
 
 ---
 
-### FE5-08 — 사용자 localStorage 전체 초기화 UX — draft
+### FE5-08 — 사용자 localStorage 전체 초기화 UX — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -217,6 +228,9 @@ Browser reload 검증은 FE5-07 범위.
 | --- | --- | --- |
 | FE5-02 | `conditions` 필드만 null | 조건 편집 UI |
 | FE5-08 | key 전체 remove (favorites+conditions) | 설정·북마크 footer 등 명시적 위험 action |
+
+2026-08-11 구현: `userDataReset.ts`, `UserDataResetPanel`, `FavoritesPage`
+footer. unit `userDataReset.test.ts`. Browser reset→reload 검증은 FE5-07.
 
 ---
 

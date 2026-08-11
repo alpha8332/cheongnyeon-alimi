@@ -5,6 +5,8 @@ import type {
   PolicyCategory,
 } from '../types/policy.js';
 
+export { getDDayLabel } from './policyDeadline.js';
+
 const CATEGORY_LABELS: Record<PolicyCategory, string> = {
   housing: '주거',
   finance: '금융',
@@ -123,48 +125,6 @@ export function formatCollectedAt(value: string): string {
   const kst = new Date(collectedAt.getTime() + 9 * 60 * 60 * 1000);
   const [date, time] = kst.toISOString().slice(0, 16).split('T');
   return `${date} ${time} KST`;
-}
-
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function parseDateOnly(value: string): Date {
-  const [year, month, day] = value.split('-').map(Number);
-  return new Date(year, month - 1, day);
-}
-
-export function getDDayLabel(
-  policy: PolicyDto,
-  referenceDate: Date = new Date(),
-): string {
-  if (policy.application_status === 'closed') {
-    return '마감';
-  }
-
-  if (policy.application_schedule === 'always' && policy.application_status === 'open') {
-    return '상시';
-  }
-
-  if (!policy.application_end) {
-    return '일정 미정';
-  }
-
-  const today = startOfDay(referenceDate);
-  const endDate = startOfDay(parseDateOnly(policy.application_end));
-  const diffDays = Math.ceil(
-    (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (diffDays > 0) {
-    return `D-${diffDays}`;
-  }
-
-  if (diffDays === 0) {
-    return 'D-Day';
-  }
-
-  return '마감';
 }
 
 export function formatNullableText(

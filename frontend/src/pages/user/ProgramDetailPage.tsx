@@ -7,6 +7,7 @@ import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PartialBadge from '@/components/policy/PartialBadge';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
+import PolicyIcsDownloadButton from '@/components/user/PolicyIcsDownloadButton';
 import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
 import {
   formatAge,
@@ -176,7 +177,7 @@ export default function ProgramDetailPage() {
         />
         <DetailField label="D-Day" value={getDDayLabel(policy)} />
 
-        <div style={{ marginTop: '16px' }}>
+        <div className="detail-actions">
           <Button
             variant="gradient"
             onClick={() => {
@@ -185,6 +186,7 @@ export default function ProgramDetailPage() {
           >
             원문 링크 열기
           </Button>
+          <PolicyIcsDownloadButton policy={policy} />
         </div>
       </Card>
     </div>

@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [User Service Features Forest 개발 계획](../../develop_plan/frontend/05_user_service_features.md)
-- 현재 Slice: FE5-02 completed
+- 현재 Slice: FE5-05 completed (FE5-06 draft)
 
 ## 목적
 
@@ -27,6 +27,10 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | FE5-00 | completed | versioned localStorage types·utils·unit test |
 | FE5-01 | completed | favorites toggle·`/favorites`·card·detail sync |
 | FE5-02 | completed | 저장 조건 UI·conditions-only clear |
+| FE5-03 | completed | KST D-Day·`/calendar` 마감 달력 |
+| FE5-04 | completed | 북마크 마감 임박 in-app `/notifications` |
+| FE5-05 | completed | `.ics` 다운로드(상세) |
+| FE5-08 | completed | localStorage 전체 삭제 UX |
 
 ## 구현 내용
 
@@ -64,6 +68,36 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `HomePage`에 panel 연결
 - `clearSavedConditions`는 `conditions: null`만 기록, `favorites` 유지
 
+### FE5-03 — KST D-Day·달력 보기
+
+- `frontend/src/utils/policyDeadline.ts`
+  - `Asia/Seoul` KST date-only D-Day (`getPolicyDeadlineInfo`, `getDDayLabel`)
+  - 종료일 null·상시·closed → calendar slot 생성 금지
+- `frontend/src/utils/policyDisplay.ts` — `getDDayLabel` re-export
+- `frontend/src/pages/user/CalendarPage.tsx` — `/calendar` 북마크·전체 정책 마감 목록
+- `frontend/src/App.tsx` — `/calendar` route
+- `frontend/tests/policyDeadline.test.ts`
+
+### FE5-04 — 앱 내부 마감 임박 알림
+
+- `frontend/src/utils/favoriteDeadlineAlerts.ts` — 북마크 ∩ D-7 이내 intersection
+- `frontend/src/pages/user/NotificationsPage.tsx` — in-app 목록(외부 push 없음)
+- `frontend/tests/favoriteDeadlineAlerts.test.ts`
+
+### FE5-05 — `.ics` 다운로드
+
+- `frontend/src/utils/policyIcs.ts` — RFC5545 subset escape·all-day VEVENT
+- `frontend/src/components/user/PolicyIcsDownloadButton.tsx`
+- `ProgramDetailPage` detail action (종료일 없으면 disabled)
+- `frontend/tests/policyIcs.test.ts`
+
+### FE5-08 — 사용자 localStorage 전체 초기화
+
+- `frontend/src/utils/userDataReset.ts` — `resetAllUserLocalStorage` + subscriber notify
+- `frontend/src/components/user/UserDataResetPanel.tsx` — 이중 confirm, favorites footer
+- `FavoritesPage` footer wiring
+- `frontend/tests/userDataReset.test.ts`
+
 ## 설계 결정
 
 | 항목 | 결정 | 근거 |
@@ -74,6 +108,9 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | Key·version | FE5-00 proposal 유지 | W4-G0 승인 전 |
 | Conditions object | `UserSavedConditions` 단일 계약 | FE6·FE7과 동일 `{region,age,category}` 공유 |
 | Conditions clear | `conditions` 필드만 null | FE5-08 전체 삭제와 UX·범위 구분 |
+| D-Day 기준 | KST date-only (`Intl` `Asia/Seoul`) | 로컬 timezone drift 방지 |
+| In-app 알림 | 북마크 ∩ D-7, 종료일 필수 | 외부 push·Service Worker 없음 |
+| `.ics` | all-day DATE, DTEND+1 | W4-G0 proposal; calendar client별 해석 차이 FE5-07 |
 
 ## 주요 변경 파일
 
@@ -91,18 +128,30 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `frontend/src/components/user/SavedConditionsPanel.tsx`
 - `frontend/src/pages/user/HomePage.tsx`
 - `frontend/tests/userConditionsStorage.test.ts`
+- `frontend/src/utils/policyDeadline.ts`
+- `frontend/src/utils/favoriteDeadlineAlerts.ts`
+- `frontend/src/utils/policyIcs.ts`
+- `frontend/src/utils/userDataReset.ts`
+- `frontend/src/pages/user/CalendarPage.tsx`
+- `frontend/src/pages/user/NotificationsPage.tsx`
+- `frontend/src/components/user/PolicyIcsDownloadButton.tsx`
+- `frontend/src/components/user/UserDataResetPanel.tsx`
+- `frontend/tests/policyDeadline.test.ts`
+- `frontend/tests/favoriteDeadlineAlerts.test.ts`
+- `frontend/tests/policyIcs.test.ts`
+- `frontend/tests/userDataReset.test.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — passed (69 unit tests, FE5-00~FE5-02)
+cd frontend && npm test   — passed (117 unit tests, FE5-03~05·08 포함)
 cd frontend && npm run lint — passed
 cd frontend && npm run build — passed
 python3 scripts/validate_docs.py — passed
 ```
 
-Browser 수동 toggle·reload·Playwright E2E는 FE5-07 범위이며 FE5-01에서
-실행하지 않았다.
+Browser 수동 시나리오·Playwright E2E는 FE5-07 범위이며 본 Slice에서 실행하지
+않았다.
 
 ### FE5-01 hotfix — `/`·`/favorites` 404-like error boundary
 
@@ -117,9 +166,9 @@ Browser 수동 toggle·reload·Playwright E2E는 FE5-07 범위이며 FE5-01에�
 
 ## 남은 작업
 
-- FE5-03: KST D-Day·달력 보기
-- FE5-07: Browser·Playwright favorites·conditions 시나리오
-- W4-G0 승인 시 key·version 동기화
+- FE5-06: search·recommend·detail·favorites·calendar route 간 state 일치
+- FE5-07: Browser·Playwright favorites·conditions·calendar·notifications 시나리오
+- W4-G0 승인 시 key·version·KST 규칙 동기화
 
 ## 관련 문서
 
