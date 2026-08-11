@@ -15,7 +15,7 @@
   (ES2 Backend DTO)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/eligibility-summary`
-- 현재 Slice: FE7-00 completed (FE7-01 draft)
+- 현재 Slice: FE7-01~04 completed (FE7-05 draft)
 
 ## 목적
 
@@ -107,7 +107,7 @@
 
 ---
 
-### FE7-01 — 핵심 신청 조건 카드 shell — draft
+### FE7-01 — 핵심 신청 조건 카드 shell — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -120,7 +120,7 @@
 
 ---
 
-### FE7-02 — 조건 섹션 UI — draft
+### FE7-02 — 조건 섹션 UI — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -133,7 +133,7 @@
 
 ---
 
-### FE7-03 — 로컬 조건 비교 badge — draft
+### FE7-03 — 로컬 조건 비교 badge — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -145,7 +145,7 @@
 
 ---
 
-### FE7-04 — evidence·공식 원문 링크 — draft
+### FE7-04 — evidence·공식 원문 링크 — completed
 
 | 항목 | 내용 |
 | --- | --- |

@@ -56,6 +56,8 @@
     "src/utils/adminLogMaintenance.ts",
     "src/utils/adminPolicyFilters.ts",
     "src/utils/adminLogEventFilters.ts",
+    "src/utils/eligibilitySummaryDisplay.ts",
+    "src/utils/eligibilityComparison.ts",
     "src/utils/collectionRunDisplay.ts",
     "src/utils/collectionRunFilters.ts",
     "src/types/adminSession.ts",

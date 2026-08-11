@@ -7,7 +7,9 @@ import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PartialBadge from '@/components/policy/PartialBadge';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
+import EligibilitySummaryCard from '@/components/eligibility/EligibilitySummaryCard';
 import PolicyIcsDownloadButton from '@/components/user/PolicyIcsDownloadButton';
+import { useSavedConditions } from '@/hooks/useSavedConditions';
 import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
 import {
   formatAge,
@@ -68,6 +70,7 @@ export default function ProgramDetailPage() {
     isError,
     refetch,
   } = usePolicyQuery(policyId, includePartial);
+  const { conditions: savedConditions } = useSavedConditions();
 
   if (policyId === null) {
     return (
@@ -188,6 +191,14 @@ export default function ProgramDetailPage() {
           </Button>
           <PolicyIcsDownloadButton policy={policy} />
         </div>
+      </Card>
+
+      <Card>
+        <EligibilitySummaryCard
+          policy={policy}
+          summary={policy.eligibility_summary}
+          savedConditions={savedConditions}
+        />
       </Card>
     </div>
   );

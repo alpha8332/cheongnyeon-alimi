@@ -141,7 +141,7 @@
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
   FE3-00~04 PIN session·실행 기록·수동 실행 UI
 - [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
-  FE7-00 eligibility_summary DTO·Mock detail fixtures
+  FE7-00~04 DTO·핵심 신청 조건 카드·비교 badge·evidence link
 - [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):
   FE8-00 admin policy·log DTO·Mock handlers
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):

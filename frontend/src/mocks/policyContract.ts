@@ -7,6 +7,7 @@ import {
   resolvePolicyListQuery,
   type ResolvedPolicyListQuery,
 } from '../api/policyRequest.js';
+import { getMockPolicyDetailById } from './policyDetailFixtures.js';
 
 type SeedQualityStatus = PublicDataQualityStatus | 'invalid';
 
@@ -122,6 +123,19 @@ export function findMockPolicyById(
   policyId: number,
   includePartial = false,
 ): PolicyDto | null {
+  const fixturePolicy = getMockPolicyDetailById(policyId);
+
+  if (fixturePolicy) {
+    if (
+      fixturePolicy.data_quality_status === 'partial' &&
+      !includePartial
+    ) {
+      return null;
+    }
+
+    return fixturePolicy;
+  }
+
   const policy = policies.find((candidate) => candidate.id === policyId);
 
   if (
