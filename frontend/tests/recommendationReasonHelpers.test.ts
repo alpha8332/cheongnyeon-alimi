@@ -1,0 +1,63 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import type { RecommendationItemDto, RecommendationResponse } from '../src/types/recommendation.js';
+import {
+  buildRecommendationQueryWarningMessage,
+  countRecommendationUnknownItems,
+  formatRecommendationReasonSummary,
+  hasQueryLevelRecommendationWarnings,
+  hasRecommendationUnknownConditions,
+} from '../src/utils/recommendationReasonHelpers.js';
+
+function createItem(
+  overrides: Partial<RecommendationItemDto> = {},
+): RecommendationItemDto {
+  return {
+    id: 1,
+    source_id: 'seed',
+    external_id: 'ext-1',
+    title: '테스트 정책',
+    lead: null,
+    category: 'finance',
+    regions: ['서울특별시'],
+    min_age: 19,
+    max_age: 39,
+    application_start: null,
+    application_end: '2026-12-31',
+    application_status: 'open',
+    data_quality_status: 'complete',
+    score: 10,
+    reasons: [{ code: 'MATCHED_REGION', label: '지역 조건이 일치합니다.' }],
+    unknown_conditions: [],
+    disclaimer: 'disclaimer',
+    ...overrides,
+  };
+}
+
+test('formatRecommendationReasonSummary는 reason label을 연결한다', () => {
+  const summary = formatRecommendationReasonSummary(createItem());
+
+  assert.match(summary, /지역 조건/);
+});
+
+test('hasRecommendationUnknownConditions는 unknown_conditions 유무를 판별한다', () => {
+  assert.equal(hasRecommendationUnknownConditions(createItem()), false);
+  assert.equal(
+    hasRecommendationUnknownConditions(
+      createItem({ unknown_conditions: ['원문 확인 필요'] }),
+    ),
+    true,
+  );
+});
+
+test('hasQueryLevelRecommendationWarnings는 response item 중 unknown을 감지한다', () => {
+  const response: RecommendationResponse = {
+    items: [createItem({ unknown_conditions: ['partial'] })],
+    total: 1,
+    evaluated_at: '2026-01-01',
+  };
+
+  assert.equal(hasQueryLevelRecommendationWarnings(response), true);
+  assert.equal(countRecommendationUnknownItems(response), 1);
+  assert.match(buildRecommendationQueryWarningMessage(response), /1건/);
+});

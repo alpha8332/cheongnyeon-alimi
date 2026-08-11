@@ -8,7 +8,7 @@
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [User Service Features Forest 개발 계획](../../develop_plan/frontend/05_user_service_features.md)
-- 현재 Slice: FE5-05 completed (FE5-06 draft)
+- 현재 Slice: FE5-06 completed (FE5-07 draft)
 
 ## 목적
 
@@ -31,6 +31,7 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | FE5-04 | completed | 북마크 마감 임박 in-app `/notifications` |
 | FE5-05 | completed | `.ics` 다운로드(상세) |
 | FE5-08 | completed | localStorage 전체 삭제 UX |
+| FE5-06 | completed | cross-route policy identity·nav |
 
 ## 구현 내용
 
@@ -98,6 +99,15 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `FavoritesPage` footer wiring
 - `frontend/tests/userDataReset.test.ts`
 
+### FE5-06 — route 간 상태 일치
+
+- `frontend/src/utils/userRouteIdentity.ts` — cross-route path constants·detail path
+- `frontend/src/utils/policyDetailNavigation.ts` — `buildRecommendationItemDetailPath`
+- 추천 결과·PolicyCard·Calendar detail link가 동일 numeric `policy.id` 사용
+- `AppShellLayout` — `/recommendations`·`/calendar` sidebar nav
+- `frontend/tests/userRouteIdentity.test.ts`
+- `frontend/tests/recommendationDetailNavigation.test.ts`
+
 ## 설계 결정
 
 | 항목 | 결정 | 근거 |
@@ -111,6 +121,7 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | D-Day 기준 | KST date-only (`Intl` `Asia/Seoul`) | 로컬 timezone drift 방지 |
 | In-app 알림 | 북마크 ∩ D-7, 종료일 필수 | 외부 push·Service Worker 없음 |
 | `.ics` | all-day DATE, DTEND+1 | W4-G0 proposal; calendar client별 해석 차이 FE5-07 |
+| Cross-route identity | numeric `policy.id` + shared detail path helper | search·recommend·favorites·calendar |
 
 ## 주요 변경 파일
 
@@ -140,18 +151,22 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `frontend/tests/favoriteDeadlineAlerts.test.ts`
 - `frontend/tests/policyIcs.test.ts`
 - `frontend/tests/userDataReset.test.ts`
+- `frontend/src/utils/userRouteIdentity.ts`
+- `frontend/src/layouts/AppShellLayout.tsx`
+- `frontend/tests/userRouteIdentity.test.ts`
+- `frontend/tests/recommendationDetailNavigation.test.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — passed (117 unit tests, FE5-03~05·08 포함)
+cd frontend && npm test   — passed (134 unit tests, FE5-06·FE6 cross-route helpers 포함)
 cd frontend && npm run lint — passed
 cd frontend && npm run build — passed
 python3 scripts/validate_docs.py — passed
 ```
 
-Browser 수동 시나리오·Playwright E2E는 FE5-07 범위이며 본 Slice에서 실행하지
-않았다.
+Browser cross-route 시나리오·Playwright E2E는 FE5-07 범위이며 본 Slice에서
+실행하지 않았다.
 
 ### FE5-01 hotfix — `/`·`/favorites` 404-like error boundary
 
@@ -166,8 +181,7 @@ Browser 수동 시나리오·Playwright E2E는 FE5-07 범위이며 본 Slice에�
 
 ## 남은 작업
 
-- FE5-06: search·recommend·detail·favorites·calendar route 간 state 일치
-- FE5-07: Browser·Playwright favorites·conditions·calendar·notifications 시나리오
+- FE5-07: Browser·Playwright favorites·conditions·calendar·notifications·cross-route 시나리오
 - W4-G0 승인 시 key·version·KST 규칙 동기화
 
 ## 관련 문서

@@ -9,9 +9,11 @@ export default function AppShellLayout() {
 
   const isHome = pathname === '/';
   const isSearch = pathname.startsWith('/search');
+  const isRecommendations = pathname.startsWith('/recommendations');
   const isPrograms = pathname.startsWith('/programs');
   const isFavorites = pathname.startsWith('/favorites');
   const isNotifications = pathname.startsWith('/notifications');
+  const isCalendar = pathname.startsWith('/calendar');
   const isAdmin = pathname.startsWith('/admin');
 
   return (
@@ -32,6 +34,14 @@ export default function AppShellLayout() {
           🔍
         </Link>
         <Link
+          to="/recommendations"
+          className={navClass(isRecommendations)}
+          title="맞춤 추천"
+          aria-label="맞춤 추천"
+        >
+          🎯
+        </Link>
+        <Link
           to="/programs"
           className={navClass(isPrograms)}
           title="정책 목록"
@@ -46,6 +56,14 @@ export default function AppShellLayout() {
           aria-label="북마크"
         >
           🔖
+        </Link>
+        <Link
+          to="/calendar"
+          className={navClass(isCalendar)}
+          title="마감 달력"
+          aria-label="마감 달력"
+        >
+          📅
         </Link>
         <Link
           to="/notifications"

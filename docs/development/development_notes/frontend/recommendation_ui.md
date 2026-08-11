@@ -8,90 +8,110 @@
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [Recommendation UI Forest 개발 계획](../../develop_plan/frontend/06_recommendation_ui.md)
-- 현재 Slice: FE6-00 completed
+- 현재 Slice: FE6-04 completed (FE6-05 draft)
 
 ## 목적
 
-W4-G0 결정적 추천 API 계약을 Frontend TypeScript·Mock·route shell(FE6-00)로
-고정하고 `/search` NL 검색 route와 분리한다.
+W4-G0 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI(FE6-00~04)로 소비하고
+`/search` NL 검색 route와 분리한다.
 
 ## Forest 범위
 
-이 기록은 Frontend 06 Slice 구현·검증 결과를 누적한다. 조건 form·결과 카드 UI
-(FE6-01+)는 이 Slice 범위 밖이다.
+이 기록은 Frontend 06 Slice 구현·검증 결과를 누적한다. Real API·Browser E2E
+(FE6-05)는 이 Slice 범위 밖이다.
 
 ## Slice 진행 현황
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | FE6-00 | completed | DTO·Mock handler·API client·`/recommendations` placeholder |
-| FE6-01 | pending | 조건 입력·localStorage 연동 |
-| FE6-02 | pending | 추천 결과·이유 UI |
+| FE6-01 | completed | 조건 form·FE5 localStorage 연동·submit → API |
+| FE6-02 | completed | 결과 목록·reason·detail link·favorite toggle |
+| FE6-03 | completed | error/empty/loading shell·retry·unconfirmed banner |
+| FE6-04 | completed | `RegionListCollapse`·mobile region truncate |
 
 ## 구현 내용
 
 ### FE6-00 — 추천 DTO·Mock·route 계약
 
 - `frontend/src/types/recommendation.ts`
-  - Backend draft `RecommendationRequest`·`RecommendationItem`·`RecommendationResponse`
-  - API: `POST /api/v1/recommendations`, `GET /api/v1/policies/recommendations`
-  - Client route: `RECOMMENDATION_APP_ROUTE = '/recommendations'`
 - `frontend/src/mocks/recommendationFixtures.ts`, `recommendationHandlers.ts`
-  - seed 기반 Mock 200, `region=MOCK_EMPTY` empty 200, age/limit 422
-  - deterministic sort: score DESC, id ASC
-- `frontend/src/api/recommendation.ts` — Mock-first `postRecommendations`
-- `frontend/src/pages/user/RecommendationPage.tsx` — route placeholder
-- `frontend/src/App.tsx` — `/recommendations` 등록 (`/search`와 분리)
+- `frontend/src/api/recommendation.ts`
+- `frontend/src/App.tsx` — `/recommendations`
 - `frontend/tests/recommendation.contract.test.ts`
+
+### FE6-01 — 조건 입력·localStorage 연동
+
+- `frontend/src/utils/savedConditionsForm.ts` — 홈·추천 공유 form helpers
+- `frontend/src/components/recommendation/RecommendationConditionForm.tsx`
+- `frontend/src/pages/user/RecommendationPage.tsx` — submit → `postRecommendations`
+- `frontend/tests/savedConditionsForm.test.ts`
+
+### FE6-02 — 추천 결과·이유 UI
+
+- `frontend/src/components/recommendation/RecommendationResultList.tsx`
+- `frontend/src/components/recommendation/RecommendationResultCard.tsx`
+- `frontend/src/utils/recommendationReasonHelpers.ts`
+- `frontend/src/utils/policyDetailNavigation.ts` — `buildRecommendationItemDetailPath`
+- score 숫자 미노출; disclaimer·reason label만 표시
+
+### FE6-03 — API 오류·재시도·미확정 배너
+
+- `frontend/src/utils/recommendationErrors.ts`
+- `frontend/src/types/recommendationErrors.ts`
+- Error/Empty/Loading shell components
+- `RecommendationUnconfirmedBanner` + row-level unknown list
+- `frontend/tests/recommendationErrors.test.ts`
+
+### FE6-04 — 지역 축약·기본 접근성
+
+- `frontend/src/components/recommendation/RegionListCollapse.tsx`
+- theme CSS — mobile word-break, expand/collapse toggle `focus-visible`
 
 ### Route·API 경계
 
 | Route / API | 역할 |
 | --- | --- |
-| `/search` | Gate G1 NL `GET /api/v1/policies/search` (PolicySearchHit nested DTO) |
-| `/recommendations` | W4-G0 structured 조건 `POST /api/v1/recommendations` (flat RecommendationItem) |
+| `/search` | Gate G1 NL `GET /api/v1/policies/search` |
+| `/recommendations` | W4-G0 structured `POST /api/v1/recommendations` |
 
-조건은 FE6-01에서 localStorage·form으로 관리; URL·서버 영구 저장 없음(FE6-01).
-
-### Backend draft 정렬 메모
-
-| 영역 | Backend draft | FE6-00 |
-| --- | --- | --- |
-| Item shape | flat `RecommendationItem` (`lead`, `min_age`, single `category`) | 1:1 TypeScript |
-| Status filter | `open`·`upcoming`·`closed` | `upcoming` → Policy `scheduled` Mock 매핑 |
-| `score` | API 필드 포함 | DTO 포함; UI 노출은 FE6-02에서 금지 |
-| Real API | `origin/feature/backend/policy-recommendation` | 로컬 merge 전 Mock-only |
+조건은 FE5 localStorage·form only; URL·서버 영구 저장 없음.
 
 ## 설계 결정
 
-- Mock handler는 Policy Search scenario(M1~M6)와 독립; 추천 전용 fixture trigger
-  (`MOCK_EMPTY`) 사용.
-- `RecommendationApiError`는 Policy Search와 동일 FastAPI `detail` 패턴.
-- GET query client는 FE6-05 Real API 단계에서 추가 가능; FE6-00는 POST client만.
+- 홈 `SavedConditionsPanel`과 추천 form은 `savedConditionsForm` utils·
+  `useSavedConditions`를 공유한다.
+- 추천 error UX tone은 Policy Search shell 패턴을 재사용한다.
+- partial item detail link는 `include_partial=true` query를 자동 부여한다.
 
 ## 주요 변경 파일
 
-- `frontend/src/types/recommendation.ts`
-- `frontend/src/mocks/recommendationFixtures.ts`
-- `frontend/src/mocks/recommendationHandlers.ts`
-- `frontend/src/api/recommendation.ts`
-- `frontend/src/api/recommendationApiError.ts`
 - `frontend/src/pages/user/RecommendationPage.tsx`
-- `frontend/src/App.tsx`
-- `frontend/tests/recommendation.contract.test.ts`
+- `frontend/src/components/recommendation/*`
+- `frontend/src/utils/savedConditionsForm.ts`
+- `frontend/src/utils/recommendationErrors.ts`
+- `frontend/src/utils/recommendationReasonHelpers.ts`
+- `frontend/src/components/user/SavedConditionsPanel.tsx` (shared utils refactor)
+- `frontend/src/styles/theme.css`
+- `frontend/tests/savedConditionsForm.test.ts`
+- `frontend/tests/recommendationErrors.test.ts`
+- `frontend/tests/recommendationReasonHelpers.test.ts`
+- `frontend/tests/recommendationDetailNavigation.test.ts`
 
 ## 검증 결과
 
-- `npm run test` (frontend): **105 passed** (recommendation contract 7건 포함)
-- `npm run lint`: passed
-- `npm run build`: passed
-- `python scripts/validate_docs.py`: passed
+```text
+cd frontend && npm test   — passed (134 unit tests, FE6-01~04 포함)
+cd frontend && npm run lint — passed
+cd frontend && npm run build — passed
+python3 scripts/validate_docs.py — passed
+```
+
+Browser·Playwright E2E는 FE6-05 범위이며 본 Slice에서 실행하지 않았다.
 
 ## 남은 작업
 
-- FE6-01: 조건 form·FE5 localStorage 연동
-- FE6-02: 결과·reason UI (score 숫자 미노출)
-- FE6-05: Real API·Browser E2E
+- FE6-05: Real API·Browser E2E·Release 1 search golden 회귀
 - W4-G0 Gate 후 `docs/api/` recommendation 절 추가
 
 ## 관련 문서

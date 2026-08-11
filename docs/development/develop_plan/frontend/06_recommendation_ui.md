@@ -15,7 +15,7 @@
   Backend 추천 API (Integration 06 R1)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/recommendation`
-- 현재 Slice: FE6-00 completed (FE6-01 draft)
+- 현재 Slice: FE6-04 completed (FE6-05 draft)
 
 ## 목적
 
@@ -64,10 +64,10 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 | Integration 06 | FE6 Slice | 책임 |
 | --- | --- | --- |
 | R0 | FE6-00 | DTO·Mock·route 계약 |
-| R2 (조건) | FE6-01 | 조건 입력·localStorage 연동 |
-| R2 (결과) | FE6-02 | 추천 결과·이유 UI |
-| R2 (오류) | FE6-03 | 오류·재시도·미확정 UX |
-| W4-F5 | FE6-04 | 지역 축약·접근성 |
+| R2 (조건) | FE6-01 | 조건 입력·localStorage 연동 | completed |
+| R2 (결과) | FE6-02 | 추천 결과·이유 UI | completed |
+| R2 (오류) | FE6-03 | 오류·재시도·미확정 UX | completed |
+| W4-F5 | FE6-04 | 지역 축약·접근성 | completed |
 | R3 | FE6-05 | Real API·Browser E2E |
 
 **W4-G0 미승인:** OpenAPI·TypeScript 초안만 작성하고 DTO 필드를 임의 추가하지 않는다.
@@ -87,7 +87,7 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 
 ---
 
-### FE6-01 — 조건 입력·localStorage 연동 — draft
+### FE6-01 — 조건 입력·localStorage 연동 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -98,9 +98,13 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 | **검증** | unit test (storage round-trip); Browser reload |
 | **완료 기준** | 서버·URL에 조건 영구 저장 없음 |
 
+2026-08-11 구현: `RecommendationConditionForm`, `savedConditionsForm` utils,
+FE5 `useSavedConditions` 공유. submit → `postRecommendations`. unit
+`savedConditionsForm.test.ts`. Browser reload는 FE6-05.
+
 ---
 
-### FE6-02 — 추천 결과·이유 UI — draft
+### FE6-02 — 추천 결과·이유 UI — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -111,9 +115,13 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 | **검증** | Mock fixtures M-rec1~n; Browser |
 | **완료 기준** | 숫자 score·자격 단정 copy 없음 |
 
+2026-08-11 구현: `RecommendationResultList`·`RecommendationResultCard`,
+`recommendationReasonHelpers`, `buildRecommendationItemDetailPath`,
+`FavoriteToggleButton` on results. score 미노출. Browser는 FE6-05.
+
 ---
 
-### FE6-03 — API 오류·재시도·미확정 배너 — draft
+### FE6-03 — API 오류·재시도·미확정 배너 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -123,9 +131,13 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 | **검증** | MSW 422/500; Browser |
 | **완료 기준** | Policy Search error UX와 톤 일치 |
 
+2026-08-11 구현: `recommendationErrors.ts`, Error/Empty/Loading shell,
+`RecommendationUnconfirmedBanner` query-level + row-level unknown. unit
+`recommendationErrors.test.ts`. MSW Browser는 FE6-05.
+
 ---
 
-### FE6-04 — 지역 축약·기본 접근성 — draft
+### FE6-04 — 지역 축약·기본 접근성 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -134,6 +146,9 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 | **선행** | FE6-02 |
 | **검증** | Browser 긴 지역 fixture; keyboard tab order |
 | **완료 기준** | overflow without horizontal scroll on mobile |
+
+2026-08-11 구현: `RegionListCollapse` on result cards, theme CSS mobile
+word-break·toggle focus-visible. keyboard tab order Browser 검증은 FE6-05.
 
 ---
 

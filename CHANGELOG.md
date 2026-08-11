@@ -34,9 +34,12 @@
 - Frontend admin observability DTO·Mock handlers (FE8-00): read-only policy
   projection list/detail·log file/event pagination·safe error contract
   ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
-- Frontend recommendation DTO·Mock·route shell (FE6-00): structured
-  `POST /api/v1/recommendations` contract, `/recommendations` vs `/search` 분리
+- Frontend recommendation UI (FE6-01~04): `/recommendations` 조건 form·FE5
+  localStorage 연동·결과·reason·error/retry·region collapse
   ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
+- Frontend cross-route policy identity (FE5-06): shared detail path·추천 결과
+  favorite toggle·sidebar `/recommendations`·`/calendar` nav
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 
 ## [0.1.0] - 2026-08-06
 

@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import { useSavedConditions } from '@/hooks/useSavedConditions';
+import type { UserSavedConditions } from '@/types/userLocalStorage';
 import {
   SAVED_CONDITIONS_CATEGORY_OPTIONS,
   SAVED_CONDITIONS_MAX_AGE,
@@ -13,7 +14,15 @@ import {
 } from '@/utils/savedConditionsForm';
 import { getCategoryLabel } from '@/utils/policyDisplay';
 
-export default function SavedConditionsPanel() {
+interface RecommendationConditionFormProps {
+  onSubmit: (conditions: UserSavedConditions) => void;
+  isSubmitting?: boolean;
+}
+
+export default function RecommendationConditionForm({
+  onSubmit,
+  isSubmitting = false,
+}: RecommendationConditionFormProps) {
   const formId = useId();
   const { conditions, saveConditions, clearConditions } = useSavedConditions();
   const conditionsKey = buildSavedConditionsKey(conditions);
@@ -31,13 +40,9 @@ export default function SavedConditionsPanel() {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     const parsed = parseSavedConditionsDraft(draft);
-    const result = saveConditions(parsed);
-
-    if (result.changed) {
-      setStatusMessage('저장 조건을 브라우저에 저장했습니다.');
-    } else {
-      setStatusMessage('변경된 조건이 없습니다.');
-    }
+    saveConditions(parsed);
+    setStatusMessage('조건을 저장하고 추천을 요청합니다.');
+    onSubmit(parsed);
   };
 
   const handleClear = () => {
@@ -56,10 +61,10 @@ export default function SavedConditionsPanel() {
   };
 
   return (
-    <Card title="🎯 내 조건 저장">
+    <Card title="🎯 맞춤 추천 조건">
       <p className="hint-text saved-conditions-panel__intro">
-        지역·연령·관심 분야를 이 기기 브라우저에만 저장합니다. 서버·URL·로그에는
-        기록되지 않으며, 다른 기기와 동기화되지 않습니다.
+        홈·추천 페이지가 동일한 브라우저 localStorage 조건을 공유합니다. 서버·URL·
+        로그에는 기록되지 않습니다.
       </p>
 
       {summary ? (
@@ -68,7 +73,7 @@ export default function SavedConditionsPanel() {
         </p>
       ) : (
         <p className="saved-conditions-panel__summary saved-conditions-panel__summary--empty">
-          아직 저장된 조건이 없습니다.
+          아직 저장된 조건이 없습니다. 조건을 입력한 뒤 추천 받기를 눌러 주세요.
         </p>
       )}
 
@@ -76,7 +81,7 @@ export default function SavedConditionsPanel() {
         id={formId}
         className="saved-conditions-form"
         onSubmit={handleSubmit}
-        aria-label="저장 조건 편집"
+        aria-label="맞춤 추천 조건 편집"
       >
         <label className="saved-conditions-form__field">
           <span className="saved-conditions-form__label">거주 지역</span>
@@ -136,12 +141,14 @@ export default function SavedConditionsPanel() {
         </label>
 
         <div className="saved-conditions-form__actions">
-          <Button type="submit">조건 저장</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? '추천 불러오는 중…' : '추천 받기'}
+          </Button>
           <Button
             type="button"
             variant="secondary"
             onClick={handleClear}
-            disabled={conditions === null}
+            disabled={conditions === null || isSubmitting}
           >
             조건 초기화
           </Button>

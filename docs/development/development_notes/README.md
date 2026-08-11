@@ -14,7 +14,8 @@
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
 | Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00 | recommendation DTO·Mock·`/recommendations` route |
-| User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~05,08 | localStorage·즐겨찾기·조건·D-Day·알림·ics |
+| Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00~04 | 조건 form·결과·error·region collapse |
+| User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~06,08 | localStorage·즐겨찾기·조건·D-Day·cross-route |
 | CollectionRun Admin UI | [개발 기록](frontend/collection_run_admin_ui.md) | FE3-00 | Admin DTO·Mock·route shell |
 | Eligibility Summary UI | [개발 기록](frontend/eligibility_summary_ui.md) | FE7-00 | eligibility_summary DTO·Mock fixtures |
 | Admin Observability UI | [개발 기록](frontend/admin_observability_ui.md) | FE8-00 | admin policy·log DTO·Mock handlers |

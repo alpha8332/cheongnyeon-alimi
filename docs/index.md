@@ -135,9 +135,9 @@
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)
 - [Recommendation UI Forest 개발 기록](development/development_notes/frontend/recommendation_ui.md):
-  FE6-00 recommendation DTO·Mock·`/recommendations` route shell
+  FE6-00~04 DTO·조건 form·결과·error·region collapse
 - [User Service Features Forest 개발 기록](development/development_notes/frontend/user_service_features.md):
-  FE5-00~02 localStorage·즐겨찾기·조건, FE5-03~05·08 D-Day·알림·ics·전체 삭제
+  FE5-00~06,08 localStorage·즐겨찾기·조건·D-Day·cross-route identity
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
   FE3-00 Admin DTO·Mock·`/admin` route shell
 - [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):

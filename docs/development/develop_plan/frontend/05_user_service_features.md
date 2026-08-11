@@ -14,7 +14,7 @@
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
-- 현재 Slice: FE5-05 completed (FE5-06 draft)
+- 현재 Slice: FE5-06 completed (FE5-07 draft)
 
 ## 목적
 
@@ -66,7 +66,7 @@
 | U2 | FE5-03 | F4 | KST D-Day·달력 보기 | completed |
 | U2 | FE5-04 | F4 | 앱 내부 마감 임박 알림 | completed |
 | U3 | FE5-05 | F4 | `.ics` 다운로드 | completed |
-| U1~U3 | FE5-06 | F4 | route 간 상태 일치 |
+| U1~U3 | FE5-06 | F4 | route 간 상태 일치 | completed |
 | U0 | FE5-08 | F4 | 사용자 localStorage 전체 초기화 UX | completed |
 | W4-F5 | FE5-07 | F5 | Browser·a11y·Release 1 회귀 |
 
@@ -186,7 +186,7 @@ unit `policyIcs.test.ts`.
 
 ---
 
-### FE5-06 — route 간 상태 일치 — draft
+### FE5-06 — route 간 상태 일치 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -195,6 +195,11 @@ unit `policyIcs.test.ts`.
 | **선행** | FE5-01·02, Frontend 06 FE6-02 (추천) |
 | **검증** | Browser cross-route scenario |
 | **완료 기준** | favorite toggle이 route 이동 후 유지 |
+
+2026-08-11 구현: `userRouteIdentity.ts`, `buildRecommendationItemDetailPath`,
+추천 결과 `FavoriteToggleButton`, AppShell `/recommendations`·`/calendar` nav.
+unit `userRouteIdentity.test.ts`, `recommendationDetailNavigation.test.ts`.
+Browser cross-route 시나리오는 FE5-07.
 
 ---
 
