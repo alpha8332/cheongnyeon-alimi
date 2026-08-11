@@ -9,6 +9,7 @@ from collectors.cross_source_duplicate import (
     CrossSourceDecisionManifestStore,
 )
 from collectors.runtime import RuntimeReplayResult, replay_runtime_raw
+from collectors.regional_expansion import EXPANDED_CAPTURE_SOURCE_IDS
 
 
 REGIONAL_DUPLICATE_SOURCE_IDS = frozenset(
@@ -16,6 +17,7 @@ REGIONAL_DUPLICATE_SOURCE_IDS = frozenset(
         "regional-gyeongbuk-youth-platform",
         "regional-busan-youth-platform",
         "regional-seoul-youth-platform",
+        *EXPANDED_CAPTURE_SOURCE_IDS,
     }
 )
 

@@ -26,6 +26,7 @@ from collectors.regional_policy_gate import (
 )
 from collectors.storage import RawDocumentStore
 from collectors.runtime import replay_runtime_raw
+from collectors.normalizer import Normalizer
 
 
 NOW = datetime(2026, 8, 11, 5, tzinfo=timezone.utc)
@@ -177,6 +178,12 @@ class SeoulBrowserPilotTests(unittest.TestCase):
         self.assertIs(ApplicationAvailability.OPEN, decision.application)
         self.assertTrue(decision.accepted)
         self.assertEqual("신청서, 공연 영상", policy.extra["required_documents"])
+        normalized = Normalizer().normalize(policy).program
+        assert normalized is not None
+        self.assertEqual(
+            ["신청서, 공연 영상"],
+            [item.text for item in normalized.eligibility_summary.documents],
+        )
         self.assertEqual(replay_one.programs, replay_two.programs)
         self.assertEqual(
             replay_one.regional_decisions,

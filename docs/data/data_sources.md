@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 온통청년·복지로 API, 천안청년센터와 경북 청년정책 승인 웹
-  Collector, Runtime replay와 제한 actual 검증 완료
+- 현재 구현 상태: 온통청년·복지로 API, 천안청년센터와 13개 승인 지역 Source
+  Adapter, Runtime replay와 지역별 제한 actual 검증 완료
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -51,8 +51,8 @@ RYP1은 17개 모두의 상세 identity를 재검증해 13개 승인, 3개 차�
 목록·JSON·modal 경로와 일치하지 않는다. 화면 discovery가 성공해도 robots 허용
 경계가 없는 세종·경기·충남은 운영 collection을 승인하지 않는다.
 
-Schema `1.1.0`은 `browser_access`, discovery 상태, collection mode, interaction
-budget, 재현 action profile과 상세 표본 identity 또는 실패 이유를 검증한다.
+Schema `1.2.0`은 `browser_access`, discovery 상태, collection mode, interaction
+budget, 재현 action profile, 상세 표본 identity와 RYP6 최종 구현 상태를 검증한다.
 
 RYP2는 승인 inventory를 실행 profile로 읽는 공통 loader, 의미 기반 fixture
 discovery, JSON subprocess Browser runner 경계와 경북 Adapter를 구현했다. 경북은
@@ -75,6 +75,16 @@ RYP4는 지역·open 후보만 최신 온통청년·복지로 완료 snapshot과
 병합하지 않고 review로 격리한다. 제목만 같은 다른 사업은 비교 필드가 명확히
 다르면 유지한다. 기존 aggregator row는 읽기만 하며 교차 Source 제외는 Source
 내부 `duplicate_count`가 아니라 `skipped_count`로 집계한다.
+
+RYP6는 기존 HTTP 2개와 Browser 11개 Adapter로 13개 승인 Source의 구현 상태를
+확정했다. 공통 Browser capture는 승인 URL·상세 identity·제한 건수·제목 일치를
+검증하며, 전체 pagination은 page별 checkpoint를 전진시킨다. 포털 게시 사실은
+청년 대상 근거가 아니므로 제목·지원대상·연령에 청년·청소년·대학생 근거가 없는
+정책은 review로 격리한다. 첫 actual 10건 중 충북·인천·전남광주·전북·경남
+5건만 신규 적재했으며 전체 page 합계 대조는 진행 중이다.
+retained 정책의 실제 연령·대상·제외·서류·기관 문의처는 공통
+EligibilitySummary에 Source field evidence로 연결하며 개인 휴대전화·이메일은
+구조화하지 않는다.
 
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영

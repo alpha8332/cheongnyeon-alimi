@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "inventory_id": "regional-youth-policy-sources-20260811",
   "inventory_date": "2026-08-11",
   "region_reference_scheme": "kr-bjd-20260803",
@@ -17,6 +17,7 @@
       "jurisdiction_label": "서울",
       "home_url": "https://youth.seoul.go.kr/mainA.do",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-seoul-youth-platform",
       "decision_reason": "Browser에서 홈 → 맞춤서비스 → 서울시 정책 90건·자치구 정책 21건 → plcyBizId 상세와 구조화 필드를 재현했다. 원시 HTTP WebGate와 무관하게 Browser collection을 승인한다.",
       "region_reference": {
@@ -95,6 +96,7 @@
       "jurisdiction_label": "부산",
       "home_url": "https://young.busan.go.kr/index.nm",
       "status": "approved",
+      "implementation_status": "implemented_http",
       "source_id": "regional-busan-youth-platform",
       "decision_reason": "부산광역시 청년플랫폼의 공개 정책지원 목록과 bizSid 상세 경로를 확인했다. robots 공개 경로를 위반하지 않으며 약관상 원문·이미지를 재배포하지 않고 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
@@ -180,6 +182,7 @@
       "jurisdiction_label": "대구",
       "home_url": "https://www.dgjump.com/",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-daegu-youth-platform",
       "decision_reason": "대구 청년정책 플랫폼의 공개 목록과 ap_seq 상세 identity를 확인했다. robots 공개 경로를 위반하지 않으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
@@ -253,6 +256,7 @@
       "jurisdiction_label": "인천",
       "home_url": "https://youth.incheon.go.kr/",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-incheon-youth-platform",
       "decision_reason": "인천청년포털의 공개 검색 목록과 poly_seq 상세 identity를 확인했다. 공개 경로의 최소 정책 사실만 제한 수집하고 원문·이미지는 저장소에 재배포하지 않는다.",
       "region_reference": {
@@ -326,6 +330,7 @@
       "jurisdiction_label": "광주",
       "home_url": "https://youth.jeonnam-gwangju.go.kr/www/",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-gwangju-integrated-youth-platform",
       "decision_reason": "기존 광주청년센터가 연결하는 현행 공식 전남광주통합특별시 청년통합플랫폼에서 공개 정책 목록과 policyId 상세 identity를 확인했다. 구 광주 후보 대신 통합 플랫폼의 최소 정책 사실만 제한 수집한다.",
       "region_reference": {
@@ -399,6 +404,7 @@
       "jurisdiction_label": "대전",
       "home_url": "https://www.daejeonyouthportal.kr/index.do",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-daejeon-youth-platform",
       "decision_reason": "대전청년포털의 공개 통합지원 목록과 CT 식별자 상세 경로를 확인했다. robots 문서는 게시되지 않았으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
@@ -472,6 +478,7 @@
       "jurisdiction_label": "울산",
       "home_url": "https://www.ulsan.go.kr/s/ulsanyouth/main.ulsan",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-ulsan-youth-platform",
       "decision_reason": "울산광역시 청년정책 게시판의 고정 bbsId 목록과 dataId 상세 identity를 확인했다. robots는 공개 경로를 허용하며 최소 정책 사실만 제한 수집한다.",
       "region_reference": {
@@ -545,6 +552,7 @@
       "jurisdiction_label": "세종",
       "home_url": "https://www.4242.or.kr/",
       "status": "blocked",
+      "implementation_status": "blocked",
       "source_id": null,
       "decision_reason": "Browser에서 홈 → 모집중 청년정보 → 상세 id 경로를 재현했다. 다만 robots.txt가 일반 크롤러 전체 경로를 차단하므로 discovery 성공과 별개로 운영 collection은 승인하지 않는다.",
       "region_reference": {
@@ -610,6 +618,7 @@
       "jurisdiction_label": "경기",
       "home_url": "https://youth.gg.go.kr/gg/index.do",
       "status": "blocked",
+      "implementation_status": "blocked",
       "source_id": null,
       "decision_reason": "Browser에서 맞춤 정책과 arcNo 상세 경로를 재현했다. robots 일반 규칙이 정책 경로를 허용하지 않으므로 discovery profile만 보존하고 운영 collection은 승인하지 않는다.",
       "region_reference": {
@@ -675,6 +684,7 @@
       "jurisdiction_label": "강원",
       "home_url": "https://job.gwd.go.kr/youth",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-gangwon-youth-platform",
       "decision_reason": "Browser에서 JavaScript 링크를 클릭해 bizId 상세와 정책개요·자격·신청방법·제출서류·기관 연락처를 재현했다. POST action profile 기반 Browser collection을 승인한다.",
       "region_reference": {
@@ -748,6 +758,7 @@
       "jurisdiction_label": "충북",
       "home_url": "https://www.chungbuk.go.kr/young/index.do",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-chungbuk-youth-platform",
       "decision_reason": "Browser에서 홈의 청년 지원 목록과 nttNo 상세 원문을 재현했다. 공통 urllib 연결 문제와 별개로 robots 허용 /young 범위의 Browser collection을 승인하며 개인 성명·이메일은 구조화하지 않는다.",
       "region_reference": {
@@ -816,6 +827,7 @@
       "jurisdiction_label": "충남",
       "home_url": "https://youth.chungnam.go.kr/web/main/customSupp/list",
       "status": "blocked",
+      "implementation_status": "blocked",
       "source_id": null,
       "decision_reason": "Browser에서 검색 가능한 충청남도정책 목록과 bizId 상세를 재현했다. robots 허용 목록에 customSupp 정책 경로가 없어 discovery 성공과 별개로 운영 collection은 승인하지 않는다.",
       "region_reference": {
@@ -876,6 +888,7 @@
       "jurisdiction_label": "전북",
       "home_url": "https://www.jb2030.or.kr/",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-jeonbuk-youth-platform",
       "decision_reason": "전북청년허브의 공개 정책 목록과 id 상세 identity를 확인했다. robots 문서는 게시되지 않았으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
@@ -944,6 +957,7 @@
       "jurisdiction_label": "전남",
       "home_url": "https://www.jnyouthcenter.kr/index.php",
       "status": "rejected",
+      "implementation_status": "rejected",
       "source_id": null,
       "decision_reason": "Browser에서 구 전남 포털의 정책통합검색과 최근 wr_id 상세를 재현했다. 현행 공식 정책은 통합특별시 플랫폼과 중복되고 robots가 홈만 허용하므로 별도 운영 Source는 rejected로 유지한다.",
       "region_reference": {
@@ -1011,6 +1025,7 @@
       "jurisdiction_label": "경북",
       "home_url": "https://gbyouth.go.kr/main.tc",
       "status": "approved",
+      "implementation_status": "implemented_http",
       "source_id": "regional-gyeongbuk-youth-platform",
       "decision_reason": "공개 정책 화면과 POST /policy/list.json, POST /policy/detail.modal을 재검증해 실제 정책 JSON·상세 HTML을 확인했다. robots의 /policy/list.tc/ 규칙은 실제 /policy/list.tc 및 JSON·modal 경로와 일치하지 않는다. Browser DOM instrumentation 충돌과 무관하게 http_json collection을 승인한다.",
       "region_reference": {
@@ -1084,6 +1099,7 @@
       "jurisdiction_label": "경남",
       "home_url": "https://youth.gyeongnam.go.kr/youth/index.es?sid=a1",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-gyeongnam-youth-platform",
       "decision_reason": "경상남도 청년정보플랫폼의 공개 정책 목록과 policy_no 기반 POST 상세 요청을 확인했다. robots 문서는 게시되지 않았으며 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
@@ -1152,6 +1168,7 @@
       "jurisdiction_label": "제주",
       "home_url": "https://jejuyouth.com/m/index.php",
       "status": "approved",
+      "implementation_status": "implemented_browser",
       "source_id": "regional-jeju-youth-platform",
       "decision_reason": "Browser에서 홈 → 청년DB → wr_id 상세 정책을 재현했다. 공통 urllib TLS 문제와 별개로 공개 Browser collection을 승인한다.",
       "region_reference": {

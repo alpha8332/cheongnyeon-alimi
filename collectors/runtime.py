@@ -31,6 +31,12 @@ from collectors.regional_pilot import (
     decide_representative_regional_policy,
     map_representative_duplicate_evidence,
 )
+from collectors.regional_expansion import (
+    EXPANDED_CAPTURE_SOURCE_IDS,
+    RegionalBrowserExtractor,
+    decide_expanded_regional_policy,
+    map_expanded_duplicate_evidence,
+)
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
 from collectors.raw import RawDocumentRole, RawPolicyDocument
@@ -51,6 +57,7 @@ SUPPORTED_SOURCE_IDS = (
     BUSAN_SOURCE_ID,
     SEOUL_SOURCE_ID,
     YOUTHCENTER_SOURCE_ID,
+    *tuple(sorted(EXPANDED_CAPTURE_SOURCE_IDS)),
 )
 
 _EXTRACTOR_TYPES = {
@@ -60,6 +67,10 @@ _EXTRACTOR_TYPES = {
     BUSAN_SOURCE_ID: BusanYouthExtractor,
     SEOUL_SOURCE_ID: SeoulYouthExtractor,
     YOUTHCENTER_SOURCE_ID: YouthCenterExtractor,
+    **{
+        source_id: (lambda value=source_id: RegionalBrowserExtractor(value))
+        for source_id in EXPANDED_CAPTURE_SOURCE_IDS
+    },
 }
 
 
@@ -161,6 +172,10 @@ def replay_runtime_raw(
         GYEONGBUK_YOUTH_SOURCE_ID: decide_gyeongbuk_regional_policy,
         BUSAN_SOURCE_ID: decide_representative_regional_policy,
         SEOUL_SOURCE_ID: decide_representative_regional_policy,
+        **{
+            source_id: decide_expanded_regional_policy
+            for source_id in EXPANDED_CAPTURE_SOURCE_IDS
+        },
     }
     if source_id in regional_deciders:
         decisions = tuple(
@@ -196,6 +211,10 @@ def replay_runtime_raw(
         GYEONGBUK_YOUTH_SOURCE_ID: map_gyeongbuk_duplicate_evidence,
         BUSAN_SOURCE_ID: map_representative_duplicate_evidence,
         SEOUL_SOURCE_ID: map_representative_duplicate_evidence,
+        **{
+            source_id: map_expanded_duplicate_evidence
+            for source_id in EXPANDED_CAPTURE_SOURCE_IDS
+        },
     }
     if source_id in duplicate_mappers:
         decisions = tuple(

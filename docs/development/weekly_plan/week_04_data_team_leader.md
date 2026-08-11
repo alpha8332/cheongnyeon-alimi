@@ -9,7 +9,7 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0`~`RYP5` 완료, `RYP6` 구현 준비 (`DTL4-4B`·`ES4`
+- 현재 Slice: Data 05 `RYP0`~`RYP5` 완료, `RYP6` 순차 확대 진행 (`DTL4-4B`·`ES4`
   actual 세로 인수 통과), Data 05·06 구현 뒤 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
@@ -697,7 +697,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [ ] Data 06 SOP0~SOP3 후보 정제·중복 감사·승인·Adapter Gate 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
-- [ ] Data 05 RYP6 지역별 최종 상태·전체 회귀 완료
+- [ ] Data 05 RYP6 지역별 구현 상태·첫 actual 완료, 전체 pagination·회귀 대기
 - [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과
 - [ ] Data 06 SOP5 Source군별 최종 상태·전체 회귀 완료
 - [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과

@@ -55,6 +55,7 @@ def regional_source_inventory_issues(
     for index, source in enumerate(sources):
         path = f"$.sources[{index}]"
         status = source["status"]
+        implementation_status = source["implementation_status"]
         source_id = source["source_id"]
         preflight = source["preflight"]
         discovery = source["discovery"]
@@ -66,6 +67,21 @@ def regional_source_inventory_issues(
                     f"{path}.status",
                     "source_decision_required",
                     "RYP1 inventory cannot retain candidate sources",
+                )
+            )
+
+        expected_implementation = {
+            "candidate": {"pending"},
+            "approved": {"implemented_http", "implemented_browser"},
+            "blocked": {"blocked"},
+            "rejected": {"rejected"},
+        }[status]
+        if implementation_status not in expected_implementation:
+            issues.append(
+                _error(
+                    f"{path}.implementation_status",
+                    "implementation_status_mismatch",
+                    "implementation status must match the Source lifecycle",
                 )
             )
 

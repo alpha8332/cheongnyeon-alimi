@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP5` 완료, `RYP6` 구현 준비
+- 현재 진행: `RYP0`~`RYP5` 완료, `RYP6` 순차 확대 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,8 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP5` 대표 Source actual 파일럿 완료
+- 현재 Slice: `RYP6` 17개 구현 상태·공통 Browser Adapter·첫 actual batch 완료,
+  전체 pagination 판정 진행 중
 
 ## 목적
 
@@ -621,6 +622,28 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 각 지역의 최신·신청 가능 정책 수와 제외·실패·drift 통계 기록
 - blocked Source의 재개 조건과 대체 공식 Source 기록
 - 전체 회귀, 문서·계약과 Git 비추적 경계 대조
+
+청년 포털에 게시됐다는 사실만으로 정책 대상이 청년이라고 추정하지 않는다.
+제목·지원대상·연령 중 하나 이상에 청년·청소년·대학생 대상 근거가 있어야
+지역·신청 가능 Gate를 통과할 수 있다. 근거가 없으면 지역 증거가 충분해도
+`review`로 격리한다.
+
+#### 현재 진행 (`2026-08-11`)
+
+- inventory `1.2.0`에 17개 `implementation_status`를 확정했다.
+  `implemented_http` 2개, `implemented_browser` 11개, `blocked` 3개,
+  `rejected` 1개다.
+- 나머지 승인 10개 Source의 실제 Browser 목록·상세 표본을 공통 Raw Adapter로
+  저장하고 replay·PostgreSQL 인수를 통과했다. retained 신규 정책은 충북·인천·
+  전남광주·전북·경남 5건이다.
+- 강원·울산은 청년 대상 근거가 없어 review, 대구는 지역 근거 부족, 대전은
+  신청기간 해석 불가로 review다. 제주는 중앙 기준선 복수 URL 후보로
+  `duplicate_review_required`이며 자동 적재하지 않았다.
+- 체크포인트는 한 목록 page에서 발견한 모든 identity에
+  `accepted/duplicate/review/closed/failed` 중 하나가 있어야 전진하고,
+  알려진 total보다 적게 판정한 종료를 거부한다.
+- 아직 전체 page identity 순회와 종료 합계 대조를 실행하지 않았으므로
+  `RYP-G4`와 Forest 완료는 보류한다.
 
 #### 완료 기준
 

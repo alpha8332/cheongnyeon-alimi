@@ -10,9 +10,8 @@ regional-gyeongbuk-youth-platform
 regional-busan-youth-platform
 ```
 
-`regional-seoul-youth-platform`은 목록 링크 클릭 뒤 identity가 생기는 Browser
-Source이므로 HTTP Collector 목록에는 없고, 검증된 Browser 캡처를 Runtime Raw로
-가져온 뒤 재처리 CLI에서 지원한다.
+서울과 RYP6의 Browser 구현 지역은 HTTP Collector 목록에는 없고, 검증된 실제
+Browser 캡처를 Runtime Raw로 가져온 뒤 재처리 CLI에서 지원한다.
 
 현재 Collector는 명시적 CLI 실행만 지원한다. 단일 페이지 제한 수집과
 호출 예산 안에서 전체 목록을 순회하는 릴리스 snapshot 수집을 구분한다.
@@ -289,9 +288,31 @@ RYP4 교차 Source 판정을 수행한다.
 Browser 캡처는 사람이 임의 작성하는 Seed가 아니며 실제 공개 목록·상세 DOM
 관찰과 action trace를 담아야 한다. 계약 drift는 저장 전에 실패한다.
 
+RYP6 공통 Browser capture는 단일 객체 또는 Source별 객체 배열을 받을 수 있다.
+각 객체는 승인 목록 URL, `page`, `total_count` 또는 `null`, `has_next`, 최대 30개
+action trace와 상세 최대 3건을 포함한다. 상세 identity와 제목이 다르거나 승인
+URL 범위를 벗어나면 Raw를 저장하지 않는다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\import_regional_browser_capture.py `
+  <regional-browser-capture.json> `
+  --raw-root runtime/raw
+
+.\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
+  --source regional-incheon-youth-platform `
+  --raw-root runtime/raw `
+  --limit 3 `
+  --decision-root runtime/decisions
+```
+
+체크포인트는 한 page의 모든 발견 identity가
+`accepted/duplicate/review/closed/failed` 중 하나로 판정돼야 전진한다. 알려진
+목록 total보다 적은 판정으로 종료하거나 이미 판정한 identity를 다시 추가하면
+실패한다. 제한 actual 표본을 전체 pagination checkpoint로 기록하지 않는다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
-| `--source` | 필수 | Runtime이 지원하는 여섯 source ID 중 하나 |
+| `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |
 | `--raw-root` | `runtime/raw` | Git 제외 Runtime Raw root |
 | `--limit` | `5000` | snapshot에서 처리할 list item 수, 1~5000 |
 | `--snapshot-id` | 최신 완료 manifest | 특정 완료 snapshot ID |

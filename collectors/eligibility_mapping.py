@@ -18,15 +18,18 @@ from collectors.eligibility import (
     RequiredDocument,
 )
 from collectors.extracted import ExtractedPolicy
+from collectors.regional_expansion import REGIONAL_EXPANSION_SPECS
 from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
 
 
 _DETAIL_SELECTOR = "#bo_v_con"
+REGIONAL_ELIGIBILITY_SOURCE_IDS = frozenset(REGIONAL_EXPANSION_SPECS)
 ELIGIBILITY_SOURCE_IDS = frozenset(
     {
         YOUTHCENTER_SOURCE_ID,
         BOKJIRO_SOURCE_ID,
         CHEONAN_SOURCE_ID,
+        *REGIONAL_ELIGIBILITY_SOURCE_IDS,
     }
 )
 
@@ -40,7 +43,93 @@ def map_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:
         return map_bokjiro_eligibility(policy)
     if policy.source_id == CHEONAN_SOURCE_ID:
         return map_cheonan_eligibility(policy)
+    if policy.source_id in REGIONAL_ELIGIBILITY_SOURCE_IDS:
+        return map_regional_eligibility(policy)
     raise ValueError("eligibility mapper is not registered for this source")
+
+
+def map_regional_eligibility(
+    policy: ExtractedPolicy,
+) -> EligibilitySummary:
+    """Map explicit extractor fields shared by the 13 regional sources."""
+
+    if policy.source_id not in REGIONAL_ELIGIBILITY_SOURCE_IDS:
+        raise ValueError("regional eligibility mapper received another source")
+    requirements = tuple(
+        _api_condition(policy, category, text, locator)
+        for category, text, locator in (
+            (
+                EligibilityCategory.AGE,
+                _source_text(policy.age_text),
+                "extracted.age_text",
+            ),
+            (
+                EligibilityCategory.OTHER,
+                _source_text(policy.eligibility_text),
+                "extracted.eligibility_text",
+            ),
+        )
+        if text is not None
+    )
+    exclusion = _source_text(policy.extra.get("exclusion_conditions"))
+    exclusions = (
+        ()
+        if exclusion is None
+        else (
+            _api_condition(
+                policy,
+                EligibilityCategory.OTHER,
+                exclusion,
+                "extra.exclusion_conditions",
+            ),
+        )
+    )
+    document = _source_text(policy.extra.get("required_documents"))
+    documents = (
+        ()
+        if document is None
+        else (
+            RequiredDocument(
+                text=document,
+                evidence=(
+                    _api_evidence(policy, "extra.required_documents"),
+                ),
+            ),
+        )
+    )
+    contact = _source_text(policy.extra.get("institutional_contact"))
+    contacts = (
+        ()
+        if contact is None
+        else (
+            InstitutionalContact(
+                kind=(
+                    InstitutionalContactKind.PHONE
+                    if any(character.isdigit() for character in contact)
+                    else InstitutionalContactKind.OFFICIAL_CHANNEL
+                ),
+                label="기관 문의처",
+                value=contact,
+                evidence=(
+                    _api_evidence(policy, "extra.institutional_contact"),
+                ),
+            ),
+        )
+    )
+    has_content = any((requirements, exclusions, documents, contacts))
+    return EligibilitySummary(
+        coverage=(
+            EligibilityCoverage.PARTIAL
+            if has_content
+            else EligibilityCoverage.UNKNOWN
+        ),
+        requirements=requirements,
+        exclusions=exclusions,
+        preferences=(),
+        documents=documents,
+        unknowns=(),
+        institutional_contacts=contacts,
+    )
 
 
 def map_youthcenter_eligibility(policy: ExtractedPolicy) -> EligibilitySummary:

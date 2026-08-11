@@ -31,7 +31,7 @@
 | RYP3 | completed | 지역 evidence·신청 상태 Gate와 경북 Runtime 격리 |
 | RYP4 | completed | snapshot·PostgreSQL 기준선과 보수적 교차 Source 제외 Gate |
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
-| RYP6 | 대기 | 지역별 확대·전체 판정 |
+| RYP6 | 진행 중 | 17개 구현 상태·공통 Browser Adapter·10개 Source 첫 actual 완료, 전체 pagination 대기 |
 
 ## 구현 내용
 
@@ -398,7 +398,73 @@ git diff --check
 
 ## 남은 작업
 
-- RYP6에서 나머지 승인 Source를 지역별로 순차 확대하고 서울 HTTP mode의
-  긍정적 drift를 이용 조건과 함께 재검증
 - RYP6 전체 pagination에서 accepted·duplicate·review·closed·failed 합계와
-  Release 1 golden 회귀를 대조해 Forest 최종 판정
+  목록 total·종료 조건을 대조하고 Release 1 golden 회귀로 Forest 최종 판정
+- 서울 HTTP mode의 긍정적 drift는 현재 Browser 구현을 변경하지 않고 이용
+  조건과 robots 범위를 다시 승인할 때만 별도 전환
+
+### RYP6 - 공통 확대 Adapter와 첫 actual batch
+
+`2026-08-11`에 inventory를 `1.2.0`으로 올리고 17개 지역의 구현 상태를
+확정했다. 기존 경북·부산은 `implemented_http`, 서울과 나머지 승인 10개는
+`implemented_browser`, 세종·경기·충남은 `blocked`, 구 전남 포털은
+`rejected`다. blocked·rejected Source는 실행 allowlist에 넣지 않았다.
+
+`RegionalBrowserCaptureStore`는 Source별 승인 목록·상세 identity, 목록 page,
+total·다음 page 여부, action trace, 상세 최대 3건과 제목 일치를 검증한 뒤
+JSON Raw로 저장한다. `RegionalBrowserExtractor`는 같은 Raw만 재생하며 공통
+지역성·신청 가능성·온통청년/복지로 중복 Gate를 통과시킨다. 실제 capture
+입력은 Git 제외 Runtime 파일이고 합성 Seed로 사용하지 않는다.
+
+`RegionalBatchCheckpoint`는 한 page에서 발견한 identity와 판정의 집합 일치,
+중복 identity, total drift, 조기 종료를 거부한다. 상태 파일은
+`runtime/decisions/regional-checkpoints`에 원자적으로 교체하며 Git에 넣지 않는다.
+이번 실행은 Source당 상세 1건의 제한 actual이므로 아직 전체 pagination
+checkpoint로 기록하지 않았다.
+
+| Source | 실제 표본 판정 | PostgreSQL 결과 |
+| --- | --- | --- |
+| 강원 | 청년 대상 근거 없음, review | 0건 |
+| 충북 | 지역·open·비중복 | 신규 1건, 재실행 unchanged 1건 |
+| 제주 | 중앙 canonical URL 복수 후보, duplicate review | 0건 |
+| 대구 | 지역 근거 부족, review | 0건 |
+| 인천 | 지역·open, material field 차이 | 신규 1건, 재실행 unchanged 1건 |
+| 전남광주 | 지역·open·비중복 | 신규 1건, 재실행 unchanged 1건 |
+| 대전 | 신청기간 해석 불가, review | 0건 |
+| 울산 | 청년 대상 근거 없음, review | 잘못 생성된 표본 row 1건 제거 후 0건 |
+| 전북 | 지역·open·비중복 | 신규 1건, 재실행 unchanged 1건 |
+| 경남 | 지역·open·비중복 | 신규 1건, 재실행 unchanged 1건 |
+
+공통 regional eligibility mapper는 RYP5의 서울·부산·경북과 RYP6 확대 10개를
+합친 13개 승인 Source에서 실제 상세의 연령·지원대상·제외·필요서류·기관 문의처를
+`SOURCE_FIELD` evidence와 함께 기존 EligibilitySummary 1.0.0에 연결한다.
+retained 5건은 모두 `coverage=partial`, 기관 문의처 1건씩이며 인천·
+경남은 필요서류도 1건씩 DB JSONB에 확인했다. 개인 휴대전화와 이메일은 기존
+계약이 계속 거부한다. mapper 추가 후 5건이 `updated=1`씩 반영됐고 다음
+재실행은 모두 `unchanged=1`이었다.
+
+첫 인천 import는 로컬 `.env`의 `postgres` 역할과 RYP5 pgpass 역할이 달라
+`UnicodeDecodeError`로 실패했다. 실패 CollectionRun은 보존하고, pgpass의
+`alpha8332@127.0.0.1:5432` 연결로 `select 1`을 확인한 뒤 10개 Source를
+재실행했다. 비밀번호는 출력·문서화하지 않았고 저장소 설정도 바꾸지 않았다.
+
+초기 울산 표본은 지역 증거만으로 1건이 삽입되는 결함을 드러냈다. 제목·대상·
+연령의 청년 근거를 필수로 하는 보수적 판정을 추가하고, 정확히 확인한
+`id=9513/source=regional-ulsan-youth-platform/external_id=60156` row만 삭제했다.
+Raw와 CollectionRun은 복구·감사 근거로 남아 있으며 새 Gate 재실행은 0건을
+확인했다.
+
+RYP6 현재 단계 검증:
+
+- 최종 regional 계약 집중 회귀: `28 passed, 2 subtests passed`
+- pgpass와 `cheongnyeon_alimi_test`를 명시한 PostgreSQL 통합: `3 passed`
+- 전체 Python: `336 passed, 24 skipped, 96 subtests passed`
+- `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+전체 Python skip 24건은 `TEST_DATABASE_URL`을 넣지 않은 기본 실행의 기존
+PostgreSQL 조건부 테스트다. 관련 PostgreSQL 3건은 별도 명시 실행으로 통과했다.
+첫 별도 실행은 설치된 드라이버와 맞지 않는 `postgresql+psycopg` URL을 사용해
+3건 모두 설정 실패했고, 새 패키지를 설치하지 않고 기존 `.venv`의 `psycopg2`에
+맞춘 URL로 다시 실행해 3건 통과를 확인했다.
+전체 pagination과 Release 1 golden 최종 회귀는 아직 실행하지 않아 RYP6 완료로
+기록하지 않는다.

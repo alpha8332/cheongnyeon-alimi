@@ -45,7 +45,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             (), self.schema_validator.schema_issues(self.inventory)
         )
         self.assertEqual((), self.domain_validator.issues(self.inventory))
-        self.assertEqual("1.1.0", self.inventory["schema_version"])
+        self.assertEqual("1.2.0", self.inventory["schema_version"])
         self.assertEqual(
             "kr-bjd-20260803",
             self.inventory["region_reference_scheme"],
@@ -166,6 +166,21 @@ class RegionalSourceInventoryTests(unittest.TestCase):
         )
         self.assertEqual(243, gyeongbuk["discovery"]["observed_list_count"])
         self.assertIsNone(gyeongbuk["discovery"]["failure_reason"])
+
+    def test_ryp6_has_one_final_implementation_status_per_region(self) -> None:
+        statuses: dict[str, int] = {}
+        for source in self.inventory["sources"]:
+            status = source["implementation_status"]
+            statuses[status] = statuses.get(status, 0) + 1
+        self.assertEqual(
+            {
+                "implemented_http": 2,
+                "implemented_browser": 11,
+                "blocked": 3,
+                "rejected": 1,
+            },
+            statuses,
+        )
 
     def test_approved_sources_have_execution_boundaries(self) -> None:
         approved = [
