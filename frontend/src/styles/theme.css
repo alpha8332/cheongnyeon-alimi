@@ -1105,6 +1105,356 @@ a.policy-card {
   }
 }
 
+/* ── Admin policy data (FE8-01~02) ── */
+
+.admin-policy-data-page__layout,
+.admin-logs-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-policy-column-toggle {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-policy-column-toggle__legend {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.admin-policy-column-toggle__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 8px;
+}
+
+.admin-policy-column-toggle__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-policy-filters,
+.admin-log-event-filters {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-policy-filters__grid,
+.admin-log-event-filters__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.admin-policy-filters__field,
+.admin-log-event-filters__field {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-policy-filters__label,
+.admin-log-event-filters__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.admin-policy-filters__input,
+.admin-log-event-filters__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  font: inherit;
+  color: var(--text);
+  background: var(--white);
+}
+
+.admin-policy-filters__actions,
+.admin-log-event-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.admin-policy-table-wrap,
+.admin-log-event-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-policy-table,
+.admin-log-event-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-policy-table__caption,
+.admin-log-event-table__caption {
+  caption-side: top;
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.admin-policy-table th,
+.admin-policy-table td,
+.admin-log-event-table th,
+.admin-log-event-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-policy-table__sort-btn,
+.admin-log-event-table__select-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-policy-table__sort-btn:hover,
+.admin-log-event-table__select-btn:hover {
+  color: var(--sky);
+}
+
+.admin-policy-table__row--selected,
+.admin-log-event-table__row--selected {
+  background: var(--sky-soft);
+}
+
+.admin-policy-table__expand-btn {
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--sky);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-policy-row-detail,
+.admin-log-event-detail {
+  position: sticky;
+  top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-policy-row-detail__header,
+.admin-log-event-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-policy-row-detail__title,
+.admin-log-event-detail__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.admin-policy-row-detail__grid,
+.admin-log-event-detail__grid {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-policy-row-detail__grid > div,
+.admin-log-event-detail__grid > div {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-policy-row-detail__grid dt,
+.admin-log-event-detail__grid dt {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.admin-policy-row-detail__grid dd,
+.admin-log-event-detail__grid dd {
+  margin: 0;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.admin-policy-row-detail__full,
+.admin-log-event-detail__full {
+  grid-column: 1 / -1;
+}
+
+.admin-policy-row-detail__error,
+.admin-log-maintenance__error {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--r-lg);
+}
+
+.admin-policy-row-detail__note,
+.admin-log-event-detail__note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Admin logs (FE8-03~04) ── */
+
+.admin-log-files-summary {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-log-files-summary__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-log-files-summary__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.admin-log-maintenance {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-log-maintenance__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-log-maintenance__description {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.admin-log-maintenance__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-log-maintenance__status {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #0369a1;
+}
+
+.admin-log-maintenance__dialog {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--bg);
+}
+
+.admin-log-maintenance__dialog h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.admin-log-maintenance__field {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.admin-log-maintenance__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.admin-log-maintenance__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  font: inherit;
+}
+
+.admin-log-maintenance__help {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.admin-log-maintenance__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .admin-policy-data-page__layout,
+  .admin-logs-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-policy-row-detail,
+  .admin-log-event-detail {
+    position: static;
+  }
+
+  .admin-policy-filters__grid,
+  .admin-log-event-filters__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .saved-conditions-panel__intro {
   margin-top: 0;
 }

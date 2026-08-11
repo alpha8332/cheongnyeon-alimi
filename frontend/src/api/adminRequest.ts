@@ -125,4 +125,8 @@ export const ADMIN_APP_ROUTES = {
   runs: '/admin/runs',
   runDetail: (runId: string) => `/admin/runs/${encodeURIComponent(runId.trim())}`,
   quality: '/admin/quality',
+  policies: '/admin/policies',
+  policyDetail: (policyId: number) =>
+    `/admin/policies/${encodeURIComponent(String(policyId))}`,
+  logs: '/admin/logs',
 } as const;

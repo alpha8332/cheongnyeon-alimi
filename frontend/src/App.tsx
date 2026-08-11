@@ -20,6 +20,8 @@ import CollectorPage from '@/pages/admin/CollectorPage';
 import CollectionRunsPage from '@/pages/admin/CollectionRunsPage';
 import CollectionRunDetailPage from '@/pages/admin/CollectionRunDetailPage';
 import DataQualityPage from '@/pages/admin/DataQualityPage';
+import AdminPolicyDataPage from '@/pages/admin/AdminPolicyDataPage';
+import AdminLogsPage from '@/pages/admin/AdminLogsPage';
 
 // 에러 페이지
 import NotFoundPage from '@/components/common/NotFoundPage';
@@ -51,6 +53,8 @@ export const router = createBrowserRouter([
               { path: 'runs', element: <CollectionRunsPage /> },
               { path: 'runs/:runId', element: <CollectionRunDetailPage /> },
               { path: 'quality', element: <DataQualityPage /> },
+              { path: 'policies', element: <AdminPolicyDataPage /> },
+              { path: 'logs', element: <AdminLogsPage /> },
             ],
           },
         ],

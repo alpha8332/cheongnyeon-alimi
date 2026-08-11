@@ -37,6 +37,9 @@
 - Frontend admin observability DTO·Mock handlers (FE8-00): read-only policy
   projection list/detail·log file/event pagination·safe error contract
   ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend admin observability UI (FE8-01~04): `/admin/policies` table·row detail,
+  `/admin/logs` event filter·refresh, archive delete·rotate confirm (Mock-first)
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
 - Frontend recommendation UI (FE6-01~04): `/recommendations` 조건 form·FE5
   localStorage 연동·결과·reason·error/retry·region collapse
   ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))

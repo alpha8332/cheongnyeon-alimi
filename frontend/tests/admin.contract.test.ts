@@ -64,8 +64,19 @@ test('CollectionRun admin list·detail·trigger 경로가 Backend 05와 일치�
 });
 
 test('ADMIN_APP_ROUTES는 API 경로에 PIN·token query를 포함하지 않는다', () => {
-  for (const value of Object.values(ADMIN_APP_ROUTES)) {
-    const path = typeof value === 'function' ? value('test-run-id') : value;
+  const paths = [
+    ADMIN_APP_ROUTES.login,
+    ADMIN_APP_ROUTES.dashboard,
+    ADMIN_APP_ROUTES.collectors,
+    ADMIN_APP_ROUTES.runs,
+    ADMIN_APP_ROUTES.runDetail('test-run-id'),
+    ADMIN_APP_ROUTES.quality,
+    ADMIN_APP_ROUTES.policies,
+    ADMIN_APP_ROUTES.policyDetail(1),
+    ADMIN_APP_ROUTES.logs,
+  ];
+
+  for (const path of paths) {
     assert.equal(path.includes('pin='), false);
     assert.equal(path.includes('token='), false);
     assert.equal(path.includes('access_token='), false);

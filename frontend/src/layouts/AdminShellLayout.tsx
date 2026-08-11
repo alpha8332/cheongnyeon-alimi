@@ -11,6 +11,8 @@ const ADMIN_NAV_ITEMS = [
   { to: ADMIN_APP_ROUTES.dashboard, label: '대시보드' },
   { to: ADMIN_APP_ROUTES.runs, label: '실행 기록' },
   { to: ADMIN_APP_ROUTES.collectors, label: '수집기' },
+  { to: ADMIN_APP_ROUTES.policies, label: '정책 데이터' },
+  { to: ADMIN_APP_ROUTES.logs, label: '구조화 Log' },
   { to: ADMIN_APP_ROUTES.quality, label: '데이터 품질' },
 ] as const;
 
@@ -30,7 +32,7 @@ export default function AdminShellLayout() {
         <div>
           <h1 className="admin-shell__title">관리자</h1>
           <p className="admin-shell__subtitle">
-            CollectionRun·수집 관리
+            CollectionRun·정책 데이터·Log 관리
           </p>
         </div>
         {isAuthenticated ? (

@@ -15,7 +15,7 @@
   [Frontend 03 CollectionRun Admin UI](03_collection_run_admin_ui.md) (FE3-01 PIN·session 공유)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/admin-observability`
-- 현재 Slice: FE8-00 completed (FE8-01 draft)
+- 현재 Slice: FE8-01~04 completed (FE8-05 draft)
 
 ## 목적
 
@@ -117,7 +117,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 
 ---
 
-### FE8-01 — 정책 데이터 표 — draft
+### FE8-01 — 정책 데이터 표 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -130,7 +130,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 
 ---
 
-### FE8-02 — Policy row 상세 — draft
+### FE8-02 — Policy row 상세 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -142,7 +142,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 
 ---
 
-### FE8-03 — 로그 파일·event UI — draft
+### FE8-03 — 로그 파일·event UI — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -155,7 +155,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 
 ---
 
-### FE8-04 — Archive 삭제·rotate 확인 — draft
+### FE8-04 — Archive 삭제·rotate 확인 — completed
 
 | 항목 | 내용 |
 | --- | --- |
