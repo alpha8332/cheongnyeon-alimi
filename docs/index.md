@@ -139,6 +139,8 @@
   관리자 4자리 PIN 세션 인증, fail-closed 및 401/403/429/422 상태코드 검증 결과
 - [Backend CollectionRun Admin API Forest 개발 기록](development/development_notes/backend/collection_run_admin_api.md):
   CollectionRun 실행 이력 목록·상세, 수동 실행 202 및 Stale 판정 계약 결과
+- [Recommendation Vertical Slice Forest 개발 기록](development/development_notes/integration/recommendation_vertical_slice.md):
+  사용자 조건 기반 결정적 맞춤 추천 API, 부합도 점수, 사유 Code 및 비단정 계약 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
@@ -151,6 +153,7 @@
   category·region·status 필터와 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약
 - [CollectionRun 관리자 API 계약](api/admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 실행 및 stale 판정 계약
+- [맞춤 정책 추천 API 계약](api/recommendation.md): 결정적 맞춤 정책 추천, 부합도 점수, 추천 사유 및 비단정 계약
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
 - [Backend Windows 로컬 환경](development/backend_local_setup.md):
