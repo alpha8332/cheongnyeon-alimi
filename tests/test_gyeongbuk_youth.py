@@ -27,6 +27,8 @@ from collectors.gyeongbuk_youth import (
     GyeongbukYouthCollector,
     GyeongbukYouthExtractor,
     decide_gyeongbuk_regional_policy,
+    _prioritize_regional_items,
+    _canonicalize_gyeongbuk_evidence,
 )
 from collectors.http import TransportResponse
 from collectors.normalizer import Normalizer
@@ -176,6 +178,32 @@ class GyeongbukProfileTests(unittest.TestCase):
         self.assertEqual((LIST_JSON_URL,), profile.approved_list_urls)
         self.assertEqual("1098", profile.sample_external_id)
         self.assertEqual(len(profile.actions), len(replayed))
+
+    def test_detail_candidates_prefer_agreeing_regional_evidence(self) -> None:
+        items = (
+            {
+                "no": "1",
+                "rgnSeNm": "경상북도",
+                "sprvsnInstNm": "경상북도",
+                "policyScl": "청년",
+            },
+            {
+                "no": "2",
+                "rgnSeNm": "포항시",
+                "sprvsnInstNm": "포항시",
+                "policyScl": "포항시 거주 청년",
+            },
+        )
+
+        selected = _prioritize_regional_items(items)
+
+        self.assertEqual(["2", "1"], [item["no"] for item in selected])
+
+    def test_official_gyeongbuk_address_shorthand_is_canonicalized(self) -> None:
+        self.assertEqual(
+            "경상북도 주소를 둔 미취업 청년",
+            _canonicalize_gyeongbuk_evidence("경북 주소를 둔 미취업 청년"),
+        )
 
 
 class GyeongbukCollectorTests(unittest.TestCase):

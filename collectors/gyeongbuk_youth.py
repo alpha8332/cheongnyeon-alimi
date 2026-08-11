@@ -59,7 +59,10 @@ LIST_FORM = {
     "searchPolicyNm": "",
     "searchPolicyTypeTmp": "",
     "searchRgnSe": "",
-    "searchAplyPeriod": "",
+    # The approved source exposes this value as the official "신청중" filter.
+    # RYP5 actual must not spend the bounded detail budget on already closed
+    # policies when the source can select currently actionable records.
+    "searchAplyPeriod": "1",
     "uploadType": "",
 }
 _DETAIL_LABELS = {
@@ -258,7 +261,7 @@ class GyeongbukYouthCollector:
             headers=headers,
         )
         list_payload = _parse_list(list_response)
-        items = list_payload.items[: selected.limit]
+        items = _prioritize_regional_items(list_payload.items)[: selected.limit]
         if not items:
             raise EmptyResponseError(
                 source_id=self.source_id,
@@ -512,7 +515,7 @@ def decide_gyeongbuk_regional_policy(
             _present_text(detail.get("supervising_organization"))
             or _present_text(list_fields.get("sprvsnInstNm"))
         ),
-        "region_eligibility_text": (
+        "region_eligibility_text": _canonicalize_gyeongbuk_evidence(
             _present_text(detail.get("eligibility_text"))
             or _present_text(list_fields.get("policyScl"))
         ),
@@ -536,7 +539,7 @@ def decide_gyeongbuk_regional_policy(
             "detail:supervising_organization|list:sprvsnInstNm"
         ),
         "region_eligibility_text": (
-            "detail:eligibility_text|list:policyScl"
+            "detail:eligibility_text|list:policyScl|alias:경북_주소"
         ),
         "application_channel_text": "detail:application_method",
         "additional_benefit_text": (
@@ -768,6 +771,47 @@ def _item_title(items: tuple[dict[str, Any], ...], external_id: str) -> str:
         if str(item.get("no")) == external_id:
             return _present_text(item.get("policyNm")) or ""
     raise AssertionError("unreachable")
+
+
+def _prioritize_regional_items(
+    items: tuple[dict[str, Any], ...],
+) -> tuple[dict[str, Any], ...]:
+    """Prefer candidates whose three regional evidence fields agree.
+
+    Source order remains the tiebreaker. This only chooses which bounded
+    details to inspect; the RYP3 gate still makes the acceptance decision.
+    """
+
+    def evidence_score(item: dict[str, Any]) -> int:
+        region = _present_text(item.get("rgnSeNm"))
+        organization = _present_text(item.get("sprvsnInstNm"))
+        eligibility = _present_text(item.get("policyScl"))
+        if region is None:
+            return 0
+        direct = int(region in (organization or "")) + int(
+            region in (eligibility or "")
+        )
+        shorthand = int(
+            "경북 주소" in (eligibility or "")
+            and "경상북도" in (organization or "")
+        )
+        return direct + (2 * shorthand)
+
+    indexed = tuple(enumerate(items))
+    return tuple(
+        item
+        for _, item in sorted(
+            indexed,
+            key=lambda value: (-evidence_score(value[1]), value[0]),
+        )
+    )
+
+
+def _canonicalize_gyeongbuk_evidence(value: str | None) -> str | None:
+    """Expand only the portal's explicit jurisdiction shorthand phrase."""
+    if value is None:
+        return None
+    return value.replace("경북 주소", "경상북도 주소")
 
 
 def _canonical_detail_url(external_id: str) -> str:

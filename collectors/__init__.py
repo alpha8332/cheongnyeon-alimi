@@ -57,6 +57,16 @@ from collectors.gyeongbuk_youth import (
     decide_gyeongbuk_regional_policy,
     map_gyeongbuk_duplicate_evidence,
 )
+from collectors.regional_pilot import (
+    BUSAN_SOURCE_ID,
+    SEOUL_SOURCE_ID,
+    BusanYouthExtractor,
+    SeoulBrowserCaptureStore,
+    SeoulYouthExtractor,
+    create_busan_youth_collector,
+    decide_representative_regional_policy,
+    map_representative_duplicate_evidence,
+)
 from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
@@ -123,6 +133,10 @@ default_registry.register(
     GYEONGBUK_YOUTH_SOURCE_ID,
     create_gyeongbuk_youth_collector,
 )
+default_registry.register(
+    BUSAN_SOURCE_ID,
+    create_busan_youth_collector,
+)
 
 __all__ = [
     "AGGREGATOR_SOURCE_IDS",
@@ -133,6 +147,7 @@ __all__ = [
     "ApplicationAvailability",
     "BaselineDescriptor",
     "BaselineRecord",
+    "BUSAN_SOURCE_ID",
     "Category",
     "CollectionOptions",
     "CollectionResult",
@@ -159,6 +174,7 @@ __all__ = [
     "HttpClient",
     "HttpClientConfig",
     "GyeongbukYouthExtractor",
+    "BusanYouthExtractor",
     "InstitutionalContact",
     "InstitutionalContactKind",
     "JsonSchemaValidator",
@@ -179,6 +195,9 @@ __all__ = [
     "RegionalPolicyDecision",
     "RegionalPolicyEvidence",
     "RegionalSourceProfile",
+    "SEOUL_SOURCE_ID",
+    "SeoulBrowserCaptureStore",
+    "SeoulYouthExtractor",
     "RequiredDocument",
     "SourceType",
     "SourceFieldProfile",
@@ -194,9 +213,11 @@ __all__ = [
     "map_youthcenter_eligibility",
     "regional_source_inventory_issues",
     "decide_gyeongbuk_regional_policy",
+    "decide_representative_regional_policy",
     "evaluate_cross_source_duplicate",
     "evaluate_regional_policy",
     "load_approved_regional_profile",
     "map_gyeongbuk_duplicate_evidence",
+    "map_representative_duplicate_evidence",
     "replay_profile_actions",
 ]

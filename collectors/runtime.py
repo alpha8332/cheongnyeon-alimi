@@ -23,6 +23,14 @@ from collectors.gyeongbuk_youth import (
     decide_gyeongbuk_regional_policy,
     map_gyeongbuk_duplicate_evidence,
 )
+from collectors.regional_pilot import (
+    BUSAN_SOURCE_ID,
+    SEOUL_SOURCE_ID,
+    BusanYouthExtractor,
+    SeoulYouthExtractor,
+    decide_representative_regional_policy,
+    map_representative_duplicate_evidence,
+)
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
 from collectors.raw import RawDocumentRole, RawPolicyDocument
@@ -40,6 +48,8 @@ SUPPORTED_SOURCE_IDS = (
     BOKJIRO_SOURCE_ID,
     CHEONAN_YOUTHCENTER_SOURCE_ID,
     GYEONGBUK_YOUTH_SOURCE_ID,
+    BUSAN_SOURCE_ID,
+    SEOUL_SOURCE_ID,
     YOUTHCENTER_SOURCE_ID,
 )
 
@@ -47,6 +57,8 @@ _EXTRACTOR_TYPES = {
     BOKJIRO_SOURCE_ID: BokjiroExtractor,
     CHEONAN_YOUTHCENTER_SOURCE_ID: CheonanYouthCenterExtractor,
     GYEONGBUK_YOUTH_SOURCE_ID: GyeongbukYouthExtractor,
+    BUSAN_SOURCE_ID: BusanYouthExtractor,
+    SEOUL_SOURCE_ID: SeoulYouthExtractor,
     YOUTHCENTER_SOURCE_ID: YouthCenterExtractor,
 }
 
@@ -145,9 +157,14 @@ def replay_runtime_raw(
 
     regional_decisions = ()
     policies = extracted
-    if source_id == GYEONGBUK_YOUTH_SOURCE_ID:
+    regional_deciders = {
+        GYEONGBUK_YOUTH_SOURCE_ID: decide_gyeongbuk_regional_policy,
+        BUSAN_SOURCE_ID: decide_representative_regional_policy,
+        SEOUL_SOURCE_ID: decide_representative_regional_policy,
+    }
+    if source_id in regional_deciders:
         decisions = tuple(
-            decide_gyeongbuk_regional_policy(policy)
+            regional_deciders[source_id](policy)
             for policy in extracted
         )
         regional_decisions = tuple(
@@ -175,11 +192,16 @@ def replay_runtime_raw(
     )
     duplicate_decisions = ()
     duplicate_manifest = None
-    if source_id == GYEONGBUK_YOUTH_SOURCE_ID:
+    duplicate_mappers = {
+        GYEONGBUK_YOUTH_SOURCE_ID: map_gyeongbuk_duplicate_evidence,
+        BUSAN_SOURCE_ID: map_representative_duplicate_evidence,
+        SEOUL_SOURCE_ID: map_representative_duplicate_evidence,
+    }
+    if source_id in duplicate_mappers:
         decisions = tuple(
             evaluate_cross_source_duplicate(
                 result.program,
-                map_gyeongbuk_duplicate_evidence(policy),
+                duplicate_mappers[source_id](policy),
                 duplicate_baseline,
             )
             for policy, result in normalized_pairs

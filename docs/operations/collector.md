@@ -6,7 +6,13 @@
 youthcenter-api
 bokjiro-central-welfare-api
 cheonan-youthcenter-web
+regional-gyeongbuk-youth-platform
+regional-busan-youth-platform
 ```
+
+`regional-seoul-youth-platform`은 목록 링크 클릭 뒤 identity가 생기는 Browser
+Source이므로 HTTP Collector 목록에는 없고, 검증된 Browser 캡처를 Runtime Raw로
+가져온 뒤 재처리 CLI에서 지원한다.
 
 현재 Collector는 명시적 CLI 실행만 지원한다. 단일 페이지 제한 수집과
 호출 예산 안에서 전체 목록을 순회하는 릴리스 snapshot 수집을 구분한다.
@@ -50,7 +56,7 @@ python -m collectors --help
 | --- | --- | --- | --- |
 | `--page` | `1` | 1~1000 | 요청 페이지 |
 | `--limit` | `10` | 1~500 | 목록 요청·저장 최대 항목 수 |
-| `--detail-limit` | `3` | 0~5 | 복지로 상세 수, 천안청년센터 상세 사용 여부 |
+| `--detail-limit` | `3` | 0~5 | Source별 상세 수, 승인 예산은 최대 3~5건 |
 
 온통청년은 `--detail-limit`을 사용하지 않는다.
 
@@ -76,6 +82,28 @@ python -m collectors --source cheonan-youthcenter-web --page 1 --limit 1 --detai
 
 이 Source는 `page=1`만 허용하고 `limit`과 `detail-limit`이 더 커도 승인 정책
 1건·상세 1건을 넘기지 않는다. 요청 시작 간격은 최소 2초다.
+
+경북 신청중 목록 3건과 상세 3건:
+
+```powershell
+python -m collectors --source regional-gyeongbuk-youth-platform `
+  --page 1 --limit 3 --detail-limit 3
+```
+
+경북은 공식 `신청중` 필터를 사용하고 지역구분·시행기관·지원대상 evidence가
+일치하는 후보를 상세 예산 안에서 우선한다. 실제 승인은 이후 지역·신청 상태
+Gate가 결정한다.
+
+부산 목록 3건과 상세 3건:
+
+```powershell
+python -m collectors --source regional-busan-youth-platform `
+  --page 1 --limit 3 --detail-limit 3
+```
+
+두 지역 Source 모두 page 1, 목록 1회, 상세 최대 3건과 요청 간격 최소 2초를
+강제한다. 부산의 이미지 원문을 재배포하지 않고 정책 식별·기관·기간·대상 등
+최소 사실과 Raw provenance만 처리한다.
 
 성공 출력에는 source ID, 실제 요청 수, 항목·상세·Raw 문서 수만 포함된다.
 요청 URL, query, 인증키, payload와 저장 파일명은 출력하지 않는다.
@@ -233,9 +261,37 @@ RYP4 교차 Source 판정을 수행한다.
 보존한다. 현재 closed인 후보만 있으면 RYP3에서 먼저 격리하므로 기준선을
 불필요하게 요구하지 않는다.
 
+부산도 같은 교차 Source Gate와 Runtime 명령을 사용한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
+  --source regional-busan-youth-platform `
+  --raw-root runtime/raw `
+  --limit 3 `
+  --decision-root runtime/decisions
+```
+
+서울은 승인된 in-app Browser action profile로 관찰한 JSON 파일만 다음 경계에서
+가져온다. Importer는 Source ID, 목록·상세 allowlist, `plcyBizId`, 제목 일치,
+최대 3건을 검증하고 원본 캡처 파일은 정식 Runtime Raw 저장 뒤 제거한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\import_seoul_browser_capture.py `
+  <browser-capture.json> --raw-root runtime/raw
+
+.\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
+  --source regional-seoul-youth-platform `
+  --raw-root runtime/raw `
+  --limit 3 `
+  --decision-root runtime/decisions
+```
+
+Browser 캡처는 사람이 임의 작성하는 Seed가 아니며 실제 공개 목록·상세 DOM
+관찰과 action trace를 담아야 한다. 계약 drift는 저장 전에 실패한다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
-| `--source` | 필수 | 현재 지원하는 네 source ID 중 하나 |
+| `--source` | 필수 | Runtime이 지원하는 여섯 source ID 중 하나 |
 | `--raw-root` | `runtime/raw` | Git 제외 Runtime Raw root |
 | `--limit` | `5000` | snapshot에서 처리할 list item 수, 1~5000 |
 | `--snapshot-id` | 최신 완료 manifest | 특정 완료 snapshot ID |

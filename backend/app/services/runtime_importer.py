@@ -8,8 +8,16 @@ from app.services.aggregator_baseline import load_aggregator_baseline
 from collectors.cross_source_duplicate import (
     CrossSourceDecisionManifestStore,
 )
-from collectors.gyeongbuk_youth import SOURCE_ID as GYEONGBUK_SOURCE_ID
 from collectors.runtime import RuntimeReplayResult, replay_runtime_raw
+
+
+REGIONAL_DUPLICATE_SOURCE_IDS = frozenset(
+    {
+        "regional-gyeongbuk-youth-platform",
+        "regional-busan-youth-platform",
+        "regional-seoul-youth-platform",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -36,15 +44,18 @@ def import_runtime_raw(
         limit=limit,
         snapshot_id=snapshot_id,
     )
-    if source_id == GYEONGBUK_SOURCE_ID and replay.duplicate_decisions:
+    if source_id in REGIONAL_DUPLICATE_SOURCE_IDS and replay.duplicate_decisions:
+        baseline = load_aggregator_baseline(db, raw_root=raw_root)
+        # SQLAlchemy autobegins a transaction for the read-only baseline query.
+        # End it before seed_importer opens the isolated write transaction.
+        if db.in_transaction():
+            db.rollback()
         replay = replay_runtime_raw(
             raw_root=raw_root,
             source_id=source_id,
             limit=limit,
             snapshot_id=snapshot_id,
-            duplicate_baseline=load_aggregator_baseline(
-                db, raw_root=raw_root
-            ),
+            duplicate_baseline=baseline,
         )
     decision_manifest_id = None
     if replay.duplicate_manifest is not None and decision_root is not None:

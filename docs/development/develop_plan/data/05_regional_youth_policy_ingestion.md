@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP4` 완료, `RYP5` 구현 준비
+- 현재 진행: `RYP0`~`RYP5` 완료, `RYP6` 구현 준비
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP4` 온통청년·복지로 교차 Source 제외 완료
+- 현재 Slice: `RYP5` 대표 Source actual 파일럿 완료
 
 ## 목적
 
@@ -587,6 +587,23 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 거짓·전국·중복 정책이 사용자 검색 결과에 포함되지 않음
 - accepted 표본은 원문 → Raw → DB → API → Browser lineage가 일치함
 - actual 실행 수치와 실패·제외·검토 필요 건수를 개발 기록에 남김
+
+#### 구현 결과
+
+- [x] `http_json` 경북, `http_html` 부산, `browser` 서울 3개 대표 유형을
+  각각 목록 1회·상세 3건으로 제한 actual 실행
+- [x] 경북 공식 `신청중` 필터와 지역 evidence 우선 상세 선택, 부산 HTML
+  목록·상세 Adapter, 서울 Browser 관찰 JSON의 allowlist·identity 검증 구현
+- [x] 9개 추출 중 경북 1건만 지역·신청 상태와 온통청년·복지로 중복 Gate를
+  통과해 PostgreSQL에 적재하고 나머지 8건은 review·closed로 격리
+- [x] 경북 표본의 Raw → 결정 manifest → PostgreSQL → Policy API → React
+  상세 Browser lineage와 동일 Raw 재실행 `unchanged` 확인
+- [x] selector·identity drift, Browser 캡처 drift, 결정적 offline replay와
+  기존 HTTP 실패 회귀 검증
+
+실행 수치, 일시 실패와 수정 내역은
+[개발 기록](../../development_notes/data/regional_youth_policy_ingestion.md)에
+남긴다. 파일럿은 3개 대표 구조만 구현하며 다른 승인 지역 확대는 RYP6 범위다.
 
 ### RYP6 - 지역별 순차 확대와 Forest 판정
 

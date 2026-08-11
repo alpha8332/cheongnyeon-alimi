@@ -30,7 +30,7 @@
 | RYP2 | completed | 공통 profile·discovery·runner 경계와 경북 Adapter·offline replay |
 | RYP3 | completed | 지역 evidence·신청 상태 Gate와 경북 Runtime 격리 |
 | RYP4 | completed | snapshot·PostgreSQL 기준선과 보수적 교차 Source 제외 Gate |
-| RYP5 | 대기 | 대표 Source actual |
+| RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | 대기 | 지역별 확대·전체 판정 |
 
 ## 구현 내용
@@ -187,6 +187,52 @@ fixture는 현재 closed라 중복 기준선 없이도 RYP3에서 먼저 격리�
 `accepted_regional`과 결정 manifest를 생성했다. 실 PostgreSQL actual 적재와
 정책 row 생성 여부 대조는 RYP5 범위로 남겼다.
 
+### RYP5 - 대표 Source actual 파일럿
+
+- 대표 유형은 경북 `http_json`, 부산 `http_html`, 서울 `browser`로 고정했다.
+  각 Source에서 목록 1회와 상세 3건만 관찰해 요청·상호작용 예산을 지켰다.
+- 경북 목록 요청에 공식 `신청중` 필터를 적용하고, 목록의 지역구분·시행기관·
+  지원대상 evidence가 일치하는 후보를 상세 예산 안에서 우선했다. 이는
+  후보 선택일 뿐 RYP3 승인 Gate를 완화하지 않는다.
+- 경북 포털이 대상 문구에 쓰는 `경북 주소`만 `경상북도 주소`로 확장해
+  canonical resolver에 전달한다. 원문은 Raw와 `source_fields`에 그대로 남고
+  다른 약칭·포털 관할은 지역 근거로 추정하지 않는다.
+- 부산 Adapter는 공식 목록 HTML의 `bizSid` identity와 제목·상태·기관·기간,
+  상세의 신청기간·담당기관·지원대상을 Raw·Extracted로 연결한다. `청년`만
+  명시된 대상은 부산 거주로 추정하지 않고 review로 유지한다.
+- 서울은 링크가 `#none`이고 클릭 뒤 `plcyBizId`가 정해지는 JavaScript 목록을
+  in-app Browser로 실제 이동했다. 최대 3건, 승인 list/detail host와 identity,
+  action trace를 검증한 구조화 Browser 관찰만 Runtime Raw로 저장한다.
+- Runtime과 Backend 중복 기준선 로더를 세 regional Source에 공통 적용했다.
+  실제 accepted가 처음 발생하며 기준선 read transaction 뒤 write transaction을
+  열 때 `InvalidRequestError`가 발생하는 기존 경계를 발견했고, read transaction을
+  명시적으로 종료한 후 쓰기를 시작하도록 수정했다. 최초 실패 실행은 정책을
+  쓰지 않았고 CollectionRun 감사 기록만 남았다.
+
+actual 판정 수치는 다음과 같다.
+
+| Source | Raw | 추출 | 지역·신청 승인 | review·closed | 교차 중복 제외 | DB 결과 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 경북 JSON | 7 | 3 | 1 | 2 | 0 | 최초 `inserted=1`, 동일 Raw `unchanged=1` |
+| 부산 HTML | 7 | 3 | 0 | 3 | 0 | 정책 0건, `skipped=3` |
+| 서울 Browser | 7 | 3 | 0 | 3 | 0 | 정책 0건, `skipped=3` |
+
+경북 `external_id=1094`, `2026년 꿈이음 청춘카페 지원사업`은 온통청년
+2,695건·복지로 461건 최신 snapshot/DB 기준선과 대조해 신규 지역 정책으로
+판정했다. 애플리케이션 DB를 Alembic `20260803_0004`에서 head
+`20260810_0006`으로 올린 뒤 Policy ID `9509`로 적재했다. 상세 API와 실제 API
+모드 React Browser에서 source ID, 제목, 경상북도, 접수 중,
+`2026-04-01~2026-12-19`, 자격 원문과 공식 원문 링크가 DB와 일치했다. 현재
+Source에는 구조화 가능한 서류·시설 문의처가 없어 Eligibility Summary는 이를
+없음/미확인으로 표시하며 값을 합성하지 않는다.
+
+같은 Raw 재실행은 동일 identity와 business 값으로 `unchanged=1`이었고,
+부산 detail 제목 drift는 partial Raw 없이 실패하며 서울 캡처의 detail identity
+drift도 저장 전에 거부했다. Browser 확인 시 서울 목록의 원시 HTTP도 200으로
+응답하는 긍정적 변화를 관찰했지만 RYP1 승인 mode를 이번 Slice에서 소급
+변경하지 않았다. RYP6에서 이용 조건과 함께 재확인한 뒤에만 HTTP mode 전환을
+검토한다.
+
 ## 주요 변경 파일
 
 - `data/reference/regional_youth_policy_sources.json`
@@ -196,6 +242,7 @@ fixture는 현재 closed라 중복 기준선 없이도 RYP3에서 먼저 격리�
 - `collectors/regional_discovery.py`
 - `collectors/browser_runner.py`
 - `collectors/gyeongbuk_youth.py`
+- `collectors/regional_pilot.py`
 - `collectors/regional_policy_gate.py`
 - `collectors/cross_source_duplicate.py`
 - `collectors/http.py`
@@ -203,6 +250,7 @@ fixture는 현재 closed라 중복 기준선 없이도 RYP3에서 먼저 격리�
 - `backend/app/services/aggregator_baseline.py`
 - `backend/app/services/runtime_importer.py`
 - `scripts/import_runtime_data.py`
+- `scripts/import_seoul_browser_capture.py`
 - `collectors/__init__.py`
 - `data/fixtures/regional/`
 - `tests/test_regional_policy_gate.py`
@@ -211,6 +259,7 @@ fixture는 현재 closed라 중복 기준선 없이도 RYP3에서 먼저 격리�
 - `tests/test_regional_discovery.py`
 - `tests/test_browser_runner.py`
 - `tests/test_gyeongbuk_youth.py`
+- `tests/test_regional_pilot.py`
 - `tests/test_regional_source_inventory.py`
 - `docs/development/develop_plan/data/05_regional_youth_policy_ingestion.md`
 - `docs/development/develop_plan/data/06_supplemental_official_policy_ingestion.md`
@@ -319,7 +368,37 @@ RYP4 구현 뒤 교차 Source 판정·기준선 loader·경북 Runtime·Collecti
   aggregator Policy·region rule 읽기, 기준선 row 수와 deterministic ID를
   검증했다. 기존 Policy 수정·삭제와 외부 웹 요청은 수행하지 않았다.
 
+RYP5 구현 뒤 대표 Adapter·Browser capture·실제 DB transaction 경계와 전체
+회귀를 실행했다.
+
+```powershell
+.\.venv\Scripts\python.exe -B -m pytest tests backend\tests -q -rs
+.\.venv\Scripts\python.exe -B -m pytest `
+  tests\integration\test_cross_source_duplicate_baseline.py `
+  tests\integration\test_runtime_to_database.py -q -rs
+Set-Location frontend
+npm.cmd test
+npm.cmd run build
+Set-Location ..
+.\.venv\Scripts\python.exe -B scripts\validate_docs.py
+git diff --check
+```
+
+- 전체 Python: `324 passed, 24 skipped, 96 subtests passed`. skip 24건은
+  `TEST_DATABASE_URL`을 넣지 않은 전체 실행의 PostgreSQL 테스트다.
+- 전용 `cheongnyeon_alimi_test`와 pgpass를 명시한 관련 PostgreSQL 통합:
+  `3 passed`. 기준선 read transaction 종료 뒤 regional policy write,
+  Runtime atomic·idempotent 적재를 실제 PostgreSQL에서 확인했다.
+- Frontend: `50 passed`, TypeScript·Vite production build 통과.
+- 문서 검증과 `git diff --check` 통과. 생성된 Frontend test/build 산출물은
+  검증 뒤 제거했다.
+- 실제 인수는 PostgreSQL 1건 삽입·동일 Raw 1건 unchanged, Policy 상세 API와
+  React Browser 일치까지 확인했다. 실행하지 않은 광역 전체 pagination이나
+  다른 지역 actual을 RYP5 성공으로 기록하지 않았다.
+
 ## 남은 작업
 
-- RYP5에서 Browser Discovery와 이용 조건을 모두 통과한 대표 Source만 actual 실행
-- RYP6에서 승인 Source를 지역별로 순차 확대하고 전체 Forest를 판정
+- RYP6에서 나머지 승인 Source를 지역별로 순차 확대하고 서울 HTTP mode의
+  긍정적 drift를 이용 조건과 함께 재검증
+- RYP6 전체 pagination에서 accepted·duplicate·review·closed·failed 합계와
+  Release 1 golden 회귀를 대조해 Forest 최종 판정
