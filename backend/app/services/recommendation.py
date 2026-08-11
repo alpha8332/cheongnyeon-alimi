@@ -25,20 +25,40 @@ def evaluate_policy_recommendation(
 
     # 1. 관심 분야 (Category) 매핑 (+30점)
     if request.category:
-        if policy.categories and request.category in policy.categories:
+        matched_cat = False
+        if policy.categories and any(request.category.lower() in str(c).lower() or str(c).lower() in request.category.lower() for c in policy.categories):
+            matched_cat = True
+        elif policy.category_text and (request.category.lower() in policy.category_text.lower() or policy.category_text.lower() in request.category.lower()):
+            matched_cat = True
+
+        if matched_cat:
             score += 30
+            cat_label = policy.categories[0] if policy.categories else (policy.category_text or request.category)
             reasons.append(
                 RecommendationReason(
                     code="MATCHED_CATEGORY",
-                    label=f"관심 분야 부합 ({request.category})",
+                    label=f"관심 분야 부합 ({cat_label})",
                 )
             )
 
     # 2. 거주지 (Region) 매핑 (+30점)
     if request.region:
-        if not policy.regions or "전국" in policy.regions or request.region in policy.regions:
+        matched_region = False
+        matched_region_str = request.region
+
+        if not policy.regions or "전국" in policy.regions or (policy.region_text and "전국" in policy.region_text):
+            matched_region = True
+            matched_region_str = "전국"
+        elif policy.regions:
+            for r in policy.regions:
+                r_str = str(r)
+                if request.region in r_str or r_str in request.region:
+                    matched_region = True
+                    matched_region_str = r_str
+                    break
+
+        if matched_region:
             score += 30
-            matched_region_str = "전국" if (not policy.regions or "전국" in policy.regions) else request.region
             reasons.append(
                 RecommendationReason(
                     code="MATCHED_REGION",
@@ -81,7 +101,7 @@ def evaluate_policy_recommendation(
         external_id=policy.external_id or "",
         title=policy.title,
         lead=policy.summary,
-        category=policy.categories[0] if policy.categories else "기타",
+        category=policy.categories[0] if policy.categories else (policy.category_text or "기타"),
         regions=policy.regions or ["전국"],
         min_age=policy.age_min,
         max_age=policy.age_max,
