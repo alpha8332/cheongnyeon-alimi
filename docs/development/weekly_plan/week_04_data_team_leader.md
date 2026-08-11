@@ -9,8 +9,8 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0` 완료·`RYP1` Browser Discovery 보완 (`DTL4-4B`·`ES4` actual
-  세로 인수 통과), Data 05·06 구현 뒤 `DTL4-5` 소비 대조 예정
+- 현재 Slice: Data 05 `RYP0`·`RYP1` 완료, `RYP2` 구현 준비 (`DTL4-4B`·`ES4`
+  actual 세로 인수 통과), Data 05·06 구현 뒤 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -86,8 +86,9 @@ W4-G1 뒤 DTL4-2B·3B·4B actual 구현과 Backend·Frontend actual 연결을 �
 수행한다. 같은 Schema, Migration, Policy model이나 Source Adapter를 동시에
 수정해야 하면 Team Leader가 소유 브랜치와 병합 순서를 먼저 지정한다.
 
-DTL4-4B와 ES4가 완료된 현재 Data 05 RYP0을 완료했고 RYP1은 17개 홈의 Browser
-Discovery 기준으로 보완한다. RYP1~RYP2부터 DTL4-5와 병렬로 진행한다.
+DTL4-4B와 ES4가 완료된 현재 Data 05 RYP0·RYP1을 완료했고 17개 홈의 Browser
+Discovery 결과 12개 승인·4개 차단·1개 제외를 확정했다. RYP2부터 DTL4-5와
+병렬로 진행한다.
 RYP0~RYP4는 DTL4-6 W4-G2, RYP5 actual은 DTL4-7 W4-G3, RYP6
 지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06 SOP0~SOP3,
 SOP4 actual과 SOP5 최종 상태도 각각 같은 W4-G2~G4의 필수 입력으로 둔다.
@@ -689,7 +690,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
 - [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
 - [x] Data 05 RYP0 후보 inventory·검증 계약 완료
-- [ ] Data 05 RYP1 Browser Discovery preflight·Source 승인 보완
+- [x] Data 05 RYP1 Browser Discovery preflight·Source 승인 완료
 - [ ] Data 05 RYP2~RYP4 Adapter·지역·중복 제외 Gate 통과
 - [ ] Data 06 SOP0~SOP3 후보 정제·중복 감사·승인·Adapter Gate 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과

@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0` 완료, `RYP1` Browser Discovery 기준으로 재검토 중
+- 현재 진행: `RYP0`·`RYP1` 완료, `RYP2` 구현 준비
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP1` Browser Discovery 보완
+- 현재 Slice: `RYP1` Browser Discovery 재검증 완료
 
 ## 목적
 
@@ -94,23 +94,28 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 테스트·데모이거나 이용 조건상 수집할 수 없으면 다른 공식 Source를 검토하고,
 우회 수집하지 않는다.
 
-### RYP1 HTTP 중심 잠정 판정과 재검토 (`2026-08-11`)
+### RYP1 Browser Discovery 최종 판정 (`2026-08-11`)
 
-- 잠정 승인 9개: 부산, 대구, 인천, 광주(현행 통합 플랫폼), 대전, 울산, 강원,
-  전북, 경남
-- 잠정 차단 7개: 서울, 세종, 경기, 충북, 충남, 경북, 제주
-- 잠정 제외 1개: 전남 구 포털
+- 승인 12개: 서울, 부산, 대구, 인천, 광주(현행 통합 플랫폼), 대전, 울산,
+  강원, 충북, 전북, 경남, 제주
+- 차단 4개: 세종, 경기, 충남, 경북
+- 제외 1개: 전남 구 포털
+- Browser 상세 도달 16개, 홈 렌더링까지만 성공 1개(경북)
 
-이 판정은 원시 HTTP 재현 가능성을 운영 수집의 선행조건으로 과도하게 두어
-사용자가 요구한 Browser 기반 홈 탐색을 충분히 반영하지 못했다. 실제 서울
-공개 화면에서 사용자와 같은 클릭으로 `맞춤서비스` → 서울시 정책 90건·자치구
-정책 21건 → `plcyBizId=V202600006` 상세까지 진입했고 주관기관·지원내용·기간·
-지원규모·자격·신청방법 필드를 확인했다. 따라서 HTTP 실패를 곧 Source 차단으로
-판정한 결과는 최종 승인이 아니며 RYP1을 재개해 17개 사이트를 Browser 기준으로
-다시 검증한다.
+원시 HTTP 중심 잠정 판정 9개 승인·7개 차단·1개 제외를 Browser 기준으로
+재검증했다. 서울은 `맞춤서비스` → 서울시 정책 90건·자치구 정책 21건 →
+`plcyBizId=V202600006` 상세까지 진입했고, 강원·충북·제주도 Browser 상세
+식별자를 재현해 `browser` collection mode로 승인했다. 서버 HTML을 안정적으로
+재현한 나머지 8개는 `http_html` mode로 승인했다.
+
+세종·경기·충남은 Browser 상세에는 도달했지만 해당 정책 경로가 robots 허용
+범위에 없어 운영 collection을 승인하지 않았다. 경북은 홈 렌더링 뒤 DOM
+instrumentation 충돌이 두 번 재현됐고 직접 정책 목록도 서버 500을 반환했으며
+robots가 해당 경로를 제한해 `home_loaded` 실패 단계로 기록했다. 전남 구 포털은
+현행 통합 플랫폼과 중복되고 robots가 홈만 허용해 제외 상태를 유지한다.
 
 광주 관할 라벨은 XLSX lineage로 보존하되 운영 Source는 기존 센터가 연결하는
-`https://youth.gwangju.go.kr/www`로 교체했다. 공식 화면이
+`https://youth.jeonnam-gwangju.go.kr/www/`로 교체했다. 공식 화면이
 전남광주통합특별시 청년통합플랫폼임을 확인했으므로 Source mapping은 활성
 `1200000000`으로 승인했다. 실제 개별 정책의 대상 지역은 포털 관할만으로
 추정하지 않고 RYP3에서 상세 원문 evidence로 판정한다. 전남 구 포털의 퇴역
@@ -409,19 +414,20 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
   validator에서 거부됨
 - 허용 여부가 불명확한 Source를 구현 대상으로 승인하지 않음
 
-#### 재검토 상태 (`2026-08-11`)
+#### 완료 결과 (`2026-08-11`)
 
 - [x] HTTP 중심 9개 승인·7개 차단·1개 제외 잠정 inventory와 validator 작성
 - [x] 서울 Browser에서 홈 → 서울시 정책 90건·자치구 정책 21건 → 상세 1건과
   주요 필드까지 사용자 클릭 경로 재현
-- [ ] 17개 사이트 Browser Discovery 재검증
-- [ ] discovery 상태와 collection mode를 분리한 inventory·validator 보완
-- [ ] 17개 모두의 action profile·상세 표본·실패 단계 기록
-- [ ] Browser 결과를 반영한 최종 RYP-G1 승인
+- [x] 17개 사이트 Browser Discovery 재검증
+- [x] discovery 상태와 collection mode를 분리한 inventory `1.1.0`·validator 보완
+- [x] 17개 모두의 action profile·상세 표본 또는 실패 단계 기록
+- [x] Browser 결과를 반영한 RYP-G1 실행 경계 승인
 
-기존 `approved` 9개·`blocked` 7개·`rejected` 1개 수치는 완료 결과가 아니라
-RYP1 보완 입력이다. 특히 서울의 기술 차단 판정은 철회 대상이며 나머지 16개도
-같은 Browser 기준으로 재검증하기 전에는 최종 승인 수를 확정하지 않는다.
+최종 판정은 `approved` 12개·`blocked` 4개·`rejected` 1개다. 화면에서 상세를
+읽을 수 있는지와 운영 수집이 robots·이용 경계를 만족하는지를 분리했으므로,
+차단 Source의 discovery evidence는 보존하되 RYP2 실행 allowlist에는 포함하지
+않는다.
 
 ### RYP2 - 공통 실행 경계와 Source Adapter
 

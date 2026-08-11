@@ -26,8 +26,8 @@
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | RYP0 | completed | 17개 후보 JSON·Schema·계약 테스트 14개와 39개 subtest 통과 |
-| RYP1 | in-progress (reopened) | HTTP 잠정 판정 뒤 Browser Discovery 기준으로 17개 재검토 |
-| RYP2 | 대기 | Browser Discovery Engine·profile replay·Source Adapter |
+| RYP1 | completed | 17개 Browser Discovery, 12개 승인·4개 차단·1개 제외 |
+| RYP2 | 준비 | Browser Discovery Engine·profile replay·Source Adapter |
 | RYP3 | 대기 | 지역 고유성·신청 가능성 |
 | RYP4 | 대기 | 온통청년·복지로 중복 제외 |
 | RYP5 | 대기 | 대표 Source actual |
@@ -50,10 +50,8 @@
 
 - 17개 홈에서 운영 주체, robots, 약관·라이선스 표시, 기술 접근, 정책
   목록·상세 경로와 identity를 제한 확인했다.
-- 부산·대구·인천·광주 통합·대전·울산·강원·전북·경남 9개를 승인하고 고정
-  목록·상세 allowlist와 목록 1회·상세 3건·최소 2초 간격 예산을 기록했다.
-- 서울은 웹 게이트, 세종·경기·충남·경북은 robots 경로 제한, 충북·제주는
-  현재 공통 HTTP 전송에서 재현할 수 없어 `blocked`로 뒀다.
+- HTTP 중심 1차 판정은 부산·대구·인천·광주 통합·대전·울산·강원·전북·경남
+  9개 승인과 7개 차단을 만들었으나 최종 판정으로 사용하지 않았다.
 - 전남 구 포털은 robots가 홈만 허용하고 현행 통합 플랫폼으로 대체되어
   `rejected`로 판정했다.
 - `RegionalSourceInventoryValidator`가 승인 상태·preflight·Source ID·allowlist·
@@ -61,7 +59,7 @@
 - 명시적 개방 라이선스가 없는 승인 Source는 원문을 재배포하지 않고 최소 정책
   사실과 provenance만 Runtime에서 처리한다.
 
-### RYP1 보완 - Browser Discovery 기준 재개
+### RYP1 보완 - Browser Discovery 재검증 완료
 
 사용자가 요구한 입력 계약은 목록 endpoint가 아니라 공식 홈 URL이다. 기존
 preflight는 원시 HTTP 접근을 우선해 Browser에서 사용자처럼 메뉴·검색·선택을
@@ -76,9 +74,21 @@ preflight는 원시 HTTP 접근을 우선해 Browser에서 사용자처럼 메�
 
 상세에서 `plcyBizId=V202600006`, 주관기관, 지원내용, 신청기간, 지원규모,
 연령·학력·취업상태, 참여제한, 신청절차·제출서류 label과 공식 URL을 확인했다.
-따라서 서울의 `technical_access=blocked`는 Browser collection 가능성을 반영하지
-못한 잠정 결과다. 기존 9개 승인·7개 차단·1개 제외와 validator는 RYP1 보완의
-출발점으로 보존하되 최종 Source 승인으로 사용하지 않는다.
+따라서 서울의 `technical_access=blocked`와 Browser collection 가능성을 분리했다.
+같은 기준으로 17개 사이트를 재검증해 16개는 상세까지, 경북은 홈 렌더링까지
+도달했다.
+
+- `http_html` 승인 8개: 부산, 대구, 인천, 광주 통합, 대전, 울산, 전북, 경남
+- `browser` 승인 4개: 서울, 강원, 충북, 제주
+- 차단 4개: 세종, 경기, 충남은 상세 도달 후 robots 경계에서 중단, 경북은 홈
+  렌더링 후 DOM instrumentation 충돌·목록 500·robots 제한을 기록
+- 제외 1개: 전남 구 포털은 현행 통합 플랫폼과 중복되고 robots가 홈만 허용
+
+inventory Schema를 `1.1.0`으로 올려 `browser_access`, 마지막 discovery 상태,
+collection mode, interaction budget, action profile, 목록 관찰 수, 상세 표본 identity와
+실패 근거를 필수화했다. Domain validator는 승인 Source의 Browser 접근·상세
+evidence와 collection mode별 HTTP 접근을 검사하고, 비승인 Source가 실행 mode나
+allowlist를 주장하지 못하게 한다.
 
 ## 주요 변경 파일
 
@@ -107,10 +117,10 @@ RYP1 제한 탐색에서 기존 광주 센터가 연결하는 현행 공식 사�
 ### 후보와 승인 Source 분리
 
 홈 URL과 상세 seed는 Source 발견의 입력일 뿐 승인 목록·상세 endpoint가 아니다.
-현재 inventory는 HTTP 중심 잠정 판정이므로 최종 실행 계약이 아니다. RYP1
-보완에서 `discovery_status`와 `collection_mode`를 분리하고 17개 모두의 Browser
-action profile을 검증한 뒤 Source ID·allowlist·interaction/request 예산을 다시
-승인한다. RYP2는 보완된 실행 inventory 밖의 경로를 호출하지 않는다.
+현재 inventory `1.1.0`은 RYP1 최종 실행 경계다. `discovery.status`와
+`collection_mode`를 분리하고 17개 모두의 Browser action profile을 검증해 Source
+ID·allowlist·interaction/request 예산을 다시 승인했다. RYP2는 이 inventory 밖의
+경로를 호출하지 않는다.
 
 ## 검증 결과
 
@@ -124,11 +134,19 @@ action profile을 검증한 뒤 Source ID·allowlist·interaction/request 예산
 - inventory JSON Schema, 17개 관할 라벨·URL 유일성, HTTPS·비밀 없는 URL,
   17개 결정 상태, 승인·비승인 실행 경계, 활성·퇴역 행정구역 code, 부산 탐색
   seed와 잘못된 교차 필드 조합 거부를 확인했다.
-- 이 결과는 HTTP 중심 잠정 inventory의 내부 일관성 검증이며, 17개 Browser
-  Discovery 완료나 최종 Source 승인을 뜻하지 않는다.
+- 이후 RYP1 재검증에서 아래 관련 계약·행정구역 회귀를 실행했다.
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\validate_docs.py
+.\.venv\Scripts\python.exe -m pytest tests\test_administrative_regions.py tests\test_regional_source_inventory.py -q
+```
+
+- 결과: `20 passed, 50 subtests passed`
+- Browser Discovery 16개 상세 도달·1개 홈 도달, collection mode 분기,
+  Browser-only 승인, robots 차단 evidence, 비승인 실행 경계와 잘못된 교차 필드
+  조합 거부를 확인했다.
+
+```powershell
+python scripts\validate_docs.py
 git diff --check
 ```
 
@@ -139,8 +157,6 @@ git diff --check
 
 ## 남은 작업
 
-- RYP1에서 17개 홈의 Browser 메뉴·검색·선택·목록·상세 경로 재검증
-- discovery 상태·collection mode·action profile 계약과 validator 보완
 - RYP2에서 Browser Discovery Engine·profile replay와 Source Adapter 구현
 - RYP3에서 정책별 지역 고유성·신청 가능성과 지역 evidence mapping 결정
 - RYP4에서 온통청년·복지로 snapshot·PostgreSQL 기준 중복 제외

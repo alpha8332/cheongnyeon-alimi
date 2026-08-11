@@ -43,11 +43,14 @@ Data 05는 사용자 제공 XLSX의 17개 지역 포털 URL을
 [`regional_youth_policy_source_inventory.schema.json`](../../data/schema/regional_youth_policy_source_inventory.schema.json)이
 검증한다.
 
-RYP1의 첫 HTTP 중심 제한 탐색은 승인 9개, 차단 7개, 제외 1개를 만들었지만
-최종 승인으로 사용하지 않는다. 서울 공개 화면에서 Browser로 홈 → 정책 목록 →
-상세와 구조화 필드를 재현해 원시 HTTP 실패만으로 Source를 차단할 수 없음이
-확인됐다. 17개 모두를 Browser Discovery로 재검토하고 discovery 상태와 API·
-HTTP·Browser collection mode를 분리한 뒤 실행 inventory를 다시 승인한다.
+RYP1은 17개 모두를 Browser Discovery로 재검증해 12개 승인, 4개 차단, 1개
+제외로 확정했다. 16개는 상세까지 도달했고 경북은 홈 렌더링 뒤 자동화 계층
+충돌·목록 500·robots 제한 단계에서 중단됐다. 승인 Source는 서버 HTML 8개와
+Browser 4개(서울·강원·충북·제주)로 분리한다. 화면 discovery가 성공해도 robots
+허용 경계가 없는 세종·경기·충남은 운영 collection을 승인하지 않는다.
+
+Schema `1.1.0`은 `browser_access`, discovery 상태, collection mode, interaction
+budget, 재현 action profile과 상세 표본 identity 또는 실패 이유를 검증한다.
 
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영

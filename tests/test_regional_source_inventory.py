@@ -45,7 +45,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             (), self.schema_validator.schema_issues(self.inventory)
         )
         self.assertEqual((), self.domain_validator.issues(self.inventory))
-        self.assertEqual("1.0.0", self.inventory["schema_version"])
+        self.assertEqual("1.1.0", self.inventory["schema_version"])
         self.assertEqual(
             "kr-bjd-20260803",
             self.inventory["region_reference_scheme"],
@@ -104,13 +104,46 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             self.assertNotEqual(
                 "unchecked", source["preflight"]["operator"]
             )
+            self.assertNotEqual(
+                "unchecked", source["preflight"]["browser_access"]
+            )
             self.assertIsNotNone(
                 source["preflight"]["last_checked_at"]
             )
         self.assertEqual(
-            {"approved": 9, "blocked": 7, "rejected": 1},
+            {"approved": 12, "blocked": 4, "rejected": 1},
             statuses,
         )
+
+    def test_browser_discovery_reaches_details_for_sixteen_sources(self) -> None:
+        discovery_statuses: dict[str, int] = {}
+        modes: dict[str, int] = {}
+        for source in self.inventory["sources"]:
+            discovery = source["discovery"]
+            discovery_statuses[discovery["status"]] = (
+                discovery_statuses.get(discovery["status"], 0) + 1
+            )
+            modes[discovery["collection_mode"]] = (
+                modes.get(discovery["collection_mode"], 0) + 1
+            )
+            self.assertEqual("goto", discovery["actions"][0]["kind"])
+
+        self.assertEqual(
+            {"extraction_ready": 16, "home_loaded": 1},
+            discovery_statuses,
+        )
+        self.assertEqual(
+            {"http_html": 8, "browser": 4, "none": 5}, modes
+        )
+
+        gyeongbuk = next(
+            source
+            for source in self.inventory["sources"]
+            if source["jurisdiction_key"] == "gyeongbuk"
+        )
+        self.assertEqual("blocked", gyeongbuk["status"])
+        self.assertEqual("home_loaded", gyeongbuk["discovery"]["status"])
+        self.assertTrue(gyeongbuk["discovery"]["failure_reason"])
 
     def test_approved_sources_have_execution_boundaries(self) -> None:
         approved = [
@@ -118,7 +151,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             for source in self.inventory["sources"]
             if source["status"] == "approved"
         ]
-        self.assertEqual(9, len(approved))
+        self.assertEqual(12, len(approved))
         self.assertEqual(
             len(approved), len({source["source_id"] for source in approved})
         )
@@ -135,10 +168,50 @@ class RegionalSourceInventoryTests(unittest.TestCase):
                     },
                     source["request_budget"],
                 )
+                discovery = source["discovery"]
+                self.assertEqual("extraction_ready", discovery["status"])
+                self.assertNotEqual("none", discovery["collection_mode"])
                 self.assertEqual(
-                    "available",
-                    source["preflight"]["technical_access"],
+                    "available", source["preflight"]["browser_access"]
                 )
+                self.assertTrue(discovery["sample_external_id"])
+                self.assertTrue(discovery["sample_title"])
+                self.assertIn(
+                    "observe_detail",
+                    {action["kind"] for action in discovery["actions"]},
+                )
+                if discovery["collection_mode"] != "browser":
+                    self.assertEqual(
+                        "available",
+                        source["preflight"]["technical_access"],
+                    )
+
+    def test_browser_mode_can_approve_a_http_blocked_source(self) -> None:
+        seoul = next(
+            source
+            for source in self.inventory["sources"]
+            if source["jurisdiction_key"] == "seoul"
+        )
+        self.assertEqual("approved", seoul["status"])
+        self.assertEqual("blocked", seoul["preflight"]["technical_access"])
+        self.assertEqual("available", seoul["preflight"]["browser_access"])
+        self.assertEqual("browser", seoul["discovery"]["collection_mode"])
+
+    def test_robots_blocked_sources_preserve_discovery_evidence(self) -> None:
+        blocked = {
+            source["jurisdiction_key"]: source
+            for source in self.inventory["sources"]
+            if source["status"] == "blocked"
+        }
+        self.assertEqual(
+            {"sejong", "gyeonggi", "chungnam", "gyeongbuk"},
+            set(blocked),
+        )
+        for key in {"sejong", "gyeonggi", "chungnam"}:
+            self.assertEqual(
+                "extraction_ready", blocked[key]["discovery"]["status"]
+            )
+            self.assertEqual("disallowed", blocked[key]["preflight"]["robots"])
 
     def test_inactive_sources_have_no_execution_boundary(self) -> None:
         inactive = [
@@ -146,7 +219,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             for source in self.inventory["sources"]
             if source["status"] in {"blocked", "rejected"}
         ]
-        self.assertEqual(8, len(inactive))
+        self.assertEqual(5, len(inactive))
         for source in inactive:
             with self.subTest(source=source["jurisdiction_key"]):
                 self.assertIsNone(source["source_id"])
@@ -155,6 +228,9 @@ class RegionalSourceInventoryTests(unittest.TestCase):
                     [], source["approved_detail_url_patterns"]
                 )
                 self.assertIsNone(source["request_budget"])
+                self.assertEqual(
+                    "none", source["discovery"]["collection_mode"]
+                )
 
     def test_region_mappings_preserve_active_and_retired_codes(self) -> None:
         review_required = set()
@@ -258,6 +334,46 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             "minimum_interval_seconds": 2,
         }
         cases.append(inactive_budget)
+
+        inactive_collection = copy.deepcopy(self.inventory)
+        inactive_collection["sources"][blocked_index]["discovery"][
+            "collection_mode"
+        ] = "browser"
+        cases.append(inactive_collection)
+
+        missing_sample = copy.deepcopy(self.inventory)
+        missing_sample["sources"][approved_index]["discovery"][
+            "sample_external_id"
+        ] = None
+        cases.append(missing_sample)
+
+        missing_detail_evidence = copy.deepcopy(self.inventory)
+        actions = missing_detail_evidence["sources"][approved_index][
+            "discovery"
+        ]["actions"]
+        missing_detail_evidence["sources"][approved_index]["discovery"][
+            "actions"
+        ] = [
+            action for action in actions if action["kind"] != "observe_detail"
+        ]
+        cases.append(missing_detail_evidence)
+
+        browser_unavailable = copy.deepcopy(self.inventory)
+        browser_unavailable["sources"][approved_index]["preflight"][
+            "browser_access"
+        ] = "blocked"
+        cases.append(browser_unavailable)
+
+        http_index = next(
+            index
+            for index, source in enumerate(self.inventory["sources"])
+            if source["discovery"]["collection_mode"] == "http_html"
+        )
+        http_unavailable = copy.deepcopy(self.inventory)
+        http_unavailable["sources"][http_index]["preflight"][
+            "technical_access"
+        ] = "blocked"
+        cases.append(http_unavailable)
 
         invalid_mapping = copy.deepcopy(self.inventory)
         invalid_mapping["sources"][approved_index]["region_reference"][

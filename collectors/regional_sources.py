@@ -57,6 +57,7 @@ def regional_source_inventory_issues(
         status = source["status"]
         source_id = source["source_id"]
         preflight = source["preflight"]
+        discovery = source["discovery"]
         mapping = source["region_reference"]
 
         if require_decisions and status == "candidate":
@@ -75,6 +76,7 @@ def regional_source_inventory_issues(
                 "terms",
                 "license",
                 "technical_access",
+                "browser_access",
             ):
                 if preflight[field] == "unchecked":
                     issues.append(
@@ -92,6 +94,8 @@ def regional_source_inventory_issues(
                         "decided sources require a preflight timestamp",
                     )
                 )
+
+        _discovery_issues(source, path, issues)
 
         if mapping["mapping_status"] == "matched_active":
             if mapping["active_code"] is None:
@@ -169,6 +173,14 @@ def regional_source_inventory_issues(
                         "non-approved sources cannot have a request budget",
                     )
                 )
+            if discovery["collection_mode"] != "none":
+                issues.append(
+                    _error(
+                        f"{path}.discovery.collection_mode",
+                        "inactive_collection_mode",
+                        "non-approved sources cannot select a collection mode",
+                    )
+                )
 
     return issues
 
@@ -180,6 +192,7 @@ def _approved_source_issues(
 ) -> None:
     source_id = source["source_id"]
     preflight = source["preflight"]
+    discovery = source["discovery"]
     if not source_id:
         issues.append(
             _error(
@@ -256,12 +269,40 @@ def _approved_source_issues(
                 "approved source paths must not be disallowed by robots rules",
             )
         )
-    if preflight["technical_access"] != "available":
+    if preflight["browser_access"] != "available":
+        issues.append(
+            _error(
+                f"{path}.preflight.browser_access",
+                "approved_browser_unavailable",
+                "approved sources require reproducible Browser access",
+            )
+        )
+    if discovery["status"] != "extraction_ready":
+        issues.append(
+            _error(
+                f"{path}.discovery.status",
+                "approved_discovery_incomplete",
+                "approved sources require an extraction-ready discovery profile",
+            )
+        )
+    collection_mode = discovery["collection_mode"]
+    if collection_mode == "none":
+        issues.append(
+            _error(
+                f"{path}.discovery.collection_mode",
+                "approved_collection_mode_required",
+                "approved sources require an explicit collection mode",
+            )
+        )
+    elif (
+        collection_mode in {"api", "http_html", "http_json"}
+        and preflight["technical_access"] != "available"
+    ):
         issues.append(
             _error(
                 f"{path}.preflight.technical_access",
-                "approved_source_unavailable",
-                "approved sources require deterministic HTTP access",
+                "approved_http_source_unavailable",
+                "HTTP collection modes require deterministic HTTP access",
             )
         )
 
@@ -287,6 +328,92 @@ def _approved_source_issues(
                     "approved detail patterns must remain on the source home host",
                 )
             )
+
+
+def _discovery_issues(
+    source: Mapping[str, Any],
+    path: str,
+    issues: list[ValidationIssue],
+) -> None:
+    discovery = source["discovery"]
+    actions = discovery["actions"]
+    budget = discovery["interaction_budget"]
+
+    if len(actions) > budget["max_interactions"]:
+        issues.append(
+            _error(
+                f"{path}.discovery.actions",
+                "interaction_budget_exceeded",
+                "discovery actions exceed the declared interaction budget",
+            )
+        )
+
+    first_action = actions[0]
+    if first_action["kind"] != "goto":
+        issues.append(
+            _error(
+                f"{path}.discovery.actions[0].kind",
+                "discovery_must_start_at_home",
+                "Browser discovery must start with a home-page goto",
+            )
+        )
+    elif _without_fragment(first_action["target"]) != _without_fragment(
+        source["home_url"]
+    ):
+        issues.append(
+            _error(
+                f"{path}.discovery.actions[0].target",
+                "discovery_home_mismatch",
+                "the first discovery action must target the source home URL",
+            )
+        )
+
+    if discovery["status"] == "extraction_ready":
+        if discovery["sample_external_id"] is None:
+            issues.append(
+                _error(
+                    f"{path}.discovery.sample_external_id",
+                    "discovery_sample_id_required",
+                    "extraction-ready discovery requires a sample external ID",
+                )
+            )
+        if discovery["sample_title"] is None:
+            issues.append(
+                _error(
+                    f"{path}.discovery.sample_title",
+                    "discovery_sample_title_required",
+                    "extraction-ready discovery requires a sample title",
+                )
+            )
+        if not any(action["kind"] == "observe_detail" for action in actions):
+            issues.append(
+                _error(
+                    f"{path}.discovery.actions",
+                    "discovery_detail_evidence_required",
+                    "extraction-ready discovery requires detail-page evidence",
+                )
+            )
+        if discovery["failure_reason"] is not None:
+            issues.append(
+                _error(
+                    f"{path}.discovery.failure_reason",
+                    "ready_discovery_has_failure",
+                    "extraction-ready discovery cannot retain a failure reason",
+                )
+            )
+    elif discovery["failure_reason"] is None:
+        issues.append(
+            _error(
+                f"{path}.discovery.failure_reason",
+                "incomplete_discovery_reason_required",
+                "incomplete discovery requires a recorded failure reason",
+            )
+        )
+
+
+def _without_fragment(url: str) -> tuple[str, str, str, str]:
+    parsed = urlsplit(url)
+    return parsed.scheme, parsed.netloc, parsed.path, parsed.query
 
 
 def _error(path: str, code: str, message: str) -> ValidationIssue:
