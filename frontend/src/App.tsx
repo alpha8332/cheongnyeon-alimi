@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router';
 import AppShellLayout from '@/layouts/AppShellLayout';
 import AdminShellLayout from '@/layouts/AdminShellLayout';
+import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
 
 // user 페이지
 import HomePage from '@/pages/user/HomePage';
@@ -40,13 +41,18 @@ export const router = createBrowserRouter([
       { path: 'admin/login', element: <AdminLoginPage /> },
       {
         path: 'admin',
-        element: <AdminShellLayout />,
+        element: <AdminProtectedRoute />,
         children: [
-          { index: true, element: <DashboardPage /> },
-          { path: 'collectors', element: <CollectorPage /> },
-          { path: 'runs', element: <CollectionRunsPage /> },
-          { path: 'runs/:runId', element: <CollectionRunDetailPage /> },
-          { path: 'quality', element: <DataQualityPage /> },
+          {
+            element: <AdminShellLayout />,
+            children: [
+              { index: true, element: <DashboardPage /> },
+              { path: 'collectors', element: <CollectorPage /> },
+              { path: 'runs', element: <CollectionRunsPage /> },
+              { path: 'runs/:runId', element: <CollectionRunDetailPage /> },
+              { path: 'quality', element: <DataQualityPage /> },
+            ],
+          },
         ],
       },
     ],

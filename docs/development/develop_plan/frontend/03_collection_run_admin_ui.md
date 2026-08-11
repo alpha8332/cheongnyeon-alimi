@@ -12,7 +12,7 @@
 - 4주차 대응: `W4-F1`, `W4-F2`, Critical Path A (`week_04_v0_5_0.md`)
 - 작업 브랜치: `feature/backend/admin-run-management` (Backend 공유),
   Frontend UI: `feature/frontend/bookmarks-calendar-admin`
-- 현재 Slice: FE3-01 draft (FE3-00 completed)
+- 현재 Slice: FE3-04 completed (FE3-05 draft)
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
@@ -112,10 +112,10 @@
 | Forest 묶음 | FE3 Slice | 4주차 | 책임 |
 | --- | --- | --- | --- |
 | U0 | FE3-00 | F0 | DTO·route·Mock 계약 | completed |
-| U0 | FE3-01 | F1 | PIN login·session·logout |
-| U1 | FE3-02 | F2 | CollectionRun 목록·필터 |
-| U1 | FE3-03 | F2 | Run 상세·stale·상태 |
-| U2 | FE3-04 | F2 | 수동 실행 confirm |
+| U0 | FE3-01 | F1 | PIN login·session·logout | completed |
+| U1 | FE3-02 | F2 | CollectionRun 목록·필터 | completed |
+| U1 | FE3-03 | F2 | Run 상세·stale·상태 | completed |
+| U2 | FE3-04 | F2 | 수동 실행 confirm | completed |
 | U3 | FE3-05 | F2 | Real API·Browser·인계 |
 | W4-F5·F8 | FE3-06 | F5 | Admin Toast·a11y |
 
@@ -146,7 +146,7 @@ OpenAPI·`docs/api/admin_*.md` 기준으로 DTO·query(`size`·`pages`·`start_d
 
 ---
 
-### FE3-01 — PIN login·session UI — draft
+### FE3-01 — PIN login·session UI — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -157,9 +157,13 @@ OpenAPI·`docs/api/admin_*.md` 기준으로 DTO·query(`size`·`pages`·`start_d
 | **검증** | unit + Browser wrong PIN·429 |
 | **완료 기준** | W4-G0 PIN·token 책임과 일치 |
 
+2026-08-11 구현: `adminSessionStorage`(in-memory), `AdminLoginPage` PIN form,
+`AdminProtectedRoute`, logout. 429 cooldown 5s. unit
+`adminSessionStorage.test.ts`. Browser wrong PIN은 FE3-05.
+
 ---
 
-### FE3-02 — CollectionRun 목록·필터 — draft
+### FE3-02 — CollectionRun 목록·필터 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -169,9 +173,12 @@ OpenAPI·`docs/api/admin_*.md` 기준으로 DTO·query(`size`·`pages`·`start_d
 | **검증** | Mock list scenarios; loading·empty·error |
 | **완료 기준** | DTO 외 DB·provenance field 미표시 |
 
+2026-08-11 구현: `CollectionRunsPage`, `CollectionRunFilters`,
+`useCollectionRunsQuery`. pagination·loading·empty·error.
+
 ---
 
-### FE3-03 — CollectionRun 상세·stale — draft
+### FE3-03 — CollectionRun 상세·stale — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -181,9 +188,12 @@ OpenAPI·`docs/api/admin_*.md` 기준으로 DTO·query(`size`·`pages`·`start_d
 | **검증** | Mock running·stale·failed fixtures |
 | **완료 기준** | 상태 임의 merge 없음 |
 
+2026-08-11 구현: `CollectionRunDetailPage`, `CollectionRunStatusBadge`,
+`collectionRunDisplay` utils, 404 shell.
+
 ---
 
-### FE3-04 — 수동 실행 UI — draft
+### FE3-04 — 수동 실행 UI — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -192,6 +202,9 @@ OpenAPI·`docs/api/admin_*.md` 기준으로 DTO·query(`size`·`pages`·`start_d
 | **선행** | FE3-03, Backend 05 manual run |
 | **검증** | duplicate click test |
 | **완료 기준** | `collection_run_id`로 목록 갱신 |
+
+2026-08-11 구현: `ManualCollectionRunTrigger` confirm·duplicate guard·running
+disable·list refetch.
 
 ---
 

@@ -1,5 +1,7 @@
-import { Link, Outlet, useLocation } from 'react-router';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router';
+import Button from '@/components/common/Button';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
+import { useAdminSession } from '@/hooks/useAdminSession';
 
 function navClass(isActive: boolean): string {
   return `admin-shell__nav-link${isActive ? ' admin-shell__nav-link--active' : ''}`;
@@ -14,6 +16,13 @@ const ADMIN_NAV_ITEMS = [
 
 export default function AdminShellLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAdminSession();
+
+  const handleLogout = () => {
+    logout();
+    navigate(ADMIN_APP_ROUTES.login, { replace: true });
+  };
 
   return (
     <div className="admin-shell">
@@ -21,12 +30,18 @@ export default function AdminShellLayout() {
         <div>
           <h1 className="admin-shell__title">관리자</h1>
           <p className="admin-shell__subtitle">
-            CollectionRun·수집 관리 (FE3-00 route shell)
+            CollectionRun·수집 관리
           </p>
         </div>
-        <Link to={ADMIN_APP_ROUTES.login} className="admin-shell__login-link">
-          로그인
-        </Link>
+        {isAuthenticated ? (
+          <Button type="button" variant="secondary" onClick={handleLogout}>
+            로그아웃
+          </Button>
+        ) : (
+          <Link to={ADMIN_APP_ROUTES.login} className="admin-shell__login-link">
+            로그인
+          </Link>
+        )}
       </header>
 
       <nav className="admin-shell__nav" aria-label="관리자 내비게이션">

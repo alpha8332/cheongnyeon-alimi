@@ -19,6 +19,9 @@
 - Frontend CollectionRun Admin DTO·Mock·route shell (FE3-00): admin session·
   collection run types, Mock-first API client, nested `/admin` layout
   ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend CollectionRun Admin PIN session·run list·manual trigger (FE3-01~04):
+  protected `/admin` routes, filters·detail·confirm dialog
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
 - Frontend admin API clients aligned to Backend 04·05 Real OpenAPI (FE3-00):
   `size`/`pages` list envelope, dual error parsing, Bearer header option
   ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
