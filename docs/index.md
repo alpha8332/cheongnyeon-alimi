@@ -41,7 +41,7 @@
 - [Regional Youth Policy Source Inventory JSON Schema](../data/schema/regional_youth_policy_source_inventory.schema.json):
   지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태의 실행 계약
 - [지역 청년정책 Source inventory](../data/reference/regional_youth_policy_sources.json):
-  17개 지역 포털의 RYP1 Browser action profile과 12개 승인·4개 차단·1개 제외 판정
+  17개 지역 포털의 RYP1 action profile과 13개 승인·3개 차단·1개 제외 판정
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스

@@ -516,14 +516,14 @@ DTL4-3A의 actual Raw 3건을 외부 요청 없이 replay했다. Extractor·Norm
 
 ## 지역 청년정책 Source RYP1 Browser Discovery profile
 
-`2026-08-11`에 사용자 제공 17개 홈을 Browser로 제한 탐색했다. 승인된 12개 Source의
+`2026-08-11`에 사용자 제공 17개 홈을 Browser로 제한 탐색했다. 승인된 13개 Source의
 운영 수집은 아래 목록·상세 identity로만 제한하며 홈 재귀 순회, 첨부 일괄
 다운로드와 실제 HTML·이미지의 Git 저장은 허용하지 않는다. 공통 파일럿 예산은
 목록 1회, 상세 3건, 요청 시작 간격 최소 2초다.
 
-16개는 정책 상세 identity까지 확인했고 경북은 홈 렌더링까지 확인했다. 원시
-HTTP 접근과 Browser 접근을 분리하며, 반복 실행 방식은 `http_html` 또는
-`browser` collection mode로 고정한다.
+17개 모두 정책 상세 identity까지 확인했다. 원시 HTTP 접근과 Browser 접근을
+분리하며, 반복 실행 방식은 `http_html`, `http_json` 또는 `browser` collection
+mode로 고정한다.
 
 | Source ID | 방식 | 상세 identity | 이용 경계 |
 | --- | --- | --- | --- |
@@ -537,14 +537,14 @@ HTTP 접근과 Browser 접근을 분리하며, 반복 실행 방식은 `http_htm
 | `regional-gangwon-youth-platform` | Browser | 온통청년형 외부 정책 ID | robots `/youth` 허용 범위 |
 | `regional-chungbuk-youth-platform` | Browser | `nttNo` | 공개 정책 상세 최소 사실만 |
 | `regional-jeonbuk-youth-platform` | 서버 HTML GET | `id` | robots 미게시, 약관 제한 |
+| `regional-gyeongbuk-youth-platform` | JSON POST·상세 modal POST | `no` | 실제 허용 경로, 최소 사실만 |
 | `regional-gyeongnam-youth-platform` | 서버 HTML GET | `policy_no` | robots 미게시, 약관 제한 |
 | `regional-jeju-youth-platform` | Browser | `wr_id` | 공개 정책 상세 최소 사실만 |
 
-비승인 Source는 세종·경기·충남·경북과 전남 구 포털이다. 세종·경기·충남은
+비승인 Source는 세종·경기·충남과 전남 구 포털이다. 세종·경기·충남은
 Browser 상세에 도달했지만 robots가 정책 collection 경로를 허용하지 않아
-차단했다. 경북은 홈 렌더링 후 DOM instrumentation 충돌과 목록 500을 재현했고
-robots도 정책 경로를 제한한다. 전남 구 포털은 통합 플랫폼으로 대체되어
-제외했다. 접근 통제나 robots를 우회하지 않는 원칙은 유지한다. 전체 URL·preflight·판정 근거는
+차단했다. 전남 구 포털은 통합 플랫폼으로 대체되어 제외했다. 접근 통제나
+robots를 우회하지 않는 원칙은 유지한다. 전체 URL·preflight·판정 근거는
 [`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)을
 기준으로 한다.
 

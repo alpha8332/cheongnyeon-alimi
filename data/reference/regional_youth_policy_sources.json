@@ -1010,9 +1010,9 @@
       "jurisdiction_key": "gyeongbuk",
       "jurisdiction_label": "경북",
       "home_url": "https://gbyouth.go.kr/main.tc",
-      "status": "blocked",
-      "source_id": null,
-      "decision_reason": "공개 홈 렌더링까지만 확인했다. Browser DOM 제어 충돌, 정책 목록 500 오류와 robots의 /policy/list.tc 차단이 함께 확인되어 마지막 성공 단계를 home_loaded로 기록하고 운영 collection을 승인하지 않는다.",
+      "status": "approved",
+      "source_id": "regional-gyeongbuk-youth-platform",
+      "decision_reason": "공개 정책 화면과 POST /policy/list.json, POST /policy/detail.modal을 재검증해 실제 정책 JSON·상세 HTML을 확인했다. robots의 /policy/list.tc/ 규칙은 실제 /policy/list.tc 및 JSON·modal 경로와 일치하지 않는다. Browser DOM instrumentation 충돌과 무관하게 http_json collection을 승인한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4700000000",
@@ -1021,21 +1021,29 @@
       },
       "preflight": {
         "operator": "verified",
-        "robots": "disallowed",
+        "robots": "allowed",
         "terms": "not_found",
         "license": "restricted",
         "technical_access": "available",
-        "last_checked_at": "2026-08-11T14:02:00+09:00",
-        "browser_access": "blocked"
+        "last_checked_at": "2026-08-11T14:27:31+09:00",
+        "browser_access": "available"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://gbyouth.go.kr/policy/list.json"
+      ],
+      "approved_detail_url_patterns": [
+        "POST https://gbyouth.go.kr/policy/detail.modal (no={positive_integer})"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": [],
       "discovery": {
-        "status": "home_loaded",
-        "collection_mode": "none",
-        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "status": "extraction_ready",
+        "collection_mode": "http_json",
+        "last_checked_at": "2026-08-11T14:27:31+09:00",
         "interaction_budget": {
           "max_depth": 4,
           "max_interactions": 30,
@@ -1048,12 +1056,27 @@
             "kind": "goto",
             "target": "https://gbyouth.go.kr/main.tc",
             "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년알림(정책) > 경북청년정책",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "POST https://gbyouth.go.kr/policy/list.json",
+            "value": "pageIndex=1&searchCondition=0&type=0"
+          },
+          {
+            "kind": "observe_detail",
+            "target": "POST https://gbyouth.go.kr/policy/detail.modal",
+            "value": "no=1098"
           }
         ],
-        "observed_list_count": null,
-        "sample_external_id": null,
-        "sample_title": null,
-        "failure_reason": "공개 홈은 렌더링됐지만 Browser DOM 제어가 사이트 스크립트와 충돌했고 /policy/list.tc 직접 경로는 사이트 500 오류를 반환했다."
+        "observed_list_count": 243,
+        "sample_external_id": "1098",
+        "sample_title": "2026 경북 청년 행복카드 지원사업",
+        "failure_reason": null
       }
     },
     {

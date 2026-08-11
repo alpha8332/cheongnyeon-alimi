@@ -96,11 +96,11 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 
 ### RYP1 Browser Discovery 최종 판정 (`2026-08-11`)
 
-- 승인 12개: 서울, 부산, 대구, 인천, 광주(현행 통합 플랫폼), 대전, 울산,
-  강원, 충북, 전북, 경남, 제주
-- 차단 4개: 세종, 경기, 충남, 경북
+- 승인 13개: 서울, 부산, 대구, 인천, 광주(현행 통합 플랫폼), 대전, 울산,
+  강원, 충북, 전북, 경북, 경남, 제주
+- 차단 3개: 세종, 경기, 충남
 - 제외 1개: 전남 구 포털
-- Browser 상세 도달 16개, 홈 렌더링까지만 성공 1개(경북)
+- Browser·공개 HTTP 재검증으로 17개 모두 상세 identity 도달
 
 원시 HTTP 중심 잠정 판정 9개 승인·7개 차단·1개 제외를 Browser 기준으로
 재검증했다. 서울은 `맞춤서비스` → 서울시 정책 90건·자치구 정책 21건 →
@@ -109,10 +109,13 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 재현한 나머지 8개는 `http_html` mode로 승인했다.
 
 세종·경기·충남은 Browser 상세에는 도달했지만 해당 정책 경로가 robots 허용
-범위에 없어 운영 collection을 승인하지 않았다. 경북은 홈 렌더링 뒤 DOM
-instrumentation 충돌이 두 번 재현됐고 직접 정책 목록도 서버 500을 반환했으며
-robots가 해당 경로를 제한해 `home_loaded` 실패 단계로 기록했다. 전남 구 포털은
-현행 통합 플랫폼과 중복되고 robots가 홈만 허용해 제외 상태를 유지한다.
+범위에 없어 운영 collection을 승인하지 않았다. 경북은 사용자 제공 정책 목록을
+재검증해 `POST /policy/list.json`의 실제 정책 JSON과
+`POST /policy/detail.modal`의 상세 HTML을 확인했다. robots의
+`/policy/list.tc/` 패턴은 실제 `/policy/list.tc`와 JSON·modal 경로에 일치하지
+않으므로 `http_json` mode로 승인한다. Browser DOM instrumentation 충돌은
+HTTP JSON 실행 경계의 차단 사유로 사용하지 않는다. 전남 구 포털은 현행 통합
+플랫폼과 중복되고 robots가 홈만 허용해 제외 상태를 유지한다.
 
 광주 관할 라벨은 XLSX lineage로 보존하되 운영 Source는 기존 센터가 연결하는
 `https://youth.jeonnam-gwangju.go.kr/www/`로 교체했다. 공식 화면이
@@ -424,7 +427,7 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 - [x] 17개 모두의 action profile·상세 표본 또는 실패 단계 기록
 - [x] Browser 결과를 반영한 RYP-G1 실행 경계 승인
 
-최종 판정은 `approved` 12개·`blocked` 4개·`rejected` 1개다. 화면에서 상세를
+최종 판정은 `approved` 13개·`blocked` 3개·`rejected` 1개다. 화면에서 상세를
 읽을 수 있는지와 운영 수집이 robots·이용 경계를 만족하는지를 분리했으므로,
 차단 Source의 discovery evidence는 보존하되 RYP2 실행 allowlist에는 포함하지
 않는다.

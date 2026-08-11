@@ -111,11 +111,11 @@ class RegionalSourceInventoryTests(unittest.TestCase):
                 source["preflight"]["last_checked_at"]
             )
         self.assertEqual(
-            {"approved": 12, "blocked": 4, "rejected": 1},
+            {"approved": 13, "blocked": 3, "rejected": 1},
             statuses,
         )
 
-    def test_browser_discovery_reaches_details_for_sixteen_sources(self) -> None:
+    def test_browser_discovery_reaches_details_for_all_sources(self) -> None:
         discovery_statuses: dict[str, int] = {}
         modes: dict[str, int] = {}
         for source in self.inventory["sources"]:
@@ -129,11 +129,12 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             self.assertEqual("goto", discovery["actions"][0]["kind"])
 
         self.assertEqual(
-            {"extraction_ready": 16, "home_loaded": 1},
+            {"extraction_ready": 17},
             discovery_statuses,
         )
         self.assertEqual(
-            {"http_html": 8, "browser": 4, "none": 5}, modes
+            {"http_html": 8, "http_json": 1, "browser": 4, "none": 4},
+            modes,
         )
 
         gyeongbuk = next(
@@ -141,9 +142,30 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             for source in self.inventory["sources"]
             if source["jurisdiction_key"] == "gyeongbuk"
         )
-        self.assertEqual("blocked", gyeongbuk["status"])
-        self.assertEqual("home_loaded", gyeongbuk["discovery"]["status"])
-        self.assertTrue(gyeongbuk["discovery"]["failure_reason"])
+        self.assertEqual("approved", gyeongbuk["status"])
+        self.assertEqual("allowed", gyeongbuk["preflight"]["robots"])
+        self.assertEqual(
+            "extraction_ready", gyeongbuk["discovery"]["status"]
+        )
+        self.assertEqual(
+            "http_json", gyeongbuk["discovery"]["collection_mode"]
+        )
+        self.assertEqual(
+            "1098", gyeongbuk["discovery"]["sample_external_id"]
+        )
+        self.assertEqual(
+            ["https://gbyouth.go.kr/policy/list.json"],
+            gyeongbuk["approved_list_urls"],
+        )
+        self.assertEqual(
+            [
+                "POST https://gbyouth.go.kr/policy/detail.modal "
+                "(no={positive_integer})"
+            ],
+            gyeongbuk["approved_detail_url_patterns"],
+        )
+        self.assertEqual(243, gyeongbuk["discovery"]["observed_list_count"])
+        self.assertIsNone(gyeongbuk["discovery"]["failure_reason"])
 
     def test_approved_sources_have_execution_boundaries(self) -> None:
         approved = [
@@ -151,7 +173,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             for source in self.inventory["sources"]
             if source["status"] == "approved"
         ]
-        self.assertEqual(12, len(approved))
+        self.assertEqual(13, len(approved))
         self.assertEqual(
             len(approved), len({source["source_id"] for source in approved})
         )
@@ -204,7 +226,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             if source["status"] == "blocked"
         }
         self.assertEqual(
-            {"sejong", "gyeonggi", "chungnam", "gyeongbuk"},
+            {"sejong", "gyeonggi", "chungnam"},
             set(blocked),
         )
         for key in {"sejong", "gyeonggi", "chungnam"}:
@@ -219,7 +241,7 @@ class RegionalSourceInventoryTests(unittest.TestCase):
             for source in self.inventory["sources"]
             if source["status"] in {"blocked", "rejected"}
         ]
-        self.assertEqual(5, len(inactive))
+        self.assertEqual(4, len(inactive))
         for source in inactive:
             with self.subTest(source=source["jurisdiction_key"]):
                 self.assertIsNone(source["source_id"])

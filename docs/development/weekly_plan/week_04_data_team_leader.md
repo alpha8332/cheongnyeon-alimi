@@ -86,8 +86,8 @@ W4-G1 뒤 DTL4-2B·3B·4B actual 구현과 Backend·Frontend actual 연결을 �
 수행한다. 같은 Schema, Migration, Policy model이나 Source Adapter를 동시에
 수정해야 하면 Team Leader가 소유 브랜치와 병합 순서를 먼저 지정한다.
 
-DTL4-4B와 ES4가 완료된 현재 Data 05 RYP0·RYP1을 완료했고 17개 홈의 Browser
-Discovery 결과 12개 승인·4개 차단·1개 제외를 확정했다. RYP2부터 DTL4-5와
+DTL4-4B와 ES4가 완료된 현재 Data 05 RYP0·RYP1을 완료했고 17개 홈의 Browser·
+공개 HTTP 재검증 결과 13개 승인·3개 차단·1개 제외를 확정했다. RYP2부터 DTL4-5와
 병렬로 진행한다.
 RYP0~RYP4는 DTL4-6 W4-G2, RYP5 actual은 DTL4-7 W4-G3, RYP6
 지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06 SOP0~SOP3,

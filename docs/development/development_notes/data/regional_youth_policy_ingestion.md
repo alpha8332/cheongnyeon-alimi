@@ -26,7 +26,7 @@
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | RYP0 | completed | 17개 후보 JSON·Schema·계약 테스트 14개와 39개 subtest 통과 |
-| RYP1 | completed | 17개 Browser Discovery, 12개 승인·4개 차단·1개 제외 |
+| RYP1 | completed | 17개 상세 identity, 13개 승인·3개 차단·1개 제외 |
 | RYP2 | 준비 | Browser Discovery Engine·profile replay·Source Adapter |
 | RYP3 | 대기 | 지역 고유성·신청 가능성 |
 | RYP4 | 대기 | 온통청년·복지로 중복 제외 |
@@ -75,14 +75,20 @@ preflight는 원시 HTTP 접근을 우선해 Browser에서 사용자처럼 메�
 상세에서 `plcyBizId=V202600006`, 주관기관, 지원내용, 신청기간, 지원규모,
 연령·학력·취업상태, 참여제한, 신청절차·제출서류 label과 공식 URL을 확인했다.
 따라서 서울의 `technical_access=blocked`와 Browser collection 가능성을 분리했다.
-같은 기준으로 17개 사이트를 재검증해 16개는 상세까지, 경북은 홈 렌더링까지
-도달했다.
+같은 기준으로 17개 사이트를 재검증해 모두 상세 identity까지 도달했다.
 
 - `http_html` 승인 8개: 부산, 대구, 인천, 광주 통합, 대전, 울산, 전북, 경남
+- `http_json` 승인 1개: 경북
 - `browser` 승인 4개: 서울, 강원, 충북, 제주
-- 차단 4개: 세종, 경기, 충남은 상세 도달 후 robots 경계에서 중단, 경북은 홈
-  렌더링 후 DOM instrumentation 충돌·목록 500·robots 제한을 기록
+- 차단 3개: 세종, 경기, 충남은 상세 도달 후 robots 경계에서 중단
 - 제외 1개: 전남 구 포털은 현행 통합 플랫폼과 중복되고 robots가 홈만 허용
+
+경북은 사용자 제공 `/policy/list.tc?mn=2379&pageNo=5069`를 다시 확인해 화면
+렌더링과 `POST /policy/list.json` 200 JSON, `POST /policy/detail.modal` 200
+상세 HTML을 재현했다. robots의 `/policy/list.tc/` 규칙은 실제 `.tc` 뒤에 `/`가
+없는 목록과 JSON·modal 경로에 일치하지 않는다. 표본 `no=1098`의
+`2026 경북 청년 행복카드 지원사업`에서 정책유형·지역·지원내용·규모·기간·기관·
+문의처·첨부파일을 확인해 `http_json` Source로 승인했다.
 
 inventory Schema를 `1.1.0`으로 올려 `browser_access`, 마지막 discovery 상태,
 collection mode, interaction budget, action profile, 목록 관찰 수, 상세 표본 identity와
@@ -141,7 +147,7 @@ ID·allowlist·interaction/request 예산을 다시 승인했다. RYP2는 이 in
 ```
 
 - 결과: `20 passed, 50 subtests passed`
-- Browser Discovery 16개 상세 도달·1개 홈 도달, collection mode 분기,
+- Browser Discovery와 공개 HTTP로 17개 상세 도달, collection mode 분기,
   Browser-only 승인, robots 차단 evidence, 비승인 실행 경계와 잘못된 교차 필드
   조합 거부를 확인했다.
 
