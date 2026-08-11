@@ -28,6 +28,9 @@
 - Frontend eligibility summary DTO·Mock detail fixtures (FE7-00): complete·
   partial·unknown 표본 envelope와 contract tests
   ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend admin observability DTO·Mock handlers (FE8-00): read-only policy
+  projection list/detail·log file/event pagination·safe error contract
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
 
 ## [0.1.0] - 2026-08-06
 

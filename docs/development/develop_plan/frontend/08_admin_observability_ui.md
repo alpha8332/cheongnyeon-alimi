@@ -15,7 +15,7 @@
   [Frontend 03 CollectionRun Admin UI](03_collection_run_admin_ui.md) (FE3-01 PIN·session 공유)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/admin-observability`
-- 현재 Slice: FE8-00 draft (계획 수립)
+- 현재 Slice: FE8-00 completed (FE8-01 draft)
 
 ## 목적
 
@@ -105,7 +105,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 
 ---
 
-### FE8-00 — Admin data·log DTO·Mock — draft
+### FE8-00 — Admin data·log DTO·Mock — completed
 
 | 항목 | 내용 |
 | --- | --- |

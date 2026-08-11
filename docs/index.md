@@ -140,6 +140,8 @@
   FE3-00 Admin DTO·Mock·`/admin` route shell
 - [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
   FE7-00 eligibility_summary DTO·Mock detail fixtures
+- [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):
+  FE8-00 admin policy·log DTO·Mock handlers
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
