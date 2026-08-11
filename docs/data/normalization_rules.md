@@ -67,6 +67,12 @@
   실제 소진 여부를 알 수 없어 상태는 null이다.
 - 알 수 없는 상태를 `"unknown"`으로 만들지 않고 null로 둔다.
 
+지역 포털 정책은 Normalizer 이전 RYP3 Gate를 먼저 통과한다. Source 전용 mapper가
+전달한 신청기간에서 현재 open을 확인한 정책만 Normalizer로 넘긴다. `scheduled`,
+`closed`, 기간 누락·오류와 실제 소진 여부를 모르는 `예산 소진 시까지`는
+Runtime 판정에 보존하고 사용자 정책으로 승격하지 않는다. 이 Gate는 기존
+`application_status` enum이나 공개 API 계약을 확장하지 않는다.
+
 ### Source 근거 경계
 
 - 신청기간 구조화 입력은 Extractor가 Source별로 명시한
@@ -189,6 +195,13 @@ Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가
   `source_code` 또는 `source_text` 중 하나 이상의 근거를 보존한다.
 - 같은 canonical 지역에 동일 relation을 중복하거나 include와 exclude를
   동시에 선언할 수 없다.
+
+지역 포털은 Source 지역·시행기관·지원 대상이라는 독립 evidence가 같은 관할을
+가리킬 때만 RYP3의 `regional_confirmed`를 얻는다. 포털의 소재지만 확인되면
+`regional_review_required`, 전국 재게시나 다른 지역은 `non_regional`이다.
+confirmed이면서 현재 open인 정책만 `coverage_scope=regional`과 canonical include
+rule을 붙여 이 Normalizer에 전달한다. 광역 관할 아래 시·군·구가 명시되면
+ancestor 관계를 확인하고 더 구체적인 canonical rule을 사용한다.
 
 ## 카테고리
 

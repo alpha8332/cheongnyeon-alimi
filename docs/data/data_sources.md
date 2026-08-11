@@ -62,6 +62,13 @@ POST하며 최소 요청 간격은 2초다. 목록·item·상세 Raw identity와
 preflight에서 총 243건과 표본 `no=1098` 한 건을 확인했지만 실제 응답 원문은
 Git이나 운영 DB에 남기지 않았다.
 
+RYP3는 지역 포털에 게시됐다는 사실과 실제 지역 정책 evidence를 분리한다.
+Source 지역·시행기관·지원 대상이 같은 canonical 관할을 가리키고 신청 상태가
+현재 `open`일 때만 정규화 후보로 전달한다. 전국·타 지역은 제외하고 지역 근거가
+부족하거나 신청기간·예산 소진 상태를 확인할 수 없으면 review로 격리한다.
+경북 표본 `no=1098`은 지역 고유성은 확인됐지만 수집일 기준 closed이므로 사용자
+정책으로 전달하지 않는다.
+
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영
 Collector는 profile을 재사용한다. 매 실행마다 홈이나 외부 인터넷을 무제한

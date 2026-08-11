@@ -37,6 +37,7 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 | `data/fixtures/contracts/policy_search_region_cases.json` | 검색 범위·지역 관계 경계 사례 | 7 |
 | `data/fixtures/contracts/recurrent_quality_cases.json` | 반복·수정·중복·실패 판정 사례 | 6 |
 | `data/fixtures/contracts/eligibility_evidence_cases.json` | 자격요건 계약 사례와 Source 소비 인계 | 5+5 |
+| `data/fixtures/regional/regional_policy_gate_cases.json` | 지역 고유성·신청 상태 Gate 합성 사례 | 12 |
 | `data/seeds/initial_programs.json` | canonical 개발 Seed | 4 |
 | `data/seeds/administrative_regions.json` | versioned 지역 Seed | 538 |
 | `data/seeds/administrative_region_aliases.json` | 지역 별칭 Seed | 1,080 |

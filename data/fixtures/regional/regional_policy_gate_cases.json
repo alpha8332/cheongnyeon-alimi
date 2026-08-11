@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0.0",
+  "synthetic_contract_fixture": true,
+  "as_of": "2026-08-11",
+  "expected_region_text": "경상북도",
+  "cases": [
+    {
+      "id": "regional-open",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "경상북도에 거주하는 청년",
+      "application_period_text": "2026-08-01 ~ 2026-08-31",
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "open",
+      "accepted": true
+    },
+    {
+      "id": "regional-district-open",
+      "source_region_text": "경상북도 경주시",
+      "implementing_organization_text": "경상북도 경주시 청년정책 담당",
+      "region_eligibility_text": "경상북도 경주시 거주 청년",
+      "application_period_text": "2026-08-01 ~ 2026-08-31",
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "open",
+      "expected_region_code": "4713000000",
+      "accepted": true
+    },
+    {
+      "id": "nationwide-republication",
+      "source_region_text": "전국",
+      "implementing_organization_text": "중앙 청년정책 기관",
+      "region_eligibility_text": "전국 청년",
+      "application_period_text": "상시",
+      "expected_regionality": "non_regional",
+      "expected_application": "open",
+      "accepted": false
+    },
+    {
+      "id": "nationwide-target-mentions-region",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "전국 청년(경상북도 거주자 포함)",
+      "application_period_text": "상시",
+      "expected_regionality": "non_regional",
+      "expected_application": "open",
+      "accepted": false
+    },
+    {
+      "id": "portal-only-ambiguous",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "청년지원센터",
+      "region_eligibility_text": "만 19세 이상 청년",
+      "application_period_text": "2026-08-01 ~ 2026-08-31",
+      "expected_regionality": "regional_review_required",
+      "expected_application": "open",
+      "accepted": false
+    },
+    {
+      "id": "ambiguous-district-name",
+      "source_region_text": "중구",
+      "implementing_organization_text": "중구 청년정책 담당",
+      "region_eligibility_text": "중구 거주 청년",
+      "application_period_text": "상시",
+      "expected_regionality": "regional_review_required",
+      "expected_application": "open",
+      "accepted": false
+    },
+    {
+      "id": "other-region",
+      "source_region_text": "부산광역시",
+      "implementing_organization_text": "부산광역시",
+      "region_eligibility_text": "부산광역시 거주 청년",
+      "application_period_text": "상시",
+      "expected_regionality": "non_regional",
+      "expected_application": "open",
+      "accepted": false
+    },
+    {
+      "id": "regional-period-missing",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "경상북도에 거주하는 청년",
+      "application_period_text": null,
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "review_required",
+      "accepted": false
+    },
+    {
+      "id": "regional-budget-state-unknown",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "경상북도에 거주하는 청년",
+      "application_period_text": "예산 소진 시까지",
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "review_required",
+      "accepted": false
+    },
+    {
+      "id": "regional-always",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "경상북도에 거주하는 청년",
+      "application_period_text": "상시",
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "open",
+      "accepted": true
+    },
+    {
+      "id": "regional-scheduled",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "경상북도에 거주하는 청년",
+      "application_period_text": "2026-09-01 ~ 2026-09-30",
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "scheduled",
+      "accepted": false
+    },
+    {
+      "id": "regional-closed",
+      "source_region_text": "경상북도",
+      "implementing_organization_text": "경상북도 청년정책과",
+      "region_eligibility_text": "경상북도에 거주하는 청년",
+      "application_period_text": "2026-06-01 ~ 2026-06-30",
+      "expected_regionality": "regional_confirmed",
+      "expected_application": "closed",
+      "accepted": false
+    }
+  ]
+}

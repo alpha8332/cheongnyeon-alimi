@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP2` 완료, `RYP3` 구현 준비
+- 현재 진행: `RYP0`~`RYP3` 완료, `RYP4` 구현 준비
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP2` 공통 실행 경계와 경북 Source Adapter 완료
+- 현재 Slice: `RYP3` 지역 고유성·신청 가능성 Gate 완료
 
 ## 목적
 
@@ -501,6 +501,29 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 승인 fixture에서 지역 고유·전국 재게시·모호 사례가 결정적으로 분리됨
 - 신청 가능성을 확인하지 못한 정책이 `open`으로 승격되지 않음
 - accepted 정책은 canonical 지역 rule과 provenance를 가짐
+
+#### 구현 결과 (`2026-08-11`)
+
+- 정규화 전 `RegionalPolicyEvidence`와 `RegionalPolicyDecision` 계약을 추가해
+  지역 판정과 신청 상태를 별도 축으로 기록한다.
+- 지역 판정은 `regional_confirmed`, `regional_review_required`,
+  `non_regional`, 신청 상태는 `open`, `scheduled`, `closed`,
+  `review_required`를 사용한다. 두 축이 각각 `regional_confirmed`와 `open`일
+  때만 Normalizer 후보로 전달한다.
+- 시행기관·지원 대상·Source 지역이 같은 canonical 관할을 가리켜야 지역으로
+  확정한다. 포털 소재지만 확인되거나 지역 근거가 부족하면 review로 격리하고,
+  전국 재게시와 다른 지역 정책은 non-regional로 제외한다.
+- 시·군·구 evidence는 광역 관할 안에 있는지 canonical parent 관계로 검증하고
+  accepted 정책에는 더 구체적인 canonical include rule을 보존한다.
+- 신청기간 두 날짜는 수집 기준일로 open·scheduled·closed를 계산한다. `상시`는
+  open, 명시적 마감은 closed이며, 실제 소진 여부가 없는 `예산 소진 시까지`와
+  기간 누락·오류는 review로 유지한다.
+- 경북 mapper가 목록·상세의 시행기관, 대상 지역, 신청기간, 지원 내용과 locator·
+  Raw provenance를 공통 Gate에 전달한다. RYP2의 실제 표본 `no=1098`은 지역
+  근거는 확인됐지만 `2026-08-11` 기준 신청기간이 끝나 Runtime에서 closed로
+  격리된다.
+- 합성 계약 fixture 12건으로 지역 고유·시군구·전국·타 지역·모호 사례와
+  open·scheduled·closed·상시·예산 상태를 결정적으로 검증했다.
 
 ### RYP4 - 온통청년·복지로 교차 Source 제외
 

@@ -8,7 +8,7 @@ import urllib.parse
 from collections.abc import Callable, Iterable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from html.parser import HTMLParser
 from typing import Any
 
@@ -31,6 +31,11 @@ from collectors.raw import (
 from collectors.regional_profile import (
     RegionalSourceProfile,
     load_approved_regional_profile,
+)
+from collectors.regional_policy_gate import (
+    RegionalPolicyDecision,
+    RegionalPolicyEvidence,
+    evaluate_regional_policy,
 )
 from collectors.source_common import response_content_type, safe_parse_error
 from collectors.storage import RawDocumentStore
@@ -483,6 +488,79 @@ class GyeongbukYouthExtractor:
 
 def create_gyeongbuk_youth_collector() -> GyeongbukYouthCollector:
     return GyeongbukYouthCollector()
+
+
+def decide_gyeongbuk_regional_policy(
+    policy: ExtractedPolicy,
+    *,
+    as_of: date | None = None,
+) -> RegionalPolicyDecision:
+    """Map approved Gyeongbuk fields into the common RYP3 gate."""
+    if policy.source_id != SOURCE_ID:
+        raise ExtractionError("invalid Gyeongbuk regional policy source")
+    source_fields = policy.extra.get("source_fields")
+    if not isinstance(source_fields, dict):
+        raise ExtractionError("Gyeongbuk regional evidence is missing")
+    list_fields = source_fields.get("list_item")
+    detail_fields = source_fields.get("detail_response")
+    if not isinstance(list_fields, dict):
+        raise ExtractionError("Gyeongbuk list evidence is missing")
+    detail = detail_fields if isinstance(detail_fields, dict) else {}
+    values = {
+        "implementing_organization_text": (
+            _present_text(detail.get("supervising_organization"))
+            or _present_text(list_fields.get("sprvsnInstNm"))
+        ),
+        "region_eligibility_text": (
+            _present_text(detail.get("eligibility_text"))
+            or _present_text(list_fields.get("policyScl"))
+        ),
+        "application_channel_text": (
+            _present_text(detail.get("application_method"))
+        ),
+        "additional_benefit_text": (
+            _present_text(detail.get("support_content"))
+            or _present_text(list_fields.get("policyCnDtl"))
+        ),
+        "source_region_text": (
+            _present_text(detail.get("region_text"))
+            or _present_text(list_fields.get("rgnSeNm"))
+        ),
+        "application_period_text": _present_text(
+            policy.application_period_text
+        ),
+    }
+    locators = {
+        "implementing_organization_text": (
+            "detail:supervising_organization|list:sprvsnInstNm"
+        ),
+        "region_eligibility_text": (
+            "detail:eligibility_text|list:policyScl"
+        ),
+        "application_channel_text": "detail:application_method",
+        "additional_benefit_text": (
+            "detail:support_content|list:policyCnDtl"
+        ),
+        "source_region_text": "detail:region_text|list:rgnSeNm",
+        "application_period_text": (
+            "detail:application_period_text|list:aplyBgngDt+aplyEndDt"
+        ),
+    }
+    evidence = RegionalPolicyEvidence(
+        **values,
+        field_locators=tuple(
+            (field_name, locators[field_name])
+            for field_name, value in values.items()
+            if value is not None
+        ),
+        provenance=policy.provenance,
+    )
+    return evaluate_regional_policy(
+        policy,
+        evidence,
+        expected_region_text="경상북도",
+        as_of=as_of,
+    )
 
 
 def _validate_profile(profile: RegionalSourceProfile) -> None:

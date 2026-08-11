@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,9 +19,11 @@ from collectors.gyeongbuk_youth import (
     SOURCE_ID,
     GyeongbukYouthCollector,
     GyeongbukYouthExtractor,
+    decide_gyeongbuk_regional_policy,
 )
 from collectors.http import TransportResponse
 from collectors.normalizer import Normalizer
+from collectors.normalized import CoverageScope
 from collectors.raw import (
     RawDocumentRole,
     RawFormat,
@@ -33,6 +35,10 @@ from collectors.regional_profile import (
     replay_profile_actions,
 )
 from collectors.runtime import replay_runtime_raw
+from collectors.regional_policy_gate import (
+    ApplicationAvailability,
+    RegionalityStatus,
+)
 from collectors.storage import RawDocumentStore
 
 
@@ -275,6 +281,25 @@ class GyeongbukExtractorTests(unittest.TestCase):
         assert normalized.program is not None
         self.assertEqual("1098", normalized.program.external_id)
 
+    def test_regional_gate_maps_actual_fixture_to_canonical_region(self) -> None:
+        policy = GyeongbukYouthExtractor().extract(extraction_documents())[0]
+        decision = decide_gyeongbuk_regional_policy(
+            policy,
+            as_of=date(2026, 6, 10),
+        )
+
+        self.assertIs(
+            RegionalityStatus.REGIONAL_CONFIRMED,
+            decision.regionality,
+        )
+        self.assertIs(ApplicationAvailability.OPEN, decision.application)
+        assert decision.accepted_policy is not None
+        normalized = Normalizer().normalize(decision.accepted_policy)
+        self.assertIsNotNone(normalized.program)
+        assert normalized.program is not None
+        self.assertIs(CoverageScope.REGIONAL, normalized.program.coverage_scope)
+        self.assertEqual("4700000000", normalized.program.region_rules[0].region_code)
+
     def test_raw_replay_is_network_free_and_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             store = RawDocumentStore(temp_dir)
@@ -292,8 +317,11 @@ class GyeongbukExtractorTests(unittest.TestCase):
             )
 
         self.assertEqual(first.programs, second.programs)
+        self.assertEqual(first.regional_decisions, second.regional_decisions)
         self.assertEqual(1, first.extracted_count)
-        self.assertEqual(1, first.accepted_count)
+        self.assertEqual(0, first.accepted_count)
+        self.assertEqual(1, first.regional_skipped_count)
+        self.assertEqual("closed", first.regional_decisions[0]["application"])
 
     def test_detail_drift_is_not_treated_as_empty_policy(self) -> None:
         with self.assertRaisesRegex(ExtractionError, "selector drift"):

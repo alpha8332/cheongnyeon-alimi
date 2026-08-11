@@ -571,6 +571,27 @@ drift로 실패한다. 공개 기관 대표 연락처는 institutional contact �
 전에는 수행하지 않는다. 저장소 fixture는 계약을 재현하는 최소 구조만 담고
 실제 응답 HTML·JSON은 포함하지 않는다.
 
+## 경북 청년정책 RYP3 판정 profile
+
+- 시행기관: 상세 `supervising_organization` 또는 목록 `sprvsnInstNm`
+- 지원 지역: 상세 `eligibility_text` 또는 목록 `policyScl`
+- Source 지역: 상세 `region_text` 또는 목록 `rgnSeNm`
+- 신청기간: 상세 `application_period_text` 또는 목록
+  `aplyBgngDt + aplyEndDt`
+- 추가 혜택: 상세 `support_content` 또는 목록 `policyCnDtl`
+- 신청 채널: 상세 `application_method`, 없으면 null 유지
+
+각 값은 위 locator와 기여 Raw provenance를 함께 가진다. Source 지역·시행기관·
+지원 대상이 모두 경북 canonical 관할과 일치할 때만 `regional_confirmed`다.
+시·군·구가 명시되면 `kr-bjd-20260803` ancestor 관계를 확인하고 더 구체적인
+include rule을 보존한다. 포털 관할만 확인되면 `regional_review_required`, 전국·
+타 지역이면 `non_regional`이다.
+
+신청기간은 KST 수집일 기준으로 open·scheduled·closed를 판정한다. `상시`는
+open이지만 `예산 소진 시까지`는 명시적 접수중 근거가 없으면
+`review_required`다. 두 판정이 `regional_confirmed + open`인 경우만 Runtime
+Normalizer로 넘긴다. 표본 `no=1098`은 지역은 confirmed, 신청 상태는 closed다.
+
 ## 공통 비밀정보 경계
 
 - 인증키 값은 환경변수에서만 읽고 코드, 문서, Fixture와 테스트 snapshot에
@@ -590,7 +611,7 @@ drift로 실패한다. 공개 기관 대표 연락처는 institutional contact �
 
 - 기본 Registry source ID:
   `youthcenter-api`, `bokjiro-central-welfare-api`,
-  `cheonan-youthcenter-web`
+  `cheonan-youthcenter-web`, `regional-gyeongbuk-youth-platform`
 - 공통 옵션: `page` 1~1000, `limit` 1~500, `detail_limit` 0~5
 - CLI 기본값: page 1, limit 10, 복지로 상세 3건
 - 온통청년 요청 수: 목록 1회

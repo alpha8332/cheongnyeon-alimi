@@ -28,7 +28,7 @@
 | RYP0 | completed | 17개 후보 JSON·Schema·계약 테스트 14개와 39개 subtest 통과 |
 | RYP1 | completed | 17개 상세 identity, 13개 승인·3개 차단·1개 제외 |
 | RYP2 | completed | 공통 profile·discovery·runner 경계와 경북 Adapter·offline replay |
-| RYP3 | 대기 | 지역 고유성·신청 가능성 |
+| RYP3 | completed | 지역 evidence·신청 상태 Gate와 경북 Runtime 격리 |
 | RYP4 | 대기 | 온통청년·복지로 중복 제외 |
 | RYP5 | 대기 | 대표 Source actual |
 | RYP6 | 대기 | 지역별 확대·전체 판정 |
@@ -129,6 +129,36 @@ allowlist를 주장하지 못하게 한다.
 확인했고 정규화까지 통과했다. 임시 Raw는 자동 삭제했으며 실제 HTML·JSON을
 Git에 추가하거나 PostgreSQL에 적재하지 않았다.
 
+### RYP3 - 지역 고유성·신청 가능성 판정
+
+- `RegionalPolicyEvidence`가 시행기관, 지원 대상 지역, 신청 채널, 추가 혜택,
+  Source 지역과 신청기간의 공개 원문을 locator·Raw provenance와 함께 보존한다.
+- `RegionalPolicyDecision`은 지역 판정과 신청 상태를 분리한다. 지역 판정은
+  `regional_confirmed`, `regional_review_required`, `non_regional`, 신청 상태는
+  `open`, `scheduled`, `closed`, `review_required`다.
+- 포털 관할만으로 지역을 만들지 않는다. Source 지역·시행기관·지원 대상이
+  같은 canonical 관할을 가리켜야 `regional_confirmed`이며 전국 또는 다른 지역은
+  `non_regional`, 근거 부족은 `regional_review_required`다.
+- 광역 Source 안의 시·군·구는 canonical ancestor 관계로 검증하고 해당 기초
+  지역 include rule을 유지한다. matched 지역 근거는 기존
+  `kr-bjd-20260803` resolver와 NormalizedProgram 1.2.0 계약을 그대로 사용한다.
+- 신청기간 두 날짜는 수집 시점의 KST 날짜로 open·scheduled·closed를 판정한다.
+  `상시`만 명시적 open으로, 실제 소진 상태가 없는 `예산 소진 시까지`, 누락·
+  잘못된 기간은 `review_required`로 두어 open으로 추정하지 않는다.
+- 경북 Source mapper는 `sprvsnInstNm`, `policyScl`, `rgnSeNm`, 신청기간과 상세
+  대응 field를 common evidence로 넘긴다. 두 판정이
+  `regional_confirmed + open`인 정책만 canonical include evidence를 붙여
+  Normalizer로 전달한다.
+- Runtime replay는 모든 경북 추출 건의 비밀 없는 판정과 evidence를
+  `regional_decisions`로 반환하고, 그 밖의 정책을 `regional_skipped_count`로
+  집계한다. DB·API Schema는 변경하지 않았다.
+
+RYP2 actual fixture `no=1098`은 시행기관·지원 대상·Source 지역이 모두 경상북도로
+확인돼 `regional_confirmed`지만 신청기간 `2026-06-01`~`2026-06-15`가 수집일
+`2026-08-11`보다 앞서 `closed`다. 따라서 기존 RYP2 offline replay의 추출 1건은
+RYP3에서 사용자 정책 0건·지역 Gate 제외 1건으로 바뀌며 거짓 open 정책을 만들지
+않는다. 실제 Source 재호출이나 PostgreSQL 적재는 수행하지 않았다.
+
 ## 주요 변경 파일
 
 - `data/reference/regional_youth_policy_sources.json`
@@ -138,10 +168,12 @@ Git에 추가하거나 PostgreSQL에 적재하지 않았다.
 - `collectors/regional_discovery.py`
 - `collectors/browser_runner.py`
 - `collectors/gyeongbuk_youth.py`
+- `collectors/regional_policy_gate.py`
 - `collectors/http.py`
 - `collectors/runtime.py`
 - `collectors/__init__.py`
 - `data/fixtures/regional/`
+- `tests/test_regional_policy_gate.py`
 - `tests/test_regional_discovery.py`
 - `tests/test_browser_runner.py`
 - `tests/test_gyeongbuk_youth.py`
@@ -210,6 +242,23 @@ Runtime replay 회귀를 실행했다.
 - 제한 실사이트 preflight는 요청 3회, 목록 243건, 상세 표본 `no=1098` 1건과
   정규화 성공을 확인했다. TemporaryDirectory를 사용해 응답 Raw를 남기지 않았다.
 
+RYP3 구현 뒤 지역·신청 상태 Gate, 경북 mapper·Runtime 격리와 기존 지역
+Normalizer 회귀를 실행했다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\test_regional_policy_gate.py tests\test_gyeongbuk_youth.py tests\test_runtime_replay.py tests\test_normalization.py tests\test_administrative_regions.py tests\test_collectors_cli.py -q
+.\.venv\Scripts\python.exe -m pytest tests -q -rs
+```
+
+- RYP3 관련 결과: `53 passed, 16 subtests passed`
+- 전체 Python 결과: `199 passed, 6 skipped, 89 subtests passed`
+- skip 6건은 `TEST_DATABASE_URL` 미설정인 기존 PostgreSQL 통합 테스트다.
+  RYP3는 정규화 전 Gate이며 DB·API·Migration 변경과 actual 적재는 수행하지
+  않았다. 경북 actual DB 통합은 RYP5 완료 기준이다.
+- 합성 fixture 12건은 지역 고유·시군구·전국·타 지역·모호 판정과
+  open·scheduled·closed·상시·예산 상태를 검증했다. 경북 actual fixture는
+  `regional_confirmed + closed`로 격리되고 같은 Raw replay 결과가 결정적이다.
+
 ```powershell
 python scripts\validate_docs.py
 git diff --check
@@ -221,6 +270,5 @@ git diff --check
 
 ## 남은 작업
 
-- RYP3에서 정책별 지역 고유성·신청 가능성과 지역 evidence mapping 결정
 - RYP4에서 온통청년·복지로 snapshot·PostgreSQL 기준 중복 제외
 - RYP5 전에는 Browser Discovery와 이용 조건을 모두 통과한 Source만 actual 실행

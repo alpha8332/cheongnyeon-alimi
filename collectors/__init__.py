@@ -40,6 +40,7 @@ from collectors.gyeongbuk_youth import (
     SOURCE_ID as GYEONGBUK_YOUTH_SOURCE_ID,
     GyeongbukYouthExtractor,
     create_gyeongbuk_youth_collector,
+    decide_gyeongbuk_regional_policy,
 )
 from collectors.normalized import (
     ApplicationSchedule,
@@ -68,6 +69,13 @@ from collectors.regional_profile import (
     RegionalSourceProfile,
     load_approved_regional_profile,
     replay_profile_actions,
+)
+from collectors.regional_policy_gate import (
+    ApplicationAvailability,
+    RegionalityStatus,
+    RegionalPolicyDecision,
+    RegionalPolicyEvidence,
+    evaluate_regional_policy,
 )
 from collectors.registry import CollectorRegistry, default_registry
 from collectors.storage import RawDocumentStore
@@ -104,6 +112,7 @@ default_registry.register(
 __all__ = [
     "ApplicationSchedule",
     "ApplicationStatus",
+    "ApplicationAvailability",
     "Category",
     "CollectionOptions",
     "CollectionResult",
@@ -140,6 +149,9 @@ __all__ = [
     "RegionResolutionStatus",
     "RegionRule",
     "RegionalSourceInventoryValidator",
+    "RegionalityStatus",
+    "RegionalPolicyDecision",
+    "RegionalPolicyEvidence",
     "RegionalSourceProfile",
     "RequiredDocument",
     "SourceType",
@@ -155,6 +167,8 @@ __all__ = [
     "map_eligibility",
     "map_youthcenter_eligibility",
     "regional_source_inventory_issues",
+    "decide_gyeongbuk_regional_policy",
+    "evaluate_regional_policy",
     "load_approved_regional_profile",
     "replay_profile_actions",
 ]

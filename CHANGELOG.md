@@ -11,7 +11,8 @@
 ### Added
 
 - 승인된 지역 Source profile 재생, 의미 기반 Browser discovery 경계와 경북
-  청년정책 공개 JSON·상세 modal의 제한 수집·offline Raw replay 기반 추가
+  청년정책 공개 JSON·상세 modal의 제한 수집·offline Raw replay, 지역 고유성·
+  현재 신청 상태 evidence Gate 기반 추가
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
 - 정책 상세에 Source 근거가 있는 신청 조건·제외 조건·필요 서류·공개 시설

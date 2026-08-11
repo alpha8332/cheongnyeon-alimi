@@ -15,6 +15,7 @@ from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.gyeongbuk_youth import (
     SOURCE_ID as GYEONGBUK_YOUTH_SOURCE_ID,
     GyeongbukYouthExtractor,
+    decide_gyeongbuk_regional_policy,
 )
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
@@ -69,10 +70,18 @@ class RuntimeReplayResult:
     programs: tuple[dict[str, Any], ...]
     issues: tuple[RuntimeValidationIssue, ...]
     normalization_issues: tuple[tuple[ValidationIssue, ...], ...] = ()
+    regional_decisions: tuple[dict[str, Any], ...] = ()
 
     @property
     def accepted_count(self) -> int:
         return len(self.programs)
+
+    @property
+    def regional_skipped_count(self) -> int:
+        return sum(
+            not decision["accepted"]
+            for decision in self.regional_decisions
+        )
 
 
 def replay_runtime_raw(
@@ -117,10 +126,26 @@ def replay_runtime_raw(
             f"runtime extraction failed ({type(exc).__name__})"
         ) from None
 
+    regional_decisions = ()
+    policies = extracted
+    if source_id == GYEONGBUK_YOUTH_SOURCE_ID:
+        decisions = tuple(
+            decide_gyeongbuk_regional_policy(policy)
+            for policy in extracted
+        )
+        regional_decisions = tuple(
+            decision.to_dict() for decision in decisions
+        )
+        policies = tuple(
+            decision.accepted_policy
+            for decision in decisions
+            if decision.accepted_policy is not None
+        )
+
     selected_normalizer = normalizer or Normalizer()
     results = [
         selected_normalizer.normalize(policy)
-        for policy in extracted
+        for policy in policies
     ]
     accepted_results = tuple(
         result for result in results if result.program is not None
@@ -156,6 +181,7 @@ def replay_runtime_raw(
         normalization_issues=tuple(
             result.issues for result in accepted_results
         ),
+        regional_decisions=regional_decisions,
     )
 
 
