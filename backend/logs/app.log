@@ -52,3 +52,79 @@
 {"timestamp": "2026-08-11T04:51:54.435190+00:00", "level": "INFO", "component": "app", "event": "Seed ingestion completed. Total: 4, Validated: 4, Inserted: 4, Updated: 0, Unchanged: 0, Duplicate: 0, Skipped: 0, Rejected: 0, Failed: 0, Run ID: None"}
 {"timestamp": "2026-08-11T04:51:54.437787+00:00", "level": "INFO", "component": "app", "event": "Starting seed ingestion from: C:\\git\\cheongnyeon-alimi\\data\\seeds\\initial_programs.json"}
 {"timestamp": "2026-08-11T04:51:54.438252+00:00", "level": "ERROR", "component": "app", "event": "Seed ingestion failed. error_type=RuntimeError"}
+{"timestamp": "2026-08-11T05:02:24.951046+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/logs/files - Status: 401 - Completed in 29.02ms"}
+{"timestamp": "2026-08-11T05:02:24.966595+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 5.20ms"}
+{"timestamp": "2026-08-11T05:02:24.976038+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/logs/files - Status: 200 - Completed in 3.78ms"}
+{"timestamp": "2026-08-11T05:02:24.986083+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.42ms"}
+{"timestamp": "2026-08-11T05:02:25.027228+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/logs/events - Status: 200 - Completed in 33.13ms"}
+{"timestamp": "2026-08-11T05:02:25.037327+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.11ms"}
+{"timestamp": "2026-08-11T05:02:25.047375+00:00", "level": "INFO", "component": "app", "event": "DELETE /api/v1/admin/logs/archives/app.log - Status: 400 - Completed in 2.50ms"}
+{"timestamp": "2026-08-11T05:02:25.059070+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.86ms"}
+{"timestamp": "2026-08-11T05:02:25.096720+00:00", "level": "INFO", "component": "app", "event": "DELETE /api/v1/admin/logs/archives/app.log.999 - Status: 200 - Completed in 3.17ms"}
+{"timestamp": "2026-08-11T05:02:25.111017+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 4.08ms"}
+{"timestamp": "2026-08-11T05:02:25.137801+00:00", "level": "INFO", "component": "app", "event": "DELETE /api/v1/admin/logs/archives/../../etc/passwd - Status: 404 - Completed in 18.35ms"}
+{"timestamp": "2026-08-11T05:02:47.680492+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 9.69ms"}
+{"timestamp": "2026-08-11T05:02:47.692513+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 1.97ms"}
+{"timestamp": "2026-08-11T05:02:47.703771+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 422 - Completed in 1.22ms"}
+{"timestamp": "2026-08-11T05:02:47.714225+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 422 - Completed in 1.54ms"}
+{"timestamp": "2026-08-11T05:02:47.726660+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 422 - Completed in 1.09ms"}
+{"timestamp": "2026-08-11T05:02:47.736436+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 422 - Completed in 0.96ms"}
+{"timestamp": "2026-08-11T05:02:47.745756+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 422 - Completed in 0.98ms"}
+{"timestamp": "2026-08-11T05:02:47.757483+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 2.13ms"}
+{"timestamp": "2026-08-11T05:02:47.768002+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 2.36ms"}
+{"timestamp": "2026-08-11T05:02:47.775700+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.64ms"}
+{"timestamp": "2026-08-11T05:02:47.789615+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 2.23ms"}
+{"timestamp": "2026-08-11T05:02:47.797857+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 2.89ms"}
+{"timestamp": "2026-08-11T05:02:47.804932+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 1.90ms"}
+{"timestamp": "2026-08-11T05:02:47.812811+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 2.33ms"}
+{"timestamp": "2026-08-11T05:02:47.819552+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 429 - Completed in 1.48ms"}
+{"timestamp": "2026-08-11T05:02:47.825617+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 429 - Completed in 1.79ms"}
+{"timestamp": "2026-08-11T05:02:47.838508+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 401 - Completed in 1.76ms"}
+{"timestamp": "2026-08-11T05:02:47.851739+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/me - Status: 401 - Completed in 2.99ms"}
+{"timestamp": "2026-08-11T05:02:47.861690+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/me - Status: 401 - Completed in 1.84ms"}
+{"timestamp": "2026-08-11T05:02:47.871217+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/me - Status: 403 - Completed in 1.56ms"}
+{"timestamp": "2026-08-11T05:02:47.880936+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.20ms"}
+{"timestamp": "2026-08-11T05:02:47.888609+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/me - Status: 200 - Completed in 2.35ms"}
+{"timestamp": "2026-08-11T05:02:48.159462+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/openapi.json - Status: 200 - Completed in 259.58ms"}
+{"timestamp": "2026-08-11T05:02:48.172398+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/logs/files - Status: 401 - Completed in 2.63ms"}
+{"timestamp": "2026-08-11T05:02:48.183706+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.68ms"}
+{"timestamp": "2026-08-11T05:02:48.193376+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/logs/files - Status: 200 - Completed in 3.21ms"}
+{"timestamp": "2026-08-11T05:02:48.203296+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.27ms"}
+{"timestamp": "2026-08-11T05:02:48.239897+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/logs/events - Status: 200 - Completed in 30.04ms"}
+{"timestamp": "2026-08-11T05:02:48.250587+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.72ms"}
+{"timestamp": "2026-08-11T05:02:48.259684+00:00", "level": "INFO", "component": "app", "event": "DELETE /api/v1/admin/logs/archives/app.log - Status: 400 - Completed in 2.65ms"}
+{"timestamp": "2026-08-11T05:02:48.269837+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 1.88ms"}
+{"timestamp": "2026-08-11T05:02:48.301525+00:00", "level": "INFO", "component": "app", "event": "DELETE /api/v1/admin/logs/archives/app.log.999 - Status: 200 - Completed in 4.43ms"}
+{"timestamp": "2026-08-11T05:02:48.311797+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.42ms"}
+{"timestamp": "2026-08-11T05:02:48.319564+00:00", "level": "INFO", "component": "app", "event": "DELETE /api/v1/admin/logs/archives/../../etc/passwd - Status: 404 - Completed in 0.55ms"}
+{"timestamp": "2026-08-11T05:02:48.383567+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/policies - Status: 401 - Completed in 4.53ms"}
+{"timestamp": "2026-08-11T05:02:48.425049+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 3.65ms"}
+{"timestamp": "2026-08-11T05:02:48.449486+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/policies - Status: 200 - Completed in 17.88ms"}
+{"timestamp": "2026-08-11T05:02:48.490713+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 2.33ms"}
+{"timestamp": "2026-08-11T05:02:48.503569+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/policies - Status: 200 - Completed in 7.04ms"}
+{"timestamp": "2026-08-11T05:02:48.538216+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 1.65ms"}
+{"timestamp": "2026-08-11T05:02:48.554452+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/policies/1 - Status: 200 - Completed in 6.98ms"}
+{"timestamp": "2026-08-11T05:02:48.593571+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/session - Status: 200 - Completed in 3.00ms"}
+{"timestamp": "2026-08-11T05:02:48.604314+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/policies/999999 - Status: 404 - Completed in 3.35ms"}
+{"timestamp": "2026-08-11T05:02:50.879545+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs - Status: 401 - Completed in 3.30ms"}
+{"timestamp": "2026-08-11T05:02:50.902537+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs - Status: 403 - Completed in 2.01ms"}
+{"timestamp": "2026-08-11T05:02:50.939073+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs - Status: 200 - Completed in 8.12ms"}
+{"timestamp": "2026-08-11T05:02:50.969786+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs - Status: 200 - Completed in 8.00ms"}
+{"timestamp": "2026-08-11T05:02:50.993223+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs - Status: 200 - Completed in 16.82ms"}
+{"timestamp": "2026-08-11T05:02:51.031904+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs/e22bc853-6933-4151-8d47-0b0df57c4a0a - Status: 200 - Completed in 6.31ms"}
+{"timestamp": "2026-08-11T05:02:51.062877+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/admin/collection-runs/59ecef9a-2626-4b34-a947-28d12170fcd4 - Status: 404 - Completed in 4.23ms"}
+{"timestamp": "2026-08-11T05:02:51.197456+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/collection-runs - Status: 202 - Completed in 100.17ms"}
+{"timestamp": "2026-08-11T05:02:51.229113+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/collection-runs - Status: 409 - Completed in 5.02ms"}
+{"timestamp": "2026-08-11T05:02:51.258953+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/collection-runs - Status: 202 - Completed in 7.07ms"}
+{"timestamp": "2026-08-11T05:02:51.286240+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/collection-runs - Status: 422 - Completed in 3.23ms"}
+{"timestamp": "2026-08-11T05:02:51.296343+00:00", "level": "INFO", "component": "app", "event": "POST /api/v1/admin/collection-runs - Status: 422 - Completed in 3.57ms"}
+{"timestamp": "2026-08-11T05:02:51.486474+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/policies/1 - Status: 200 - Completed in 7.73ms"}
+{"timestamp": "2026-08-11T05:02:51.568192+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/health - Status: 200 - Completed in 2.45ms"}
+{"timestamp": "2026-08-11T05:02:51.595550+00:00", "level": "INFO", "component": "app", "event": "GET /health - Status: 200 - Completed in 2.94ms"}
+{"timestamp": "2026-08-11T05:02:51.620174+00:00", "level": "INFO", "component": "app", "event": "GET /api/v1/health - Status: 503 - Completed in 1.62ms"}
+{"timestamp": "2026-08-11T05:02:53.259865+00:00", "level": "INFO", "component": "app", "event": "Starting seed ingestion from: C:\\git\\cheongnyeon-alimi\\data\\seeds\\initial_programs.json"}
+{"timestamp": "2026-08-11T05:02:53.260727+00:00", "level": "INFO", "component": "app", "event": "Seed ingestion failed. Total: 6, Validated: 6, Inserted: 1, Updated: 1, Unchanged: 1, Duplicate: 1, Skipped: 2, Rejected: 1, Failed: 1, Run ID: run-1"}
+{"timestamp": "2026-08-11T05:02:53.265820+00:00", "level": "INFO", "component": "app", "event": "Starting seed ingestion from: C:\\git\\cheongnyeon-alimi\\data\\seeds\\initial_programs.json"}
+{"timestamp": "2026-08-11T05:02:53.266588+00:00", "level": "INFO", "component": "app", "event": "Seed ingestion completed. Total: 4, Validated: 4, Inserted: 4, Updated: 0, Unchanged: 0, Duplicate: 0, Skipped: 0, Rejected: 0, Failed: 0, Run ID: None"}
+{"timestamp": "2026-08-11T05:02:53.271720+00:00", "level": "INFO", "component": "app", "event": "Starting seed ingestion from: C:\\git\\cheongnyeon-alimi\\data\\seeds\\initial_programs.json"}
+{"timestamp": "2026-08-11T05:02:53.272604+00:00", "level": "ERROR", "component": "app", "event": "Seed ingestion failed. error_type=RuntimeError"}

@@ -27,4 +27,5 @@ API 문서는 실제 구현 및 자동화된 Schema와 일치해야 한다. 엔�
 - [관리자 인증 API](admin_access.md): 관리자 PIN 세션 생성 및 토큰 인증/권한 계약
 - [CollectionRun 관리자 API](admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 수집 실행 및 stale 판정 계약
 - [관리자 정책 데이터 표 API](admin_policies.md): 관리자 읽기 전용 정책 데이터 표 목록·상세, 페이징 및 Allowlist 정렬 계약
+- [관리자 로그 및 감사 API](admin_logs.md): 관리자 서버 로그 파일/이벤트 조회, 회전 archive 삭제 및 Audit 감사 기록 계약
 - [맞춤 정책 추천 API](recommendation.md): 결정적 맞춤 정책 추천, 부합도 점수, 추천 사유 및 비단정 계약
