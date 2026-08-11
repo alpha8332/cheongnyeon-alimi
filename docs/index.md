@@ -112,6 +112,8 @@
   반복 수집의 수정·중복·실패 격리와 안전한 품질 통계
 - [Public HTTPS Policy Ingestion Forest 계획](development/develop_plan/data/04_public_https_policy_ingestion.md):
   승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
+- [Regional Youth Policy Ingestion Forest 계획](development/develop_plan/data/05_regional_youth_policy_ingestion.md):
+  광역자치단체 공식 포털 탐색, 지역 고유 정책 판정과 온통청년·복지로 중복 제외
 - [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
   정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
 - [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):

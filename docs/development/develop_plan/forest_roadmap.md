@@ -119,6 +119,18 @@ v0.1.0 → W4-G0
                   → midpoint → 리뷰·수정 → v0.5.0
 ```
 
+## 릴리스 미배정 확장 Forest
+
+| 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
+| ---: | --- | --- | --- | --- | --- | --- |
+| 1 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | draft | 광역자치단체 공식 포털 탐색, 지역 고유 정책 판정, 온통청년·복지로 중복 제외와 실제 DB 적재 | Data 03·04, Release 배정 승인 |
+
+Data 05는 현재 `v0.5.0`의 공식 웹 Source 한 곳 완료 조건을 바꾸지 않는다.
+`v0.5.0`에 포함하려면 Release·주차·Integration 07 범위 변경을 함께 승인하고,
+포함하지 않으면 현재 4주차 Gate를 막지 않는 독립 후속 Forest로 실행한다.
+17개 지역별 브랜치를 만들지 않고 릴리스 배정 뒤 Forest 브랜치 한 개에서
+Source별 Conventional Commit으로 검토 지점을 나눈다.
+
 ## `v1.0.0` Forest
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
@@ -155,6 +167,7 @@ feature/frontend/recommendation
 feature/frontend/user-service-features
 feature/data/recurrent-quality-operations
 feature/data/public-web-policy-source
+feature/data/regional-youth-policy-ingestion
 feature/backend/admin-observability
 feature/frontend/admin-observability
 feature/deploy/open-source-runtime
@@ -197,6 +210,7 @@ Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함�
 - [Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md)
 - [User Service Features](frontend/05_user_service_features.md)
 - [Data Quality Operations](data/03_recurrent_collection_quality_operations.md)
+- [Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md)
 - [Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
