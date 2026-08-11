@@ -13,6 +13,7 @@
 | Release Dataset Bootstrap | [개발 기록](data/release_dataset_bootstrap.md) | DT0~DT4 | Release 1 실제 정책 수집·적재 기준선과 검증 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
+| Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00 | recommendation DTO·Mock·`/recommendations` route |
 | User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~02 | localStorage·즐겨찾기·저장 조건 UI |
 | CollectionRun Admin UI | [개발 기록](frontend/collection_run_admin_ui.md) | FE3-00 | Admin DTO·Mock·route shell |
 | Eligibility Summary UI | [개발 기록](frontend/eligibility_summary_ui.md) | FE7-00 | eligibility_summary DTO·Mock fixtures |

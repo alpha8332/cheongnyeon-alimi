@@ -15,7 +15,7 @@
   Backend 추천 API (Integration 06 R1)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/recommendation`
-- 현재 Slice: FE6-00 draft (계획 수립)
+- 현재 Slice: FE6-00 completed (FE6-01 draft)
 
 ## 목적
 
@@ -74,7 +74,7 @@ W4-G0 승인 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI로 소
 
 ---
 
-### FE6-00 — 추천 DTO·Mock·route 계약 — draft
+### FE6-00 — 추천 DTO·Mock·route 계약 — completed
 
 | 항목 | 내용 |
 | --- | --- |

@@ -6,6 +6,7 @@ import AdminShellLayout from '@/layouts/AdminShellLayout';
 import HomePage from '@/pages/user/HomePage';
 import SearchPage from '@/pages/user/SearchPage';
 import PolicySearchPage from '@/pages/user/PolicySearchPage';
+import RecommendationPage from '@/pages/user/RecommendationPage';
 import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import FavoritesPage from '@/pages/user/FavoritesPage';
 import NotificationsPage from '@/pages/user/NotificationsPage';
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'search', element: <PolicySearchPage /> },
+      { path: 'recommendations', element: <RecommendationPage /> },
       { path: 'programs', element: <SearchPage /> },
       { path: 'programs/:id', element: <ProgramDetailPage /> },
       { path: 'favorites', element: <FavoritesPage /> },
