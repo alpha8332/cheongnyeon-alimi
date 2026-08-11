@@ -14,7 +14,7 @@
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
-- 현재 Slice: FE5-01 draft (FE5-00 completed)
+- 현재 Slice: FE5-02 draft (FE5-01 completed)
 
 ## 목적
 
@@ -61,7 +61,7 @@
 | Forest 묶음 | FE5 Slice | 4주차 | 책임 |
 | --- | --- | --- | --- |
 | U0 | FE5-00 | F4 | versioned localStorage 계약 | completed |
-| U1 | FE5-01 | F4 | 즐겨찾기 UI·State |
+| U1 | FE5-01 | F4 | 즐겨찾기 UI·State | completed |
 | U1 | FE5-02 | F4 | 저장 조건 UI·State |
 | U2 | FE5-03 | F4 | KST D-Day·달력 보기 |
 | U2 | FE5-04 | F4 | 앱 내부 마감 임박 알림 |
@@ -98,7 +98,7 @@ default payload로 reset persist. storage unavailable 시 in-memory default만
 
 ---
 
-### FE5-01 — 즐겨찾기 UI·State — draft
+### FE5-01 — 즐겨찾기 UI·State — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -108,6 +108,14 @@ default payload로 reset persist. storage unavailable 시 in-memory default만
 | **세부 작업** | ☆/★ toggle; per-id detail fetch; no server sync copy |
 | **검증** | unit test; Browser toggle·reload |
 | **완료 기준** | 목록·상세·북마크 동일 id 상태 |
+
+2026-08-11 구현: `useSyncExternalStore` 기반 `useFavorites`, `FavoriteToggleButton`을
+PolicyCard·ProgramDetailPage에 연결. `/favorites`는 id별 `getPolicyById(include_partial=true)`
+병렬 fetch. storage `storage` 이벤트로 탭 간 favorites 동기화.
+
+2026-08-11 hotfix: `getFavoritePolicyIdsSnapshot`이 매 렌더 새 배열 참조를 반환해
+`/`·`/favorites`에서 error boundary(404 UI)가 발생하던 문제를 snapshot cache로
+수정. `App.tsx` 라우트 등록은 변경 없음.
 
 ---
 

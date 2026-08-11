@@ -6,6 +6,7 @@ import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PartialBadge from '@/components/policy/PartialBadge';
+import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
 import {
   formatAge,
@@ -110,9 +111,15 @@ export default function ProgramDetailPage() {
         <Link to="/programs">← 목록으로</Link>
       </p>
 
-      <h1 className="detail-title">
-        {policy.title}
-        <PartialBadge policy={policy} />
+      <h1 className="detail-title detail-title--with-actions">
+        <span className="detail-title__text">
+          {policy.title}
+          <PartialBadge policy={policy} />
+        </span>
+        <FavoriteToggleButton
+          policyId={policy.id}
+          className="detail-title__favorite"
+        />
       </h1>
 
       <Card title="📄 정책 정보">

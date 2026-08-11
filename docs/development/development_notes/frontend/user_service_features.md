@@ -8,12 +8,12 @@
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [User Service Features Forest 개발 계획](../../develop_plan/frontend/05_user_service_features.md)
-- 현재 Slice: FE5-00 completed
+- 현재 Slice: FE5-01 completed
 
 ## 목적
 
-브라우저 전용 사용자 조건·즐겨찾기 저장 계약(FE5-00)을 구현하고, 후속
-Slice(FE5-01~)가 공통 util을 재사용할 수 있게 한다.
+브라우저 전용 사용자 조건·즐겨찾기 저장(FE5-00)과 즐겨찾기 UI·동기
+state(FE5-01)를 구현한다.
 
 ## Forest 범위
 
@@ -25,7 +25,7 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | FE5-00 | completed | versioned localStorage types·utils·unit test |
-| FE5-01 | pending | 즐겨찾기 UI·State |
+| FE5-01 | completed | favorites toggle·`/favorites`·card·detail sync |
 | FE5-02 | pending | 저장 조건 UI·State |
 
 ## 구현 내용
@@ -33,49 +33,73 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 ### FE5-00 — versioned localStorage 계약
 
 - `frontend/src/types/userLocalStorage.ts`
-  - `USER_LOCAL_STORAGE_KEY = cheongnyeon-alimi.user-local.v1` (W4-G0 proposal)
-  - `USER_LOCAL_STORAGE_SCHEMA_VERSION = 1`
-  - `UserLocalStoragePayload`: `favorites`, `conditions`, `updated_at`
 - `frontend/src/utils/userLocalStorage.ts`
-  - `readUserLocalStorage`: missing → default; corrupt/version/shape → reset persist
-  - `writeUserLocalStorage`, `updateUserLocalStorage`, `clearUserLocalStorage`
-  - `getBrowserLocalStorage`: SSR·privacy 오류 시 null (throw 없음)
-- UI route·Zustand store·즐겨찾기 toggle은 FE5-01 범위로 보류
+- corrupt/version/shape → reset persist; storage unavailable → in-memory default
+
+### FE5-01 — 즐겨찾기 UI·State
+
+- `frontend/src/utils/userFavoritesStorage.ts`
+  - `readFavoritePolicyIds`, `toggleFavoritePolicyId`, `subscribeFavoritePolicyIds`
+  - cross-tab `storage` event 구독
+- `frontend/src/hooks/useFavorites.ts`
+  - `useSyncExternalStore`로 card·detail·favorites page state 동기화
+- `frontend/src/components/policy/FavoriteToggleButton.tsx`
+  - ☆/★ toggle, `aria-pressed`, click propagation 차단
+- `frontend/src/pages/user/FavoritesPage.tsx`
+  - bookmark id별 `getPolicyById(id, include_partial=true)` 병렬 fetch
+  - empty·loading·error·missing id 안내
+- `PolicyCard`, `ProgramDetailPage`에 toggle 연결
+- 서버 즐겨찾기 API·계정 동기화 없음 (copy 명시)
 
 ## 설계 결정
 
 | 항목 | 결정 | 근거 |
 | --- | --- | --- |
-| Key 이름 | `cheongnyeon-alimi.user-local.v1` | Integration 05 proposal; W4-G0 승인 전 상수 주석 명시 |
-| Version migration | 미구현, unsupported → reset | FE5-00 완료 기준; migration은 Gate 승인 후 별도 Slice |
-| favorites upper bound | 200 ids | client-side guard; 서버 동기화 없음 |
-| conditions age | 1~120 정수 또는 null | 청년 정책 UI 범위; invalid field는 normalize 시 null |
-| updateUserLocalStorage | FE5-00 util에 포함 | FE5-01·02가 동일 persist 경로 사용 |
+| State 동기화 | `useSyncExternalStore` + module listeners | FE5-01 card·detail·page 동일 id without global Zustand |
+| Favorites fetch | per-id `getPolicyById`, `include_partial=true` | partial bookmark 노출; 목록 API filter by id 없음 |
+| Missing policy | note + skip render | API 404 id는 grid에서 제외, count 안내 |
+| Key·version | FE5-00 proposal 유지 | W4-G0 승인 전 |
 
 ## 주요 변경 파일
 
-- `frontend/src/types/userLocalStorage.ts`
-- `frontend/src/utils/userLocalStorage.ts`
-- `frontend/tests/userLocalStorage.test.ts`
-- `frontend/tsconfig.test.json`
-- `docs/development/develop_plan/frontend/05_user_service_features.md`
+- `frontend/src/utils/userFavoritesStorage.ts`
+- `frontend/src/hooks/useFavorites.ts`
+- `frontend/src/components/policy/FavoriteToggleButton.tsx`
+- `frontend/src/pages/user/FavoritesPage.tsx`
+- `frontend/src/components/policy/PolicyCard.tsx`
+- `frontend/src/pages/user/ProgramDetailPage.tsx`
+- `frontend/src/styles/theme.css`
+- `frontend/tests/userFavoritesStorage.test.ts`
+- `frontend/tests/helpers/memoryStorage.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — passed (userLocalStorage.test 포함)
+cd frontend && npm test   — passed (63 unit tests, FE5-00·FE5-01 snapshot cache 포함)
 cd frontend && npm run lint — passed
 cd frontend && npm run build — passed
-python scripts/validate_docs.py — passed
+python3 scripts/validate_docs.py — passed
 ```
 
-Browser·Playwright 검증은 FE5-07 범위이며 FE5-00에서는 실행하지 않았다.
+Browser 수동 toggle·reload·Playwright E2E는 FE5-07 범위이며 FE5-01에서
+실행하지 않았다.
+
+### FE5-01 hotfix — `/`·`/favorites` 404-like error boundary
+
+- **원인**: `App.tsx` 라우트 누락이 아니라 `useFavorites`의
+  `useSyncExternalStore`가 `getFavoritePolicyIdsSnapshot`에서 매번 새 배열
+  참조를 반환해 React가 무한 re-render → layout `errorElement`(`NotFoundPage`)
+  노출. `/search`는 `useFavorites` 미사용으로 정상.
+- **수정**: `userFavoritesStorage.ts`에 snapshot cache·동일 내용 참조 유지
+  (`syncFavoritePolicyIdsSnapshotFromStorage`, `EMPTY_FAVORITES_SNAPSHOT`).
+- **라우트**: `App.tsx` index `/` → `HomePage`, `favorites` → `FavoritesPage`
+  기존 등록 유지. Vite dev server SPA fallback 이상 없음(HTTP 200 확인).
 
 ## 남은 작업
 
-- FE5-01: `useFavorites` hook·`FavoriteToggleButton`·`/favorites` actual UI
 - FE5-02: conditions editor·conditions-only clear
-- W4-G0 승인 시 key·version·migration 정책 문서와 상수 동기화
+- FE5-07: Browser·Playwright favorites 시나리오
+- W4-G0 승인 시 key·version 동기화
 
 ## 관련 문서
 

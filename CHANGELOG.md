@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Frontend `/`·`/favorites` 접속 시 404 UI가 뜨던 문제: `useFavorites` snapshot
+  참조 불안정으로 layout error boundary가 트리거되던 것을 수정
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+
 ## [0.1.0] - 2026-08-06
 
 ### Added

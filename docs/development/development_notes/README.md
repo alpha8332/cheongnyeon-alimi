@@ -13,7 +13,7 @@
 | Release Dataset Bootstrap | [개발 기록](data/release_dataset_bootstrap.md) | DT0~DT4 | Release 1 실제 정책 수집·적재 기준선과 검증 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
-| User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~ | versioned localStorage 계약 (FE5-00 completed) |
+| User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~01 | localStorage 계약·즐겨찾기 UI |
 | React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |
 | Backend Baseline | [개발 기록](backend/policy_baseline.md) | Backend 0 | DB Schema, ORM 모델, Importer 및 Policy API 구축 |
 | Backend Policy Persistence Hardening | [개발 기록](backend/policy_persistence_hardening.md) | B0~B6 | PostgreSQL 저장·Importer·Repository·Policy API 종단 검증 |

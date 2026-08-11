@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PartialBadge from '@/components/policy/PartialBadge';
 import type { PolicyDto } from '@/types/policy';
 import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
@@ -57,6 +58,7 @@ export default function PolicyCard({ policy }: PolicyCardProps) {
         <h3 className="policy-card__title">
           <Link to={detailPath}>{policy.title}</Link>
           <PartialBadge policy={policy} />
+          <FavoriteToggleButton policyId={policy.id} />
         </h3>
         <p className="policy-card__meta">
           {[formatRegion(policy), formatOrganization(policy), getDDayLabel(policy)]
