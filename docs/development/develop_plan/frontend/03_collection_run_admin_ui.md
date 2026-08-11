@@ -12,7 +12,7 @@
 - 4주차 대응: `W4-F1`, `W4-F2`, Critical Path A (`week_04_v0_5_0.md`)
 - 작업 브랜치: `feature/backend/admin-run-management` (Backend 공유),
   Frontend UI: `feature/frontend/bookmarks-calendar-admin`
-- 현재 Slice: FE3-00 draft (세부 Slice 수립 완료)
+- 현재 Slice: FE3-01 draft (FE3-00 completed)
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
@@ -111,7 +111,7 @@
 
 | Forest 묶음 | FE3 Slice | 4주차 | 책임 |
 | --- | --- | --- | --- |
-| U0 | FE3-00 | F0 | DTO·route·Mock 계약 |
+| U0 | FE3-00 | F0 | DTO·route·Mock 계약 | completed |
 | U0 | FE3-01 | F1 | PIN login·session·logout |
 | U1 | FE3-02 | F2 | CollectionRun 목록·필터 |
 | U1 | FE3-03 | F2 | Run 상세·stale·상태 |
@@ -124,7 +124,7 @@ FE8-01~05와 session module을 공유할 수 있다(W4-G0에서 확정).
 
 ---
 
-### FE3-00 — Admin DTO·라우팅·Mock 계약 — draft
+### FE3-00 — Admin DTO·라우팅·Mock 계약 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -134,6 +134,15 @@ FE8-01~05와 session module을 공유할 수 있다(W4-G0에서 확정).
 | **인터페이스** | PIN session request/response; run list envelope; safe error DTO |
 | **검증** | contract unit test; `npm run build` |
 | **완료 기준** | credential·token URL/log 비노출; placeholder → route shell |
+
+2026-08-11 구현: W4-G0 proposal TypeScript·Mock-first API client,
+`AdminShellLayout` nested `/admin` routes, `/admin/login`·`/admin/runs/:runId`
+placeholder, `admin.contract.test.ts`. Browser 검증은 FE3-05 범위.
+
+2026-08-11 Real API 정합: Backend 04·05(`origin/feature/backend/collection-run-admin-api`)
+OpenAPI·`docs/api/admin_*.md` 기준으로 DTO·query(`size`·`pages`·`start_date`)·
+에러(`error.message` / `detail`)·`Authorization` 옵션·`triggerManualCollectionRun`
+클라이언트 정렬. 로컬 `:8000` OpenAPI에 admin path 미포함 시 Real 호출 불가.
 
 ---
 

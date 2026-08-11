@@ -135,7 +135,9 @@
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)
 - [User Service Features Forest 개발 기록](development/development_notes/frontend/user_service_features.md):
-  versioned localStorage (FE5-00)와 즐겨찾기 UI·동기 state (FE5-01)
+  FE5-00 localStorage·FE5-01 즐겨찾기·FE5-02 저장 조건
+- [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
+  FE3-00 Admin DTO·Mock·`/admin` route shell
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)

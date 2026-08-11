@@ -602,6 +602,62 @@ a.policy-card {
   margin-bottom: 12px;
 }
 
+.admin-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-shell__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-shell__title {
+  margin: 0;
+  font-size: 22px;
+}
+
+.admin-shell__subtitle {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.admin-shell__login-link {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-shell__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-shell__nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-shell__nav-link--active {
+  border-color: var(--sky);
+  background: var(--sky-soft);
+  color: var(--sky-dark);
+}
+
+.admin-shell__content {
+  min-width: 0;
+}
+
 .saved-conditions-panel__intro {
   margin-top: 0;
 }

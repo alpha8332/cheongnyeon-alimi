@@ -38,6 +38,14 @@
     "src/utils/userLocalStorage.ts",
     "src/utils/userFavoritesStorage.ts",
     "src/utils/userConditionsStorage.ts",
+    "src/utils/adminApiErrors.ts",
+    "src/types/adminSession.ts",
+    "src/types/collectionRun.ts",
+    "src/api/adminRequest.ts",
+    "src/api/adminApiError.ts",
+    "src/mocks/adminSessionHandlers.ts",
+    "src/mocks/collectionRunFixtures.ts",
+    "src/mocks/collectionRunHandlers.ts",
     "tests/helpers/memoryStorage.ts",
     "tests/**/*.ts"
   ]

@@ -16,6 +16,12 @@
 
 ### Added
 
+- Frontend CollectionRun Admin DTO·Mock·route shell (FE3-00): admin session·
+  collection run types, Mock-first API client, nested `/admin` layout
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend admin API clients aligned to Backend 04·05 Real OpenAPI (FE3-00):
+  `size`/`pages` list envelope, dual error parsing, Bearer header option
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
 - Frontend 홈 저장 조건 UI(FE5-02): region·age·category 브라우저 localStorage
   저장·복원·조건-only 초기화(북마크 유지)
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
