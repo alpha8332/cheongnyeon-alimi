@@ -14,6 +14,12 @@
   참조 불안정으로 layout error boundary가 트리거되던 것을 수정
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 
+### Added
+
+- Frontend 홈 저장 조건 UI(FE5-02): region·age·category 브라우저 localStorage
+  저장·복원·조건-only 초기화(북마크 유지)
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+
 ## [0.1.0] - 2026-08-06
 
 ### Added

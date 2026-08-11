@@ -37,6 +37,7 @@
     "src/types/userLocalStorage.ts",
     "src/utils/userLocalStorage.ts",
     "src/utils/userFavoritesStorage.ts",
+    "src/utils/userConditionsStorage.ts",
     "tests/helpers/memoryStorage.ts",
     "tests/**/*.ts"
   ]

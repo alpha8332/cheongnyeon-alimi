@@ -8,12 +8,12 @@
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [User Service Features Forest 개발 계획](../../develop_plan/frontend/05_user_service_features.md)
-- 현재 Slice: FE5-01 completed
+- 현재 Slice: FE5-02 completed
 
 ## 목적
 
-브라우저 전용 사용자 조건·즐겨찾기 저장(FE5-00)과 즐겨찾기 UI·동기
-state(FE5-01)를 구현한다.
+브라우저 전용 사용자 조건·즐겨찾기 저장(FE5-00)·즐겨찾기 UI(FE5-01)·저장
+조건 UI(FE5-02)를 구현한다.
 
 ## Forest 범위
 
@@ -26,7 +26,7 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | --- | --- | --- |
 | FE5-00 | completed | versioned localStorage types·utils·unit test |
 | FE5-01 | completed | favorites toggle·`/favorites`·card·detail sync |
-| FE5-02 | pending | 저장 조건 UI·State |
+| FE5-02 | completed | 저장 조건 UI·conditions-only clear |
 
 ## 구현 내용
 
@@ -51,6 +51,19 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `PolicyCard`, `ProgramDetailPage`에 toggle 연결
 - 서버 즐겨찾기 API·계정 동기화 없음 (copy 명시)
 
+### FE5-02 — 저장 조건 UI·State
+
+- `frontend/src/utils/userConditionsStorage.ts`
+  - `readSavedConditions`, `saveSavedConditions`, `clearSavedConditions`
+  - `subscribeSavedConditions` + stable snapshot cache (`useSyncExternalStore` 호환)
+  - cross-tab `storage` event 구독
+- `frontend/src/hooks/useSavedConditions.ts`
+- `frontend/src/components/user/SavedConditionsPanel.tsx`
+  - 홈 `/` region·age·category 편집·저장·조건-only 초기화
+  - 브라우저-only·서버/URL 미저장 copy
+- `HomePage`에 panel 연결
+- `clearSavedConditions`는 `conditions: null`만 기록, `favorites` 유지
+
 ## 설계 결정
 
 | 항목 | 결정 | 근거 |
@@ -59,6 +72,8 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | Favorites fetch | per-id `getPolicyById`, `include_partial=true` | partial bookmark 노출; 목록 API filter by id 없음 |
 | Missing policy | note + skip render | API 404 id는 grid에서 제외, count 안내 |
 | Key·version | FE5-00 proposal 유지 | W4-G0 승인 전 |
+| Conditions object | `UserSavedConditions` 단일 계약 | FE6·FE7과 동일 `{region,age,category}` 공유 |
+| Conditions clear | `conditions` 필드만 null | FE5-08 전체 삭제와 UX·범위 구분 |
 
 ## 주요 변경 파일
 
@@ -71,11 +86,16 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `frontend/src/styles/theme.css`
 - `frontend/tests/userFavoritesStorage.test.ts`
 - `frontend/tests/helpers/memoryStorage.ts`
+- `frontend/src/utils/userConditionsStorage.ts`
+- `frontend/src/hooks/useSavedConditions.ts`
+- `frontend/src/components/user/SavedConditionsPanel.tsx`
+- `frontend/src/pages/user/HomePage.tsx`
+- `frontend/tests/userConditionsStorage.test.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — passed (63 unit tests, FE5-00·FE5-01 snapshot cache 포함)
+cd frontend && npm test   — passed (69 unit tests, FE5-00~FE5-02)
 cd frontend && npm run lint — passed
 cd frontend && npm run build — passed
 python3 scripts/validate_docs.py — passed
@@ -97,8 +117,8 @@ Browser 수동 toggle·reload·Playwright E2E는 FE5-07 범위이며 FE5-01에�
 
 ## 남은 작업
 
-- FE5-02: conditions editor·conditions-only clear
-- FE5-07: Browser·Playwright favorites 시나리오
+- FE5-03: KST D-Day·달력 보기
+- FE5-07: Browser·Playwright favorites·conditions 시나리오
 - W4-G0 승인 시 key·version 동기화
 
 ## 관련 문서

@@ -14,7 +14,7 @@
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
-- 현재 Slice: FE5-02 draft (FE5-01 completed)
+- 현재 Slice: FE5-03 draft (FE5-02 completed)
 
 ## 목적
 
@@ -62,7 +62,7 @@
 | --- | --- | --- | --- |
 | U0 | FE5-00 | F4 | versioned localStorage 계약 | completed |
 | U1 | FE5-01 | F4 | 즐겨찾기 UI·State | completed |
-| U1 | FE5-02 | F4 | 저장 조건 UI·State |
+| U1 | FE5-02 | F4 | 저장 조건 UI·State | completed |
 | U2 | FE5-03 | F4 | KST D-Day·달력 보기 |
 | U2 | FE5-04 | F4 | 앱 내부 마감 임박 알림 |
 | U3 | FE5-05 | F4 | `.ics` 다운로드 |
@@ -119,7 +119,7 @@ PolicyCard·ProgramDetailPage에 연결. `/favorites`는 id별 `getPolicyById(in
 
 ---
 
-### FE5-02 — 저장 조건 UI·State — draft
+### FE5-02 — 저장 조건 UI·State — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -129,6 +129,11 @@ PolicyCard·ProgramDetailPage에 연결. `/favorites`는 id별 `getPolicyById(in
 | **세부 작업** | FE6 recommendation·FE7 comparison과 동일 conditions 객체 공유; **즐겨찾기·알림 cache는 유지** |
 | **검증** | unit + Browser reload |
 | **완료 기준** | URL·서버·log에 조건 영구 저장 없음; favorites unchanged after conditions-only clear |
+
+2026-08-11 구현: `userConditionsStorage` + `useSavedConditions` +
+`SavedConditionsPanel`(홈 `/`). `saveSavedConditions`·`clearSavedConditions`는
+FE5-00 `UserSavedConditions` 계약만 사용. 조건 초기화 시 favorites 유지.
+Browser reload 검증은 FE5-07 범위.
 
 ---
 
