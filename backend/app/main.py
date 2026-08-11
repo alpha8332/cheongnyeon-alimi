@@ -6,12 +6,14 @@ from fastapi.openapi.utils import get_openapi
 
 from app.core.config import settings
 from app.core.logging import setup_logging, logger
+from app.core.logging_config import setup_file_logging
 from app.core.exceptions import AppException
 from app.api.v1.api import api_router
 from app.api.v1.endpoints.health import check_health
 
 # Initialize Logger
 setup_logging()
+setup_file_logging()
 
 app = FastAPI(
     title=settings.APP_NAME,
