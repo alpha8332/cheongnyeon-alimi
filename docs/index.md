@@ -134,6 +134,8 @@
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)
+- [User Service Features Forest 개발 기록](development/development_notes/frontend/user_service_features.md):
+  versioned localStorage 계약 (FE5-00)
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)

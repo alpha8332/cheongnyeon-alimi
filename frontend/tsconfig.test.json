@@ -9,7 +9,11 @@
     "rootDir": ".",
     "outDir": ".test-dist",
     "ignoreDeprecations": "6.0",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [
     "src/api/policyRequest.ts",
@@ -30,6 +34,8 @@
     "src/types/policySearchErrors.ts",
     "src/utils/policyId.ts",
     "src/utils/policyDisplay.ts",
+    "src/types/userLocalStorage.ts",
+    "src/utils/userLocalStorage.ts",
     "tests/**/*.ts"
   ]
 }

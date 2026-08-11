@@ -7,13 +7,14 @@
 - 상태: draft
 - 계획일: `2026-08-07`
 - Slice 계획 갱신: `2026-08-11`
+- 구현 시작: `2026-08-11` (FE5-00)
 - 대상 Release: `v0.5.0`
 - 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
 - 4주차 대응: `W4-F4`, Critical Path C (`week_04_v0_5_0.md`)
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
-- 현재 Slice: FE5-00 draft (세부 Slice 수립 완료)
+- 현재 Slice: FE5-01 draft (FE5-00 completed)
 
 ## 목적
 
@@ -59,7 +60,7 @@
 
 | Forest 묶음 | FE5 Slice | 4주차 | 책임 |
 | --- | --- | --- | --- |
-| U0 | FE5-00 | F4 | versioned localStorage 계약 |
+| U0 | FE5-00 | F4 | versioned localStorage 계약 | completed |
 | U1 | FE5-01 | F4 | 즐겨찾기 UI·State |
 | U1 | FE5-02 | F4 | 저장 조건 UI·State |
 | U2 | FE5-03 | F4 | KST D-Day·달력 보기 |
@@ -78,7 +79,7 @@
 
 ---
 
-### FE5-00 — versioned localStorage 계약 — draft
+### FE5-00 — versioned localStorage 계약 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -88,6 +89,12 @@
 | **인터페이스** | `favorites: number[]`, `conditions: {region,age,category}|null`, `updated_at` |
 | **검증** | unit test (normalize·parse); SSR/no-storage graceful |
 | **완료 기준** | corrupt·wrong version → reset; 검색·상세 flow 차단 없음 |
+
+2026-08-11 구현: key `cheongnyeon-alimi.user-local.v1`, schema version `1`(W4-G0
+proposal). `readUserLocalStorage`는 corrupt·unsupported version·invalid shape 시
+default payload로 reset persist. storage unavailable 시 in-memory default만
+반환. 후속 Slice(FE5-01~)는 `updateUserLocalStorage`·`clearUserLocalStorage`를
+사용한다.
 
 ---
 
