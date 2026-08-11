@@ -139,7 +139,7 @@
 - [User Service Features Forest 개발 기록](development/development_notes/frontend/user_service_features.md):
   FE5-00~06,08 localStorage·즐겨찾기·조건·D-Day·cross-route identity
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
-  FE3-00~04 PIN session·실행 기록·수동 실행 UI
+  FE3-00~05 PIN session·실행 기록·수동 실행·Playwright E2E
 - [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
   FE7-00~04 DTO·핵심 신청 조건 카드·비교 badge·evidence link
 - [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):

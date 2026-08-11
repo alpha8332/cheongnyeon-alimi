@@ -12,7 +12,7 @@
 - 4주차 대응: `W4-F1`, `W4-F2`, Critical Path A (`week_04_v0_5_0.md`)
 - 작업 브랜치: `feature/backend/admin-run-management` (Backend 공유),
   Frontend UI: `feature/frontend/bookmarks-calendar-admin`
-- 현재 Slice: FE3-04 completed (FE3-05 draft)
+- 현재 Slice: FE3-05 completed (FE3-06 draft)
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
@@ -208,7 +208,7 @@ disable·list refetch.
 
 ---
 
-### FE3-05 — Real API·Browser·인계 — draft
+### FE3-05 — Real API·Browser·인계 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -217,6 +217,13 @@ disable·list refetch.
 | **선행** | FE3-01~04, Backend 04·05 merged |
 | **검증** | `npm run test:e2e`; `python scripts/validate_docs.py` |
 | **완료 기준** | `BE-ADMIN-RUN-HISTORY` Frontend 종료 |
+
+2026-08-11 구현: `frontend/e2e/admin-collection-run.spec.ts` Mock-first Browser
+flow 9건(PIN·list·filter·detail·404·manual trigger). `playwright.config.ts`
+`VITE_USE_MOCK`·`VITE_API_BASE_URL` webServer env 전달. Real API golden 1건은
+`VITE_USE_MOCK=false` + Backend admin path 준비 시에만 실행(skip). 로컬
+`:8000` admin API 미merge 상태에서는 Mock E2E로 Frontend 소비 경로를
+검증하고 Real smoke는 Backend merge 후 재실행.
 
 ---
 
