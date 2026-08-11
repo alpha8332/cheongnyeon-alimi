@@ -26,8 +26,8 @@
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | RYP0 | completed | 17개 후보 JSON·Schema·계약 테스트 14개와 39개 subtest 통과 |
-| RYP1 | 대기 | 홈페이지 탐색·Source 승인 |
-| RYP2 | 대기 | 공통 실행 경계·Source Adapter |
+| RYP1 | in-progress (reopened) | HTTP 잠정 판정 뒤 Browser Discovery 기준으로 17개 재검토 |
+| RYP2 | 대기 | Browser Discovery Engine·profile replay·Source Adapter |
 | RYP3 | 대기 | 지역 고유성·신청 가능성 |
 | RYP4 | 대기 | 온통청년·복지로 중복 제외 |
 | RYP5 | 대기 | 대표 Source actual |
@@ -46,10 +46,46 @@
 - `청년정책_데이터수집_완료.xlsx` 32행의 부산 상세 공고는 구현·승인 Source가
   아니라 RYP1 탐색을 돕는 `detail_candidate` seed로만 보존했다.
 
+### RYP1 - 홈페이지 탐색·Source 승인
+
+- 17개 홈에서 운영 주체, robots, 약관·라이선스 표시, 기술 접근, 정책
+  목록·상세 경로와 identity를 제한 확인했다.
+- 부산·대구·인천·광주 통합·대전·울산·강원·전북·경남 9개를 승인하고 고정
+  목록·상세 allowlist와 목록 1회·상세 3건·최소 2초 간격 예산을 기록했다.
+- 서울은 웹 게이트, 세종·경기·충남·경북은 robots 경로 제한, 충북·제주는
+  현재 공통 HTTP 전송에서 재현할 수 없어 `blocked`로 뒀다.
+- 전남 구 포털은 robots가 홈만 허용하고 현행 통합 플랫폼으로 대체되어
+  `rejected`로 판정했다.
+- `RegionalSourceInventoryValidator`가 승인 상태·preflight·Source ID·allowlist·
+  요청 예산·행정구역 mapping의 교차 필드 조합을 검사한다.
+- 명시적 개방 라이선스가 없는 승인 Source는 원문을 재배포하지 않고 최소 정책
+  사실과 provenance만 Runtime에서 처리한다.
+
+### RYP1 보완 - Browser Discovery 기준 재개
+
+사용자가 요구한 입력 계약은 목록 endpoint가 아니라 공식 홈 URL이다. 기존
+preflight는 원시 HTTP 접근을 우선해 Browser에서 사용자처럼 메뉴·검색·선택을
+거쳐 상세에 도달할 수 있는 Source를 충분히 평가하지 못했다.
+
+서울 청년몽땅정보통을 Browser로 다시 확인해 다음 경로를 재현했다.
+
+```text
+홈 → 맞춤서비스 → 서울시 정책 90건·자치구 정책 21건
+  → 청년 부동산 중개보수 및 이사비 지원사업 상세
+```
+
+상세에서 `plcyBizId=V202600006`, 주관기관, 지원내용, 신청기간, 지원규모,
+연령·학력·취업상태, 참여제한, 신청절차·제출서류 label과 공식 URL을 확인했다.
+따라서 서울의 `technical_access=blocked`는 Browser collection 가능성을 반영하지
+못한 잠정 결과다. 기존 9개 승인·7개 차단·1개 제외와 validator는 RYP1 보완의
+출발점으로 보존하되 최종 Source 승인으로 사용하지 않는다.
+
 ## 주요 변경 파일
 
 - `data/reference/regional_youth_policy_sources.json`
 - `data/schema/regional_youth_policy_source_inventory.schema.json`
+- `collectors/regional_sources.py`
+- `collectors/__init__.py`
 - `tests/test_regional_source_inventory.py`
 - `docs/development/develop_plan/data/05_regional_youth_policy_ingestion.md`
 - `docs/development/develop_plan/data/06_supplemental_official_policy_ingestion.md`
@@ -62,16 +98,19 @@ XLSX는 광주와 전남을 나눈 17개 포털을 제공하지만 현재
 `kr-bjd-20260803`은 `전남광주통합특별시(1200000000)`를 활성 지역으로 두고
 광주 `2900000000`과 전남 `4600000000`을 `2026-07-01` 퇴역으로 보존한다.
 
-포털 후보 수를 임의로 15개로 줄이거나 두 후보를 활성 통합 코드로 자동
-치환하지 않았다. 17개 Source 관할 라벨은 그대로 보존하고 광주·전남 mapping을
-`historical_review_required`, `active_code=null`로 격리했다. 실제 정책의 지역
-rule은 RYP1~RYP3에서 공식 원문과 현행 관할을 확인한 뒤 결정한다.
+RYP0에서는 포털 후보 수를 임의로 줄이거나 후계 지역으로 자동 치환하지 않았다.
+RYP1 제한 탐색에서 기존 광주 센터가 연결하는 현행 공식 사이트가
+전남광주통합특별시 청년통합플랫폼임을 확인해 광주 Source를 활성 통합 코드
+`1200000000`으로 승인했다. 전남 구 포털은 비승인 lineage와 퇴역 코드로
+남겼다. 개별 정책의 실제 지역 rule은 RYP3 상세 원문 evidence로 결정한다.
 
 ### 후보와 승인 Source 분리
 
 홈 URL과 상세 seed는 Source 발견의 입력일 뿐 승인 목록·상세 endpoint가 아니다.
-운영 주체·robots·약관·라이선스·기술 접근과 요청 예산을 확인하기 전에는
-`approved`나 `implemented`로 기록하지 않는다.
+현재 inventory는 HTTP 중심 잠정 판정이므로 최종 실행 계약이 아니다. RYP1
+보완에서 `discovery_status`와 `collection_mode`를 분리하고 17개 모두의 Browser
+action profile을 검증한 뒤 Source ID·allowlist·interaction/request 예산을 다시
+승인한다. RYP2는 보완된 실행 inventory 밖의 경로를 호출하지 않는다.
 
 ## 검증 결과
 
@@ -81,10 +120,12 @@ rule은 RYP1~RYP3에서 공식 원문과 현행 관할을 확인한 뒤 결정�
 .\.venv\Scripts\python.exe -m pytest tests\test_administrative_regions.py tests\test_regional_source_inventory.py -q
 ```
 
-- 결과: `14 passed, 39 subtests passed`
+- 결과: `17 passed, 45 subtests passed`
 - inventory JSON Schema, 17개 관할 라벨·URL 유일성, HTTPS·비밀 없는 URL,
-  candidate-only 초기 상태, 활성·퇴역 행정구역 code 보존과 부산 탐색 seed를
-  확인했다.
+  17개 결정 상태, 승인·비승인 실행 경계, 활성·퇴역 행정구역 code, 부산 탐색
+  seed와 잘못된 교차 필드 조합 거부를 확인했다.
+- 이 결과는 HTTP 중심 잠정 inventory의 내부 일관성 검증이며, 17개 Browser
+  Discovery 완료나 최종 Source 승인을 뜻하지 않는다.
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\validate_docs.py
@@ -92,13 +133,15 @@ git diff --check
 ```
 
 - 결과: 문서 검증 통과, whitespace 오류 없음
-- 테스트는 외부 웹 요청이나 PostgreSQL을 사용하지 않았다. Source 접근·승인과
-  actual 적재는 실행하지 않았으며 RYP1 이후 결과로 기록한다.
+- 테스트는 외부 웹 요청이나 PostgreSQL을 사용하지 않았다. RYP1 preflight는
+  제한 실제 HTTP·Browser 확인으로 수행했지만 응답 원문은 Git에 저장하지
+  않았다. 정책 추출·actual 적재는 RYP2 이후 결과로 기록한다.
 
 ## 남은 작업
 
-- RYP1에서 17개 홈의 운영 주체·목록·상세·robots·약관·요청 예산 확인
-- RYP1에서 승인 상태·Source ID·allowlist·요청 예산·지역 mapping의 교차 필드
-  조합을 검사하는 domain validator 추가
-- 광주·전남 Source의 현행 관할과 정책별 지역 evidence mapping 결정
-- 승인 Source만 RYP2 Adapter 구현 대상으로 전달
+- RYP1에서 17개 홈의 Browser 메뉴·검색·선택·목록·상세 경로 재검증
+- discovery 상태·collection mode·action profile 계약과 validator 보완
+- RYP2에서 Browser Discovery Engine·profile replay와 Source Adapter 구현
+- RYP3에서 정책별 지역 고유성·신청 가능성과 지역 evidence mapping 결정
+- RYP4에서 온통청년·복지로 snapshot·PostgreSQL 기준 중복 제외
+- RYP5 전에는 Browser Discovery와 이용 조건을 모두 통과한 Source만 actual 실행

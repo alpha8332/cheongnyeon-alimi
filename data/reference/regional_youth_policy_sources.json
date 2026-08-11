@@ -16,9 +16,9 @@
       "jurisdiction_key": "seoul",
       "jurisdiction_label": "서울",
       "home_url": "https://youth.seoul.go.kr/mainA.do",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "서울청년몽땅정보통은 Devy WebGate 스크립트만 반환하고 현재 공통 HTTP로 결정적인 목록·상세 응답을 얻을 수 없다. 접근 통제를 우회하지 않고 기술 접근 차단으로 보류한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "1100000000",
@@ -26,12 +26,12 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "not_found",
+        "license": "not_found",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -42,9 +42,9 @@
       "jurisdiction_key": "busan",
       "jurisdiction_label": "부산",
       "home_url": "https://young.busan.go.kr/index.nm",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-busan-youth-platform",
+      "decision_reason": "부산광역시 청년플랫폼의 공개 정책지원 목록과 bizSid 상세 경로를 확인했다. robots 공개 경로를 위반하지 않으며 약관상 원문·이미지를 재배포하지 않고 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "2600000000",
@@ -52,16 +52,24 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://young.busan.go.kr/policySupport/list.nm?menuCd=12"
+      ],
+      "approved_detail_url_patterns": [
+        "https://young.busan.go.kr/policySupport/view.nm?menuCd=13&bizSid={SUP followed by digits}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": [
         {
           "kind": "detail_candidate",
@@ -80,9 +88,9 @@
       "jurisdiction_key": "daegu",
       "jurisdiction_label": "대구",
       "home_url": "https://www.dgjump.com/",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-daegu-youth-platform",
+      "decision_reason": "대구 청년정책 플랫폼의 공개 목록과 ap_seq 상세 identity를 확인했다. robots 공개 경로를 위반하지 않으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "2700000000",
@@ -90,25 +98,33 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://www.dgjump.com/open_content/info/info_list_01"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.dgjump.com/open_content/info/info_list_01_view?ap_seq={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "incheon",
       "jurisdiction_label": "인천",
       "home_url": "https://youth.incheon.go.kr/",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-incheon-youth-platform",
+      "decision_reason": "인천청년포털의 공개 검색 목록과 poly_seq 상세 identity를 확인했다. 공개 경로의 최소 정책 사실만 제한 수집하고 원문·이미지는 저장소에 재배포하지 않는다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "2800000000",
@@ -116,53 +132,67 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://youth.incheon.go.kr/policy/search_incheon.jsp"
+      ],
+      "approved_detail_url_patterns": [
+        "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoDetail.do?poly_seq={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "gwangju",
       "jurisdiction_label": "광주",
-      "home_url": "https://gjyouthcenter.kr/main/",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 광주 청년정책 탐색 시작점이다. 현행 행정구역 기준과의 관할 mapping을 RYP1에서 별도 검토한다.",
+      "home_url": "https://youth.gwangju.go.kr/www",
+      "status": "approved",
+      "source_id": "regional-gwangju-integrated-youth-platform",
+      "decision_reason": "기존 광주청년센터가 연결하는 현행 공식 전남광주통합특별시 청년통합플랫폼에서 공개 정책 목록과 policyId 상세 identity를 확인했다. 구 광주 후보 대신 통합 플랫폼의 최소 정책 사실만 제한 수집한다.",
       "region_reference": {
-        "mapping_status": "historical_review_required",
-        "active_code": null,
-        "historical_codes": [
-          "2900000000"
-        ],
-        "note": "kr-bjd-20260803에서 광주광역시는 2026-07-01 퇴역하고 전남광주통합특별시 1200000000이 활성화됐지만 후계 지역으로 자동 치환하지 않는다."
+        "mapping_status": "matched_active",
+        "active_code": "1200000000",
+        "historical_codes": [],
+        "note": "현행 공식 플랫폼이 전남광주통합특별시를 운영 주체와 서비스 관할로 표시하므로 활성 통합 코드에 연결한다. 정책별 실제 대상 지역은 RYP3 원문 evidence로 별도 판정한다."
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://youth.gwangju.go.kr/www/50"
+      ],
+      "approved_detail_url_patterns": [
+        "https://youth.gwangju.go.kr/www/50?policyId={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "daejeon",
       "jurisdiction_label": "대전",
       "home_url": "https://www.daejeonyouthportal.kr/index.do",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-daejeon-youth-platform",
+      "decision_reason": "대전청년포털의 공개 통합지원 목록과 CT 식별자 상세 경로를 확인했다. robots 문서는 게시되지 않았으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "3000000000",
@@ -170,25 +200,33 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://www.daejeonyouthportal.kr/biz/integratedYouth.do?section=1&commonMenuNo=438_323_514_517"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.daejeonyouthportal.kr/content/CT_{12_digits}/cntPage.do?dpmSectionFst={positive_integer}&dpmSectionScd={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "ulsan",
       "jurisdiction_label": "울산",
       "home_url": "https://www.ulsan.go.kr/s/ulsanyouth/main.ulsan",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-ulsan-youth-platform",
+      "decision_reason": "울산광역시 청년정책 게시판의 고정 bbsId 목록과 dataId 상세 identity를 확인했다. robots는 공개 경로를 허용하며 최소 정책 사실만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "3100000000",
@@ -196,25 +234,33 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://www.ulsan.go.kr/s/ulsanyouth/bbs/list.ulsan?bbsId=BBS_0000000000000309&mId=008001002000000000"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.ulsan.go.kr/s/ulsanyouth/bbs/view.do?bbsId=BBS_0000000000000309&mId=008001002000000000&dataId={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "sejong",
       "jurisdiction_label": "세종",
       "home_url": "https://www.4242.or.kr/",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "세종청년플랫폼 robots.txt가 일반 크롤러에 전체 경로 Disallow를 선언한다. 공개 화면 접근 여부와 무관하게 수집 대상에서 차단한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "3611000000",
@@ -222,12 +268,12 @@
         "note": "kr-bjd-20260803 기준정보에서는 세종특별자치시를 district level code로 보존한다."
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -238,9 +284,9 @@
       "jurisdiction_key": "gyeonggi",
       "jurisdiction_label": "경기",
       "home_url": "https://youth.gg.go.kr/gg/index.do",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "경기청년포털 robots.txt의 일반 규칙은 index와 notice 일부 외 경로를 차단하며 정책 목록 경로는 허용되지 않는다. 허용 경로가 확정될 때까지 수집하지 않는다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4100000000",
@@ -248,12 +294,12 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -264,9 +310,9 @@
       "jurisdiction_key": "gangwon",
       "jurisdiction_label": "강원",
       "home_url": "https://job.gwd.go.kr/youth",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-gangwon-youth-platform",
+      "decision_reason": "강원일자리정보망 청년정책의 공개 목록과 bizId·mode=gw POST 상세 요청을 확인했다. robots의 /youth 허용 범위 안에서 최소 정책 사실만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "5100000000",
@@ -274,25 +320,33 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://job.gwd.go.kr/youth/policies/search/gangwon_policies"
+      ],
+      "approved_detail_url_patterns": [
+        "POST https://job.gwd.go.kr/youth/policies/search/gangwon_policies (bizId={non_empty}&mode=gw)"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "chungbuk",
       "jurisdiction_label": "충북",
       "home_url": "https://www.chungbuk.go.kr/young/index.do",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "충북 청년포털 robots는 /young 경로를 허용하지만 현재 공통 urllib HTTP 전송에서 연결이 종료되어 결정적 수집을 재현할 수 없다. RYP2에서 전송 경계를 별도 검토하기 전에는 승인하지 않는다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4300000000",
@@ -300,12 +354,12 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -316,9 +370,9 @@
       "jurisdiction_key": "chungnam",
       "jurisdiction_label": "충남",
       "home_url": "https://youth.chungnam.go.kr/web/main/customSupp/list",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 정책 목록 후보이며 운영 주체·상세 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "충남청년포털 robots 일반 규칙은 전체 차단 뒤 일부 경로만 허용하며 실제 customSupp 정책 목록·상세 경로는 허용 목록에 포함되지 않는다. 현재 공통 HTTP 연결도 안정적으로 재현되지 않아 차단한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4400000000",
@@ -326,12 +380,12 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -342,9 +396,9 @@
       "jurisdiction_key": "jeonbuk",
       "jurisdiction_label": "전북",
       "home_url": "https://www.jb2030.or.kr/",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-jeonbuk-youth-platform",
+      "decision_reason": "전북청년허브의 공개 정책 목록과 id 상세 identity를 확인했다. robots 문서는 게시되지 않았으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "5200000000",
@@ -352,25 +406,33 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://www.jb2030.or.kr/policy/p2_pol.html"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.jb2030.or.kr/policy/p2_pol_view.html?id={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "jeonnam",
       "jurisdiction_label": "전남",
       "home_url": "https://www.jnyouthcenter.kr/index.php",
-      "status": "candidate",
+      "status": "rejected",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 전남 청년정책 탐색 시작점이다. 현행 행정구역 기준과의 관할 mapping을 RYP1에서 별도 검토한다.",
+      "decision_reason": "기존 전남청년센터 포털은 robots가 홈만 허용하며 현행 공식 청년정책 서비스는 전남광주통합특별시 통합플랫폼으로 이전됐다. 중복·퇴역 Source이므로 승인 후보에서 제외하고 lineage만 보존한다.",
       "region_reference": {
         "mapping_status": "historical_review_required",
         "active_code": null,
@@ -380,12 +442,12 @@
         "note": "kr-bjd-20260803에서 전라남도는 2026-07-01 퇴역하고 전남광주통합특별시 1200000000이 활성화됐지만 후계 지역으로 자동 치환하지 않는다."
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -396,9 +458,9 @@
       "jurisdiction_key": "gyeongbuk",
       "jurisdiction_label": "경북",
       "home_url": "https://gbyouth.go.kr/main.tc",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "경북청년포털 robots.txt가 정책 목록 /policy/list.tc/ 경로를 명시적으로 차단한다. 해당 Source는 우회하지 않고 수집 대상에서 제외한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4700000000",
@@ -406,12 +468,12 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],
@@ -422,9 +484,9 @@
       "jurisdiction_key": "gyeongnam",
       "jurisdiction_label": "경남",
       "home_url": "https://youth.gyeongnam.go.kr/youth/index.es?sid=a1",
-      "status": "candidate",
-      "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "status": "approved",
+      "source_id": "regional-gyeongnam-youth-platform",
+      "decision_reason": "경상남도 청년정보플랫폼의 공개 정책 목록과 policy_no 기반 POST 상세 요청을 확인했다. robots 문서는 게시되지 않았으며 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4800000000",
@@ -432,25 +494,33 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
-      "approved_list_urls": [],
-      "approved_detail_url_patterns": [],
-      "request_budget": null,
+      "approved_list_urls": [
+        "https://youth.gyeongnam.go.kr/youth/youthPolicySearchPageNew.es?mid=a10101020000&policy_subject_office=0"
+      ],
+      "approved_detail_url_patterns": [
+        "POST https://youth.gyeongnam.go.kr/youth/youthPolicySearchViewNew.es (policy_no={positive_integer}[&api_city={value}&api_policy_no={value}])"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
       "discovery_seeds": []
     },
     {
       "jurisdiction_key": "jeju",
       "jurisdiction_label": "제주",
       "home_url": "https://jejuyouth.com/m/index.php",
-      "status": "candidate",
+      "status": "blocked",
       "source_id": null,
-      "decision_reason": "사용자 제공 XLSX의 지역 청년정책 포털 탐색 시작점이며 운영 주체·수집 경로·이용 조건은 RYP1에서 확인한다.",
+      "decision_reason": "제주청년센터는 Browser와 curl에서는 열리지만 현재 공통 urllib HTTP에서 TLS handshake가 재현되지 않는다. RYP2에서 지원 전송 방식이 확정되기 전에는 승인하지 않는다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "5000000000",
@@ -458,12 +528,12 @@
         "note": null
       },
       "preflight": {
-        "operator": "unchecked",
-        "robots": "unchecked",
-        "terms": "unchecked",
-        "license": "unchecked",
-        "technical_access": "unchecked",
-        "last_checked_at": null
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T13:30:00+09:00"
       },
       "approved_list_urls": [],
       "approved_detail_url_patterns": [],

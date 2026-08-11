@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0` 완료, 다음 `RYP1` 홈페이지 탐색·Source 승인
+- 현재 진행: `RYP0` 완료, `RYP1` Browser Discovery 기준으로 재검토 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP1`
+- 현재 Slice: `RYP1` Browser Discovery 보완
 
 ## 목적
 
@@ -94,6 +94,28 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 테스트·데모이거나 이용 조건상 수집할 수 없으면 다른 공식 Source를 검토하고,
 우회 수집하지 않는다.
 
+### RYP1 HTTP 중심 잠정 판정과 재검토 (`2026-08-11`)
+
+- 잠정 승인 9개: 부산, 대구, 인천, 광주(현행 통합 플랫폼), 대전, 울산, 강원,
+  전북, 경남
+- 잠정 차단 7개: 서울, 세종, 경기, 충북, 충남, 경북, 제주
+- 잠정 제외 1개: 전남 구 포털
+
+이 판정은 원시 HTTP 재현 가능성을 운영 수집의 선행조건으로 과도하게 두어
+사용자가 요구한 Browser 기반 홈 탐색을 충분히 반영하지 못했다. 실제 서울
+공개 화면에서 사용자와 같은 클릭으로 `맞춤서비스` → 서울시 정책 90건·자치구
+정책 21건 → `plcyBizId=V202600006` 상세까지 진입했고 주관기관·지원내용·기간·
+지원규모·자격·신청방법 필드를 확인했다. 따라서 HTTP 실패를 곧 Source 차단으로
+판정한 결과는 최종 승인이 아니며 RYP1을 재개해 17개 사이트를 Browser 기준으로
+다시 검증한다.
+
+광주 관할 라벨은 XLSX lineage로 보존하되 운영 Source는 기존 센터가 연결하는
+`https://youth.gwangju.go.kr/www`로 교체했다. 공식 화면이
+전남광주통합특별시 청년통합플랫폼임을 확인했으므로 Source mapping은 활성
+`1200000000`으로 승인했다. 실제 개별 정책의 대상 지역은 포털 관할만으로
+추정하지 않고 RYP3에서 상세 원문 evidence로 판정한다. 전남 구 포털의 퇴역
+`4600000000` mapping은 비승인 lineage로 유지한다.
+
 ## 용어와 승인 의미
 
 ### 지역 고유 정책
@@ -133,6 +155,8 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 
 - 17개 광역자치단체 공식 청년정책 Source 후보 inventory와 상태 관리
 - 홈·사이트맵·정책 메뉴에서 목록·상세·공개 API endpoint를 찾는 제한 탐색
+- 로그인 없는 공개 화면에서 클릭·검색어 입력·select·tab·pagination·더보기와
+  JavaScript event를 사용자처럼 실행하는 Browser Discovery
 - 공식 운영 주체·robots·이용약관·라이선스·재배포 조건 preflight
 - 승인된 목록·상세 경로와 pagination의 Source별 allowlist
 - 공개 API → 서버 HTML → 공개 JSON/XHR 순서의 수집 방식 선택
@@ -146,7 +170,8 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 
 ## 범위 밖
 
-- 인터넷 전체 또는 임의 도메인을 재귀 탐색하는 범용 크롤러
+- 사용자 입력과 무관한 인터넷 전체·검색엔진 결과·외부 도메인을 무제한 재귀
+  탐색하는 크롤러
 - 로그인·CAPTCHA·접근 통제·robots·이용약관 우회
 - 검색엔진 구축, 전체 사이트 미러링과 첨부파일 일괄 다운로드
 - 지역 포털에 재게시됐다는 이유만으로 전국 정책을 지역 정책으로 복제
@@ -160,28 +185,100 @@ XLSX의 17개 관할 라벨은 Source 탐색 범위로 보존하지만 현재
 
 ## 공통 설계 원칙
 
+### 지원하는 공개 웹사이트 계약
+
+입력은 지방자치단체·지역 공공기관의 로그인 없는 공식 HTTPS 홈 URL이다. 별도
+목록 URL이나 selector가 없어도 다음 상호작용으로 정책 상세에 도달할 수 있으면
+수집 후보로 지원한다.
+
+- 메뉴·전체메뉴·tab·accordion·modal 열기와 링크 클릭
+- `청년`, `청년정책`, `지원사업` 등 검색어 입력과 검색 실행
+- 지역·분야·모집상태 select, checkbox와 button 선택
+- pagination·더보기·무한 스크롤의 제한 실행
+- JavaScript `#none` 링크·POST form·XHR로 열리는 목록과 상세
+- 같은 공식 운영 주체가 명시적으로 연결한 정책 하위 도메인 이동
+
+로그인·본인인증·CAPTCHA·결제·개인정보 입력이 필요한 경로와 접근통제 우회는
+지원하지 않는다. 사용자 제공 17개 사이트는 정책 열람에 로그인이 필요 없다는
+사용자 확인을 출발 가정으로 두되, RYP1에서 각 사이트의 홈 → 상세 경로를 실제
+Browser로 재현해야 승인한다.
+
 ### 홈 탐색과 운영 수집 분리
 
-홈 URL은 정책 데이터 endpoint가 아니라 Source 발견의 시작점으로만 사용한다.
-RYP1 탐색은 같은 공식 도메인의 메뉴·사이트맵·공개 요청을 최소 범위로 확인해
-목록·상세 경로를 찾는다. 운영 Collector는 탐색 결과로 승인된 경로만 호출하고
-홈에서 매 실행마다 링크를 무제한 재귀 순회하지 않는다.
+홈 URL은 Browser Discovery의 필수 시작점이다. 최초 등록과 구조 drift 복구 때는
+Browser가 렌더링된 DOM의 메뉴·검색·선택 UI를 제한 탐색해 정책 목록·상세와
+필드 구조를 찾고, 클릭 경로를 재현 가능한 Source profile로 만든다. 운영
+Collector는 해당 profile을 재사용하며 매 실행마다 홈을 무제한 순회하지 않는다.
 
-### 수집 방식 우선순위
+profile 재생이 실패하면 정상 빈 결과로 처리하지 않고 `discovery_drift`로
+격리한 뒤 같은 홈에서 제한 재탐색한다. 새 경로는 상세 표본과 이용 조건을 다시
+확인한 후에만 운영 profile로 승격한다.
 
-1. 공식 Open API 또는 공공데이터
-2. 서버에서 렌더링된 정책 목록·상세 HTML
-3. 사이트가 로그인 없이 공개적으로 사용하는 JSON/XHR
-4. 앞선 방식이 없고 이용 조건이 허용할 때만 제한 Browser rendering 검토
+### 발견 방식과 실행 방식 분리
 
-Browser로 endpoint를 발견했더라도 운영 호출은 가능한 한 결정적인 HTTP
-요청으로 고정한다. Browser 자동화가 필수이면 일반 Adapter에 섞지 않고 별도
-승인·실패·실행 비용을 기록한다.
+최초 발견 방식은 Browser를 기본으로 한다. Browser가 사용자처럼 홈에서 정책
+목록과 상세까지 이동하면서 DOM·form·network 요청을 함께 관찰한다. 발견 후
+반복 실행 방식은 다음 순서로 선택한다.
+
+1. 같은 공식 사이트가 제공하는 Open API 또는 공개 JSON
+2. Browser에서 확인한 서버 HTML GET·POST
+3. 로그인 없이 공개된 XHR
+4. 클릭·JavaScript 렌더링이 필수인 Browser 실행 profile
+
+Browser는 실패 시 최후 수단이 아니라 정식 discovery·collection mode다. 더
+단순한 API·HTTP 경로가 재현되면 운영 비용과 결정성을 위해 이를 선택하지만,
+원시 HTTP가 실패한다는 이유만으로 Browser에서 읽을 수 있는 Source를 차단하지
+않는다. 선택 mode와 fallback 금지 조건, 실행 비용을 inventory에 기록한다.
+
+### Browser Discovery 상태와 산출물
+
+각 Source는 `home_loaded` → `policy_menu_found` → `list_found` →
+`detail_found` → `extraction_ready` 상태를 순서대로 증명한다. 중간 실패는 마지막
+성공 상태와 이유를 남기며 `HTTP blocked`를 Browser 실패와 같은 의미로 쓰지
+않는다.
+
+Source profile은 다음을 보존한다.
+
+- 홈부터 목록·상세까지의 클릭·입력·선택 action과 대상 locator
+- 목록 URL 또는 form/XHR, pagination 방식과 목록 정책 수 표본
+- 상세 URL·POST identity 또는 JavaScript action과 stable external ID
+- 제목·기관·지원내용·신청기간·대상·제외조건·필요서류·문의처의 label/locator
+- same-origin·공식 하위 도메인 allowlist, 요청·상호작용 예산과 최소 간격
+- 발견 시각, 최종 URL, DOM fingerprint와 상세 표본 대조 결과
+
+상태 값은 다음 두 축으로 분리한다.
+
+- discovery: `pending`, `home_loaded`, `policy_menu_found`, `list_found`,
+  `detail_found`, `extraction_ready`, `discovery_review_required`, `blocked`
+- collection mode: `api`, `http_html`, `http_json`, `browser`, `none`
+
+RYP1 탐색 예산의 기본값은 Source당 동일 도메인 깊이 4, 상호작용 30회, 목록
+2페이지, 상세 3건과 상호작용 시작 간격 최소 2초다. 이 값은 전체 정책 수집량이
+아니라 안전하게 구조를 발견하기 위한 표본 예산이다. 후보 선택은 접근 가능한
+이름·heading·메뉴 문맥의 청년·정책·지원·사업 동의어를 결정적으로 점수화하고,
+동점·모호 후보는 임의 클릭하지 않고 `discovery_review_required`로 기록한다.
+
+### Data Browser runtime 경계
+
+현재 repository의 Playwright는 Frontend E2E 개발 의존성으로만 존재한다. RYP1
+실사이트 탐색은 설치된 로컬 Playwright를 사용하되, Data 운영 코드가 Frontend
+테스트 모듈을 import하는 구조는 승인하지 않는다. RYP2에서 Data 소유 Browser
+runner와 Python 수집 파이프라인을 다음 JSON 경계로 분리한다.
+
+- 입력: 홈 URL, 허용 host, interaction/request 예산, 기존 action profile
+- 출력: action trace, 발견 목록·상세 identity, 렌더링 Raw metadata, locator와
+  비밀 없는 실패 분류
+- Browser runner는 DB에 직접 쓰거나 정책값을 추정하지 않음
+- Python Runtime이 Raw 보존·정규화·검증·중복 제외·PostgreSQL 적재를 소유
+
+Data 소유 runtime 위치와 Node dependency는 RYP2 구현 시작 전에 repository
+구조와 lockfile 영향을 검토해 확정한다. 이 계획 보완만으로 새 패키지를
+설치하거나 Frontend dependency 소유권을 변경하지 않는다.
 
 ### 공통 엔진과 Source별 Adapter
 
-- 공통 계층: HTTP, timeout·retry·rate limit, Raw 저장, snapshot, 실행 기록,
-  정규화·검증과 PostgreSQL 전달
+- 공통 계층: Browser navigator, interaction budget, HTTP, timeout·retry·rate
+  limit, Raw 저장, snapshot, 실행 기록, 정규화·검증과 PostgreSQL 전달
 - Source별 계층: 목록·상세 URL, pagination, selector 또는 source field,
   external identity, 지역·기간·기관 evidence mapping
 - Normalizer는 CSS selector, 사이트 메뉴명과 Source별 key를 알지 않는다.
@@ -286,44 +383,75 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 
 #### 목적
 
-홈 URL에서 실제 정책 목록·상세 endpoint를 찾고 수집 가능 Source만 승인한다.
+17개 홈에서 사용자와 같은 Browser 상호작용으로 정책 목록·상세와 추출 가능한
+필드를 찾고, discovery와 운영 collection 가능 여부를 분리해 승인한다.
 
 #### 작업
 
-- 메뉴·사이트맵·검색·공개 네트워크 요청을 제한 조사
-- 목록·상세·pagination·external identity·rate limit 후보 기록
+- 17개 홈 모두에서 렌더링 후 메뉴·전체메뉴·검색·select·tab·pagination을
+  interaction budget 안에서 실행
+- `home_loaded`부터 `extraction_ready`까지 마지막 성공 discovery 상태 기록
+- 목록·상세·pagination·external identity·form/XHR·rate limit 후보 기록
+- 상세 최소 1건에서 정책명·기관·지원내용·기간·대상과 신청 경로를 원문 대조
 - robots·약관·라이선스·저장·변환·재배포 허용 범위 확인
-- API·HTML·JSON/XHR·Browser 필요 유형 분류
-- 승인 상태·Source ID·allowlist·요청 예산·지역 mapping의 교차 필드 조합을
-  검사하는 domain validator 추가
+- discovery mode와 API·HTML·JSON/XHR·Browser collection mode 분리
+- `discovery_status`, `collection_mode`, Source ID·allowlist·interaction/request
+  예산·지역 mapping의 교차 필드 조합을 검사하는 inventory 계약 보완
 - 접근 금지·로그인 전용·데모 Source를 `blocked` 또는 `rejected`로 판정
 
 #### 완료 기준
 
-- 각 지역에 승인 Source 또는 비승인 사유가 있음
-- 승인 Source는 목록·상세 allowlist와 요청 예산을 가짐
+- 각 지역에 홈 → 정책 메뉴 → 목록 → 상세의 재현 경로 또는 정확한 실패 단계가 있음
+- Browser에서 상세를 읽을 수 있는 Source를 원시 HTTP 실패만으로 차단하지 않음
+- 승인 Source는 discovery action profile, 목록·상세 allowlist, collection mode와
+  interaction/request 예산을 가짐
 - 공통 `JsonSchemaValidator`가 지원하지 않는 조건부 교차 필드 조합도 domain
   validator에서 거부됨
 - 허용 여부가 불명확한 Source를 구현 대상으로 승인하지 않음
+
+#### 재검토 상태 (`2026-08-11`)
+
+- [x] HTTP 중심 9개 승인·7개 차단·1개 제외 잠정 inventory와 validator 작성
+- [x] 서울 Browser에서 홈 → 서울시 정책 90건·자치구 정책 21건 → 상세 1건과
+  주요 필드까지 사용자 클릭 경로 재현
+- [ ] 17개 사이트 Browser Discovery 재검증
+- [ ] discovery 상태와 collection mode를 분리한 inventory·validator 보완
+- [ ] 17개 모두의 action profile·상세 표본·실패 단계 기록
+- [ ] Browser 결과를 반영한 최종 RYP-G1 승인
+
+기존 `approved` 9개·`blocked` 7개·`rejected` 1개 수치는 완료 결과가 아니라
+RYP1 보완 입력이다. 특히 서울의 기술 차단 판정은 철회 대상이며 나머지 16개도
+같은 Browser 기준으로 재검증하기 전에는 최종 승인 수를 확정하지 않는다.
 
 ### RYP2 - 공통 실행 경계와 Source Adapter
 
 #### 목적
 
-승인 Source를 기존 파이프라인에 안전하게 연결할 재사용 경계를 만든다.
+홈 URL만으로 정책 상세를 발견하고 이후 반복 실행할 Browser Discovery Engine과
+Source profile 재생 경계를 기존 파이프라인에 연결한다.
 
 #### 작업
 
+- DOM 역할·텍스트·label 의미로 메뉴 후보를 찾는 `BrowserDiscoveryEngine`
+- click·fill·select·tab·pagination·load-more의 제한 interaction interface
+- 홈 → 상세 action profile 생성·재생과 drift 시 제한 재탐색
+- table·definition list·heading/section label 기반 공통 정책 필드 후보 추출
+- 공통 추출로 모호한 부분만 Source profile selector·mapping으로 보완
 - Source profile과 목록·상세 Adapter interface 확정
+- Data Browser runner JSON 입출력과 Python subprocess 오류·timeout·취소 경계
 - pagination, timeout·retry·429·rate limit 공통 동작 재사용
 - 안정적인 `(source_id, external_id)` 생성과 canonical URL 검증
-- 목록·상세·누락·drift·실패 축소 fixture
+- JS `#none`, GET·POST, 검색·select, pagination, 새 tab·modal, 누락·drift·실패
+  축소 fixture
 - 원문 byte, hash, collected_at과 locator provenance 보존
 
 #### 완료 기준
 
 - Source별 selector·field가 공통 Normalizer에 누출되지 않음
+- 미등록 공개 홈 fixture에서 정책 메뉴·목록·상세 action profile을 생성함
+- 생성한 profile replay가 재탐색 없이 같은 상세 identity와 필드를 추출함
 - 같은 Raw replay가 외부 요청 없이 같은 추출 결과를 만듦
+- profile drift가 빈 정책 0건 성공이 아니라 재탐색 또는 격리로 판정됨
 - 실제 운영 HTML·개인정보·재배포 제한 자료가 Git에 포함되지 않음
 
 ### RYP3 - 지역 고유성·신청 가능성 판정
@@ -374,7 +502,8 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 
 #### 작업
 
-- RYP1 결과에서 HTML, 공개 API/JSON, 게시판형을 대표하는 최대 3개 Source 선정
+- RYP1 결과에서 Browser-only, 서버 HTML, 공개 API/JSON 또는 게시판형을
+  대표하는 최대 3개 Source 선정
 - Source마다 목록 1페이지와 상세 3~5건부터 제한 actual 실행
 - 지역 고유성·중복 제외·정규화·품질 결과 수동 원문 대조
 - accepted 정책의 PostgreSQL 적재와 Policy API·Browser 확인
@@ -396,15 +525,20 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 #### 작업
 
 - Source별 fixture·Adapter·actual 검증을 Conventional Commit 단위로 추가
+- 각 Source 목록의 전체 pagination identity를 checkpoint로 순회하고 중단 뒤
+  재개 가능한 batch 수집
+- 발견한 모든 상세 identity를 accepted·duplicate·review·closed·failed 중
+  하나로 집계해 조용한 누락 방지
 - 각 지역의 최신·신청 가능 정책 수와 제외·실패·drift 통계 기록
 - blocked Source의 재개 조건과 대체 공식 Source 기록
 - 전체 회귀, 문서·계약과 Git 비추적 경계 대조
 
 #### 완료 기준
 
-- 17개 지역이 `implemented`, `blocked`, `rejected` 중 하나의 근거 있는 최종
-  상태를 가짐
+- 17개 지역이 `implemented_http`, `implemented_browser`, `blocked`, `rejected`
+  중 하나의 근거 있는 최종 상태를 가짐
 - 모든 `implemented` Source가 제한 actual 수집·재실행·DB 인수를 통과함
+- 승인 Source의 목록 total 또는 종료 조건과 상세 판정 합계가 일치함
 - `blocked`·`rejected` Source를 우회하거나 성공으로 기록하지 않음
 - 기존 온통청년·복지로와 Release 1 golden 검색 회귀가 통과함
 
@@ -413,15 +547,15 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 | Gate | 승인 내용 | 다음 단계 |
 | --- | --- | --- |
 | `RYP-G0` | 17개 inventory, 범위·완료 기준과 DTL Gate | RYP1 |
-| `RYP-G1` | Source별 이용 조건·endpoint·요청 예산 | RYP2 |
+| `RYP-G1` | 17개 Browser action profile·이용 조건·collection mode·예산 | RYP2 |
 | `RYP-G2` | Adapter·지역 판정·중복 제외 fixture | RYP5 |
 | `RYP-G3` | 대표 Source actual DB·API·Browser 인수 | RYP6 |
 | `RYP-G4` | 지역별 최종 상태·전체 회귀·문서 대조 | Forest 완료 판정 |
 
 ```text
 RYP0 inventory·v0.5.0 Gate
-  → RYP1 홈페이지 탐색·Source 승인
-  → RYP2 Adapter 실행 경계
+  → RYP1 Browser 홈페이지 탐색·Source 승인
+  → RYP2 Browser Discovery Engine·profile replay·Adapter 실행 경계
   → RYP3 지역 고유성·신청 가능성
   → RYP4 온통청년·복지로 중복 제외
   → RYP5 대표 actual DB·API·Browser
@@ -450,6 +584,9 @@ API 또는 TypeScript 변경 필요가 실제로 발견되면 해당 Slice 범�
 
 ### 단위·계약 검증
 
+- 홈·전체메뉴·검색·select·tab에서 정책 목록 후보를 찾는 Browser discovery
+- JS `#none` click·POST form·modal·새 tab·pagination action profile replay
+- DOM drift 때 제한 재탐색과 빈 결과 성공 방지
 - Source별 목록·상세·pagination과 stable external identity
 - 선택 필드 누락, selector/schema drift와 잘못된 canonical URL
 - 지역 고유·전국 재게시·타 지역·모호 지역 fixture
@@ -468,7 +605,8 @@ API 또는 TypeScript 변경 필요가 실제로 발견되면 해당 Slice 범�
 
 ### actual 인수
 
-- 승인 Source별 제한 목록·상세 호출과 요청 예산 준수
+- 승인 Source별 홈 → 메뉴·검색 → 목록 → 상세 Browser 경로와 interaction 예산
+- 선택된 collection mode의 제한 목록·상세 호출과 요청 예산 준수
 - 공식 원문과 지역 고유성·신청 가능성·중복 판정 수동 표본 대조
 - Runtime Raw → PostgreSQL → Policy API → Browser lineage
 - Release 1 snapshot 3,156건과 golden 검색 회귀
@@ -487,7 +625,8 @@ git diff --check
 ## Forest 완료 기준
 
 - 17개 광역자치단체마다 공식 Source의 최종 상태와 근거가 있음
-- 승인 Source는 허용된 목록·상세 endpoint와 요청 예산을 가짐
+- 승인 Source는 재현 가능한 Browser action profile, 허용된 목록·상세 endpoint,
+  collection mode와 interaction/request 예산을 가짐
 - 최소 3개 대표 Source의 실제 지역 정책이 기존 파이프라인과 PostgreSQL에
   연결됨
 - 전국 재게시·마감·거짓·온통청년·복지로 중복이 새 사용자 Policy row를 만들지
@@ -499,15 +638,17 @@ git diff --check
 - 실제 Raw·운영 HTML·개인정보·비밀키·Runtime decision manifest가 Git에 없음
 - 단위·PostgreSQL 통합·actual API·Browser·문서 검증 결과가 개발 기록에 있음
 
-Forest 완료는 17개 사이트를 모두 억지로 크롤링했다는 의미가 아니다. 이용
-조건·접근 경계·데이터 품질 때문에 수집할 수 없는 Source는 근거와 재개 조건을
-가진 `blocked` 또는 `rejected` 상태로 남긴다.
+Forest 완료 전 17개 로그인 없는 공개 사이트 모두에 Browser Discovery를 실제
+시도한다. 단, 로그인 불필요와 기술적 접근 가능성이 자동 수집 허용을 뜻하지는
+않는다. 이용 조건·접근 경계·데이터 품질 때문에 운영 수집할 수 없는 Source는
+마지막 성공 discovery 단계, 근거와 재개 조건을 가진 `blocked` 또는 `rejected`
+상태로 남긴다.
 
 ## v0.5.0과 DTL Gate 연결
 
 Data 05는 `v0.5.0` 필수 범위다. DTL4-4와 Integration 08의 승인 Schema·DB·API·
-UI 기준선을 재사용하므로 DTL4-5 계약 소비 대조를 기다리지 않고 RYP0~RYP1
-inventory·Source preflight를 병렬 수행할 수 있다.
+UI 기준선을 재사용하므로 DTL4-5 계약 소비 대조를 기다리지 않고 RYP0 inventory와
+RYP1 Browser Discovery preflight를 병렬 수행할 수 있다.
 
 - DTL4-5 / W4-G1: Data 05는 기존 Schema를 바꾸지 않는다는 소비 경계를 대조
 - DTL4-6 / W4-G2: RYP0~RYP4 inventory·Adapter·지역 판정·중복 제외 테스트 준비

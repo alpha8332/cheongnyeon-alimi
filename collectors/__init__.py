@@ -55,6 +55,10 @@ from collectors.raw import (
     RawPolicyDocument,
     SourceType,
 )
+from collectors.regional_sources import (
+    RegionalSourceInventoryValidator,
+    regional_source_inventory_issues,
+)
 from collectors.registry import CollectorRegistry, default_registry
 from collectors.storage import RawDocumentStore
 from collectors.validation import (
@@ -120,6 +124,7 @@ __all__ = [
     "RegionRelation",
     "RegionResolutionStatus",
     "RegionRule",
+    "RegionalSourceInventoryValidator",
     "RequiredDocument",
     "SourceType",
     "SourceFieldProfile",
@@ -133,4 +138,5 @@ __all__ = [
     "map_cheonan_eligibility",
     "map_eligibility",
     "map_youthcenter_eligibility",
+    "regional_source_inventory_issues",
 ]

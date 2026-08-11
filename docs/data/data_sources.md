@@ -35,7 +35,7 @@ replay·정규화·PostgreSQL 적재를 포함한다. 웹 Source의 Source 전�
 요청 파라미터, 실제 응답 필드와 호출 결과는
 [API Source Profile](source_profiles.md)에서 관리한다.
 
-## 지역 청년정책 Source 후보 inventory
+## 지역 청년정책 Source inventory
 
 Data 05는 사용자 제공 XLSX의 17개 지역 포털 URL을
 [`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)으로
@@ -43,17 +43,29 @@ Data 05는 사용자 제공 XLSX의 17개 지역 포털 URL을
 [`regional_youth_policy_source_inventory.schema.json`](../../data/schema/regional_youth_policy_source_inventory.schema.json)이
 검증한다.
 
-초기 17개 항목은 모두 `candidate`이며 현재 승인 Source가 아니다. `source_id`,
-목록·상세 allowlist, 요청 예산과 운영 주체·robots·약관·라이선스 preflight는
-RYP1에서 실제 확인한 뒤에만 채운다. 홈 URL은 Source 발견 시작점이고 운영
-Collector가 무제한 재귀 순회할 대상이 아니다.
+RYP1의 첫 HTTP 중심 제한 탐색은 승인 9개, 차단 7개, 제외 1개를 만들었지만
+최종 승인으로 사용하지 않는다. 서울 공개 화면에서 Browser로 홈 → 정책 목록 →
+상세와 구조화 필드를 재현해 원시 HTTP 실패만으로 Source를 차단할 수 없음이
+확인됐다. 17개 모두를 Browser Discovery로 재검토하고 discovery 상태와 API·
+HTTP·Browser collection mode를 분리한 뒤 실행 inventory를 다시 승인한다.
+
+홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
+메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영
+Collector는 profile을 재사용한다. 매 실행마다 홈이나 외부 인터넷을 무제한
+재귀 순회하지 않는다.
 
 inventory의 관할 라벨은 제공 자료의 광주·전남 분리 17개를 보존한다. 현재
 행정구역 기준 `kr-bjd-20260803`은 광주 `2900000000`과 전남 `4600000000`을
 퇴역으로, `전남광주통합특별시(1200000000)`를 활성으로 관리한다. Source
-inventory는 이를 자동 successor mapping하지 않고 두 후보를
-`historical_review_required`로 둔다. 실제 Policy region rule은 공식 원문의
-시행·대상 관할을 확인한 뒤 기존 행정구역 계약에 따라 생성한다.
+RYP1에서 기존 광주 센터가 연결하는 현행 공식 통합 플랫폼을 확인해 광주
+Source를 활성 통합 코드 `1200000000`으로 연결했다. 전남 구 포털은 robots가
+홈만 허용하고 현행 통합 플랫폼으로 대체되어 `rejected`로 두며 퇴역 코드
+lineage를 유지한다. 실제 Policy region rule은 공식 원문의 시행·대상 관할을
+확인한 뒤 기존 행정구역 계약에 따라 생성한다.
+
+승인 여부는 원문·이미지 재배포 허가를 뜻하지 않는다. 명시적 개방 라이선스가
+없는 Source는 최소 정책 사실과 provenance만 Runtime에서 처리하며 실제 HTML,
+이미지와 첨부파일을 Git에 저장하지 않는다.
 
 ## 온통청년 API
 

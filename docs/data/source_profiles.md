@@ -514,6 +514,38 @@ DTL4-3A의 actual Raw 3건을 외부 요청 없이 replay했다. Extractor·Norm
 확인했다. Source 전용 section의 제외조건·필요서류와 기관 연락처는 DTL4-4의
 공통 조건·소비 계약 전까지 자동 승격하지 않는다.
 
+## 지역 청년정책 Source RYP1 잠정 preflight
+
+`2026-08-11`에 사용자 제공 17개 홈을 HTTP 중심으로 제한 탐색했다. 잠정 승인된 9개 Source의
+운영 수집은 아래 목록·상세 identity로만 제한하며 홈 재귀 순회, 첨부 일괄
+다운로드와 실제 HTML·이미지의 Git 저장은 허용하지 않는다. 공통 파일럿 예산은
+목록 1회, 상세 3건, 요청 시작 간격 최소 2초다.
+
+이 표는 최종 승인 profile이 아니다. 서울 Browser 재검증에서 홈 → 맞춤서비스 →
+서울시 정책 90건·자치구 정책 21건 → `plcyBizId=V202600006` 상세와 주관기관·
+지원내용·기간·규모·자격·신청방법을 사용자 클릭으로 확인했다. 17개 전체에 같은
+Browser Discovery를 적용해 action profile과 collection mode를 다시 승인한다.
+
+| Source ID | 방식 | 상세 identity | 이용 경계 |
+| --- | --- | --- | --- |
+| `regional-busan-youth-platform` | 서버 HTML GET | `bizSid` | 약관 제한, 최소 사실만 |
+| `regional-daegu-youth-platform` | 서버 HTML GET | `ap_seq` | 약관 제한, 최소 사실만 |
+| `regional-incheon-youth-platform` | 서버 HTML GET | `poly_seq` | 명시 라이선스 없음, 최소 사실만 |
+| `regional-gwangju-integrated-youth-platform` | 서버 HTML GET | `policyId` | 통합특별시 공식 플랫폼, 저작권 정책 제한 |
+| `regional-daejeon-youth-platform` | 서버 HTML GET | `CT_` 식별자 | robots 미게시, 약관 제한 |
+| `regional-ulsan-youth-platform` | 게시판 HTML GET | `dataId` | 공개 게시판 최소 사실만 |
+| `regional-gangwon-youth-platform` | HTML 목록·POST 상세 | `bizId`, `mode=gw` | robots `/youth` 허용 범위 |
+| `regional-jeonbuk-youth-platform` | 서버 HTML GET | `id` | robots 미게시, 약관 제한 |
+| `regional-gyeongnam-youth-platform` | HTML 목록·POST 상세 | `policy_no` | robots 미게시, 약관 제한 |
+
+잠정 비승인 Source는 서울(HTTP 웹 게이트), 세종·경기·충남·경북(robots 정책 경로 제한),
+충북·제주(현재 공통 HTTP 전송으로 재현 불가)와 전남 구 포털(통합 플랫폼으로
+대체)이다. 이 판정은 Browser 접근 여부와 운영 collection mode를 분리하지 않은
+결과이므로 RYP1 보완 전에는 최종 차단으로 사용하지 않는다. 접근 통제나 robots를
+우회하지 않는 원칙은 유지한다. 전체 URL·preflight·잠정 판정 근거는
+[`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)을
+기준으로 한다.
+
 ## 공통 비밀정보 경계
 
 - 인증키 값은 환경변수에서만 읽고 코드, 문서, Fixture와 테스트 snapshot에

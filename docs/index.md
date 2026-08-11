@@ -41,7 +41,7 @@
 - [Regional Youth Policy Source Inventory JSON Schema](../data/schema/regional_youth_policy_source_inventory.schema.json):
   지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태의 실행 계약
 - [지역 청년정책 Source inventory](../data/reference/regional_youth_policy_sources.json):
-  사용자 제공 XLSX에서 변환한 17개 지역 포털 후보와 탐색 seed
+  사용자 제공 XLSX의 17개 지역 포털과 RYP1 HTTP 잠정 판정·Browser 재검토 입력
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
@@ -137,7 +137,7 @@
 - [Public HTTPS Policy Ingestion Forest 개발 기록](development/development_notes/data/public_https_policy_ingestion.md):
   DTL4-3A 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증
 - [Regional Youth Policy Ingestion Forest 개발 기록](development/development_notes/data/regional_youth_policy_ingestion.md):
-  RYP0 17개 Source inventory·Schema와 지역 기준정보 차이 처리 결과
+  RYP0 inventory, RYP1 HTTP 잠정 판정과 Browser Discovery 기준 재개 결과
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
   DTL4-4 조건·서류·시설 연락처 계약부터 실제 PostgreSQL·API·Browser 인수까지
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
