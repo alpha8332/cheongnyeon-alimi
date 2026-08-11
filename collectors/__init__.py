@@ -36,6 +36,11 @@ from collectors.eligibility_mapping import (
     map_youthcenter_eligibility,
 )
 from collectors.http import HttpClient, HttpClientConfig
+from collectors.gyeongbuk_youth import (
+    SOURCE_ID as GYEONGBUK_YOUTH_SOURCE_ID,
+    GyeongbukYouthExtractor,
+    create_gyeongbuk_youth_collector,
+)
 from collectors.normalized import (
     ApplicationSchedule,
     ApplicationStatus,
@@ -58,6 +63,11 @@ from collectors.raw import (
 from collectors.regional_sources import (
     RegionalSourceInventoryValidator,
     regional_source_inventory_issues,
+)
+from collectors.regional_profile import (
+    RegionalSourceProfile,
+    load_approved_regional_profile,
+    replay_profile_actions,
 )
 from collectors.registry import CollectorRegistry, default_registry
 from collectors.storage import RawDocumentStore
@@ -86,6 +96,10 @@ default_registry.register(
     CHEONAN_YOUTHCENTER_SOURCE_ID,
     create_cheonan_youthcenter_collector,
 )
+default_registry.register(
+    GYEONGBUK_YOUTH_SOURCE_ID,
+    create_gyeongbuk_youth_collector,
+)
 
 __all__ = [
     "ApplicationSchedule",
@@ -110,6 +124,7 @@ __all__ = [
     "FieldStatistics",
     "HttpClient",
     "HttpClientConfig",
+    "GyeongbukYouthExtractor",
     "InstitutionalContact",
     "InstitutionalContactKind",
     "JsonSchemaValidator",
@@ -125,6 +140,7 @@ __all__ = [
     "RegionResolutionStatus",
     "RegionRule",
     "RegionalSourceInventoryValidator",
+    "RegionalSourceProfile",
     "RequiredDocument",
     "SourceType",
     "SourceFieldProfile",
@@ -139,4 +155,6 @@ __all__ = [
     "map_eligibility",
     "map_youthcenter_eligibility",
     "regional_source_inventory_issues",
+    "load_approved_regional_profile",
+    "replay_profile_actions",
 ]

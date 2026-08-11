@@ -12,6 +12,10 @@ from collectors.cheonan_youthcenter import (
     CheonanYouthCenterExtractor,
 )
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
+from collectors.gyeongbuk_youth import (
+    SOURCE_ID as GYEONGBUK_YOUTH_SOURCE_ID,
+    GyeongbukYouthExtractor,
+)
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
 from collectors.raw import RawDocumentRole, RawPolicyDocument
@@ -28,12 +32,14 @@ from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
 SUPPORTED_SOURCE_IDS = (
     BOKJIRO_SOURCE_ID,
     CHEONAN_YOUTHCENTER_SOURCE_ID,
+    GYEONGBUK_YOUTH_SOURCE_ID,
     YOUTHCENTER_SOURCE_ID,
 )
 
 _EXTRACTOR_TYPES = {
     BOKJIRO_SOURCE_ID: BokjiroExtractor,
     CHEONAN_YOUTHCENTER_SOURCE_ID: CheonanYouthCenterExtractor,
+    GYEONGBUK_YOUTH_SOURCE_ID: GyeongbukYouthExtractor,
     YOUTHCENTER_SOURCE_ID: YouthCenterExtractor,
 }
 

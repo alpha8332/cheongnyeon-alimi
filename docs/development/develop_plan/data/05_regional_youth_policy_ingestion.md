@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`·`RYP1` 완료, `RYP2` 구현 준비
+- 현재 진행: `RYP0`~`RYP2` 완료, `RYP3` 구현 준비
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP1` Browser Discovery 재검증 완료
+- 현재 Slice: `RYP2` 공통 실행 경계와 경북 Source Adapter 완료
 
 ## 목적
 
@@ -462,6 +462,26 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 같은 Raw replay가 외부 요청 없이 같은 추출 결과를 만듦
 - profile drift가 빈 정책 0건 성공이 아니라 재탐색 또는 격리로 판정됨
 - 실제 운영 HTML·개인정보·재배포 제한 자료가 Git에 포함되지 않음
+
+#### 구현 결과 (`2026-08-11`)
+
+- inventory `1.1.0`의 승인 Source만 여는 profile loader와 action 순서·상세
+  evidence replay 검증을 구현했다.
+- 합성 홈·목록·상세 fixture에서 의미 기반 메뉴 발견, 공통 `dl`·`table` field
+  후보 추출과 profile drift 격리를 검증했다.
+- Data Browser runner는 JSON stdin/stdout subprocess 경계, timeout·실패 분류와
+  action replay 대조를 소유한다. 실제 Browser 실행 명령은 Source별 Adapter가
+  등록할 때 이 경계를 소비하며 Frontend Playwright 모듈을 import하지 않는다.
+- 공통 HTTP에 cookie 보존과 form POST를 추가하고 경북 승인 profile의 홈 GET →
+  CSRF 포함 목록 JSON POST → 상세 modal POST를 목록 1회·상세 최대 3건·최소 2초
+  간격으로 제한했다.
+- 경북 목록·상세 Adapter, Raw 역할·목록 item parent·상세 external identity,
+  Extractor와 Runtime offline replay를 연결했다. Source 전용 key는 공통 Normalizer에 누출하지 않고
+  `extra`와 provenance에 보존한다.
+- 저장소에는 합성·최소 구조 fixture만 포함했다. 제한 실사이트 preflight는
+  요청 3회로 목록 총 243건과 표본 `no=1098` 한 건을 확인했으며 실제 응답 Raw는
+  임시 디렉터리에서 삭제했다. PostgreSQL 적재와 지역 고유성 판정은 각각
+  RYP5와 RYP3 범위로 남긴다.
 
 ### RYP3 - 지역 고유성·신청 가능성 판정
 

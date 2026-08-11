@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 온통청년·복지로 API와 천안청년센터 승인 웹 Collector,
-  Runtime replay·PostgreSQL 적재와 제한 actual 검증 완료
+- 현재 구현 상태: 온통청년·복지로 API, 천안청년센터와 경북 청년정책 승인 웹
+  Collector, Runtime replay와 제한 actual 검증 완료
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -20,6 +20,7 @@
 | 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 Raw 수집 확인 |
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
 | 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 actual Raw → PostgreSQL·API 확인 |
+| 경북 청년정책 플랫폼 | `regional-gyeongbuk-youth-platform` | 공개 JSON·modal | 제한 preflight·offline Raw replay 확인 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
@@ -52,6 +53,14 @@ RYP1은 17개 모두의 상세 identity를 재검증해 13개 승인, 3개 차�
 
 Schema `1.1.0`은 `browser_access`, discovery 상태, collection mode, interaction
 budget, 재현 action profile과 상세 표본 identity 또는 실패 이유를 검증한다.
+
+RYP2는 승인 inventory를 실행 profile로 읽는 공통 loader, 의미 기반 fixture
+discovery, JSON subprocess Browser runner 경계와 경북 Adapter를 구현했다. 경북은
+홈 GET으로 cookie·CSRF를 확보한 뒤 page 1 목록 JSON 1회와 상세 modal 최대 3건만
+POST하며 최소 요청 간격은 2초다. 목록·item·상세 Raw identity와 hash를 연결하고
+같은 Raw의 offline replay가 같은 추출 결과를 내는지 검증한다. 제한 실사이트
+preflight에서 총 243건과 표본 `no=1098` 한 건을 확인했지만 실제 응답 원문은
+Git이나 운영 DB에 남기지 않았다.
 
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영

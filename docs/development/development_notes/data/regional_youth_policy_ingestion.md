@@ -27,7 +27,7 @@
 | --- | --- | --- |
 | RYP0 | completed | 17개 후보 JSON·Schema·계약 테스트 14개와 39개 subtest 통과 |
 | RYP1 | completed | 17개 상세 identity, 13개 승인·3개 차단·1개 제외 |
-| RYP2 | 준비 | Browser Discovery Engine·profile replay·Source Adapter |
+| RYP2 | completed | 공통 profile·discovery·runner 경계와 경북 Adapter·offline replay |
 | RYP3 | 대기 | 지역 고유성·신청 가능성 |
 | RYP4 | 대기 | 온통청년·복지로 중복 제외 |
 | RYP5 | 대기 | 대표 Source actual |
@@ -96,12 +96,55 @@ collection mode, interaction budget, action profile, 목록 관찰 수, 상세 �
 evidence와 collection mode별 HTTP 접근을 검사하고, 비승인 Source가 실행 mode나
 allowlist를 주장하지 못하게 한다.
 
+### RYP2 - 공통 실행 경계와 경북 Source Adapter
+
+- `RegionalSourceProfile` loader가 inventory `1.1.0`의 승인 상태, collection mode,
+  allowlist, request·interaction 예산과 action profile을 실행 전에 검증한다.
+- `BrowserDiscoveryEngine`은 합성 페이지에서 DOM 역할·텍스트·label 의미로
+  정책 메뉴·목록·상세를 찾고 `dl`·`table` label의 공통 field 후보를 만든다.
+  profile replay에서 action 순서, 상세 identity나 필수 field가 달라지면 정책
+  0건 성공이 아니라 drift로 격리한다.
+- `BrowserRunner`는 JSON stdin/stdout subprocess, timeout, non-zero exit와
+  malformed success를 분류한다. 반환 action trace를 요청 profile과 다시
+  대조하며 DB나 정책값 추정을 소유하지 않는다.
+- 공통 `HttpClient`에 cookie jar와 form POST를 추가했다. 기존 GET의 retry·429·
+  pacing·redaction 경계를 그대로 재사용한다.
+- 경북 Collector는 승인 profile을 읽고 홈 GET으로 cookie·CSRF를 얻은 뒤
+  `POST /policy/list.json`과 `POST /policy/detail.modal`만 호출한다. page 1,
+  목록 1회, 상세 최대 3건과 요청 시작 간격 최소 2초를 넘으면 요청 전에
+  거부한다.
+- 목록 응답, 목록 item과 상세 modal은 서로 다른 Raw 역할로 보존한다. 목록
+  item은 parent ID, 상세는 external ID로 관계를 검증하고 SHA-256·수집 시각·
+  공식 URL을 남긴다. 전체 parse가 성공하기 전에는 Raw를
+  쓰지 않아 drift가 partial Raw를 남기지 않는다.
+- `GyeongbukYouthExtractor`가 `no`를 external ID로 고정하고 제목·지원 내용·기간·
+  시행기관·공개 시설 연락처·필요 서류를 `ExtractedPolicy`와 provenance로
+  전달한다. 지역 포털 관할만으로 지역 고유성을 추정하거나 온통청년·복지로
+  중복을 자동 삭제하지 않는다.
+- Registry·CLI·Runtime replay에 `regional-gyeongbuk-youth-platform`을 등록했다.
+  최소 fixture Raw를 두 번 offline replay해 같은 NormalizedProgram을 얻었다.
+
+제한 실사이트 preflight는 임시 Raw root에서 요청 3회로 수행했다. 목록 총
+243건과 표본 `no=1098`, `2026 경북 청년 행복카드 지원사업` 상세 한 건을
+확인했고 정규화까지 통과했다. 임시 Raw는 자동 삭제했으며 실제 HTML·JSON을
+Git에 추가하거나 PostgreSQL에 적재하지 않았다.
+
 ## 주요 변경 파일
 
 - `data/reference/regional_youth_policy_sources.json`
 - `data/schema/regional_youth_policy_source_inventory.schema.json`
 - `collectors/regional_sources.py`
+- `collectors/regional_profile.py`
+- `collectors/regional_discovery.py`
+- `collectors/browser_runner.py`
+- `collectors/gyeongbuk_youth.py`
+- `collectors/http.py`
+- `collectors/runtime.py`
 - `collectors/__init__.py`
+- `data/fixtures/regional/`
+- `tests/test_regional_discovery.py`
+- `tests/test_browser_runner.py`
+- `tests/test_gyeongbuk_youth.py`
 - `tests/test_regional_source_inventory.py`
 - `docs/development/develop_plan/data/05_regional_youth_policy_ingestion.md`
 - `docs/development/develop_plan/data/06_supplemental_official_policy_ingestion.md`
@@ -151,19 +194,33 @@ ID·allowlist·interaction/request 예산을 다시 승인했다. RYP2는 이 in
   Browser-only 승인, robots 차단 evidence, 비승인 실행 경계와 잘못된 교차 필드
   조합 거부를 확인했다.
 
+RYP2 구현 뒤 공통 HTTP·profile·discovery·runner, 경북 Collector·Extractor와
+Runtime replay 회귀를 실행했다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\test_collectors_http.py tests\test_collectors_cli.py tests\test_regional_source_inventory.py tests\test_regional_discovery.py tests\test_browser_runner.py tests\test_gyeongbuk_youth.py tests\test_runtime_replay.py -q
+.\.venv\Scripts\python.exe -m pytest tests -q -rs
+```
+
+- RYP2 관련 결과: `55 passed, 54 subtests passed`
+- 전체 Python 결과: `193 passed, 6 skipped, 77 subtests passed`
+- skip 6건은 `TEST_DATABASE_URL` 미설정으로 건너뛴 기존 PostgreSQL 통합
+  테스트다. RYP2는 DB Schema나 적재를 바꾸지 않고 offline Runtime replay까지
+  담당하며 경북 PostgreSQL actual은 RYP5 완료 기준이다.
+- 제한 실사이트 preflight는 요청 3회, 목록 243건, 상세 표본 `no=1098` 1건과
+  정규화 성공을 확인했다. TemporaryDirectory를 사용해 응답 Raw를 남기지 않았다.
+
 ```powershell
 python scripts\validate_docs.py
 git diff --check
 ```
 
 - 결과: 문서 검증 통과, whitespace 오류 없음
-- 테스트는 외부 웹 요청이나 PostgreSQL을 사용하지 않았다. RYP1 preflight는
-  제한 실제 HTTP·Browser 확인으로 수행했지만 응답 원문은 Git에 저장하지
-  않았다. 정책 추출·actual 적재는 RYP2 이후 결과로 기록한다.
+- 자동화 테스트는 외부 웹 요청이나 PostgreSQL을 사용하지 않았다. RYP1
+  preflight와 RYP2 경북 제한 preflight의 응답 원문은 Git에 저장하지 않았다.
 
 ## 남은 작업
 
-- RYP2에서 Browser Discovery Engine·profile replay와 Source Adapter 구현
 - RYP3에서 정책별 지역 고유성·신청 가능성과 지역 evidence mapping 결정
 - RYP4에서 온통청년·복지로 snapshot·PostgreSQL 기준 중복 제외
 - RYP5 전에는 Browser Discovery와 이용 조건을 모두 통과한 Source만 actual 실행

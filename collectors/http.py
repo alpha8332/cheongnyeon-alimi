@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.cookiejar
 import json
 import socket
 import threading
@@ -73,7 +74,11 @@ class UrllibTransport:
     """Standard-library transport that never forwards credentials on redirects."""
 
     def __init__(self) -> None:
-        self._opener = urllib.request.build_opener(_NoRedirectHandler())
+        self._cookie_jar = http.cookiejar.CookieJar()
+        self._opener = urllib.request.build_opener(
+            _NoRedirectHandler(),
+            urllib.request.HTTPCookieProcessor(self._cookie_jar),
+        )
 
     def send(
         self,
@@ -118,7 +123,7 @@ class HttpClientConfig:
 
 
 class HttpClient:
-    """GET client with bounded retries, pacing, parsing, and safe errors."""
+    """HTTP client with bounded retries, pacing, parsing, and safe errors."""
 
     def __init__(
         self,
@@ -152,6 +157,46 @@ class HttpClient:
             headers=request_headers,
             method="GET",
         )
+        return self._send(
+            source_id=source_id,
+            safe_url=safe_url,
+            request=request,
+        )
+
+    def post_form(
+        self,
+        *,
+        source_id: str,
+        url: str,
+        form: Mapping[str, QueryValue],
+        headers: Mapping[str, str] | None = None,
+    ) -> TransportResponse:
+        """POST an application/x-www-form-urlencoded body."""
+        request_headers = dict(headers or {})
+        request_headers.setdefault("User-Agent", self.config.user_agent)
+        request_headers.setdefault(
+            "Content-Type",
+            "application/x-www-form-urlencoded; charset=utf-8",
+        )
+        request = urllib.request.Request(
+            url,
+            data=urllib.parse.urlencode(form, doseq=True).encode("utf-8"),
+            headers=request_headers,
+            method="POST",
+        )
+        return self._send(
+            source_id=source_id,
+            safe_url=redact_url(url),
+            request=request,
+        )
+
+    def _send(
+        self,
+        *,
+        source_id: str,
+        safe_url: str,
+        request: urllib.request.Request,
+    ) -> TransportResponse:
         max_attempts = self.config.max_retries + 1
 
         for attempt in range(1, max_attempts + 1):

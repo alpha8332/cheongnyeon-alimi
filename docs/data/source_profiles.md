@@ -4,8 +4,8 @@
 
 - 상태: 기준선
 - 마지막 공식 자료 확인: 2026-08-10
-- 마지막 실호출 확인: 2026-08-10
-- 범위: 온통청년·복지로 API, 천안청년센터 승인 공개 웹 공지
+- 마지막 실호출 확인: 2026-08-11
+- 범위: 온통청년·복지로 API, 천안청년센터와 경북 승인 공개 웹 Source
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
 제약을 기록한다. 공식 자료의 명세, 실제 응답과 로컬 과거 샘플을 구분하며,
@@ -18,9 +18,11 @@
 | `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 | `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
+| `regional-gyeongbuk-youth-platform` | 경북청년포털 청년e끌림 | RYP1 승인 | 목록 243건·상세 표본 1건 제한 확인 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
-Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
+Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`, 천안 공지 번호와
+경북 정책 `no`로 확정했다.
 목록 항목과 상세 응답은 같은 `source_id + external_id`로 연결하고 목록
 항목은 부모 전체 응답의 `document_id`도 참조한다. Data 4에서 두
 Extractor가 공통 `ExtractedPolicy`와 기여 Raw provenance를 사용하도록
@@ -547,6 +549,27 @@ Browser 상세에 도달했지만 robots가 정책 collection 경로를 허용�
 robots를 우회하지 않는 원칙은 유지한다. 전체 URL·preflight·판정 근거는
 [`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)을
 기준으로 한다.
+
+## 경북 청년정책 RYP2 실행 profile
+
+- Source ID: `regional-gyeongbuk-youth-platform`
+- 홈: `GET https://gbyouth.go.kr/main.tc`
+- 목록: `POST https://gbyouth.go.kr/policy/list.json`
+- 상세: `POST https://gbyouth.go.kr/policy/detail.modal`
+- external identity: 목록과 상세의 정수형 `no`
+- canonical URL: 정책 목록 URL과 `no` query 조합
+- 인증: 없음. 홈의 cookie와 CSRF meta 값만 같은 실행에서 사용
+- 예산: page 1, 목록 1회, 상세 최대 3건, 요청 시작 간격 최소 2초
+- Raw 역할: `list_response` → `list_item`은 parent ID, `detail`은 external ID로 연결
+- 주요 원문 field: 정책명, 정책유형, 지역, 지원내용·규모·기간, 시행기관,
+  문의처, 첨부파일·제출서류
+
+Collector는 목록·상세 구조와 identity가 맞지 않으면 아무 Raw도 확정하지 않고
+drift로 실패한다. 공개 기관 대표 연락처는 institutional contact 후보로 전달할
+수 있지만 개인 연락처는 수집하지 않는다. 지역 field는 RYP3 evidence 판정 전
+정책의 지역 고유성으로 승격하지 않으며, 온통청년·복지로 중복 제거도 RYP4
+전에는 수행하지 않는다. 저장소 fixture는 계약을 재현하는 최소 구조만 담고
+실제 응답 HTML·JSON은 포함하지 않는다.
 
 ## 공통 비밀정보 경계
 

@@ -118,6 +118,30 @@ class HttpClientTests(unittest.TestCase):
         self.assertEqual("response", root.tag)
         self.assertEqual("1", root.findtext("totalCount"))
 
+    def test_form_post_encodes_body_and_preserves_headers(self) -> None:
+        transport = StubTransport([response(200, b'{"ok": true}')])
+        client = client_for(transport)
+
+        result = client.post_form(
+            source_id="regional-test-source",
+            url="https://example.test/policies.json",
+            form={"pageIndex": 1, "policyType": ["job", "housing"]},
+            headers={"X-CSRF-TOKEN": "token-value"},
+        )
+
+        request = transport.requests[0]
+        self.assertEqual(200, result.status)
+        self.assertEqual("POST", request.get_method())
+        self.assertEqual(
+            b"pageIndex=1&policyType=job&policyType=housing",
+            request.data,
+        )
+        self.assertEqual("token-value", request.get_header("X-csrf-token"))
+        self.assertEqual(
+            "application/x-www-form-urlencoded; charset=utf-8",
+            request.get_header("Content-type"),
+        )
+
     def test_timeout_is_retried_and_classified_without_original_message(
         self,
     ) -> None:

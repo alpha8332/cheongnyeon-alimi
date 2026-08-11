@@ -189,7 +189,7 @@ fast-forward해 4주차의 공통 시작점으로 사용한다.
 ### 상태
 
 in progress (`W4-G0`, Data 03·04와 Integration 08 기반 완료;
-Data 05 `RYP0`·`RYP1` 완료·`RYP2` 준비, Data 06 계획 확정)
+Data 05 `RYP0`~`RYP2` 완료·`RYP3` 준비, Data 06 계획 확정)
 
 ### 목표
 
