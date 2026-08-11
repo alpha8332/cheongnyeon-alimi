@@ -72,7 +72,7 @@ Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, �
 | W4-G0 뒤 | `R2-RECOMMENDATION` | 결정적 추천 API → 이유·미확정 조건 UI | Backend·Frontend 추천 브랜치 |
 | W4-G0 뒤 | `R2-USER-SERVICE` | localStorage 조건·즐겨찾기·D-Day·알림·`.ics` | `feature/frontend/user-service-features` |
 | W4-G0 뒤 | `R2-DATA-QUALITY` | 반복 수집·수정·중복·실패 통계 | `feature/data/recurrent-quality-operations` |
-| 릴리스 배정 뒤 | `REGIONAL-YOUTH-POLICY-INGESTION` | 지역 고유 정책 Source 탐색·중복 제외·실데이터 적재 | `feature/data/regional-youth-policy-ingestion` |
+| W4-G1 병렬·`v0.5.0` 필수 | `REGIONAL-YOUTH-POLICY-INGESTION` | 지역 고유 정책 Source 탐색·중복 제외·실데이터 적재 | `feature/data/regional-youth-policy-ingestion` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text

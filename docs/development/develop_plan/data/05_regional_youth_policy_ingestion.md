@@ -6,14 +6,14 @@
 - 담당 영역: Data
 - 상태: draft
 - 계획일: `2026-08-11`
-- 대상 Release: 미정. `v0.5.0` 범위 변경 또는 `v0.5.0` 이후 확장으로 별도 승인 필요
+- 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
   Operations, Data 04 Public HTTPS Policy Ingestion
 - 참조 기반: Data 02 Release Dataset Bootstrap, Integration 03 Policy Search Data
   Foundation, Integration 08 Eligibility Evidence and Summary
 - 후속 통합: 실제 정책 적재 뒤 기존 Policy API·Browser 인수, 필요할 때 별도
   교차 Source 관계 계약
-- 권장 브랜치: 릴리스 배정 뒤 `feature/data/regional-youth-policy-ingestion`
+- 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 
 ## 목적
@@ -43,7 +43,7 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 
 ## 선행 조건
 
-- RYP-G0에서 17개 지역 inventory, 대상 Release와 Forest 완료 기준을 승인한다.
+- RYP-G0에서 17개 지역 inventory와 Forest 완료 기준을 승인한다.
 - Data 04의 공통 HTTP·HTML Raw·Source Adapter·actual 적재 기준선이 구현
   브랜치에서 재사용 가능한 상태인지 확인한다.
 - Data 03의 CollectionRun·동일·수정·실패 격리와 PostgreSQL Importer 기준선을
@@ -57,7 +57,7 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 
 ## 초기 Source 후보 inventory
 
-아래 URL은 `2026-08-11` 작업 입력으로 제공된 탐색 시작점이다. 공식 운영 주체,
+아래 URL은 `2026-08-11` 작업 입력으로 제공된 16개 탐색 시작점이다. 공식 운영 주체,
 현재 접근 가능 여부, robots, 이용약관, 정책 목록·상세 endpoint와 재배포 허용
 범위를 아직 승인한 값으로 취급하지 않는다.
 
@@ -67,7 +67,7 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 | 부산 | `https://young.busan.go.kr/index.nm` | candidate-unverified |
 | 대구 | `https://www.dgjump.com/` | candidate-unverified |
 | 인천 | `https://youth.incheon.go.kr/` | candidate-unverified |
-| 광주 | 미정 | inventory-missing |
+| 광주 | `https://youth.gwangju.go.kr/www` | candidate-unverified |
 | 대전 | `https://www.daejeonyouthportal.kr/index.do` | candidate-unverified |
 | 울산 | `https://www.ulsan.go.kr/s/ulsanyouth/main.ulsan` | candidate-unverified |
 | 세종 | `https://www.4242.or.kr/` | candidate-unverified |
@@ -81,7 +81,7 @@ Policy row로 적재하지 않는다. Source 근거 없는 조건·기간·대�
 | 경남 | `https://youth.gyeongnam.go.kr/youth/index.es?sid=a1` | candidate-unverified |
 | 제주 | `https://jejuyouth.com/m/index.php` | candidate-unverified |
 
-광주·전남의 공식 탐색 시작점을 보완하기 전에는 17개 광역자치단체 inventory를
+전남의 공식 탐색 시작점을 보완하기 전에는 17개 광역자치단체 inventory를
 완료로 처리하지 않는다. 후보 사이트의 데이터가 테스트·데모이거나 이용 조건상
 수집할 수 없으면 다른 공식 Source를 검토하고, 우회 수집하지 않는다.
 
@@ -247,7 +247,7 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 
 ## Slice 계획
 
-### RYP0 - Inventory 완성·릴리스 Gate
+### RYP0 - Inventory 완성·v0.5.0 Gate
 
 #### 목적
 
@@ -255,17 +255,20 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 
 #### 작업
 
-- 광주·전남 공식 청년정책 탐색 시작점 보완
+- 제공 XLSX의 `전남광주` 행을 광주 후보로 해석하고 전남 공식 청년정책
+  탐색 시작점을 별도 보완
 - 17개 후보의 운영 주체, 공식 도메인과 HTTPS 확인
 - `candidate`, `approved`, `blocked`, `rejected` 상태와 근거 형식 확정
-- `v0.5.0` 범위 변경 또는 후속 확장 중 대상 Release 결정
+- Data 05를 `v0.5.0` 필수 범위와 DTL4-6~DTL4-8 Gate에 연결
 - 실제 구현 시작 SHA와 Forest 브랜치 한 개 확정
+- 사용자 제공 XLSX는 입력 근거로 보존하되 실행 기준 inventory는 diff와
+  검증이 가능한 repository JSON으로 변환할 경로·Schema를 확정
 
 #### 완료 기준
 
 - 17개 지역 inventory에 빈 지역이 없음
-- 릴리스 배정과 완료 기준이 Team Leader 승인을 받음
-- Release 배정에 따라 Forest·Release·주차 로드맵이 일치함
+- 완료 기준과 구현 순서가 Team Leader 승인을 받음
+- Forest·Release·4주차·Integration 07 로드맵이 `v0.5.0` 필수 범위로 일치함
 
 ### RYP1 - 홈페이지 탐색·Source 승인
 
@@ -393,14 +396,14 @@ provenance와 canonical policy 관계를 Data·Backend·Frontend가 공동 승�
 
 | Gate | 승인 내용 | 다음 단계 |
 | --- | --- | --- |
-| `RYP-G0` | 17개 inventory, Release 배정, 범위·완료 기준 | RYP1 |
+| `RYP-G0` | 17개 inventory, 범위·완료 기준과 DTL Gate | RYP1 |
 | `RYP-G1` | Source별 이용 조건·endpoint·요청 예산 | RYP2 |
 | `RYP-G2` | Adapter·지역 판정·중복 제외 fixture | RYP5 |
 | `RYP-G3` | 대표 Source actual DB·API·Browser 인수 | RYP6 |
 | `RYP-G4` | 지역별 최종 상태·전체 회귀·문서 대조 | Forest 완료 판정 |
 
 ```text
-RYP0 inventory·Release Gate
+RYP0 inventory·v0.5.0 Gate
   → RYP1 홈페이지 탐색·Source 승인
   → RYP2 Adapter 실행 경계
   → RYP3 지역 고유성·신청 가능성
@@ -421,7 +424,7 @@ RYP3·RYP4 판정 Gate가 통과한 Source만 실행한다. 지역별 구현을 
 | Data | Source preflight, Adapter·Extractor, Raw·provenance, 지역 판정, 교차 Source 제외, 정규화·품질·actual 적재 |
 | Backend | 초기에는 기존 Importer·Policy API 회귀 확인. 새 DB 관계나 관리자 상세 노출이 필요할 때만 공동 계약 뒤 구현 |
 | Frontend | 초기에는 기존 목록·상세·검색의 실제 지역 정책 표시 회귀 확인. 새 중복 상태 UI는 별도 승인 전 구현하지 않음 |
-| Team Leader | Release 배정, Source 이용 조건 승인, actual 원문 → DB → API → Browser 대조와 Gate 판정 |
+| Team Leader | `v0.5.0` 범위·Source 이용 조건 승인, actual 원문 → DB → API → Browser 대조와 Gate 판정 |
 
 초기 Data-only Slice는 기존 공개 API Schema를 바꾸지 않는다. Schema, Migration,
 API 또는 TypeScript 변경 필요가 실제로 발견되면 해당 Slice 범위를 확장하지
@@ -484,21 +487,24 @@ Forest 완료는 17개 사이트를 모두 억지로 크롤링했다는 의미�
 조건·접근 경계·데이터 품질 때문에 수집할 수 없는 Source는 근거와 재개 조건을
 가진 `blocked` 또는 `rejected` 상태로 남긴다.
 
-## Release 배정 결정 필요
+## v0.5.0과 DTL Gate 연결
 
-현재 `v0.5.0` 계약은 공식 웹 Source 한 곳만 필수 범위로 한다. Data 05를
-`v0.5.0`에 포함하려면 Release·4주차·Integration 07 완료 조건과 일정 영향을
-같이 갱신해야 한다. 포함하지 않으면 현재 4주차 Gate를 막지 않는 독립 후속
-Forest로 실행한다.
+Data 05는 `v0.5.0` 필수 범위다. DTL4-4와 Integration 08의 승인 Schema·DB·API·
+UI 기준선을 재사용하므로 DTL4-5 계약 소비 대조를 기다리지 않고 RYP0~RYP1
+inventory·Source preflight를 병렬 수행할 수 있다.
 
-권장안은 기존 DTL4-5~DTL4-8과 `v0.5.0` 범위를 먼저 완료한 뒤 Data 05를 한
-Forest 브랜치로 실행하는 것이다. 대표 Source 파일럿을 4주차와 병렬 조사할
-수는 있지만, `RYP-G0` 릴리스 승인 전 구현·actual 수집을 완료 기능으로 처리하지
-않는다.
+- DTL4-5 / W4-G1: Data 05는 기존 Schema를 바꾸지 않는다는 소비 경계를 대조
+- DTL4-6 / W4-G2: RYP0~RYP4 inventory·Adapter·지역 판정·중복 제외 테스트 준비
+- DTL4-7 / W4-G3: RYP5 대표 Source actual DB → API → Browser 인수
+- DTL4-8 / W4-G4: RYP6 지역별 최종 상태·전체 회귀·문서 대조
+
+따라서 DTL4-8을 끝낸 뒤 Data 05를 시작하지 않는다. Data 05가 위 Gate를
+통과하지 못하면 `v0.5.0` 기본 기능이 미완료이므로 W4-G4를 통과시키지 않는다.
 
 ## 위험과 미확정 사항
 
-- 광주·전남 공식 탐색 시작점이 현재 inventory에 없다.
+- 전남 공식 탐색 시작점이 현재 inventory에 없다. 제공 XLSX의 `전남광주`
+  한 행은 광주 URL이므로 두 광역자치단체를 함께 충족하지 않는다.
 - 홈페이지에서 발견한 정책 메뉴가 공식 원문이 아니라 다른 포털 재게시일 수 있다.
 - 사이트별 HTML·JSON·pagination·인코딩과 동적 렌더링 방식이 서로 다르다.
 - robots가 허용해도 이용약관이 저장·변환·재배포를 제한할 수 있다.
