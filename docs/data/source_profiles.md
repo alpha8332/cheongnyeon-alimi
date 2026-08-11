@@ -568,7 +568,7 @@ Collector는 목록·상세 구조와 identity가 맞지 않으면 아무 Raw도
 drift로 실패한다. 공개 기관 대표 연락처는 institutional contact 후보로 전달할
 수 있지만 개인 연락처는 수집하지 않는다. 지역 field는 RYP3 evidence 판정 전
 정책의 지역 고유성으로 승격하지 않으며, 온통청년·복지로 중복 제거도 RYP4
-전에는 수행하지 않는다. 저장소 fixture는 계약을 재현하는 최소 구조만 담고
+판정 전에는 수행하지 않는다. 저장소 fixture는 계약을 재현하는 최소 구조만 담고
 실제 응답 HTML·JSON은 포함하지 않는다.
 
 ## 경북 청년정책 RYP3 판정 profile
@@ -591,6 +591,24 @@ include rule을 보존한다. 포털 관할만 확인되면 `regional_review_req
 open이지만 `예산 소진 시까지`는 명시적 접수중 근거가 없으면
 `review_required`다. 두 판정이 `regional_confirmed + open`인 경우만 Runtime
 Normalizer로 넘긴다. 표본 `no=1098`은 지역은 confirmed, 신청 상태는 closed다.
+
+## 경북 청년정책 RYP4 교차 Source profile
+
+- 비교 Source: `youthcenter-api`, `bokjiro-central-welfare-api`
+- 기준선: Source별 최신 완료 snapshot ID·완료 시각·item 수와 현재 PostgreSQL
+  유효 row identity·확인 시각
+- 확정 제외: 명시적 aggregator external ID, canonical URL 또는 발행기관이
+  포함된 공식 공고 ID exact 일치
+- 검토 격리: 제목·기관·canonical 지역·신청기간·지원내용 fingerprint 전체
+  일치 또는 동일 제목인데 비교 근거가 부족한 경우
+- 신규 승인: 교차 후보가 없거나 동일 제목의 기관·기간·지원내용이 명확히 다름
+- 기록: `runtime/decisions/<source_id>/<manifest_id>.json`
+
+경북 mapper는 현재 상세 canonical URL과 URL 형태의 신청 경로만 explicit
+evidence로 제공한다. Source 원문에 온통청년 `plcyNo`, 복지로 `servId` 또는
+공식 공고 ID가 추가로 확인되는 Adapter는 해당 field locator와 Raw provenance를
+함께 제공해야 한다. 기준선이 없거나 두 aggregator 중 하나가 불완전하면 open
+후보를 사용자 정책으로 적재하지 않는다.
 
 ## 공통 비밀정보 경계
 

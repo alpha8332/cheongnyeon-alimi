@@ -6,10 +6,17 @@ import unittest
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from collectors import default_registry
 from collectors.base import CollectionOptions
 from collectors.errors import CollectorConfigurationError, ResponseParseError
+from collectors.cross_source_duplicate import (
+    AggregatorBaseline,
+    BaselineDescriptor,
+    BaselineRecord,
+    PolicyIdentity,
+)
 from collectors.extracted import ExtractionError
 from collectors.gyeongbuk_youth import (
     DETAIL_MODAL_URL,
@@ -322,6 +329,73 @@ class GyeongbukExtractorTests(unittest.TestCase):
         self.assertEqual(0, first.accepted_count)
         self.assertEqual(1, first.regional_skipped_count)
         self.assertEqual("closed", first.regional_decisions[0]["application"])
+
+    def test_open_policy_passes_cross_source_gate_with_baseline(self) -> None:
+        checked_at = datetime(2026, 8, 11, tzinfo=timezone.utc)
+        baseline = AggregatorBaseline(
+            descriptors=tuple(
+                BaselineDescriptor(
+                    source_id=source_id,
+                    snapshot_id=marker * 32,
+                    snapshot_collected_at=checked_at,
+                    snapshot_policy_count=1,
+                    database_checked_at=checked_at,
+                    database_policy_count=1,
+                )
+                for source_id, marker in (
+                    ("youthcenter-api", "1"),
+                    ("bokjiro-central-welfare-api", "2"),
+                )
+            ),
+            records=tuple(
+                BaselineRecord(
+                    identity=PolicyIdentity(source_id, f"UNRELATED-{marker}"),
+                    title=f"무관 정책 {marker}",
+                    organization="중앙기관",
+                    canonical_region_keys=(),
+                    application_start=date(2026, 1, 1),
+                    application_end=date(2026, 12, 31),
+                    support_content="무관 지원",
+                    canonical_urls=(
+                        f"https://fixture.invalid/central/{marker}",
+                    ),
+                    database_row_id=int(marker),
+                )
+                for source_id, marker in (
+                    ("youthcenter-api", "1"),
+                    ("bokjiro-central-welfare-api", "2"),
+                )
+            ),
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            for document in extraction_documents():
+                store.save(document)
+            original = decide_gyeongbuk_regional_policy
+            with patch(
+                "collectors.runtime.decide_gyeongbuk_regional_policy",
+                side_effect=lambda policy: original(
+                    policy, as_of=date(2026, 6, 10)
+                ),
+            ):
+                replay = replay_runtime_raw(
+                    raw_root=temp_dir,
+                    source_id=SOURCE_ID,
+                    limit=1,
+                    duplicate_baseline=baseline,
+                )
+
+        self.assertEqual(1, replay.accepted_count)
+        self.assertEqual(0, replay.cross_source_skipped_count)
+        self.assertEqual(
+            "accepted_regional",
+            replay.duplicate_decisions[0]["outcome"],
+        )
+        self.assertIsNotNone(replay.duplicate_manifest)
+        self.assertEqual(
+            baseline.baseline_id,
+            replay.duplicate_baseline["baseline_id"],
+        )
 
     def test_detail_drift_is_not_treated_as_empty_policy(self) -> None:
         with self.assertRaisesRegex(ExtractionError, "selector drift"):

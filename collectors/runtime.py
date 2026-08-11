@@ -11,11 +11,17 @@ from collectors.cheonan_youthcenter import (
     SOURCE_ID as CHEONAN_YOUTHCENTER_SOURCE_ID,
     CheonanYouthCenterExtractor,
 )
+from collectors.cross_source_duplicate import (
+    AggregatorBaseline,
+    CrossSourceDecisionManifest,
+    evaluate_cross_source_duplicate,
+)
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.gyeongbuk_youth import (
     SOURCE_ID as GYEONGBUK_YOUTH_SOURCE_ID,
     GyeongbukYouthExtractor,
     decide_gyeongbuk_regional_policy,
+    map_gyeongbuk_duplicate_evidence,
 )
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
@@ -71,6 +77,9 @@ class RuntimeReplayResult:
     issues: tuple[RuntimeValidationIssue, ...]
     normalization_issues: tuple[tuple[ValidationIssue, ...], ...] = ()
     regional_decisions: tuple[dict[str, Any], ...] = ()
+    duplicate_decisions: tuple[dict[str, Any], ...] = ()
+    duplicate_baseline: dict[str, Any] | None = None
+    duplicate_manifest: CrossSourceDecisionManifest | None = None
 
     @property
     def accepted_count(self) -> int:
@@ -83,6 +92,13 @@ class RuntimeReplayResult:
             for decision in self.regional_decisions
         )
 
+    @property
+    def cross_source_skipped_count(self) -> int:
+        return sum(
+            not decision["accepted"]
+            for decision in self.duplicate_decisions
+        )
+
 
 def replay_runtime_raw(
     *,
@@ -91,6 +107,7 @@ def replay_runtime_raw(
     limit: int,
     snapshot_id: str | None = None,
     normalizer: Normalizer | None = None,
+    duplicate_baseline: AggregatorBaseline | None = None,
 ) -> RuntimeReplayResult:
     """Load the latest source batch and normalize its policies."""
     if source_id not in _EXTRACTOR_TYPES:
@@ -143,13 +160,47 @@ def replay_runtime_raw(
         )
 
     selected_normalizer = normalizer or Normalizer()
-    results = [
-        selected_normalizer.normalize(policy)
+    policy_results = tuple(
+        (policy, selected_normalizer.normalize(policy))
         for policy in policies
-    ]
+    )
+    results = tuple(result for _, result in policy_results)
+    normalized_pairs = tuple(
+        (policy, result)
+        for policy, result in policy_results
+        if result.program is not None
+    )
     accepted_results = tuple(
         result for result in results if result.program is not None
     )
+    duplicate_decisions = ()
+    duplicate_manifest = None
+    if source_id == GYEONGBUK_YOUTH_SOURCE_ID:
+        decisions = tuple(
+            evaluate_cross_source_duplicate(
+                result.program,
+                map_gyeongbuk_duplicate_evidence(policy),
+                duplicate_baseline,
+            )
+            for policy, result in normalized_pairs
+            if result.program is not None
+        )
+        duplicate_decisions = tuple(
+            decision.to_dict() for decision in decisions
+        )
+        if decisions and duplicate_baseline is not None:
+            duplicate_manifest = CrossSourceDecisionManifest(
+                source_id=source_id,
+                baseline=duplicate_baseline,
+                decisions=decisions,
+            )
+        accepted_results = tuple(
+            result
+            for (_, result), decision in zip(
+                normalized_pairs, decisions, strict=True
+            )
+            if decision.accepted
+        )
     programs = tuple(
         result.program.to_dict()
         for result in accepted_results
@@ -182,6 +233,13 @@ def replay_runtime_raw(
             result.issues for result in accepted_results
         ),
         regional_decisions=regional_decisions,
+        duplicate_decisions=duplicate_decisions,
+        duplicate_baseline=(
+            duplicate_baseline.to_dict()
+            if duplicate_decisions and duplicate_baseline is not None
+            else None
+        ),
+        duplicate_manifest=duplicate_manifest,
     )
 
 

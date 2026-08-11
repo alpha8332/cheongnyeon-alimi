@@ -14,6 +14,7 @@ from typing import Any
 
 from collectors.base import CollectionOptions, CollectionResult
 from collectors.cheonan_youthcenter import web_http_config_from_environment
+from collectors.cross_source_duplicate import DuplicateEvidence
 from collectors.errors import CollectorConfigurationError, EmptyResponseError
 from collectors.extracted import (
     ExtractedPolicy,
@@ -560,6 +561,29 @@ def decide_gyeongbuk_regional_policy(
         evidence,
         expected_region_text="경상북도",
         as_of=as_of,
+    )
+
+
+def map_gyeongbuk_duplicate_evidence(
+    policy: ExtractedPolicy,
+) -> DuplicateEvidence:
+    """Map only explicit URLs exposed by the approved Gyeongbuk profile."""
+    if policy.source_id != SOURCE_ID:
+        raise ExtractionError("invalid Gyeongbuk duplicate evidence source")
+    canonical_urls = [policy.source_url]
+    locator = "detail:canonical_url"
+    if (
+        isinstance(policy.application_method, str)
+        and policy.application_method.strip().lower().startswith(
+            ("http://", "https://")
+        )
+    ):
+        canonical_urls.append(policy.application_method.strip())
+        locator += "|detail:application_method"
+    return DuplicateEvidence(
+        canonical_urls=tuple(canonical_urls),
+        field_locators=(("canonical_urls", locator),),
+        provenance=policy.provenance,
     )
 
 

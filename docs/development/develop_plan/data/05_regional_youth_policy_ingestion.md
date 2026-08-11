@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP3` 완료, `RYP4` 구현 준비
+- 현재 진행: `RYP0`~`RYP4` 완료, `RYP5` 구현 준비
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP3` 지역 고유성·신청 가능성 Gate 완료
+- 현재 Slice: `RYP4` 온통청년·복지로 교차 Source 제외 완료
 
 ## 목적
 
@@ -546,6 +546,26 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 불확실한 후보는 사용자 검색에 노출되지 않고 검토 근거를 보존함
 - 기존 온통청년·복지로 row를 수정·삭제하지 않음
 
+#### 구현 결과 (`2026-08-11`)
+
+- [x] 최신 완료 snapshot ID·수집 시각·건수와 PostgreSQL의 온통청년·복지로
+  row 수를 묶는 읽기 전용 비교 기준선 loader 구현
+- [x] 명시적 `plcyNo`·`servId`, canonical URL과 공식 공고 identity exact
+  일치는 `excluded_aggregator_duplicate`로 판정
+- [x] 제목·기관·canonical 지역·신청기간·지원내용 전체 fingerprint 일치는
+  자동 병합하지 않고 `duplicate_review_required`로 격리
+- [x] 제목만 같아도 비교 필드가 명확히 다르면 `accepted_regional`, 비교 근거가
+  부족하면 review로 분리
+- [x] 비밀 없는 후보 identity·match field·fingerprint와 기준선 ID를 결정
+  manifest에 보존하고 `runtime/decisions/`를 Git에서 제외
+- [x] 교차 Source 제외·검토는 `skipped_count`, Source 내부 중복만 기존
+  `duplicate_count`로 집계
+
+초기 구현은 DB·API Schema와 기존 aggregator row를 바꾸지 않는다. 경북 open
+후보가 있을 때만 비교 기준선을 요구하며, 기준선이 없거나 불완전하면 적재하지
+않고 실패 안전하게 review 또는 loader 오류로 중단한다. 합성 7개 계약 사례와
+경북 open replay로 RYP-G2를 통과했다.
+
 ### RYP5 - 대표 Source actual 파일럿
 
 #### 목적
@@ -600,7 +620,7 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 | --- | --- | --- |
 | `RYP-G0` | 17개 inventory, 범위·완료 기준과 DTL Gate | RYP1 |
 | `RYP-G1` | 17개 Browser action profile·이용 조건·collection mode·예산 | RYP2 |
-| `RYP-G2` | Adapter·지역 판정·중복 제외 fixture | RYP5 |
+| `RYP-G2` | Adapter·지역 판정·중복 제외 fixture 통과 | RYP5 |
 | `RYP-G3` | 대표 Source actual DB·API·Browser 인수 | RYP6 |
 | `RYP-G4` | 지역별 최종 상태·전체 회귀·문서 대조 | Forest 완료 판정 |
 
@@ -703,7 +723,7 @@ UI 기준선을 재사용하므로 DTL4-5 계약 소비 대조를 기다리지 �
 RYP1 Browser Discovery preflight를 병렬 수행할 수 있다.
 
 - DTL4-5 / W4-G1: Data 05는 기존 Schema를 바꾸지 않는다는 소비 경계를 대조
-- DTL4-6 / W4-G2: RYP0~RYP4 inventory·Adapter·지역 판정·중복 제외 테스트 준비
+- DTL4-6 / W4-G2: RYP0~RYP4 inventory·Adapter·지역 판정·중복 제외 테스트 통과
 - DTL4-7 / W4-G3: RYP5 대표 Source actual DB → API → Browser 인수
 - DTL4-8 / W4-G4: RYP6 지역별 최종 상태·전체 회귀·문서 대조
 

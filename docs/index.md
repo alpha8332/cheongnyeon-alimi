@@ -137,7 +137,8 @@
 - [Public HTTPS Policy Ingestion Forest 개발 기록](development/development_notes/data/public_https_policy_ingestion.md):
   DTL4-3A 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증
 - [Regional Youth Policy Ingestion Forest 개발 기록](development/development_notes/data/regional_youth_policy_ingestion.md):
-  RYP0 inventory부터 RYP2 경북 Adapter, RYP3 지역·신청 상태 Gate 검증 결과
+  RYP0 inventory부터 RYP2 경북 Adapter, RYP3 지역·신청 상태와 RYP4 교차 Source
+  제외 Gate 검증 결과
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
   DTL4-4 조건·서류·시설 연락처 계약부터 실제 PostgreSQL·API·Browser 인수까지
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)

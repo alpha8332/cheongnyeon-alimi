@@ -68,6 +68,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="validate and project database changes, then roll them back",
     )
+    parser.add_argument(
+        "--decision-root",
+        type=Path,
+        default=Path("runtime/decisions"),
+        help="Git-excluded cross-source decision root",
+    )
     return parser
 
 
@@ -117,6 +123,7 @@ def main(
             limit=args.limit,
             snapshot_id=args.snapshot_id,
             dry_run=args.dry_run,
+            decision_root=args.decision_root,
         )
         if run_writer is not None and run_id is not None:
             run_writer.finish(
@@ -172,6 +179,8 @@ def _print_summary(
         f"partial={replay.partial_count} "
         f"invalid={replay.invalid_count} "
         f"accepted={replay.accepted_count} "
+        f"regional_skipped={replay.regional_skipped_count} "
+        f"cross_source_skipped={replay.cross_source_skipped_count} "
         f"inserted={database.inserted} "
         f"updated={database.updated} "
         f"unchanged={database.unchanged} "
@@ -179,7 +188,8 @@ def _print_summary(
         f"skipped={database.skipped} "
         f"rejected={database.rejected} "
         f"failed={database.failed} "
-        f"run_id={run_id}",
+        f"run_id={run_id} "
+        f"decision_manifest_id={result.decision_manifest_id}",
         file=stdout,
     )
 
@@ -265,7 +275,11 @@ def _runtime_run_counts(
         inserted_count=database.inserted,
         updated_count=database.updated,
         unchanged_count=database.unchanged,
-        skipped_count=database.skipped,
+        skipped_count=(
+            database.skipped
+            + replay.regional_skipped_count
+            + replay.cross_source_skipped_count
+        ),
         failed_count=database.failed,
     )
 

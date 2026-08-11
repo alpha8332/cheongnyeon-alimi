@@ -38,6 +38,7 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 | `data/fixtures/contracts/recurrent_quality_cases.json` | 반복·수정·중복·실패 판정 사례 | 6 |
 | `data/fixtures/contracts/eligibility_evidence_cases.json` | 자격요건 계약 사례와 Source 소비 인계 | 5+5 |
 | `data/fixtures/regional/regional_policy_gate_cases.json` | 지역 고유성·신청 상태 Gate 합성 사례 | 12 |
+| `data/fixtures/regional/cross_source_duplicate_cases.json` | aggregator 교차 Source 판정 합성 사례 | 7 |
 | `data/seeds/initial_programs.json` | canonical 개발 Seed | 4 |
 | `data/seeds/administrative_regions.json` | versioned 지역 Seed | 538 |
 | `data/seeds/administrative_region_aliases.json` | 지역 별칭 Seed | 1,080 |
@@ -45,6 +46,11 @@ Backend와 Frontend는 현재 Schema와 Seed로 기능 구현을 시작할 수 �
 Normalized Fixture와 canonical Seed는 byte가 같은 JSON 배열이다. rejected는
 정상 Seed에 포함하지 않는다. 현재 Backend가 CSV importer를 요구하지 않았고
 CSV는 배열·null 표현을 약화하므로 생성하지 않는다.
+
+지역 교차 Source fixture는 실제 aggregator 응답이나 정책을 복제하지 않는다.
+합성 identity로 exact 제외 3종, fingerprint·근거 부족 review 2종과 동일 제목
+다른 사업·신규 정책 승인 2종을 결정적으로 검증하며 canonical Seed에는 넣지
+않는다.
 
 ## 합성 Raw 경계
 

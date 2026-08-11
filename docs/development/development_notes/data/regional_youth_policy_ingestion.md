@@ -29,7 +29,7 @@
 | RYP1 | completed | 17개 상세 identity, 13개 승인·3개 차단·1개 제외 |
 | RYP2 | completed | 공통 profile·discovery·runner 경계와 경북 Adapter·offline replay |
 | RYP3 | completed | 지역 evidence·신청 상태 Gate와 경북 Runtime 격리 |
-| RYP4 | 대기 | 온통청년·복지로 중복 제외 |
+| RYP4 | completed | snapshot·PostgreSQL 기준선과 보수적 교차 Source 제외 Gate |
 | RYP5 | 대기 | 대표 Source actual |
 | RYP6 | 대기 | 지역별 확대·전체 판정 |
 
@@ -159,6 +159,34 @@ RYP2 actual fixture `no=1098`은 시행기관·지원 대상·Source 지역이 �
 RYP3에서 사용자 정책 0건·지역 Gate 제외 1건으로 바뀌며 거짓 open 정책을 만들지
 않는다. 실제 Source 재호출이나 PostgreSQL 적재는 수행하지 않았다.
 
+### RYP4 - 온통청년·복지로 교차 Source 제외
+
+- `AggregatorBaseline`은 온통청년·복지로별 최신 완료 snapshot ID·완료 시각·
+  item 수와 읽기 전용 PostgreSQL row 수·확인 시각을 하나의 `baseline_id`로
+  고정한다. 두 Source 중 snapshot이나 DB row가 빠지면 open 지역 후보를
+  승인하지 않는다.
+- 명시적 aggregator external ID, canonical URL, 발행기관이 포함된 공식 공고
+  identity의 exact 일치만 확정 중복으로 제외한다. URL은 fragment와 `utm_*`
+  추적값을 제거하되 query의 사업 identity는 유지한다.
+- 제목·기관·canonical 지역·신청기간·지원내용이 모두 정규화 일치하면 의미상
+  후보지만 자동 병합하지 않고 `duplicate_review_required`로 격리한다. 제목만
+  같고 다른 필드가 명확히 다르면 신규 정책을 유지하며, 비교 필드가 누락되면
+  검토 대상으로 둔다.
+- Runtime은 accepted만 Importer에 전달한다. 제외와 review는
+  `cross_source_skipped_count` 및 CollectionRun `skipped_count`에 포함하고,
+  Source 내부 동일 identity만 기존 `duplicate_count`로 유지한다.
+- `CrossSourceDecisionManifest`는 기준선, 후보·일치 identity, reason code,
+  match field와 원문을 복원하지 않는 SHA-256 fingerprint를
+  `runtime/decisions/`에 결정적으로 저장한다. 기존 aggregator Policy row는
+  조회만 하며 수정·삭제·provenance 합성을 하지 않는다.
+
+합성 계약 fixture 7건은 확정 ID·URL·공고 identity, 전체 fingerprint review,
+동일 제목 근거 부족, 동일 제목 다른 사업과 신규 정책을 검증했다. 경북 actual
+fixture는 현재 closed라 중복 기준선 없이도 RYP3에서 먼저 격리된다. 같은 Raw를
+`2026-06-10` open으로 고정한 테스트에서는 무관한 기준선과 대조한 뒤
+`accepted_regional`과 결정 manifest를 생성했다. 실 PostgreSQL actual 적재와
+정책 row 생성 여부 대조는 RYP5 범위로 남겼다.
+
 ## 주요 변경 파일
 
 - `data/reference/regional_youth_policy_sources.json`
@@ -169,11 +197,17 @@ RYP3에서 사용자 정책 0건·지역 Gate 제외 1건으로 바뀌며 거짓
 - `collectors/browser_runner.py`
 - `collectors/gyeongbuk_youth.py`
 - `collectors/regional_policy_gate.py`
+- `collectors/cross_source_duplicate.py`
 - `collectors/http.py`
 - `collectors/runtime.py`
+- `backend/app/services/aggregator_baseline.py`
+- `backend/app/services/runtime_importer.py`
+- `scripts/import_runtime_data.py`
 - `collectors/__init__.py`
 - `data/fixtures/regional/`
 - `tests/test_regional_policy_gate.py`
+- `tests/test_cross_source_duplicate.py`
+- `backend/tests/test_aggregator_baseline.py`
 - `tests/test_regional_discovery.py`
 - `tests/test_browser_runner.py`
 - `tests/test_gyeongbuk_youth.py`
@@ -268,7 +302,24 @@ git diff --check
 - 자동화 테스트는 외부 웹 요청이나 PostgreSQL을 사용하지 않았다. RYP1
   preflight와 RYP2 경북 제한 preflight의 응답 원문은 Git에 저장하지 않았다.
 
+RYP4 구현 뒤 교차 Source 판정·기준선 loader·경북 Runtime·CollectionRun 집계와
+기존 정규화 회귀를 실행했다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_cross_source_duplicate.py backend/tests/test_aggregator_baseline.py tests/test_gyeongbuk_youth.py tests/test_runtime_replay.py tests/test_runtime_import_cli.py tests/test_regional_policy_gate.py tests/test_normalization.py -q
+.\.venv\Scripts\python.exe -m pytest tests backend/tests -q -rs
+```
+
+- RYP4 관련 결과: `53 passed, 21 subtests passed`
+- 전체 Python 결과: `317 passed, 23 skipped, 96 subtests passed`
+- 전체 실행의 skip 23건은 `TEST_DATABASE_URL` 미설정 PostgreSQL 테스트다.
+  이 중 새 RYP4 PostgreSQL 기준선 통합 테스트는 기존 임시 pgpass와 전용
+  `cheongnyeon_alimi_test`를 명시한 별도 실행에서 `1 passed`를 확인했다.
+- SQLite 단위 테스트와 별도로 실제 PostgreSQL에서 완료 snapshot descriptor와
+  aggregator Policy·region rule 읽기, 기준선 row 수와 deterministic ID를
+  검증했다. 기존 Policy 수정·삭제와 외부 웹 요청은 수행하지 않았다.
+
 ## 남은 작업
 
-- RYP4에서 온통청년·복지로 snapshot·PostgreSQL 기준 중복 제외
-- RYP5 전에는 Browser Discovery와 이용 조건을 모두 통과한 Source만 actual 실행
+- RYP5에서 Browser Discovery와 이용 조건을 모두 통과한 대표 Source만 actual 실행
+- RYP6에서 승인 Source를 지역별로 순차 확대하고 전체 Forest를 판정

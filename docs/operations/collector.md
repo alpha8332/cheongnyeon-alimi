@@ -215,13 +215,32 @@ write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projectio
   --limit 1
 ```
 
+경북 Runtime은 RYP3에서 지역·open을 통과한 후보가 있을 때 최신 온통청년·
+복지로 snapshot manifest와 현재 PostgreSQL row를 읽기 전용 기준선으로 묶어
+RYP4 교차 Source 판정을 수행한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
+  --source regional-gyeongbuk-youth-platform `
+  --raw-root runtime/raw `
+  --limit 3 `
+  --decision-root runtime/decisions
+```
+
+기준선 Source 하나라도 최신 완료 manifest나 유효 DB row가 없으면 open 지역
+후보를 적재하지 않고 실패한다. 확정 중복과 review는 Importer에 전달하지 않고
+비밀 없는 identity·match field·fingerprint를 Git 제외 decision manifest에
+보존한다. 현재 closed인 후보만 있으면 RYP3에서 먼저 격리하므로 기준선을
+불필요하게 요구하지 않는다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
-| `--source` | 필수 | 현재 지원하는 세 source ID 중 하나 |
+| `--source` | 필수 | 현재 지원하는 네 source ID 중 하나 |
 | `--raw-root` | `runtime/raw` | Git 제외 Runtime Raw root |
 | `--limit` | `5000` | snapshot에서 처리할 list item 수, 1~5000 |
 | `--snapshot-id` | 최신 완료 manifest | 특정 완료 snapshot ID |
 | `--dry-run` | 꺼짐 | 실제 transaction을 수행한 뒤 rollback |
+| `--decision-root` | `runtime/decisions` | 교차 Source 판정 manifest의 Git 제외 root |
 
 ### 회차와 품질 처리
 
@@ -242,11 +261,16 @@ write까지 수행한 뒤 rollback하므로 운영 DB에 Policy·rule·projectio
 - 같은 Raw를 재실행하면 같은 `(source_id, external_id)`를 사용해
   `unchanged` 또는 명시적인 `updated`로 집계하며 중복 row를 만들지 않는다.
 
-성공 요약은 source, Raw·추출·valid·partial·invalid·accepted 수와
+성공 요약은 source, Raw·추출·valid·partial·invalid·accepted·지역 제외·교차
+Source 제외 수와
 inserted·updated·unchanged·duplicate·skipped·rejected·failed 수만 출력한다. 실패
 항목은 source ID, external ID, 안전한 오류 코드·경로·오류 타입과 기여 Raw
 document ID만 출력하며 Raw payload, source URL query와 인증키를 출력하지
 않는다.
+
+지역·교차 Source 제외와 review는 CollectionRun `skipped_count`에 포함한다.
+`duplicate_count`는 같은 Source의 `(source_id, external_id)` 반복만 의미한다.
+교차 Source 정책 관계는 기존 aggregator row에 합성하거나 덮어쓰지 않는다.
 
 실제 실행은 별도 `collection_runs` transaction에 `run_id`, source, 시작·종료
 시각, 상태와 위 집계를 기록하고 CLI 요약에 `run_id`를 출력한다. 일부 invalid를

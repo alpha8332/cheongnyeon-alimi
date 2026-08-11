@@ -203,6 +203,18 @@ confirmed이면서 현재 open인 정책만 `coverage_scope=regional`과 canonic
 rule을 붙여 이 Normalizer에 전달한다. 광역 관할 아래 시·군·구가 명시되면
 ancestor 관계를 확인하고 더 구체적인 canonical rule을 사용한다.
 
+RYP4 교차 Source 판정은 정규화 뒤 Importer 전달 전에 수행한다. 명시적
+aggregator ID·canonical URL·발행기관 포함 공고 ID exact 일치만 확정 중복으로
+제외한다. 정규화 제목·기관·canonical include 지역·신청 시작/종료일·지원내용이
+모두 같아도 자동 병합하지 않고 검토 대상으로 둔다. 제목만 같은 경우 비교
+필드가 모두 존재하고 하나 이상 다르면 신규 지역 정책을 유지하며, 근거가
+누락되면 검토 대상으로 둔다. 판정용 text는 Unicode NFKC 후 문자·숫자만
+case-insensitive 비교하고 URL은 fragment와 `utm_*`만 제거한다.
+
+교차 Source 판정은 NormalizedProgram 필드나 기존 aggregator row를 변경하지
+않는다. 확정 제외·검토는 `skipped_count`, 같은 Source identity 반복은 기존
+`duplicate_count`로 구분한다.
+
 ## 카테고리
 
 Normalized 1.1.0은 실제 복지로 관심주제의 다중값을 보존하기 위해

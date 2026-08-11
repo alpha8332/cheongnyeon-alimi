@@ -15,6 +15,20 @@ from collectors.cheonan_youthcenter import (
     CheonanYouthCenterExtractor,
     create_cheonan_youthcenter_collector,
 )
+from collectors.cross_source_duplicate import (
+    AGGREGATOR_SOURCE_IDS,
+    AggregatorBaseline,
+    AnnouncementIdentity,
+    BaselineDescriptor,
+    BaselineRecord,
+    CrossSourceDecisionManifest,
+    CrossSourceDecisionManifestStore,
+    DuplicateDecision,
+    DuplicateEvidence,
+    DuplicateOutcome,
+    PolicyIdentity,
+    evaluate_cross_source_duplicate,
+)
 from collectors.extracted import ExtractedPolicy, SourceProvenance
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.eligibility import (
@@ -41,6 +55,7 @@ from collectors.gyeongbuk_youth import (
     GyeongbukYouthExtractor,
     create_gyeongbuk_youth_collector,
     decide_gyeongbuk_regional_policy,
+    map_gyeongbuk_duplicate_evidence,
 )
 from collectors.normalized import (
     ApplicationSchedule,
@@ -110,18 +125,28 @@ default_registry.register(
 )
 
 __all__ = [
+    "AGGREGATOR_SOURCE_IDS",
+    "AggregatorBaseline",
+    "AnnouncementIdentity",
     "ApplicationSchedule",
     "ApplicationStatus",
     "ApplicationAvailability",
+    "BaselineDescriptor",
+    "BaselineRecord",
     "Category",
     "CollectionOptions",
     "CollectionResult",
     "Collector",
     "CollectorFactory",
     "CollectorRegistry",
+    "CrossSourceDecisionManifest",
+    "CrossSourceDecisionManifestStore",
     "CoverageScope",
     "CheonanYouthCenterExtractor",
     "DataQualityStatus",
+    "DuplicateDecision",
+    "DuplicateEvidence",
+    "DuplicateOutcome",
     "EligibilityCategory",
     "EligibilityContractError",
     "EligibilityCoverage",
@@ -140,6 +165,7 @@ __all__ = [
     "NormalizedProgram",
     "NormalizedProgramValidator",
     "Normalizer",
+    "PolicyIdentity",
     "BokjiroExtractor",
     "RawDocumentRole",
     "RawDocumentStore",
@@ -168,7 +194,9 @@ __all__ = [
     "map_youthcenter_eligibility",
     "regional_source_inventory_issues",
     "decide_gyeongbuk_regional_policy",
+    "evaluate_cross_source_duplicate",
     "evaluate_regional_policy",
     "load_approved_regional_profile",
+    "map_gyeongbuk_duplicate_evidence",
     "replay_profile_actions",
 ]

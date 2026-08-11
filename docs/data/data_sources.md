@@ -69,6 +69,13 @@ Source 지역·시행기관·지원 대상이 같은 canonical 관할을 가리�
 경북 표본 `no=1098`은 지역 고유성은 확인됐지만 수집일 기준 closed이므로 사용자
 정책으로 전달하지 않는다.
 
+RYP4는 지역·open 후보만 최신 온통청년·복지로 완료 snapshot과 PostgreSQL row에
+대조한다. 명시적 aggregator ID·canonical URL·공식 공고 identity exact 일치는
+제외하고, 제목·기관·canonical 지역·기간·지원내용 전체 fingerprint 일치는 자동
+병합하지 않고 review로 격리한다. 제목만 같은 다른 사업은 비교 필드가 명확히
+다르면 유지한다. 기존 aggregator row는 읽기만 하며 교차 Source 제외는 Source
+내부 `duplicate_count`가 아니라 `skipped_count`로 집계한다.
+
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영
 Collector는 profile을 재사용한다. 매 실행마다 홈이나 외부 인터넷을 무제한

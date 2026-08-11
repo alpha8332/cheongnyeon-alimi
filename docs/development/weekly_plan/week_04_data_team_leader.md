@@ -9,7 +9,7 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0`~`RYP3` 완료, `RYP4` 구현 준비 (`DTL4-4B`·`ES4`
+- 현재 Slice: Data 05 `RYP0`~`RYP4` 완료, `RYP5` 구현 준비 (`DTL4-4B`·`ES4`
   actual 세로 인수 통과), Data 05·06 구현 뒤 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
@@ -86,11 +86,11 @@ W4-G1 뒤 DTL4-2B·3B·4B actual 구현과 Backend·Frontend actual 연결을 �
 수행한다. 같은 Schema, Migration, Policy model이나 Source Adapter를 동시에
 수정해야 하면 Team Leader가 소유 브랜치와 병합 순서를 먼저 지정한다.
 
-DTL4-4B와 ES4가 완료된 현재 Data 05 RYP0~RYP3를 완료했다. 17개 홈의 Browser·
+DTL4-4B와 ES4가 완료된 현재 Data 05 RYP0~RYP4를 완료했다. 17개 홈의 Browser·
 공개 HTTP 재검증 결과 13개 승인·3개 차단·1개 제외를 확정했고, 공통 profile·
 discovery·Browser runner 경계와 경북 JSON·modal Adapter의 offline replay를
 검증했다. RYP3에서 지역 evidence·신청 상태 Gate와 경북 closed 격리를 추가했다.
-RYP4부터 DTL4-5와 병렬로 진행한다.
+RYP4 교차 Source Gate까지 DTL4-5와 병렬로 완료했으며 RYP5 actual을 준비한다.
 RYP0~RYP4는 DTL4-6 W4-G2, RYP5 actual은 DTL4-7 W4-G3, RYP6
 지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06 SOP0~SOP3,
 SOP4 actual과 SOP5 최종 상태도 각각 같은 W4-G2~G4의 필수 입력으로 둔다.
@@ -693,7 +693,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
 - [x] Data 05 RYP0 후보 inventory·검증 계약 완료
 - [x] Data 05 RYP1 Browser Discovery preflight·Source 승인 완료
-- [ ] Data 05 RYP2~RYP4 Adapter·지역·중복 제외 Gate 통과
+- [x] Data 05 RYP2~RYP4 Adapter·지역·중복 제외 Gate 통과
 - [ ] Data 06 SOP0~SOP3 후보 정제·중복 감사·승인·Adapter Gate 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [ ] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
