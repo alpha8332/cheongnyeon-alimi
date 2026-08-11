@@ -139,6 +139,12 @@
   관리자 4자리 PIN 세션 인증, fail-closed 및 401/403/429/422 상태코드 검증 결과
 - [Backend CollectionRun Admin API Forest 개발 기록](development/development_notes/backend/collection_run_admin_api.md):
   CollectionRun 실행 이력 목록·상세, 수동 실행 202 및 Stale 판정 계약 결과
+- [Recommendation Vertical Slice Forest 개발 기록](development/development_notes/integration/recommendation_vertical_slice.md):
+  사용자 조건 기반 결정적 맞춤 추천 API, 부합도 점수, 사유 Code 및 비단정 계약 결과
+- [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
+  정책 상세 자격요건 구조화 응답 DTO 및 Evidence 출처 보증 검증 결과
+- [Admin Data and Log Console Forest 개발 기록](development/development_notes/integration/admin_data_log_console.md):
+  관리자 읽기 전용 정책 데이터 표 목록·상세 API 및 페이징/Allowlist 검증 결과
 - [Policy Data Database Integration Forest 개발 기록](development/development_notes/integration/policy_data_database_integration.md):
   Backend 저장·조회 증거를 바탕으로 한 데이터 계약 승인과 Frontend 인계 결과
 - [Policy Search Data Foundation Forest 개발 기록](development/development_notes/integration/policy_search_data_foundation.md):
@@ -151,6 +157,9 @@
   category·region·status 필터와 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약
 - [CollectionRun 관리자 API 계약](api/admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 실행 및 stale 판정 계약
+- [관리자 정책 데이터 표 API 계약](api/admin_policies.md): 관리자 읽기 전용 정책 데이터 표 목록·상세, 페이징 및 Allowlist 정렬 계약
+- [관리자 로그 및 감사 API 계약](api/admin_logs.md): 관리자 서버 로그 파일/이벤트 조회, 회전 archive 삭제 및 Audit 감사 기록 계약
+- [맞춤 정책 추천 API 계약](api/recommendation.md): 결정적 맞춤 정책 추천, 부합도 점수, 추천 사유 및 비단정 계약
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
 - [Backend Windows 로컬 환경](development/backend_local_setup.md):

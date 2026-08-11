@@ -22,6 +22,9 @@
 | Backend Policy Search | [개발 기록](backend/policy_search.md) | W3-B0~B4 | PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 |
 | Backend Admin Access Control | [개발 기록](backend/admin_access_control.md) | A0~A3 | 관리자 인증·권한 세션 API 및 Fail-closed 기준선 |
 | Backend CollectionRun Admin API | [개발 기록](backend/collection_run_admin_api.md) | C0~C3 | CollectionRun 실행 이력 목록·상세 및 수동 실행 기준선 |
+| Recommendation Vertical Slice | [개발 기록](integration/recommendation_vertical_slice.md) | R0~R3 | 사용자 조건 기반 결정적 맞춤 추천 API 및 비단정 계약 |
+| Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | ES0~ES4 | 정책 상세 자격요건 구조화 응답 DTO 및 Evidence 출처 보증 |
+| Admin Data and Log Console | [개발 기록](integration/admin_data_log_console.md) | AO0~AO5 | 관리자 읽기 전용 정책 데이터 표 API 및 파일 로그 콘솔 |
 | Policy Data Database Integration | [개발 기록](integration/policy_data_database_integration.md) | D0~D6 | Seed·Runtime의 PostgreSQL 적재와 Policy API 통합 검증·Frontend 인계 |
 | Policy Search Data Foundation | [개발 기록](integration/policy_search_data_foundation.md) | PSF0~PSF8 | Source 중립 검색 데이터·지역 관계·projection 기반과 소비 검증 |
 | Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA3F | 실제 snapshot DB → API → UI 인수, 경량 팀 리뷰와 Release 1 G4 통과 |

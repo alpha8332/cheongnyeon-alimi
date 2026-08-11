@@ -88,6 +88,7 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
         - NormalizedProgram.SEARCH_FIELD_NAMES
         - {"provenance"}
         | SYSTEM_FIELDS
+        | {"eligibility_summary"}
     )
 
 
