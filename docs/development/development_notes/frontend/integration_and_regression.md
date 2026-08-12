@@ -169,6 +169,7 @@ Real API golden E2E(`VITE_USE_MOCK=false`)와 W4-G3 PostgreSQL E2E는 본 Forest
 
 - Backend merge 후 W4-F9 Real API 항목(F9-05·F9-06) 재triage·closure
 - `VITE_USE_MOCK=false` 환경에서 week4 Real API golden 및 Forest별 Real API skip 해소
+- [Real API 수동 테스트 가이드](../../frontend_real_api_manual_testing_guide.md)로 Browser 검증 후 E2E 재실행
 - W4-G3 actual PostgreSQL E2E 실행 후 Frontend 결함 routing
 
 ## 관련 문서

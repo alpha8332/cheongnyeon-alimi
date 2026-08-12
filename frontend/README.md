@@ -61,6 +61,10 @@ Week 4 Frontend regression matrix (FE9-02, W4-F10·W4-I3 Mock-first):
 npm run test:e2e -- e2e/week4-regression.spec.ts
 ```
 
+Real API 수동 Browser 검증 절차는
+[Frontend Real API 수동 테스트 가이드](../docs/development/frontend_real_api_manual_testing_guide.md)를
+참고한다.
+
 Real API admin golden은 Backend admin path가 `:8000`에 노출된 환경에서만
 실행한다.
 

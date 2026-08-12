@@ -146,6 +146,8 @@
   FE8-00~06 admin policy·log DTO·표·drawer·maintenance·Toast·a11y·Playwright E2E
 - [Integration Fix and Regression Forest 개발 기록](development/development_notes/frontend/integration_and_regression.md):
   FE9-01 W4-F9 Frontend-only 통합 수정·blocker triage; FE9-02 W4-F10 Mock-first 회귀
+- [Frontend Real API 수동 테스트 가이드](development/frontend_real_api_manual_testing_guide.md):
+  `VITE_USE_MOCK=false` + localhost:8000 Browser 수동 검증 절차 (Real API E2E skip 대응)
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
