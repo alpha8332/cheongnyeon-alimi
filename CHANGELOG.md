@@ -44,6 +44,9 @@
 - Frontend eligibility summary card UI (FE7-01~04): policy detail 핵심 신청 조건
   sections, local condition badges, evidence links (Mock-first)
   ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend Eligibility Summary Browser E2E (FE7-05): Playwright complete·partial·
+  unknown mock detail fixtures, comparison badges, search golden regression
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
 - Frontend admin observability DTO·Mock handlers (FE8-00): read-only policy
   projection list/detail·log file/event pagination·safe error contract
   ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))

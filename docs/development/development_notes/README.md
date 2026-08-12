@@ -17,7 +17,7 @@
 | Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00~05 | 조건 form·결과·error·Browser E2E |
 | User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~08, FE5-07 E2E | localStorage·즐겨찾기·조건·D-Day·Browser |
 | CollectionRun Admin UI | [개발 기록](frontend/collection_run_admin_ui.md) | FE3-00~04 | PIN session·실행 기록·수동 실행 |
-| Eligibility Summary UI | [개발 기록](frontend/eligibility_summary_ui.md) | FE7-00 | eligibility_summary DTO·Mock fixtures |
+| Eligibility Summary UI | [개발 기록](frontend/eligibility_summary_ui.md) | FE7-00~05 | eligibility_summary DTO·카드 UI·Browser E2E |
 | Admin Observability UI | [개발 기록](frontend/admin_observability_ui.md) | FE8-00 | admin policy·log DTO·Mock handlers |
 | React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |
 | Backend Baseline | [개발 기록](backend/policy_baseline.md) | Backend 0 | DB Schema, ORM 모델, Importer 및 Policy API 구축 |

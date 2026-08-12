@@ -15,7 +15,7 @@
   (ES2 Backend DTO)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/eligibility-summary`
-- 현재 Slice: FE7-01~04 completed (FE7-05 draft)
+- 현재 Slice: FE7-05 completed (FE7-06 draft)
 
 ## 목적
 
@@ -157,7 +157,7 @@
 
 ---
 
-### FE7-05 — Real API·Browser E2E — draft
+### FE7-05 — Real API·Browser E2E — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -167,7 +167,13 @@
 | **검증** | golden policy detail; Release 1 회귀 |
 | **완료 기준** | Integration 08 ES4 Frontend 항목 충족 |
 
----
+2026-08-12 구현: `frontend/e2e/eligibility-summary-ui.spec.ts` — Mock-first 12 scenarios
+(complete·partial·unknown fixtures 9101~9103, empty summary seed policy, saved conditions
+comparison badges, evidence link attributes, keyboard·mobile, `/search` golden·search→detail
+regression, mock detail envelope golden) + Real API skip 1건.
+Mock fixture에 120자 초과 문장 없음 — long text expand toggle E2E는 unit test로 검증.
+Backend `eligibility_summary` Real API merge 전 — Real API golden은 card 또는 empty state 분기.
+FE7-06 Toast·5xx refetch는 본 Slice 범위 밖.
 
 ### FE7-06 — Detail API Toast·접근성 — draft
 
