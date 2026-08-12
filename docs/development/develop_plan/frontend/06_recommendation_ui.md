@@ -4,7 +4,7 @@
 
 - 번호: Frontend 06
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
@@ -15,7 +15,7 @@
   Backend 추천 API (Integration 06 R1)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/recommendation`
-- 현재 Slice: FE6-04 completed (FE6-05 draft)
+- 현재 Slice: FE6-05 completed
 
 ## 목적
 
@@ -152,7 +152,7 @@ word-break·toggle focus-visible. keyboard tab order Browser 검증은 FE6-05.
 
 ---
 
-### FE6-05 — Real API·Browser E2E — draft
+### FE6-05 — Real API·Browser E2E — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -161,6 +161,14 @@ word-break·toggle focus-visible. keyboard tab order Browser 검증은 FE6-05.
 | **선행** | FE6-03·04, Integration 06 R1 merged |
 | **검증** | `npm run test:e2e`; Release 1 golden search 회귀 |
 | **완료 기준** | Integration 06 R3 인수 기준 Frontend 항목 충족 |
+
+2026-08-12 구현: `frontend/e2e/recommendation-ui.spec.ts` — Mock-first 12 scenarios
+(route boundary·loading·results·empty·recovery·detail·localStorage·region·keyboard·
+mobile·search golden·503 retry annotation) + Real API skip 1건.
+422 API validation은 form client normalize로 Browser unreachable — unit contract test로 검증.
+Mock Seed 3+ regions 부재로 region collapse expand E2E는 단일 지역 표시만 검증.
+
+---
 
 ## 검증 계획
 

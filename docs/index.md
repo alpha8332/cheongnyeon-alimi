@@ -135,7 +135,7 @@
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)
 - [Recommendation UI Forest 개발 기록](development/development_notes/frontend/recommendation_ui.md):
-  FE6-00~04 DTO·조건 form·결과·error·region collapse
+  FE6-00~04 DTO·조건 form·결과·error·region collapse·FE6-05 Playwright E2E
 - [User Service Features Forest 개발 기록](development/development_notes/frontend/user_service_features.md):
   FE5-00~06,08 localStorage·즐겨찾기·조건·D-Day·cross-route identity·FE5-07 Playwright E2E
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):

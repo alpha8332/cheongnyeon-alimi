@@ -2,13 +2,13 @@
 
 ## 작업 정보
 
-- 작업일: 2026-08-11
+- 작업일: 2026-08-11 (FE6-05 Browser E2E: 2026-08-12)
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [Recommendation UI Forest 개발 계획](../../develop_plan/frontend/06_recommendation_ui.md)
-- 현재 Slice: FE6-04 completed (FE6-05 draft)
+- 현재 Slice: FE6-05 completed (Forest Browser 검증 완료)
 
 ## 목적
 
@@ -17,8 +17,7 @@ W4-G0 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI(FE6-00~04)로
 
 ## Forest 범위
 
-이 기록은 Frontend 06 Slice 구현·검증 결과를 누적한다. Real API·Browser E2E
-(FE6-05)는 이 Slice 범위 밖이다.
+이 기록은 Frontend 06 Slice 구현·검증 결과를 누적한다.
 
 ## Slice 진행 현황
 
@@ -29,6 +28,7 @@ W4-G0 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI(FE6-00~04)로
 | FE6-02 | completed | 결과 목록·reason·detail link·favorite toggle |
 | FE6-03 | completed | error/empty/loading shell·retry·unconfirmed banner |
 | FE6-04 | completed | `RegionListCollapse`·mobile region truncate |
+| FE6-05 | completed | Playwright Browser E2E·search golden 회귀 |
 
 ## 구현 내용
 
@@ -84,6 +84,20 @@ W4-G0 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI(FE6-00~04)로
 - 추천 error UX tone은 Policy Search shell 패턴을 재사용한다.
 - partial item detail link는 `include_partial=true` query를 자동 부여한다.
 
+### FE6-05 — Real API·Browser E2E (Playwright)
+
+- `frontend/e2e/recommendation-ui.spec.ts`
+  - Mock-first 12 scenarios: route boundary·loading·results·empty·empty→results
+    recovery·detail·favorite·localStorage·region display·keyboard·mobile·
+    `/search` golden 회귀·503 retry(Mock bypass annotation)
+  - Real API golden: `VITE_USE_MOCK=false` 환경에서만 실행(skip)
+- 422 API validation error shell은 form `parseSavedConditionsDraft` client
+  normalize로 Browser UI에서 unreachable — `recommendation.contract.test.ts`·
+  `recommendationErrors.test.ts`로 검증.
+- Mock Seed에 3+ regions policy 없음 — `RegionListCollapse` expand E2E는
+  단일 지역·「더 보기 없음」만 검증. partial unknown banner는
+  `include_partial=false` 기본 request로 Mock 결과에 partial item 미포함.
+
 ## 주요 변경 파일
 
 - `frontend/src/pages/user/RecommendationPage.tsx`
@@ -97,21 +111,24 @@ W4-G0 결정적 추천 API 계약을 Frontend TypeScript·Mock·UI(FE6-00~04)로
 - `frontend/tests/recommendationErrors.test.ts`
 - `frontend/tests/recommendationReasonHelpers.test.ts`
 - `frontend/tests/recommendationDetailNavigation.test.ts`
+- `frontend/e2e/recommendation-ui.spec.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — passed (134 unit tests, FE6-01~04 포함)
+cd frontend && npm test   — 159 passed
 cd frontend && npm run lint — passed
-cd frontend && npm run build — passed
+cd frontend && npm run build — passed (FE6-04 기준; FE6-05에서 재실행하지 않음)
+cd frontend && npm run test:e2e -- e2e/recommendation-ui.spec.ts — 12 passed, 1 skipped (Real API)
 python3 scripts/validate_docs.py — passed
 ```
 
-Browser·Playwright E2E는 FE6-05 범위이며 본 Slice에서 실행하지 않았다.
+Browser·Playwright E2E는 FE6-05에서 실행 완료.
 
 ## 남은 작업
 
-- FE6-05: Real API·Browser E2E·Release 1 search golden 회귀
+- Real API E2E(`VITE_USE_MOCK=false`) 및 partial·long-region positive Browser case는
+  Backend actual API·Seed 데이터 준비 후 FE9 또는 별도 회귀에서 실행
 - W4-G0 Gate 후 `docs/api/` recommendation 절 추가
 
 ## 관련 문서

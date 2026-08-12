@@ -53,6 +53,9 @@
 - Frontend recommendation UI (FE6-01~04): `/recommendations` 조건 form·FE5
   localStorage 연동·결과·reason·error/retry·region collapse
   ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
+- Frontend Recommendation Browser E2E (FE6-05): Playwright structured
+  recommendation·empty·cross-route·search golden Mock-first flow
+  ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
 - Frontend cross-route policy identity (FE5-06): shared detail path·추천 결과
   favorite toggle·sidebar `/recommendations`·`/calendar` nav
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
