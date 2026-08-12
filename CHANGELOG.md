@@ -10,6 +10,10 @@
 
 ### Fixed
 
+- Admin policy data table row detail drawer did not appear when clicking
+  상세보기: replaced grid sidebar with fixed overlay slide-in drawer and
+  `isDrawerOpen` state on `/admin/policies`
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
 - Frontend `/`·`/favorites` 접속 시 404 UI가 뜨던 문제: `useFavorites` snapshot
   참조 불안정으로 layout error boundary가 트리거되던 것을 수정
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))

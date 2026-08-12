@@ -48,6 +48,7 @@ export default function AdminPolicyDataPage() {
     DEFAULT_VISIBLE_ADMIN_POLICY_COLUMNS,
   );
   const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const query = useMemo(
     () =>
@@ -112,6 +113,23 @@ export default function AdminPolicyDataPage() {
 
   const handleSelectRow = (item: AdminPolicyListItemDto) => {
     setSelectedPolicyId(item.id);
+
+    if (!isDrawerOpen) {
+      setIsDrawerOpen(false);
+      window.requestAnimationFrame(() => {
+        setIsDrawerOpen(true);
+      });
+      return;
+    }
+
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    window.setTimeout(() => {
+      setSelectedPolicyId(null);
+    }, 260);
   };
 
   return (
@@ -146,7 +164,7 @@ export default function AdminPolicyDataPage() {
 
       <div className="admin-policy-data-page__layout">
         {!isLoading && !isError && listResponse && listResponse.items.length > 0 ? (
-          <>
+          <div className="admin-policy-data-page__main">
             <AdminPolicyDataTable
               items={listResponse.items}
               visibleColumns={visibleColumns}
@@ -184,22 +202,23 @@ export default function AdminPolicyDataPage() {
                 다음
               </button>
             </nav>
-          </>
-        ) : null}
-
-        {selectedPolicyId !== null ? (
-          <AdminPolicyRowDetail
-            policy={detailPolicy}
-            isLoading={isDetailLoading}
-            isNotFound={
-              !isDetailLoading &&
-              !isDetailError &&
-              (detailPolicy === null || detailPolicy === undefined)
-            }
-            onClose={() => setSelectedPolicyId(null)}
-          />
+          </div>
         ) : null}
       </div>
+
+      {selectedPolicyId !== null ? (
+        <AdminPolicyRowDetail
+          policy={detailPolicy}
+          isOpen={isDrawerOpen}
+          isLoading={isDetailLoading}
+          isNotFound={
+            !isDetailLoading &&
+            !isDetailError &&
+            (detailPolicy === null || detailPolicy === undefined)
+          }
+          onClose={handleCloseDrawer}
+        />
+      ) : null}
     </div>
   );
 }

@@ -77,12 +77,13 @@ export default function AdminPolicyDataTable({
                   <button
                     type="button"
                     className="admin-policy-table__sort-btn"
-                    onClick={() =>
+                    onClick={(event) => {
+                      event.stopPropagation();
                       onSortChange(
                         sortField,
                         nextSortOrder(sortBy, sortOrder, sortField),
-                      )
-                    }
+                      );
+                    }}
                   >
                     {column.label}
                     {sortBy === sortField
@@ -106,9 +107,18 @@ export default function AdminPolicyDataTable({
               key={item.id}
               className={
                 selectedPolicyId === item.id
-                  ? 'admin-policy-table__row admin-policy-table__row--selected'
-                  : 'admin-policy-table__row'
+                  ? 'admin-policy-table__row admin-policy-table__row--selected admin-policy-table__row--interactive'
+                  : 'admin-policy-table__row admin-policy-table__row--interactive'
               }
+              tabIndex={0}
+              aria-selected={selectedPolicyId === item.id}
+              onClick={() => onSelectRow(item)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onSelectRow(item);
+                }
+              }}
             >
               {columns.map((column) => {
                 const rawValue = formatAdminPolicyCellValue(item, column.key);
@@ -128,7 +138,10 @@ export default function AdminPolicyDataTable({
                         type="button"
                         className="admin-policy-table__expand-btn"
                         aria-expanded={isExpanded}
-                        onClick={() => toggleCellExpand(item.id, column.key)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleCellExpand(item.id, column.key);
+                        }}
                       >
                         {isExpanded ? '접기' : '더 보기'}
                       </button>
@@ -140,9 +153,13 @@ export default function AdminPolicyDataTable({
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => onSelectRow(item)}
+                  aria-label={`${item.title} 상세보기`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onSelectRow(item);
+                  }}
                 >
-                  보기
+                  상세보기
                 </button>
               </td>
             </tr>

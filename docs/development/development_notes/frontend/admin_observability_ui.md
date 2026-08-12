@@ -102,6 +102,21 @@ Real API 연동·Browser E2E는 Integration 09 Backend merge 후 FE8-05에서 �
 - 401은 FE3-01과 동일하게 `clearAdminSession()` + login redirect.
 - FE8-06 Toast·a11y subset은 본 Slice 범위 밖(후속 Slice).
 
+### 버그 수정 — Policy row detail drawer 미표시 (2026-08-12)
+
+- **1차 원인**: `AdminPolicyDataPage` layout grid 안에서 React Fragment(`<>`)가 table·
+  pagination을 별도 grid item으로 분리해 pagination이 drawer 열(2열)을 점유함.
+  drawer는 2행 1열에 렌더되어 화면 밖/아래로 밀려 클릭해도 보이지 않음.
+- **1차 수정**: table+pagination을 `admin-policy-data-page__main` wrapper로 묶음.
+- **재발 원인**: grid 2열 sidebar 방식은 drawer가 레이아웃 흐름에 묶여 z-index·
+  fixed overlay로 슬라이드되지 않음.
+- **최종 수정 (FE8-02)**: `AdminPolicyDataPage`에 `isDrawerOpen` 상태를 두고,
+  `AdminPolicyRowDetail`을 layout grid 밖 fixed overlay drawer로 렌더.
+  `isOpen`·`onClose`·`policy` prop 전달, backdrop·Escape·닫기 버튼으로 닫기.
+  `theme.css`에 `admin-policy-row-detail-drawer` slide-in(`translateX`)·
+  `z-index: 1100` 스타일 추가. row 클릭·`상세보기` 버튼에
+  `stopPropagation` 유지.
+
 ## 주요 변경 파일
 
 - `frontend/src/api/adminPolicyData.ts`
@@ -125,10 +140,12 @@ Real API 연동·Browser E2E는 Integration 09 Backend merge 후 FE8-05에서 �
 
 ## 검증 결과
 
-- `npm run test` (frontend): **150 passed** (admin observability·policy table·log maintenance 포함)
+- `npm run test` (frontend): **159 passed**
 - `npm run lint`: passed
 - `npm run build`: passed
 - `python3 scripts/validate_docs.py`: passed
+- policy row detail drawer fix (2026-08-12): fixed overlay slide drawer·`isDrawerOpen`
+  수동 확인 (layout grid·row click)
 - `npm run test:e2e`: **미실행** (FE8-05 범위)
 
 ## 남은 작업

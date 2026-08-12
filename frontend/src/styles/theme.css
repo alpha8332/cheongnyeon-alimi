@@ -1107,12 +1107,66 @@ a.policy-card {
 
 /* ── Admin policy data (FE8-01~02) ── */
 
-.admin-policy-data-page__layout,
+.admin-policy-data-page__layout {
+  display: block;
+}
+
 .admin-logs-page__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
   gap: 20px;
   align-items: start;
+}
+
+.admin-policy-data-page__main {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.admin-policy-row-detail-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.admin-policy-row-detail-drawer--open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.admin-policy-row-detail-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(15, 23, 42, 0.35);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.24s ease;
+}
+
+.admin-policy-row-detail-drawer--open .admin-policy-row-detail-drawer__backdrop {
+  opacity: 1;
+}
+
+.admin-policy-row-detail-drawer__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(360px, 100vw);
+  overflow-y: auto;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.24s ease;
+}
+
+.admin-policy-row-detail-drawer--open .admin-policy-row-detail-drawer__panel {
+  transform: translateX(0);
 }
 
 .admin-policy-column-toggle {
@@ -1250,6 +1304,15 @@ a.policy-card {
   background: var(--sky-soft);
 }
 
+.admin-policy-table__row--interactive {
+  cursor: pointer;
+}
+
+.admin-policy-table__row--interactive:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: -2px;
+}
+
 .admin-policy-table__expand-btn {
   margin-left: 6px;
   padding: 0;
@@ -1261,7 +1324,6 @@ a.policy-card {
   cursor: pointer;
 }
 
-.admin-policy-row-detail,
 .admin-log-event-detail {
   position: sticky;
   top: 16px;
@@ -1269,6 +1331,19 @@ a.policy-card {
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
   background: var(--white);
+}
+
+.admin-policy-row-detail {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+}
+
+.admin-policy-row-detail-drawer__panel.admin-policy-row-detail {
+  border-radius: var(--r-xl) 0 0 var(--r-xl);
+  border-right: none;
+  height: 100%;
 }
 
 .admin-policy-row-detail__header,
@@ -1439,19 +1514,21 @@ a.policy-card {
 }
 
 @media (max-width: 900px) {
-  .admin-policy-data-page__layout,
   .admin-logs-page__layout {
     grid-template-columns: 1fr;
-  }
-
-  .admin-policy-row-detail,
-  .admin-log-event-detail {
-    position: static;
   }
 
   .admin-policy-filters__grid,
   .admin-log-event-filters__grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-policy-row-detail-drawer__panel {
+    width: 100vw;
+  }
+
+  .admin-log-event-detail {
+    position: static;
   }
 }
 
