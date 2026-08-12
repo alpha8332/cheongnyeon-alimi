@@ -38,6 +38,7 @@ function ExpandableText({ text }: { text: string }) {
           type="button"
           className="eligibility-section-list__expand-btn"
           aria-expanded={expanded}
+          aria-label={expanded ? '조건 내용 접기' : '조건 내용 더 보기'}
           onClick={() => setExpanded((current) => !current)}
         >
           {expanded ? '접기' : '더 보기'}
@@ -145,7 +146,10 @@ export default function EligibilitySectionList({
   savedConditions,
 }: EligibilitySectionListProps) {
   return (
-    <div className="eligibility-section-list">
+    <nav
+      className="eligibility-section-list"
+      aria-label="핵심 신청 조건 섹션"
+    >
       <SectionBlock
         title="필수 조건"
         isEmpty={summary.requirements.length === 0}
@@ -186,6 +190,6 @@ export default function EligibilitySectionList({
       >
         <UnknownConditionItems items={summary.unknown_conditions} />
       </SectionBlock>
-    </div>
+    </nav>
   );
 }

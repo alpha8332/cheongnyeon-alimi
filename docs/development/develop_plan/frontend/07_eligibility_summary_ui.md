@@ -4,7 +4,7 @@
 
 - 번호: Frontend 07
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
@@ -15,7 +15,7 @@
   (ES2 Backend DTO)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/eligibility-summary`
-- 현재 Slice: FE7-05 completed (FE7-06 draft)
+- 현재 Slice: FE7-06 completed (Forest 완료)
 
 ## 목적
 
@@ -91,7 +91,7 @@
 | ES3 | FE7-03 | 로컬 조건 비교 badge |
 | ES3 | FE7-04 | evidence·원문 링크 |
 | ES4 | FE7-05 | Real API·Browser E2E |
-| W4-F5·F8 | FE7-06 | Detail Toast·a11y |
+| W4-F5·F8 | FE7-06 | Detail Toast·a11y | completed |
 
 ---
 
@@ -171,11 +171,11 @@
 (complete·partial·unknown fixtures 9101~9103, empty summary seed policy, saved conditions
 comparison badges, evidence link attributes, keyboard·mobile, `/search` golden·search→detail
 regression, mock detail envelope golden) + Real API skip 1건.
-Mock fixture에 120자 초과 문장 없음 — long text expand toggle E2E는 unit test로 검증.
+Mock fixture에 120자 초과 문장 없음 — long text expand toggle E2E는 FE7-06에서
+complete fixture region 항목으로 Browser 검증.
 Backend `eligibility_summary` Real API merge 전 — Real API golden은 card 또는 empty state 분기.
-FE7-06 Toast·5xx refetch는 본 Slice 범위 밖.
 
-### FE7-06 — Detail API Toast·접근성 — draft
+### FE7-06 — Detail API Toast·접근성 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -185,6 +185,15 @@ FE7-06 Toast·5xx refetch는 본 Slice 범위 밖.
 | **세부 작업** | 본 문서 「공통 API 오류 Toast·접근성」표 준수 |
 | **검증** | Browser 5xx refetch; keyboard section nav; long text expand |
 | **완료 기준** | W4-F5·F8 eligibility subset; [FE9-02](09_integration_and_regression.md) matrix B |
+
+2026-08-12 구현: `AppShellLayout`에 `ApiErrorToastProvider` wiring,
+`policyDetailApiError`·`policyDetailErrorToast` mapper, `ProgramDetailPage` summary
+refetch(5xx Toast·detail 본문 유지·422 inline), `EligibilitySummaryCard` 새로고침
+control, comparison badge·section nav·expand a11y, Mock audit hooks
+(9101 summary refetch→503, 9102+include_partial refetch→422).
+`frontend/e2e/eligibility-detail-toast-a11y.spec.ts` 6 scenarios.
+FE9-02 cross-Forest Toast dedupe·full matrix B regression은 Integration Regression
+(FE9-02) 범위.
 
 ## 검증 계획
 

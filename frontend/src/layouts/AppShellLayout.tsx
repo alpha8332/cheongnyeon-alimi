@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router';
+import ApiErrorToastProvider from '@/components/common/ApiErrorToastProvider';
 
 function navClass(isActive: boolean): string {
   return `app-shell__nav-btn${isActive ? ' app-shell__nav-btn--active' : ''}`;
@@ -17,6 +18,7 @@ export default function AppShellLayout() {
   const isAdmin = pathname.startsWith('/admin');
 
   return (
+    <ApiErrorToastProvider>
     <div className="app-shell">
       <nav className="app-shell__sidebar" aria-label="메인 내비게이션">
         <Link to="/" className="app-shell__logo" title="청년알리미">
@@ -91,5 +93,6 @@ export default function AppShellLayout() {
         <Outlet />
       </main>
     </div>
+    </ApiErrorToastProvider>
   );
 }

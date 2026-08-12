@@ -17,7 +17,10 @@ const COMPLETE_ELIGIBILITY_SUMMARY: EligibilitySummaryDto = {
     },
     {
       category: 'region',
-      content: '해당 시·군·구 거주 또는 전입 예정자',
+      content:
+        '해당 시·군·구 거주 또는 전입 예정자. ' +
+        '상세 거주 요건 및 전입 일정은 지자체 공고를 확인해야 합니다. '.repeat(4) +
+        '전입 신고 예정일과 실제 거주지가 신청 시점에 일치하는지 담당 기관에 문의할 수 있습니다.',
       evidence: {
         source_id: 'youthcenter',
         source_url: 'https://example.gov/youth-housing/apply',

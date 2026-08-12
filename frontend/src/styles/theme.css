@@ -1808,12 +1808,51 @@ a.policy-card__arrow {
 }
 
 .eligibility-summary-card__status {
+  display: inline-flex;
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
   background: var(--sky-soft);
   color: #0369a1;
+}
+
+.eligibility-summary-card__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.eligibility-summary-card__refresh-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--white);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.eligibility-summary-card__refresh-btn:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.eligibility-summary-card__refresh-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.eligibility-summary-card__validation-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .eligibility-summary-card__status--partial {
@@ -2036,6 +2075,16 @@ a.policy-card__arrow {
 
 @media (max-width: 640px) {
   .eligibility-summary-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .eligibility-summary-card__header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .eligibility-section-list__item-head {
     flex-direction: column;
     align-items: flex-start;
   }

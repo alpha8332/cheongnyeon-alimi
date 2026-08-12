@@ -20,6 +20,9 @@ interface EligibilitySummaryCardProps {
   isLoading?: boolean;
   errorMessage?: string | null;
   onRetry?: () => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  validationError?: string | null;
 }
 
 export default function EligibilitySummaryCard({
@@ -29,6 +32,9 @@ export default function EligibilitySummaryCard({
   isLoading = false,
   errorMessage = null,
   onRetry,
+  onRefresh,
+  isRefreshing = false,
+  validationError = null,
 }: EligibilitySummaryCardProps) {
   if (isLoading) {
     return (
@@ -57,12 +63,34 @@ export default function EligibilitySummaryCard({
         <h2 id="eligibility-summary-title" className="eligibility-summary-card__title">
           핵심 신청 조건
         </h2>
-        <span
-          className={`eligibility-summary-card__status eligibility-summary-card__status--${summary.status}`}
-        >
-          {ELIGIBILITY_SUMMARY_STATUS_LABELS[summary.status]}
-        </span>
+        <div className="eligibility-summary-card__header-actions">
+          {onRefresh ? (
+            <button
+              type="button"
+              className="eligibility-summary-card__refresh-btn"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              aria-label="핵심 신청 조건 새로고침"
+            >
+              {isRefreshing ? '새로고침 중…' : '새로고침'}
+            </button>
+          ) : null}
+          <span
+            className={`eligibility-summary-card__status eligibility-summary-card__status--${summary.status}`}
+          >
+            {ELIGIBILITY_SUMMARY_STATUS_LABELS[summary.status]}
+          </span>
+        </div>
       </header>
+
+      {validationError ? (
+        <p
+          className="eligibility-summary-card__validation-error"
+          role="alert"
+        >
+          {validationError}
+        </p>
+      ) : null}
 
       {summary.status === 'partial' ? (
         <p className="eligibility-summary-card__banner" role="note">

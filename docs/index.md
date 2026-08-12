@@ -141,7 +141,7 @@
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
   FE3-00~06 PIN session·실행 기록·수동 실행·ApiErrorToast·Playwright E2E
 - [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
-  FE7-00~05 DTO·핵심 신청 조건 카드·비교 badge·evidence link·FE7-05 Playwright E2E
+  FE7-00~06 DTO·핵심 신청 조건 카드·비교 badge·evidence link·Toast·a11y·Playwright E2E
 - [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):
   FE8-00~05 admin policy·log DTO·표·drawer·maintenance·FE8-05 Playwright E2E
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):

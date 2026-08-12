@@ -50,6 +50,9 @@
 - Frontend Eligibility Summary Browser E2E (FE7-05): Playwright complete·partial·
   unknown mock detail fixtures, comparison badges, search golden regression
   ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend Eligibility Detail Toast·a11y (FE7-06): policy detail summary refetch
+  5xx Toast·422 inline·section nav·long text expand Browser E2E
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
 - Frontend admin observability DTO·Mock handlers (FE8-00): read-only policy
   projection list/detail·log file/event pagination·safe error contract
   ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))

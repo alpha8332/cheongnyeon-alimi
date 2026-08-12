@@ -17,6 +17,8 @@ export default function EligibilityComparisonBadge({
   return (
     <span
       className={`eligibility-comparison-badge eligibility-comparison-badge--${status}`}
+      role="status"
+      aria-label={ELIGIBILITY_COMPARISON_LABELS[status]}
       title={ELIGIBILITY_COMPARISON_LABELS[status]}
     >
       <span className="eligibility-comparison-badge__icon" aria-hidden="true">

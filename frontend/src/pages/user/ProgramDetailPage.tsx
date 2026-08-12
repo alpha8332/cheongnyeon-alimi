@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
@@ -9,8 +10,14 @@ import PartialBadge from '@/components/policy/PartialBadge';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import EligibilitySummaryCard from '@/components/eligibility/EligibilitySummaryCard';
 import PolicyIcsDownloadButton from '@/components/user/PolicyIcsDownloadButton';
+import { getPolicyById } from '@/api/policies';
 import { useSavedConditions } from '@/hooks/useSavedConditions';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
+import {
+  isPolicyDetailApiError,
+  mapPolicyDetailErrorToToast,
+} from '@/utils/policyDetailErrorToast';
 import {
   formatAge,
   formatApplicationPeriod,
@@ -64,13 +71,64 @@ export default function ProgramDetailPage() {
   const [searchParams] = useSearchParams();
   const policyId = parsePolicyId(id);
   const includePartial = searchParams.get('include_partial') === 'true';
+  const queryClient = useQueryClient();
+  const { showToast } = useApiErrorToast();
+  const [isSummaryRefreshing, setIsSummaryRefreshing] = useState(false);
+  const [summaryValidationError, setSummaryValidationError] = useState<
+    string | null
+  >(null);
+
   const {
     data: policy,
     isLoading,
     isError,
+    error,
     refetch,
   } = usePolicyQuery(policyId, includePartial);
   const { conditions: savedConditions } = useSavedConditions();
+
+  const hasCachedPolicy = policy != null;
+
+  const handleSummaryRefresh = () => {
+    void (async () => {
+      if (policyId === null) {
+        return;
+      }
+
+      setSummaryValidationError(null);
+      setIsSummaryRefreshing(true);
+
+      try {
+        const updated = await getPolicyById(policyId, includePartial, {
+          summaryRefetch: true,
+        });
+
+        queryClient.setQueryData(
+          ['policy', policyId, { include_partial: includePartial }],
+          updated,
+        );
+      } catch (refreshError: unknown) {
+        if (!isPolicyDetailApiError(refreshError)) {
+          return;
+        }
+
+        if (refreshError.status === 422) {
+          setSummaryValidationError(refreshError.detail);
+          return;
+        }
+
+        if (refreshError.status >= 500) {
+          showToast(mapPolicyDetailErrorToToast(refreshError), {
+            onRetry: () => {
+              handleSummaryRefresh();
+            },
+          });
+        }
+      } finally {
+        setIsSummaryRefreshing(false);
+      }
+    })();
+  };
 
   if (policyId === null) {
     return (
@@ -80,7 +138,7 @@ export default function ProgramDetailPage() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !hasCachedPolicy) {
     return (
       <DetailShell>
         <LoadingState message="정책 상세를 불러오는 중입니다." />
@@ -88,7 +146,15 @@ export default function ProgramDetailPage() {
     );
   }
 
-  if (isError) {
+  if (isError && !hasCachedPolicy) {
+    if (isPolicyDetailApiError(error) && error.status === 422) {
+      return (
+        <DetailShell>
+          <ErrorState message={error.detail} />
+        </DetailShell>
+      );
+    }
+
     return (
       <DetailShell>
         <ErrorState
@@ -198,6 +264,9 @@ export default function ProgramDetailPage() {
           policy={policy}
           summary={policy.eligibility_summary}
           savedConditions={savedConditions}
+          onRefresh={handleSummaryRefresh}
+          isRefreshing={isSummaryRefreshing}
+          validationError={summaryValidationError}
         />
       </Card>
     </div>
