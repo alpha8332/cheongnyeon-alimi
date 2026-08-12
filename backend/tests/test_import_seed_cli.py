@@ -39,6 +39,7 @@ def test_cli_prints_all_import_outcomes(capsys):
         inserted=1,
         updated=1,
         unchanged=1,
+        duplicate=1,
         skipped=2,
         rejected=1,
         failed=1,
@@ -74,6 +75,7 @@ def test_cli_prints_all_import_outcomes(capsys):
     assert "Inserted: 1" in output
     assert "Updated: 1" in output
     assert "Unchanged: 1" in output
+    assert "Duplicate: 1" in output
     assert "Skipped: 2" in output
     assert "Rejected: 1" in output
     assert "Failed: 1" in output
@@ -81,6 +83,9 @@ def test_cli_prints_all_import_outcomes(capsys):
     assert "code=missing_external_id" in output
     db.close.assert_called_once_with()
     assert run_writer.finish.call_args.kwargs["status"] == "failed"
+    counts = run_writer.finish.call_args.kwargs["counts"]
+    assert counts.duplicate_count == 1
+    assert counts.rejected_count == 1
 
 
 def test_cli_passes_dry_run_and_reports_success(capsys):

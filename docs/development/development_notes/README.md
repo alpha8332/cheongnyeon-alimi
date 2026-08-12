@@ -11,6 +11,8 @@
 | Docs System | [개발 기록](integration/docs_system.md) | D0~D6 | 문서 구조, 정책, 기준선, 계획과 품질 검증 |
 | Data Pipeline | [개발 기록](data/data_pipeline.md) | Data 0 | API Source Preflight와 비밀정보 경계 |
 | Release Dataset Bootstrap | [개발 기록](data/release_dataset_bootstrap.md) | DT0~DT4 | Release 1 실제 정책 수집·적재 기준선과 검증 |
+| Recurrent Collection and Quality Operations | [개발 기록](data/recurrent_collection_quality_operations.md) | DTL4-2A~2B | 반복·수정·중복·실패 판정과 품질 운영 |
+| Public HTTPS Policy Ingestion | [개발 기록](data/public_https_policy_ingestion.md) | DTL4-3A~ | 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
 | Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00 | recommendation DTO·Mock·`/recommendations` route |
@@ -26,9 +28,15 @@
 | Backend Policy Persistence Hardening | [개발 기록](backend/policy_persistence_hardening.md) | B0~B6 | PostgreSQL 저장·Importer·Repository·Policy API 종단 검증 |
 | Backend Policy Runtime Safety | [개발 기록](backend/policy_runtime_safety.md) | R0~R3 | Policy timestamp 순서와 SQL parameter logging 안전화 |
 | Backend Policy Search | [개발 기록](backend/policy_search.md) | W3-B0~B4 | PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 |
+| Backend Admin Access Control | [개발 기록](backend/admin_access_control.md) | A0~A3 | 관리자 인증·권한 세션 API 및 Fail-closed 기준선 |
+| Backend CollectionRun Admin API | [개발 기록](backend/collection_run_admin_api.md) | C0~C3 | CollectionRun 실행 이력 목록·상세 및 수동 실행 기준선 |
+| Recommendation Vertical Slice | [개발 기록](integration/recommendation_vertical_slice.md) | R0~R3 | 사용자 조건 기반 결정적 맞춤 추천 API 및 비단정 계약 |
+| Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | ES0~ES4 | 정책 상세 자격요건 구조화 응답 DTO 및 Evidence 출처 보증 |
+| Admin Data and Log Console | [개발 기록](integration/admin_data_log_console.md) | AO0~AO5 | 관리자 읽기 전용 정책 데이터 표 API 및 파일 로그 콘솔 |
 | Policy Data Database Integration | [개발 기록](integration/policy_data_database_integration.md) | D0~D6 | Seed·Runtime의 PostgreSQL 적재와 Policy API 통합 검증·Frontend 인계 |
 | Policy Search Data Foundation | [개발 기록](integration/policy_search_data_foundation.md) | PSF0~PSF8 | Source 중립 검색 데이터·지역 관계·projection 기반과 소비 검증 |
 | Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA3F | 실제 snapshot DB → API → UI 인수, 경량 팀 리뷰와 Release 1 G4 통과 |
+| v0.5.0 Contract Baseline | [개발 기록](integration/v0_5_0_contract_baseline.md) | DTL4-0~ | 4주차 시작 기준·실행 환경·Forest 소유와 W4-G0 진행 근거 |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
 함께 갱신한다.

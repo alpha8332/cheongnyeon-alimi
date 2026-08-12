@@ -26,6 +26,15 @@
 
 ### Added
 
+- 승인한 천안청년센터 공개 공지를 제한 수집하고 Runtime Raw → 정규화 →
+  PostgreSQL → partial 정책 상세 API까지 재처리하는 첫 공식 웹 Source 기반 추가
+  ([개발 기록](docs/development/development_notes/data/public_https_policy_ingestion.md))
+- 반복 수집에서 metadata-only 재실행·business 변경·실행 내 중복·실패
+  rollback을 구분하고 품질 집계를 CollectionRun에 영속하는 Data 03 기반 추가
+  ([개발 기록](docs/development/development_notes/data/recurrent_collection_quality_operations.md))
+- 천안청년센터 공개 공지 표본과 최소 수집·비재배포 경계를 포함한 v0.5.0
+  `W4-G0` 계약 기준선 승인
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
 - Frontend W4-F10 week4 regression matrix E2E (FE9-02): `week4-regression.spec.ts`
   covering admin·eligibility·user·Release 1 golden·mobile cross checks
   ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))

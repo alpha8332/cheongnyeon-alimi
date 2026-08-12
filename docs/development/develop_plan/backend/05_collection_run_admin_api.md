@@ -4,7 +4,7 @@
 
 - 번호: Backend 05
 - 담당 영역: Backend
-- 상태: draft
+- 상태: completed
 - 작업 브랜치: `feature/backend/admin-run-management`
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
@@ -61,7 +61,7 @@
 
 ### C0 - 관리자 API·상태 계약 확정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   목록·상세·수동 실행과 stale 판정의 API 계약을 정의한다.
 - 산출물:
@@ -74,7 +74,7 @@
 
 ### C1 - 실행 이력 목록·상세 구현
 
-- 상태: draft
+- 상태: completed
 - 목적:
   관리자에게 안전한 CollectionRun 조회 기능을 제공한다.
 - 산출물:
@@ -89,7 +89,7 @@
 
 ### C2 - 수동 실행과 stale 판정 구현
 
-- 상태: draft
+- 상태: completed
 - 목적:
   중복·동시 실행에 안전한 관리자 수동 실행 경계를 제공한다.
 - 산출물:
@@ -104,7 +104,7 @@
 
 ### C3 - PostgreSQL·권한·문서 통합 검증
 
-- 상태: draft
+- 상태: completed
 - 목적:
   실제 PostgreSQL과 관리자 권한 경계에서 전체 기능을 검증한다.
 - 산출물:

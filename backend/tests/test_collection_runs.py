@@ -42,6 +42,8 @@ def test_writer_persists_source_runtime_lifecycle(db):
             accepted_count=2,
             partial_count=0,
             invalid_count=1,
+            duplicate_count=2,
+            rejected_count=1,
             inserted_count=2,
         ),
         finished_at=finished_at,
@@ -55,6 +57,8 @@ def test_writer_persists_source_runtime_lifecycle(db):
         assert run.status == "partial_failure"
         assert run.accepted_count == 2
         assert run.invalid_count == 1
+        assert run.duplicate_count == 2
+        assert run.rejected_count == 1
         assert run.inserted_count == 2
         assert run.error_type is None
     finally:
@@ -96,6 +100,10 @@ def test_writer_rejects_negative_counts_and_invalid_contract_values(db):
 
     with pytest.raises(ValueError):
         CollectionRunCounts(invalid_count=-1)
+    with pytest.raises(ValueError):
+        CollectionRunCounts(duplicate_count=-1)
+    with pytest.raises(ValueError):
+        CollectionRunCounts(rejected_count=-1)
     with pytest.raises(ValueError):
         writer.start(
             source_id=" ",

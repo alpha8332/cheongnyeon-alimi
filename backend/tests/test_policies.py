@@ -157,8 +157,9 @@ def test_current_api_sources_reject_null_external_id(db):
     result = import_programs(db, programs)
 
     assert result.total == 2
-    assert result.skipped == 1
-    assert result.rejected == 1
+    assert result.skipped == 0
+    assert result.invalid == 1
+    assert result.rejected == 2
     assert result.inserted == 0
     assert result.failed == 0
     assert "missing_external_id" in {

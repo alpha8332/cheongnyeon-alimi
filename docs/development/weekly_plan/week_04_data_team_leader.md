@@ -2,14 +2,14 @@
 
 ## 계획 정보
 
-- 상태: draft (`DTL4-0 시작 대기`)
+- 상태: in progress (`DTL4-1`·`W4-G0` 완료, 후속 Forest 착수 가능)
 - 대상 주차: 4주차
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data 담당, Team Leader - Integration
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: `DTL4-0`
+- 현재 Slice: `DTL4-3B` 완료 (`DTL4-4A` 미착수)
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -162,8 +162,8 @@ DTL4-0 완료 후 DTL4-1 inventory와 W4-G0 공동 검토를 시작한다.
 - 정적 HTML·허용된 공개 내부 API 우선순위와 동적 렌더링 필요 여부
 - API와 웹의 동일 정책 후보, 충돌·최신성·source-scoped identity 경계
 
-대상 사이트·약관·robots는 착수 시점의 실제 웹 자료로 확인한다. 아직 Source가
-선정되지 않았다면 추정으로 승인하지 않는다.
+대상은 `cheonan-youthcenter-web`, 승인 표본은 `notice:674`다. Data 04 착수
+시점에 DOM·이용 조건·robots를 다시 확인하고 승인 요청 예산을 넘기지 않는다.
 
 #### 자격요건 evidence
 
@@ -324,6 +324,22 @@ Backend·Frontend가 같은 의미를 소비하게 한다.
 - 각 항목에 category·원문·source ID·URL·수집 시각·field/selector evidence 보존
 - 수치·단위를 추정·반올림하지 않고 계산 불가능 조건은 unknown으로 유지
 - API와 웹 충돌 시 임의 최신 우선 덮어쓰기를 하지 않음
+
+#### DTL4-4 역할·브랜치 분리
+
+- Data·Team Leader는 `feature/schema/eligibility-evidence-contract`에서
+  제외조건·필요서류·공개 시설 연락처 계약과 provenance·fixture를 먼저
+  확정한다.
+- Backend는 현재 진행 중인 Forest와 섞지 않고 계약 병합 뒤
+  `feature/backend/eligibility-evidence-api`에서 DB·Migration·상세 API와
+  PostgreSQL 테스트를 구현한다.
+- Frontend도 현재 진행 중인 Forest와 섞지 않고 계약 병합 뒤
+  `feature/frontend/eligibility-evidence-ui`에서 TypeScript·Mock·상세 화면의
+  `제외 조건`·`필요 서류`·`문의처`와 접근성 테스트를 구현한다.
+- Backend API 병합 뒤 Frontend가 최신 `develop`으로 실제 API 소비를 확인하고,
+  Team Leader는 세 결과가 병합된 `develop`에서 DB → API → Browser E2E를
+  수행한다.
+- 개인 휴대전화·개인 이메일·성명은 시설 연락처 계약과 UI에 포함하지 않는다.
 
 #### DTL4-4B - actual 소비 인계
 
@@ -629,8 +645,8 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 
 ## 완료 체크리스트
 
-- [ ] DTL4-0 시작 SHA·환경·브랜치·담당 확인
-- [ ] DTL4-1 Data inventory와 `W4-G0_APPROVED`
+- [x] DTL4-0 시작 SHA·환경·브랜치·담당 확인
+- [x] DTL4-1 Data inventory와 `W4-G0_APPROVED`
 - [ ] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
 - [ ] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
 - [ ] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료

@@ -89,6 +89,8 @@ def test_postgresql_seed_and_runtime_run_history_lifecycle():
                 extracted_count=3,
                 accepted_count=2,
                 invalid_count=1,
+                duplicate_count=1,
+                rejected_count=1,
                 inserted_count=2,
             ),
         )
@@ -127,6 +129,8 @@ def test_postgresql_seed_and_runtime_run_history_lifecycle():
         assert runs[1].source_id == "youthcenter-api"
         assert runs[1].status == "partial_failure"
         assert runs[1].invalid_count == 1
+        assert runs[1].duplicate_count == 1
+        assert runs[1].rejected_count == 1
         assert runs[2].trigger_type == "admin"
         assert runs[2].status == "failed"
         assert runs[2].error_type == "OperationalError"

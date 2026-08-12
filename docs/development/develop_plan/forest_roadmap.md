@@ -89,12 +89,12 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 | 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
 | 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
 | 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
-| 5 | [Data 04 Public HTTPS Policy Ingestion](data/04_public_https_policy_ingestion.md) | Data | Team Leader Source 승인, Backend 소비 검토 | draft | 공식 HTTPS Source 1곳의 목록·상세·조건 근거 수집과 DB 적재 | Integration 05, Data 01 |
+| 5 | [Data 04 Public HTTPS Policy Ingestion](data/04_public_https_policy_ingestion.md) | Data | Team Leader Source 승인, Backend 소비 검토 | in-progress | 공식 HTTPS Source 1곳의 목록·상세·조건 근거 수집과 DB 적재 | Integration 05, Data 01 |
 | 6 | [Integration 08 Eligibility Evidence and Summary](integration/08_eligibility_evidence_summary.md) | Data·Backend·Frontend | Team Leader 계약·실제 E2E | draft | 핵심 신청 조건·제외·서류·확인 필요와 근거 있는 상세 UI | Integration 05, Data 04 병렬 보강 |
 | 7 | [Integration 09 Admin Data and Log Console](integration/09_admin_data_log_console.md) | Backend·Frontend | Team Leader 보안·운영 검토 | draft | 읽기 전용 정책 데이터 표, 구조화 파일 로그·조회·archive 삭제 UI | Integration 05, Backend 04 |
 | 8 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05·08, v0.1.0 검색 |
 | 9 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
-| 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | draft | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
+| 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
 | 11 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능 |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만

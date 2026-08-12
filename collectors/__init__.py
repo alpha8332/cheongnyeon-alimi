@@ -10,6 +10,11 @@ from collectors.bokjiro import (
     SOURCE_ID as BOKJIRO_SOURCE_ID,
     create_bokjiro_collector,
 )
+from collectors.cheonan_youthcenter import (
+    SOURCE_ID as CHEONAN_YOUTHCENTER_SOURCE_ID,
+    CheonanYouthCenterExtractor,
+    create_cheonan_youthcenter_collector,
+)
 from collectors.extracted import ExtractedPolicy, SourceProvenance
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.http import HttpClient, HttpClientConfig
@@ -54,6 +59,10 @@ default_registry.register(
     BOKJIRO_SOURCE_ID,
     create_bokjiro_collector,
 )
+default_registry.register(
+    CHEONAN_YOUTHCENTER_SOURCE_ID,
+    create_cheonan_youthcenter_collector,
+)
 
 __all__ = [
     "ApplicationSchedule",
@@ -65,6 +74,7 @@ __all__ = [
     "CollectorFactory",
     "CollectorRegistry",
     "CoverageScope",
+    "CheonanYouthCenterExtractor",
     "DataQualityStatus",
     "ExtractedPolicy",
     "FieldStatistics",
