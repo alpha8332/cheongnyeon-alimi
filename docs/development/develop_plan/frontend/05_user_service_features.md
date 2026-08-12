@@ -4,7 +4,7 @@
 
 - 번호: Frontend 05
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-07`
 - Slice 계획 갱신: `2026-08-11`
 - 구현 시작: `2026-08-11` (FE5-00)
@@ -14,7 +14,7 @@
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
-- 현재 Slice: FE5-06 completed (FE5-07 draft)
+- 현재 Slice: FE5-07 completed
 
 ## 목적
 
@@ -203,7 +203,7 @@ Browser cross-route 시나리오는 FE5-07.
 
 ---
 
-### FE5-07 — Browser·a11y·회귀 — draft
+### FE5-07 — Browser·a11y·회귀 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -213,7 +213,10 @@ Browser cross-route 시나리오는 FE5-07.
 | **검증** | `npm run test:e2e`; home→search golden |
 | **완료 기준** | Forest Browser 완료 기준·W4-I2 사용자 E2E 준비 |
 
----
+2026-08-12 구현: `frontend/e2e/user-service-features.spec.ts` — Mock-first 13 scenarios
+(저장 조건·북마크 cross-route·reload·조건-only clear·달력·알림 empty·전체 reset·ICS
+disabled·nav·keyboard·mobile·home→search golden) + Real API skip 1건.
+unit·lint·build·`validate_docs.py` 통과.
 
 ### FE5-08 — 사용자 localStorage 전체 초기화 UX — completed
 

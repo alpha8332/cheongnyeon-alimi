@@ -2,13 +2,13 @@
 
 ## 작업 정보
 
-- 작업일: 2026-08-11
+- 작업일: 2026-08-11 (FE5-07 Browser E2E: 2026-08-12)
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [User Service Features Forest 개발 계획](../../develop_plan/frontend/05_user_service_features.md)
-- 현재 Slice: FE5-06 completed (FE5-07 draft)
+- 현재 Slice: FE5-07 completed (Forest Browser 검증 완료)
 
 ## 목적
 
@@ -32,6 +32,7 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | FE5-05 | completed | `.ics` 다운로드(상세) |
 | FE5-08 | completed | localStorage 전체 삭제 UX |
 | FE5-06 | completed | cross-route policy identity·nav |
+| FE5-07 | completed | Playwright Browser·a11y·cross-route E2E |
 
 ## 구현 내용
 
@@ -123,6 +124,17 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 | `.ics` | all-day DATE, DTEND+1 | W4-G0 proposal; calendar client별 해석 차이 FE5-07 |
 | Cross-route identity | numeric `policy.id` + shared detail path helper | search·recommend·favorites·calendar |
 
+### FE5-07 — Browser·a11y·회귀 (Playwright)
+
+- `frontend/e2e/user-service-features.spec.ts`
+  - Mock-first 13 scenarios: 저장 조건 save/reload, 북마크 cross-route·reload,
+    조건-only clear(북마크 유지), favorites/calendar/notifications empty·loading,
+    localStorage 전체 reset→reload, ICS disabled(종료일 없음), sidebar nav,
+    favorite keyboard Enter, mobile viewport(640px sidebar hidden), home→search golden
+  - Real API favorites persistence: `VITE_USE_MOCK=false` 환경에서만 실행(skip)
+- Mock Seed에 `application_end`+open 정책이 없어 달력·알림 D-7 positive case는
+  empty shell 검증으로 대체(Integration actual 데이터 연결 시 FE9 회귀에서 보강).
+
 ## 주요 변경 파일
 
 - `frontend/src/utils/userFavoritesStorage.ts`
@@ -155,18 +167,19 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
 - `frontend/src/layouts/AppShellLayout.tsx`
 - `frontend/tests/userRouteIdentity.test.ts`
 - `frontend/tests/recommendationDetailNavigation.test.ts`
+- `frontend/e2e/user-service-features.spec.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — passed (134 unit tests, FE5-06·FE6 cross-route helpers 포함)
+cd frontend && npm test   — 159 passed
 cd frontend && npm run lint — passed
 cd frontend && npm run build — passed
+cd frontend && npm run test:e2e -- e2e/user-service-features.spec.ts — 13 passed, 1 skipped (Real API)
 python3 scripts/validate_docs.py — passed
 ```
 
-Browser cross-route 시나리오·Playwright E2E는 FE5-07 범위이며 본 Slice에서
-실행하지 않았다.
+Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 
 ### FE5-01 hotfix — `/`·`/favorites` 404-like error boundary
 
@@ -181,8 +194,9 @@ Browser cross-route 시나리오·Playwright E2E는 FE5-07 범위이며 본 Slic
 
 ## 남은 작업
 
-- FE5-07: Browser·Playwright favorites·conditions·calendar·notifications·cross-route 시나리오
 - W4-G0 승인 시 key·version·KST 규칙 동기화
+- Real API E2E(`VITE_USE_MOCK=false`) 및 D-7 알림 positive Browser case는
+  Backend actual Policy API·Seed 마감일 데이터 준비 후 FE9 또는 별도 회귀에서 실행
 
 ## 관련 문서
 

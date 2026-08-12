@@ -56,6 +56,9 @@
 - Frontend cross-route policy identity (FE5-06): shared detail path·추천 결과
   favorite toggle·sidebar `/recommendations`·`/calendar` nav
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- Frontend User Service Browser E2E (FE5-07): Playwright favorites·conditions·
+  calendar·notifications·reset·cross-route Mock-first flow
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 
 ## [0.1.0] - 2026-08-06
 
