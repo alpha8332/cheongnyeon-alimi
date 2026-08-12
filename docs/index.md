@@ -144,6 +144,8 @@
   FE7-00~06 DTO·핵심 신청 조건 카드·비교 badge·evidence link·Toast·a11y·Playwright E2E
 - [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):
   FE8-00~06 admin policy·log DTO·표·drawer·maintenance·Toast·a11y·Playwright E2E
+- [Integration Fix and Regression Forest 개발 기록](development/development_notes/frontend/integration_and_regression.md):
+  FE9-01 W4-F9 Frontend-only 통합 수정·blocker triage
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)

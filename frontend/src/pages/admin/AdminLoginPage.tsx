@@ -103,7 +103,7 @@ function AdminLoginPageContent() {
       }
 
       if (presentation.kind === 'cooldown' && presentation.cooldownMs) {
-        setCooldownUntilMs(Date.now() + presentation.cooldownMs);
+        setCooldownUntilMs(nowMs + presentation.cooldownMs);
       }
     } finally {
       setIsSubmitting(false);

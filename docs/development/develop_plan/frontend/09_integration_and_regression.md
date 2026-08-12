@@ -14,7 +14,7 @@
   FE8-05) 및 Backend·Integration Phase 2~3 머지
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/week4-integration-regression`
-- 현재 Slice: FE9-00 draft (계획 수립)
+- 현재 Slice: FE9-01 completed (Frontend-only, W4-G4 `CONDITIONAL`)
 
 ## 목적
 
@@ -68,7 +68,7 @@
 
 ---
 
-### FE9-01 — actual 연동 통합 버그 수정 — draft
+### FE9-01 — actual 연동 통합 버그 수정 — completed (Frontend-only, W4-G4 CONDITIONAL)
 
 | 항목 | 내용 |
 | --- | --- |
@@ -79,6 +79,19 @@
 | **세부 작업** | 결함 ticket을 Forest·Slice ID에 매핑; PIN 401→login redirect; detail+summary DTO drift; recommendation conditions sync; corrupt localStorage recovery UX |
 | **검증** | 재현 시나리오 Browser; affected Forest unit test |
 | **완료 기준** | W4-F9 checklist 항목 closure; blocker 미해결 시 W4-G4 `BLOCKED` 근거 명시 |
+| **상태** | Frontend-only 수정·triage 완료. Backend actual 연동 blocker는 development notes에 `BLOCKED` 분류. W4-G4 Frontend 판정은 `CONDITIONAL`. |
+
+**W4-F9 Frontend-only closure (2026-08-12):**
+
+| 범주 | 결과 | 비고 |
+| --- | --- | --- |
+| 인증·세션 | closed (Mock) | `useAdminUnauthorizedRedirect` 공통 hook, AdminLoginPage cooldown lint |
+| localStorage | closed | corrupt recovery session banner (`UserLocalStorageRecoveryBanner`) |
+| 추천·조건 | no defect | `useSavedConditions` 공유 — mismatch 재현 없음 |
+| 공통 Toast | closed (prior FE3/6/7/8) | dedupe·401/5xx wiring 기존 Slice에서 완료 |
+| 자격요건 UI | **BLOCKED** | `eligibility_summary` Real API 미merge |
+| admin data/log Real API | **BLOCKED** | Integration 09 AO1~AO3 미merge |
+| 날짜·알림 KST | no defect | FE5 unit/E2E 기존 pass, triage 재현 없음 |
 
 **W4-F9 대표 수정 범주 (non-exhaustive):**
 

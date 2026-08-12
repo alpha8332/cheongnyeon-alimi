@@ -28,16 +28,24 @@ function favoriteIdsEqual(
 
 /** Keep a stable snapshot reference for useSyncExternalStore subscribers. */
 function syncFavoritePolicyIdsSnapshotFromStorage(): void {
-  const next = readFavoritePolicyIds();
-  if (favoriteIdsEqual(cachedFavoritePolicyIdsSnapshot, next)) {
-    return;
-  }
+  try {
+    const next = readFavoritePolicyIds();
+    if (favoriteIdsEqual(cachedFavoritePolicyIdsSnapshot, next)) {
+      return;
+    }
 
-  cachedFavoritePolicyIdsSnapshot = next;
+    cachedFavoritePolicyIdsSnapshot = next;
+  } catch {
+    cachedFavoritePolicyIdsSnapshot = EMPTY_FAVORITES_SNAPSHOT;
+  }
 }
 
 if (typeof window !== 'undefined') {
-  syncFavoritePolicyIdsSnapshotFromStorage();
+  try {
+    syncFavoritePolicyIdsSnapshotFromStorage();
+  } catch {
+    cachedFavoritePolicyIdsSnapshot = EMPTY_FAVORITES_SNAPSHOT;
+  }
 }
 
 export interface ToggleFavoritePolicyResult {

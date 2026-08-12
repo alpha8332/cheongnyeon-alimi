@@ -47,6 +47,7 @@
     "src/utils/userRouteIdentity.ts",
     "src/types/userLocalStorage.ts",
     "src/utils/userLocalStorage.ts",
+    "src/utils/userLocalStorageRecoveryNotice.ts",
     "src/utils/userFavoritesStorage.ts",
     "src/utils/userConditionsStorage.ts",
     "src/utils/adminApiErrors.ts",

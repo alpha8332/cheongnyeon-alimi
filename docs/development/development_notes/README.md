@@ -19,6 +19,7 @@
 | CollectionRun Admin UI | [개발 기록](frontend/collection_run_admin_ui.md) | FE3-00~06 | PIN session·실행 기록·Toast·E2E |
 | Eligibility Summary UI | [개발 기록](frontend/eligibility_summary_ui.md) | FE7-00~05 | eligibility_summary DTO·카드 UI·Browser E2E |
 | Admin Observability UI | [개발 기록](frontend/admin_observability_ui.md) | FE8-00~05 | policy·log DTO·admin UI·Browser E2E |
+| Integration Fix and Regression | [개발 기록](frontend/integration_and_regression.md) | FE9-01 | W4-F9 Frontend-only 통합 수정·blocker triage |
 | React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |
 | Backend Baseline | [개발 기록](backend/policy_baseline.md) | Backend 0 | DB Schema, ORM 모델, Importer 및 Policy API 구축 |
 | Backend Policy Persistence Hardening | [개발 기록](backend/policy_persistence_hardening.md) | B0~B6 | PostgreSQL 저장·Importer·Repository·Policy API 종단 검증 |

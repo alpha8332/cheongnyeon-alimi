@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
 import AdminLogEventFilters from '@/components/admin/AdminLogEventFilters';
 import {
   EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT,
@@ -13,24 +12,19 @@ import AdminLogMaintenanceActions from '@/components/admin/AdminLogMaintenanceAc
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import { AdminApiError } from '@/api/adminApiError';
-import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
-import { useApiErrorToast } from '@/hooks/useApiErrorToast';
+import { useAdminUnauthorizedRedirect } from '@/hooks/useAdminUnauthorizedRedirect';
 import {
   useAdminLogEventListQuery,
   useAdminLogFileListQuery,
 } from '@/hooks/useAdminObservabilityQuery';
 import type { AdminLogEventListResponse } from '@/types/adminLog';
 import { findMockAdminLogEventById } from '@/mocks/adminObservabilityFixtures';
-import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
-import { clearAdminSession } from '@/utils/adminSessionStorage';
 
 const PAGE_SIZE = 10;
 
 export default function AdminLogsPage() {
-  const navigate = useNavigate();
-  const { accessToken, logout } = useAdminSession();
-  const { showToast } = useApiErrorToast();
+  const { accessToken } = useAdminSession();
   const refreshButtonRef = useRef<HTMLButtonElement>(null);
   const [filterDraft, setFilterDraft] = useState<AdminLogEventFilterDraft>(
     EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT,
@@ -73,23 +67,10 @@ export default function AdminLogsPage() {
     setCachedEventResponse(eventResponse);
   }, [eventResponse]);
 
-  useEffect(() => {
-    if (!(error instanceof AdminApiError)) {
-      return;
-    }
-
-    showToast(mapAdminApiErrorToToast(error), {
-      onRetry: error.status >= 500 ? () => void refetchEvents() : undefined,
-    });
-
-    if (error.status !== 401) {
-      return;
-    }
-
-    clearAdminSession();
-    logout();
-    navigate(ADMIN_APP_ROUTES.login, { replace: true });
-  }, [error, logout, navigate, refetchEvents, showToast]);
+  const { redirectToLogin } = useAdminUnauthorizedRedirect({
+    error,
+    onRetry: () => void refetchEvents(),
+  });
 
   const errorMessage =
     error instanceof AdminApiError
@@ -136,9 +117,7 @@ export default function AdminLogsPage() {
   };
 
   const handleUnauthorized = () => {
-    clearAdminSession();
-    logout();
-    navigate(ADMIN_APP_ROUTES.login, { replace: true });
+    redirectToLogin();
   };
 
   return (

@@ -7,6 +7,7 @@ import {
   type UserLocalStorageSnapshot,
   type UserSavedConditions,
 } from '../types/userLocalStorage.js';
+import { recordUserLocalStorageRecoveryNotice } from './userLocalStorageRecoveryNotice.js';
 
 const MAX_CONDITION_TEXT_LENGTH = 200;
 const MIN_AGE = 1;
@@ -214,6 +215,11 @@ function recoverStoragePayload(
   reason: UserLocalStorageRecoveryReason,
 ): UserLocalStorageSnapshot {
   const data = persistDefaultPayload(storage);
+  try {
+    recordUserLocalStorageRecoveryNotice(reason);
+  } catch {
+    // Recovery notice is best-effort UX; never block payload reset.
+  }
   return {
     data,
     source: 'recovered',

@@ -2282,6 +2282,59 @@ a.policy-card__arrow {
   color: #92400e;
 }
 
+.user-local-recovery-banner {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--r-xl);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.user-local-recovery-banner__title {
+  display: block;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e40af;
+}
+
+.user-local-recovery-banner__message {
+  margin: 0;
+  flex: 1 1 200px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1e40af;
+}
+
+.layout-error-boundary {
+  padding: 24px;
+  max-width: 560px;
+}
+
+.layout-error-boundary__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text, #0f172a);
+}
+
+.layout-error-boundary__message {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted, #64748b);
+}
+
+.layout-error-boundary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .region-list-collapse {
   display: inline;
   word-break: break-word;

@@ -1,5 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router';
 import ApiErrorToastProvider from '@/components/common/ApiErrorToastProvider';
+import LayoutErrorBoundary from '@/components/common/LayoutErrorBoundary';
+import UserLocalStorageRecoveryBanner from '@/components/user/UserLocalStorageRecoveryBanner';
 
 function navClass(isActive: boolean): string {
   return `app-shell__nav-btn${isActive ? ' app-shell__nav-btn--active' : ''}`;
@@ -90,7 +92,12 @@ export default function AppShellLayout() {
       </nav>
 
       <main className="app-shell__main">
-        <Outlet />
+        <LayoutErrorBoundary fallbackTitle="저장 데이터 안내를 표시하지 못했습니다">
+          <UserLocalStorageRecoveryBanner />
+        </LayoutErrorBoundary>
+        <LayoutErrorBoundary>
+          <Outlet />
+        </LayoutErrorBoundary>
       </main>
     </div>
     </ApiErrorToastProvider>

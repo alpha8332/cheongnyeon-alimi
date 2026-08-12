@@ -24,13 +24,13 @@ import AdminPolicyDataPage from '@/pages/admin/AdminPolicyDataPage';
 import AdminLogsPage from '@/pages/admin/AdminLogsPage';
 
 // 에러 페이지
-import NotFoundPage from '@/components/common/NotFoundPage';
+import RootErrorFallback from '@/components/common/RootErrorFallback';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppShellLayout />,
-    errorElement: <NotFoundPage />,
+    errorElement: <RootErrorFallback />,
     children: [
       { index: true, element: <HomePage /> },
       { path: 'search', element: <PolicySearchPage /> },

@@ -10,6 +10,12 @@
 
 ### Fixed
 
+- Frontend `/` white screen after FE9-01: harden localStorage recovery notice reads,
+  module-init storage sync, layout error boundaries, and route error fallback
+  ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))
+- Frontend W4-F9 cross-Forest integration (FE9-01): shared admin 401 redirect hook,
+  localStorage corrupt recovery banner, AdminLoginPage cooldown lint
+  ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))
 - Admin policy data table row detail drawer did not appear when clicking
   상세보기: replaced grid sidebar with fixed overlay slide-in drawer and
   `isDrawerOpen` state on `/admin/policies`

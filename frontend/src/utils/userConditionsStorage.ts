@@ -30,17 +30,25 @@ function savedConditionsEqual(
 
 /** Keep a stable snapshot reference for useSyncExternalStore subscribers. */
 function syncSavedConditionsSnapshotFromStorage(): void {
-  const next = readSavedConditions();
-  if (savedConditionsEqual(cachedSavedConditionsSnapshot, next)) {
-    return;
-  }
+  try {
+    const next = readSavedConditions();
+    if (savedConditionsEqual(cachedSavedConditionsSnapshot, next)) {
+      return;
+    }
 
-  cachedSavedConditionsSnapshot =
-    next === null ? null : { ...next };
+    cachedSavedConditionsSnapshot =
+      next === null ? null : { ...next };
+  } catch {
+    cachedSavedConditionsSnapshot = null;
+  }
 }
 
 if (typeof window !== 'undefined') {
-  syncSavedConditionsSnapshotFromStorage();
+  try {
+    syncSavedConditionsSnapshotFromStorage();
+  } catch {
+    cachedSavedConditionsSnapshot = null;
+  }
 }
 
 export interface SaveSavedConditionsResult {

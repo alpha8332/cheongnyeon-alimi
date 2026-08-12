@@ -1,12 +1,11 @@
-import { useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import CollectionRunStatusBadge from '@/components/admin/CollectionRunStatusBadge';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import { AdminApiError } from '@/api/adminApiError';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
-import { useApiErrorToast } from '@/hooks/useApiErrorToast';
+import { useAdminUnauthorizedRedirect } from '@/hooks/useAdminUnauthorizedRedirect';
 import { useCollectionRunDetailQuery } from '@/hooks/useCollectionRunsQuery';
 import type { CollectionRunDetailDto } from '@/types/collectionRun';
 import {
@@ -14,8 +13,6 @@ import {
   getCollectionRunTriggerTypeLabel,
   getCollectionRunTypeLabel,
 } from '@/utils/collectionRunDisplay';
-import { clearAdminSession } from '@/utils/adminSessionStorage';
-import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 const DETAIL_COUNT_FIELDS: Array<{
   key: keyof CollectionRunDetailDto;
@@ -38,31 +35,16 @@ const DETAIL_COUNT_FIELDS: Array<{
 
 export default function CollectionRunDetailPage() {
   const { runId = '' } = useParams();
-  const navigate = useNavigate();
-  const { accessToken, logout } = useAdminSession();
-  const { showToast } = useApiErrorToast();
+  const { accessToken } = useAdminSession();
   const { data: run, isLoading, isError, error, refetch } = useCollectionRunDetailQuery(
     runId,
     accessToken,
   );
 
-  useEffect(() => {
-    if (!(error instanceof AdminApiError)) {
-      return;
-    }
-
-    showToast(mapAdminApiErrorToToast(error), {
-      onRetry: error.status >= 500 ? () => void refetch() : undefined,
-    });
-
-    if (error.status !== 401) {
-      return;
-    }
-
-    clearAdminSession();
-    logout();
-    navigate(ADMIN_APP_ROUTES.login, { replace: true });
-  }, [error, logout, navigate, refetch, showToast]);
+  useAdminUnauthorizedRedirect({
+    error,
+    onRetry: () => void refetch(),
+  });
 
   const errorMessage =
     error instanceof AdminApiError

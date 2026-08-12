@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import CollectionRunFilters from '@/components/admin/CollectionRunFilters';
 import CollectionRunStatusBadge from '@/components/admin/CollectionRunStatusBadge';
 import ManualCollectionRunTrigger from '@/components/admin/ManualCollectionRunTrigger';
@@ -8,7 +8,7 @@ import LoadingState from '@/components/common/LoadingState';
 import { AdminApiError } from '@/api/adminApiError';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
-import { useApiErrorToast } from '@/hooks/useApiErrorToast';
+import { useAdminUnauthorizedRedirect } from '@/hooks/useAdminUnauthorizedRedirect';
 import { useCollectionRunsQuery } from '@/hooks/useCollectionRunsQuery';
 import type { CollectionRunTriggerResponse } from '@/types/collectionRun';
 import {
@@ -22,15 +22,11 @@ import {
   toCollectionRunListQueryFromDraft,
   type CollectionRunFilterDraft,
 } from '@/utils/collectionRunFilters';
-import { clearAdminSession } from '@/utils/adminSessionStorage';
-import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 const PAGE_SIZE = 10;
 
 export default function CollectionRunsPage() {
-  const navigate = useNavigate();
-  const { accessToken, logout } = useAdminSession();
-  const { showToast } = useApiErrorToast();
+  const { accessToken } = useAdminSession();
   const [filterDraft, setFilterDraft] = useState<CollectionRunFilterDraft>(
     EMPTY_COLLECTION_RUN_FILTER_DRAFT,
   );
@@ -48,23 +44,10 @@ export default function CollectionRunsPage() {
   const { data: response, isLoading, isError, error, refetch } =
     useCollectionRunsQuery(query, accessToken);
 
-  useEffect(() => {
-    if (!(error instanceof AdminApiError)) {
-      return;
-    }
-
-    showToast(mapAdminApiErrorToToast(error), {
-      onRetry: error.status >= 500 ? () => void refetch() : undefined,
-    });
-
-    if (error.status !== 401) {
-      return;
-    }
-
-    clearAdminSession();
-    logout();
-    navigate(ADMIN_APP_ROUTES.login, { replace: true });
-  }, [error, logout, navigate, refetch, showToast]);
+  const { redirectToLogin } = useAdminUnauthorizedRedirect({
+    error,
+    onRetry: () => void refetch(),
+  });
 
   const errorMessage =
     error instanceof AdminApiError
@@ -96,9 +79,7 @@ export default function CollectionRunsPage() {
   };
 
   const handleUnauthorized = () => {
-    clearAdminSession();
-    logout();
-    navigate(ADMIN_APP_ROUTES.login, { replace: true });
+    redirectToLogin();
   };
 
   return (
