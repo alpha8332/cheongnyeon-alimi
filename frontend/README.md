@@ -55,6 +55,12 @@ Mock-first admin flow(FE3-05):
 npm run test:e2e -- e2e/admin-collection-run.spec.ts
 ```
 
+Week 4 Frontend regression matrix (FE9-02, W4-F10·W4-I3 Mock-first):
+
+```powershell
+npm run test:e2e -- e2e/week4-regression.spec.ts
+```
+
 Real API admin golden은 Backend admin path가 `:8000`에 노출된 환경에서만
 실행한다.
 

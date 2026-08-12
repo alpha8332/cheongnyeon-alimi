@@ -2,18 +2,19 @@
 
 ## 작업 정보
 
-- 작업일: 2026-08-12 (FE9-01 Frontend-only triage·수정)
+- 작업일: 2026-08-12 (FE9-01 Frontend-only triage·수정; FE9-02 Mock-first 회귀)
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [Integration Fix and Regression Forest 개발 계획](../../develop_plan/frontend/09_integration_and_regression.md)
-- 현재 Slice: FE9-01 completed (Frontend-only, W4-G4 `CONDITIONAL`); FE9-02 pending
+- 현재 Slice: FE9-02 completed (Mock-first, W4-G4 `CONDITIONAL`)
 
 ## 목적
 
 W4-F9 cross-Forest 연동 결함을 Forest·Slice 단위로 triage·수정하고, Backend
-blocker는 W4-G4 판정 근거로 분류한다. W4-F10 전체 회귀(FE9-02)는 별도 Slice.
+blocker는 W4-G4 판정 근거로 분류한다. W4-F10 전체 회귀(FE9-02)는 Mock-first
+E2E 매트릭스로 closure.
 
 ## Forest 범위
 
@@ -25,7 +26,7 @@ blocker triage만 담당한다. Backend·Integration Forest 버그 수정은 범
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | FE9-01 | completed (CONDITIONAL) | Frontend-only W4-F9 수정·blocker triage |
-| FE9-02 | pending | 4주차 Frontend 전체 회귀·golden 검색 |
+| FE9-02 | completed (CONDITIONAL) | W4-F10 Mock-first 회귀 매트릭스·W4-I3 golden (Mock) |
 
 ## 구현 내용
 
@@ -93,6 +94,30 @@ Frontend 수정 가능 항목 closure + `CONDITIONAL` 근거 기록으로 마감
   - `RootErrorFallback` — route `errorElement` (404·runtime error fallback UI)
   - `useAdminUnauthorizedRedirect` — optional Toast context (provider 밖 throw 방지)
 
+### FE9-02 — 4주차 Frontend 전체 회귀 (Mock-first)
+
+**목표:** W4-F10 + W4-I3 Release 2 Frontend midpoint 회귀 매트릭스 E2E.
+
+**산출물:** `frontend/e2e/week4-regression.spec.ts` — 5 Mock path + 1 Real API conditional skip.
+
+**회귀 매트릭스 실행 결과 (2026-08-12):**
+
+| Path | W4 | 시나리오 | 결과 | 비고 |
+| --- | --- | --- | --- | --- |
+| A | W4-I1 | PIN → runs → manual run → policies → logs | pass | Mock admin flow |
+| B | W4-IE1 | detail → eligibility card → evidence → 원문 | pass | fixture id 9101 |
+| C | W4-I2 | conditions → recommend → favorite → calendar → notify → `.ics` | pass | ICS disabled — seed id 1 `application_status: closed` |
+| Release 1 | W4-I3 | home → `/search?q=` → detail `include_partial` | pass | M4 partial golden |
+| Cross | W4-F5 | mobile viewport·keyboard favorite·search | pass | mobile sidebar hidden — `/search` direct navigation |
+| Real API | W4-I3 | week4 golden search | skip | `VITE_USE_MOCK=false` + Backend 필요 |
+
+**Mock-first triage (FE9-02 범위 밖·기록만):**
+
+- Mock seed에 `application_status: open` + `application_end` 조합 정책 없음 → ICS
+  enabled Browser golden은 Real API 또는 seed 확장 후 별도 Slice.
+- mobile(`max-width: 640px`)에서 sidebar `display: none` — 회귀 spec은 홈 layout·
+  direct route navigation으로 spot check.
+
 ## 설계 결정
 
 | 항목 | 결정 | 근거 |
@@ -100,6 +125,8 @@ Frontend 수정 가능 항목 closure + `CONDITIONAL` 근거 기록으로 마감
 | Admin 401 handling | `useAdminUnauthorizedRedirect` hook | W4-F9 session 범주; 4 admin page DRY |
 | Recovery UX | sessionStorage notice + AppShell banner | localStorage reset 후 one-shot 안내; persist 금지 |
 | FE9-01 completion | `CONDITIONAL` | Backend actual merge·W4-G3 E2E pending |
+| FE9-02 completion | `CONDITIONAL` | Mock-first 회귀 pass; Real API golden·W4-G3 E2E pending |
+| Week4 regression spec | 단일 `week4-regression.spec.ts` | W4-F10 matrix를 Forest E2E helper 패턴으로 재사용 |
 
 ## 주요 변경 파일
 
@@ -118,6 +145,7 @@ Frontend 수정 가능 항목 closure + `CONDITIONAL` 근거 기록으로 마감
 - `frontend/src/layouts/AppShellLayout.tsx`
 - `frontend/src/styles/theme.css`
 - `frontend/tests/userLocalStorageRecoveryNotice.test.ts`
+- `frontend/e2e/week4-regression.spec.ts`
 - `frontend/tsconfig.test.json`
 - `docs/development/develop_plan/frontend/09_integration_and_regression.md`
 - `docs/development/development_notes/frontend/integration_and_regression.md`
@@ -129,16 +157,18 @@ Frontend 수정 가능 항목 closure + `CONDITIONAL` 근거 기록으로 마감
 cd frontend && npm test              — 171 passed
 cd frontend && npm run lint          — passed
 cd frontend && npm run build         — passed
+cd frontend && npm run test:e2e      — 92 passed, 7 skipped (Real API golden)
+cd frontend && npm run test:e2e -- e2e/week4-regression.spec.ts — 5 passed, 1 skipped
 python3 scripts/validate_docs.py     — passed
 ```
 
-Real API golden E2E(`VITE_USE_MOCK=false`)와 W4-G3 PostgreSQL E2E는 본 Slice에서
+Real API golden E2E(`VITE_USE_MOCK=false`)와 W4-G3 PostgreSQL E2E는 본 Forest에서
 실행하지 않았다.
 
 ## 남은 작업
 
 - Backend merge 후 W4-F9 Real API 항목(F9-05·F9-06) 재triage·closure
-- FE9-02 W4-F10 전체 회귀 매트릭스·W4-I3 golden flow
+- `VITE_USE_MOCK=false` 환경에서 week4 Real API golden 및 Forest별 Real API skip 해소
 - W4-G3 actual PostgreSQL E2E 실행 후 Frontend 결함 routing
 
 ## 관련 문서

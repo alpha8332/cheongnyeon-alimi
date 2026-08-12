@@ -26,6 +26,9 @@
 
 ### Added
 
+- Frontend W4-F10 week4 regression matrix E2E (FE9-02): `week4-regression.spec.ts`
+  covering admin·eligibility·user·Release 1 golden·mobile cross checks
+  ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))
 - Frontend CollectionRun Admin DTO·Mock·route shell (FE3-00): admin session·
   collection run types, Mock-first API client, nested `/admin` layout
   ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))

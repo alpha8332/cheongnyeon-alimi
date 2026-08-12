@@ -4,7 +4,7 @@
 
 - 번호: Frontend 09
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
@@ -14,7 +14,7 @@
   FE8-05) 및 Backend·Integration Phase 2~3 머지
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/week4-integration-regression`
-- 현재 Slice: FE9-01 completed (Frontend-only, W4-G4 `CONDITIONAL`)
+- 현재 Slice: FE9-02 completed (Mock-first, W4-G4 `CONDITIONAL`)
 
 ## 목적
 
@@ -106,7 +106,7 @@
 
 ---
 
-### FE9-02 — 4주차 Frontend 전체 회귀 — draft
+### FE9-02 — 4주차 Frontend 전체 회귀 — completed (Mock-first, W4-G4 `CONDITIONAL`)
 
 | 항목 | 내용 |
 | --- | --- |
@@ -116,6 +116,18 @@
 | **세부 작업** | 아래 회귀 매트릭스 실행; 실패 시 FE9-01 또는 owner Forest로 routing |
 | **검증** | `npm run test`, `npm run lint`, `npm run build`, `npm run test:e2e` |
 | **완료 기준** | W4-F10 산출; W4-I3 golden pass; W4-G3·G4 Frontend 항목 evidence |
+| **상태** | Mock-first 회귀 매트릭스 E2E 5 path pass. Real API golden·W4-G3 PostgreSQL E2E는 `CONDITIONAL` blocker 유지. |
+
+**W4-F10 Mock-first closure (2026-08-12):**
+
+| Path | W4 | E2E | 결과 |
+| --- | --- | --- | --- |
+| A 관리자 | W4-I1 | `week4-regression` Path A | pass (Mock) |
+| B 자격요건 | W4-IE1 | Path B | pass (Mock) |
+| C 사용자 | W4-I2 | Path C | pass (Mock; ICS 버튼 disabled — seed policy closed) |
+| Release 1 | W4-I3 | Path Release 1 | pass (Mock) |
+| Cross | W4-F5 | Path Cross | pass (Mock; mobile sidebar hidden — direct `/search` navigation) |
+| Real API golden | W4-I3 | conditional skip | skip (`VITE_USE_MOCK=false` 필요) |
 
 **회귀 매트릭스 (FE9-02):**
 
