@@ -2,25 +2,25 @@
 
 ## 작업 정보
 
-- 작업일: 2026-08-11
+- 작업일: 2026-08-11 (FE8-05 Browser E2E: 2026-08-12)
 - 담당 영역: Frontend
 - 상태: in-progress
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [Admin Observability UI Forest 개발 계획](../../develop_plan/frontend/08_admin_observability_ui.md)
-- 현재 Slice: FE8-01~04 completed
+- 현재 Slice: FE8-05 completed (FE8-06 draft)
 
 ## 목적
 
 관리자 Policy 데이터·구조화 file log UI Forest(FE8)의 Mock-first read-only
-표·상세·log 조회·maintenance confirm UI(FE8-01~04)를 Integration 09 proposal
-계약에 맞춰 구현한다.
+표·상세·log 조회·maintenance confirm UI(FE8-01~04)와 Browser E2E(FE8-05)를
+Integration 09 proposal 계약에 맞춰 구현·검증한다.
 
 ## Forest 범위
 
 이 기록은 Frontend 08 Slice 구현·검증 결과를 누적한다. W4-G0 승인 전
-admin policy·log API path·DTO는 proposal이며 Real API·Browser E2E(FE8-05)는
-Backend merge 후 별도 Slice에서 진행한다.
+admin policy·log API path·DTO는 proposal이며 Real API 연동은 Backend merge 후
+Real API golden E2E에서 재검증한다.
 
 ## Slice 진행 현황
 
@@ -31,6 +31,7 @@ Backend merge 후 별도 Slice에서 진행한다.
 | FE8-02 | completed | AdminPolicyRowDetail drawer |
 | FE8-03 | completed | AdminLogsPage·event filter·refresh |
 | FE8-04 | completed | AdminLogMaintenanceActions rotate·archive delete confirm |
+| FE8-05 | completed | Playwright Browser E2E·admin auth flow |
 
 ## 구현 내용
 
@@ -78,6 +79,23 @@ Backend merge 후 별도 Slice에서 진행한다.
 - `frontend/src/pages/admin/AdminLogsPage.tsx`
 - `/admin/logs` route·AdminShell nav 항목 추가
 
+### FE8-05 — Real API·Browser E2E (Playwright)
+
+- `frontend/e2e/admin-observability-ui.spec.ts`
+  - Mock-first 12 scenarios: protected `/admin/policies`·`/admin/logs` redirect,
+    PIN login·policy table list·sort·partial filter, row detail drawer open·close·
+    Escape, log file summary·event filter·detail panel(safe error_type·no stack trace),
+    explicit refresh, rotate confirm, archive typed delete, admin nav cross-route,
+    mobile viewport
+  - Real API golden: `VITE_USE_MOCK=false` 환경에서만 실행(skip)
+- Policy drawer 404·active log HTTP 409 delete는 Browser UI unreachable —
+  `adminObservability.contract.test.ts`로 검증.
+- Archive delete E2E는 dialog open 후 select `index: 0` 명시 선택 필요:
+  `AdminLogMaintenanceActions`의 `selectedArchiveId` 초기 state가 async file load와
+  동기화되지 않음(별도 fix 후보, FE8-05 범위 밖).
+- Backend Integration 09 AO1~AO3 미merge — Real API golden은 table·log shell만 검증.
+- FE8-06 Toast·401/409/5xx Browser subset은 본 Slice 범위 밖.
+
 ### 계약 정렬 메모 (Backend 미구현)
 
 | 영역 | FE8 proposal | Backend 상태 |
@@ -87,7 +105,7 @@ Backend merge 후 별도 Slice에서 진행한다.
 | List envelope | `page`·`size`·`pages`·`total` | Backend 05 CollectionRun 패턴 따름 |
 | Error body | protected route `detail` | Backend 04·FE3와 동일 |
 
-Real API 연동·Browser E2E는 Integration 09 Backend merge 후 FE8-05에서 재검증.
+Real API 연동·Browser E2E는 Integration 09 Backend merge 후 Real API golden 재검증.
 
 ## 설계 결정
 
@@ -136,23 +154,27 @@ Real API 연동·Browser E2E는 Integration 09 Backend merge 후 FE8-05에서 �
 - `frontend/src/styles/theme.css`
 - `frontend/tests/adminPolicyTableColumns.test.ts`
 - `frontend/tests/adminLogMaintenance.test.ts`
+- `frontend/tests/adminObservability.contract.test.ts`
 - `frontend/tsconfig.test.json`
+- `frontend/e2e/admin-observability-ui.spec.ts`
 
 ## 검증 결과
 
-- `npm run test` (frontend): **159 passed**
-- `npm run lint`: passed
-- `npm run build`: passed
-- `python3 scripts/validate_docs.py`: passed
-- policy row detail drawer fix (2026-08-12): fixed overlay slide drawer·`isDrawerOpen`
-  수동 확인 (layout grid·row click)
-- `npm run test:e2e`: **미실행** (FE8-05 범위)
+```text
+cd frontend && npm test   — 159 passed
+cd frontend && npm run lint — passed
+cd frontend && npm run test:e2e -- e2e/admin-observability-ui.spec.ts — 12 passed, 1 skipped (Real API)
+python3 scripts/validate_docs.py — passed
+```
+
+Browser·Playwright E2E는 FE8-05에서 실행 완료.
 
 ## 남은 작업
 
-- FE8-05: Real API·Browser E2E (`feature/backend/admin-observability` merge 후)
 - FE8-06: Admin data/log Toast·a11y subset
+- `AdminLogMaintenanceActions` archive select 초기 state async sync fix (별도 Slice)
 - W4-G0 Gate 승인 후 `docs/api/admin_observability.md`(또는 동등 API 문서) 추가
+- Backend Integration 09 merge 후 Real API admin observability golden 재검증
 
 ## 관련 문서
 

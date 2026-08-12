@@ -15,7 +15,7 @@
   [Frontend 03 CollectionRun Admin UI](03_collection_run_admin_ui.md) (FE3-01 PIN·session 공유)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/admin-observability`
-- 현재 Slice: FE8-01~04 completed (FE8-05 draft)
+- 현재 Slice: FE8-05 completed (FE8-06 draft)
 
 ## 목적
 
@@ -168,7 +168,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 
 ---
 
-### FE8-05 — Real API·Browser E2E — draft
+### FE8-05 — Real API·Browser E2E — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -178,7 +178,14 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 | **검증** | `npm run test:e2e`; W4-I1 admin E2E checklist |
 | **완료 기준** | Integration 09 Frontend 완료 기준 충족 |
 
----
+2026-08-12 구현: `frontend/e2e/admin-observability-ui.spec.ts` — Mock-first 12 scenarios
+(PIN session·protected routes·policy table filter·sort·row detail drawer·log event filter·
+detail panel·refresh·rotate·archive typed delete·cross-nav·mobile) + Real API skip 1건.
+Policy drawer 404·active log 409 delete는 contract test로 검증; Browser UI unreachable.
+`AdminLogMaintenanceActions` archive select 초기 state가 async file load와 동기화되지 않아
+E2E delete flow는 select `index: 0` 명시 선택 필요(FE8-06 또는 별도 fix 후보).
+Backend Integration 09 AO1~AO3 미merge — Real API golden은 skip.
+FE8-06 Toast·401/409/5xx Browser subset은 본 Slice 범위 밖.
 
 ### FE8-06 — Admin data/log Toast·접근성 — draft
 

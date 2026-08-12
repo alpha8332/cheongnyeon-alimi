@@ -53,6 +53,9 @@
 - Frontend admin observability UI (FE8-01~04): `/admin/policies` table·row detail,
   `/admin/logs` event filter·refresh, archive delete·rotate confirm (Mock-first)
   ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend Admin Observability Browser E2E (FE8-05): Playwright PIN session·policy
+  table·log view·maintenance confirm·admin nav regression
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
 - Frontend recommendation UI (FE6-01~04): `/recommendations` 조건 form·FE5
   localStorage 연동·결과·reason·error/retry·region collapse
   ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
