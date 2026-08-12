@@ -1247,6 +1247,26 @@ a.policy-card {
 
 .admin-policy-column-toggle {
   margin-bottom: 16px;
+}
+
+.admin-policy-column-toggle__trigger {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-policy-column-toggle__trigger:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.admin-policy-column-toggle__panel {
+  margin-top: 8px;
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
@@ -1357,6 +1377,19 @@ a.policy-card {
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
+}
+
+.admin-policy-table__sort-btn:focus-visible,
+.admin-log-event-table__select-btn:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.admin-log-maintenance__target {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .admin-policy-table__sort-btn,

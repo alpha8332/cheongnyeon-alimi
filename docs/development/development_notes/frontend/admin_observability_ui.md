@@ -2,19 +2,19 @@
 
 ## 작업 정보
 
-- 작업일: 2026-08-11 (FE8-05 Browser E2E: 2026-08-12)
+- 작업일: 2026-08-11 (FE8-05 Browser E2E: 2026-08-12, FE8-06 Toast·a11y: 2026-08-12)
 - 담당 영역: Frontend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [Admin Observability UI Forest 개발 계획](../../develop_plan/frontend/08_admin_observability_ui.md)
-- 현재 Slice: FE8-05 completed (FE8-06 draft)
+- 현재 Slice: FE8-06 completed (Forest 완료)
 
 ## 목적
 
 관리자 Policy 데이터·구조화 file log UI Forest(FE8)의 Mock-first read-only
-표·상세·log 조회·maintenance confirm UI(FE8-01~04)와 Browser E2E(FE8-05)를
-Integration 09 proposal 계약에 맞춰 구현·검증한다.
+표·상세·log 조회·maintenance confirm UI(FE8-01~04)와 Browser E2E(FE8-05)·
+Toast·a11y(FE8-06)를 Integration 09 proposal 계약에 맞춰 구현·검증한다.
 
 ## Forest 범위
 
@@ -32,6 +32,7 @@ Real API golden E2E에서 재검증한다.
 | FE8-03 | completed | AdminLogsPage·event filter·refresh |
 | FE8-04 | completed | AdminLogMaintenanceActions rotate·archive delete confirm |
 | FE8-05 | completed | Playwright Browser E2E·admin auth flow |
+| FE8-06 | completed | Admin data/log Toast·a11y Browser E2E |
 
 ## 구현 내용
 
@@ -90,11 +91,19 @@ Real API golden E2E에서 재검증한다.
   - Real API golden: `VITE_USE_MOCK=false` 환경에서만 실행(skip)
 - Policy drawer 404·active log HTTP 409 delete는 Browser UI unreachable —
   `adminObservability.contract.test.ts`로 검증.
-- Archive delete E2E는 dialog open 후 select `index: 0` 명시 선택 필요:
-  `AdminLogMaintenanceActions`의 `selectedArchiveId` 초기 state가 async file load와
-  동기화되지 않음(별도 fix 후보, FE8-05 범위 밖).
 - Backend Integration 09 AO1~AO3 미merge — Real API golden은 table·log shell만 검증.
-- FE8-06 Toast·401/409/5xx Browser subset은 본 Slice 범위 밖.
+
+### FE8-06 — Admin data/log Toast·a11y
+
+- `AdminPolicyDataPage`·`AdminLogsPage` — FE3-06 `ApiErrorToast` wiring
+  (401 login redirect·5xx retryable·422 Toast), list 5xx 시 cached response 유지
+- `AdminLogMaintenanceActions` — 409/5xx Toast·dialog 유지·Escape dismiss·
+  archive file_id live announcement·resolved archive select
+- Mock audit hooks: policy filter `MOCK_503`/`MOCK_401`/`MOCK_422`, log filter
+  `component=MOCK_503`, archive `log-file-archive-mock409`→409
+- `AdminPolicyColumnToggle` popover·Escape, table sort `aria-label`·caption
+  `aria-describedby`, refresh focus return
+- `frontend/e2e/admin-observability-toast-a11y.spec.ts` — 7 Mock-first scenarios
 
 ### 계약 정렬 메모 (Backend 미구현)
 
@@ -118,7 +127,8 @@ Real API 연동·Browser E2E는 Integration 09 Backend merge 후 Real API golden
 - Active log file direct delete는 Mock에서 HTTP 409로 거부(Integration 09
   rotate-first UX 선행).
 - 401은 FE3-01과 동일하게 `clearAdminSession()` + login redirect.
-- FE8-06 Toast·a11y subset은 본 Slice 범위 밖(후속 Slice).
+- list 5xx Toast 시 ErrorState와 global Toast 중복 금지; cached list ref로
+  이전 table 유지.
 
 ### 버그 수정 — Policy row detail drawer 미표시 (2026-08-12)
 
@@ -149,6 +159,8 @@ Real API 연동·Browser E2E는 Integration 09 Backend merge 후 Real API golden
 - `frontend/src/components/admin/AdminLogMaintenanceActions.tsx`
 - `frontend/src/pages/admin/AdminPolicyDataPage.tsx`
 - `frontend/src/pages/admin/AdminLogsPage.tsx`
+- `frontend/src/mocks/adminObservabilityFixtures.ts`
+- `frontend/src/mocks/adminObservabilityHandlers.ts`
 - `frontend/src/App.tsx`
 - `frontend/src/layouts/AdminShellLayout.tsx`
 - `frontend/src/styles/theme.css`
@@ -157,24 +169,27 @@ Real API 연동·Browser E2E는 Integration 09 Backend merge 후 Real API golden
 - `frontend/tests/adminObservability.contract.test.ts`
 - `frontend/tsconfig.test.json`
 - `frontend/e2e/admin-observability-ui.spec.ts`
+- `frontend/e2e/admin-observability-toast-a11y.spec.ts`
 
 ## 검증 결과
 
 ```text
-cd frontend && npm test   — 159 passed
-cd frontend && npm run lint — passed
+cd frontend && npm test   — 168 passed
+cd frontend && npx eslint src/pages/admin/AdminPolicyDataPage.tsx src/pages/admin/AdminLogsPage.tsx src/components/admin/AdminLogMaintenanceActions.tsx src/components/admin/AdminPolicyDataTable.tsx — passed
+cd frontend && npm run test:e2e -- e2e/admin-observability-toast-a11y.spec.ts — 7 passed
 cd frontend && npm run test:e2e -- e2e/admin-observability-ui.spec.ts — 12 passed, 1 skipped (Real API)
 python3 scripts/validate_docs.py — passed
 ```
 
-Browser·Playwright E2E는 FE8-05에서 실행 완료.
+Browser·Playwright E2E는 FE8-05·FE8-06에서 실행 완료.
+전체 `npm run lint`는 `AdminLoginPage.tsx` 기존 `react-hooks/purity` 1건으로
+실패(FE3-06 선행 코드, 본 Slice 범위 밖).
 
 ## 남은 작업
 
-- FE8-06: Admin data/log Toast·a11y subset
-- `AdminLogMaintenanceActions` archive select 초기 state async sync fix (별도 Slice)
 - W4-G0 Gate 승인 후 `docs/api/admin_observability.md`(또는 동등 API 문서) 추가
 - Backend Integration 09 merge 후 Real API admin observability golden 재검증
+- FE9-02 Integration Regression matrix A cross-Forest Toast dedupe 회귀
 
 ## 관련 문서
 

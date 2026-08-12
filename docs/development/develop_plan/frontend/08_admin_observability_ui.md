@@ -4,7 +4,7 @@
 
 - 번호: Frontend 08
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
@@ -15,7 +15,7 @@
   [Frontend 03 CollectionRun Admin UI](03_collection_run_admin_ui.md) (FE3-01 PIN·session 공유)
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/admin-observability`
-- 현재 Slice: FE8-05 completed (FE8-06 draft)
+- 현재 Slice: FE8-06 completed (Forest 완료)
 
 ## 목적
 
@@ -101,7 +101,7 @@ log·event를 필터·상세·새로고침으로 확인하며, 회전 archive �
 | FL1 | FE8-03 | Log file·event list |
 | FL1 | FE8-04 | Delete·rotate confirm UI |
 | E2E | FE8-05 | Real API·auth·Browser |
-| W4-F5·F8 | FE8-06 | Admin data/log Toast·a11y |
+| W4-F5·F8 | FE8-06 | Admin data/log Toast·a11y | completed |
 
 ---
 
@@ -187,7 +187,7 @@ E2E delete flow는 select `index: 0` 명시 선택 필요(FE8-06 또는 별도 f
 Backend Integration 09 AO1~AO3 미merge — Real API golden은 skip.
 FE8-06 Toast·401/409/5xx Browser subset은 본 Slice 범위 밖.
 
-### FE8-06 — Admin data/log Toast·접근성 — draft
+### FE8-06 — Admin data/log Toast·접근성 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -197,6 +197,16 @@ FE8-06 Toast·401/409/5xx Browser subset은 본 Slice 범위 밖.
 | **세부 작업** | 본 문서 「공통 API 오류 Toast·접근성」표 준수 |
 | **검증** | Browser 401/409/5xx; keyboard table navigation |
 | **완료 기준** | W4-F5·F8 admin observability subset; [FE9-02](09_integration_and_regression.md) matrix A |
+
+2026-08-12 구현: `AdminPolicyDataPage`·`AdminLogsPage` ApiErrorToast wiring(401 redirect·
+5xx retryable·422 Toast), list 5xx 시 cached response 유지, `AdminLogMaintenanceActions`
+409/5xx Toast·dialog 유지·Escape·archive select async sync·file_id live announcement.
+Mock audit: policy filter `MOCK_503`/`MOCK_401`/`MOCK_422`, log filter `component=MOCK_503`,
+archive `log-file-archive-mock409`→409. `AdminPolicyColumnToggle` popover·Escape,
+table sort `aria-label`·caption `aria-describedby`.
+`frontend/e2e/admin-observability-toast-a11y.spec.ts` 7 scenarios.
+FE9-02 cross-Forest Toast dedupe·full matrix A regression은 Integration Regression
+(FE9-02) 범위.
 
 ## 검증 계획
 

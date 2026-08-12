@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type {
   AdminPolicyListItemDto,
   AdminPolicySortField,
@@ -59,9 +59,12 @@ export default function AdminPolicyDataTable({
   };
 
   return (
-    <div className="admin-policy-table-wrap">
+    <div
+      className="admin-policy-table-wrap"
+      aria-describedby="admin-policy-table-caption"
+    >
       <table className="admin-policy-table">
-        <caption className="admin-policy-table__caption">
+        <caption id="admin-policy-table-caption" className="admin-policy-table__caption">
           승인 Policy projection ({items.length} rows on page)
         </caption>
         <thead>
@@ -77,6 +80,7 @@ export default function AdminPolicyDataTable({
                   <button
                     type="button"
                     className="admin-policy-table__sort-btn"
+                    aria-label={`${column.label} 정렬`}
                     onClick={(event) => {
                       event.stopPropagation();
                       onSortChange(
@@ -177,21 +181,52 @@ export function AdminPolicyColumnToggle({
   visibleColumns: AdminPolicyTableColumnKey[];
   onToggle: (key: AdminPolicyTableColumnKey) => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const panelId = useId();
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   return (
-    <fieldset className="admin-policy-column-toggle">
-      <legend className="admin-policy-column-toggle__legend">표시 열</legend>
-      <div className="admin-policy-column-toggle__grid">
-        {ADMIN_POLICY_TABLE_COLUMNS.map((column) => (
-          <label key={column.key} className="admin-policy-column-toggle__item">
-            <input
-              type="checkbox"
-              checked={visibleColumns.includes(column.key)}
-              onChange={() => onToggle(column.key)}
-            />
-            {column.label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <div className="admin-policy-column-toggle">
+      <button
+        type="button"
+        className="admin-policy-column-toggle__trigger"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        표시 열 설정
+      </button>
+      {isOpen ? (
+        <fieldset id={panelId} className="admin-policy-column-toggle__panel">
+          <legend className="admin-policy-column-toggle__legend">표시 열</legend>
+          <div className="admin-policy-column-toggle__grid">
+            {ADMIN_POLICY_TABLE_COLUMNS.map((column) => (
+              <label key={column.key} className="admin-policy-column-toggle__item">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.includes(column.key)}
+                  onChange={() => onToggle(column.key)}
+                />
+                {column.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+    </div>
   );
 }

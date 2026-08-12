@@ -24,6 +24,7 @@ import {
   MOCK_ACTIVE_LOG_FILE_ID,
   MOCK_ADMIN_LOG_EVENTS,
   MOCK_ADMIN_LOG_FILES,
+  MOCK_ARCHIVE_DELETE_409_FILE_ID,
   MOCK_ARCHIVE_LOG_FILE_ID,
 } from './adminObservabilityFixtures.js';
 
@@ -327,6 +328,15 @@ export function handleAdminLogArchiveDeleteMock(
       status: 409,
       body: {
         detail: 'Active log file cannot be deleted. Rotate the current log first.',
+      },
+    };
+  }
+
+  if (fileId === MOCK_ARCHIVE_DELETE_409_FILE_ID) {
+    return {
+      status: 409,
+      body: {
+        detail: 'Archive delete conflict for admin observability audit test.',
       },
     };
   }

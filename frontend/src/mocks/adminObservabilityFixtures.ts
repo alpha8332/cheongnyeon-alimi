@@ -6,6 +6,8 @@ import type {
 export const MOCK_ACTIVE_LOG_FILE_ID = 'log-file-active-001';
 export const MOCK_ARCHIVE_LOG_FILE_ID = 'log-file-archive-20260810';
 
+export const MOCK_ARCHIVE_DELETE_409_FILE_ID = 'log-file-archive-mock409';
+
 export const MOCK_ADMIN_LOG_FILES: readonly AdminLogFileListItemDto[] = [
   {
     file_id: MOCK_ACTIVE_LOG_FILE_ID,
@@ -30,6 +32,14 @@ export const MOCK_ADMIN_LOG_FILES: readonly AdminLogFileListItemDto[] = [
     size_bytes: 892_416,
     created_at: '2026-08-09T00:00:00.000Z',
     rotated_at: '2026-08-10T00:00:00.000Z',
+  },
+  {
+    file_id: MOCK_ARCHIVE_DELETE_409_FILE_ID,
+    filename: 'app.log.mock409',
+    status: 'archive',
+    size_bytes: 512_000,
+    created_at: '2026-08-08T00:00:00.000Z',
+    rotated_at: '2026-08-09T00:00:00.000Z',
   },
 ];
 

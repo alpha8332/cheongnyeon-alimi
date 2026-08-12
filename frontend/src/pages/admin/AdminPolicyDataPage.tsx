@@ -15,12 +15,14 @@ import LoadingState from '@/components/common/LoadingState';
 import { AdminApiError } from '@/api/adminApiError';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import {
   useAdminPolicyDetailQuery,
   useAdminPolicyListQuery,
 } from '@/hooks/useAdminObservabilityQuery';
 import type {
   AdminPolicyListItemDto,
+  AdminPolicyListResponse,
   AdminPolicySortField,
   AdminPolicySortOrder,
 } from '@/types/adminPolicyData';
@@ -28,6 +30,7 @@ import {
   DEFAULT_VISIBLE_ADMIN_POLICY_COLUMNS,
   type AdminPolicyTableColumnKey,
 } from '@/utils/adminPolicyTableColumns';
+import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 import { clearAdminSession } from '@/utils/adminSessionStorage';
 
 const PAGE_SIZE = 10;
@@ -35,6 +38,7 @@ const PAGE_SIZE = 10;
 export default function AdminPolicyDataPage() {
   const navigate = useNavigate();
   const { accessToken, logout } = useAdminSession();
+  const { showToast } = useApiErrorToast();
   const [filterDraft, setFilterDraft] = useState<AdminPolicyFilterDraft>(
     EMPTY_ADMIN_POLICY_FILTER_DRAFT,
   );
@@ -49,6 +53,8 @@ export default function AdminPolicyDataPage() {
   );
   const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [cachedListResponse, setCachedListResponse] =
+    useState<AdminPolicyListResponse | null>(null);
 
   const query = useMemo(
     () =>
@@ -67,6 +73,7 @@ export default function AdminPolicyDataPage() {
     isLoading,
     isError,
     error,
+    refetch,
   } = useAdminPolicyListQuery(query, accessToken);
 
   const {
@@ -76,14 +83,32 @@ export default function AdminPolicyDataPage() {
   } = useAdminPolicyDetailQuery(selectedPolicyId, accessToken);
 
   useEffect(() => {
-    if (!(error instanceof AdminApiError) || error.status !== 401) {
+    if (!listResponse) {
+      return;
+    }
+
+    // Cache last successful list so 5xx Toast keeps the table visible.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional stale-while-error UX
+    setCachedListResponse(listResponse);
+  }, [listResponse]);
+
+  useEffect(() => {
+    if (!(error instanceof AdminApiError)) {
+      return;
+    }
+
+    showToast(mapAdminApiErrorToToast(error), {
+      onRetry: error.status >= 500 ? () => void refetch() : undefined,
+    });
+
+    if (error.status !== 401) {
       return;
     }
 
     clearAdminSession();
     logout();
     navigate(ADMIN_APP_ROUTES.login, { replace: true });
-  }, [error, logout, navigate]);
+  }, [error, logout, navigate, refetch, showToast]);
 
   const errorMessage =
     error instanceof AdminApiError
@@ -91,6 +116,10 @@ export default function AdminPolicyDataPage() {
       : error instanceof Error
         ? error.message
         : '정책 데이터를 불러오지 못했습니다.';
+
+  const displayListResponse = listResponse ?? cachedListResponse;
+  const hasListItems = (displayListResponse?.items.length ?? 0) > 0;
+  const showListLoading = isLoading && !hasListItems;
 
   const handleApplyFilters = () => {
     setAppliedFilters(filterDraft);
@@ -153,20 +182,24 @@ export default function AdminPolicyDataPage() {
         onReset={handleResetFilters}
       />
 
-      {isLoading ? <LoadingState message="정책 데이터를 불러오는 중입니다." /> : null}
-      {isError ? <ErrorState message={errorMessage} /> : null}
+      {showListLoading ? (
+        <LoadingState message="정책 데이터를 불러오는 중입니다." />
+      ) : null}
+      {isError && !(error instanceof AdminApiError) ? (
+        <ErrorState message={errorMessage} />
+      ) : null}
 
-      {!isLoading && !isError && listResponse && listResponse.items.length === 0 ? (
+      {!showListLoading && !isError && listResponse && listResponse.items.length === 0 ? (
         <p className="state-message state-message--empty" role="status">
           조건에 맞는 Policy row가 없습니다.
         </p>
       ) : null}
 
       <div className="admin-policy-data-page__layout">
-        {!isLoading && !isError && listResponse && listResponse.items.length > 0 ? (
+        {hasListItems && displayListResponse ? (
           <div className="admin-policy-data-page__main">
             <AdminPolicyDataTable
-              items={listResponse.items}
+              items={displayListResponse.items}
               visibleColumns={visibleColumns}
               sortBy={sortBy}
               sortOrder={sortOrder}
@@ -189,14 +222,14 @@ export default function AdminPolicyDataPage() {
                 이전
               </button>
               <span className="collection-run-pagination__status" role="status">
-                {listResponse.page} / {listResponse.pages} 페이지
+                {displayListResponse.page} / {displayListResponse.pages} 페이지
               </span>
               <button
                 type="button"
                 className="btn btn-secondary"
-                disabled={page >= listResponse.pages}
+                disabled={page >= displayListResponse.pages}
                 onClick={() =>
-                  setPage((current) => Math.min(listResponse.pages, current + 1))
+                  setPage((current) => Math.min(displayListResponse.pages, current + 1))
                 }
               >
                 다음

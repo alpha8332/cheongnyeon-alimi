@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import AdminLogEventFilters from '@/components/admin/AdminLogEventFilters';
 import {
@@ -15,11 +15,14 @@ import LoadingState from '@/components/common/LoadingState';
 import { AdminApiError } from '@/api/adminApiError';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import {
   useAdminLogEventListQuery,
   useAdminLogFileListQuery,
 } from '@/hooks/useAdminObservabilityQuery';
+import type { AdminLogEventListResponse } from '@/types/adminLog';
 import { findMockAdminLogEventById } from '@/mocks/adminObservabilityFixtures';
+import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 import { clearAdminSession } from '@/utils/adminSessionStorage';
 
 const PAGE_SIZE = 10;
@@ -27,6 +30,8 @@ const PAGE_SIZE = 10;
 export default function AdminLogsPage() {
   const navigate = useNavigate();
   const { accessToken, logout } = useAdminSession();
+  const { showToast } = useApiErrorToast();
+  const refreshButtonRef = useRef<HTMLButtonElement>(null);
   const [filterDraft, setFilterDraft] = useState<AdminLogEventFilterDraft>(
     EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT,
   );
@@ -35,6 +40,8 @@ export default function AdminLogsPage() {
   );
   const [page, setPage] = useState(1);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [cachedEventResponse, setCachedEventResponse] =
+    useState<AdminLogEventListResponse | null>(null);
 
   const eventQuery = useMemo(
     () => toAdminLogEventListQueryFromDraft(appliedFilters, page, PAGE_SIZE),
@@ -57,14 +64,32 @@ export default function AdminLogsPage() {
   } = useAdminLogEventListQuery(eventQuery, accessToken);
 
   useEffect(() => {
-    if (!(error instanceof AdminApiError) || error.status !== 401) {
+    if (!eventResponse) {
+      return;
+    }
+
+    // Cache last successful list so 5xx Toast keeps the table visible.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional stale-while-error UX
+    setCachedEventResponse(eventResponse);
+  }, [eventResponse]);
+
+  useEffect(() => {
+    if (!(error instanceof AdminApiError)) {
+      return;
+    }
+
+    showToast(mapAdminApiErrorToToast(error), {
+      onRetry: error.status >= 500 ? () => void refetchEvents() : undefined,
+    });
+
+    if (error.status !== 401) {
       return;
     }
 
     clearAdminSession();
     logout();
     navigate(ADMIN_APP_ROUTES.login, { replace: true });
-  }, [error, logout, navigate]);
+  }, [error, logout, navigate, refetchEvents, showToast]);
 
   const errorMessage =
     error instanceof AdminApiError
@@ -73,8 +98,12 @@ export default function AdminLogsPage() {
         ? error.message
         : 'Log event를 불러오지 못했습니다.';
 
+  const displayEventResponse = eventResponse ?? cachedEventResponse;
+  const hasEventItems = (displayEventResponse?.items.length ?? 0) > 0;
+  const showEventLoading = isLoading && !hasEventItems;
+
   const selectedEvent =
-    eventResponse?.items.find((item) => item.event_id === selectedEventId) ??
+    displayEventResponse?.items.find((item) => item.event_id === selectedEventId) ??
     null;
   const selectedEventDetail = selectedEventId
     ? findMockAdminLogEventById(selectedEventId)
@@ -96,7 +125,9 @@ export default function AdminLogsPage() {
 
   const handleRefresh = () => {
     void refetchFiles();
-    void refetchEvents();
+    void refetchEvents().finally(() => {
+      refreshButtonRef.current?.focus();
+    });
   };
 
   const handleMaintenanceComplete = () => {
@@ -145,22 +176,27 @@ export default function AdminLogsPage() {
         onReset={handleResetFilters}
         onRefresh={handleRefresh}
         isRefreshing={isEventsFetching}
+        refreshButtonRef={refreshButtonRef}
       />
 
-      {isLoading ? <LoadingState message="Log event를 불러오는 중입니다." /> : null}
-      {isError ? <ErrorState message={errorMessage} /> : null}
+      {showEventLoading ? (
+        <LoadingState message="Log event를 불러오는 중입니다." />
+      ) : null}
+      {isError && !(error instanceof AdminApiError) ? (
+        <ErrorState message={errorMessage} />
+      ) : null}
 
-      {!isLoading && !isError && eventResponse && eventResponse.items.length === 0 ? (
+      {!showEventLoading && !isError && eventResponse && eventResponse.items.length === 0 ? (
         <p className="state-message state-message--empty" role="status">
           조건에 맞는 log event가 없습니다.
         </p>
       ) : null}
 
       <div className="admin-logs-page__layout">
-        {!isLoading && !isError && eventResponse && eventResponse.items.length > 0 ? (
+        {hasEventItems && displayEventResponse ? (
           <>
             <AdminLogEventTable
-              items={eventResponse.items}
+              items={displayEventResponse.items}
               selectedEventId={selectedEventId}
               onSelectEvent={setSelectedEventId}
             />
@@ -175,14 +211,14 @@ export default function AdminLogsPage() {
                 이전
               </button>
               <span className="collection-run-pagination__status" role="status">
-                {eventResponse.page} / {eventResponse.pages} 페이지
+                {displayEventResponse.page} / {displayEventResponse.pages} 페이지
               </span>
               <button
                 type="button"
                 className="btn btn-secondary"
-                disabled={page >= eventResponse.pages}
+                disabled={page >= displayEventResponse.pages}
                 onClick={() =>
-                  setPage((current) => Math.min(eventResponse.pages, current + 1))
+                  setPage((current) => Math.min(displayEventResponse.pages, current + 1))
                 }
               >
                 다음

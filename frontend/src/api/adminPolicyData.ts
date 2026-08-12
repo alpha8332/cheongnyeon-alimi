@@ -53,6 +53,25 @@ export async function getAdminPolicies(
 
   if (USE_MOCK) {
     await delay(MOCK_DELAY_MS);
+
+    if (resolvedQuery.source_id === 'MOCK_503') {
+      throw new AdminApiError(
+        503,
+        'Service unavailable for admin policy list audit test.',
+      );
+    }
+
+    if (resolvedQuery.source_id === 'MOCK_401') {
+      throw new AdminApiError(401, 'Admin session expired for audit test.');
+    }
+
+    if (resolvedQuery.source_id === 'MOCK_422') {
+      throw new AdminApiError(
+        422,
+        'Invalid filter parameter for admin policy list audit test.',
+      );
+    }
+
     return handleAdminPolicyListMock(mockPolicies, resolvedQuery);
   }
 

@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Button from '@/components/common/Button';
 import {
   deleteAdminLogArchive,
   rotateAdminLogCurrent,
 } from '@/api/adminLog';
 import { AdminApiError } from '@/api/adminApiError';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import type { AdminLogFileListItemDto } from '@/types/adminLog';
+import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 import {
   buildArchiveDeleteConfirmLabel,
   isArchiveDeleteConfirmValid,
@@ -24,16 +26,40 @@ export default function AdminLogMaintenanceActions({
   onMaintenanceComplete,
   onUnauthorized,
 }: AdminLogMaintenanceActionsProps) {
-  const archiveFiles = files.filter((file) => file.status === 'archive');
-  const [selectedArchiveId, setSelectedArchiveId] = useState(
-    archiveFiles[0]?.file_id ?? '',
+  const { showToast } = useApiErrorToast();
+  const archiveFiles = useMemo(
+    () => files.filter((file) => file.status === 'archive'),
+    [files],
   );
+  const [selectedArchiveId, setSelectedArchiveId] = useState('');
+  const resolvedArchiveId =
+    archiveFiles.find((file) => file.file_id === selectedArchiveId)?.file_id ??
+    archiveFiles[0]?.file_id ??
+    '';
   const [typedConfirm, setTypedConfirm] = useState('');
   const [isRotateOpen, setIsRotateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isRotateOpen && !isDeleteOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsRotateOpen(false);
+        setIsDeleteOpen(false);
+        setTypedConfirm('');
+        setErrorMessage(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isDeleteOpen, isRotateOpen]);
 
   const handleRotate = async () => {
     setErrorMessage(null);
@@ -47,7 +73,20 @@ export default function AdminLogMaintenanceActions({
     } catch (error) {
       if (error instanceof AdminApiError && error.status === 401) {
         onUnauthorized?.();
+        return;
       }
+
+      if (error instanceof AdminApiError) {
+        showToast(mapAdminApiErrorToToast(error), {
+          onRetry:
+            error.status >= 500
+              ? () => {
+                  void handleRotate();
+                }
+              : undefined,
+        });
+      }
+
       setErrorMessage(
         error instanceof AdminApiError
           ? error.detail
@@ -59,7 +98,7 @@ export default function AdminLogMaintenanceActions({
   };
 
   const handleDeleteArchive = async () => {
-    if (!isArchiveDeleteConfirmValid(selectedArchiveId, typedConfirm)) {
+    if (!isArchiveDeleteConfirmValid(resolvedArchiveId, typedConfirm)) {
       setErrorMessage('file_id 확인 입력이 일치하지 않습니다.');
       return;
     }
@@ -68,7 +107,7 @@ export default function AdminLogMaintenanceActions({
     setIsSubmitting(true);
 
     try {
-      const result = await deleteAdminLogArchive(selectedArchiveId, {
+      const result = await deleteAdminLogArchive(resolvedArchiveId, {
         accessToken,
       });
       setStatusMessage(result.message);
@@ -78,7 +117,20 @@ export default function AdminLogMaintenanceActions({
     } catch (error) {
       if (error instanceof AdminApiError && error.status === 401) {
         onUnauthorized?.();
+        return;
       }
+
+      if (error instanceof AdminApiError) {
+        showToast(mapAdminApiErrorToToast(error), {
+          onRetry:
+            error.status >= 500
+              ? () => {
+                  void handleDeleteArchive();
+                }
+              : undefined,
+        });
+      }
+
       setErrorMessage(
         error instanceof AdminApiError
           ? error.detail
@@ -114,6 +166,7 @@ export default function AdminLogMaintenanceActions({
           variant="secondary"
           disabled={isSubmitting || archiveFiles.length === 0}
           onClick={() => {
+            setSelectedArchiveId(archiveFiles[0]?.file_id ?? '');
             setIsDeleteOpen(true);
             setErrorMessage(null);
           }}
@@ -129,8 +182,13 @@ export default function AdminLogMaintenanceActions({
       ) : null}
 
       {isRotateOpen ? (
-        <div className="admin-log-maintenance__dialog" role="dialog" aria-modal="true">
-          <h3>현재 log rotate 확인</h3>
+        <div
+          className="admin-log-maintenance__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-log-rotate-title"
+        >
+          <h3 id="admin-log-rotate-title">현재 log rotate 확인</h3>
           <p>
             active log를 rotate하고 이전 archive 정리를 요청합니다. 계속할까요?
           </p>
@@ -161,15 +219,30 @@ export default function AdminLogMaintenanceActions({
       ) : null}
 
       {isDeleteOpen ? (
-        <div className="admin-log-maintenance__dialog" role="dialog" aria-modal="true">
-          <h3>archive 삭제 확인</h3>
+        <div
+          className="admin-log-maintenance__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-log-delete-title"
+          aria-describedby="admin-log-delete-target"
+        >
+          <h3 id="admin-log-delete-title">archive 삭제 확인</h3>
+          <p
+            id="admin-log-delete-target"
+            className="admin-log-maintenance__target"
+            role="status"
+            aria-live="polite"
+          >
+            삭제 대상 file_id: {resolvedArchiveId || '없음'}
+          </p>
           <label className="admin-log-maintenance__field">
             <span className="admin-log-maintenance__label">archive file</span>
             <select
               className="admin-log-maintenance__input"
-              value={selectedArchiveId}
+              value={resolvedArchiveId}
               onChange={(event) => setSelectedArchiveId(event.target.value)}
               disabled={isSubmitting}
+              aria-label="archive file 선택"
             >
               {archiveFiles.map((file) => (
                 <option key={file.file_id} value={file.file_id}>
@@ -180,7 +253,7 @@ export default function AdminLogMaintenanceActions({
           </label>
           <label className="admin-log-maintenance__field">
             <span className="admin-log-maintenance__label">
-              {buildArchiveDeleteConfirmLabel(selectedArchiveId)}
+              {buildArchiveDeleteConfirmLabel(resolvedArchiveId)}
             </span>
             <input
               className="admin-log-maintenance__input"
@@ -189,6 +262,7 @@ export default function AdminLogMaintenanceActions({
               onChange={(event) => setTypedConfirm(event.target.value)}
               disabled={isSubmitting}
               aria-describedby="archive-delete-help"
+              aria-label={buildArchiveDeleteConfirmLabel(resolvedArchiveId)}
             />
           </label>
           <p id="archive-delete-help" className="admin-log-maintenance__help">
@@ -216,7 +290,7 @@ export default function AdminLogMaintenanceActions({
               type="button"
               disabled={
                 isSubmitting ||
-                !isArchiveDeleteConfirmValid(selectedArchiveId, typedConfirm)
+                !isArchiveDeleteConfirmValid(resolvedArchiveId, typedConfirm)
               }
               onClick={() => void handleDeleteArchive()}
             >

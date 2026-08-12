@@ -84,6 +84,14 @@ export async function getAdminLogEvents(
 
   if (USE_MOCK) {
     await delay(MOCK_DELAY_MS);
+
+    if (resolvedQuery.component === 'MOCK_503') {
+      throw new AdminApiError(
+        503,
+        'Service unavailable for admin log event list audit test.',
+      );
+    }
+
     return handleAdminLogEventListMock(resolvedQuery);
   }
 

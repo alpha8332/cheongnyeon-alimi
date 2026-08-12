@@ -1,5 +1,6 @@
 import { ADMIN_LOG_LEVELS } from '@/types/adminLog';
 import type { AdminLogEventFilterDraft } from '@/utils/adminLogEventFilters';
+import type { RefObject } from 'react';
 
 interface AdminLogEventFiltersProps {
   draft: AdminLogEventFilterDraft;
@@ -8,6 +9,7 @@ interface AdminLogEventFiltersProps {
   onReset: () => void;
   onRefresh: () => void;
   isRefreshing?: boolean;
+  refreshButtonRef?: RefObject<HTMLButtonElement | null>;
 }
 
 export default function AdminLogEventFilters({
@@ -17,6 +19,7 @@ export default function AdminLogEventFilters({
   onReset,
   onRefresh,
   isRefreshing = false,
+  refreshButtonRef,
 }: AdminLogEventFiltersProps) {
   return (
     <section className="admin-log-event-filters" aria-label="Log event 필터">
@@ -101,6 +104,7 @@ export default function AdminLogEventFilters({
         <button
           type="button"
           className="btn btn-secondary"
+          ref={refreshButtonRef}
           onClick={onRefresh}
           disabled={isRefreshing}
         >
