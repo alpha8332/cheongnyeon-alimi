@@ -56,6 +56,14 @@ export async function getCollectionRuns(
 
   if (USE_MOCK) {
     await delay(MOCK_DELAY_MS);
+
+    if (resolvedQuery.source_id === 'MOCK_503') {
+      throw new AdminApiError(
+        503,
+        'Service unavailable for admin list audit test.',
+      );
+    }
+
     return handleCollectionRunListMock(resolvedQuery);
   }
 

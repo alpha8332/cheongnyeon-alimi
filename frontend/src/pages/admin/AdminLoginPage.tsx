@@ -2,23 +2,36 @@ import { useEffect, useId, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import Button from '@/components/common/Button';
 import { createAdminSession } from '@/api/adminSession';
+import { AdminApiError } from '@/api/adminApiError';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
+import ApiErrorToastProvider from '@/components/common/ApiErrorToastProvider';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import { useAdminSession } from '@/hooks/useAdminSession';
 import {
   isValidAdminPinInput,
   mapAdminLoginError,
 } from '@/utils/adminLoginPresentation';
+import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 interface LoginLocationState {
   from?: string;
 }
 
 export default function AdminLoginPage() {
+  return (
+    <ApiErrorToastProvider>
+      <AdminLoginPageContent />
+    </ApiErrorToastProvider>
+  );
+}
+
+function AdminLoginPageContent() {
   const formId = useId();
   const pinInputId = useId();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, login } = useAdminSession();
+  const { showToast } = useApiErrorToast();
   const redirectTarget =
     (location.state as LoginLocationState | null)?.from ??
     ADMIN_APP_ROUTES.dashboard;
@@ -53,8 +66,7 @@ export default function AdminLoginPage() {
     ? Math.ceil((cooldownUntilMs - nowMs) / 1000)
     : 0;
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const submitPin = async () => {
     setErrorMessage(null);
 
     if (!isValidAdminPinInput(pin)) {
@@ -77,12 +89,30 @@ export default function AdminLoginPage() {
       const presentation = mapAdminLoginError(error);
       setErrorMessage(presentation.message);
 
+      if (error instanceof AdminApiError) {
+        if (error.status === 429 || error.status >= 500) {
+          showToast(mapAdminApiErrorToToast(error), {
+            onRetry:
+              error.status >= 500
+                ? () => {
+                    void submitPin();
+                  }
+                : undefined,
+          });
+        }
+      }
+
       if (presentation.kind === 'cooldown' && presentation.cooldownMs) {
         setCooldownUntilMs(Date.now() + presentation.cooldownMs);
       }
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    await submitPin();
   };
 
   return (
@@ -149,8 +179,8 @@ export default function AdminLoginPage() {
       </form>
 
       <p className="hint-text">
-        Mock 환경 테스트 PIN: <code>0000</code> (429 cooldown 테스트:{' '}
-        <code>4290</code>)
+        Mock 환경 테스트 PIN: <code>0000</code> (429 cooldown: <code>4290</code>,
+        503 Toast: <code>5000</code>)
       </p>
 
       <p className="admin-login-page__back">

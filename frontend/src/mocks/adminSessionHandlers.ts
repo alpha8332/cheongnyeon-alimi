@@ -33,6 +33,15 @@ export function handleAdminSessionMock(
     };
   }
 
+  if (pin === '5000') {
+    return {
+      status: 503,
+      body: {
+        message: 'Admin session service unavailable.',
+      },
+    };
+  }
+
   if (pin === '0000') {
     return {
       status: 200,

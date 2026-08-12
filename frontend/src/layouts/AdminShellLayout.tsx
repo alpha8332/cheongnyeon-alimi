@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import Button from '@/components/common/Button';
+import ApiErrorToastProvider from '@/components/common/ApiErrorToastProvider';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
 
@@ -27,7 +28,8 @@ export default function AdminShellLayout() {
   };
 
   return (
-    <div className="admin-shell">
+    <ApiErrorToastProvider>
+      <div className="admin-shell">
       <header className="admin-shell__header">
         <div>
           <h1 className="admin-shell__title">관리자</h1>
@@ -70,5 +72,6 @@ export default function AdminShellLayout() {
         <Outlet />
       </div>
     </div>
+    </ApiErrorToastProvider>
   );
 }

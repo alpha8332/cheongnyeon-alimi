@@ -29,6 +29,9 @@
 - Frontend CollectionRun Admin Browser E2E (FE3-05): Playwright admin PIN·run
   list·detail·manual trigger Mock-first flow
   ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend CollectionRun Admin Toast·a11y (FE3-06): shared ApiErrorToast·401/429/5xx
+  admin wiring·keyboard PIN·confirm Escape·Browser E2E
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
 - Frontend admin API clients aligned to Backend 04·05 Real OpenAPI (FE3-00):
   `size`/`pages` list envelope, dual error parsing, Bearer header option
   ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))

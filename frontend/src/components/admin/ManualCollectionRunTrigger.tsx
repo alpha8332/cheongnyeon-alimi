@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '@/components/common/Button';
 import { triggerManualCollectionRun } from '@/api/collectionRuns';
 import { AdminApiError } from '@/api/adminApiError';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import type { CollectionRunTriggerResponse } from '@/types/collectionRun';
+import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 interface ManualCollectionRunTriggerProps {
   accessToken?: string;
@@ -19,32 +21,66 @@ export default function ManualCollectionRunTrigger({
   onTriggered,
   onUnauthorized,
 }: ManualCollectionRunTriggerProps) {
+  const { showToast } = useApiErrorToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isDisabled = disabled || isSubmitting;
 
+  const closeConfirmDialog = () => {
+    setIsConfirmOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isConfirmOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeConfirmDialog();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isConfirmOpen]);
+
   const handleConfirm = async () => {
-    setErrorMessage(null);
     setIsSubmitting(true);
 
     try {
       const response = await triggerManualCollectionRun({}, { accessToken });
-      setIsConfirmOpen(false);
+      closeConfirmDialog();
       onTriggered(response);
     } catch (error) {
       if (error instanceof AdminApiError && error.status === 401) {
+        showToast(mapAdminApiErrorToToast(error));
         onUnauthorized?.();
-        setErrorMessage('세션이 만료되었습니다. 다시 로그인해 주세요.');
         return;
       }
 
-      const detail =
-        error instanceof AdminApiError
-          ? error.detail
-          : '수동 실행 요청을 처리하지 못했습니다.';
-      setErrorMessage(detail);
+      if (error instanceof AdminApiError) {
+        showToast(mapAdminApiErrorToToast(error), {
+          onRetry:
+            error.status >= 500
+              ? () => {
+                  void handleConfirm();
+                }
+              : undefined,
+        });
+        return;
+      }
+
+      showToast({
+        message: '수동 실행 요청을 처리하지 못했습니다.',
+        kind: 'error',
+        retryable: false,
+        dedupeKey: 'manual-run-unknown-error',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -91,22 +127,13 @@ export default function ManualCollectionRunTrigger({
             번만 실행됩니다. 계속할까요?
           </p>
 
-          {errorMessage ? (
-            <p className="manual-run-trigger__error" role="alert">
-              {errorMessage}
-            </p>
-          ) : null}
-
           <div className="manual-run-trigger__dialog-actions">
             <Button
               type="button"
               variant="secondary"
               autoFocus
               disabled={isSubmitting}
-              onClick={() => {
-                setIsConfirmOpen(false);
-                setErrorMessage(null);
-              }}
+              onClick={closeConfirmDialog}
             >
               취소
             </Button>

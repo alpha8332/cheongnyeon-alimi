@@ -4,7 +4,7 @@
 
 - 번호: Frontend 03
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-07`
 - Slice 계획 갱신: `2026-08-11`
 - 대상 Release: `v0.5.0`
@@ -12,7 +12,7 @@
 - 4주차 대응: `W4-F1`, `W4-F2`, Critical Path A (`week_04_v0_5_0.md`)
 - 작업 브랜치: `feature/backend/admin-run-management` (Backend 공유),
   Frontend UI: `feature/frontend/bookmarks-calendar-admin`
-- 현재 Slice: FE3-05 completed (FE3-06 draft)
+- 현재 Slice: FE3-06 completed
 - 공통 선행 계약:
   [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
@@ -227,7 +227,7 @@ flow 9건(PIN·list·filter·detail·404·manual trigger). `playwright.config.ts
 
 ---
 
-### FE3-06 — Admin API Toast·접근성 — draft
+### FE3-06 — Admin API Toast·접근성 — completed
 
 | 항목 | 내용 |
 | --- | --- |
@@ -238,7 +238,12 @@ flow 9건(PIN·list·filter·detail·404·manual trigger). `playwright.config.ts
 | **검증** | Browser 401/429/5xx; keyboard-only PIN·confirm flow |
 | **완료 기준** | W4-F5·F8 admin subset; [FE9-02](09_integration_and_regression.md) matrix A pass |
 
----
+2026-08-12 구현: `ApiErrorToast`·`ApiErrorToastProvider`·`adminApiErrorToast` mapper,
+`AdminShellLayout`·`AdminLoginPage` wiring. CollectionRun list·detail·manual trigger
+401/403/422/429/5xx Toast(5xx retry). Mock audit hooks: login PIN `5000`→503,
+list filter `source_id=MOCK_503`→503. Manual confirm Escape close·PIN Enter submit.
+`frontend/e2e/admin-toast-a11y.spec.ts` 6 scenarios. FE9-02 cross-Forest Toast
+dedupe·full matrix는 Integration Regression(FE9-02) 범위.
 
 ### U0 - 관리자 DTO·라우팅 소비 계약
 

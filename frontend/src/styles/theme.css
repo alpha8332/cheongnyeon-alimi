@@ -1097,11 +1097,87 @@ a.policy-card {
   font-size: 14px;
 }
 
+.api-error-toast-host {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.api-error-toast {
+  pointer-events: auto;
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(15 23 42 / 16%);
+}
+
+.api-error-toast--error {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.api-error-toast--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.api-error-toast__message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.api-error-toast__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.api-error-toast__retry {
+  min-height: 36px;
+}
+
+.api-error-toast__dismiss {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.api-error-toast__dismiss:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 @media (max-width: 900px) {
   .collection-run-filters__grid,
   .collection-run-detail-grid,
   .collection-run-detail-grid--counts {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .collection-run-table-wrap {
+    overflow-x: auto;
+  }
+
+  .collection-run-table__caption {
+    text-align: left;
   }
 }
 

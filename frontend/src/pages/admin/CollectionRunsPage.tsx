@@ -8,6 +8,7 @@ import LoadingState from '@/components/common/LoadingState';
 import { AdminApiError } from '@/api/adminApiError';
 import { ADMIN_APP_ROUTES } from '@/api/adminRequest';
 import { useAdminSession } from '@/hooks/useAdminSession';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import { useCollectionRunsQuery } from '@/hooks/useCollectionRunsQuery';
 import type { CollectionRunTriggerResponse } from '@/types/collectionRun';
 import {
@@ -22,12 +23,14 @@ import {
   type CollectionRunFilterDraft,
 } from '@/utils/collectionRunFilters';
 import { clearAdminSession } from '@/utils/adminSessionStorage';
+import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 const PAGE_SIZE = 10;
 
 export default function CollectionRunsPage() {
   const navigate = useNavigate();
   const { accessToken, logout } = useAdminSession();
+  const { showToast } = useApiErrorToast();
   const [filterDraft, setFilterDraft] = useState<CollectionRunFilterDraft>(
     EMPTY_COLLECTION_RUN_FILTER_DRAFT,
   );
@@ -46,14 +49,22 @@ export default function CollectionRunsPage() {
     useCollectionRunsQuery(query, accessToken);
 
   useEffect(() => {
-    if (!(error instanceof AdminApiError) || error.status !== 401) {
+    if (!(error instanceof AdminApiError)) {
+      return;
+    }
+
+    showToast(mapAdminApiErrorToToast(error), {
+      onRetry: error.status >= 500 ? () => void refetch() : undefined,
+    });
+
+    if (error.status !== 401) {
       return;
     }
 
     clearAdminSession();
     logout();
     navigate(ADMIN_APP_ROUTES.login, { replace: true });
-  }, [error, logout, navigate]);
+  }, [error, logout, navigate, refetch, showToast]);
 
   const errorMessage =
     error instanceof AdminApiError
@@ -128,7 +139,9 @@ export default function CollectionRunsPage() {
         <LoadingState message="실행 기록을 불러오는 중입니다." />
       ) : null}
 
-      {isError ? <ErrorState message={errorMessage} /> : null}
+      {isError && !(error instanceof AdminApiError) ? (
+        <ErrorState message={errorMessage} />
+      ) : null}
 
       {!isLoading && !isError && response && response.items.length === 0 ? (
         <p className="state-message state-message--empty" role="status">
