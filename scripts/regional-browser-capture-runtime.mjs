@@ -767,6 +767,151 @@ export function gangwonConfig(page) {
   };
 }
 
+export function buildGangwonCanaryPlan(checkpoint, cycle = 0) {
+  if (
+    checkpoint?.source_id !== "regional-gangwon-youth-platform"
+    || !Array.isArray(checkpoint.discovered_ids)
+    || !Array.isArray(checkpoint.decisions)
+    || !Number.isInteger(cycle)
+    || cycle < 0
+  ) {
+    throw new Error("Gangwon canary checkpoint input is invalid");
+  }
+  const outcomes = new Map(
+    checkpoint.decisions.map((item) => [String(item.external_id), item.outcome]),
+  );
+  const byPage = new Map();
+  checkpoint.discovered_ids.forEach((externalId, index) => {
+    if (outcomes.get(String(externalId)) !== "failed") return;
+    const page = Math.floor(index / 12) + 1;
+    if (!byPage.has(page)) byPage.set(page, []);
+    byPage.get(page).push(String(externalId));
+  });
+  const strata = [
+    {name: "early", firstPage: 2, lastPage: 10},
+    {name: "middle", firstPage: 11, lastPage: 20},
+    {name: "late", firstPage: 21, lastPage: 29},
+  ];
+  const canaries = strata.map((stratum) => {
+    const pages = [];
+    for (let page = stratum.firstPage; page <= stratum.lastPage; page += 1) {
+      if (byPage.get(page)?.length) pages.push(page);
+    }
+    if (!pages.length) throw new Error("Gangwon canary stratum has no failed identity");
+    const page = pages[cycle % pages.length];
+    const identities = byPage.get(page);
+    return {
+      stratum: stratum.name,
+      page,
+      external_id: identities[cycle % identities.length],
+    };
+  });
+  return {
+    schema_version: "1.0.0",
+    source_id: checkpoint.source_id,
+    cycle,
+    failed_count: [...outcomes.values()].filter((value) => value === "failed").length,
+    canaries,
+  };
+}
+
+export function classifyDetailCanaryObservation(observation) {
+  if (!observation?.identity_present) return "page_or_identity_changed";
+  if (observation.deleted_or_private) return "deleted_or_private";
+  if (!observation.navigation_completed) return "detail_click_or_post_contract";
+  if (!observation.ready_visible) return "dynamic_render_wait";
+  if (!observation.title_matches) return "page_or_identity_changed";
+  if (!Number.isInteger(observation.field_row_count) || observation.field_row_count < 1) {
+    return "response_success_without_field_dom";
+  }
+  return "healthy";
+}
+
+export async function probeGangwonDetailCanary({
+  tab,
+  page,
+  externalId,
+  expectedTitle = null,
+}) {
+  const config = gangwonConfig(page);
+  await tab.goto(config.listUrl);
+  const pageGroup = Math.floor((page - 1) / 10);
+  for (let group = 0; group < pageGroup; group += 1) {
+    await tab.playwright.getByRole(
+      "link",
+      {name: "10페이지 뒤로 이동", exact: true},
+    ).click();
+  }
+  if ((page - 1) % 10 !== 0) {
+    await tab.playwright.getByRole(
+      "link",
+      {name: String(page), exact: true},
+    ).click();
+  }
+  await tab.playwright.locator(config.listReadySelector).first().waitFor({
+    state: "visible",
+    timeoutMs: 20000,
+  });
+  const selector = config.detailClickTemplate.replace("{id}", externalId);
+  const listTitle = await tab.playwright.evaluate(
+    (selected) => String(document.querySelector(selected)?.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim(),
+    selector,
+  );
+  const identityPresent = Boolean(listTitle);
+  const observation = {
+    page,
+    external_id: externalId,
+    list_title: listTitle || null,
+    identity_present: identityPresent,
+    navigation_completed: false,
+    ready_visible: false,
+    title_matches: false,
+    field_row_count: 0,
+    deleted_or_private: false,
+  };
+  if (!identityPresent) {
+    return {...observation, classification: classifyDetailCanaryObservation(observation)};
+  }
+  try {
+    await tab.playwright.locator(selector).first().click();
+    observation.navigation_completed = true;
+  } catch {
+    return {...observation, classification: classifyDetailCanaryObservation(observation)};
+  }
+  try {
+    await tab.playwright.locator(config.detailReadySelector).first().waitFor({
+      state: "visible",
+      timeoutMs: 20000,
+    });
+    observation.ready_visible = true;
+  } catch {
+    const bodyText = await tab.playwright.evaluate(
+      () => String(document.body?.innerText || "").replace(/\s+/g, " ").trim(),
+    );
+    observation.deleted_or_private = /삭제|비공개|접근 권한|존재하지 않/.test(bodyText);
+    return {...observation, classification: classifyDetailCanaryObservation(observation)};
+  }
+  const detailState = await tab.playwright.evaluate(() => ({
+    fieldRowCount: document.querySelectorAll(".skinTb-tr").length,
+    bodyText: String(document.body?.innerText || "").replace(/\s+/g, " ").trim(),
+  }));
+  observation.field_row_count = detailState.fieldRowCount;
+  observation.deleted_or_private = /삭제|비공개|접근 권한|존재하지 않/.test(
+    detailState.bodyText,
+  );
+  const titleCandidate = clean(expectedTitle || listTitle).replace(/\.{2,}\s*$/, "");
+  const replacementPrefix = titleCandidate.split("�", 1)[0].trim();
+  const titlePrefix = replacementPrefix.length >= 8
+    ? replacementPrefix
+    : titleCandidate;
+  observation.title_matches = Boolean(
+    titlePrefix && detailState.bodyText.includes(titlePrefix),
+  );
+  return {...observation, classification: classifyDetailCanaryObservation(observation)};
+}
+
 export function jejuConfig(page, asOfDate) {
   if (!Number.isInteger(page) || page < 1 || page > 200) {
     throw new Error("Jeju page is outside the approved pagination range");

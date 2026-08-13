@@ -3,12 +3,14 @@ import {readFile} from "node:fs/promises";
 import test from "node:test";
 
 import {
+  buildGangwonCanaryPlan,
   buildRegisteredTitleDeadlineDetail,
   buildDetail,
   chungbukConfig,
   daejeonConfig,
   gangwonConfig,
   jejuConfig,
+  classifyDetailCanaryObservation,
   ulsanConfig,
 } from "../scripts/regional-browser-capture-runtime.mjs";
 
@@ -61,6 +63,13 @@ const gangwonFixture = JSON.parse(await readFile(
 const gangwonFailureFixture = JSON.parse(await readFile(
   new URL(
     "./fixtures/regional/gangwon_detail_failure_page_context.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
+const gangwonCanaryFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/gangwon_detail_canary_signatures.json",
     import.meta.url,
   ),
   "utf8",
@@ -247,6 +256,44 @@ test("Gangwon failure pages preserve the official POST page context", () => {
     assert.match(config.detailClickTemplate, /data-id/);
   }
   assert.throws(() => gangwonConfig(30), /observed 1\.\.29 range/);
+});
+
+test("Gangwon canaries rotate one failed identity through each page stratum", () => {
+  const discoveredIds = Array.from(
+    {length: 337},
+    (_, index) => `A${String(index).padStart(24, "0")}`,
+  );
+  const decisions = discoveredIds.map((externalId, index) => ({
+    external_id: externalId,
+    outcome: index < 12 ? "review" : "failed",
+  }));
+  decisions[12].outcome = "review";
+  decisions[14 * 12].outcome = "closed";
+  decisions[336].outcome = "review";
+  const plan = buildGangwonCanaryPlan({
+    source_id: "regional-gangwon-youth-platform",
+    discovered_ids: discoveredIds,
+    decisions,
+  });
+
+  assert.equal(plan.failed_count, 322);
+  assert.deepEqual(
+    plan.canaries.map(({stratum, page}) => ({stratum, page})),
+    [
+      {stratum: "early", page: 2},
+      {stratum: "middle", page: 11},
+      {stratum: "late", page: 21},
+    ],
+  );
+});
+
+test("Gangwon canary signatures keep unfamiliar failures out of healthy", () => {
+  for (const observation of gangwonCanaryFixture.observations) {
+    assert.equal(
+      classifyDetailCanaryObservation(observation),
+      observation.expected,
+    );
+  }
 });
 
 test("Jeju recovers dated closed posts without structured field rows", () => {

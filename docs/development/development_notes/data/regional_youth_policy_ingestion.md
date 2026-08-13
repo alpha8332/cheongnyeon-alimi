@@ -33,7 +33,7 @@
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
-| RYP8 | planned | Source별 지역·청년 대상·신청 상태 field·selector 보강 |
+| RYP8 | in-progress | field·selector·실패 분류·종료 이력 대조 완료, legacy null 8,963개 감소 필요 |
 | RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
 ## 구현 내용
@@ -763,3 +763,82 @@ PostgreSQL 통합은 기존 로컬 전용 `_test` DB와 pgpass를 사용했으�
   지정해 8건이 실행 전 실패했다. 새 패키지 설치 없이 저장소 기준
   `postgresql+psycopg2`로 정정한 재실행은 `8 passed` (기존 warning 1건)
 - `python scripts/validate_docs.py`와 `git diff --check` 통과
+
+### RYP8 종료 이력 대조·강원 예지보전 감사 (`2026-08-13`)
+
+강원 잔여 실패는 수집 당시의 공통 page-context 오류로 분류할 수 있지만 현재
+상세가 전건 유지된다는 뜻은 아니다. 이를 구분하기 위해 checkpoint discovery
+순서를 page size 12로 복원하고 2~10, 11~20, 21~29 page에서 회차별 1건씩 순환
+선택하는 읽기 전용 canary를 추가했다. canary는 identity 존재, 클릭/POST 완료,
+동적 ready selector, 제목 일치, field row, 삭제·비공개 문구를 차례로 확인하고
+다음 여섯 유형 중 하나로만 분류한다.
+
+- `healthy`
+- `page_or_identity_changed`
+- `detail_click_or_post_contract`
+- `dynamic_render_wait`
+- `response_success_without_field_dom`
+- `deleted_or_private`
+
+회차 0 actual은 page 2 `A2023100600300200900400003`, page 11
+`A2024052900300200900000002`, page 21 `A2023100600300200900000192`를 최소 2초
+간격으로 확인했다. 세 건 모두 목록 identity와 제목이 일치하고 상세 field row가
+27개여서 `healthy`였다. 이 결과는 322건 전체의 현재 상태를 보증하지 않는다.
+하나라도 비정상이면 해당 유형과 page 구간만 제한 batch 후보로 격리하며,
+checkpoint·Raw·DB를 canary 단계에서 쓰지 않는다.
+
+종료 이력과 완료 조건의 데이터 부분은 `audit_regional_ryp8.py`로 결정적으로
+대조한다. 경남 checkpoint closed 1,419건과 제주 926건은 Raw replay의 closed
+identity와 전건 같았고, 각 identity가 `list_response`·`list_item`·
+`detail_response` provenance를 모두 보유했다. 제주 reason은 명시 종료 925건과
+기간 종료 1건이고 경남은 명시 종료 1,419건이다. 강원 failed 322건은 checkpoint
+발견 위치와 재현된 공통 오류를 근거로 `detail_click_or_post_contract`에 분류했다.
+개별 현재 상세 상태 검증 수는 0으로 별도 명시해 원인 분류와 현행 상태 확인을
+혼동하지 않는다.
+
+Source별 outcome 전후와 현재 6개 field 관찰 상태는 다음과 같다. `V`는
+`value_extracted`, `E`는 `label_present_value_empty`, `N`은 `label_not_found`,
+`L`은 legacy `null_unverifiable`이다.
+
+| Source | RYP7 review/closed/failed | 현재 review/closed/failed | V | E | N | L |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 부산 | 107/0/0 | 107/0/0 | 426 | 2 | 214 | 0 |
+| 충북 | 441/0/0 | 441/0/0 | 4 | 0 | 2 | 2,640 |
+| 대구 | 197/0/0 | 197/0/0 | 592 | 0 | 22 | 568 |
+| 대전 | 12/0/0 | 12/0/0 | 0 | 0 | 0 | 72 |
+| 강원 | 12/0/325 | 14/1/322 | 15 | 0 | 3 | 66 |
+| 광주 | 31/0/0 | 31/0/0 | 95 | 0 | 1 | 90 |
+| 경북 | 58/0/0 | 58/0/0 | 312 | 0 | 0 | 36 |
+| 경남 | 28/1,419/0 | 28/1,419/0 | 0 | 0 | 0 | 168 |
+| 인천 | 28/0/0 | 28/0/0 | 96 | 0 | 1 | 71 |
+| 제주 | 207/924/2 | 207/926/0 | 3 | 0 | 0 | 1,239 |
+| 전북 | 89/0/0 | 89/0/0 | 271 | 0 | 2 | 261 |
+| 서울 | 97/13/0 | 97/13/0 | 393 | 0 | 0 | 189 |
+| 울산 | 596/1/0 | 596/1/0 | 8 | 0 | 5 | 3,563 |
+| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 2,215 | 2 | 250 | 8,963 |
+
+11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 8,963개가 남았다. 계획의
+“합리적인 수준”에는 수치 기준이 없으므로 감사기가 임의 threshold를 만들지 않고
+`legacy_null_within_target=null`, `data_ready=false`로 판정했다. 따라서 종료 이력
+대조와 실패 분류는 완료됐으나 RYP8은 열린 상태다. 이 Slice의 시작 기준선
+`accepted 18`, `duplicate 1`, `review 1,905`, `closed 2,360`, `failed 322`와 DB
+projection은 유지한다. Schema·Fixture 의미·Seed·null enum·Backend·Frontend
+계약은 변경하지 않았다.
+
+감사 명령:
+
+```powershell
+$expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\":2360,\"failed\":322}'
+& .\.venv\Scripts\python.exe scripts\audit_regional_ryp8.py `
+  --expected-outcomes $expectedOutcomes
+```
+
+검증 결과:
+
+- Gangwon canary Node syntax·fixture: `15 passed`
+- RYP8 audit·regional replay 집중 Python: `61 passed, 12 subtests passed`
+- `TEST_DATABASE_URL`을 전용 `cheongnyeon_alimi_test`로 지정한 전체 Python·
+  PostgreSQL: `397 passed, 96 subtests passed` (기존 deprecation warning 1건)
+- RYP8 감사: field slot `11,430/11,430` reconcile, closed history
+  `2,345/2,345`, failed 분류 `322/322`, 고정 outcome 일치, legacy blocker 1개
+- `python scripts/validate_docs.py`, `git diff --check`: 통과

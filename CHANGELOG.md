@@ -22,6 +22,11 @@
 
 ### Added
 
+- 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,
+  경남·제주 종료 이력·필드 null 상태·실패 원인·checkpoint outcome을 함께
+  대조하는 RYP8 완료 감사를 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 - 지역 Source review 1,903건을 사유·필드 coverage로 감사하고, 공식 목록 scope와
   정책별 지역·청년 근거를 함께 요구하는 안전한 승격 계약 및 Browser 필드 관찰
   상태를 추가

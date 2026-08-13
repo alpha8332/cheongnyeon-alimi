@@ -383,6 +383,33 @@ replay가 identity를 누락하거나 `accepted`를 만들면 Raw와 checkpoint�
 되돌려 중복 기준선 없는 자동 승격을 막는다. 이 경계는 새 identity discovery,
 다른 Source, enum·DB 변경에 사용할 수 없다.
 
+강원 잔여 failed의 예지보전은 전체 재요청이 아니라 3구간 순환 canary로 한다.
+`buildGangwonCanaryPlan(checkpoint, cycle)`이 2~10, 11~20, 21~29 page에서 실패
+identity를 각 1건 고르고, `probeGangwonDetailCanary`가 공식 목록과 상세를 읽기
+전용으로 확인한다. 호출 사이 최소 2초 간격을 지키며 canary 단계에서는 Raw,
+checkpoint, DB를 쓰지 않는다. 세 건이 모두 `healthy`면 다음 회차에서 page와
+identity를 순환한다. 하나라도 비정상이면 분류된 유형과 page 구간만 `/recover`
+후보로 검토하고 자동 복구하지 않는다.
+
+RYP8 데이터 완료 조건은 종료 이력·필드 상태·실패 원인·고정 outcome을 한 번에
+감사한다. PowerShell의 native argument quote 제거를 피하려면 JSON 안의 큰따옴표를
+백슬래시로 보존한다.
+
+```powershell
+$expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\":2360,\"failed\":322}'
+& .\.venv\Scripts\python.exe scripts\audit_regional_ryp8.py `
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints `
+  --review-audit runtime/decisions/regional-review-audit.json `
+  --expected-outcomes $expectedOutcomes `
+  --output runtime/decisions/regional-ryp8-audit.json
+```
+
+`--max-legacy-null-slots`는 계획에서 승인된 수치가 있을 때만 지정한다. 생략하면
+감사기는 임의 기준을 만들지 않고 `legacy_null_within_target=null`과
+`data_ready=false`를 기록한다. 이 명령은 Raw·checkpoint·DB를 변경하지 않고
+Git 제외 감사 보고서만 원자적으로 교체한다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |

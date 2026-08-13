@@ -752,18 +752,25 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
    provenance에 보존하고 공통 정규화 필드로 mapping한다.
 4. 완료: 강원 325건·제주 2건 capture 실패를 유형별 대표 표본으로 제한
    재시도해 페이지 컨텍스트·상세 클릭 계약과 구조화 필드 DOM 부재를 구분한다.
-5. 경남·제주의 종료 이력은 수집 완전성 대조에 남기되 accepted 후보 처리
-   비용을 우선 투입하지 않는다.
+5. 완료: 경남·제주의 종료 checkpoint identity를 Raw replay의 closed outcome과
+   `list_response`·`list_item`·`detail_response` provenance까지 전건 대조한다.
+6. 강원 잔여 실패는 초기·중기·후기 page 구간에서 회차별 1건씩 순환 canary를
+   먼저 확인한다. 비정상 유형이 나온 구간만 제한 batch로 열고, 322건 전체를
+   예방 목적으로 재요청하지 않는다.
 
 #### 완료 기준
 
-- Source가 제공하는 지역·대상·신청 상태 필드가 있는데 selector 누락 때문에
-  review가 된 사례가 남지 않음
+- 승인 Source의 null이 `value_extracted`, `label_present_value_empty`,
+  `label_not_found` 중 하나로 설명되고 legacy `null_unverifiable`가 합의된
+  허용치 이하임
 - 지원하는 날짜·상태 형식은 fixture와 actual 표본에서 동일하게 판정됨
 - 원문에 없는 값은 계속 null·review로 남고 기대 지역명이나 신청 상태를
   synthetic field로 채우지 않음
-- 실패 identity는 성공으로 위장하지 않고 재현 실패 근거 또는 Source 상태를
-  가짐
+- 실패 identity는 원인 유형으로 분류되고, 전건의 현재 상세 상태를 검증한 것처럼
+  기록하지 않음
+- 전체 Python·Node·PostgreSQL 테스트와 문서 검증을 통과하고 Source별 전후
+  감사 수치가 기록됨
+- Slice 시작 outcome 기준선과 운영 DB projection이 바뀌지 않음
 
 #### 진행 결과 (`2026-08-13`)
 
@@ -798,8 +805,16 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   outcome을 교체하며 `accepted` 후보는 중복 기준선 검토 없이 승격하지 않는다.
 - 제한 복구 뒤 감사 합계는 `discovered 4,606 = accepted 18 + duplicate 1 +
   review 1,905 + closed 2,360 + failed 322`, drift 1이다. DB projection은 변경하지
-  않았다. 아직 경남·제주 종료 이력의 수집 완전성 대조가 남아 있으므로 RYP8
-  또는 `RYP-G5`를 완료로 판정하지 않는다.
+  않았다.
+- 경남 closed 1,419건과 제주 closed 926건은 checkpoint identity, Raw replay
+  closed outcome, 3종 provenance가 전건 일치했다. 강원 잔여 322건은 알려진
+  page-context 계약 오류군으로 분류하되 현재 상세 상태를 전건 확인한 것으로
+  간주하지 않고 3구간 순환 canary를 둔다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 8,963개다.
+  계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
+  종료하지 않는다. 다음 제한 재캡처 순서는 기존 계획의 충북·울산·대전·강원·
+  서울을 유지한다. 제주 1,239개 등 그 밖의 legacy는 현재 Slice에서 임의로
+  재배치하지 않고 별도 범위 결정 대상으로 남긴다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 
