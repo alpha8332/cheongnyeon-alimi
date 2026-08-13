@@ -9,10 +9,147 @@ import {
   chungbukConfig,
   daejeonConfig,
   gangwonConfig,
+  gotoWithReadyFallback,
   jejuConfig,
   classifyDetailCanaryObservation,
   ulsanConfig,
+  waitForVisibleWithFallback,
 } from "../scripts/regional-browser-capture-runtime.mjs";
+
+test("navigation timeout continues only when the target DOM already loaded", async () => {
+  const target = "https://regional.example.test/detail?id=149186&page=33";
+  const tab = {
+    goto: async () => {
+      throw new Error("Page.navigate timeout");
+    },
+    playwright: {
+      evaluate: async (callback, input) => {
+        globalThis.location = {href: target};
+        globalThis.document = {
+          querySelector: (selector) => selector === ".detail-ready" ? {} : null,
+        };
+        try {
+          return callback(input);
+        } finally {
+          delete globalThis.location;
+          delete globalThis.document;
+        }
+      },
+    },
+  };
+
+  assert.equal(
+    await gotoWithReadyFallback(tab, target, ".detail-ready"),
+    true,
+  );
+});
+
+test("navigation timeout remains a failure when target DOM is absent", async () => {
+  const timeout = new Error("Page.navigate timeout");
+  const tab = {
+    goto: async () => {
+      throw timeout;
+    },
+    playwright: {
+      evaluate: async () => false,
+    },
+  };
+
+  await assert.rejects(
+    gotoWithReadyFallback(
+      tab,
+      "https://regional.example.test/detail?id=missing",
+      ".detail-ready",
+    ),
+    (error) => error === timeout,
+  );
+});
+
+test("navigation fallback requires the complete target query", async () => {
+  const timeout = new Error("Page.navigate timeout");
+  const target = "https://regional.example.test/detail?id=149186&page=33";
+  const tab = {
+    goto: async () => {
+      throw timeout;
+    },
+    playwright: {
+      evaluate: async (callback, input) => {
+        globalThis.location = {href: `${target}&unexpected=1`};
+        globalThis.document = {querySelector: () => ({})};
+        try {
+          return callback(input);
+        } finally {
+          delete globalThis.location;
+          delete globalThis.document;
+        }
+      },
+    },
+  };
+
+  await assert.rejects(
+    gotoWithReadyFallback(tab, target, ".detail-ready"),
+    (error) => error === timeout,
+  );
+});
+
+test("navigation fallback never absorbs a non-timeout error", async () => {
+  const failure = new Error("navigation target rejected");
+  const tab = {
+    goto: async () => {
+      throw failure;
+    },
+  };
+
+  await assert.rejects(
+    gotoWithReadyFallback(
+      tab,
+      "https://regional.example.test/detail?id=rejected",
+      ".detail-ready",
+    ),
+    (error) => error === failure,
+  );
+});
+
+test("visible locator continues after a wait timeout", async () => {
+  const locator = {
+    waitFor: async () => {
+      throw new Error("locator wait timeout");
+    },
+    isVisible: async () => true,
+  };
+
+  assert.equal(await waitForVisibleWithFallback(locator), true);
+});
+
+test("hidden locator preserves the original wait failure", async () => {
+  const timeout = new Error("locator wait timeout");
+  const locator = {
+    waitFor: async () => {
+      throw timeout;
+    },
+    isVisible: async () => false,
+  };
+
+  await assert.rejects(
+    waitForVisibleWithFallback(locator),
+    (error) => error === timeout,
+  );
+});
+
+test("visible locator never absorbs a non-timeout failure", async () => {
+  const failure = new Error("locator detached");
+  const locator = {
+    waitFor: async () => {
+      throw failure;
+    },
+    isVisible: async () => true,
+  };
+
+  await assert.rejects(
+    waitForVisibleWithFallback(locator),
+    (error) => error === failure,
+  );
+});
 
 const fixtureUrl = new URL(
   "./fixtures/regional/daegu_detail_6104.json",

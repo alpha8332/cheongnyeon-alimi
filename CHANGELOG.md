@@ -10,6 +10,11 @@
 
 ### Fixed
 
+- Browser navigation·locator timeout 뒤 요청 URL과 준비 DOM 또는 visibility가
+  실제로 확인된 경우에만 제한 수집을 계속해, 정상 로드된 충북 상세의 false
+  timeout으로 인한 중단을 방지
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 - 충북 공식 상세의 한글 순번 `제출기한`을 `훈련기간`과 구분해 신청 마감으로
   추출하고, 단일 신청 마감일을 open·ended 상태로 판정하도록 보강
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))

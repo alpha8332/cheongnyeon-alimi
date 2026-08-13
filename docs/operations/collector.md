@@ -369,6 +369,14 @@ RYP8 Browser 제한 재캡처는 loopback 서버의 `/recapture`를 사용한다
 사용한다. source scope는 Raw list response에 staging되지만 RYP9 전에는 Gate의
 승격 근거로 소비하지 않는다.
 
+Browser navigation timeout은 실패 응답으로 단정하기 전에 요청한 URL의
+origin·path·query와 Source별 준비 DOM이 이미 로드됐는지 확인한다. 둘 다
+일치할 때만 현재 DOM으로 계속하고, locator wait timeout도 locator가 실제로
+visible인 경우에만 계속한다. 어느 하나라도 다르면 원래 timeout을 다시
+발생시킨다. 이 fallback은 전송 완료 신호만 보완하며 목록 total·identity drift를
+우회하지 않는다. 울산처럼 현재 공식 total 596과 완료 checkpoint total 597이
+다르면 `/recapture`를 시작하지 않는다.
+
 인천은 `지원내용` heading을 `지원규모`보다 우선하고 `지원대상·지원조건`을
 결합한다. 전북은 `공고상세보기URL`을 공식 신청 channel로 관찰한다. 서울처럼
 완료 checkpoint와 현재 공식 목록 identity가 교체된 Source는 상세 URL이 여전히

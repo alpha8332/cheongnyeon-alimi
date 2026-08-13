@@ -1,5 +1,45 @@
 const clean = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
 
+export async function gotoWithReadyFallback(tab, url, readySelector) {
+  try {
+    await tab.goto(url);
+    return false;
+  } catch (error) {
+    if (!readySelector || !/timeout/i.test(String(error?.message ?? error))) {
+      throw error;
+    }
+    const loaded = await tab.playwright.evaluate(
+      ({targetUrl, selector}) => {
+        const current = new URL(location.href);
+        const target = new URL(targetUrl, location.href);
+        const sortedParams = (urlValue) => [...urlValue.searchParams]
+          .sort(([leftKey, leftValue], [rightKey, rightValue]) => (
+            leftKey.localeCompare(rightKey) || leftValue.localeCompare(rightValue)
+          ));
+        const sameTarget = current.origin === target.origin
+          && current.pathname === target.pathname
+          && JSON.stringify(sortedParams(current))
+            === JSON.stringify(sortedParams(target));
+        return sameTarget && Boolean(document.querySelector(selector));
+      },
+      {targetUrl: url, selector: readySelector},
+    );
+    if (!loaded) throw error;
+    return true;
+  }
+}
+
+export async function waitForVisibleWithFallback(locator, timeoutMs = 20000) {
+  try {
+    await locator.waitFor({state: "visible", timeoutMs});
+    return false;
+  } catch (error) {
+    if (!/timeout/i.test(String(error?.message ?? error))) throw error;
+    if (!(await locator.isVisible())) throw error;
+    return true;
+  }
+}
+
 export async function collectQueryPage({
   tab,
   endpoint,
@@ -44,7 +84,8 @@ export async function collectQueryPage({
 }) {
   const listRequestStartedAt = Date.now();
   const prepareListPage = async () => {
-    await tab.goto(listUrl);
+    const readySelector = listReadySelector || linkSelector;
+    await gotoWithReadyFallback(tab, listUrl, readySelector);
     if (page !== 1 && listPageLinkNavigation) {
       const pageGroup = Math.floor((page - 1) / 10);
       for (let group = 0; group < pageGroup; group += 1) {
@@ -60,12 +101,10 @@ export async function collectQueryPage({
         ).click();
       }
     }
-    const readySelector = listReadySelector || linkSelector;
     if (readySelector) {
-      await tab.playwright.locator(readySelector).first().waitFor({
-        state: "visible",
-        timeoutMs: 20000,
-      });
+      await waitForVisibleWithFallback(
+        tab.playwright.locator(readySelector).first(),
+      );
     }
   };
   await prepareListPage();
@@ -236,13 +275,16 @@ export async function collectQueryPage({
             .first()
             .click();
           if (detailReadySelector) {
-            await tab.playwright.locator(detailReadySelector).first().waitFor({
-              state: "visible",
-              timeoutMs: 20000,
-            });
+            await waitForVisibleWithFallback(
+              tab.playwright.locator(detailReadySelector).first(),
+            );
           }
         } else {
-          await tab.goto(item.detail_url);
+          await gotoWithReadyFallback(
+            tab,
+            item.detail_url,
+            detailContentSelector || detailTitleSelector,
+          );
         }
         if (!detail) detail = await extractDetail(
           tab,

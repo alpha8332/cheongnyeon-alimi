@@ -33,7 +33,7 @@
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
-| RYP8 | in-progress | 충북 313건 보강 뒤 반복 navigation timeout으로 중단, legacy null 7,091개 감소 필요 |
+| RYP8 | in-progress | 충북 441건 보강 완료, 울산 공식 total 596/checkpoint 597 불일치로 중단, legacy null 6,323개 |
 | RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
 ## 구현 내용
@@ -803,7 +803,7 @@ Source별 outcome 전후와 현재 6개 field 관찰 상태는 다음과 같다.
 | Source | RYP7 review/closed/failed | 현재 review/closed/failed | V | E | N | L |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 부산 | 107/0/0 | 107/0/0 | 426 | 2 | 214 | 0 |
-| 충북 | 441/0/0 | 441/0/0 | 114 | 3 | 1,761 | 768 |
+| 충북 | 441/0/0 | 441/0/0 | 115 | 3 | 2,528 | 0 |
 | 대구 | 197/0/0 | 197/0/0 | 592 | 0 | 22 | 568 |
 | 대전 | 12/0/0 | 12/0/0 | 0 | 0 | 0 | 72 |
 | 강원 | 12/0/325 | 14/1/322 | 15 | 0 | 3 | 66 |
@@ -815,9 +815,9 @@ Source별 outcome 전후와 현재 6개 field 관찰 상태는 다음과 같다.
 | 전북 | 89/0/0 | 89/0/0 | 271 | 0 | 2 | 261 |
 | 서울 | 97/13/0 | 97/13/0 | 393 | 0 | 0 | 189 |
 | 울산 | 596/1/0 | 596/1/0 | 8 | 0 | 5 | 3,563 |
-| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 2,325 | 5 | 2,009 | 7,091 |
+| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 2,326 | 5 | 2,776 | 6,323 |
 
-11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 7,091개가 남았다. 계획의
+11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 6,323개가 남았다. 계획의
 “합리적인 수준”에는 수치 기준이 없으므로 감사기가 임의 threshold를 만들지 않고
 `legacy_null_within_target=null`, `data_ready=false`로 판정했다. 따라서 종료 이력
 대조와 실패 분류는 완료됐으나 RYP8은 열린 상태다. 이 Slice의 시작 기준선
@@ -879,3 +879,41 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
   `399 passed, 96 subtests passed` (기존 deprecation warning 1건)
 - `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+### RYP8 충북 재개 완료·울산 total drift 중단 (`2026-08-13`)
+
+- 충북 중단 지점은 새 Browser tab에서 page 33 canary `149185`, `149186`의
+  공식 상세 내용이 모두 정상임을 먼저 확인했다. navigation timeout은 요청한
+  origin·path·query와 준비 DOM이 이미 로드된 경우에만 계속하고, locator wait
+  timeout도 해당 locator가 실제 visible인 경우에만 계속하도록 제한 fallback을
+  추가했다. URL·DOM 또는 visibility가 맞지 않으면 기존 timeout을 그대로
+  발생시킨다.
+- page 1 잔여 7건과 page 33~45의 121건을 최소 2초 간격의 제한 batch로
+  재캡처해 충북 441 identity 관찰을 완료했다. 충북 field slot은
+  `V 114/E 3/N 1,761/L 768 → V 115/E 3/N 2,528/L 0`, 전체 legacy는
+  `7,091 → 6,323`이다.
+- replay 뒤 고정 outcome은 `accepted 18`, `duplicate 1`, `review 1,905`,
+  `closed 2,360`, `failed 322`, drift 1로 유지됐다. checkpoint digest와 운영 DB
+  projection은 변경하지 않았다.
+- 다음 Source 울산의 현재 공식 목록은 `총 596개`이고 첫 page 11개 identity의
+  DOM은 정상이다. 완료 checkpoint total은 597이며 `review 596 + closed 1`로,
+  차이 1건은 별도 종료 identity `37439`다. 지정 중단 조건에 따라 capture
+  endpoint를 열거나 울산 Raw·checkpoint·DB를 쓰지 않았고 대전·강원·서울도
+  시작하지 않았다.
+- timeout fallback은 전송·준비 상태 확인 방식만 보강한다. 울산처럼 total 또는
+  identity가 다른 경우에는 적용하지 않는다. Schema·Fixture 의미·Seed·null
+  enum과 Backend·Frontend 데이터 계약은 변경하지 않았다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `23 passed`
+- regional Gate·review audit·expansion·replay 집중 Python:
+  `52 passed, 12 subtests passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `399 passed, 96 subtests passed` (기존 deprecation warning 1건)
+- RYP8 감사: 충북 `L 0`, 전체 legacy `6,323`, outcome
+  `18/1/1,905/2,360/322`, failed 분류 `322/322`; `data_ready=false`의 유일한
+  blocker는 아직 수치 기준이 없는 `legacy_null_within_target`
+- 테스트 DB 연결 사용자는 `alpha8332`, DB는 `cheongnyeon_alimi_test`이며 public
+  table은 `alembic_version`만 존재하고 `policies` table은 없다. 운영 projection
+  동기화는 실행하지 않았다.
