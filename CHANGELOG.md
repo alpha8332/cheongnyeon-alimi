@@ -10,6 +10,10 @@
 
 ### Fixed
 
+- 충북 공식 상세의 한글 순번 `제출기한`을 `훈련기간`과 구분해 신청 마감으로
+  추출하고, 단일 신청 마감일을 open·ended 상태로 판정하도록 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 - 강원 상세 실패 325건을 목록 page 컨텍스트가 유실된 동일 유형으로 분류해
   대표 3건만 복구하고, 제주 비정형 상세 2건은 공식 제목 기한·등록일 근거로
   종료 판정을 복구하면서 failed 자동 승격을 제한

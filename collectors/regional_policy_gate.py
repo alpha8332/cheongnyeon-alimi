@@ -507,6 +507,11 @@ def _application_availability(
         if as_of > end:
             return ApplicationAvailability.CLOSED, "application_period_ended"
         return ApplicationAvailability.OPEN, "application_period_open"
+    if len(dates) == 1:
+        end = dates[0]
+        if as_of > end:
+            return ApplicationAvailability.CLOSED, "application_period_ended"
+        return ApplicationAvailability.OPEN, "application_period_open"
     if any(marker in normalized for marker in ("접수중", "모집중", "신청 가능")):
         return ApplicationAvailability.OPEN, "application_explicitly_open"
     if _scope_confirms_current_application(source_scope):

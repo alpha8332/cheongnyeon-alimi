@@ -33,7 +33,7 @@
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
-| RYP8 | in-progress | field·selector·실패 분류·종료 이력 대조 완료, legacy null 8,963개 감소 필요 |
+| RYP8 | in-progress | 충북 313건 보강 뒤 반복 navigation timeout으로 중단, legacy null 7,091개 감소 필요 |
 | RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
 ## 구현 내용
@@ -803,7 +803,7 @@ Source별 outcome 전후와 현재 6개 field 관찰 상태는 다음과 같다.
 | Source | RYP7 review/closed/failed | 현재 review/closed/failed | V | E | N | L |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 부산 | 107/0/0 | 107/0/0 | 426 | 2 | 214 | 0 |
-| 충북 | 441/0/0 | 441/0/0 | 4 | 0 | 2 | 2,640 |
+| 충북 | 441/0/0 | 441/0/0 | 114 | 3 | 1,761 | 768 |
 | 대구 | 197/0/0 | 197/0/0 | 592 | 0 | 22 | 568 |
 | 대전 | 12/0/0 | 12/0/0 | 0 | 0 | 0 | 72 |
 | 강원 | 12/0/325 | 14/1/322 | 15 | 0 | 3 | 66 |
@@ -815,9 +815,9 @@ Source별 outcome 전후와 현재 6개 field 관찰 상태는 다음과 같다.
 | 전북 | 89/0/0 | 89/0/0 | 271 | 0 | 2 | 261 |
 | 서울 | 97/13/0 | 97/13/0 | 393 | 0 | 0 | 189 |
 | 울산 | 596/1/0 | 596/1/0 | 8 | 0 | 5 | 3,563 |
-| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 2,215 | 2 | 250 | 8,963 |
+| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 2,325 | 5 | 2,009 | 7,091 |
 
-11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 8,963개가 남았다. 계획의
+11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 7,091개가 남았다. 계획의
 “합리적인 수준”에는 수치 기준이 없으므로 감사기가 임의 threshold를 만들지 않고
 `legacy_null_within_target=null`, `data_ready=false`로 판정했다. 따라서 종료 이력
 대조와 실패 분류는 완료됐으나 RYP8은 열린 상태다. 이 Slice의 시작 기준선
@@ -841,4 +841,41 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
   PostgreSQL: `397 passed, 96 subtests passed` (기존 deprecation warning 1건)
 - RYP8 감사: field slot `11,430/11,430` reconcile, closed history
   `2,345/2,345`, failed 분류 `322/322`, 고정 outcome 일치, legacy blocker 1개
+- `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+### RYP8 충북 page 제한 재캡처 중단 (`2026-08-13`)
+
+- 공식 목록 `441건·45 page`의 identity 441개를 최소 2초 간격으로 전건 읽기
+  대조했다. 현재 목록과 checkpoint의 identity 순서 SHA-256이
+  `6ace75667a11c8fc51ef494dd1c7feca7f659d3133116055883441338deadf90`로
+  같고 중복은 0건이었다.
+- 최신·중기·과거 상세는 모두 `.p-table__content`를 사용했다. 텍스트 원문에는
+  `모집기간`, `접수기간`, `제출기한`이 있었고 이미지·첨부 중심 게시물에는
+  신청기간 텍스트 라벨이 실제로 없었다. 한글 순번 `사.` 뒤의 `제출기한`을
+  신청 마감으로 추출하되 `훈련기간`은 신청기간으로 오인하지 않는 fixture를
+  추가했다.
+- 신청기간 필드에서 추출된 단일 날짜는 마감일로 판정하도록 공통 Gate를
+  보강했다. `2026.07.28.(화)`는 as-of `2026-08-13`에
+  `application_period_ended`이며, Schema·enum·Seed는 변경하지 않았다. 공통
+  Gate 변경이므로 전체 replay에서 다른 Source outcome 변화가 없는지 확인했다.
+- page 1은 대표 3건, page 2~31은 각 10건, page 32는 navigation timeout 전후
+  6건·4건으로 나눠 저장했다. page 32 첫 timeout은 실제 상세 DOM이 정상
+  로드돼 남은 4건 한 번의 제한 재시도로 복구됐다.
+- page 33의 두 번째 identity `149186`에서 navigation timeout이 반복됐다.
+  같은 오류가 재발했으므로 지정 중단 조건에 따라 page 33~45와 다음 순서인
+  울산 작업을 시작하지 않았다. page 33의 첫 묶음도 저장 전에 실패해 완료
+  관찰 범위는 page 1 대표 3건과 page 2~32 전건을 합한 313 identity이며,
+  page 1 잔여 7건과 page 33~45의 121건은 미재캡처 상태다.
+- 충북 field slot은 `V 4/E 0/N 2/L 2,640 → V 114/E 3/N 1,761/L 768`, 전체
+  legacy는 `8,963 → 7,091`이다. checkpoint outcome은 `accepted 18`,
+  `duplicate 1`, `review 1,905`, `closed 2,360`, `failed 322`, drift 1로
+  유지됐고 checkpoint digest도 변경되지 않았다. DB 동기화는 실행하지 않았다.
+
+검증 결과:
+
+- 충북 Browser fixture·runtime syntax: `16 passed`
+- regional Gate·review audit·expansion·replay 집중 Python:
+  `56 passed, 12 subtests passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `399 passed, 96 subtests passed` (기존 deprecation warning 1건)
 - `python scripts/validate_docs.py`, `git diff --check`: 통과

@@ -386,6 +386,46 @@ class RegionalPolicyGateTests(unittest.TestCase):
         self.assertIs(ApplicationAvailability.CLOSED, decision.application)
         self.assertIn("application_period_ended", decision.reason_codes)
 
+    def test_single_application_deadline_is_classified_as_end_date(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(),
+            organization="충청북도 청년정책과",
+            eligibility="충청북도 거주 청년",
+            application_period="2026.07.28.(화)",
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="충청북도",
+            as_of=date(2026, 8, 13),
+        )
+
+        self.assertIs(ApplicationAvailability.CLOSED, decision.application)
+        self.assertIn("application_period_ended", decision.reason_codes)
+
+    def test_single_future_application_deadline_is_open(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(),
+            organization="충청북도 청년정책과",
+            eligibility="충청북도 거주 청년",
+            application_period="2026.08.31.(월)",
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="충청북도",
+            as_of=date(2026, 8, 13),
+        )
+
+        self.assertIs(ApplicationAvailability.OPEN, decision.application)
+        self.assertIn("application_period_open", decision.reason_codes)
+
     def test_youth_scope_needs_item_marker_or_explicit_age(self) -> None:
         case = self.fixture["cases"][0]
         selected_policy, selected_evidence = scoped_policy_and_evidence(

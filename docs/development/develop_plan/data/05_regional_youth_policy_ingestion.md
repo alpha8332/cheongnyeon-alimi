@@ -810,7 +810,13 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   closed outcome, 3종 provenance가 전건 일치했다. 강원 잔여 322건은 알려진
   page-context 계약 오류군으로 분류하되 현재 상세 상태를 전건 확인한 것으로
   간주하지 않고 3구간 순환 canary를 둔다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 8,963개다.
+- 충북은 공식 목록 441건·45 page가 완료 checkpoint와 순서까지 일치했다.
+  page 1 대표 3건과 page 2~32 전건, 합계 313건을 제한 재캡처해 충북
+  `null_unverifiable`를
+  `2,640 → 768`, 전체를 `8,963 → 7,091`로 줄였다. page 33의 두 번째 상세에서
+  브라우저 navigation timeout이 반복돼 지정 중단 조건에 따라 후속 page와 울산
+  이후 Source 작업을 멈췄다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 7,091개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
   종료하지 않는다. 다음 제한 재캡처 순서는 기존 계획의 충북·울산·대전·강원·
   서울을 유지한다. 제주 1,239개 등 그 밖의 legacy는 현재 Slice에서 임의로

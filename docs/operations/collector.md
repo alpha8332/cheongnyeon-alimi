@@ -410,6 +410,12 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 `data_ready=false`를 기록한다. 이 명령은 Raw·checkpoint·DB를 변경하지 않고
 Git 제외 감사 보고서만 원자적으로 교체한다.
 
+신청기간 필드에서 날짜가 하나만 추출되면 그 날짜를 신청 마감일로 판정한다.
+as-of가 마감일을 지났으면 `application_period_ended`, 같거나 이전이면
+`application_period_open`이다. 이는 `제출기한` 같은 명시적 신청기간 계열
+라벨에서 추출된 값에 적용하며, `훈련기간`·행사일처럼 다른 의미의 날짜를
+신청기간으로 mapping하는 근거는 아니다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |

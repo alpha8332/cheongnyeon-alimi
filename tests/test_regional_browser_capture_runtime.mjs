@@ -42,6 +42,13 @@ const chungbukFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/chungbuk_detail_440062.json", import.meta.url),
   "utf8",
 ));
+const chungbukSubmissionDeadlineFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/chungbuk_detail_440288_submission_deadline.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
 const ulsanFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/ulsan_detail_60156.json", import.meta.url),
   "utf8",
@@ -207,6 +214,19 @@ test("Chungbuk numbered prose preserves application period evidence", () => {
   assert.equal(
     detail.evidence_observations.application_period.status,
     "value_extracted",
+  );
+});
+
+test("Chungbuk uses the submission deadline instead of the training period", () => {
+  const detail = buildDetail(
+    chungbukSubmissionDeadlineFixture.expected_title,
+    chungbukSubmissionDeadlineFixture.extracted,
+  );
+
+  assert.equal(detail.application_period, "2026.07.28.(화)");
+  assert.equal(
+    detail.evidence_observations.application_period.label,
+    "제출기한",
   );
 });
 
