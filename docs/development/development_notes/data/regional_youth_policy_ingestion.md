@@ -32,7 +32,7 @@
 | RYP4 | completed | snapshot·PostgreSQL 기준선과 보수적 교차 Source 제외 Gate |
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
-| RYP7 | in-progress | review 1,903건 Source별 사유 감사와 승격 계약 보강 |
+| RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | planned | Source별 지역·청년 대상·신청 상태 field·selector 보강 |
 | RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
@@ -562,3 +562,66 @@ provenance를 사용하지 못하는 과도하게 엄격한 부분이 확인됐�
 이를 무조건 완화하지 않고, 고정된 공식 목록 scope와 policy-level 지역·청년
 근거를 함께 요구하는 조합을 fixture와 actual 표본으로 승인한다. 실제 원문에
 없는 지역·연령·기간은 합성하지 않는다.
+
+#### RYP7 구현과 actual 감사
+
+- `RegionalSourceScopeEvidence`를 Data 내부 판정 계약에 추가했다. scope 근거는
+  같은 정책의 `list_response` provenance에 속해야 하며 공식 관할·운영 주체와
+  정책별 대상 또는 시행기관 지역 근거 중 하나를 함께 만족해야 한다.
+- 진행중 목록 scope는 신청기간이 null·미해석일 때만 open 보조 근거가 된다.
+  정책별 명시 마감·종료일은 scope보다 우선한다.
+- 모든 regional decider에서 청년 대상을 독립 판정한다. 제목·대상·연령·분류의
+  명시적 청년·청소년·대학생 문구 또는 청년정책 scope와 정책별 숫자 연령의
+  조합만 허용한다. 청년 포털 위치만으로는 승인하지 않는다.
+- 공통 Browser capture는 각 상세 필드를 `value_extracted`,
+  `label_present_value_empty`, `label_not_found`로 관찰해 다음 재캡처부터 selector
+  누락과 원문 빈 값을 분리한다. 과거 Raw에는 이 관찰이 없어 호환 replay에서는
+  `null_unverifiable`로 남긴다.
+- `audit_regional_reviews.py`는 checkpoint outcome과 현재 replay identity가
+  정확히 일치할 때만 Source별 사유·조합·필드 coverage 보고서를 원자적으로
+  작성한다. Runtime 보고서는 Git 제외 경계에 둔다.
+
+actual 보고서 집계:
+
+| Source | review | 지역 근거 | 신청 상태 | 청년 미확인 | failed | legacy capture gap |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 부산 | 107 | 105 | 0 | 5 | 0 | 있음 |
+| 충북 | 441 | 441 | 441 | 136 | 0 | 있음 |
+| 대구 | 197 | 197 | 12 | 116 | 0 | 있음 |
+| 대전 | 12 | 12 | 12 | 3 | 0 | 있음 |
+| 강원 | 12 | 12 | 12 | 2 | 325 | 있음 |
+| 광주 | 31 | 31 | 0 | 9 | 0 | 있음 |
+| 경북 | 58 | 56 | 5 | 19 | 0 | 없음 |
+| 경남 | 28 | 28 | 28 | 12 | 0 | 있음 |
+| 인천 | 28 | 28 | 11 | 0 | 0 | 있음 |
+| 제주 | 207 | 207 | 207 | 152 | 2 | 있음 |
+| 전북 | 89 | 65 | 1 | 40 | 0 | 있음 |
+| 서울 | 97 | 97 | 94 | 18 | 0 | 있음 |
+| 울산 | 596 | 596 | 596 | 213 | 0 | 있음 |
+| **합계** | **1,903** | **1,875** | **1,419** | **725** | **327** | **12 Source** |
+
+신청 상태 route 합계 1,419건은 `application_period_missing 1,321 +
+application_period_unresolved 96 + budget_exhaustion_state_unknown 2`다.
+한 review가 지역·신청·청년 사유를 동시에 가질 수 있다. RYP7은 원인을 감사하고
+안전한 승격 조합을 구현한 Slice이며 legacy null 12개 Source의 실제 label·값
+재확인은 RYP8 범위다. actual 감사 후 checkpoint accepted 18·duplicate 1과 DB는
+변경하지 않았다. 경북 `external_id=1009`는 과거 중복 Gate에서 duplicate로
+제외됐지만 통합 청년 Gate에서는 `youth_target_unconfirmed`다. 두 판정 모두
+미적재이므로 사용자 DB 영향은 없고 감사 보고서의
+`checkpoint_decision_drift=1`로 보존했다. RYP9 재판정 때 checkpoint outcome을
+현재 Gate 순서와 일치시킨다.
+
+RYP7 검증:
+
+- actual 감사 CLI: 13 Source·4,606 discovered·1,903 review·327 failed·
+  legacy capture gap 12 Source·checkpoint drift 1건을 재현하고 종료 코드 0
+- 지역 Gate·Source-scope·필드 관찰·감사 집중 회귀:
+  `57 passed, 14 subtests passed`
+- 전체 Python: `362 passed, 24 skipped, 96 subtests passed`
+- PostgreSQL 통합: `8 passed`
+- Browser capture JavaScript `node --check`: 통과
+- `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+PostgreSQL 통합은 기존 로컬 전용 `_test` DB와 pgpass를 사용했으며 새 패키지를
+설치하지 않았다. RYP7은 DB transaction을 실행하지 않는 actual 감사 Slice이고,
+통합 테스트만 임시 테스트 transaction·migration 경계에서 실행했다.

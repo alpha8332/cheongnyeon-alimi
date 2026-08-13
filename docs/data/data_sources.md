@@ -88,12 +88,26 @@ EligibilitySummary에 Source field evidence로 연결하며 개인 휴대전화�
 구조화하지 않는다.
 
 이 수치는 pagination·checkpoint·누락 없는 outcome 합계의 RYP6 기준선이지
-지역별 사용자 검색 커버리지 완료를 뜻하지 않는다. RYP7~RYP9에서 Source별
-review 사유와 field coverage를 감사하고, 공식 관할 목록·청년정책 taxonomy·
+지역별 사용자 검색 커버리지 완료를 뜻하지 않는다. RYP7에서 Source별 review
+사유와 field coverage를 감사했고, RYP8~RYP9에서 공식 관할 목록·청년정책 taxonomy·
 진행중 상태의 Source-level provenance와 정책별 원문 근거를 함께 만족하는
 정책만 재판정한다. 지원하는 비차단 지역에서 open 고유 정책이 실제로 존재하면
 DB·API·Browser 검색에 노출해야 하며, 추출 누락 때문에 accepted가 0건인 상태는
 완료로 인정하지 않는다.
+
+RYP7은 지역 포털이라는 위치를 정책 근거로 치환하지 않으면서 승인된 목록
+scope를 사용할 수 있는 내부 계약을 고정한다. Source-scope는 같은 정책의
+`list_response` provenance, 공식 관할·운영 주체와 정책별 대상 또는 시행기관
+지역 근거 중 하나가 함께 있어야 지역 근거로 사용할 수 있다. 청년정책 목록도
+단독으로는 부족하고 정책별 청년 문구 또는 명시 숫자 연령이 필요하다. 진행중
+목록 scope는 정책별 마감·종료 근거보다 우선하지 않는다.
+
+Browser capture는 다음 실제 수집부터 필드별 `value_extracted`,
+`label_present_value_empty`, `label_not_found`를 Raw detail에 함께 보존한다. 이를
+통해 원문 라벨의 빈 값과 공통 selector가 라벨을 찾지 못한 경우를 구분한다.
+이 관찰 계약이 없던 기존 Raw null은 `null_unverifiable`이며 값 부재로 단정하지
+않는다. RYP7 actual 감사는 review 1,903건 중 지역 근거 부족 1,875건, 신청 상태
+검토 1,419건, 청년 대상 미확인 725건을 확인했다. 사유는 중복될 수 있다.
 
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영

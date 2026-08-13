@@ -113,6 +113,8 @@ from collectors.regional_policy_gate import (
     RegionalityStatus,
     RegionalPolicyDecision,
     RegionalPolicyEvidence,
+    RegionalSourceScopeEvidence,
+    enforce_youth_target,
     evaluate_regional_policy,
 )
 from collectors.registry import CollectorRegistry, default_registry
@@ -214,6 +216,7 @@ __all__ = [
     "RegionalityStatus",
     "RegionalPolicyDecision",
     "RegionalPolicyEvidence",
+    "RegionalSourceScopeEvidence",
     "RegionalSourceProfile",
     "SEOUL_SOURCE_ID",
     "SeoulBrowserCaptureStore",
@@ -237,6 +240,7 @@ __all__ = [
     "decide_expanded_regional_policy",
     "decide_representative_regional_policy",
     "evaluate_cross_source_duplicate",
+    "enforce_youth_target",
     "evaluate_regional_policy",
     "load_approved_regional_profile",
     "map_gyeongbuk_duplicate_evidence",

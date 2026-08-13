@@ -5,8 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP6`·`RYP-G4` 수집 인프라 완료, `RYP7` review
-  사유 감사 진행
+- 현재 진행: `RYP0`~`RYP7`·`RYP-G4` 완료, `RYP8` Source별 필드 추출 예정
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -18,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP7` Source별 review 사유·필드 coverage 감사와 승격 계약 보강
+- 현재 Slice: `RYP8` Source별 지역·청년 대상·신청 상태 필드 추출 보강
 
 ## 목적
 
@@ -714,10 +713,32 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
 #### 완료 기준
 
 - 1,903건 review가 Source별·사유별로 재현 가능하게 집계됨
-- 지원하는 각 Source에서 추출 누락과 원문 부재가 구분됨
+- 필드가 추출됨, 라벨은 있으나 원문 값이 비어 있음, capture contract가 라벨을
+  찾지 못함, 과거 Raw라 구분 불가 상태가 감사 결과에서 서로 구분됨
 - Source-level 근거를 사용할 수 있는 조합과 사용할 수 없는 조합이 테스트로
   고정됨
 - 근거 조합 완화가 전국 재게시·타 지역·비청년·마감 정책을 승인하지 않음
+
+#### 완료 결과 (`2026-08-13`)
+
+- 13개 checkpoint와 동일 Raw를 재생해 `discovered 4,606 = accepted 18 +
+  duplicate 1 + review 1,903 + closed 2,357 + failed 327`을 재대조했다.
+- review 사유는 지역 근거 부족 1,875건, 신청 상태 검토 1,419건, 청년 대상
+  미확인 725건이다. 한 정책이 여러 사유를 가질 수 있어 사유 합은 review 수와
+  같지 않다.
+- Source-scope는 `list_response` provenance, 공식 관할·운영 주체와 정책별 대상
+  또는 시행기관 근거를 함께 요구한다. 청년정책 목록만으로는 승인하지 않고
+  정책별 청년 문구 또는 명시 연령을 추가로 요구한다.
+- 진행중 목록 scope는 정책별 마감 근거보다 우선하지 않으며, 전국·타 지역은
+  기존처럼 제외한다.
+- Browser capture에 `value_extracted`, `label_present_value_empty`,
+  `label_not_found` 관찰 계약을 추가했다. 과거 Raw는 그대로 재생하지만 12개
+  Source의 legacy null은 현재 구분 불가로 남아 RYP8 재캡처 대상이다.
+- 경북 중복 제외 1건은 새 청년 Gate에서는 `youth_target_unconfirmed`지만 기존
+  checkpoint에는 `duplicate`다. 어느 경로에서도 DB에 적재되지 않으며 감사
+  보고서가 drift 1건으로 명시한다. RYP9 전체 재판정에서 checkpoint를 맞춘다.
+- 감사 보고서는 `runtime/decisions/regional-review-audit.json`에 원자적으로
+  생성하며 Git에 포함하지 않는다. 이 Slice에서는 DB를 변경하지 않았다.
 
 ### RYP8 - Source별 필드 추출 보강
 

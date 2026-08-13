@@ -9,9 +9,9 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0`~`RYP6`·`RYP-G4` 수집 인프라 완료,
-  `RYP7` review 사유 감사 진행 (`DTL4-4B`·`ES4` actual 세로 인수 포함),
-  이후 RYP8~RYP9·Data 06 구현과 `DTL4-5` 소비 대조 예정
+- 현재 Slice: Data 05 `RYP0`~`RYP7`·`RYP-G4` 완료,
+  `RYP8` Source별 필드 추출 예정 (`DTL4-4B`·`ES4` actual 세로 인수 포함),
+  이후 RYP9·Data 06 구현과 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -102,6 +102,11 @@ PostgreSQL 동기화, 동일 Raw unchanged, Release 1 golden 기술 회귀를 �
 존재하므로 Forest는 다시 `in-progress`로 두고, RYP7~RYP9에서 review 사유 감사·
 Source별 필드 추출·지역 검색 actual을 마친 뒤 완료 판정한다. Data 06·DTL4-5·
 주차 전체 `W4-G4`도 완료로 소급하지 않는다.
+
+같은 날 RYP7은 review 1,903건을 지역 근거 1,875건·신청 상태 1,419건·청년
+미확인 725건으로 중복 사유 감사하고 Source-scope·필드 관찰 계약을 고정해
+완료했다. legacy null이 남은 12개 Source의 실제 라벨·값 보강은 RYP8, 전체
+accepted 재판정과 지역 검색 actual은 RYP9에서 수행한다.
 
 ## 권장 5일 배치
 
@@ -706,7 +711,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
 - [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
-- [ ] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료
+- [x] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료
 - [ ] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
 - [ ] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
 - [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과

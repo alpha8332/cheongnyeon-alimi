@@ -152,6 +152,95 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
             stdout.getvalue(),
         )
 
+    def test_capture_preserves_field_presence_observations(self) -> None:
+        capture = daegu_capture()
+        detail = capture["items"][0]["detail"]
+        detail["eligibility"] = None
+        detail["evidence_observations"] = {
+            field_name: {
+                "label": field_name if value is not None else None,
+                "status": (
+                    "value_extracted" if value is not None else "label_not_found"
+                ),
+            }
+            for field_name, value in detail.items()
+            if field_name != "title"
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            store = RawDocumentStore(root / "raw")
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID,
+                store=store,
+                now=lambda: NOW,
+            ).save(capture)
+            documents = tuple(store.load(path) for path in result.stored_paths)
+            selected = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                documents
+            )[0]
+
+        decision = decide_expanded_regional_policy(
+            selected, as_of=date(2026, 8, 11)
+        )
+        observations = dict(decision.evidence.field_observations)
+        self.assertEqual(
+            "value_extracted",
+            observations["implementing_organization_text"],
+        )
+        self.assertEqual(
+            "label_not_found", observations["region_eligibility_text"]
+        )
+
+    def test_capture_rejects_observation_that_disagrees_with_value(self) -> None:
+        capture = daegu_capture()
+        detail = capture["items"][0]["detail"]
+        detail["evidence_observations"] = {
+            field_name: {"label": None, "status": "label_not_found"}
+            for field_name in detail
+            if field_name != "title"
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID,
+                store=RawDocumentStore(Path(temp_dir) / "raw"),
+                now=lambda: NOW,
+            )
+            with self.assertRaisesRegex(ExtractionError, "contract drift"):
+                store.save(capture)
+
+    def test_capture_accepts_present_label_with_empty_source_value(self) -> None:
+        capture = daegu_capture()
+        detail = capture["items"][0]["detail"]
+        detail["eligibility"] = None
+        detail["evidence_observations"] = {
+            field_name: {
+                "label": (
+                    "지원대상"
+                    if field_name == "eligibility"
+                    else field_name
+                    if value is not None
+                    else None
+                ),
+                "status": (
+                    "label_present_value_empty"
+                    if field_name == "eligibility"
+                    else "value_extracted"
+                    if value is not None
+                    else "label_not_found"
+                ),
+            }
+            for field_name, value in detail.items()
+            if field_name != "title"
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID,
+                store=RawDocumentStore(Path(temp_dir) / "raw"),
+                now=lambda: NOW,
+            ).save(capture)
+
+        self.assertEqual(1, result.item_count)
+
     def test_capture_cli_rejects_invalid_root_without_raw(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

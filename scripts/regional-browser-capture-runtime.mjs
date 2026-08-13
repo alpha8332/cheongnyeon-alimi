@@ -278,7 +278,7 @@ async function extractDetail(tab, expectedTitle, detailTitleSelector) {
         }
         value = squash(chunks.join(" "));
       }
-      if (key && value && !pairs[key]) pairs[key] = value;
+      if (key && !(key in pairs)) pairs[key] = value;
     }
     return {
       body: compact(document.body?.innerText || document.body?.textContent),
@@ -304,21 +304,33 @@ function buildDetail(title, extracted) {
     throw new Error("detail title does not match list");
   }
   const pairs = extracted.pairs;
-  const find = (pattern) => Object.entries(pairs).find(([key]) => pattern.test(key))?.[1] ?? null;
-  return {
-    title,
-    organization: find(/기관명|주관기관|운영기관|담당기관|시행기관/),
-    category: find(/분야|유형|카테고리|정책유형/),
-    application_period: find(/모집일시|신청기간|접수기간|모집기간/),
-    source_region: find(/사업지역|지역|거주지/),
-    eligibility: find(/지원대상|신청대상|대상|자격|지원조건/),
-    support_content: find(/지원내용|지원규모|사업내용|정책내용|주요내용|혜택/),
-    application_method: find(/신청방법|접수방법|신청링크|접수처/),
-    contact: find(/문의처|문의|담당자|연락처/),
-    required_documents: find(/필요서류|제출서류|구비서류|첨부파일/),
-    exclusions: find(/제외|지원제외|제한/),
-    age: find(/연령|나이/),
+  const observations = {};
+  const find = (field, pattern) => {
+    const match = Object.entries(pairs).find(([key]) => pattern.test(key));
+    const value = clean(match?.[1]) || null;
+    observations[field] = {
+      label: match?.[0] ?? null,
+      status: match
+        ? (value ? "value_extracted" : "label_present_value_empty")
+        : "label_not_found",
+    };
+    return value;
   };
+  const detail = {
+    title,
+    organization: find("organization", /기관명|주관기관|운영기관|담당기관|시행기관/),
+    category: find("category", /분야|유형|카테고리|정책유형/),
+    application_period: find("application_period", /모집일시|신청기간|접수기간|모집기간/),
+    source_region: find("source_region", /사업지역|지역|거주지/),
+    eligibility: find("eligibility", /지원대상|신청대상|대상|자격|지원조건/),
+    support_content: find("support_content", /지원내용|지원규모|사업내용|정책내용|주요내용|혜택/),
+    application_method: find("application_method", /신청방법|접수방법|신청링크|접수처/),
+    contact: find("contact", /문의처|문의|담당자|연락처/),
+    required_documents: find("required_documents", /필요서류|제출서류|구비서류|첨부파일/),
+    exclusions: find("exclusions", /제외|지원제외|제한/),
+    age: find("age", /연령|나이/),
+  };
+  return {...detail, evidence_observations: observations};
 }
 
 async function postCapture(endpoint, token, capture) {

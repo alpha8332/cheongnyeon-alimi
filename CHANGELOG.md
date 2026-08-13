@@ -10,6 +10,11 @@
 
 ### Added
 
+- 지역 Source review 1,903건을 사유·필드 coverage로 감사하고, 공식 목록 scope와
+  정책별 지역·청년 근거를 함께 요구하는 안전한 승격 계약 및 Browser 필드 관찰
+  상태를 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 - 13개 승인 지역 Source에서 4,606개 정책 identity를 checkpoint 기반으로 전체
   순회해 수집 인프라 기준 신청 가능성·지역 고유성·온통청년/복지로 중복을
   누락 없이 분류하고,

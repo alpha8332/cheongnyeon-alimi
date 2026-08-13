@@ -32,6 +32,7 @@ from collectors.regional_policy_gate import (
     RegionalPolicyDecision,
     RegionalPolicyEvidence,
     RegionalityStatus,
+    enforce_youth_target,
     evaluate_regional_policy,
 )
 from collectors.regional_profile import load_approved_regional_profile
@@ -55,6 +56,17 @@ _DETAIL_FIELDS = (
     "exclusions",
     "age",
 )
+_OBSERVABLE_DETAIL_FIELDS = tuple(
+    value for value in _DETAIL_FIELDS if value != "title"
+)
+_CAPTURE_TO_EVIDENCE_FIELD = {
+    "organization": "implementing_organization_text",
+    "eligibility": "region_eligibility_text",
+    "application_method": "application_channel_text",
+    "support_content": "additional_benefit_text",
+    "source_region": "source_region_text",
+    "application_period": "application_period_text",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -450,6 +462,7 @@ class RegionalBrowserCaptureStore:
                     and _text(detail.get(field)) is None
                     for field in _DETAIL_FIELDS
                 )
+                or not _valid_detail_observations(detail)
             ):
                 raise ExtractionError("regional Browser item contract drift")
             seen.add(external_id)
@@ -597,6 +610,14 @@ def decide_expanded_regional_policy(
         spec = REGIONAL_EXPANSION_SPECS[policy.source_id]
     except KeyError:
         raise ExtractionError("expanded regional decision source is unsupported") from None
+    source_fields = policy.extra.get("source_fields")
+    detail = (
+        source_fields.get("detail_response")
+        if isinstance(source_fields, Mapping)
+        else None
+    )
+    if not isinstance(detail, Mapping):
+        raise ExtractionError("expanded regional detail evidence is missing")
     values = {
         "implementing_organization_text": policy.organization,
         "region_eligibility_text": policy.eligibility_text,
@@ -613,6 +634,7 @@ def decide_expanded_regional_policy(
             if value is not None
         ),
         provenance=policy.provenance,
+        field_observations=_regional_field_observations(detail),
     )
     decision = evaluate_regional_policy(
         policy,
@@ -620,31 +642,56 @@ def decide_expanded_regional_policy(
         expected_region_text=spec.expected_region_text,
         as_of=as_of,
     )
-    youth_evidence = " ".join(
-        value
-        for value in (
-            policy.title,
-            policy.eligibility_text,
-            policy.age_text,
-        )
-        if value is not None
-    )
-    if decision.accepted and not any(
-        marker in youth_evidence for marker in ("청년", "청소년", "대학생")
+    return enforce_youth_target(policy, decision)
+
+
+def _regional_field_observations(
+    detail: Mapping[str, Any],
+) -> tuple[tuple[str, str], ...]:
+    observations = detail.get("evidence_observations")
+    if not isinstance(observations, Mapping):
+        return ()
+    selected: list[tuple[str, str]] = []
+    for capture_field, evidence_field in _CAPTURE_TO_EVIDENCE_FIELD.items():
+        observation = observations.get(capture_field)
+        if not isinstance(observation, Mapping):
+            continue
+        status = observation.get("status")
+        if isinstance(status, str):
+            selected.append((evidence_field, status))
+    return tuple(selected)
+
+
+def _valid_detail_observations(detail: Mapping[str, Any]) -> bool:
+    observations = detail.get("evidence_observations")
+    if observations is None:
+        return True
+    if (
+        not isinstance(observations, Mapping)
+        or set(observations) != set(_OBSERVABLE_DETAIL_FIELDS)
     ):
-        return RegionalPolicyDecision(
-            source_id=decision.source_id,
-            external_id=decision.external_id,
-            regionality=RegionalityStatus.REGIONAL_REVIEW_REQUIRED,
-            application=decision.application,
-            reason_codes=(
-                *decision.reason_codes,
-                "youth_target_unconfirmed",
-            ),
-            evidence=decision.evidence,
-            accepted_policy=None,
-        )
-    return decision
+        return False
+    for field_name in _OBSERVABLE_DETAIL_FIELDS:
+        observation = observations[field_name]
+        if not isinstance(observation, Mapping):
+            return False
+        status = observation.get("status")
+        label = observation.get("label")
+        if (
+            status
+            not in {
+                "value_extracted",
+                "label_present_value_empty",
+                "label_not_found",
+            }
+            or label is not None
+            and (not isinstance(label, str) or not label.strip())
+            or (status == "value_extracted")
+            != (detail.get(field_name) is not None)
+            or (status == "label_not_found") != (label is None)
+        ):
+            return False
+    return True
 
 
 def map_expanded_duplicate_evidence(policy: ExtractedPolicy) -> DuplicateEvidence:

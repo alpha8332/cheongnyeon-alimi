@@ -33,6 +33,7 @@ from collectors.regional_profile import (
 from collectors.regional_policy_gate import (
     RegionalPolicyDecision,
     RegionalPolicyEvidence,
+    enforce_youth_target,
     evaluate_regional_policy,
 )
 from collectors.source_common import response_content_type, safe_parse_error
@@ -495,11 +496,14 @@ def decide_representative_regional_policy(
         ),
         provenance=policy.provenance,
     )
-    return evaluate_regional_policy(
+    return enforce_youth_target(
         policy,
-        evidence,
-        expected_region_text=expected,
-        as_of=as_of,
+        evaluate_regional_policy(
+            policy,
+            evidence,
+            expected_region_text=expected,
+            as_of=as_of,
+        ),
     )
 
 

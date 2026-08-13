@@ -325,6 +325,30 @@ total보다 적은 발견·판정으로 종료하거나 이미 발견·판정한
 추가하면 실패한다. 저장이나 체크포인트 갱신이 실패하면 해당 호출이 새로 만든
 Raw를 제거하며 기존 체크포인트는 유지한다.
 
+RYP7 이후 공통 Browser 상세 캡처는 구조화 필드 값과 함께 라벨 관찰 상태를
+기록한다. `value_extracted`는 라벨과 값이 모두 확인됨,
+`label_present_value_empty`는 라벨은 있으나 원문 값이 비어 있음,
+`label_not_found`는 현재 capture contract가 라벨을 찾지 못했음을 뜻한다. 마지막
+상태를 원문 값 부재로 간주하지 않는다. 관찰 필드가 없는 과거 Raw는 계속
+재생할 수 있지만 review 감사에서 `null_unverifiable`로 분류한다.
+
+DB를 변경하지 않고 완료 checkpoint와 현재 regional replay의 review 사유·필드
+coverage를 대조하려면 다음 명령을 사용한다.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\audit_regional_reviews.py `
+  --as-of 2026-08-13 `
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints `
+  --output runtime/decisions/regional-review-audit.json
+```
+
+checkpoint가 미완료이거나 replay identity가 다르면 실패한다. accepted·review·
+closed outcome이 현재 regional Gate와 충돌해 DB projection에 영향을 줄 수
+있어도 실패한다. 이미 미적재인 duplicate가 새 Gate에서 review로 바뀐 경우는
+숨기지 않고 `checkpoint_decision_drift`로 집계한다. 보고서는 Git 제외 Runtime
+경계에 원자적으로 작성되며 Raw payload를 포함하지 않는다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |

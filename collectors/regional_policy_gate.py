@@ -36,6 +36,22 @@ _EVIDENCE_FIELDS = frozenset(
         "application_period_text",
     }
 )
+_SOURCE_SCOPE_FIELDS = frozenset(
+    {
+        "jurisdiction_text",
+        "operator_text",
+        "youth_policy_scope_text",
+        "application_scope_text",
+    }
+)
+_YOUTH_MARKERS = ("청년", "청소년", "대학생")
+_FIELD_OBSERVATION_STATUSES = frozenset(
+    {
+        "value_extracted",
+        "label_present_value_empty",
+        "label_not_found",
+    }
+)
 
 
 class RegionalityStatus(str, Enum):
@@ -52,6 +68,71 @@ class ApplicationAvailability(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
+class RegionalSourceScopeEvidence:
+    """Approved list-scope evidence; never sufficient without item evidence."""
+
+    jurisdiction_text: str
+    operator_text: str
+    youth_policy_scope_text: str | None
+    application_scope_text: str | None
+    field_locators: tuple[tuple[str, str], ...]
+    provenance: tuple[SourceProvenance, ...]
+
+    def __post_init__(self) -> None:
+        if self.jurisdiction_text is None or self.operator_text is None:
+            raise ValueError(
+                "regional Source scope requires jurisdiction and operator"
+            )
+        for field_name in _SOURCE_SCOPE_FIELDS:
+            value = getattr(self, field_name)
+            if value is not None and (
+                not isinstance(value, str)
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"{field_name} must be normalized text or null"
+                )
+        locator_names = [name for name, _ in self.field_locators]
+        if (
+            len(locator_names) != len(set(locator_names))
+            or any(name not in _SOURCE_SCOPE_FIELDS for name in locator_names)
+            or any(
+                not isinstance(locator, str)
+                or not locator
+                or locator != locator.strip()
+                for _, locator in self.field_locators
+            )
+        ):
+            raise ValueError("regional Source scope locators are invalid")
+        populated = {
+            field_name
+            for field_name in _SOURCE_SCOPE_FIELDS
+            if getattr(self, field_name) is not None
+        }
+        if populated != set(locator_names):
+            raise ValueError(
+                "each regional Source scope value requires one locator"
+            )
+        if not self.provenance or not any(
+            value.document_role.value == "list_response"
+            for value in self.provenance
+        ):
+            raise ValueError(
+                "regional Source scope requires list_response provenance"
+            )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            field_name: getattr(self, field_name)
+            for field_name in sorted(_SOURCE_SCOPE_FIELDS)
+        } | {
+            "field_locators": dict(self.field_locators),
+            "provenance": [item.to_dict() for item in self.provenance],
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class RegionalPolicyEvidence:
     implementing_organization_text: str | None
     region_eligibility_text: str | None
@@ -61,6 +142,8 @@ class RegionalPolicyEvidence:
     application_period_text: str | None
     field_locators: tuple[tuple[str, str], ...]
     provenance: tuple[SourceProvenance, ...]
+    source_scope: RegionalSourceScopeEvidence | None = None
+    field_observations: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         for field_name in _EVIDENCE_FIELDS:
@@ -96,6 +179,36 @@ class RegionalPolicyEvidence:
             )
         if not self.provenance:
             raise ValueError("regional evidence requires provenance")
+        if self.source_scope is not None:
+            if not isinstance(self.source_scope, RegionalSourceScopeEvidence):
+                raise ValueError("regional Source scope evidence is invalid")
+            policy_raw_ids = {
+                value.raw_document_id for value in self.provenance
+            }
+            scope_raw_ids = {
+                value.raw_document_id
+                for value in self.source_scope.provenance
+            }
+            if not scope_raw_ids.issubset(policy_raw_ids):
+                raise ValueError(
+                    "regional Source scope provenance must belong to policy"
+                )
+        observation_names = [name for name, _ in self.field_observations]
+        if (
+            len(observation_names) != len(set(observation_names))
+            or any(name not in _EVIDENCE_FIELDS for name in observation_names)
+            or any(
+                status not in _FIELD_OBSERVATION_STATUSES
+                for _, status in self.field_observations
+            )
+        ):
+            raise ValueError("regional field observations are invalid")
+        for field_name, status in self.field_observations:
+            value = getattr(self, field_name)
+            if (status == "value_extracted") != (value is not None):
+                raise ValueError(
+                    "regional field observation does not match its value"
+                )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -104,6 +217,12 @@ class RegionalPolicyEvidence:
         } | {
             "field_locators": dict(self.field_locators),
             "provenance": [item.to_dict() for item in self.provenance],
+            "source_scope": (
+                self.source_scope.to_dict()
+                if self.source_scope is not None
+                else None
+            ),
+            "field_observations": dict(self.field_observations),
         }
 
 
@@ -186,6 +305,7 @@ def evaluate_regional_policy(
             if as_of is not None
             else policy.collected_at.astimezone(KOREA_TIMEZONE).date()
         ),
+        source_scope=evidence.source_scope,
     )
     accepted_policy = None
     if (
@@ -266,6 +386,7 @@ def _regionality(
     expected_in_region = _mentions_any(source_region, expected_aliases)
     expected_in_target = _mentions_any(eligibility, expected_aliases)
     expected_in_organization = _mentions_any(implementing, expected_aliases)
+    source_scope = evidence.source_scope
 
     if _is_nationwide(source_region) or _is_nationwide(eligibility):
         return (
@@ -295,6 +416,32 @@ def _regionality(
                 "implementing_region_confirmed",
             ),
         )
+    if source_scope is not None:
+        scoped_region = _mentions_any(
+            source_scope.jurisdiction_text, expected_aliases
+        )
+        scoped_operator = _mentions_any(
+            source_scope.operator_text, expected_aliases
+        )
+        if scoped_region and scoped_operator and (
+            expected_in_target or expected_in_organization
+        ):
+            return (
+                RegionalityStatus.REGIONAL_CONFIRMED,
+                tuple(
+                    reason
+                    for confirmed, reason in (
+                        (scoped_region, "source_scope_region_confirmed"),
+                        (scoped_operator, "source_scope_operator_confirmed"),
+                        (expected_in_target, "target_region_confirmed"),
+                        (
+                            expected_in_organization,
+                            "implementing_region_confirmed",
+                        ),
+                    )
+                    if confirmed
+                ),
+            )
     return (
         RegionalityStatus.REGIONAL_REVIEW_REQUIRED,
         ("insufficient_regional_evidence",),
@@ -305,8 +452,14 @@ def _application_availability(
     value: str | None,
     *,
     as_of: date,
+    source_scope: RegionalSourceScopeEvidence | None = None,
 ) -> tuple[ApplicationAvailability, str]:
     if value is None:
+        if _scope_confirms_current_application(source_scope):
+            return (
+                ApplicationAvailability.OPEN,
+                "source_scope_application_open",
+            )
         return (
             ApplicationAvailability.REVIEW_REQUIRED,
             "application_period_missing",
@@ -348,6 +501,11 @@ def _application_availability(
         return ApplicationAvailability.OPEN, "application_period_open"
     if any(marker in normalized for marker in ("접수중", "모집중", "신청 가능")):
         return ApplicationAvailability.OPEN, "application_explicitly_open"
+    if _scope_confirms_current_application(source_scope):
+        return (
+            ApplicationAvailability.OPEN,
+            "source_scope_application_open",
+        )
     return (
         ApplicationAvailability.REVIEW_REQUIRED,
         "application_period_unresolved",
@@ -360,3 +518,71 @@ def _mentions_any(value: str | None, aliases: frozenset[str]) -> bool:
 
 def _is_nationwide(value: str | None) -> bool:
     return value is not None and "전국" in value
+
+
+def enforce_youth_target(
+    policy: ExtractedPolicy,
+    decision: RegionalPolicyDecision,
+) -> RegionalPolicyDecision:
+    """Require item evidence even when an approved youth list scope exists."""
+
+    values = (
+        policy.title,
+        policy.eligibility_text,
+        policy.age_text,
+        policy.category_text,
+    )
+    policy_text = " ".join(value for value in values if value is not None)
+    reason = None
+    if any(marker in policy_text for marker in _YOUTH_MARKERS):
+        reason = "youth_target_confirmed"
+    else:
+        scope = decision.evidence.source_scope
+        if (
+            scope is not None
+            and scope.youth_policy_scope_text is not None
+            and any(
+                marker in scope.youth_policy_scope_text
+                for marker in _YOUTH_MARKERS
+            )
+            and policy.age_text is not None
+            and bool(
+                re.search(r"(?<!\d)\d{1,3}\s*세(?!\w)", policy.age_text)
+            )
+        ):
+            reason = "youth_target_confirmed_by_scope_and_age"
+    if reason is not None:
+        if reason in decision.reason_codes:
+            return decision
+        return replace(
+            decision,
+            reason_codes=(*decision.reason_codes, reason),
+        )
+
+    reasons = (
+        decision.reason_codes
+        if "youth_target_unconfirmed" in decision.reason_codes
+        else (*decision.reason_codes, "youth_target_unconfirmed")
+    )
+    return replace(
+        decision,
+        regionality=(
+            RegionalityStatus.REGIONAL_REVIEW_REQUIRED
+            if decision.accepted
+            else decision.regionality
+        ),
+        reason_codes=reasons,
+        accepted_policy=None,
+    )
+
+
+def _scope_confirms_current_application(
+    source_scope: RegionalSourceScopeEvidence | None,
+) -> bool:
+    if source_scope is None or source_scope.application_scope_text is None:
+        return False
+    normalized = " ".join(source_scope.application_scope_text.split())
+    return any(
+        marker in normalized
+        for marker in ("접수중", "모집중", "신청 가능", "현재 신청 가능")
+    )
