@@ -41,6 +41,10 @@
   제한 재캡처해 빈 신청기간과 실제 라벨 부재를 구분
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 대구 현재목록의 identity 교체 drift를 checkpoint 고정 상세 URL·제목 계약으로
+  격리하고, 기존 197건만 제한 재캡처해 legacy 필드 상태를 전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,

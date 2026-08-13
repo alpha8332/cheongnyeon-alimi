@@ -118,6 +118,164 @@ export function validateRecaptureExclusions(
   return recaptureExcludedIds;
 }
 
+export function validateCheckpointDetailRecaptureContracts(
+  sourceId,
+  listUrl,
+  items,
+) {
+  let approvedList;
+  try {
+    approvedList = new URL(listUrl);
+  } catch {
+    throw new Error("checkpoint detail recapture contract is invalid");
+  }
+  const validList = sourceId === "regional-daegu-youth-platform"
+    && approvedList.origin === "https://www.dgjump.com"
+    && approvedList.pathname === "/open_content/info/info_list_01"
+    && approvedList.searchParams.get("search_flag") === "1";
+  const validItems = Array.isArray(items)
+    && items.length >= 1
+    && items.length <= 3
+    && items.length === new Set(items.map((item) => item?.external_id)).size
+    && items.every((item) => {
+      if (
+        typeof item?.external_id !== "string"
+        || !item.external_id
+        || typeof item.title !== "string"
+        || !clean(item.title)
+        || typeof item.detail_url !== "string"
+      ) return false;
+      try {
+        const detailUrl = new URL(item.detail_url);
+        return detailUrl.origin === approvedList.origin
+          && detailUrl.pathname === "/open_content/info/info_list_01_view"
+          && detailUrl.searchParams.get("ap_seq") === item.external_id;
+      } catch {
+        return false;
+      }
+    });
+  if (!validList || !validItems) {
+    throw new Error("checkpoint detail recapture contract is invalid");
+  }
+  return items;
+}
+
+export function normalizeCheckpointDetailTitle(
+  value,
+  expectedTitle,
+  prefixPattern = null,
+) {
+  let normalized = clean(value);
+  const expected = clean(expectedTitle).replace(/\.{2,}\s*$/, "");
+  const prefix = prefixPattern ? new RegExp(prefixPattern) : null;
+  while (prefix && !normalized.startsWith(expected)) {
+    const next = normalized.replace(prefix, "").trim();
+    if (next === normalized) break;
+    normalized = next;
+  }
+  return normalized;
+}
+
+export async function collectCheckpointDetailRecapture({
+  tab,
+  endpoint,
+  token,
+  sourceId,
+  listUrl,
+  items,
+  detailTitleSelector,
+  detailTitlePrefixPattern = null,
+  detailContentSelector,
+  detailPairRowSelector = null,
+  detailPairLabelSelector = null,
+  detailPairValueSelector = null,
+  detailMetadataSelector = null,
+  sourceScopeSelectors,
+}) {
+  const contracts = validateCheckpointDetailRecaptureContracts(
+    sourceId,
+    listUrl,
+    items,
+  );
+  if (!detailTitleSelector || !detailContentSelector || !sourceScopeSelectors) {
+    throw new Error("checkpoint detail recapture selectors are incomplete");
+  }
+  const captured = [];
+  let sourceScope = null;
+  for (const contract of contracts) {
+    const requestStartedAt = Date.now();
+    try {
+      await gotoWithReadyFallback(tab, contract.detail_url, detailTitleSelector);
+      await waitForReadySelector(tab, detailContentSelector);
+      const observed = await tab.playwright.evaluate(
+        ({titleSelector, scopeSelectors}) => {
+          const squash = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
+          return {
+            title: squash(document.querySelector(titleSelector)?.textContent),
+            sourceScope: Object.fromEntries(
+              Object.entries(scopeSelectors).map(([field, selector]) => [
+                field,
+                squash(document.querySelector(selector)?.textContent),
+              ]),
+            ),
+          };
+        },
+        {titleSelector: detailTitleSelector, scopeSelectors: sourceScopeSelectors},
+      );
+      const actualTitle = normalizeCheckpointDetailTitle(
+        observed.title,
+        contract.title,
+        detailTitlePrefixPattern,
+      );
+      const expectedTitle = clean(contract.title).replace(/\.{2,}\s*$/, "");
+      if (!actualTitle || !actualTitle.startsWith(expectedTitle)) {
+        throw new Error("checkpoint detail title does not match frozen Raw");
+      }
+      sourceScope ??= observed.sourceScope;
+      const detail = await extractDetail(
+        tab,
+        actualTitle,
+        null,
+        detailContentSelector,
+        detailPairRowSelector,
+        detailPairLabelSelector,
+        detailPairValueSelector,
+        detailMetadataSelector,
+      );
+      captured.push({
+        external_id: contract.external_id,
+        title: actualTitle,
+        summary: null,
+        category: detail.category,
+        detail_url: contract.detail_url,
+        request_identity: null,
+        detail,
+      });
+    } finally {
+      const remainingInterval = Math.max(0, 2000 - (Date.now() - requestStartedAt));
+      if (remainingInterval) await tab.playwright.waitForTimeout(remainingInterval);
+    }
+  }
+  await postCapture(endpoint, token, {
+    source_id: sourceId,
+    recapture_mode: "checkpoint_detail_url",
+    source_scope: sourceScope,
+    list_url: listUrl,
+    page: 1,
+    total_count: null,
+    has_next: false,
+    discovered_ids: contracts.map((item) => item.external_id),
+    action_trace: [
+      "load frozen checkpoint Raw identity contract",
+      "goto approved historical detail URL",
+      "verify current detail title against frozen Raw",
+      "recapture checkpoint detail fields",
+    ],
+    items: captured,
+  }, "recapture");
+  return {count: captured.length, ids: captured.map((item) => item.external_id)};
+}
+
 export async function collectQueryPage({
   tab,
   endpoint,
@@ -761,6 +919,14 @@ export function daeguConfig(page) {
       youth_policy_scope_text: 'nav a[href="/open_content/info/info_list_01"]',
       application_scope_text: ".page-title",
     },
+  };
+}
+
+export function daeguCheckpointDetailConfig() {
+  return {
+    ...daeguConfig(1),
+    detailTitleSelector: "h4.v_tit",
+    detailTitlePrefixPattern: "^\\[\\s*[^\\]]+\\]\\s*",
   };
 }
 

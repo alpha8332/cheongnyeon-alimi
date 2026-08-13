@@ -358,6 +358,77 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
                 checkpoint_store.load(DAEGU_SOURCE_ID),
             )
 
+    def test_checkpoint_detail_recapture_preserves_completed_checkpoint(
+        self,
+    ) -> None:
+        capture = daegu_capture()
+        capture["recapture_mode"] = "checkpoint_detail_url"
+        capture["total_count"] = None
+        capture["has_next"] = False
+        capture["discovered_ids"] = ["8366"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                DAEGU_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=("8366",),
+                total_count=None,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(("8366",)).decide(
+                {"8366": RegionalOutcome.REVIEW}
+            )
+            checkpoint_store.save(checkpoint)
+
+            result, unchanged = _store_recapture(
+                capture,
+                raw_root=root / "raw",
+                checkpoint_root=root / "checkpoints",
+            )
+
+            self.assertEqual(3, result.raw_document_count)
+            self.assertEqual(checkpoint, unchanged)
+            self.assertEqual(checkpoint, checkpoint_store.load(DAEGU_SOURCE_ID))
+
+    def test_checkpoint_detail_recapture_rejects_non_exact_batch(self) -> None:
+        capture = daegu_capture()
+        capture["recapture_mode"] = "checkpoint_detail_url"
+        capture["total_count"] = None
+        capture["has_next"] = False
+        capture["discovered_ids"] = ["8366", "8345"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                DAEGU_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=("8366", "8345"),
+                total_count=None,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(("8366", "8345")).decide(
+                {
+                    "8366": RegionalOutcome.REVIEW,
+                    "8345": RegionalOutcome.REVIEW,
+                }
+            )
+            checkpoint_store.save(checkpoint)
+
+            with self.assertRaisesRegex(
+                ValueError,
+                "recapture does not match completed checkpoint",
+            ):
+                _store_recapture(
+                    capture,
+                    raw_root=root / "raw",
+                    checkpoint_root=root / "checkpoints",
+                )
+
+            self.assertFalse((root / "raw").exists())
+
     def test_recapture_allows_explicit_current_only_identity(self) -> None:
         capture = daegu_capture()
         capture["total_count"] = 2

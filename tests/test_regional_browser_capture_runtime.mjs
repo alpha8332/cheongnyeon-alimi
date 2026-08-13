@@ -11,12 +11,14 @@ import {
   gangwonConfig,
   gotoWithReadyFallback,
   jejuConfig,
+  normalizeCheckpointDetailTitle,
   classifyDetailCanaryObservation,
   seoulConfig,
   ulsanConfig,
   waitForReadySelector,
   waitForExpectedTitle,
   withSingleDetailRetry,
+  validateCheckpointDetailRecaptureContracts,
   validateRecaptureExclusions,
 } from "../scripts/regional-browser-capture-runtime.mjs";
 
@@ -300,6 +302,13 @@ const fixtureUrl = new URL(
   import.meta.url,
 );
 const fixture = JSON.parse(await readFile(fixtureUrl, "utf8"));
+const daeguCheckpointDetailFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/daegu_checkpoint_detail_recapture.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
 const gwangjuFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/gwangju_detail_1248.json", import.meta.url),
   "utf8",
@@ -362,6 +371,52 @@ const gangwonFailureFixture = JSON.parse(await readFile(
   ),
   "utf8",
 ));
+
+test("Daegu checkpoint detail recapture accepts a frozen Raw identity contract", () => {
+  assert.deepEqual(
+    validateCheckpointDetailRecaptureContracts(
+      daeguCheckpointDetailFixture.source_id,
+      daeguCheckpointDetailFixture.list_url,
+      daeguCheckpointDetailFixture.items,
+    ),
+    daeguCheckpointDetailFixture.items,
+  );
+});
+
+test("Daegu checkpoint detail recapture rejects a detail URL identity drift", () => {
+  const drifted = structuredClone(daeguCheckpointDetailFixture.items);
+  drifted[0].detail_url = drifted[0].detail_url.replace("6104", "6105");
+  assert.throws(
+    () => validateCheckpointDetailRecaptureContracts(
+      daeguCheckpointDetailFixture.source_id,
+      daeguCheckpointDetailFixture.list_url,
+      drifted,
+    ),
+    /checkpoint detail recapture contract is invalid/,
+  );
+});
+
+test("Daegu checkpoint detail recapture removes repeated category prefixes", () => {
+  assert.equal(
+    normalizeCheckpointDetailTitle(
+      daeguCheckpointDetailFixture.repeated_category_title.observed,
+      daeguCheckpointDetailFixture.repeated_category_title.expected,
+      "^\\[\\s*[^\\]]+\\]\\s*",
+    ),
+    daeguCheckpointDetailFixture.repeated_category_title.expected,
+  );
+});
+
+test("Daegu checkpoint detail recapture preserves a bracketed policy title", () => {
+  assert.equal(
+    normalizeCheckpointDetailTitle(
+      daeguCheckpointDetailFixture.bracketed_policy_title.observed,
+      daeguCheckpointDetailFixture.bracketed_policy_title.expected,
+      "^\\[\\s*[^\\]]+\\]\\s*",
+    ),
+    daeguCheckpointDetailFixture.bracketed_policy_title.expected,
+  );
+});
 const gangwonCanaryFixture = JSON.parse(await readFile(
   new URL(
     "./fixtures/regional/gangwon_detail_canary_signatures.json",

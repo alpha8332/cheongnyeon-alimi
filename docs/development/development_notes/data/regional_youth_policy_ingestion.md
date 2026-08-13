@@ -1051,3 +1051,45 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 테스트 DB는 `alpha8332@cheongnyeon_alimi_test`로 연결했고 public table은
   `alembic_version`만 남았다. 운영 projection 동기화는 실행하지 않았다.
 - `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+### RYP8 대구 checkpoint 상세 고정 재캡처 (`2026-08-14`)
+
+- 쓰기 전에 공식 현재모집 목록 25 page를 읽기 전용으로 대조했다. 현재 200건과
+  완료 checkpoint 197건은 추가 11·누락 8로 단순 current-only 추가가 아닌
+  identity 교체 drift였다. 일반 `/recapture`와 current-only 제외 예외는 적용하지
+  않았다. 누락 대표 `8397`·`8303`·`6104`의 공식 상세는 계속 열렸고 각각
+  기간 종료, `폐강` 제목 보강, `예산소진시` 상태임을 확인했다.
+- 별도 승인 범위에 따라 대구에서만 `recapture_mode=checkpoint_detail_url`을
+  허용했다. 기존 Raw list item에서 완료 checkpoint 197건의 상세 URL과 제목을
+  복원하고, URL origin·path·`ap_seq` identity, checkpoint captured 부분집합,
+  선택 batch와 `discovered_ids`의 완전 일치, 기존 total·outcome 무변경을 서버와
+  Browser runtime 양쪽에서 검증한다. current-only 11건은 입력·Raw·checkpoint에
+  편입하지 않았다.
+- 상세 제목 `h4.v_tit`의 분류 접두어는 기존 Raw 제목이 시작되는 지점까지만
+  하나씩 제거한다. 연속 `[교육/강연/토론] [커뮤니티활동]` 접두어는 제거하되
+  정책 제목 자체의 `[Pre D-Link 5기]`는 보존하는 fixture와 실패 테스트를
+  추가했다. 실제 제목이 기존 Raw 제목으로 시작하지 않으면 저장 전에 중단한다.
+- `6104` 1건 canary 뒤 즉시 replay해 대구 legacy `568 → 565`, 전체
+  `2,433 → 2,430`, 고정 outcome 무변경을 확인했다. 이후 최대 24건 차수,
+  실제 저장은 최대 3건 단위로 나눠 나머지 196건을 재캡처했다. 최종 대구 field
+  slot은 `V 592/E 0/N 22/L 568 → V 623/E 1/N 558/L 0`, 전체는
+  `V 3,312/E 24/N 5,661/L 2,433 → V 3,343/E 25/N 6,197/L 1,865`다.
+- 대구 checkpoint digest
+  `f8a523be72a5d6782355efc3c92063abd1eaa2c51f4f5bf471396c364364a9e6`와
+  고정 outcome `accepted 18`, `duplicate 1`, `review 1,905`, `closed 2,360`,
+  `failed 322`는 유지됐다. 테스트 DB public table은 `alembic_version`뿐이며
+  projection 동기화는 실행하지 않았다. review 감사의 decision drift 1건은
+  기존 경북 duplicate 이력으로, 대구에서 새로 생긴 drift가 아니다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `39 passed`
+- 전체 Python·PostgreSQL: `404 passed, 96 subtests passed` (기존
+  Starlette deprecation warning 1건)
+- Backend PostgreSQL 집중 회귀: `127 passed`; 이 PC의 `.venv`에는 psycopg v3가
+  없어 이미 설치된 `psycopg2` 드라이버 URL로 실행했으며 새 패키지는 설치하지
+  않았다.
+- RYP8 감사: 전체 legacy `1,865`, failed 분류 `322/322`, 고정 outcome 일치;
+  `data_ready=false`의 남은 blocker는 합의 수치가 없는
+  `legacy_null_within_target`
+- `python scripts/validate_docs.py`, `git diff --check`: 통과

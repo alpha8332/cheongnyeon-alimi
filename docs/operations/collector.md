@@ -410,10 +410,20 @@ closed identity는 기존 outcome 보존을 위해 제외한다. 상세는
 보존한다.
 
 완료 checkpoint와 현재 공식 목록 identity가 교체된 Source는 상세 URL이 여전히
-열리더라도 `/recapture`로 저장하지 않는다. fixture·실제 DOM 대조까지만 수행하고
-현재 목록과 checkpoint가 다시 일치하는 별도 재수집 계획을 세운다. 서울의 과거
-교체 drift는 `2026-08-14` 전건 대조에서 추가·누락·순서 차이 0으로 해소된 것을
-확인한 뒤 기존 checkpoint로 재개했다.
+열리더라도 일반 `/recapture`로 저장하지 않는다. fixture·실제 DOM 대조까지만
+수행하고 Source별 별도 재수집 승인을 받는다. 서울의 과거 교체 drift는
+`2026-08-14` 전건 대조에서 추가·누락·순서 차이 0으로 해소된 것을 확인한 뒤
+기존 checkpoint로 재개했다.
+
+대구의 `checkpoint_detail_url` 모드는 추가 11·누락 8의 교체 drift에 대해 별도
+승인된 예외다. 현재 목록을 checkpoint로 가장하지 않고, 기존 Raw list item의
+상세 URL·제목으로 완료 checkpoint identity만 직접 재관찰한다. Browser runtime은
+대구 공식 origin·detail path·`ap_seq`와 현재 `h4.v_tit` 제목을 검증하고, 서버는
+대구 Source, page 1, 기존 total, `has_next=false`, 선택 `discovered_ids`와 detail
+identity의 완전 일치, 기존 captured 부분집합을 모두 확인한다. 한 batch는 승인
+예산과 같은 최대 3건이며 current-only identity, exclusion 목록, 다른 Source에는
+사용할 수 없다. 분류 접두어는 기존 Raw 제목이 시작될 때까지만 제거해 제목 자체의
+대괄호를 보존한다.
 
 강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
 `/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고

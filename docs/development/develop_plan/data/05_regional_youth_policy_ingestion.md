@@ -845,10 +845,17 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   page 1~18은 `ctList.do`, 19~23은 `guList.do`로 고정하고 새 checkpoint나 identity
   교체 계약 없이 기존 review 97건만 제한 재캡처했다. closed 13건은 요청하지
   않았다. 서울 `null_unverifiable`는 `189 → 0`, 전체는 `2,622 → 2,433`이다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 2,433개다.
+- 대구는 `2026-08-14` 현재 공식 목록 200건과 완료 checkpoint 197건 사이에
+  추가 11·누락 8의 identity 교체 drift가 있어 일반 `/recapture`를 중단했다.
+  별도 승인 뒤 checkpoint 197건의 기존 Raw 상세 URL·제목만 입력으로 사용하는
+  대구 전용 `checkpoint_detail_url` 재캡처를 추가했다. current-only 11건은
+  요청하지 않고, 상세 URL의 `ap_seq`와 현재 제목이 기존 Raw 계약에 일치하는
+  경우에만 1건 canary와 3건 단위 batch를 저장했다. 대구
+  `null_unverifiable`는 `568 → 0`, 전체는 `2,433 → 1,865`다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 1,865개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
-  종료하지 않는다. 제주 1,239개, 대구 568개 등 그 밖의 legacy는 현재 서울
-  Slice에서 임의로 재배치하지 않고 다음 범위 결정 대상으로 남긴다.
+  종료하지 않는다. 제주 1,239개, 전북 261개, 경남 168개 등 남은 Source는
+  대구 Slice에서 임의로 재배치하지 않고 기존 순서의 다음 범위로 남긴다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 
