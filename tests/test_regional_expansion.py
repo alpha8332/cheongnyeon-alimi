@@ -30,6 +30,7 @@ from collectors.storage import RawDocumentStore
 from scripts.import_regional_browser_capture import main as import_capture_main
 from scripts.serve_regional_browser_capture import (
     _pending_detail_ids,
+    _store_recapture,
     _store_discovery,
     _store_failure,
 )
@@ -191,6 +192,44 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
             "label_not_found", observations["region_eligibility_text"]
         )
 
+    def test_ryp8_source_scope_is_staged_without_premature_promotion(
+        self,
+    ) -> None:
+        capture = daegu_capture()
+        capture["source_scope"] = {
+            "jurisdiction_text": "대구청년커뮤니티포털 '젊프'",
+            "operator_text": "대구청년커뮤니티포털 '젊프'",
+            "youth_policy_scope_text": "청년 꿀정보",
+            "application_scope_text": "현재 모집 중",
+        }
+        detail = capture["items"][0]["detail"]
+        detail["organization"] = "청년지원센터"
+        detail["source_region"] = None
+        detail["eligibility"] = "청년"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(Path(temp_dir) / "raw")
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID,
+                store=store,
+                now=lambda: NOW,
+            ).save(capture)
+            policy = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+
+        decision = decide_expanded_regional_policy(
+            policy, as_of=date(2026, 8, 11)
+        )
+        self.assertEqual(
+            "현재 모집 중",
+            policy.extra["source_scope"]["application_scope_text"],
+        )
+        self.assertIs(
+            RegionalityStatus.REGIONAL_REVIEW_REQUIRED,
+            decision.regionality,
+        )
+        self.assertFalse(decision.accepted)
+
     def test_capture_rejects_observation_that_disagrees_with_value(self) -> None:
         capture = daegu_capture()
         detail = capture["items"][0]["detail"]
@@ -240,6 +279,37 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
             ).save(capture)
 
         self.assertEqual(1, result.item_count)
+
+    def test_limited_recapture_preserves_completed_checkpoint(self) -> None:
+        capture = daegu_capture()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                DAEGU_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=("8366",),
+                total_count=1,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(("8366",)).decide(
+                {"8366": RegionalOutcome.REVIEW}
+            )
+            checkpoint_store.save(checkpoint)
+
+            result, unchanged = _store_recapture(
+                capture,
+                raw_root=root / "raw",
+                checkpoint_root=root / "checkpoints",
+            )
+
+            self.assertEqual(3, result.raw_document_count)
+            self.assertEqual(checkpoint, unchanged)
+            self.assertEqual(
+                checkpoint,
+                checkpoint_store.load(DAEGU_SOURCE_ID),
+            )
 
     def test_capture_cli_rejects_invalid_root_without_raw(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

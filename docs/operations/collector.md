@@ -361,6 +361,20 @@ limited actual은 다음처럼 목록·상세 각 1건만 요청할 수 있다.
   --page 1 --limit 1 --detail-limit 1
 ```
 
+RYP8 Browser 제한 재캡처는 loopback 서버의 `/recapture`를 사용한다. 이 경계는
+새 identity를 발견하거나 checkpoint outcome을 바꾸지 않으며, 완료 checkpoint의
+기존 `page`·identity·total과 일치할 때만 새 Raw를 저장한다. `recaptureIds`를
+지정하면 현재 공식 목록에서 확인되는 선택 identity만 상세를 다시 관찰한다.
+대구는 `.view_txt` 문단, 광주는 목록의 `policyView(policyId)` 클릭 상세를
+사용한다. source scope는 Raw list response에 staging되지만 RYP9 전에는 Gate의
+승격 근거로 소비하지 않는다.
+
+인천은 `지원내용` heading을 `지원규모`보다 우선하고 `지원대상·지원조건`을
+결합한다. 전북은 `공고상세보기URL`을 공식 신청 channel로 관찰한다. 서울처럼
+완료 checkpoint와 현재 공식 목록 identity가 교체된 Source는 상세 URL이 여전히
+열리더라도 `/recapture`로 저장하지 않는다. fixture·실제 DOM 대조까지만 수행하고
+현재 목록과 checkpoint가 다시 일치하는 별도 재수집 계획을 세운다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |

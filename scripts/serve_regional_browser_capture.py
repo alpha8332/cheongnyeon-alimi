@@ -55,7 +55,12 @@ def main() -> int:
                 self._reply(200, {"status": "stopping"})
                 threading.Thread(target=self.server.shutdown, daemon=True).start()
                 return
-            if self.path not in {"/capture", "/discover", "/failure"} or not self._authorized():
+            if self.path not in {
+                "/capture",
+                "/discover",
+                "/failure",
+                "/recapture",
+            } or not self._authorized():
                 self._reply(404, {"status": "not_found"})
                 return
             try:
@@ -75,6 +80,12 @@ def main() -> int:
                     result = None
                     checkpoint = _store_failure(
                         capture,
+                        checkpoint_root=args.checkpoint_root,
+                    )
+                elif self.path == "/recapture":
+                    result, checkpoint = _store_recapture(
+                        capture,
+                        raw_root=args.raw_root,
                         checkpoint_root=args.checkpoint_root,
                     )
                 else:
@@ -181,6 +192,39 @@ def _store_capture(
         raw_store.remove_result(result)
         raise
     return result, checkpoint
+
+
+def _store_recapture(
+    capture: dict[str, Any],
+    *,
+    raw_root: Path,
+    checkpoint_root: Path,
+) -> tuple[Any, RegionalBatchCheckpoint]:
+    """Persist refreshed Raw for an identity in a completed checkpoint."""
+
+    source_id = capture.get("source_id")
+    if not isinstance(source_id, str):
+        raise ValueError("recapture source_id is required")
+    capture_store = RegionalBrowserCaptureStore(
+        source_id,
+        store=RawDocumentStore(raw_root),
+    )
+    page, total_count, _has_next, discovered_ids = (
+        capture_store.checkpoint_metadata(capture)
+    )
+    checkpoint = RegionalCheckpointStore(checkpoint_root).load(source_id)
+    detail_ids = tuple(item["external_id"] for item in capture["items"])
+    if (
+        checkpoint is None
+        or not checkpoint.complete
+        or page >= checkpoint.next_page
+        or not set(discovered_ids).issubset(checkpoint.discovered_ids)
+        or not set(detail_ids).issubset(checkpoint.captured_ids)
+        or total_count is not None
+        and total_count != checkpoint.total_count
+    ):
+        raise ValueError("recapture does not match completed checkpoint")
+    return capture_store.save(capture), checkpoint
 
 
 def _pending_detail_ids(checkpoint: RegionalBatchCheckpoint) -> list[str]:

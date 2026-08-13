@@ -641,6 +641,43 @@ PostgreSQL 통합은 기존 로컬 전용 `_test` DB와 pgpass를 사용했으�
   변하지 않았으며 감사 결과는 legacy gap Source `12 → 11`이다.
 - 집중 회귀 `45 passed, 12 subtests passed`, 전체 Python `363 passed, 24 skipped,
   96 subtests passed`, Node syntax·문서 검증·`git diff --check`를 통과했다.
-- 새 PC PostgreSQL은 5432에서 실행 중이나 pgpass 인증이 실패해 관련 통합 테스트
-  9건은 실패하고 1건만 통과했다. 이를 성공으로 기록하지 않으며 로컬 역할·비밀번호·
-  `_test` DB 권한을 복구한 뒤 재실행한다.
+- 새 PC PostgreSQL에 전용 `alpha8332` 역할과 소유자가 일치하는
+  `cheongnyeon_alimi_test`를 재구성하고 새 pgpass를 적용했다. 최초 인증·기존
+  객체 권한 실패를 해결한 뒤 Backend·Data PostgreSQL 통합 `10 passed`를
+  재확인했다.
+
+### RYP8 대구·광주 field observation 보강 (`2026-08-13`)
+
+- 대구 상세의 구조화 `dt/dd` 밖 `.view_txt` 본문에서 `지원대상`의 후속 문단과
+  `지원내용: 값` 문단을 추출하도록 fixture를 추가했다. 상단 안내문의
+  `담당기관·문의` 부분문자열은 전체 라벨 일치가 아니므로 evidence에서
+  제외한다.
+- 대구 목록의 포털명·`청년 꿀정보`·`현재 모집 중`을 `source_scope`에 staging하고
+  완료 checkpoint의 accepted/review/duplicate 판정에는 적용하지 않았다. 현재
+  마지막 페이지 8건만 제한 재캡처해 실제 라벨이 있던 1건은 대상·지원내용을
+  `value_extracted`, 나머지 7건은 `label_not_found`로 구분했다.
+- 광주는 목록 카드의 `policyView(policyId)` 클릭 뒤 상세가 열리는 계약을 고정했다.
+  상세의 `참여요건`은 eligibility, `신청절차`는 application method로 매핑하고
+  `신청방법` marker 앞의 중복 대상 설명은 신청 방식 값에서 제거했다.
+- 광주 `policyId=1248` 한 건만 제한 재캡처했고, 광주 review coverage의
+  `region_eligibility_text`와 `application_channel_text`는 각각 present 0건에서
+  1건으로 바뀌었다. 대구·광주 모두 checkpoint outcome과 DB projection은
+  변경하지 않았다.
+- 완료 checkpoint에 이미 속한 identity만 다시 관찰할 수 있는 `/recapture`
+  경계를 추가했다. 이 경계는 identity·page·total을 완료 checkpoint와 대조한
+  뒤 새 Raw만 저장하며 checkpoint를 수정하지 않는다.
+- 경북은 기존 HTTP/JSON + modal 계약에 이미 지역·대상·지원내용 locator가 있고
+  RYP7 capture evidence gap도 없음을 확인했다. 공식 `신청중` 목록 1건·상세 1건을
+  제한 재수집했으며 outcome·DB는 변경하지 않았다.
+- 인천은 `지원규모`가 `지원내용`보다 먼저 매칭되던 공통 label 순서를 수정하고
+  실제 `지원내용` heading을 우선했다. `지원대상 + 지원조건`을 결합해 부평구
+  거주 조건을 보존하고 띄어 쓴 `문 의 처`도 인식한다. `poly_seq=110` 한 건을
+  제한 재캡처했다.
+- 전북은 `해당지역·담당기관명·연령제한·공고상세보기URL` 별칭을 추가했다.
+  `id=129`에서 공식 신청 URL을 application channel로 새로 보존하고, 원문에
+  대상·지원내용 라벨이 없는 상태와 빈 첨부파일을 서로 다른 관찰 상태로 남겼다.
+- 서울은 표본 상세에서 `지원 내용`을 `지원규모`보다 우선하고
+  `사업신청기간·추가단서 사항·참여제한 대상`을 각각 기간·지역 대상 조건·제외
+  조건으로 고정했다. 과거 완료 checkpoint의 110개 identity와 현재 공식 목록
+  identity가 교체돼 제한 recapture 조건을 만족하지 않으므로 새 Raw는 만들지
+  않고 공식 상세 DOM과 fixture 회귀만 검증했다.

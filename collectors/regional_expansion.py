@@ -59,6 +59,12 @@ _DETAIL_FIELDS = (
 _OBSERVABLE_DETAIL_FIELDS = tuple(
     value for value in _DETAIL_FIELDS if value != "title"
 )
+_SOURCE_SCOPE_FIELDS = {
+    "jurisdiction_text",
+    "operator_text",
+    "youth_policy_scope_text",
+    "application_scope_text",
+}
 _CAPTURE_TO_EVIDENCE_FIELD = {
     "organization": "implementing_organization_text",
     "eligibility": "region_eligibility_text",
@@ -304,6 +310,9 @@ class RegionalBrowserCaptureStore:
             "discovered_count": len(discovered_ids),
             "captured_detail_count": len(items),
         }
+        source_scope = capture.get("source_scope")
+        if source_scope is not None:
+            list_payload["source_scope"] = deepcopy(source_scope)
         list_response = _json_response(list_payload)
         list_document = _raw(
             source_id=self.source_id,
@@ -414,6 +423,7 @@ class RegionalBrowserCaptureStore:
         has_next = capture.get("has_next")
         trace = capture.get("action_trace")
         items = capture.get("items")
+        source_scope = capture.get("source_scope")
         if (
             not isinstance(page, int)
             or isinstance(page, bool)
@@ -432,6 +442,7 @@ class RegionalBrowserCaptureStore:
             or not all(isinstance(value, str) and value.strip() for value in trace)
             or not isinstance(items, list)
             or not 1 <= len(items) <= self._profile.request_budget.max_detail_requests
+            or not _valid_source_scope(source_scope)
         ):
             raise ExtractionError("regional Browser capture is incomplete")
         seen: set[str] = set()
@@ -567,6 +578,10 @@ class RegionalBrowserExtractor:
             provenance = tuple(
                 SourceProvenance.from_raw(value) for value in provenance_documents
             )
+            list_payload = _json_document(
+                parents[item_document.parent_document_id]
+            )
+            source_scope = list_payload.get("source_scope")
             policies.append(
                 ExtractedPolicy(
                     source_id=self.source_id,
@@ -592,6 +607,11 @@ class RegionalBrowserExtractor:
                             "list_item": deepcopy(item),
                             "detail_response": deepcopy(detail),
                         },
+                        "source_scope": (
+                            deepcopy(source_scope)
+                            if isinstance(source_scope, Mapping)
+                            else None
+                        ),
                         "institutional_contact": _text(detail.get("contact")),
                         "required_documents": _text(detail.get("required_documents")),
                         "exclusion_conditions": _text(detail.get("exclusions")),
@@ -692,6 +712,16 @@ def _valid_detail_observations(detail: Mapping[str, Any]) -> bool:
         ):
             return False
     return True
+
+
+def _valid_source_scope(value: Any) -> bool:
+    if value is None:
+        return True
+    return (
+        isinstance(value, Mapping)
+        and set(value) == _SOURCE_SCOPE_FIELDS
+        and all(_text(field_value) is not None for field_value in value.values())
+    )
 
 
 def map_expanded_duplicate_evidence(policy: ExtractedPolicy) -> DuplicateEvidence:

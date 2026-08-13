@@ -101,6 +101,19 @@ replay해 legacy capture gap Source를 12개에서 11개로 줄였다. 이 단�
 checkpoint·accepted DB projection을 변경하지 않으며 staged scope의 승격 소비는
 RYP9 전체 재판정에서 수행한다.
 
+대구는 상세 본문 문단의 `지원대상·지원내용`을, 광주는 클릭형 정책 상세의
+`참여요건·신청절차`를 Source별 locator로 보강했다. 완료 checkpoint identity만
+허용하는 제한 recapture로 대구 마지막 페이지 8건과 광주 1건의 새 Raw를
+확인했으며 staged scope와 observation은 RYP9 전까지 판정에 적용하지 않는다.
+경북은 기존 JSON·modal locator가 이미 field coverage를 만족해 신청중 표본
+1건만 재확인했다.
+
+인천은 지원규모와 지원내용의 우선순위를 분리하고 대상·지원조건을 결합했으며,
+전북은 해당지역과 공식 신청 상세 URL 별칭을 보강했다. 서울은 지원내용·사업
+신청기간·금천구 계속 거주 조건을 공식 상세에서 확인했지만 현재 목록 identity가
+완료 checkpoint와 교체되어 제한 recapture는 수행하지 않았다. 현재 목록에 없는
+과거 identity를 새 목록 관찰로 가장하지 않는 것이 RYP8 재캡처 경계다.
+
 RYP7은 지역 포털이라는 위치를 정책 근거로 치환하지 않으면서 승인된 목록
 scope를 사용할 수 있는 내부 계약을 고정한다. Source-scope는 같은 정책의
 `list_response` provenance, 공식 관할·운영 주체와 정책별 대상 또는 시행기관
