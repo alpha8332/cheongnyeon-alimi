@@ -10,9 +10,9 @@
 
 ### Added
 
-- 13개 승인 지역 Source의 HTTP·Browser 구현 상태, 제한 actual Raw replay,
-  누락 방지 pagination checkpoint와 청년 대상 근거 Gate를 추가하고 충북·인천·
-  전남광주·전북·경남 실제 지역 정책을 PostgreSQL에 적재
+- 13개 승인 지역 Source에서 4,606개 정책 identity를 checkpoint 기반으로 전체
+  순회해 신청 가능성·지역 고유성·온통청년/복지로 중복을 완전 판정하고,
+  accepted 부산 16건·경북 2건만 PostgreSQL에 동기화
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
 - 정책 상세에 Source 근거가 있는 신청 조건·제외 조건·필요 서류·공개 시설

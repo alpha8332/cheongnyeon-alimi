@@ -76,13 +76,14 @@ RYP4는 지역·open 후보만 최신 온통청년·복지로 완료 snapshot과
 다르면 유지한다. 기존 aggregator row는 읽기만 하며 교차 Source 제외는 Source
 내부 `duplicate_count`가 아니라 `skipped_count`로 집계한다.
 
-RYP6는 기존 HTTP 2개와 Browser 11개 Adapter로 13개 승인 Source의 구현 상태를
-확정했다. 공통 Browser capture는 승인 URL·상세 identity·제한 건수·제목 일치를
-검증하며, 전체 pagination은 page별 checkpoint를 전진시킨다. 포털 게시 사실은
+RYP6는 기존 HTTP 2개와 Browser 11개 Adapter로 13개 승인 Source의 구현 상태와
+전체 수집을 확정했다. 공통 Browser capture는 승인 URL·상세 identity·제한 건수·
+제목 일치를 검증하며, 전체 pagination은 page별 checkpoint를 전진시킨다. 포털 게시 사실은
 청년 대상 근거가 아니므로 제목·지원대상·연령에 청년·청소년·대학생 근거가 없는
-정책은 review로 격리한다. 첫 actual 10건 중 충북·인천·전남광주·전북·경남
-5건만 신규 적재했으며 전체 page 합계 대조는 진행 중이다.
-retained 정책의 실제 연령·대상·제외·서류·기관 문의처는 공통
+정책은 review로 격리한다. 13개 Source에서 4,606개 identity를
+`accepted 18`, `duplicate 1`, `review 1,903`, `closed 2,357`, `failed 327`로
+완전 판정했고, 부산 16건·경북 2건만 DB에 유지했다. accepted 정책의 실제
+연령·대상·제외·서류·기관 문의처는 공통
 EligibilitySummary에 Source field evidence로 연결하며 개인 휴대전화·이메일은
 구조화하지 않는다.
 

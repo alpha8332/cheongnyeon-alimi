@@ -10,11 +10,13 @@ from pathlib import Path
 
 from collectors.extracted import ExtractionError
 from collectors.regional_expansion import (
+    REGIONAL_PAGINATION_SPECS,
     RegionalBatchCheckpoint,
     RegionalBrowserCaptureStore,
     RegionalBrowserExtractor,
     RegionalCheckpointStore,
     RegionalOutcome,
+    RegionalPaginationTermination,
     decide_expanded_regional_policy,
     outcome_from_decisions,
 )
@@ -26,6 +28,11 @@ from collectors.runtime import replay_runtime_raw
 from collectors.normalizer import Normalizer
 from collectors.storage import RawDocumentStore
 from scripts.import_regional_browser_capture import main as import_capture_main
+from scripts.serve_regional_browser_capture import (
+    _pending_detail_ids,
+    _store_discovery,
+    _store_failure,
+)
 
 
 NOW = datetime(2026, 8, 11, 5, tzinfo=timezone.utc)
@@ -74,6 +81,42 @@ def daegu_capture() -> dict[str, object]:
 
 
 class RegionalBrowserExpansionTests(unittest.TestCase):
+    def test_every_approved_source_has_an_operational_pagination_contract(
+        self,
+    ) -> None:
+        self.assertEqual(13, len(REGIONAL_PAGINATION_SPECS))
+        self.assertEqual(
+            "official_current_filter",
+            REGIONAL_PAGINATION_SPECS[
+                "regional-busan-youth-platform"
+            ].scope,
+        )
+        self.assertEqual(
+            RegionalPaginationTermination.REPORTED_TOTAL,
+            REGIONAL_PAGINATION_SPECS[GANGWON_SOURCE_ID].termination,
+        )
+
+    def test_pagination_contract_rejects_missing_total_and_safety_overrun(
+        self,
+    ) -> None:
+        reported = REGIONAL_PAGINATION_SPECS[GANGWON_SOURCE_ID]
+        with self.assertRaisesRegex(ExtractionError, "total is required"):
+            reported.validate_page(
+                page=1,
+                discovered_count=1,
+                total_count=None,
+                has_next=True,
+            )
+
+        bounded = REGIONAL_PAGINATION_SPECS[DAEGU_SOURCE_ID]
+        with self.assertRaisesRegex(ExtractionError, "safety limit"):
+            bounded.validate_page(
+                page=bounded.safety_max_pages,
+                discovered_count=1,
+                total_count=None,
+                has_next=True,
+            )
+
     def test_capture_cli_stores_replayable_raw(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -84,13 +127,30 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
             )
             stdout = StringIO()
             result = import_capture_main(
-                [str(capture_path), "--raw-root", str(root / "raw")],
+                [
+                    str(capture_path),
+                    "--raw-root",
+                    str(root / "raw"),
+                    "--checkpoint-root",
+                    str(root / "checkpoints"),
+                ],
                 stdout=stdout,
             )
             stored = list((root / "raw").rglob("*.json"))
+            checkpoint = RegionalCheckpointStore(root / "checkpoints").load(
+                DAEGU_SOURCE_ID
+            )
         self.assertEqual(0, result)
         self.assertEqual(3, len(stored))
-        self.assertIn("items=1 raw_documents=3", stdout.getvalue())
+        assert checkpoint is not None
+        self.assertEqual(("8366",), checkpoint.discovered_ids)
+        self.assertEqual(("8366",), checkpoint.captured_ids)
+        self.assertEqual(1, checkpoint.to_dict()["pending_count"])
+        self.assertIn(
+            "discovered=1 details=1 raw_documents=3 "
+            "pending_details=0 pending_decisions=1",
+            stdout.getvalue(),
+        )
 
     def test_capture_cli_rejects_invalid_root_without_raw(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -105,6 +165,121 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
         self.assertEqual(1, result)
         self.assertIn("capture rejected", stderr.getvalue())
         self.assertFalse((root / "raw").exists())
+
+    def test_capture_cli_tracks_all_list_ids_with_bounded_details(self) -> None:
+        first = daegu_capture()
+        first["total_count"] = 3
+        first["has_next"] = True
+        first["discovered_ids"] = ["8366", "8345"]
+        second = deepcopy(daegu_capture())
+        second["page"] = 2
+        second["list_url"] = (
+            "https://www.dgjump.com/open_content/info/info_list_01?page=2"
+        )
+        second["items"][0]["external_id"] = "8318"
+        second["items"][0]["detail_url"] = (
+            "https://www.dgjump.com/open_content/info/"
+            "info_list_01_view?ap_seq=8318"
+        )
+        second["discovered_ids"] = ["8318"]
+        second["total_count"] = 3
+        second["has_next"] = False
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            capture_path = root / "capture.json"
+            capture_path.write_text(
+                json.dumps([first, second], ensure_ascii=False),
+                encoding="utf-8",
+            )
+            result = import_capture_main(
+                [
+                    str(capture_path),
+                    "--raw-root",
+                    str(root / "raw"),
+                    "--checkpoint-root",
+                    str(root / "checkpoints"),
+                ]
+            )
+            checkpoint = RegionalCheckpointStore(root / "checkpoints").load(
+                DAEGU_SOURCE_ID
+            )
+        self.assertEqual(0, result)
+        assert checkpoint is not None
+        self.assertEqual(("8366", "8345", "8318"), checkpoint.discovered_ids)
+        self.assertTrue(checkpoint.discovery_complete)
+        self.assertFalse(checkpoint.complete)
+        self.assertEqual(3, checkpoint.to_dict()["pending_count"])
+
+    def test_capture_cli_resumes_a_second_detail_batch_on_the_same_page(
+        self,
+    ) -> None:
+        first = daegu_capture()
+        first["total_count"] = 2
+        first["discovered_ids"] = ["8366", "8345"]
+        second = deepcopy(first)
+        second_item = second["items"][0]
+        second_item["external_id"] = "8345"
+        second_item["title"] = "second policy"
+        second_item["detail_url"] = (
+            "https://www.dgjump.com/open_content/info/"
+            "info_list_01_view?ap_seq=8345"
+        )
+        second_item["detail"]["title"] = "second policy"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_root = root / "checkpoints"
+            raw_root = root / "raw"
+            for index, capture in enumerate((first, second), start=1):
+                capture_path = root / f"capture-{index}.json"
+                capture_path.write_text(
+                    json.dumps(capture, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                self.assertEqual(
+                    0,
+                    import_capture_main(
+                        [
+                            str(capture_path),
+                            "--raw-root",
+                            str(raw_root),
+                            "--checkpoint-root",
+                            str(checkpoint_root),
+                        ],
+                        stdout=StringIO(),
+                    ),
+                )
+            checkpoint = RegionalCheckpointStore(checkpoint_root).load(
+                DAEGU_SOURCE_ID
+            )
+
+        assert checkpoint is not None
+        self.assertEqual(("8366", "8345"), checkpoint.discovered_ids)
+        self.assertEqual(("8366", "8345"), checkpoint.captured_ids)
+        self.assertEqual(0, checkpoint.to_dict()["pending_detail_count"])
+
+    def test_capture_cli_preflight_failure_leaves_no_partial_raw(self) -> None:
+        captures = [daegu_capture(), deepcopy(daegu_capture())]
+        captures[1]["page"] = 3
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            capture_path = root / "capture.json"
+            capture_path.write_text(
+                json.dumps(captures, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            result = import_capture_main(
+                [
+                    str(capture_path),
+                    "--raw-root",
+                    str(root / "raw"),
+                    "--checkpoint-root",
+                    str(root / "checkpoints"),
+                ]
+            )
+        self.assertEqual(1, result)
+        self.assertFalse((root / "raw").exists())
+        self.assertFalse((root / "checkpoints").exists())
 
     def test_actual_capture_replays_through_region_gate(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -193,6 +368,48 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
 
 
 class RegionalCheckpointTests(unittest.TestCase):
+    def test_discovery_endpoint_returns_only_unprocessed_detail_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            discovery = {
+                "source_id": DAEGU_SOURCE_ID,
+                "page": 1,
+                "total_count": 2,
+                "has_next": False,
+                "discovered_ids": ["8366", "8345"],
+            }
+            checkpoint = _store_discovery(
+                discovery, checkpoint_root=root
+            )
+            checkpoint = checkpoint.capture(("8366",))
+            RegionalCheckpointStore(root).save(checkpoint)
+
+            resumed = _store_discovery(
+                discovery, checkpoint_root=root
+            )
+
+        self.assertEqual(["8345"], _pending_detail_ids(resumed))
+
+    def test_failed_detail_completes_checkpoint_without_fake_capture(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            checkpoint = _store_failure(
+                {
+                    "source_id": GANGWON_SOURCE_ID,
+                    "page": 1,
+                    "total_count": 1,
+                    "has_next": False,
+                    "discovered_ids": ["A2026021300300200900000001"],
+                    "failed_id": "A2026021300300200900000001",
+                    "reason": "official detail error page",
+                },
+                checkpoint_root=Path(temp_dir),
+            )
+
+        self.assertTrue(checkpoint.complete)
+        self.assertEqual((), checkpoint.captured_ids)
+        self.assertEqual(0, checkpoint.to_dict()["pending_detail_count"])
+        self.assertEqual(1, checkpoint.counts()["failed"])
+
     def test_discovery_queue_allows_bounded_detail_decision_batches(self) -> None:
         discovered = RegionalBatchCheckpoint.initial(DAEGU_SOURCE_ID).discover(
             page=1,
@@ -200,14 +417,16 @@ class RegionalCheckpointTests(unittest.TestCase):
             total_count=4,
             has_next=False,
         )
-        first = discovered.decide(
+        first = discovered.capture(("8366", "8345", "8318")).decide(
             {
                 "8366": RegionalOutcome.ACCEPTED,
                 "8345": RegionalOutcome.REVIEW,
                 "8318": RegionalOutcome.CLOSED,
             }
         )
-        complete = first.decide({"8301": RegionalOutcome.DUPLICATE})
+        complete = first.capture(("8301",)).decide(
+            {"8301": RegionalOutcome.DUPLICATE}
+        )
         self.assertTrue(discovered.discovery_complete)
         self.assertFalse(discovered.complete)
         self.assertEqual(1, first.to_dict()["pending_count"])

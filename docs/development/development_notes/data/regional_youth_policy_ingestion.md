@@ -4,7 +4,7 @@
 
 - 작업일: `2026-08-11`
 - 작업 영역: Data
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/data/regional-youth-policy-ingestion`
 - 시작 커밋: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
 - 관련 계획: [Data 05 Regional Youth Policy Ingestion](../../develop_plan/data/05_regional_youth_policy_ingestion.md)
@@ -31,7 +31,7 @@
 | RYP3 | completed | 지역 evidence·신청 상태 Gate와 경북 Runtime 격리 |
 | RYP4 | completed | snapshot·PostgreSQL 기준선과 보수적 교차 Source 제외 Gate |
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
-| RYP6 | 진행 중 | 17개 구현 상태·공통 Browser Adapter·10개 Source 첫 actual 완료, 전체 pagination 대기 |
+| RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 
 ## 구현 내용
 
@@ -422,6 +422,13 @@ JSON Raw로 저장한다. `RegionalBrowserExtractor`는 같은 Raw만 재생하�
 이번 실행은 Source당 상세 1건의 제한 actual이므로 아직 전체 pagination
 checkpoint로 기록하지 않았다.
 
+`2026-08-13`에는 Browser 캡처 CLI와 체크포인트를 연결했다. 캡처 계약은 한
+page의 전체 `discovered_ids`와 상세 최대 3건 batch를 분리하며, 상세를 아직
+가져오지 않은 identity도 pending으로 보존한다. 입력 배열 전체를 먼저 검증한
+뒤 각 page Raw와 체크포인트를 저장하고, 새 Raw 저장이나 체크포인트 갱신이
+실패하면 해당 호출이 생성한 Raw만 제거한다. 기존 제한 actual 입력은
+`discovered_ids` 생략을 허용하지만 전체 pagination에서는 생략하지 않는다.
+
 | Source | 실제 표본 판정 | PostgreSQL 결과 |
 | --- | --- | --- |
 | 강원 | 청년 대상 근거 없음, review | 0건 |
@@ -466,5 +473,56 @@ PostgreSQL 조건부 테스트다. 관련 PostgreSQL 3건은 별도 명시 실�
 첫 별도 실행은 설치된 드라이버와 맞지 않는 `postgresql+psycopg` URL을 사용해
 3건 모두 설정 실패했고, 새 패키지를 설치하지 않고 기존 `.venv`의 `psycopg2`에
 맞춘 URL로 다시 실행해 3건 통과를 확인했다.
-전체 pagination과 Release 1 golden 최종 회귀는 아직 실행하지 않아 RYP6 완료로
-기록하지 않는다.
+이 첫 actual 단계에서는 전체 pagination과 Release 1 golden 최종 회귀를 아직
+실행하지 않아 RYP6 완료로 기록하지 않았다.
+
+### RYP6 - 전체 pagination·판정·DB 동기화 완료
+
+`2026-08-13`에 승인 Source 목록을 끝까지 순회하고 checkpoint에서 중단·재개를
+실제 검증했다. Browser 캡처 서버는 목록 discovery를 상세 처리보다 먼저
+기록하고 `pending_ids`만 반환한다. 재개 시 처리 완료 identity를 다시 요청하지
+않으며, 상세 오류는 캡처 성공으로 위장하지 않고 `failed`로 결정한다. checkpoint
+계약 `1.2.0`은 failed identity를 상세 pending에서 제외한다.
+
+| Source | 종료 근거 | 발견 | accepted | duplicate | review | closed | failed |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 서울 | 시·자치구 목록 23 page 종료 | 110 | 0 | 0 | 97 | 13 | 0 |
+| 부산 | 공식 현재 필터 total | 123 | 16 | 0 | 107 | 0 | 0 |
+| 대구 | 다음 page 없음 | 197 | 0 | 0 | 197 | 0 | 0 |
+| 인천 | `acptrun=ing` total | 28 | 0 | 0 | 28 | 0 | 0 |
+| 전남광주 | `status=ing` total | 31 | 0 | 0 | 31 | 0 | 0 |
+| 대전 | 목록 total | 12 | 0 | 0 | 12 | 0 | 0 |
+| 울산 | 목록 total 596 + 반복 고정 1 identity | 597 | 0 | 0 | 596 | 1 | 0 |
+| 강원 | 29 page·total | 337 | 0 | 0 | 12 | 0 | 325 |
+| 충북 | 목록 total | 441 | 0 | 0 | 441 | 0 | 0 |
+| 전북 | 실제 `strstate=ing` 8 page 종료 | 89 | 0 | 0 | 89 | 0 | 0 |
+| 경북 | 공식 현재 필터 total | 61 | 2 | 1 | 58 | 0 | 0 |
+| 경남 | 161 page·total | 1,447 | 0 | 0 | 28 | 1,419 | 0 |
+| 제주 | 112 page 종료·반복 고정 ID dedupe | 1,133 | 0 | 0 | 207 | 924 | 2 |
+| **합계** | 13개 checkpoint complete | **4,606** | **18** | **1** | **1,903** | **2,357** | **327** |
+
+강원 2 page 이후 다수 상세는 공식 화면 자체가 빈 오류 페이지를 반환해 325건을
+failed로 보존했다. 경남은 5 page 이후 공식 카드의 `기간: 마감`, 제주는 일반
+행의 모집·채용·행사 마감 표시를 목록 Raw 근거로 closed 처리했다. 목록에 신청
+가능 필터가 있는 전북은 DOM에서 실제 제출 계약 `strstate=ing`을 확인해 기존
+계획의 잘못된 `dateCheck=ing` 기록을 정정했다.
+
+모든 Source를 같은 Raw로 다시 실행했다. 부산 16건·경북 2건은
+`unchanged=18`이었고 나머지는 accepted 0건이었다. 최종 checkpoint의 accepted
+집합과 DB를 동기화해 과거 제한 actual에서 남은 충북·인천·전남광주·전북·경남
+표본 5건을 제거했다. 최종 지역 Policy row는 부산 16건·경북 2건뿐이다.
+
+최종 검증:
+
+- 전체 Python: `347 passed, 24 skipped, 96 subtests passed`
+- PostgreSQL 통합: `8 passed`
+- checkpoint·resume·accepted projection 집중 회귀: `26 passed`
+- Frontend 단위: `50 passed`; lint·production build 통과
+- Release 1 golden HTTP: 자연어·control 모두 1위, 231.66ms·133.23ms,
+  technical verdict `pass`
+- 실제 경북 `external_id=1094` DB → 상세 API → in-app Browser 대조 통과
+- `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+Release 1 감사의 `gate_verdict=blocked`는 기존 수동 QA·사용성 증거 대기를
+뜻한다. 자동 golden 회귀는 통과했으며 해당 수동 증거를 이번 Data 05 결과로
+소급 처리하지 않았다. Data 05의 `RYP-G4`는 pass이고 Forest는 completed다.

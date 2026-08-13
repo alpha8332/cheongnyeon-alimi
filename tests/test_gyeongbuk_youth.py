@@ -219,6 +219,10 @@ class GyeongbukCollectorTests(unittest.TestCase):
                     "application/json; charset=utf-8",
                 ),
                 response(
+                    fixture("list_response.json"),
+                    "application/json; charset=utf-8",
+                ),
+                response(
                     fixture("detail_1098.html"),
                     "text/html; charset=utf-8",
                 ),
@@ -233,39 +237,40 @@ class GyeongbukCollectorTests(unittest.TestCase):
             ).collect(CollectionOptions(limit=1, detail_limit=1))
             documents = tuple(store.load(path) for path in result.stored_paths)
 
-        self.assertEqual(3, result.request_count)
+        self.assertEqual(4, result.request_count)
         self.assertEqual(1, result.item_count)
         self.assertEqual(1, result.detail_count)
         self.assertEqual(243, result.total_count)
         self.assertEqual(("1098",), result.external_ids)
-        self.assertEqual(3, result.raw_document_count)
+        self.assertEqual(4, result.raw_document_count)
         self.assertEqual(
             [
                 ("get", HOME_URL),
+                ("post_form", LIST_JSON_URL),
                 ("post_form", LIST_JSON_URL),
                 ("post_form", DETAIL_MODAL_URL),
             ],
             [(method, values["url"]) for method, values in client.calls],
         )
-        list_call = client.calls[1][1]
-        self.assertEqual(LIST_FORM, list_call["form"])
+        list_call = client.calls[2][1]
+        self.assertEqual("1", list_call["form"]["type"])
         self.assertEqual(
             "fixture-csrf-token",
             list_call["headers"]["X-CSRF-TOKEN"],
         )
         self.assertEqual(
-            [RawFormat.JSON, RawFormat.JSON, RawFormat.HTML],
+            [RawFormat.JSON, RawFormat.JSON, RawFormat.JSON, RawFormat.HTML],
             [document.raw_format for document in documents],
         )
         self.assertEqual(
-            documents[0].document_id,
-            documents[1].parent_document_id,
+            documents[1].document_id,
+            documents[2].parent_document_id,
         )
-        self.assertIsNone(documents[2].parent_document_id)
+        self.assertIsNone(documents[3].parent_document_id)
 
     def test_budget_and_page_are_rejected_before_request(self) -> None:
         for options in (
-            CollectionOptions(page=2),
+            CollectionOptions(page=31),
             CollectionOptions(detail_limit=4),
         ):
             with self.subTest(options=options):
@@ -274,10 +279,41 @@ class GyeongbukCollectorTests(unittest.TestCase):
                     GyeongbukYouthCollector(http_client=client).collect(options)
                 self.assertEqual([], client.calls)
 
+    def test_operational_page_is_sent_with_the_official_open_filter(self) -> None:
+        client = StubHttpClient(
+            [
+                response(fixture("home.html"), "text/html; charset=utf-8"),
+                response(
+                    fixture("list_response.json"),
+                    "application/json; charset=utf-8",
+                ),
+                response(
+                    fixture("list_response.json"),
+                    "application/json; charset=utf-8",
+                ),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = GyeongbukYouthCollector(
+                http_client=client,
+                store=RawDocumentStore(temp_dir),
+                now=lambda: COLLECTED_AT,
+            ).collect(
+                CollectionOptions(page=2, limit=10, detail_limit=0)
+            )
+
+        self.assertEqual(2, result.page)
+        self.assertEqual("1", client.calls[2][1]["form"]["pageIndex"])
+        self.assertEqual("2", client.calls[2][1]["form"]["type"])
+        self.assertEqual(
+            "1", client.calls[2][1]["form"]["searchAplyPeriod"]
+        )
+
     def test_detail_drift_stores_no_partial_raw(self) -> None:
         client = StubHttpClient(
             [
                 response(fixture("home.html"), "text/html"),
+                response(fixture("list_response.json"), "application/json"),
                 response(fixture("list_response.json"), "application/json"),
                 response(fixture("detail_drift.html"), "text/html"),
             ]

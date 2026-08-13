@@ -289,26 +289,41 @@ Browser 캡처는 사람이 임의 작성하는 Seed가 아니며 실제 공개 
 관찰과 action trace를 담아야 한다. 계약 drift는 저장 전에 실패한다.
 
 RYP6 공통 Browser capture는 단일 객체 또는 Source별 객체 배열을 받을 수 있다.
-각 객체는 승인 목록 URL, `page`, `total_count` 또는 `null`, `has_next`, 최대 30개
-action trace와 상세 최대 3건을 포함한다. 상세 identity와 제목이 다르거나 승인
-URL 범위를 벗어나면 Raw를 저장하지 않는다.
+각 객체는 승인 목록 URL, `page`, `total_count` 또는 `null`, `has_next`, 한 page에서
+관찰한 전체 `discovered_ids`, 최대 30개 action trace와 상세 최대 3건을 포함한다.
+`discovered_ids`와 상세 batch를 분리해 아직 상세를 처리하지 않은 identity도
+체크포인트의 pending 대상으로 보존한다. 호환 입력에서 `discovered_ids`가 없으면
+상세 batch의 identity만 사용하므로 전체 pagination 실행에는 생략할 수 없다.
+상세 identity와 제목이 다르거나 승인 URL 범위를 벗어나면 Raw를 저장하지 않는다.
+
+전체 Browser 순회는 loopback capture endpoint의 `/discover`로 page 전체 identity를
+먼저 저장하고 응답의 `pending_ids`만 상세 처리한다. 성공 상세은 `/capture`, 공식
+상세 오류는 `/failure`로 기록한다. checkpoint `1.2.0`은 failed identity를 실제
+상세 캡처로 간주하지 않지만 pending detail에서는 제외하므로 중단 뒤 같은 실패
+요청을 반복하지 않는다. 서버는 `127.0.0.1`에만 bind하고 실행별 bearer token을
+요구한다.
 
 ```powershell
 .\.venv\Scripts\python.exe -B scripts\import_regional_browser_capture.py `
   <regional-browser-capture.json> `
-  --raw-root runtime/raw
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints
 
 .\.venv\Scripts\python.exe -B scripts\import_runtime_data.py `
   --source regional-incheon-youth-platform `
   --raw-root runtime/raw `
   --limit 3 `
-  --decision-root runtime/decisions
+  --decision-root runtime/decisions `
+  --checkpoint-root runtime/decisions/regional-checkpoints
 ```
 
-체크포인트는 한 page의 모든 발견 identity가
-`accepted/duplicate/review/closed/failed` 중 하나로 판정돼야 전진한다. 알려진
-목록 total보다 적은 판정으로 종료하거나 이미 판정한 identity를 다시 추가하면
-실패한다. 제한 actual 표본을 전체 pagination checkpoint로 기록하지 않는다.
+캡처 CLI는 Raw 저장과 함께 page·total·종료 상태와 전체 발견 identity를
+Git 제외 체크포인트에 원자적으로 기록한다. 모든 page를 발견하는 동안 상세는
+최대 3건씩 처리할 수 있지만 Forest 완료 전에는 모든 identity가
+`accepted/duplicate/review/closed/failed` 중 하나로 판정돼야 한다. 알려진 목록
+total보다 적은 발견·판정으로 종료하거나 이미 발견·판정한 identity를 다시
+추가하면 실패한다. 저장이나 체크포인트 갱신이 실패하면 해당 호출이 새로 만든
+Raw를 제거하며 기존 체크포인트는 유지한다.
 
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
@@ -318,6 +333,7 @@ URL 범위를 벗어나면 Raw를 저장하지 않는다.
 | `--snapshot-id` | 최신 완료 manifest | 특정 완료 snapshot ID |
 | `--dry-run` | 꺼짐 | 실제 transaction을 수행한 뒤 rollback |
 | `--decision-root` | `runtime/decisions` | 교차 Source 판정 manifest의 Git 제외 root |
+| `--checkpoint-root` | 없음 | 완료된 지역 checkpoint를 대조하고 accepted DB projection을 동기화 |
 
 ### 회차와 품질 처리
 
@@ -337,10 +353,13 @@ URL 범위를 벗어나면 Raw를 저장하지 않는다.
 - DB write 하나가 실패하면 해당 accepted batch 전체를 rollback한다.
 - 같은 Raw를 재실행하면 같은 `(source_id, external_id)`를 사용해
   `unchanged` 또는 명시적인 `updated`로 집계하며 중복 row를 만들지 않는다.
+- 완료된 지역 checkpoint를 지정하면 accepted 결정 밖의 해당 Source 과거 row를
+  같은 source identity 범위에서 제거한다. 미완료 checkpoint·다른 Source row는
+  변경하지 않으며 요약의 `pruned`로 제거 수를 출력한다.
 
 성공 요약은 source, Raw·추출·valid·partial·invalid·accepted·지역 제외·교차
 Source 제외 수와
-inserted·updated·unchanged·duplicate·skipped·rejected·failed 수만 출력한다. 실패
+inserted·updated·unchanged·pruned·duplicate·skipped·rejected·failed 수만 출력한다. 실패
 항목은 source ID, external ID, 안전한 오류 코드·경로·오류 타입과 기여 Raw
 document ID만 출력하며 Raw payload, source URL query와 인증키를 출력하지
 않는다.

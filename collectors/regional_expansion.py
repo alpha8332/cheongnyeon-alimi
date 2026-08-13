@@ -66,6 +66,64 @@ class RegionalExpansionSpec:
     request_identity: bool = False
 
 
+class RegionalPaginationTermination(str, Enum):
+    """Authoritative condition used to finish one approved Source traversal."""
+
+    REPORTED_TOTAL = "reported_total"
+    LAST_PAGE = "last_page"
+    NEXT_ABSENT = "next_absent"
+
+
+@dataclass(frozen=True, slots=True)
+class RegionalPaginationSpec:
+    """Operational pagination scope, separate from the bounded RYP1 pilot."""
+
+    page_parameter: str
+    page_size: int | None
+    safety_max_pages: int
+    termination: RegionalPaginationTermination
+    scope: str = "full_list"
+    fixed_parameters: tuple[tuple[str, str], ...] = ()
+
+    def __post_init__(self) -> None:
+        if (
+            not self.page_parameter
+            or self.page_size is not None
+            and self.page_size < 1
+            or self.safety_max_pages < 1
+            or self.scope not in {"full_list", "official_current_filter"}
+            or len(self.fixed_parameters) != len(dict(self.fixed_parameters))
+        ):
+            raise ValueError("regional pagination specification is invalid")
+
+    def validate_page(
+        self,
+        *,
+        page: int,
+        discovered_count: int,
+        total_count: int | None,
+        has_next: bool,
+    ) -> None:
+        """Reject premature or unbounded termination claims."""
+
+        if page > self.safety_max_pages or (
+            has_next and page == self.safety_max_pages
+        ):
+            raise ExtractionError("regional pagination safety limit reached")
+        if discovered_count < 1:
+            raise ExtractionError("regional pagination page is empty")
+        if self.page_size is not None and discovered_count > self.page_size:
+            raise ExtractionError(
+                "regional pagination page size drifted: "
+                f"observed={discovered_count} allowed={self.page_size}"
+            )
+        if self.termination is RegionalPaginationTermination.REPORTED_TOTAL:
+            if total_count is None:
+                raise ExtractionError("regional pagination total is required")
+            if not has_next and discovered_count > total_count:
+                raise ExtractionError("regional pagination total drifted")
+
+
 REGIONAL_EXPANSION_SPECS: dict[str, RegionalExpansionSpec] = {
     "regional-seoul-youth-platform": RegionalExpansionSpec(
         "청년몽땅정보통", "서울특별시", "plcyBizId"
@@ -110,6 +168,83 @@ REGIONAL_EXPANSION_SPECS: dict[str, RegionalExpansionSpec] = {
     ),
 }
 
+
+# These are operational safety/termination contracts, not the one-page RYP1
+# discovery budgets retained in the Source inventory.  Counts are deliberately
+# not frozen because public lists change; a run reconciles its observed total in
+# RegionalBatchCheckpoint.
+REGIONAL_PAGINATION_SPECS: dict[str, RegionalPaginationSpec] = {
+    "regional-seoul-youth-platform": RegionalPaginationSpec(
+        "pageIndex", 5, 80, RegionalPaginationTermination.REPORTED_TOTAL
+    ),
+    "regional-busan-youth-platform": RegionalPaginationSpec(
+        "pageIndex",
+        12,
+        30,
+        RegionalPaginationTermination.REPORTED_TOTAL,
+        scope="official_current_filter",
+        fixed_parameters=(("endstat", "Y"),),
+    ),
+    "regional-daegu-youth-platform": RegionalPaginationSpec(
+        "page",
+        None,
+        200,
+        RegionalPaginationTermination.NEXT_ABSENT,
+        scope="official_current_filter",
+        fixed_parameters=(("search_flag", "1"),),
+    ),
+    "regional-incheon-youth-platform": RegionalPaginationSpec(
+        "pgno",
+        10,
+        50,
+        RegionalPaginationTermination.REPORTED_TOTAL,
+        scope="official_current_filter",
+        fixed_parameters=(("acptrun", "ing"),),
+    ),
+    "regional-gwangju-integrated-youth-platform": RegionalPaginationSpec(
+        "pageIndex",
+        10,
+        100,
+        RegionalPaginationTermination.REPORTED_TOTAL,
+        scope="official_current_filter",
+        fixed_parameters=(("status", "ing"),),
+    ),
+    "regional-daejeon-youth-platform": RegionalPaginationSpec(
+        "pageIndex", 10, 20, RegionalPaginationTermination.REPORTED_TOTAL
+    ),
+    "regional-ulsan-youth-platform": RegionalPaginationSpec(
+        "page", 11, 100, RegionalPaginationTermination.REPORTED_TOTAL
+    ),
+    "regional-gangwon-youth-platform": RegionalPaginationSpec(
+        "pageIndex", 12, 100, RegionalPaginationTermination.REPORTED_TOTAL
+    ),
+    "regional-chungbuk-youth-platform": RegionalPaginationSpec(
+        "pageIndex", 10, 100, RegionalPaginationTermination.REPORTED_TOTAL
+    ),
+    "regional-jeonbuk-youth-platform": RegionalPaginationSpec(
+        "offset",
+        12,
+        100,
+        RegionalPaginationTermination.LAST_PAGE,
+        scope="official_current_filter",
+        fixed_parameters=(("strstate", "ing"),),
+    ),
+    "regional-gyeongbuk-youth-platform": RegionalPaginationSpec(
+        "pageIndex",
+        9,
+        30,
+        RegionalPaginationTermination.REPORTED_TOTAL,
+        scope="official_current_filter",
+        fixed_parameters=(("searchAplyPeriod", "1"),),
+    ),
+    "regional-gyeongnam-youth-platform": RegionalPaginationSpec(
+        "page_no", 9, 250, RegionalPaginationTermination.REPORTED_TOTAL
+    ),
+    "regional-jeju-youth-platform": RegionalPaginationSpec(
+        "page", None, 200, RegionalPaginationTermination.LAST_PAGE
+    ),
+}
+
 EXPANDED_CAPTURE_SOURCE_IDS = frozenset(
     set(REGIONAL_EXPANSION_SPECS)
     - {
@@ -142,7 +277,9 @@ class RegionalBrowserCaptureStore:
         self._now = now
 
     def save(self, capture: Mapping[str, Any]) -> CollectionResult:
-        page, total_count, has_next, items = self._validate(capture)
+        page, total_count, has_next, discovered_ids, items = self._validate(
+            capture
+        )
         collected_at = self._now()
         list_payload = {
             "capture_mode": "browser",
@@ -151,7 +288,9 @@ class RegionalBrowserCaptureStore:
             "page": page,
             "total_count": total_count,
             "has_next": has_next,
-            "item_count": len(items),
+            "discovered_ids": list(discovered_ids),
+            "discovered_count": len(discovered_ids),
+            "captured_detail_count": len(items),
         }
         list_response = _json_response(list_payload)
         list_document = _raw(
@@ -196,7 +335,14 @@ class RegionalBrowserCaptureStore:
             )
             documents.append(detail_document)
             detail_document_ids.append(detail_document.document_id)
-        paths = tuple(self._store.save(document) for document in documents)
+        stored_paths: list[Path] = []
+        try:
+            for document in documents:
+                stored_paths.append(self._store.save(document))
+        except Exception:
+            self._remove_created_raw(stored_paths)
+            raise
+        paths = tuple(stored_paths)
         return CollectionResult(
             source_id=self.source_id,
             request_count=0,
@@ -211,9 +357,41 @@ class RegionalBrowserCaptureStore:
             detail_document_ids=tuple(detail_document_ids),
         )
 
+    def checkpoint_metadata(
+        self, capture: Mapping[str, Any]
+    ) -> tuple[int, int | None, bool, tuple[str, ...]]:
+        """Validate a capture and return its complete list-page identity set."""
+
+        page, total_count, has_next, discovered_ids, _ = self._validate(
+            capture
+        )
+        return page, total_count, has_next, discovered_ids
+
+    def remove_result(self, result: CollectionResult) -> None:
+        """Remove only Raw files created by one failed CLI transaction."""
+
+        self._remove_created_raw(list(result.stored_paths))
+
+    def _remove_created_raw(self, paths: list[Path]) -> None:
+        for path in reversed(paths):
+            path.unlink(missing_ok=True)
+            parent = path.parent
+            while parent != self._store.root:
+                try:
+                    parent.rmdir()
+                except OSError:
+                    break
+                parent = parent.parent
+
     def _validate(
         self, capture: Mapping[str, Any]
-    ) -> tuple[int, int | None, bool, tuple[dict[str, Any], ...]]:
+    ) -> tuple[
+        int,
+        int | None,
+        bool,
+        tuple[str, ...],
+        tuple[dict[str, Any], ...],
+    ]:
         if capture.get("source_id") != self.source_id:
             raise ExtractionError("regional Browser capture source drift")
         list_url = capture.get("list_url")
@@ -276,9 +454,44 @@ class RegionalBrowserCaptureStore:
                 raise ExtractionError("regional Browser item contract drift")
             seen.add(external_id)
             validated.append(deepcopy(value))
-        if total_count is not None and total_count < len(items):
-            raise ExtractionError("regional Browser total is smaller than batch")
-        return page, total_count, has_next, tuple(validated)
+        discovered_value = capture.get("discovered_ids")
+        if discovered_value is None:
+            discovered_ids = tuple(item["external_id"] for item in validated)
+        elif (
+            not isinstance(discovered_value, list)
+            or not discovered_value
+            or not all(
+                isinstance(value, str) and _EXTERNAL_ID.fullmatch(value)
+                for value in discovered_value
+            )
+            or len(discovered_value) != len(set(discovered_value))
+        ):
+            raise ExtractionError(
+                "regional Browser discovered identities are invalid"
+            )
+        else:
+            discovered_ids = tuple(discovered_value)
+        if not seen.issubset(discovered_ids):
+            raise ExtractionError(
+                "regional Browser detail is absent from discovered identities"
+            )
+        if total_count is not None and total_count < len(discovered_ids):
+            raise ExtractionError(
+                "regional Browser total is smaller than discovered identities"
+            )
+        try:
+            pagination = REGIONAL_PAGINATION_SPECS[self.source_id]
+        except KeyError:
+            raise ExtractionError(
+                "regional pagination contract is missing"
+            ) from None
+        pagination.validate_page(
+            page=page,
+            discovered_count=len(discovered_ids),
+            total_count=total_count,
+            has_next=has_next,
+        )
+        return page, total_count, has_next, discovered_ids, tuple(validated)
 
 
 class RegionalBrowserExtractor:
@@ -466,6 +679,7 @@ class RegionalBatchCheckpoint:
     discovery_complete: bool
     complete: bool
     discovered_ids: tuple[str, ...] = ()
+    captured_ids: tuple[str, ...] = ()
     decisions: tuple[tuple[str, RegionalOutcome], ...] = ()
 
     def __post_init__(self) -> None:
@@ -496,9 +710,21 @@ class RegionalBatchCheckpoint:
         ):
             raise ValueError("regional checkpoint identities are invalid")
         decision_ids = tuple(external_id for external_id, _ in self.decisions)
+        nonfailed_decision_ids = {
+            external_id
+            for external_id, outcome in self.decisions
+            if outcome is not RegionalOutcome.FAILED
+        }
         if (
-            len(decision_ids) != len(set(decision_ids))
+            len(self.captured_ids) != len(set(self.captured_ids))
+            or set(self.captured_ids) - set(discovered)
+            or any(
+                not _EXTERNAL_ID.fullmatch(value)
+                for value in self.captured_ids
+            )
             or set(decision_ids) - set(discovered)
+            or nonfailed_decision_ids - set(self.captured_ids)
+            or len(decision_ids) != len(set(decision_ids))
             or any(not isinstance(outcome, RegionalOutcome) for _, outcome in self.decisions)
         ):
             raise ValueError("regional checkpoint decisions are invalid")
@@ -543,11 +769,17 @@ class RegionalBatchCheckpoint:
             or not ids
             or len(ids) != len(set(ids))
             or any(not _EXTERNAL_ID.fullmatch(value) for value in ids)
-            or set(ids) & set(self.discovered_ids)
         ):
             raise ValueError("regional checkpoint discovery page is invalid")
+        new_ids = tuple(
+            external_id
+            for external_id in ids
+            if external_id not in set(self.discovered_ids)
+        )
+        if has_next and not new_ids:
+            raise ValueError("regional checkpoint discovery made no progress")
         known_total = self.total_count
-        discovered = (*self.discovered_ids, *ids)
+        discovered = (*self.discovered_ids, *new_ids)
         if total_count is not None:
             if total_count < len(discovered):
                 raise ValueError("regional checkpoint total is too small")
@@ -570,6 +802,79 @@ class RegionalBatchCheckpoint:
             complete=discovery_complete
             and len(self.decisions) == len(discovered),
             discovered_ids=discovered,
+            captured_ids=self.captured_ids,
+            decisions=self.decisions,
+        )
+
+    def capture(self, external_ids: Iterable[str]) -> "RegionalBatchCheckpoint":
+        """Record a successfully persisted bounded detail batch."""
+
+        selected = tuple(external_ids)
+        existing = set(self.captured_ids)
+        if (
+            not selected
+            or len(selected) != len(set(selected))
+            or set(selected) - set(self.discovered_ids)
+            or set(selected) & existing
+        ):
+            raise ValueError("regional checkpoint capture batch is invalid")
+        captured = (
+            *self.captured_ids,
+            *(
+                external_id
+                for external_id in self.discovered_ids
+                if external_id in set(selected)
+            ),
+        )
+        return RegionalBatchCheckpoint(
+            source_id=self.source_id,
+            collection_mode=self.collection_mode,
+            next_page=self.next_page,
+            total_count=self.total_count,
+            discovery_complete=self.discovery_complete,
+            complete=self.discovery_complete
+            and len(self.decisions) == len(self.discovered_ids),
+            discovered_ids=self.discovered_ids,
+            captured_ids=captured,
+            decisions=self.decisions,
+        )
+
+    def amend_discovery(
+        self,
+        *,
+        page: int,
+        external_ids: Iterable[str],
+        total_count: int | None,
+        has_next: bool,
+    ) -> "RegionalBatchCheckpoint":
+        """Add identities missed on the most recently persisted open page."""
+
+        ids = tuple(external_ids)
+        existing = set(self.discovered_ids)
+        new_ids = tuple(value for value in ids if value not in existing)
+        if (
+            self.discovery_complete
+            or page != self.next_page - 1
+            or not has_next
+            or not ids
+            or len(ids) != len(set(ids))
+            or any(not _EXTERNAL_ID.fullmatch(value) for value in ids)
+            or not new_ids
+            or total_count != self.total_count
+        ):
+            raise ValueError("regional checkpoint discovery amendment is invalid")
+        discovered = (*self.discovered_ids, *new_ids)
+        if self.total_count is not None and len(discovered) > self.total_count:
+            raise ValueError("regional checkpoint total is too small")
+        return RegionalBatchCheckpoint(
+            source_id=self.source_id,
+            collection_mode=self.collection_mode,
+            next_page=self.next_page,
+            total_count=self.total_count,
+            discovery_complete=False,
+            complete=False,
+            discovered_ids=discovered,
+            captured_ids=self.captured_ids,
             decisions=self.decisions,
         )
 
@@ -587,6 +892,12 @@ class RegionalBatchCheckpoint:
                 normalized[external_id] = RegionalOutcome(outcome)
         except (TypeError, ValueError):
             raise ValueError("regional checkpoint outcome is invalid") from None
+        if any(
+            outcome is not RegionalOutcome.FAILED
+            and external_id not in set(self.captured_ids)
+            for external_id, outcome in normalized.items()
+        ):
+            raise ValueError("regional checkpoint decision requires captured detail")
         merged = (
             *self.decisions,
             *(
@@ -604,6 +915,7 @@ class RegionalBatchCheckpoint:
             complete=self.discovery_complete
             and len(merged) == len(self.discovered_ids),
             discovered_ids=self.discovered_ids,
+            captured_ids=self.captured_ids,
             decisions=merged,
         )
 
@@ -626,7 +938,7 @@ class RegionalBatchCheckpoint:
             external_ids=ids,
             total_count=total_count,
             has_next=has_next,
-        ).decide(outcomes)
+        ).capture(ids).decide(outcomes)
 
     def counts(self) -> dict[str, int]:
         return {
@@ -636,7 +948,7 @@ class RegionalBatchCheckpoint:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": "1.0.0",
+            "schema_version": "1.2.0",
             "source_id": self.source_id,
             "collection_mode": self.collection_mode,
             "next_page": self.next_page,
@@ -644,12 +956,22 @@ class RegionalBatchCheckpoint:
             "discovery_complete": self.discovery_complete,
             "complete": self.complete,
             "discovered_ids": list(self.discovered_ids),
+            "captured_ids": list(self.captured_ids),
             "decisions": [
                 {"external_id": external_id, "outcome": outcome.value}
                 for external_id, outcome in self.decisions
             ],
             "counts": self.counts(),
             "pending_count": len(self.discovered_ids) - len(self.decisions),
+            "pending_detail_count": len(self.discovered_ids)
+            - len(
+                set(self.captured_ids)
+                | {
+                    external_id
+                    for external_id, outcome in self.decisions
+                    if outcome is RegionalOutcome.FAILED
+                }
+            ),
         }
 
 
@@ -688,9 +1010,18 @@ class RegionalCheckpointStore:
             return None
         try:
             value = json.loads(target.read_text(encoding="utf-8"))
+            schema_version = value.get("schema_version")
+            if schema_version not in {"1.0.0", "1.1.0", "1.2.0"}:
+                raise ValueError
             decisions = tuple(
                 (item["external_id"], RegionalOutcome(item["outcome"]))
                 for item in value["decisions"]
+            )
+            captured_ids = tuple(
+                value.get(
+                    "captured_ids",
+                    [external_id for external_id, _ in decisions],
+                )
             )
             checkpoint = RegionalBatchCheckpoint(
                 source_id=value["source_id"],
@@ -700,11 +1031,22 @@ class RegionalCheckpointStore:
                 discovery_complete=value["discovery_complete"],
                 complete=value["complete"],
                 discovered_ids=tuple(value["discovered_ids"]),
+                captured_ids=captured_ids,
                 decisions=decisions,
             )
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
             raise ValueError("regional checkpoint is invalid") from None
-        if checkpoint.source_id != source_id or checkpoint.to_dict() != value:
+        expected = checkpoint.to_dict()
+        if schema_version == "1.1.0":
+            # 1.1 counted failed-but-not-captured identities as pending detail.
+            # Accept that derived counter only while loading, then migrate on save.
+            expected["schema_version"] = "1.1.0"
+            expected["pending_detail_count"] = len(checkpoint.discovered_ids) - len(
+                checkpoint.captured_ids
+            )
+        if checkpoint.source_id != source_id or (
+            schema_version in {"1.1.0", "1.2.0"} and expected != value
+        ):
             raise ValueError("regional checkpoint contract drift")
         return checkpoint
 

@@ -4,8 +4,8 @@
 
 - 번호: Data 05
 - 담당 영역: Data
-- 상태: in-progress
-- 현재 진행: `RYP0`~`RYP5` 완료, `RYP6` 순차 확대 진행 중
+- 상태: completed
+- 현재 진행: `RYP0`~`RYP6`·`RYP-G4` 완료
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,8 +17,8 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP6` 17개 구현 상태·공통 Browser Adapter·첫 actual batch 완료,
-  전체 pagination 판정 진행 중
+- 현재 Slice: `RYP6` 13개 승인 Source 전체 pagination·상세 판정·DB 동기화·
+  전체 회귀 완료
 
 ## 목적
 
@@ -628,7 +628,7 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 지역·신청 가능 Gate를 통과할 수 있다. 근거가 없으면 지역 증거가 충분해도
 `review`로 격리한다.
 
-#### 현재 진행 (`2026-08-11`)
+#### 현재 진행 (`2026-08-13`)
 
 - inventory `1.2.0`에 17개 `implementation_status`를 확정했다.
   `implemented_http` 2개, `implemented_browser` 11개, `blocked` 3개,
@@ -642,8 +642,27 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 체크포인트는 한 목록 page에서 발견한 모든 identity에
   `accepted/duplicate/review/closed/failed` 중 하나가 있어야 전진하고,
   알려진 total보다 적게 판정한 종료를 거부한다.
-- 아직 전체 page identity 순회와 종료 합계 대조를 실행하지 않았으므로
-  `RYP-G4`와 Forest 완료는 보류한다.
+- Browser 캡처의 page 전체 `discovered_ids`와 상세 최대 3건 batch를 분리하고,
+  캡처 CLI가 Raw 저장과 원자적 체크포인트 갱신을 함께 수행하도록 연결했다.
+  전체 page 발견 뒤에도 미판정 identity는 pending으로 남아 완료될 수 없다.
+- `2026-08-11` 제한 actual 시점에는 전체 page identity 순회와 종료 합계 대조를
+  실행하지 않았으므로 `RYP-G4`와 Forest 완료를 보류했다.
+
+#### RYP6 최종 판정 (`2026-08-13`)
+
+- HTTP 2개와 Browser 11개 승인 Source에서 4,606개 고유 identity를 발견했다.
+- 4,279개 상세 또는 공식 목록 상태를 Raw로 보존했고, 공식 상세 오류 327개는
+  `failed`로 격리했다.
+- 최종 판정은 `accepted 18`, `duplicate 1`, `review 1,903`, `closed 2,357`,
+  `failed 327`이며 합계가 발견 identity 4,606개와 일치한다.
+- 부산 16건·경북 2건만 PostgreSQL에 유지했다. 전체 checkpoint 재생 시 모두
+  `unchanged`였고 과거 제한 actual의 비승인 표본 5건은 Source별 최종 accepted
+  projection 동기화에서 제거했다.
+- 세종·경기·충남은 `blocked`, 구 전남 Source는 `rejected` 상태를 유지했으며
+  우회 수집하지 않았다.
+- Release 1 golden HTTP 기술 감사와 Python·PostgreSQL·Frontend 회귀가
+  통과해 `RYP-G4`를 pass로 판정한다. 기존 Release 1 감사의 수동 QA·사용성
+  증거 대기는 이번 Data Forest 완료와 별개이며 완료로 소급 기록하지 않는다.
 
 #### 완료 기준
 

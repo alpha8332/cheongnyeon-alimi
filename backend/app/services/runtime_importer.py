@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from sqlalchemy import delete, or_
 from sqlalchemy.orm import Session
 
+from app.models.policy import Policy
 from app.services.seed_importer import ImportResult, import_programs
 from app.services.aggregator_baseline import load_aggregator_baseline
 from collectors.cross_source_duplicate import (
@@ -10,6 +12,12 @@ from collectors.cross_source_duplicate import (
 )
 from collectors.runtime import RuntimeReplayResult, replay_runtime_raw
 from collectors.regional_expansion import EXPANDED_CAPTURE_SOURCE_IDS
+from collectors.regional_expansion import (
+    RegionalBatchCheckpoint,
+    RegionalCheckpointStore,
+    RegionalOutcome,
+    outcome_from_decisions,
+)
 
 
 REGIONAL_DUPLICATE_SOURCE_IDS = frozenset(
@@ -27,6 +35,7 @@ class RuntimeImportResult:
     replay: RuntimeReplayResult
     database: ImportResult
     decision_manifest_id: str | None = None
+    pruned: int = 0
 
 
 def import_runtime_raw(
@@ -38,6 +47,7 @@ def import_runtime_raw(
     snapshot_id: str | None = None,
     dry_run: bool = False,
     decision_root: str | Path | None = None,
+    checkpoint_root: str | Path | None = None,
 ) -> RuntimeImportResult:
     """Replay one source batch and pass accepted programs to the importer."""
     replay = replay_runtime_raw(
@@ -45,6 +55,7 @@ def import_runtime_raw(
         source_id=source_id,
         limit=limit,
         snapshot_id=snapshot_id,
+        checkpoint_root=checkpoint_root,
     )
     if source_id in REGIONAL_DUPLICATE_SOURCE_IDS and replay.duplicate_decisions:
         baseline = load_aggregator_baseline(db, raw_root=raw_root)
@@ -58,6 +69,7 @@ def import_runtime_raw(
             limit=limit,
             snapshot_id=snapshot_id,
             duplicate_baseline=baseline,
+            checkpoint_root=checkpoint_root,
         )
     decision_manifest_id = None
     if replay.duplicate_manifest is not None and decision_root is not None:
@@ -78,8 +90,93 @@ def import_runtime_raw(
         dry_run=dry_run,
         normalization_issues=normalization_issues,
     )
+    pruned = 0
+    if checkpoint_root is not None and source_id in REGIONAL_DUPLICATE_SOURCE_IDS:
+        checkpoint = _finalize_regional_checkpoint(
+            replay,
+            checkpoint_root=checkpoint_root,
+        )
+        if not dry_run:
+            accepted_ids = {
+                external_id
+                for external_id, outcome in checkpoint.decisions
+                if outcome is RegionalOutcome.ACCEPTED
+            }
+            pruned = _prune_regional_policies(
+                db,
+                source_id=source_id,
+                accepted_ids=accepted_ids,
+            )
     return RuntimeImportResult(
         replay=replay,
         database=database,
         decision_manifest_id=decision_manifest_id,
+        pruned=pruned,
     )
+
+
+def _prune_regional_policies(
+    db: Session, *, source_id: str, accepted_ids: set[str]
+) -> int:
+    """Make a completed regional Source projection match accepted decisions."""
+
+    statement = delete(Policy).where(Policy.source_id == source_id)
+    if accepted_ids:
+        statement = statement.where(
+            or_(
+                Policy.external_id.is_(None),
+                Policy.external_id.not_in(accepted_ids),
+            )
+        )
+    try:
+        result = db.execute(statement)
+        pruned = result.rowcount or 0
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return pruned
+
+
+def _finalize_regional_checkpoint(
+    replay: RuntimeReplayResult, *, checkpoint_root: str | Path
+) -> RegionalBatchCheckpoint:
+    store = RegionalCheckpointStore(checkpoint_root)
+    checkpoint = store.load(replay.source_id)
+    if checkpoint is None or not checkpoint.discovery_complete:
+        raise ValueError("regional checkpoint discovery is incomplete")
+    duplicate_by_external_id = {
+        decision["candidate"]["external_id"]: decision
+        for decision in replay.duplicate_decisions
+    }
+    outcomes: dict[str, RegionalOutcome] = {
+        external_id: outcome
+        for external_id, outcome in checkpoint.decisions
+    }
+    for decision in replay.regional_decisions:
+        external_id = decision["external_id"]
+        if outcomes.get(external_id) is RegionalOutcome.FAILED:
+            continue
+        outcomes[external_id] = outcome_from_decisions(
+            decision,
+            duplicate_by_external_id.get(external_id),
+        )
+    missing = set(checkpoint.captured_ids) - set(outcomes)
+    for external_id in missing:
+        outcomes[external_id] = RegionalOutcome.FAILED
+    existing = dict(checkpoint.decisions)
+    if any(
+        external_id in outcomes and outcomes[external_id] != outcome
+        for external_id, outcome in existing.items()
+    ):
+        raise ValueError("regional checkpoint decisions drifted")
+    pending = {
+        external_id: outcome
+        for external_id, outcome in outcomes.items()
+        if external_id not in existing
+    }
+    finalized = checkpoint if not pending else checkpoint.decide(pending)
+    if not finalized.complete:
+        raise ValueError("regional checkpoint decision set is incomplete")
+    store.save(finalized)
+    return finalized

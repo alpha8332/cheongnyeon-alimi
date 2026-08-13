@@ -113,6 +113,23 @@ class BusanPilotTests(unittest.TestCase):
                 ).collect(CollectionOptions(limit=1, detail_limit=1))
             self.assertEqual([], list(RawDocumentStore(temp_dir).root.rglob("*.json")))
 
+    def test_operational_page_uses_the_official_recruiting_filter(self) -> None:
+        client = StubHttpClient([response(BUSAN_LIST)])
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = BusanYouthCollector(
+                http_client=client,
+                store=RawDocumentStore(temp_dir),
+                now=lambda: NOW,
+            ).collect(
+                CollectionOptions(page=2, limit=12, detail_limit=0)
+            )
+
+        self.assertEqual(2, result.page)
+        self.assertEqual(
+            {"menuCd": "12", "endstat": "Y", "pageIndex": "2"},
+            client.calls[0]["query"],
+        )
+
 
 class SeoulBrowserPilotTests(unittest.TestCase):
     def capture(self) -> dict[str, object]:

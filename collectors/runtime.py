@@ -33,6 +33,7 @@ from collectors.regional_pilot import (
 )
 from collectors.regional_expansion import (
     EXPANDED_CAPTURE_SOURCE_IDS,
+    RegionalCheckpointStore,
     RegionalBrowserExtractor,
     decide_expanded_regional_policy,
     map_expanded_duplicate_evidence,
@@ -58,6 +59,15 @@ SUPPORTED_SOURCE_IDS = (
     SEOUL_SOURCE_ID,
     YOUTHCENTER_SOURCE_ID,
     *tuple(sorted(EXPANDED_CAPTURE_SOURCE_IDS)),
+)
+
+REGIONAL_RUNTIME_SOURCE_IDS = frozenset(
+    {
+        GYEONGBUK_YOUTH_SOURCE_ID,
+        BUSAN_SOURCE_ID,
+        SEOUL_SOURCE_ID,
+        *EXPANDED_CAPTURE_SOURCE_IDS,
+    }
 )
 
 _EXTRACTOR_TYPES = {
@@ -131,6 +141,7 @@ def replay_runtime_raw(
     snapshot_id: str | None = None,
     normalizer: Normalizer | None = None,
     duplicate_baseline: AggregatorBaseline | None = None,
+    checkpoint_root: str | Path | None = None,
 ) -> RuntimeReplayResult:
     """Load the latest source batch and normalize its policies."""
     if source_id not in _EXTRACTOR_TYPES:
@@ -152,18 +163,32 @@ def replay_runtime_raw(
         )
     except SnapshotError as exc:
         raise RuntimeReplayError(str(exc)) from None
+    checkpoint = (
+        RegionalCheckpointStore(checkpoint_root).load(source_id)
+        if checkpoint_root is not None
+        and source_id in REGIONAL_RUNTIME_SOURCE_IDS
+        else None
+    )
     selected_documents = (
-        _snapshot_batch(documents, manifest, limit)
+        _checkpoint_batch(documents, checkpoint, limit)
+        if checkpoint is not None
+        else _snapshot_batch(documents, manifest, limit)
         if manifest is not None
         else _latest_batch(documents, limit)
     )
+    browser_checkpoint_replay = (
+        checkpoint is not None and source_id == SEOUL_SOURCE_ID
+    )
+    extractor = (
+        RegionalBrowserExtractor(source_id)
+        if browser_checkpoint_replay
+        else _EXTRACTOR_TYPES[source_id]()
+    )
     try:
-        extracted = _EXTRACTOR_TYPES[source_id]().extract(
-            selected_documents
-        )
+        extracted = extractor.extract(selected_documents)
     except Exception as exc:
         raise RuntimeReplayError(
-            f"runtime extraction failed ({type(exc).__name__})"
+            f"runtime extraction failed ({type(exc).__name__}: {exc})"
         ) from None
 
     regional_decisions = ()
@@ -177,9 +202,14 @@ def replay_runtime_raw(
             for source_id in EXPANDED_CAPTURE_SOURCE_IDS
         },
     }
-    if source_id in regional_deciders:
+    selected_regional_decider = (
+        decide_expanded_regional_policy
+        if browser_checkpoint_replay
+        else regional_deciders.get(source_id)
+    )
+    if selected_regional_decider is not None:
         decisions = tuple(
-            regional_deciders[source_id](policy)
+            selected_regional_decider(policy)
             for policy in extracted
         )
         regional_decisions = tuple(
@@ -216,11 +246,16 @@ def replay_runtime_raw(
             for source_id in EXPANDED_CAPTURE_SOURCE_IDS
         },
     }
-    if source_id in duplicate_mappers:
+    selected_duplicate_mapper = (
+        map_expanded_duplicate_evidence
+        if browser_checkpoint_replay
+        else duplicate_mappers.get(source_id)
+    )
+    if selected_duplicate_mapper is not None:
         decisions = tuple(
             evaluate_cross_source_duplicate(
                 result.program,
-                duplicate_mappers[source_id](policy),
+                selected_duplicate_mapper(policy),
                 duplicate_baseline,
             )
             for policy, result in normalized_pairs
@@ -374,6 +409,58 @@ def _latest_batch(
         for external_id in sorted(details_by_external_id)
     )
     return (latest_response, *selected_items, *selected_details)
+
+
+def _checkpoint_batch(
+    documents: tuple[RawPolicyDocument, ...],
+    checkpoint: Any,
+    limit: int,
+) -> tuple[RawPolicyDocument, ...]:
+    """Select the latest complete Raw triple for every captured checkpoint ID."""
+
+    if not checkpoint.captured_ids:
+        raise RuntimeReplayError("regional checkpoint has no captured details")
+    selected_ids = checkpoint.captured_ids[:limit]
+    selected_set = set(selected_ids)
+    responses = {
+        document.document_id: document
+        for document in documents
+        if document.document_role is RawDocumentRole.LIST_RESPONSE
+    }
+
+    def newest(
+        role: RawDocumentRole,
+    ) -> dict[str, RawPolicyDocument]:
+        values: dict[str, RawPolicyDocument] = {}
+        for document in documents:
+            external_id = document.external_id
+            if document.document_role is not role or external_id not in selected_set:
+                continue
+            current = values.get(external_id)
+            if current is None or (
+                document.collected_at,
+                document.document_id,
+            ) > (current.collected_at, current.document_id):
+                values[external_id] = document
+        return values
+
+    items = newest(RawDocumentRole.LIST_ITEM)
+    details = newest(RawDocumentRole.DETAIL_RESPONSE)
+    if set(items) != selected_set or set(details) != selected_set:
+        raise RuntimeReplayError(
+            "regional checkpoint Raw details are incomplete"
+        )
+    parents: dict[str, RawPolicyDocument] = {}
+    for item in items.values():
+        parent_id = item.parent_document_id
+        if parent_id is None or parent_id not in responses:
+            raise RuntimeReplayError(
+                "regional checkpoint list parent is missing"
+            )
+        parents[parent_id] = responses[parent_id]
+    ordered_items = tuple(items[external_id] for external_id in selected_ids)
+    ordered_details = tuple(details[external_id] for external_id in selected_ids)
+    return (*parents.values(), *ordered_items, *ordered_details)
 
 
 def _snapshot_batch(

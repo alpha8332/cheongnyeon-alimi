@@ -9,8 +9,8 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0`~`RYP5` 완료, `RYP6` 순차 확대 진행 (`DTL4-4B`·`ES4`
-  actual 세로 인수 통과), Data 05·06 구현 뒤 `DTL4-5` 소비 대조 예정
+- 현재 Slice: Data 05 `RYP0`~`RYP6`·`RYP-G4` 완료 (`DTL4-4B`·`ES4`
+  actual 세로 인수 포함), Data 06 구현과 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -94,6 +94,11 @@ RYP4 교차 Source Gate와 RYP5 대표 actual DB·API·Browser 인수를 완료�
 RYP0~RYP4는 DTL4-6 W4-G2, 완료한 RYP5 actual은 DTL4-7 W4-G3, RYP6
 지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06 SOP0~SOP3,
 SOP4 actual과 SOP5 최종 상태도 각각 같은 W4-G2~G4의 필수 입력으로 둔다.
+
+`2026-08-13`에 RYP6는 13개 승인 Source 4,606건 전체 판정, accepted 18건
+PostgreSQL 동기화, 동일 Raw unchanged, Release 1 golden 기술 회귀를 완료해
+`RYP-G4`를 통과했다. 이는 Data 05 Forest 판정이며 Data 06·DTL4-5·주차 전체
+`W4-G4`를 완료로 소급하지 않는다.
 
 ## 권장 5일 배치
 
@@ -697,7 +702,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [ ] Data 06 SOP0~SOP3 후보 정제·중복 감사·승인·Adapter Gate 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
-- [ ] Data 05 RYP6 지역별 구현 상태·첫 actual 완료, 전체 pagination·회귀 대기
+- [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
 - [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과
 - [ ] Data 06 SOP5 Source군별 최종 상태·전체 회귀 완료
 - [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과

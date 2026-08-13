@@ -74,6 +74,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("runtime/decisions"),
         help="Git-excluded cross-source decision root",
     )
+    parser.add_argument(
+        "--checkpoint-root",
+        type=Path,
+        default=None,
+        help="optional completed regional batch checkpoint root",
+    )
     return parser
 
 
@@ -124,6 +130,7 @@ def main(
             snapshot_id=args.snapshot_id,
             dry_run=args.dry_run,
             decision_root=args.decision_root,
+            checkpoint_root=args.checkpoint_root,
         )
         if run_writer is not None and run_id is not None:
             run_writer.finish(
@@ -184,6 +191,7 @@ def _print_summary(
         f"inserted={database.inserted} "
         f"updated={database.updated} "
         f"unchanged={database.unchanged} "
+        f"pruned={result.pruned} "
         f"duplicate={database.duplicate} "
         f"skipped={database.skipped} "
         f"rejected={database.rejected} "

@@ -207,7 +207,7 @@ class _DetailParser(HTMLParser):
 
 
 class GyeongbukYouthCollector:
-    """Collect one bounded Gyeongbuk JSON page and up to three details."""
+    """Collect one 신청중 Gyeongbuk page and a bounded detail slice."""
 
     source_id = SOURCE_ID
 
@@ -232,9 +232,9 @@ class GyeongbukYouthCollector:
         options: CollectionOptions | None = None,
     ) -> CollectionResult:
         selected = options or CollectionOptions()
-        if selected.page != 1:
+        if selected.page > 30:
             raise CollectorConfigurationError(
-                "Gyeongbuk pilot profile only permits page 1"
+                "Gyeongbuk page exceeds the operational safety limit"
             )
         if (
             selected.detail_limit
@@ -254,13 +254,31 @@ class GyeongbukYouthCollector:
             "Referer": _list_page_url(),
             "X-Requested-With": "XMLHttpRequest",
         }
-        list_response = self._http_client.post_form(
+        count_response = self._http_client.post_form(
             source_id=self.source_id,
             url=LIST_JSON_URL,
             form=LIST_FORM,
             headers=headers,
         )
-        list_payload = _parse_list(list_response)
+        count_payload = _parse_list(count_response)
+        stream_type = "1" if selected.page == 1 else "2"
+        stream_page = 1 if selected.page == 1 else selected.page - 1
+        list_form = {
+            **LIST_FORM,
+            "pageIndex": str(stream_page),
+            "searchCondition": stream_type,
+            "type": stream_type,
+        }
+        list_response = self._http_client.post_form(
+            source_id=self.source_id,
+            url=LIST_JSON_URL,
+            form=list_form,
+            headers=headers,
+        )
+        list_payload = _parse_paginated_list(
+            list_response,
+            combined_total=count_payload.total_count,
+        )
         items = _prioritize_regional_items(list_payload.items)[: selected.limit]
         if not items:
             raise EmptyResponseError(
@@ -269,8 +287,35 @@ class GyeongbukYouthCollector:
                 reason="source returned an empty policy list",
                 status=list_response.status,
             )
+        external_ids = [str(item["no"]) for item in items]
+        if (
+            selected.detail_limit
+            and selected.detail_offset >= len(external_ids)
+        ):
+            raise CollectorConfigurationError(
+                "Gyeongbuk detail offset exceeds the page"
+            )
+        detail_external_ids = external_ids[
+            selected.detail_offset : selected.detail_offset
+            + selected.detail_limit
+        ]
+        stored_external_ids = (
+            external_ids
+            if selected.detail_limit == 0
+            else detail_external_ids
+        )
 
         collected_at = self._now()
+        count_document = _raw_document(
+            response=count_response,
+            role=RawDocumentRole.LIST_RESPONSE,
+            external_id=None,
+            parent_document_id=None,
+            collected_at=collected_at,
+            payload=count_response.body,
+            source_url=LIST_JSON_URL,
+            raw_format=RawFormat.JSON,
+        )
         list_document = _raw_document(
             response=list_response,
             role=RawDocumentRole.LIST_RESPONSE,
@@ -281,11 +326,11 @@ class GyeongbukYouthCollector:
             source_url=LIST_JSON_URL,
             raw_format=RawFormat.JSON,
         )
-        documents: list[RawPolicyDocument] = [list_document]
-        external_ids: list[str] = []
+        documents: list[RawPolicyDocument] = [count_document, list_document]
         for item in items:
             external_id = str(item["no"])
-            external_ids.append(external_id)
+            if external_id not in stored_external_ids:
+                continue
             item_document = _raw_document(
                 response=list_response,
                 role=RawDocumentRole.LIST_ITEM,
@@ -299,8 +344,8 @@ class GyeongbukYouthCollector:
             documents.append(item_document)
 
         detail_document_ids: list[str] = []
-        detail_count = min(selected.detail_limit, len(external_ids))
-        for external_id in external_ids[:detail_count]:
+        detail_count = len(detail_external_ids)
+        for external_id in detail_external_ids:
             detail_response = self._http_client.post_form(
                 source_id=self.source_id,
                 url=DETAIL_MODAL_URL,
@@ -334,11 +379,11 @@ class GyeongbukYouthCollector:
         stored_paths = tuple(self._store.save(document) for document in documents)
         return CollectionResult(
             source_id=self.source_id,
-            request_count=2 + detail_count,
+            request_count=3 + detail_count,
             item_count=len(items),
             detail_count=detail_count,
             stored_paths=stored_paths,
-            page=1,
+            page=selected.page,
             page_size=len(items),
             total_count=list_payload.total_count,
             external_ids=tuple(external_ids),
@@ -689,6 +734,67 @@ def _parse_list(response: TransportResponse) -> _ListPayload:
             reason="list total count is smaller than the returned items",
         )
     return _ListPayload(items=tuple(items), total_count=total_count)
+
+
+def _parse_paginated_list(
+    response: TransportResponse, *, combined_total: int
+) -> _ListPayload:
+    """Parse one official province or city/county tab page."""
+
+    try:
+        payload = json.loads(response.body)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise safe_parse_error(
+            source_id=SOURCE_ID,
+            source_url=LIST_JSON_URL,
+            response=response,
+            reason="paginated list response is not valid JSON",
+        ) from None
+    if not isinstance(payload, dict):
+        raise safe_parse_error(
+            source_id=SOURCE_ID,
+            source_url=LIST_JSON_URL,
+            response=response,
+            reason="paginated list response root must be an object",
+        )
+    group = payload.get("resultList")
+    if group is None:
+        groups = (payload.get("resultList1"), payload.get("resultList2"))
+        if all(isinstance(value, list) for value in groups):
+            group = [*groups[0], *groups[1]]
+    if not isinstance(group, list) or not group:
+        raise safe_parse_error(
+            source_id=SOURCE_ID,
+            source_url=LIST_JSON_URL,
+            response=response,
+            reason="paginated list response is missing policy items",
+        )
+    items: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for value in group:
+        external_id = str(value.get("no", "")) if isinstance(value, dict) else ""
+        if (
+            not external_id.isdigit()
+            or int(external_id) <= 0
+            or not _present_text(value.get("policyNm"))
+            or external_id in seen
+        ):
+            raise safe_parse_error(
+                source_id=SOURCE_ID,
+                source_url=LIST_JSON_URL,
+                response=response,
+                reason="paginated policy identity is invalid or duplicated",
+            )
+        seen.add(external_id)
+        items.append(value)
+    if combined_total < len(items):
+        raise safe_parse_error(
+            source_id=SOURCE_ID,
+            source_url=LIST_JSON_URL,
+            response=response,
+            reason="combined policy total is smaller than one page",
+        )
+    return _ListPayload(tuple(items), combined_total)
 
 
 def _parse_detail(response: TransportResponse) -> _DetailPayload:

@@ -36,7 +36,9 @@
         "browser_access": "available"
       },
       "approved_list_urls": [
-        "https://youth.seoul.go.kr/infoData/plcyInfo/list.do?key=2309150002"
+        "https://youth.seoul.go.kr/infoData/plcyInfo/list.do?key=2309150002",
+        "https://youth.seoul.go.kr/infoData/plcyInfo/ctList.do?key=2309150002",
+        "https://youth.seoul.go.kr/infoData/plcyInfo/guList.do?key=2309150002"
       ],
       "approved_detail_url_patterns": [
         "https://youth.seoul.go.kr/infoData/plcyInfo/view.do?key=2309150002&plcyBizId={non_empty}"
@@ -275,7 +277,8 @@
         "browser_access": "available"
       },
       "approved_list_urls": [
-        "https://youth.incheon.go.kr/policy/search_incheon.jsp"
+        "https://youth.incheon.go.kr/policy/search_incheon.jsp",
+        "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoList.do"
       ],
       "approved_detail_url_patterns": [
         "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoDetail.do?poly_seq={positive_integer}"
@@ -907,7 +910,8 @@
         "browser_access": "available"
       },
       "approved_list_urls": [
-        "https://www.jb2030.or.kr/policy/p2_pol.html"
+        "https://www.jb2030.or.kr/policy/p2_pol.html",
+        "https://www.jb2030.or.kr/policy/p2_pol.html?strstate=ing"
       ],
       "approved_detail_url_patterns": [
         "https://www.jb2030.or.kr/policy/p2_pol_view.html?id={positive_integer}"

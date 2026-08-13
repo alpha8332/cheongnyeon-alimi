@@ -183,7 +183,7 @@ class _BusanDetailParser(HTMLParser):
 
 
 class BusanYouthCollector:
-    """Collect one official Busan list page and at most three details."""
+    """Collect one 모집중 Busan page and a bounded detail slice."""
 
     source_id = BUSAN_SOURCE_ID
 
@@ -209,8 +209,10 @@ class BusanYouthCollector:
         self, options: CollectionOptions | None = None
     ) -> CollectionResult:
         selected = options or CollectionOptions()
-        if selected.page != 1:
-            raise CollectorConfigurationError("Busan pilot only permits page 1")
+        if selected.page > 30:
+            raise CollectorConfigurationError(
+                "Busan page exceeds the operational safety limit"
+            )
         if selected.detail_limit > self._profile.request_budget.max_detail_requests:
             raise CollectorConfigurationError(
                 "Busan detail limit exceeds the approved request budget"
@@ -218,7 +220,11 @@ class BusanYouthCollector:
         response = self._http_client.get(
             source_id=self.source_id,
             url=BUSAN_LIST_URL,
-            query={"menuCd": "12"},
+            query={
+                "menuCd": "12",
+                "endstat": "Y",
+                "pageIndex": str(selected.page),
+            },
         )
         payload = _parse_busan_list(response)
         items = payload.items[: selected.limit]
@@ -229,6 +235,15 @@ class BusanYouthCollector:
                 reason="source returned an empty policy list",
                 status=response.status,
             )
+        if selected.detail_limit and selected.detail_offset >= len(items):
+            raise CollectorConfigurationError(
+                "Busan detail offset exceeds the page"
+            )
+        detail_items = items[
+            selected.detail_offset : selected.detail_offset
+            + selected.detail_limit
+        ]
+        stored_items = items if selected.detail_limit == 0 else detail_items
         collected_at = self._now()
         list_document = _raw(
             source_id=self.source_id,
@@ -243,7 +258,7 @@ class BusanYouthCollector:
             collected_at=collected_at,
         )
         documents = [list_document]
-        for item in items:
+        for item in stored_items:
             documents.append(
                 _raw(
                     source_id=self.source_id,
@@ -259,8 +274,8 @@ class BusanYouthCollector:
                 )
             )
         detail_ids: list[str] = []
-        detail_count = min(selected.detail_limit, len(items))
-        for item in items[:detail_count]:
+        detail_count = len(detail_items)
+        for item in detail_items:
             external_id = item["external_id"]
             detail_response = self._http_client.get(
                 source_id=self.source_id,
@@ -296,7 +311,7 @@ class BusanYouthCollector:
             item_count=len(items),
             detail_count=detail_count,
             stored_paths=paths,
-            page=1,
+            page=selected.page,
             page_size=len(items),
             total_count=payload.total_count,
             external_ids=tuple(item["external_id"] for item in items),

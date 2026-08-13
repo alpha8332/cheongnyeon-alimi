@@ -15,6 +15,7 @@ class CollectionOptions:
     page: int = 1
     limit: int = 10
     detail_limit: int = 3
+    detail_offset: int = 0
 
     def __post_init__(self) -> None:
         if (
@@ -40,6 +41,14 @@ class CollectionOptions:
         ):
             raise CollectorConfigurationError(
                 "detail_limit must be an integer from 0 to 5"
+            )
+        if (
+            not isinstance(self.detail_offset, int)
+            or isinstance(self.detail_offset, bool)
+            or not 0 <= self.detail_offset <= 500
+        ):
+            raise CollectorConfigurationError(
+                "detail_offset must be an integer from 0 to 500"
             )
 
 
