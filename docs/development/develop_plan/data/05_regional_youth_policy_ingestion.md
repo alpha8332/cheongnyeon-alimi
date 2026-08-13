@@ -839,12 +839,16 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   읽기 전용으로 대조했다. 기존 상세 12건만 canary 후 제한 재캡처했고 failed
   322건은 요청하지 않았다. 강원 `null_unverifiable`는 `66 → 0`, 전체는
   `2,688 → 2,622`이다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 2,622개다.
+- 서울 별도 재수집 승인 뒤 공식 서울시 정책 89건·18 page와 자치구 정책 21건·
+  5 page를 읽기 전용으로 전건 대조했다. `2026-08-14` 현재 total 110건과 identity
+  순서가 완료 checkpoint와 다시 일치해 과거 교체 drift는 해소된 상태다. 논리
+  page 1~18은 `ctList.do`, 19~23은 `guList.do`로 고정하고 새 checkpoint나 identity
+  교체 계약 없이 기존 review 97건만 제한 재캡처했다. closed 13건은 요청하지
+  않았다. 서울 `null_unverifiable`는 `189 → 0`, 전체는 `2,622 → 2,433`이다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 2,433개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
-  종료하지 않는다. 다음 순서는 서울이지만 완료 checkpoint와 현재 identity
-  drift가 중단 조건이므로 별도 재수집 범위가 승인되기 전에는 재캡처하지 않는다.
-  제주 1,239개 등 그 밖의 legacy는 현재 Slice에서 임의로 재배치하지 않고 별도
-  범위 결정 대상으로 남긴다.
+  종료하지 않는다. 제주 1,239개, 대구 568개 등 그 밖의 legacy는 현재 서울
+  Slice에서 임의로 재배치하지 않고 다음 범위 결정 대상으로 남긴다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

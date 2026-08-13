@@ -12,6 +12,7 @@ import {
   gotoWithReadyFallback,
   jejuConfig,
   classifyDetailCanaryObservation,
+  seoulConfig,
   ulsanConfig,
   waitForReadySelector,
   waitForExpectedTitle,
@@ -382,6 +383,13 @@ const seoulEmptyPeriodFixture = JSON.parse(await readFile(
   ),
   "utf8",
 ));
+const seoulIdentityFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/seoul_list_identity_contract.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
 
 test("Daegu prose labels preserve multi-paragraph field evidence", () => {
   const detail = buildDetail(fixture.expected_title, fixture.extracted);
@@ -695,4 +703,36 @@ test("remaining RYP8 Source configs pin the observed list and detail selectors",
     },
   );
   assert.equal(gangwonConfig(2).listPageLinkNavigation, true);
+});
+
+test("Seoul maps the 18 city and 5 district pages into one checkpoint order", () => {
+  const cityFirst = seoulConfig(1);
+  const cityLast = seoulConfig(seoulIdentityFixture.city_pages);
+  const districtFirst = seoulConfig(seoulIdentityFixture.city_pages + 1);
+  const districtLast = seoulConfig(seoulIdentityFixture.total_pages);
+
+  assert.match(cityFirst.listUrl, /\/ctList\.do/);
+  assert.match(cityFirst.listUrl, /key=2309150002/);
+  assert.match(cityFirst.listUrl, /tabKind=002/);
+  assert.equal(cityFirst.paginationValue, 1);
+  assert.equal(cityLast.paginationValue, 18);
+  assert.match(districtFirst.listUrl, /\/guList\.do/);
+  assert.match(districtFirst.listUrl, /tabKind=003/);
+  assert.equal(districtFirst.paginationValue, 1);
+  assert.equal(districtLast.paginationValue, 5);
+  assert.equal(districtLast.page, 23);
+  assert.equal(cityFirst.detailTitleSelector, ".policy-detail strong.title");
+  assert.equal(cityFirst.detailReadySelector, ".policy-detail .form-table");
+  assert.match(cityFirst.identityPattern, /goView/);
+  assert.throws(() => seoulConfig(0), /observed 1\.\.23 range/);
+  assert.throws(() => seoulConfig(24), /observed 1\.\.23 range/);
+});
+
+test("Seoul identity audit fixture records a resolved replacement drift", () => {
+  assert.equal(seoulIdentityFixture.total_count, 110);
+  assert.equal(seoulIdentityFixture.city_count, 89);
+  assert.equal(seoulIdentityFixture.district_count, 21);
+  assert.equal(seoulIdentityFixture.added_ids.length, 0);
+  assert.equal(seoulIdentityFixture.missing_ids.length, 0);
+  assert.equal(seoulIdentityFixture.common_order_diff, 0);
 });

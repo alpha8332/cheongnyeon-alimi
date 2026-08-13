@@ -399,10 +399,21 @@ identity drift를 우회하지 않는다.
 열고 처리 직후 닫아 격리한다.
 
 인천은 `지원내용` heading을 `지원규모`보다 우선하고 `지원대상·지원조건`을
-결합한다. 전북은 `공고상세보기URL`을 공식 신청 channel로 관찰한다. 서울처럼
+결합한다. 전북은 `공고상세보기URL`을 공식 신청 channel로 관찰한다. 서울은
+서울시 정책 89건의 `ctList.do` 18 page를 논리 page 1~18, 자치구 정책 21건의
+`guList.do` 5 page를 논리 page 19~23으로 연결한다. 두 목록의 total·identity·
+순서가 완료 checkpoint 110건과 모두 일치할 때만 review identity를 재캡처하며
+closed identity는 기존 outcome 보존을 위해 제외한다. 상세는
+`.policy-detail strong.title`과 `.policy-detail .form-table`이 준비된 뒤 구조화
+`th`·`td`를 읽는다. 공식 `사업신청기간` 라벨의 빈 값은
+`label_present_value_empty`, 원문에 없는 Source 지역 라벨은 `label_not_found`로
+보존한다.
+
 완료 checkpoint와 현재 공식 목록 identity가 교체된 Source는 상세 URL이 여전히
 열리더라도 `/recapture`로 저장하지 않는다. fixture·실제 DOM 대조까지만 수행하고
-현재 목록과 checkpoint가 다시 일치하는 별도 재수집 계획을 세운다.
+현재 목록과 checkpoint가 다시 일치하는 별도 재수집 계획을 세운다. 서울의 과거
+교체 drift는 `2026-08-14` 전건 대조에서 추가·누락·순서 차이 0으로 해소된 것을
+확인한 뒤 기존 checkpoint로 재개했다.
 
 강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
 `/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고

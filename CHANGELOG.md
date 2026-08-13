@@ -37,6 +37,10 @@
   강원 기존 상세 12건 제한 보강으로 두 Source의 legacy 필드 상태를 해소
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 서울시·자치구 정책 110건을 공식 목록과 재대조하고 review 97건의 구조화 상세를
+  제한 재캡처해 빈 신청기간과 실제 라벨 부재를 구분
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,

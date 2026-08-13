@@ -866,6 +866,33 @@ export function ulsanConfig(page) {
   };
 }
 
+export function seoulConfig(page) {
+  if (!Number.isInteger(page) || page < 1 || page > 23) {
+    throw new Error("Seoul page is outside the observed 1..23 range");
+  }
+  const cityPage = page <= 18;
+  const localPage = cityPage ? page : page - 18;
+  const listPath = cityPage ? "ctList.do" : "guList.do";
+  const tabQuery = cityPage ? "tabKind=002" : "tab=002&tabKind=003";
+  return {
+    sourceId: "regional-seoul-youth-platform",
+    listUrl: `https://youth.seoul.go.kr/infoData/plcyInfo/${listPath}?key=2309150002&pageIndex=${localPage}&orderBy=regYmd%20desc&blueWorksYn=N&${tabQuery}`,
+    page,
+    paginationValue: localPage,
+    idParam: "plcyBizId",
+    pageParam: "pageIndex",
+    titleSelector: ".tit.txt-over1",
+    linkSelector: 'a.tit[onclick^="goView("]',
+    listReadySelector: 'a.tit[onclick^="goView("]',
+    identityPattern: "goView\\('([^']+)'\\)",
+    identityAttribute: "onclick",
+    detailUrlTemplate: "https://youth.seoul.go.kr/infoData/plcyInfo/view.do?key=2309150002&plcyBizId={id}",
+    detailTitleSelector: ".policy-detail strong.title",
+    detailContentSelector: ".policy-detail",
+    detailReadySelector: ".policy-detail .form-table",
+  };
+}
+
 export function daejeonConfig(page) {
   return {
     sourceId: "regional-daejeon-youth-platform",

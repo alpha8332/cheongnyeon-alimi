@@ -1013,3 +1013,41 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 테스트 DB는 `alpha8332@cheongnyeon_alimi_test`로 연결했고 public table은
   `alembic_version`만 남았다. 운영 projection 동기화는 실행하지 않았다.
 - `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+### RYP8 서울 identity 재대조·review 제한 재캡처 (`2026-08-14`)
+
+- 별도 재수집 승인 뒤 capture endpoint를 열기 전에 공식 목록을 읽기 전용으로
+  전건 대조했다. 서울시 정책은 89건·18 page, 자치구 정책은 21건·5 page이고,
+  합계 110 identity는 완료 checkpoint 110건과 추가 0·누락 0·공통 순서 차이
+  0으로 다시 일치했다. 따라서 과거 identity 교체 drift는 현재 해소됐으며 새
+  checkpoint, identity 교체, current-only 제외 계약을 만들지 않았다.
+- 서울의 두 공식 목록을 하나의 완료 checkpoint 순서로 재생하기 위해 논리 page
+  1~18을 `ctList.do?tabKind=002`, 19~23을 `guList.do?tabKind=003`에 mapping했다.
+  목록 identity는 `goView(plcyBizId)`, 상세은 `.policy-detail strong.title`과
+  `.policy-detail .form-table` selector로 고정했다. 실제 전건 대조 결과는 payload
+  없이 identity 수·경계·drift delta만 fixture로 남겼다.
+- 서울시·자치구 각 1건 canary 뒤 기존 review 97건만 최소 2초 간격으로 제한
+  재캡처했다. closed 13건은 상세 요청과 Raw 저장에서 제외했고 checkpoint
+  outcome을 유지했다. 서울 field slot은 `V 393/E 0/N 0/L 189 →
+  V 468/E 17/N 97/L 0`이다. 신청기간 17건은 공식 `사업신청기간` 라벨이 있으나
+  값이 비어 `label_present_value_empty`, Source 지역 97건은 해당 라벨이 없어
+  `label_not_found`로 분류했다. synthetic 서울 지역값은 만들지 않았다.
+- 전체 field slot은 `V 3,237/E 7/N 5,564/L 2,622 →
+  V 3,312/E 24/N 5,661/L 2,433`이다. 고정 outcome은 `accepted 18`,
+  `duplicate 1`, `review 1,905`, `closed 2,360`, `failed 322`이고 서울 checkpoint
+  digest `25c9e42b9fe450e03ff4ee6856dead5ac21432e50ce9a45fad38022265f65caf`는
+  유지됐다. DB 동기화는 실행하지 않았다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `35 passed`
+- regional inventory·Gate·review audit·expansion·RYP8 감사 집중 Python:
+  `67 passed, 60 subtests passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `402 passed, 96 subtests passed` (기존 deprecation warning 1건)
+- RYP8 감사: 전체 legacy `2,433`, failed 분류 `322/322`, 고정 outcome 일치;
+  `data_ready=false`의 유일한 blocker는 합의 수치가 없는
+  `legacy_null_within_target`
+- 테스트 DB는 `alpha8332@cheongnyeon_alimi_test`로 연결했고 public table은
+  `alembic_version`만 남았다. 운영 projection 동기화는 실행하지 않았다.
+- `python scripts/validate_docs.py`, `git diff --check`: 통과
