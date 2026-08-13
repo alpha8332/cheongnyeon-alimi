@@ -13,7 +13,9 @@ import {
   jejuConfig,
   classifyDetailCanaryObservation,
   ulsanConfig,
-  waitForVisibleWithFallback,
+  waitForReadySelector,
+  waitForExpectedTitle,
+  withSingleDetailRetry,
 } from "../scripts/regional-browser-capture-runtime.mjs";
 
 test("navigation timeout continues only when the target DOM already loaded", async () => {
@@ -110,45 +112,166 @@ test("navigation fallback never absorbs a non-timeout error", async () => {
   );
 });
 
-test("visible locator continues after a wait timeout", async () => {
-  const locator = {
-    waitFor: async () => {
-      throw new Error("locator wait timeout");
+test("ready selector returns immediately when the DOM exists", async () => {
+  let checks = 0;
+  const tab = {
+    playwright: {
+      evaluate: async (_callback, selector) => {
+        checks += 1;
+        return selector === ".ready";
+      },
     },
-    isVisible: async () => true,
   };
 
-  assert.equal(await waitForVisibleWithFallback(locator), true);
+  assert.equal(await waitForReadySelector(tab, ".ready"), true);
+  assert.equal(checks, 1);
 });
 
-test("hidden locator preserves the original wait failure", async () => {
-  const timeout = new Error("locator wait timeout");
-  const locator = {
-    waitFor: async () => {
-      throw timeout;
+test("ready selector polling observes delayed DOM insertion", async () => {
+  let checks = 0;
+  const tab = {
+    playwright: {
+      evaluate: async () => {
+        checks += 1;
+        return checks > 1;
+      },
     },
-    isVisible: async () => false,
+  };
+
+  assert.equal(await waitForReadySelector(tab, ".ready"), true);
+  assert.equal(checks, 2);
+});
+
+test("missing ready selector reaches an explicit timeout", async () => {
+  const tab = {
+    playwright: {evaluate: async () => false},
   };
 
   await assert.rejects(
-    waitForVisibleWithFallback(locator),
-    (error) => error === timeout,
+    waitForReadySelector(tab, ".missing", 1),
+    /ready selector timeout after 1ms: \.missing/,
   );
 });
 
-test("visible locator never absorbs a non-timeout failure", async () => {
-  const failure = new Error("locator detached");
-  const locator = {
-    waitFor: async () => {
-      throw failure;
-    },
-    isVisible: async () => true,
+test("ready selector polling never absorbs a DOM evaluation failure", async () => {
+  const failure = new Error("DOM evaluation failed");
+  const tab = {
+    playwright: {evaluate: async () => { throw failure; }},
   };
 
   await assert.rejects(
-    waitForVisibleWithFallback(locator),
+    waitForReadySelector(tab, ".ready"),
     (error) => error === failure,
   );
+});
+
+test("detail title polling waits for navigation to replace stale DOM", async () => {
+  const titles = ["이전 상세 제목", "새 상세 제목", "새 상세 제목"];
+  const tab = {
+    playwright: {
+      evaluate: async () => ({
+        title: titles.shift() ?? "새 상세 제목",
+        content: null,
+      }),
+    },
+  };
+
+  assert.equal(
+    await waitForExpectedTitle(tab, ".title_here", "새 상세 제목"),
+    "새 상세 제목",
+  );
+});
+
+test("detail title polling rejects an unchanged stale DOM", async () => {
+  const tab = {
+    playwright: {
+      evaluate: async () => ({title: "이전 상세 제목", content: null}),
+    },
+  };
+
+  await assert.rejects(
+    waitForExpectedTitle(tab, ".title_here", "새 상세 제목", 1),
+    /detail title timeout after 1ms/,
+  );
+});
+
+test("detail polling waits for content after the title changes", async () => {
+  const contents = [
+    "이전 상세 본문",
+    "새 상세 제목 새 상세 본문",
+    "새 상세 제목 새 상세 본문",
+  ];
+  const tab = {
+    playwright: {
+      evaluate: async () => ({
+        title: "새 상세 제목",
+        content: contents.shift() ?? "새 상세 제목 새 상세 본문",
+      }),
+    },
+  };
+
+  assert.equal(
+    await waitForExpectedTitle(
+      tab,
+      ".title_here",
+      "새 상세 제목",
+      20000,
+      "#board_normal_view",
+    ),
+    "새 상세 제목",
+  );
+});
+
+test("detail polling resets stability when matching DOM changes back", async () => {
+  const contents = [
+    "새 상세 제목 새 상세 본문",
+    "이전 상세 본문",
+    "새 상세 제목 새 상세 본문",
+    "새 상세 제목 새 상세 본문",
+  ];
+  const tab = {
+    playwright: {
+      evaluate: async () => ({
+        title: "새 상세 제목",
+        content: contents.shift() ?? "새 상세 제목 새 상세 본문",
+      }),
+    },
+  };
+
+  assert.equal(
+    await waitForExpectedTitle(
+      tab,
+      ".title_here",
+      "새 상세 제목",
+      20000,
+      "#board_normal_view",
+    ),
+    "새 상세 제목",
+  );
+});
+
+test("detail retry repeats one transient title mismatch", async () => {
+  let attempts = 0;
+  const result = await withSingleDetailRetry(async () => {
+    attempts += 1;
+    if (attempts === 1) throw new Error("detail title does not match list");
+    return "stable detail";
+  }, true);
+
+  assert.equal(result, "stable detail");
+  assert.equal(attempts, 2);
+});
+
+test("detail retry preserves non-title failures", async () => {
+  let attempts = 0;
+  await assert.rejects(
+    withSingleDetailRetry(async () => {
+      attempts += 1;
+      throw new Error("detail access denied");
+    }, true),
+    /detail access denied/,
+  );
+  assert.equal(attempts, 1);
 });
 
 const fixtureUrl = new URL(
@@ -188,6 +311,13 @@ const chungbukSubmissionDeadlineFixture = JSON.parse(await readFile(
 ));
 const ulsanFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/ulsan_detail_60156.json", import.meta.url),
+  "utf8",
+));
+const ulsanClosedFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/ulsan_detail_46930_closed_status.json",
+    import.meta.url,
+  ),
   "utf8",
 ));
 const daejeonFixture = JSON.parse(await readFile(
@@ -378,6 +508,35 @@ test("Ulsan maps the official reception schedule label", () => {
     detail.evidence_observations.application_period.label,
     "접수일정",
   );
+});
+
+test("Ulsan removes the bare closed badge from historical list titles", () => {
+  const pattern = new RegExp(ulsanConfig(30).titlePrefixPattern);
+  const normalizedTitle = ulsanClosedFixture.list_title.replace(pattern, "");
+  const detail = buildDetail(normalizedTitle, ulsanClosedFixture.extracted);
+
+  assert.equal(normalizedTitle, ulsanClosedFixture.expected_title);
+  assert.equal(
+    detail.application_period,
+    "상시모집(선착순 마감) 2025-02-06 ~ 2025-08-31",
+  );
+  assert.equal(
+    ulsanClosedFixture.scheduled_list_title.replace(pattern, ""),
+    ulsanClosedFixture.scheduled_expected_title,
+  );
+  assert.equal(
+    ulsanClosedFixture.no_schedule_list_title.replace(pattern, ""),
+    ulsanClosedFixture.no_schedule_expected_title,
+  );
+});
+
+test("Ulsan pins the official detail title and content roots", () => {
+  const config = ulsanConfig(1);
+  assert.equal(config.detailTitleSelector, ".title_here");
+  assert.equal(config.detailContentSelector, "#board_normal_view");
+  assert.equal(config.detailReadySelector, ".title_here");
+  assert.equal(config.detailFromListContext, true);
+  assert.equal(config.detailRetryOnMismatch, true);
 });
 
 test("Daejeon combines the reception period and per-event deadline", () => {

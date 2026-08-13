@@ -371,11 +371,22 @@ RYP8 Browser 제한 재캡처는 loopback 서버의 `/recapture`를 사용한다
 
 Browser navigation timeout은 실패 응답으로 단정하기 전에 요청한 URL의
 origin·path·query와 Source별 준비 DOM이 이미 로드됐는지 확인한다. 둘 다
-일치할 때만 현재 DOM으로 계속하고, locator wait timeout도 locator가 실제로
-visible인 경우에만 계속한다. 어느 하나라도 다르면 원래 timeout을 다시
-발생시킨다. 이 fallback은 전송 완료 신호만 보완하며 목록 total·identity drift를
-우회하지 않는다. 울산처럼 현재 공식 total 596과 완료 checkpoint total 597이
-다르면 `/recapture`를 시작하지 않는다.
+일치할 때만 현재 DOM으로 계속한다. 준비 selector는 locator wait 신호에
+의존하지 않고 페이지 DOM을 최대 20초 polling하며, 어느 하나라도 다르면
+timeout을 발생시킨다. 이 fallback은 전송 완료 신호만 보완하며 목록 total·
+identity drift를 우회하지 않는다.
+
+울산 화면의 total 596은 모든 page에 반복되는 고정 공지 `57904`를 제외한
+일반 게시물 수다. 재캡처 경계의 effective total은 dedupe한 unique identity
+597이며 완료 checkpoint와 순서까지 일치해야 한다. closed identity `37439`도
+현재 목록에 있으므로 recapture scope에서 제외하지 않는다.
+
+울산 상세는 카드 상태 badge `마감`, `접수전`, `접수일정 없음`을 실제 제목에서
+분리한다. `.title_here`와 `#board_normal_view`가 요청 identity의 제목으로 두 번
+연속 일치한 뒤에만 추출한다. 제목 mismatch·title timeout만 목록 context에서
+한 번 재관찰하며 삭제·권한·다른 DOM 오류는 재시도하지 않는다. 이 PC처럼 연속
+상세 navigation의 렌더 상태가 호출 사이에 남으면 identity마다 새 Browser tab을
+열고 처리 직후 닫아 격리한다.
 
 인천은 `지원내용` heading을 `지원규모`보다 우선하고 `지원대상·지원조건`을
 결합한다. 전북은 `공고상세보기URL`을 공식 신청 channel로 관찰한다. 서울처럼

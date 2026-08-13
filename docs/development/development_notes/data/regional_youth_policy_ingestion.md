@@ -33,7 +33,7 @@
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
-| RYP8 | in-progress | 충북 441건 보강 완료, 울산 공식 total 596/checkpoint 597 불일치로 중단, legacy null 6,323개 |
+| RYP8 | in-progress | 충북·울산 보강 완료, 대전 current 13/checkpoint 12 identity drift로 중단, legacy null 2,760개 |
 | RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
 ## 구현 내용
@@ -814,10 +814,10 @@ Source별 outcome 전후와 현재 6개 field 관찰 상태는 다음과 같다.
 | 제주 | 207/924/2 | 207/926/0 | 3 | 0 | 0 | 1,239 |
 | 전북 | 89/0/0 | 89/0/0 | 271 | 0 | 2 | 261 |
 | 서울 | 97/13/0 | 97/13/0 | 393 | 0 | 0 | 189 |
-| 울산 | 596/1/0 | 596/1/0 | 8 | 0 | 5 | 3,563 |
-| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 2,326 | 5 | 2,776 | 6,323 |
+| 울산 | 596/1/0 | 596/1/0 | 841 | 2 | 2,733 | 0 |
+| 합계 | 1,903/2,357/327 | 1,905/2,360/322 | 3,159 | 7 | 5,504 | 2,760 |
 
-11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 6,323개가 남았다. 계획의
+11,430 slot은 네 상태로 모두 reconcile됐지만 legacy 2,760개가 남았다. 계획의
 “합리적인 수준”에는 수치 기준이 없으므로 감사기가 임의 threshold를 만들지 않고
 `legacy_null_within_target=null`, `data_ready=false`로 판정했다. 따라서 종료 이력
 대조와 실패 분류는 완료됐으나 RYP8은 열린 상태다. 이 Slice의 시작 기준선
@@ -884,10 +884,10 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 
 - 충북 중단 지점은 새 Browser tab에서 page 33 canary `149185`, `149186`의
   공식 상세 내용이 모두 정상임을 먼저 확인했다. navigation timeout은 요청한
-  origin·path·query와 준비 DOM이 이미 로드된 경우에만 계속하고, locator wait
-  timeout도 해당 locator가 실제 visible인 경우에만 계속하도록 제한 fallback을
-  추가했다. URL·DOM 또는 visibility가 맞지 않으면 기존 timeout을 그대로
-  발생시킨다.
+  origin·path·query와 준비 DOM이 이미 로드된 경우에만 계속하도록 제한 fallback을
+  추가했다. 이 PC에서 locator `waitFor`·`isVisible`이 실제 DOM과 다른 timeout
+  결과를 반환해 준비 selector는 페이지 내부 DOM을 최대 20초 polling한다.
+  URL·DOM이 맞지 않으면 timeout을 그대로 발생시킨다.
 - page 1 잔여 7건과 page 33~45의 121건을 최소 2초 간격의 제한 batch로
   재캡처해 충북 441 identity 관찰을 완료했다. 충북 field slot은
   `V 114/E 3/N 1,761/L 768 → V 115/E 3/N 2,528/L 0`, 전체 legacy는
@@ -900,13 +900,13 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
   차이 1건은 별도 종료 identity `37439`다. 지정 중단 조건에 따라 capture
   endpoint를 열거나 울산 Raw·checkpoint·DB를 쓰지 않았고 대전·강원·서울도
   시작하지 않았다.
-- timeout fallback은 전송·준비 상태 확인 방식만 보강한다. 울산처럼 total 또는
-  identity가 다른 경우에는 적용하지 않는다. Schema·Fixture 의미·Seed·null
+- timeout fallback은 전송·준비 상태 확인 방식만 보강한다. total 또는 identity
+  차이를 우회하는 데는 적용하지 않는다. Schema·Fixture 의미·Seed·null
   enum과 Backend·Frontend 데이터 계약은 변경하지 않았다.
 
 검증 결과:
 
-- Browser runtime syntax·fixture: `23 passed`
+- Browser runtime syntax·fixture: `24 passed`
 - regional Gate·review audit·expansion·replay 집중 Python:
   `52 passed, 12 subtests passed`
 - 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
@@ -917,3 +917,55 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 테스트 DB 연결 사용자는 `alpha8332`, DB는 `cheongnyeon_alimi_test`이며 public
   table은 `alembic_version`만 존재하고 `policies` table은 없다. 운영 projection
   동기화는 실행하지 않았다.
+
+### RYP8 울산 전체 identity 재대조 (`2026-08-13`)
+
+- 첫 page의 화면 total 596과 checkpoint 597만 비교한 초기 판단을 검증하기 위해
+  capture endpoint를 열지 않고 공식 목록 60 page를 최소 2초 간격으로 전건
+  읽었다. 각 page에는 고정 공지 `57904`가 반복되며 화면 total 596에는 이 공지가
+  포함되지 않는다.
+- 60 page의 노출 slot은 656개, dedupe한 unique identity는 597개다. 현재 목록과
+  checkpoint는 누락 0, 추가 0, 순서 차이 0이며 양쪽 identity digest가
+  `c7df0cdd785bcdc9839eb6b68b0649ed7ca618ebf3a2a96f0a978966b99af4bf`로
+  같다. checkpoint의 closed identity `37439`도 현재 공식 목록에 존재한다.
+- 따라서 `closed 37439`를 제외한 596건만 재캡처하도록 계약을 바꾸는 승인안은
+  실제 목록 구조와 충돌한다. 해당 서버 변경과 테스트는 적용하지 않고 원래
+  `/recapture`의 checkpoint total·identity 검증을 유지했다. 올바른 후속안은 화면
+  total 596과 고정 공지 1건을 구분해 effective total 597을 전달하고 기존
+  checkpoint 597건 전체를 재캡처하는 것이다.
+- 이 차이를 임의로 맞추지 않고 울산 Raw·checkpoint·DB 쓰기 전에 중단했다.
+  대전·강원·서울은 시작하지 않았다.
+
+### RYP8 울산 전건 재캡처 완료·대전 identity drift 중단 (`2026-08-13`)
+
+- 승인된 effective total 597과 기존 checkpoint identity를 그대로 사용해 울산
+  60 page의 unique 597건을 최소 2초 간격으로 전건 재캡처했다. 고정 공지
+  `57904`는 한 번만 처리했고 closed `37439`도 현재 공식 목록 identity로
+  관찰하되 기존 outcome은 변경하지 않았다.
+- 울산 과거·현재 카드에는 `마감`, `접수전`, `접수일정 없음` 상태 badge가 제목
+  앞에 있었다. 공식 DOM fixture로 이를 본문 제목과 분리했다. 연속 상세 이동 중
+  제목과 본문이 서로 다른 identity를 잠시 표시하는 race는 `.title_here`와
+  `#board_normal_view`가 같은 제목으로 두 번 연속 일치하는지 확인하고, 울산만
+  목록 context에서 단 한 번 재관찰하도록 제한했다. Browser binding 호출 사이의
+  잔여 race는 identity마다 새 tab을 열고 닫는 격리 방식으로 해소했다.
+- 울산 field slot은 `V 8/E 0/N 5/L 3,563 → V 841/E 2/N 2,733/L 0`, 전체
+  legacy는 `6,323 → 2,760`이다. checkpoint digest
+  `9476089712f2d075813faec1f001cbb2837447a3f7bd569d3947a58b563f8644`와
+  고정 outcome `accepted 18/duplicate 1/review 1,905/closed 2,360/failed 322`는
+  유지됐다. DB 동기화는 실행하지 않았다.
+- 다음 순서 대전은 공식 목록 `총 13건`이며 checkpoint 12건에 신규
+  `CT_000000000042`가 앞에 추가됐고 기존 identity 누락은 0건이다. 지정 중단
+  조건에 따라 대전 Raw·checkpoint·DB를 쓰지 않았고 강원·서울로 진행하지
+  않았다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `32 passed`
+- regional Gate·review audit·expansion·replay 집중 Python:
+  `52 passed, 12 subtests passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `399 passed, 96 subtests passed` (기존 deprecation warning 1건)
+- RYP8 감사: 전체 legacy `2,760`, outcome
+  `18/1/1,905/2,360/322`, failed 분류 `322/322`; `data_ready=false`의 유일한
+  blocker는 아직 수치 기준이 없는 `legacy_null_within_target`
+- `python scripts/validate_docs.py`, `git diff --check`: 통과

@@ -10,9 +10,13 @@
 
 ### Fixed
 
-- Browser navigation·locator timeout 뒤 요청 URL과 준비 DOM 또는 visibility가
-  실제로 확인된 경우에만 제한 수집을 계속해, 정상 로드된 충북 상세의 false
+- Browser navigation timeout 뒤 요청 URL과 준비 DOM을 검증하고 locator 신호
+  대신 페이지 DOM selector를 polling해, 정상 로드된 충북·울산 페이지의 false
   timeout으로 인한 중단을 방지
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 울산 목록 상태 badge와 상세 제목·본문 렌더 race를 구분하고 identity별 tab
+  격리로 597건의 신청기간 관찰 상태를 전건 보강
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
 - 충북 공식 상세의 한글 순번 `제출기한`을 `훈련기간`과 구분해 신청 마감으로

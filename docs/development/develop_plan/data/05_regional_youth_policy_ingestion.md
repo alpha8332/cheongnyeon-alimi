@@ -811,21 +811,28 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   page-context 계약 오류군으로 분류하되 현재 상세 상태를 전건 확인한 것으로
   간주하지 않고 3구간 순환 canary를 둔다.
 - 충북은 공식 목록 441건·45 page가 완료 checkpoint와 순서까지 일치했다.
-  navigation·locator timeout 뒤에도 요청 URL과 준비 DOM이 이미 정확히 로드된
-  경우에만 계속하는 제한 fallback을 추가하고 page 1 잔여 7건과 page 33~45의
+  navigation timeout 뒤에도 요청 URL과 준비 DOM이 이미 정확히 로드된 경우에만
+  계속하고, locator 대기 대신 DOM selector를 polling하는 제한 fallback을
+  추가했다. page 1 잔여 7건과 page 33~45의
   121건을 재개했다. 441건 전부를 제한 재캡처해 충북 `null_unverifiable`를
   `2,640 → 0`, 전체를 `8,963 → 6,323`으로 줄였다.
-- 다음 순서인 울산은 현재 공식 목록 total 596과 완료 checkpoint total 597이
-  달라 즉시 중단했다. checkpoint의 차이 1건은 현재 review 목록과 별도로 보존된
-  closed identity `37439`다. 현재 목록과 완료 checkpoint의 total이 같아야 하는
-  `/recapture` 계약을 임의로 완화하지 않았고 울산 Raw·checkpoint·DB는 쓰지
-  않았다. 대전·강원·서울도 아직 시작하지 않았다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 6,323개다.
+- 다음 순서인 울산은 공식 목록 60 page를 읽기 전용으로 전건 대조했다. 화면의
+  total 596은 모든 page에 반복되는 고정 공지 `57904`를 제외한 일반 게시물
+  수다. 656 노출 slot을 dedupe한 실제 unique identity는 597건이며 완료
+  checkpoint와 누락·추가·순서 차이 없이 digest
+  `c7df0cdd785bcdc9839eb6b68b0649ed7ca618ebf3a2a96f0a978966b99af4bf`로
+  일치했다. closed identity `37439`도 현재 목록에 존재한다.
+- 승인 뒤 effective total 597과 기존 identity를 유지해 울산 전건을 제한
+  재캡처했다. `마감`, `접수전`, `접수일정 없음` badge를 목록 제목에서 분리하고,
+  `.title_here`와 `#board_normal_view`가 같은 identity로 안정될 때만 추출했다.
+  이 PC의 연속 상세 렌더 race는 identity마다 새 tab을 사용해 격리했다. 울산
+  `null_unverifiable`는 `3,563 → 0`, 전체는 `6,323 → 2,760`이다.
+- 다음 대전은 현재 13건이고 checkpoint 12건에 신규 `CT_000000000042`가 추가된
+  상태임을 다시 확인해 중단했다. 대전 Raw·checkpoint·DB는 쓰지 않았고 강원·
+  서울도 시작하지 않았다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 2,760개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
-  종료하지 않는다. 울산은 closed 이력을 total에서 분리해 현재 review identity
-  596건만 재캡처할지, 현재 목록으로 새 checkpoint를 만들지 먼저 결정해야 한다.
-  전자는 outcome·종료 이력을 유지하는 제한 계약 변경이고 후자는 고정 checkpoint
-  기준을 바꾸므로 현재 RYP8 무변경 조건과 충돌한다. 결정 뒤 대전·강원·서울
+  종료하지 않는다. 대전의 신규 identity 처리 방식을 결정한 뒤 대전·강원·서울
   순서를 유지한다. 제주 1,239개 등 그 밖의 legacy는 현재 Slice에서 임의로
   재배치하지 않고 별도 범위 결정 대상으로 남긴다.
 

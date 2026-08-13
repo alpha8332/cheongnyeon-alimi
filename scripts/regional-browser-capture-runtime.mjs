@@ -1,11 +1,14 @@
 const clean = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
+const isTimeoutError = (error) => /timeout|timed out|deadline exceeded/i.test(
+  String(error?.message ?? error),
+);
 
 export async function gotoWithReadyFallback(tab, url, readySelector) {
   try {
     await tab.goto(url);
     return false;
   } catch (error) {
-    if (!readySelector || !/timeout/i.test(String(error?.message ?? error))) {
+    if (!readySelector || !isTimeoutError(error)) {
       throw error;
     }
     const loaded = await tab.playwright.evaluate(
@@ -29,14 +32,69 @@ export async function gotoWithReadyFallback(tab, url, readySelector) {
   }
 }
 
-export async function waitForVisibleWithFallback(locator, timeoutMs = 20000) {
+export async function waitForReadySelector(tab, selector, timeoutMs = 20000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt <= timeoutMs) {
+    const ready = await tab.playwright.evaluate(
+      (selected) => Boolean(document.querySelector(selected)),
+      selector,
+    );
+    if (ready) return true;
+    const remaining = timeoutMs - (Date.now() - startedAt);
+    if (remaining <= 0) break;
+    await new Promise((resolve) => setTimeout(resolve, Math.min(250, remaining)));
+  }
+  throw new Error(`ready selector timeout after ${timeoutMs}ms: ${selector}`);
+}
+
+export async function waitForExpectedTitle(
+  tab,
+  selector,
+  expectedTitle,
+  timeoutMs = 20000,
+  contentSelector = null,
+) {
+  const expected = clean(expectedTitle).replace(/\.{2,}\s*$/, "");
+  const startedAt = Date.now();
+  let consecutiveMatches = 0;
+  while (Date.now() - startedAt <= timeoutMs) {
+    const observed = await tab.playwright.evaluate(
+      ({titleSelector, detailSelector}) => ({
+        title: String(document.querySelector(titleSelector)?.textContent || "")
+          .replace(/\s+/g, " ")
+          .trim(),
+        content: detailSelector
+          ? String(document.querySelector(detailSelector)?.textContent || "")
+            .replace(/\s+/g, " ")
+            .trim()
+          : null,
+      }),
+      {titleSelector: selector, detailSelector: contentSelector},
+    );
+    const titleReady = observed.title
+      && (!expected || observed.title.startsWith(expected));
+    const contentReady = !contentSelector
+      || (observed.content && (!expected || observed.content.includes(expected)));
+    consecutiveMatches = titleReady && contentReady
+      ? consecutiveMatches + 1
+      : 0;
+    if (consecutiveMatches >= 2) return observed.title;
+    const remaining = timeoutMs - (Date.now() - startedAt);
+    if (remaining <= 0) break;
+    await new Promise((resolve) => setTimeout(resolve, Math.min(250, remaining)));
+  }
+  throw new Error(`detail title timeout after ${timeoutMs}ms`);
+}
+
+export async function withSingleDetailRetry(observe, enabled = false) {
   try {
-    await locator.waitFor({state: "visible", timeoutMs});
-    return false;
+    return await observe();
   } catch (error) {
-    if (!/timeout/i.test(String(error?.message ?? error))) throw error;
-    if (!(await locator.isVisible())) throw error;
-    return true;
+    const retryable = /detail title (?:does not match list|timeout)/i.test(
+      String(error?.message ?? error),
+    );
+    if (!enabled || !retryable) throw error;
+    return observe();
   }
 }
 
@@ -69,6 +127,8 @@ export async function collectQueryPage({
   detailPost = null,
   detailClickTemplate = null,
   detailReadySelector = null,
+  detailFromListContext = false,
+  detailRetryOnMismatch = false,
   titleSuffixPattern = null,
   titlePrefixPattern = null,
   applicationEndPattern = null,
@@ -102,9 +162,7 @@ export async function collectQueryPage({
       }
     }
     if (readySelector) {
-      await waitForVisibleWithFallback(
-        tab.playwright.locator(readySelector).first(),
-      );
+      await waitForReadySelector(tab, readySelector);
     }
   };
   await prepareListPage();
@@ -267,37 +325,47 @@ export async function collectQueryPage({
       let detail;
       const requestStartedAt = Date.now();
       try {
-        if (detailPost) {
-          await prepareListPage();
-          if (!detailClickTemplate) throw new Error("detail POST click selector missing");
-          await tab.playwright
-            .locator(detailClickTemplate.replace("{id}", item.external_id))
-            .first()
-            .click();
-          if (detailReadySelector) {
-            await waitForVisibleWithFallback(
-              tab.playwright.locator(detailReadySelector).first(),
+        detail = await withSingleDetailRetry(async () => {
+          if (detailPost) {
+            await prepareListPage();
+            if (!detailClickTemplate) throw new Error("detail POST click selector missing");
+            await tab.playwright
+              .locator(detailClickTemplate.replace("{id}", item.external_id))
+              .first()
+              .click();
+            if (detailReadySelector) {
+              await waitForReadySelector(tab, detailReadySelector);
+            }
+          } else {
+            if (detailFromListContext) await prepareListPage();
+            await gotoWithReadyFallback(
+              tab,
+              item.detail_url,
+              detailContentSelector || detailTitleSelector,
             );
           }
-        } else {
-          await gotoWithReadyFallback(
+          if (detailTitleSelector) {
+            await waitForExpectedTitle(
+              tab,
+              detailTitleSelector,
+              item.title,
+              20000,
+              detailContentSelector,
+            );
+          }
+          return extractDetail(
             tab,
-            item.detail_url,
-            detailContentSelector || detailTitleSelector,
+            item.title,
+            detailTitleSelector,
+            detailContentSelector,
+            detailPairRowSelector,
+            detailPairLabelSelector,
+            detailPairValueSelector,
+            detailMetadataSelector,
+            detailDateInference,
+            asOfDate,
           );
-        }
-        if (!detail) detail = await extractDetail(
-          tab,
-          item.title,
-          detailTitleSelector,
-          detailContentSelector,
-          detailPairRowSelector,
-          detailPairLabelSelector,
-          detailPairValueSelector,
-          detailMetadataSelector,
-          detailDateInference,
-          asOfDate,
-        );
+        }, detailRetryOnMismatch);
       } catch (error) {
         if (recapture || recover) throw error;
         await postFailure(endpoint, token, {
@@ -764,7 +832,12 @@ export function ulsanConfig(page) {
     titleSelector: ".tit",
     closestSelector: "li",
     linkSelector: '.bodo_list a[href*="view.do"][href*="dataId="]',
-    titlePrefixPattern: "^접수(?:중|마감)\\s*",
+    detailTitleSelector: ".title_here",
+    detailContentSelector: "#board_normal_view",
+    detailReadySelector: ".title_here",
+    detailFromListContext: true,
+    detailRetryOnMismatch: true,
+    titlePrefixPattern: "^(?:접수(?:전|중|마감|일정\\s*없음)|마감)\\s*",
   };
 }
 
