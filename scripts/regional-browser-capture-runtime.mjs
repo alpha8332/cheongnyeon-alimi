@@ -17,12 +17,15 @@ export async function collectQueryPage({
   identityPattern = null,
   identityAttribute = null,
   listReadySelector = null,
+  listPageLinkNavigation = false,
   detailUrlTemplate = null,
   detailTitleSelector = null,
   detailContentSelector = null,
   detailPairRowSelector = null,
   detailPairLabelSelector = null,
   detailPairValueSelector = null,
+  detailMetadataSelector = null,
+  detailDateInference = null,
   detailPost = null,
   detailClickTemplate = null,
   detailReadySelector = null,
@@ -36,15 +39,36 @@ export async function collectQueryPage({
   sourceScopeSelectors = null,
   recapture = false,
   recaptureIds = null,
+  recover = false,
+  recoverIds = null,
 }) {
   const listRequestStartedAt = Date.now();
-  await tab.goto(listUrl);
-  if (listReadySelector) {
-    await tab.playwright.locator(listReadySelector).first().waitFor({
-      state: "visible",
-      timeoutMs: 20000,
-    });
-  }
+  const prepareListPage = async () => {
+    await tab.goto(listUrl);
+    if (page !== 1 && listPageLinkNavigation) {
+      const pageGroup = Math.floor((page - 1) / 10);
+      for (let group = 0; group < pageGroup; group += 1) {
+        await tab.playwright.getByRole(
+          "link",
+          {name: "10페이지 뒤로 이동", exact: true},
+        ).click();
+      }
+      if ((page - 1) % 10 !== 0) {
+        await tab.playwright.getByRole(
+          "link",
+          {name: String(page), exact: true},
+        ).click();
+      }
+    }
+    const readySelector = listReadySelector || linkSelector;
+    if (readySelector) {
+      await tab.playwright.locator(readySelector).first().waitFor({
+        state: "visible",
+        timeoutMs: 20000,
+      });
+    }
+  };
+  await prepareListPage();
   const audit = await tab.playwright.evaluate(
     ({ idParam: identity, pageParam: pagination, page: current, pageStep: step, titleSelector: title, closestSelector: closest, linkSelector: selectedLinks, identityPattern: identityRegex, identityAttribute: identityAttr, sourceScopeSelectors: scopeSelectors }) => {
       const squash = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
@@ -105,25 +129,29 @@ export async function collectQueryPage({
       list_text: clean(link.listText || link.text),
     });
   }
-  if (recaptureIds !== null) {
+  if (recapture && recover) {
+    throw new Error("recapture and failed recovery are mutually exclusive");
+  }
+  const selectedRecoveryIds = recover ? recoverIds : recapture ? recaptureIds : null;
+  if (selectedRecoveryIds !== null) {
     if (
-      !recapture
-      || !Array.isArray(recaptureIds)
-      || !recaptureIds.length
-      || recaptureIds.length !== new Set(recaptureIds).size
+      !(recapture || recover)
+      || !Array.isArray(selectedRecoveryIds)
+      || !selectedRecoveryIds.length
+      || selectedRecoveryIds.length !== new Set(selectedRecoveryIds).size
     ) {
-      throw new Error("limited recapture identities are invalid");
+      throw new Error("limited capture identities are invalid");
     }
-    const selectedIds = new Set(recaptureIds.map(String));
+    const selectedIds = new Set(selectedRecoveryIds.map(String));
     const selected = discovered.filter((item) => selectedIds.has(item.external_id));
     if (selected.length !== selectedIds.size) {
-      throw new Error("limited recapture identity is absent from official list");
+      throw new Error("limited capture identity is absent from official list");
     }
     discovered.splice(0, discovered.length, ...selected);
   }
   if (!discovered.length) throw new Error(`no identities on ${listUrl}`);
   const hasNext = declaredHasNext ?? audit.hasNext;
-  const pending = recapture
+  const pending = recapture || recover
     ? new Set(discovered.map((item) => item.external_id))
     : new Set((await postDiscovery(endpoint, token, {
       source_id: sourceId,
@@ -133,7 +161,7 @@ export async function collectQueryPage({
       discovered_ids: discovered.map((item) => item.external_id),
     })).pending_ids);
   const listClosed = [];
-  if (closedTextPattern || (applicationEndPattern && asOfDate)) {
+  if (!recover && (closedTextPattern || (applicationEndPattern && asOfDate))) {
     const closedPattern = closedTextPattern ? new RegExp(closedTextPattern) : null;
     const endPattern = applicationEndPattern ? new RegExp(applicationEndPattern) : null;
     for (const item of discovered) {
@@ -201,7 +229,7 @@ export async function collectQueryPage({
       const requestStartedAt = Date.now();
       try {
         if (detailPost) {
-          await tab.goto(listUrl);
+          await prepareListPage();
           if (!detailClickTemplate) throw new Error("detail POST click selector missing");
           await tab.playwright
             .locator(detailClickTemplate.replace("{id}", item.external_id))
@@ -224,9 +252,12 @@ export async function collectQueryPage({
           detailPairRowSelector,
           detailPairLabelSelector,
           detailPairValueSelector,
+          detailMetadataSelector,
+          detailDateInference,
+          asOfDate,
         );
       } catch (error) {
-        if (recapture) throw error;
+        if (recapture || recover) throw error;
         await postFailure(endpoint, token, {
           source_id: sourceId,
           page,
@@ -270,10 +301,14 @@ export async function collectQueryPage({
         "goto approved list",
         "apply approved scope filter",
         `paginate page ${page}`,
-        recapture ? "recapture selected detail" : "observe detail batch",
+        recover
+          ? "recover selected failed detail"
+          : recapture
+            ? "recapture selected detail"
+            : "observe detail batch",
       ],
       items,
-    });
+    }, recover ? "recover" : recapture ? "recapture" : "capture");
   }
   const remainingListInterval = Math.max(
     0,
@@ -329,6 +364,9 @@ export async function extractDetail(
   detailPairRowSelector = null,
   detailPairLabelSelector = null,
   detailPairValueSelector = null,
+  detailMetadataSelector = null,
+  detailDateInference = null,
+  detailAsOfDate = null,
 ) {
   const extracted = await tab.playwright.evaluate(({
     titleSelector,
@@ -336,6 +374,7 @@ export async function extractDetail(
     pairRowSelector,
     pairLabelSelector,
     pairValueSelector,
+    metadataSelector,
   }) => {
     const squash = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
     const compact = (value) => squash(value).replace(/\s/g, "");
@@ -399,6 +438,9 @@ export async function extractDetail(
       actualTitle: titleSelector
         ? squash(document.querySelector(titleSelector)?.textContent)
         : null,
+      metadataText: metadataSelector
+        ? squash(document.querySelector(metadataSelector)?.textContent)
+        : null,
     };
   }, {
     titleSelector: detailTitleSelector,
@@ -406,15 +448,63 @@ export async function extractDetail(
     pairRowSelector: detailPairRowSelector,
     pairLabelSelector: detailPairLabelSelector,
     pairValueSelector: detailPairValueSelector,
+    metadataSelector: detailMetadataSelector,
   });
   const actualTitle = extracted.actualTitle || expectedTitle;
   if (detailTitleSelector) {
-    const expectedPrefix = clean(expectedTitle).replace(/\.{2,}\s*$/, "");
+    const cleanedExpected = clean(expectedTitle).replace(/\.{2,}\s*$/, "");
+    const replacementPrefix = cleanedExpected.split("�", 1)[0].trim();
+    const expectedPrefix = replacementPrefix.length >= 8
+      ? replacementPrefix
+      : cleanedExpected;
     if (!actualTitle || (expectedPrefix && !actualTitle.startsWith(expectedPrefix))) {
       throw new Error("detail title does not match truncated list title");
     }
   }
-  return buildDetail(actualTitle, extracted);
+  return detailDateInference === "registered_title_deadline"
+    ? buildRegisteredTitleDeadlineDetail(actualTitle, extracted, detailAsOfDate)
+    : buildDetail(actualTitle, extracted);
+}
+
+export function buildRegisteredTitleDeadlineDetail(
+  title,
+  extracted,
+  asOfDate,
+) {
+  const detail = buildDetail(title, extracted);
+  if (detail.application_period) return detail;
+  const registered = clean(extracted.metadataText).match(
+    /등록일\s*:\s*(\d{4})[.\/-](\d{1,2})[.\/-](\d{1,2})/,
+  );
+  const deadline = clean(title).match(
+    /\(~\s*(\d{1,2})[.\/-](\d{1,2})[.]?(?:\s*(\d{1,2}:\d{2}))?\s*\)/,
+  );
+  if (!registered || !deadline) return detail;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asOfDate || "")) {
+    throw new Error("dated title inference requires an as-of date");
+  }
+  const year = registered[1];
+  const [, month, day, time] = deadline;
+  const registeredIso = `${year}-${registered[2].padStart(2, "0")}-${registered[3].padStart(2, "0")}`;
+  const deadlineIso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  if (deadlineIso < registeredIso) return detail;
+  const value = [
+    deadlineIso,
+    time || null,
+    deadlineIso < asOfDate ? "마감" : null,
+    `(상세 등록일 ${registeredIso})`,
+  ].filter(Boolean).join(" ");
+  return {
+    ...detail,
+    application_period: value,
+    evidence_observations: {
+      ...detail.evidence_observations,
+      application_period: {
+        label: "제목 기한 + 등록일",
+        status: "value_extracted",
+      },
+    },
+  };
 }
 
 function pairsWithProseLabels(pairs, contentBlocks = []) {
@@ -506,8 +596,8 @@ export function buildDetail(title, extracted) {
   return {...detail, evidence_observations: observations};
 }
 
-async function postCapture(endpoint, token, capture) {
-  const response = await fetch(endpoint, {
+async function postCapture(endpoint, token, capture, mode = "capture") {
+  const response = await fetch(endpoint.replace(/\/capture$/, `/${mode}`), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -652,8 +742,8 @@ export function daejeonConfig(page) {
 }
 
 export function gangwonConfig(page) {
-  if (page !== 1) {
-    throw new Error("Gangwon RYP8 config is limited to the actual first page");
+  if (!Number.isInteger(page) || page < 1 || page > 29) {
+    throw new Error("Gangwon page is outside the observed 1..29 range");
   }
   return {
     sourceId: "regional-gangwon-youth-platform",
@@ -664,6 +754,8 @@ export function gangwonConfig(page) {
     titleSelector: "a.tit.detail",
     closestSelector: ".result-card-box",
     linkSelector: "a.tit.detail[data-id]",
+    listReadySelector: "a.tit.detail[data-id]",
+    listPageLinkNavigation: true,
     identityPattern: "^(.+)$",
     identityAttribute: "data-id",
     detailPost: {identityField: "bizId", fields: {mode: "gw"}},
@@ -672,5 +764,30 @@ export function gangwonConfig(page) {
     detailPairRowSelector: ".skinTb-tr",
     detailPairLabelSelector: ".skinTb-th",
     detailPairValueSelector: ".skinTb-td",
+  };
+}
+
+export function jejuConfig(page, asOfDate) {
+  if (!Number.isInteger(page) || page < 1 || page > 200) {
+    throw new Error("Jeju page is outside the approved pagination range");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asOfDate || "")) {
+    throw new Error("Jeju recovery requires an as-of date");
+  }
+  return {
+    sourceId: "regional-jeju-youth-platform",
+    listUrl: `https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1&page=${page}`,
+    page,
+    asOfDate,
+    idParam: "wr_id",
+    pageParam: "page",
+    titleSelector: "a",
+    closestSelector: "li",
+    linkSelector: 'a[href*="bo_table=1_2_2_1"][href*="wr_id="]',
+    detailTitleSelector: ".view_title",
+    detailContentSelector: "#writeContents",
+    detailMetadataSelector: ".mb_area",
+    detailDateInference: "registered_title_deadline",
+    closedTextPattern: "모집마감",
   };
 }

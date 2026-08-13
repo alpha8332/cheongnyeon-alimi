@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tempfile
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,7 +20,9 @@ from collectors.regional_expansion import (  # noqa: E402
     RegionalBatchCheckpoint,
     RegionalBrowserCaptureStore,
     RegionalCheckpointStore,
+    RegionalOutcome,
 )
+from collectors.runtime import replay_runtime_raw  # noqa: E402
 from collectors.storage import RawDocumentStore  # noqa: E402
 
 
@@ -60,6 +63,7 @@ def main() -> int:
                 "/discover",
                 "/failure",
                 "/recapture",
+                "/recover",
             } or not self._authorized():
                 self._reply(404, {"status": "not_found"})
                 return
@@ -84,6 +88,12 @@ def main() -> int:
                     )
                 elif self.path == "/recapture":
                     result, checkpoint = _store_recapture(
+                        capture,
+                        raw_root=args.raw_root,
+                        checkpoint_root=args.checkpoint_root,
+                    )
+                elif self.path == "/recover":
+                    result, checkpoint = _store_recovery(
                         capture,
                         raw_root=args.raw_root,
                         checkpoint_root=args.checkpoint_root,
@@ -225,6 +235,84 @@ def _store_recapture(
     ):
         raise ValueError("recapture does not match completed checkpoint")
     return capture_store.save(capture), checkpoint
+
+
+def _store_recovery(
+    capture: dict[str, Any],
+    *,
+    raw_root: Path,
+    checkpoint_root: Path,
+) -> tuple[Any, RegionalBatchCheckpoint]:
+    """Persist bounded Raw and replay a failed Gangwon or Jeju identity."""
+
+    source_id = capture.get("source_id")
+    if source_id not in {
+        "regional-gangwon-youth-platform",
+        "regional-jeju-youth-platform",
+    }:
+        raise ValueError("failed recovery source is outside the RYP8 slice")
+    capture_store = RegionalBrowserCaptureStore(
+        source_id,
+        store=RawDocumentStore(raw_root),
+    )
+    page, total_count, _has_next, discovered_ids = (
+        capture_store.checkpoint_metadata(capture)
+    )
+    checkpoint_store = RegionalCheckpointStore(checkpoint_root)
+    checkpoint = checkpoint_store.load(source_id)
+    detail_ids = tuple(item["external_id"] for item in capture["items"])
+    decisions = dict(checkpoint.decisions) if checkpoint is not None else {}
+    if (
+        checkpoint is None
+        or not checkpoint.complete
+        or page >= checkpoint.next_page
+        or not set(discovered_ids).issubset(checkpoint.discovered_ids)
+        or not detail_ids
+        or len(detail_ids) != len(set(detail_ids))
+        or any(
+            decisions.get(external_id) is not RegionalOutcome.FAILED
+            for external_id in detail_ids
+        )
+        or set(detail_ids) & set(checkpoint.captured_ids)
+        or total_count is not None
+        and total_count != checkpoint.total_count
+    ):
+        raise ValueError("failed recovery does not match completed checkpoint")
+    result = capture_store.save(capture)
+    try:
+        captured = checkpoint.capture(detail_ids)
+        with tempfile.TemporaryDirectory() as temporary:
+            replay_checkpoint_root = Path(temporary)
+            RegionalCheckpointStore(replay_checkpoint_root).save(captured)
+            replay = replay_runtime_raw(
+                raw_root=raw_root,
+                source_id=source_id,
+                limit=len(captured.captured_ids),
+                checkpoint_root=replay_checkpoint_root,
+            )
+        replay_decisions = {
+            str(decision["external_id"]): decision
+            for decision in replay.regional_decisions
+        }
+        outcomes: dict[str, RegionalOutcome] = {}
+        for external_id in detail_ids:
+            decision = replay_decisions.get(external_id)
+            if decision is None:
+                raise ValueError("failed recovery replay omitted an identity")
+            if decision.get("application") == "closed":
+                outcomes[external_id] = RegionalOutcome.CLOSED
+            elif decision.get("accepted") is False:
+                outcomes[external_id] = RegionalOutcome.REVIEW
+            else:
+                raise ValueError(
+                    "failed recovery requires duplicate baseline review"
+                )
+        recovered = captured.reclassify_failed(outcomes)
+        checkpoint_store.save(recovered)
+    except Exception:
+        capture_store.remove_result(result)
+        raise
+    return result, recovered
 
 
 def _pending_detail_ids(checkpoint: RegionalBatchCheckpoint) -> list[str]:

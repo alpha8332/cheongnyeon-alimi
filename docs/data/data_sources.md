@@ -128,6 +128,14 @@ Browser capture는 다음 실제 수집부터 필드별 `value_extracted`,
 않는다. RYP7 actual 감사는 review 1,903건 중 지역 근거 부족 1,875건, 신청 상태
 검토 1,419건, 청년 대상 미확인 725건을 확인했다. 사유는 중복될 수 있다.
 
+RYP8 실패 제한 복구는 강원 325건을 2~29 page의 동일한 목록 page 컨텍스트·
+POST 클릭 계약 유형으로 분류하고 대표 3건만 재요청했다. 제주의 failed 2건은
+상세 응답은 성공했으나 구조화 field row가 없는 유형으로 분리해 제목의 명시
+기한과 공식 등록일 연도만 보존했다. 복구 결과 전체 checkpoint는
+`accepted 18`, `duplicate 1`, `review 1,905`, `closed 2,360`, `failed 322`이며,
+DB projection은 변경하지 않았다. `/recover`는 강원·제주 기존 failed identity의
+`review/closed` 전이만 허용하고 accepted는 중복 기준선 검토 전 거부한다.
+
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영
 Collector는 profile을 재사용한다. 매 실행마다 홈이나 외부 인터넷을 무제한

@@ -750,8 +750,8 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
    날짜 형식을 Source별로 추출해 신청 가능성을 판정한다.
 3. Source별 DOM label·JSON field·본문 section·목록 taxonomy locator를 Raw와
    provenance에 보존하고 공통 정규화 필드로 mapping한다.
-4. 강원 325건·제주 2건 capture 실패를 제한 재시도해 selector drift·공식 오류·
-   실제 삭제를 구분한다.
+4. 완료: 강원 325건·제주 2건 capture 실패를 유형별 대표 표본으로 제한
+   재시도해 페이지 컨텍스트·상세 클릭 계약과 구조화 필드 DOM 부재를 구분한다.
 5. 경남·제주의 종료 이력은 수집 완전성 대조에 남기되 accepted 후보 처리
    비용을 우선 투입하지 않는다.
 
@@ -783,11 +783,23 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   `application_period_unresolved 76 → 25`, `application_period_ended 13 → 62`,
   `application_period_open 2 → 4`를 확인했다. 기간 미확인 17건은 공식 상세 표본상
   `사업신청기간` 라벨의 실제 빈 값이며 synthetic 날짜를 만들지 않는다.
-- 전체 checkpoint outcome과 DB projection은 변경하지 않았다. 감사 합계는
-  `discovered 4,606 = accepted 18 + duplicate 1 + review 1,903 + closed 2,357 +
-  failed 327`, drift 1을 유지한다.
-- 아직 강원 실패 325건·제주 실패 2건의 제한 재시도와 경남·제주 종료 이력
-  대조가 남아 있으므로 RYP8 또는 `RYP-G5`를 완료로 판정하지 않는다.
+- 강원 실패는 첫 12건만 존재하는 1 page와 달리 2~29 page의 325건 전체에서
+  수집기가 상세마다 기본 1 page로 복귀해 현재 page의 `data-id`를 찾지 못한
+  동일한 페이지 컨텍스트·POST 클릭 계약 유형이었다. 2·15·29 page 대표 3건의
+  공식 상세가 모두 27개 field row로 즉시 열려 동적 대기·삭제·비공개·필드 DOM
+  부재 유형은 확인되지 않았다. page navigation을 보존하는 수정 뒤 대표 3건만
+  `failed`에서 replay 결과 `review 2·closed 1`로 제한 복구했다.
+- 제주 실패 2건은 상세 응답·제목·본문은 정상이나 공통 구조화 field row가 없는
+  게시물이었다. 제목의 `(~M.D[. HH:MM])`와 공식 등록일의 연도를 함께 근거로
+  과거 마감을 판정해 두 identity를 `closed`로 복구했다. 제목 기한만으로 연도를
+  추정하거나 원문에 없는 지역·대상 값을 만들지 않는다.
+- 실패 복구는 강원·제주, 기존 `failed` identity, 완료 checkpoint의 기존 total과
+  identity에만 허용한다. Raw replay가 `review` 또는 `closed`일 때만 원자적으로
+  outcome을 교체하며 `accepted` 후보는 중복 기준선 검토 없이 승격하지 않는다.
+- 제한 복구 뒤 감사 합계는 `discovered 4,606 = accepted 18 + duplicate 1 +
+  review 1,905 + closed 2,360 + failed 322`, drift 1이다. DB projection은 변경하지
+  않았다. 아직 경남·제주 종료 이력의 수집 완전성 대조가 남아 있으므로 RYP8
+  또는 `RYP-G5`를 완료로 판정하지 않는다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

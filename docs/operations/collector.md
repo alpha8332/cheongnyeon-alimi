@@ -375,6 +375,14 @@ RYP8 Browser 제한 재캡처는 loopback 서버의 `/recapture`를 사용한다
 열리더라도 `/recapture`로 저장하지 않는다. fixture·실제 DOM 대조까지만 수행하고
 현재 목록과 checkpoint가 다시 일치하는 별도 재수집 계획을 세운다.
 
+강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
+`/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고
+해당 outcome이 `failed`인 경우에만 Raw를 저장한다. 저장한 Raw를 같은 checkpoint
+범위로 즉시 replay해 `review` 또는 `closed`가 확인되면 failed 결정을 교체한다.
+replay가 identity를 누락하거나 `accepted`를 만들면 Raw와 checkpoint를 함께
+되돌려 중복 기준선 없는 자동 승격을 막는다. 이 경계는 새 identity discovery,
+다른 Source, enum·DB 변경에 사용할 수 없다.
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |

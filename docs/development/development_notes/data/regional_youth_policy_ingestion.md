@@ -504,8 +504,9 @@ PostgreSQL 조건부 테스트다. 관련 PostgreSQL 3건은 별도 명시 실�
 | 제주 | 112 page 종료·반복 고정 ID dedupe | 1,133 | 0 | 0 | 207 | 924 | 2 |
 | **합계** | 13개 checkpoint complete | **4,606** | **18** | **1** | **1,903** | **2,357** | **327** |
 
-강원 2 page 이후 다수 상세는 공식 화면 자체가 빈 오류 페이지를 반환해 325건을
-failed로 보존했다. 경남은 5 page 이후 공식 카드의 `기간: 마감`, 제주는 일반
+강원 2 page 이후 325건은 당시 상세 수집 실패로 failed에 보존했다. 후속 RYP8
+조사에서 공식 상세 오류가 아니라 수집기가 상세마다 1 page로 복귀한 뒤 다른
+page identity를 클릭하려 한 계약 문제로 정정했다. 경남은 5 page 이후 공식 카드의 `기간: 마감`, 제주는 일반
 행의 모집·채용·행사 마감 표시를 목록 Raw 근거로 closed 처리했다. 목록에 신청
 가능 필터가 있는 전북은 DOM에서 실제 제출 계약 `strstate=ing`을 확인해 기존
 계획의 잘못된 `dateCheck=ing` 기록을 정정했다.
@@ -721,3 +722,44 @@ PostgreSQL 통합은 기존 로컬 전용 `_test` DB와 pgpass를 사용했으�
 - 전용 `cheongnyeon_alimi_test` Data 통합: `8 passed` (기존 warning 1건)
 - actual Browser 표본은 충북·울산·대전·강원·서울 공식 상세와 대조했고,
   대전 total drift 차단 및 서울 identity drift 미재캡처를 확인했다.
+
+### RYP8 강원·제주 상세 실패 제한 복구 (`2026-08-13`)
+
+실패 분류 결과:
+
+| Source | 대상 | 판정 유형 | 대표 검증 | 다른 유형 |
+| --- | ---: | --- | --- | --- |
+| 강원 | 325 | 상세 클릭/POST의 목록 page 컨텍스트 유실 | 2·15·29 page 각 1건, 상세 row 27개 | identity 변경·동적 대기·필드 DOM 부재·삭제/비공개 미확인 |
+| 제주 | 2 | 응답 성공, 구조화 field DOM 부재 | `wr_id=864`, `862` 제목·본문·등록일 확인 | identity 변경·동적 대기·클릭 계약·삭제/비공개 미확인 |
+
+- 강원 checkpoint는 발견 순서상 1 page 12건만 captured이고 2~29 page의
+  `12 × 27 + 1 = 325`건이 모두 failed였다. 공식 목록에서 2 page 첫 identity,
+  15 page 첫 identity, 29 page 유일 identity를 클릭하자 별도 대기 없이 같은
+  `.skinTb-tr` 27행 상세가 열렸다. 목록 page를 유지하지 않은 기존 수집기의
+  `goto(listUrl) → 현재 page identity 클릭` 불일치가 원인이었다.
+- 제주 두 상세는 HTTP 성공과 `.view_title`, `#writeContents`, `.mb_area`가
+  존재했지만 공통 정책 field row가 없었다. 제목의 명시 기한과 등록일 연도만
+  조합해 각각 `2025-08-13 19:00 마감`, `2025-08-14 마감`으로 보존했고 나머지
+  필드는 `label_not_found`로 유지했다.
+- `/recover`는 완료 checkpoint의 강원·제주 failed identity만 받는다. Raw를 먼저
+  저장한 뒤 같은 checkpoint 범위를 replay하고 결과가 `review` 또는 `closed`일
+  때만 `failed → captured/outcome`을 원자적으로 교체한다. accepted 결과는
+  온통청년·복지로 중복 기준선 확인 전 자동 승격하지 않는다. enum·Schema·Seed·
+  DB 계약은 바꾸지 않았다.
+- 325건 전체를 재요청하지 않고 강원 대표 3건과 제주 2건만 actual 복구했다.
+  강원은 `review 12/failed 325 → review 14/closed 1/failed 322`, 제주는
+  `review 207/closed 924/failed 2 → review 207/closed 926/failed 0`이다.
+  전체 감사는 `discovered 4,606`, `accepted 18`, `duplicate 1`, `review 1,905`,
+  `closed 2,360`, `failed 322`, checkpoint drift 1로 재현됐다. importer와 DB
+  동기화는 실행하지 않았다.
+
+검증 결과:
+
+- Browser capture syntax·fixture·config: `13 passed`
+- 지역 expansion·Gate·review audit 집중 회귀: `44 passed, 12 subtests passed`
+- 전체 Python: `369 passed, 24 skipped, 96 subtests passed`; skip 24건은
+  `TEST_DATABASE_URL` 미주입 PostgreSQL 테스트
+- 전용 `cheongnyeon_alimi_test` 통합: 첫 실행은 설치되지 않은 `psycopg` URL을
+  지정해 8건이 실행 전 실패했다. 새 패키지 설치 없이 저장소 기준
+  `postgresql+psycopg2`로 정정한 재실행은 `8 passed` (기존 warning 1건)
+- `python scripts/validate_docs.py`와 `git diff --check` 통과

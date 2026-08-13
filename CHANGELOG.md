@@ -10,6 +10,11 @@
 
 ### Fixed
 
+- 강원 상세 실패 325건을 목록 page 컨텍스트가 유실된 동일 유형으로 분류해
+  대표 3건만 복구하고, 제주 비정형 상세 2건은 공식 제목 기한·등록일 근거로
+  종료 판정을 복구하면서 failed 자동 승격을 제한
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 - 충북·울산·대전·강원 공식 상세의 신청기간 selector와 서울 compact 날짜 해석을
   보강하고, 원문 빈 값·목록 total/identity drift는 checkpoint·DB 판정을 바꾸지
   않은 채 review 근거로 보존

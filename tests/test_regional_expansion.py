@@ -30,6 +30,7 @@ from collectors.storage import RawDocumentStore
 from scripts.import_regional_browser_capture import main as import_capture_main
 from scripts.serve_regional_browser_capture import (
     _pending_detail_ids,
+    _store_recovery,
     _store_recapture,
     _store_discovery,
     _store_failure,
@@ -75,6 +76,52 @@ def daegu_capture() -> dict[str, object]:
                     "required_documents": "신청서",
                     "exclusions": None,
                     "age": "만 19세 ~ 만 39세",
+                },
+            }
+        ],
+    }
+
+
+def gangwon_recovery_capture() -> dict[str, object]:
+    external_id = "A2026040800300200900100004"
+    return {
+        "source_id": GANGWON_SOURCE_ID,
+        "list_url": (
+            "https://job.gwd.go.kr/youth/policies/search/gangwon_policies"
+        ),
+        "page": 1,
+        "total_count": 1,
+        "has_next": False,
+        "discovered_ids": [external_id],
+        "action_trace": [
+            "goto approved list",
+            "paginate page 2",
+            "recover selected failed detail",
+        ],
+        "items": [
+            {
+                "external_id": external_id,
+                "title": "2026 청년도전지원사업",
+                "summary": None,
+                "category": "교육",
+                "detail_url": (
+                    "https://job.gwd.go.kr/youth/policies/search/"
+                    "gangwon_policies"
+                ),
+                "request_identity": f"bizId={external_id}&mode=gw",
+                "detail": {
+                    "title": "2026 청년도전지원사업",
+                    "organization": "춘천시청 기업지원과",
+                    "category": "교육",
+                    "application_period": "상시",
+                    "source_region": "강원특별자치도",
+                    "eligibility": "최근 6개월간 취업 이력이 없는 주민",
+                    "support_content": "참여수당 지급",
+                    "application_method": "사회적협동조합 문의",
+                    "contact": "033-818-9288",
+                    "required_documents": None,
+                    "exclusions": "재학생",
+                    "age": None,
                 },
             }
         ],
@@ -568,6 +615,108 @@ class RegionalCheckpointTests(unittest.TestCase):
         self.assertEqual((), checkpoint.captured_ids)
         self.assertEqual(0, checkpoint.to_dict()["pending_detail_count"])
         self.assertEqual(1, checkpoint.counts()["failed"])
+
+    def test_failed_detail_recovery_replays_raw_and_reclassifies_review(
+        self,
+    ) -> None:
+        capture = gangwon_recovery_capture()
+        external_id = capture["items"][0]["external_id"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_root = root / "checkpoints"
+            checkpoint = RegionalBatchCheckpoint.initial(
+                GANGWON_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=(external_id,),
+                total_count=1,
+                has_next=False,
+            ).decide({external_id: RegionalOutcome.FAILED})
+            RegionalCheckpointStore(checkpoint_root).save(checkpoint)
+
+            result, recovered = _store_recovery(
+                capture,
+                raw_root=root / "raw",
+                checkpoint_root=checkpoint_root,
+            )
+
+            stored = RegionalCheckpointStore(checkpoint_root).load(
+                GANGWON_SOURCE_ID
+            )
+
+        self.assertEqual(3, result.raw_document_count)
+        self.assertEqual((external_id,), recovered.captured_ids)
+        self.assertEqual(0, recovered.counts()["failed"])
+        self.assertEqual(1, recovered.counts()["review"])
+        self.assertEqual(recovered, stored)
+
+    def test_failed_reclassification_rejects_uncorroborated_acceptance(
+        self,
+    ) -> None:
+        external_id = "A2026040800300200900100004"
+        checkpoint = RegionalBatchCheckpoint.initial(
+            GANGWON_SOURCE_ID
+        ).discover(
+            page=1,
+            external_ids=(external_id,),
+            total_count=1,
+            has_next=False,
+        ).capture((external_id,)).decide(
+            {external_id: RegionalOutcome.FAILED}
+        )
+
+        with self.assertRaisesRegex(ValueError, "requires review"):
+            checkpoint.reclassify_failed(
+                {external_id: RegionalOutcome.ACCEPTED}
+            )
+
+    def test_failed_recovery_rejects_acceptance_without_partial_raw(
+        self,
+    ) -> None:
+        capture = gangwon_recovery_capture()
+        item = capture["items"][0]
+        external_id = item["external_id"]
+        item["detail"].update(
+            {
+                "organization": "강원특별자치도 청년정책과",
+                "source_region": "강원특별자치도",
+                "eligibility": "강원특별자치도 거주 청년",
+                "age": "만 19세 ~ 39세",
+            }
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            raw_root = root / "raw"
+            checkpoint_root = root / "checkpoints"
+            checkpoint = RegionalBatchCheckpoint.initial(
+                GANGWON_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=(external_id,),
+                total_count=1,
+                has_next=False,
+            ).decide({external_id: RegionalOutcome.FAILED})
+            store = RegionalCheckpointStore(checkpoint_root)
+            store.save(checkpoint)
+
+            with self.assertRaisesRegex(
+                ValueError, "duplicate baseline review"
+            ):
+                _store_recovery(
+                    capture,
+                    raw_root=raw_root,
+                    checkpoint_root=checkpoint_root,
+                )
+
+            remaining_raw = (
+                tuple(path for path in raw_root.rglob("*") if path.is_file())
+                if raw_root.exists()
+                else ()
+            )
+            unchanged = store.load(GANGWON_SOURCE_ID)
+
+        self.assertEqual((), remaining_raw)
+        self.assertEqual(checkpoint, unchanged)
 
     def test_discovery_queue_allows_bounded_detail_decision_batches(self) -> None:
         discovered = RegionalBatchCheckpoint.initial(DAEGU_SOURCE_ID).discover(

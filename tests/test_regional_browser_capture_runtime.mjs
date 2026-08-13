@@ -3,10 +3,12 @@ import {readFile} from "node:fs/promises";
 import test from "node:test";
 
 import {
+  buildRegisteredTitleDeadlineDetail,
   buildDetail,
   chungbukConfig,
   daejeonConfig,
   gangwonConfig,
+  jejuConfig,
   ulsanConfig,
 } from "../scripts/regional-browser-capture-runtime.mjs";
 
@@ -52,6 +54,20 @@ const daejeonFixture = JSON.parse(await readFile(
 const gangwonFixture = JSON.parse(await readFile(
   new URL(
     "./fixtures/regional/gangwon_detail_A2026021200300200900000001.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
+const gangwonFailureFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/gangwon_detail_failure_page_context.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
+const jejuFailureFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/jeju_detail_failure_unstructured_deadline.json",
     import.meta.url,
   ),
   "utf8",
@@ -223,6 +239,49 @@ test("Gangwon maps class-table regional and application fields", () => {
   assert.equal(detail.organization, "강원특별자치도 건축과");
 });
 
+test("Gangwon failure pages preserve the official POST page context", () => {
+  assert.equal(gangwonFailureFixture.affected_count, 325);
+  for (const representative of gangwonFailureFixture.representatives) {
+    const config = gangwonConfig(representative.page);
+    assert.equal(config.listPageLinkNavigation, true);
+    assert.match(config.detailClickTemplate, /data-id/);
+  }
+  assert.throws(() => gangwonConfig(30), /observed 1\.\.29 range/);
+});
+
+test("Jeju recovers dated closed posts without structured field rows", () => {
+  for (const fixtureCase of jejuFailureFixture.cases) {
+    const detail = buildRegisteredTitleDeadlineDetail(
+      fixtureCase.title,
+      {
+        actualTitle: fixtureCase.title,
+        body: fixtureCase.title.replace(/\s/g, ""),
+        pairs: {},
+        contentBlocks: [fixtureCase.content_text],
+        metadataText: fixtureCase.metadata_text,
+      },
+      "2026-08-13",
+    );
+    assert.equal(
+      detail.application_period,
+      fixtureCase.expected_application_period,
+    );
+    assert.deepEqual(detail.evidence_observations.application_period, {
+      label: "제목 기한 + 등록일",
+      status: "value_extracted",
+    });
+  }
+  assert.equal(
+    jejuConfig(1, "2026-08-13").detailTitleSelector,
+    ".view_title",
+  );
+  assert.equal(
+    jejuConfig(1, "2026-08-13").detailContentSelector,
+    "#writeContents",
+  );
+  assert.throws(() => jejuConfig(1), /requires an as-of date/);
+});
+
 test("Seoul distinguishes an empty official period from a missing label", () => {
   const detail = buildDetail(
     seoulEmptyPeriodFixture.expected_title,
@@ -252,5 +311,5 @@ test("remaining RYP8 Source configs pin the observed list and detail selectors",
       value: ".skinTb-td",
     },
   );
-  assert.throws(() => gangwonConfig(2), /limited to the actual first page/);
+  assert.equal(gangwonConfig(2).listPageLinkNavigation, true);
 });

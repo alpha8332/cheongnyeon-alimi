@@ -189,8 +189,8 @@ fast-forward해 4주차의 공통 시작점으로 사용한다.
 ### 상태
 
 in progress (`W4-G0`, Data 03·04와 Integration 08 기반 완료;
-Data 05 `RYP0`~`RYP7`·`RYP-G4` 완료·`RYP8` 진행 중(Source 필드 관찰 보강,
-강원·제주 실패 identity 후속 남음), Data 06 계획 확정)
+Data 05 `RYP0`~`RYP7`·`RYP-G4` 완료·`RYP8` 진행 중(Source 필드 관찰 및
+강원·제주 실패 대표 복구 완료, 종료 이력 완전성 대조 남음), Data 06 계획 확정)
 
 ### 목표
 

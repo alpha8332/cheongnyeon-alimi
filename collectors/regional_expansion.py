@@ -996,6 +996,51 @@ class RegionalBatchCheckpoint:
             decisions=merged,
         )
 
+    def reclassify_failed(
+        self, outcomes: Mapping[str, RegionalOutcome | str]
+    ) -> "RegionalBatchCheckpoint":
+        """Replace captured failure outcomes after a bounded detail recovery."""
+
+        if not outcomes:
+            raise ValueError("regional failed recovery outcomes cannot be empty")
+        existing = dict(self.decisions)
+        if (
+            set(outcomes) - set(self.captured_ids)
+            or any(
+                existing.get(external_id) is not RegionalOutcome.FAILED
+                for external_id in outcomes
+            )
+        ):
+            raise ValueError("regional failed recovery identity is invalid")
+        try:
+            normalized = {
+                external_id: RegionalOutcome(outcome)
+                for external_id, outcome in outcomes.items()
+            }
+        except (TypeError, ValueError):
+            raise ValueError("regional failed recovery outcome is invalid") from None
+        if any(
+            outcome not in {RegionalOutcome.REVIEW, RegionalOutcome.CLOSED}
+            for outcome in normalized.values()
+        ):
+            raise ValueError("regional failed recovery outcome requires review")
+        decisions = tuple(
+            (external_id, normalized.get(external_id, outcome))
+            for external_id, outcome in self.decisions
+        )
+        return RegionalBatchCheckpoint(
+            source_id=self.source_id,
+            collection_mode=self.collection_mode,
+            next_page=self.next_page,
+            total_count=self.total_count,
+            discovery_complete=self.discovery_complete,
+            complete=self.discovery_complete
+            and len(decisions) == len(self.discovered_ids),
+            discovered_ids=self.discovered_ids,
+            captured_ids=self.captured_ids,
+            decisions=decisions,
+        )
+
     def advance(
         self,
         *,
