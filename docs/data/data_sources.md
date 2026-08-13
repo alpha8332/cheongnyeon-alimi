@@ -87,6 +87,14 @@ RYP6는 기존 HTTP 2개와 Browser 11개 Adapter로 13개 승인 Source의 구�
 EligibilitySummary에 Source field evidence로 연결하며 개인 휴대전화·이메일은
 구조화하지 않는다.
 
+이 수치는 pagination·checkpoint·누락 없는 outcome 합계의 RYP6 기준선이지
+지역별 사용자 검색 커버리지 완료를 뜻하지 않는다. RYP7~RYP9에서 Source별
+review 사유와 field coverage를 감사하고, 공식 관할 목록·청년정책 taxonomy·
+진행중 상태의 Source-level provenance와 정책별 원문 근거를 함께 만족하는
+정책만 재판정한다. 지원하는 비차단 지역에서 open 고유 정책이 실제로 존재하면
+DB·API·Browser 검색에 노출해야 하며, 추출 누락 때문에 accepted가 0건인 상태는
+완료로 인정하지 않는다.
+
 홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
 메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영
 Collector는 profile을 재사용한다. 매 실행마다 홈이나 외부 인터넷을 무제한

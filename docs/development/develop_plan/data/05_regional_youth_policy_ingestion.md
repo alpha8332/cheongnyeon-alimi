@@ -4,8 +4,9 @@
 
 - 번호: Data 05
 - 담당 영역: Data
-- 상태: completed
-- 현재 진행: `RYP0`~`RYP6`·`RYP-G4` 완료
+- 상태: in-progress
+- 현재 진행: `RYP0`~`RYP6`·`RYP-G4` 수집 인프라 완료, `RYP7` review
+  사유 감사 진행
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,8 +18,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP6` 13개 승인 Source 전체 pagination·상세 판정·DB 동기화·
-  전체 회귀 완료
+- 현재 Slice: `RYP7` Source별 review 사유·필드 coverage 감사와 승격 계약 보강
 
 ## 목적
 
@@ -606,7 +606,7 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 [개발 기록](../../development_notes/data/regional_youth_policy_ingestion.md)에
 남긴다. 파일럿은 3개 대표 구조만 구현하며 다른 승인 지역 확대는 RYP6 범위다.
 
-### RYP6 - 지역별 순차 확대와 Forest 판정
+### RYP6 - 지역별 순차 확대와 수집 인프라 판정
 
 #### 목적
 
@@ -661,8 +661,10 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - 세종·경기·충남은 `blocked`, 구 전남 Source는 `rejected` 상태를 유지했으며
   우회 수집하지 않았다.
 - Release 1 golden HTTP 기술 감사와 Python·PostgreSQL·Frontend 회귀가
-  통과해 `RYP-G4`를 pass로 판정한다. 기존 Release 1 감사의 수동 QA·사용성
-  증거 대기는 이번 Data Forest 완료와 별개이며 완료로 소급 기록하지 않는다.
+  통과해 전체 수집 인프라 Gate인 `RYP-G4`를 pass로 판정한다. 다만 13개 승인
+  Source 중 실제 DB 검색 데이터가 부산·경북에만 존재하므로 이 Gate만으로
+  Data 05 Forest를 완료하지 않는다. 기존 Release 1 감사의 수동 QA·사용성
+  증거 대기도 완료로 소급 기록하지 않는다.
 
 #### 완료 기준
 
@@ -673,6 +675,104 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 - `blocked`·`rejected` Source를 우회하거나 성공으로 기록하지 않음
 - 기존 온통청년·복지로와 Release 1 golden 검색 회귀가 통과함
 
+### RYP7 - review 사유 감사와 승격 계약
+
+#### 목적
+
+`review`를 안전한 격리 결과로만 남겨 두지 않고, Source별 추출 누락과 실제 원문
+근거 부족을 분리한다. 공식 지역 포털이라는 사실만으로 정책을 일괄 승인하지
+않으면서도, Source의 고정된 관할·정책 메뉴·진행중 필터를 검증 가능한
+provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계약을 보강한다.
+
+#### 기준선 (`2026-08-13`)
+
+- 전체 `review`는 1,903건이다.
+- 신청 상태가 이미 `open`이지만 지역 근거 부족으로 막힌 후보는 부산 105건,
+  대구 183건, 광주 31건, 경북 53건, 인천 17건, 전북 64건, 서울 3건이다.
+- 충북 441건, 울산 595건, 대전 12건과 강원 actual 12건은 신청기간 필드가
+  비어 있다. 서울도 76건의 기간 문자열을 해석하지 못했고 17건은 누락됐다.
+- 경남 1,419건과 제주 924건은 공식 목록·상세 근거상 종료 정책이므로 검색
+  승격 대상이 아니다.
+- 강원 상세 실패 325건과 제주 상세 실패 2건은 review 승격과 별도로 capture
+  실패 원인을 해결하거나 Source 상태를 근거 있게 재판정해야 한다.
+
+#### 작업
+
+- Source·reason code·필드별 null·selector coverage와 실제 원문 표본을 집계
+- `insufficient_regional_evidence`, `application_period_missing`,
+  `application_period_unresolved`, `youth_target_unconfirmed`, capture failure를
+  서로 다른 수정 경로로 분리
+- 현재 지역 판정의 `Source 지역 + 대상 지역 + 시행기관 지역` 세 필드 동시
+  일치 조건을 재검토하고, Source-level 근거와 policy-level 근거 조합을 승인
+- Source-level 근거는 승인된 공식 운영 주체, 관할이 고정된 정책 목록 경로,
+  청년정책 전용 taxonomy와 진행중 필터의 실제 action·URL·수집 시각을 모두
+  provenance로 보존할 때만 사용
+- 홈이 청년 포털이라는 이유만으로 청년 대상 또는 지역 고유성을 추정하지 않고,
+  제목·대상·연령·목록 taxonomy 중 원문 근거가 있는 값만 사용
+- 자동 승격·review 유지·closed·blocked 판정 fixture와 수동 golden 표본 고정
+
+#### 완료 기준
+
+- 1,903건 review가 Source별·사유별로 재현 가능하게 집계됨
+- 지원하는 각 Source에서 추출 누락과 원문 부재가 구분됨
+- Source-level 근거를 사용할 수 있는 조합과 사용할 수 없는 조합이 테스트로
+  고정됨
+- 근거 조합 완화가 전국 재게시·타 지역·비청년·마감 정책을 승인하지 않음
+
+### RYP8 - Source별 필드 추출 보강
+
+#### 작업 순서
+
+1. 이미 open 판정이 가능한 부산·대구·광주·경북·인천·전북·서울에서 지역·
+   청년 대상 근거를 우선 보강한다.
+2. 충북·대전·울산·강원·서울의 상태 badge, 진행중 목록 filter, 상세 label과
+   날짜 형식을 Source별로 추출해 신청 가능성을 판정한다.
+3. Source별 DOM label·JSON field·본문 section·목록 taxonomy locator를 Raw와
+   provenance에 보존하고 공통 정규화 필드로 mapping한다.
+4. 강원 325건·제주 2건 capture 실패를 제한 재시도해 selector drift·공식 오류·
+   실제 삭제를 구분한다.
+5. 경남·제주의 종료 이력은 수집 완전성 대조에 남기되 accepted 후보 처리
+   비용을 우선 투입하지 않는다.
+
+#### 완료 기준
+
+- Source가 제공하는 지역·대상·신청 상태 필드가 있는데 selector 누락 때문에
+  review가 된 사례가 남지 않음
+- 지원하는 날짜·상태 형식은 fixture와 actual 표본에서 동일하게 판정됨
+- 원문에 없는 값은 계속 null·review로 남고 기대 지역명이나 신청 상태를
+  synthetic field로 채우지 않음
+- 실패 identity는 성공으로 위장하지 않고 재현 실패 근거 또는 Source 상태를
+  가짐
+
+### RYP9 - 전체 재판정·검색 커버리지 인수
+
+#### 작업
+
+- 동일 Raw와 보강 Raw를 전체 재생해 4,606 identity의 최종 합계와 review 사유
+  전후 delta를 작성
+- 지역·청년 대상·현재 신청 가능 근거를 모두 가진 정책만 온통청년·복지로
+  중복 Gate 뒤 accepted로 승격
+- 최종 accepted projection만 PostgreSQL에 동기화하고 동일 재실행
+  `unchanged`, 제외 전환 row prune과 기존 전국 정책 무변경 확인
+- 승인 Source별로 `accepted >= 1` 또는 `현재 신청 가능한 고유 정책 0건`의
+  원문 근거를 남김. 추출 누락·미해결 review 때문에 0건인 상태는 완료로
+  인정하지 않음
+- accepted가 존재하는 각 지역에 대해 실제 지역 검색 → 목록 → 상세의
+  DB·API·Browser 결과와 provenance를 대조
+- 세종·경기·충남의 blocked 상태와 구 전남 Source의 rejected 상태는 별도
+  해결 없이 우회하지 않음
+
+#### 완료 기준
+
+- 지원하는 비차단 지역에서 실제 open 고유 정책이 존재하면 최소 1건 이상이
+  사용자 검색에 노출됨
+- 0건 지역은 실제 open 정책 부재 근거가 있고 selector·판정 미완료를 0건으로
+  오인하지 않음
+- 지역별 검색 결과가 다른 지역 또는 전국 재게시 정책으로 채워지지 않음
+- accepted 원문 → Raw → 결정 → DB → API → Browser lineage와 반복 실행이
+  일치함
+- 전체 Python·PostgreSQL·Frontend·Release 1 회귀와 문서 검증을 통과함
+
 ## Gate와 실행 순서
 
 | Gate | 승인 내용 | 다음 단계 |
@@ -681,7 +781,9 @@ Source profile 재생 경계를 기존 파이프라인에 연결한다.
 | `RYP-G1` | 17개 Browser action profile·이용 조건·collection mode·예산 | RYP2 |
 | `RYP-G2` | Adapter·지역 판정·중복 제외 fixture 통과 | RYP5 |
 | `RYP-G3` | 대표 Source actual DB·API·Browser 인수 | RYP6 |
-| `RYP-G4` | 지역별 최종 상태·전체 회귀·문서 대조 | Forest 완료 판정 |
+| `RYP-G4` | 13개 승인 Source 전체 pagination·checkpoint·합계·회귀 | RYP7 |
+| `RYP-G5` | review 사유 계약·Source별 추출 보강과 오승격 방지 | RYP9 |
+| `RYP-G6` | 재판정·accepted DB 동기화·지역 검색 actual | Forest 완료 판정 |
 
 ```text
 RYP0 inventory·v0.5.0 Gate
@@ -691,6 +793,9 @@ RYP0 inventory·v0.5.0 Gate
   → RYP4 온통청년·복지로 중복 제외
   → RYP5 대표 actual DB·API·Browser
   → RYP6 지역별 순차 확대·전체 판정
+  → RYP7 review 사유 감사·승격 계약
+  → RYP8 Source별 필드 추출 보강
+  → RYP9 전체 재판정·지역 검색 actual
 ```
 
 RYP2의 Source별 fixture 작업은 승인 Source끼리 병렬화할 수 있다. RYP5 actual은
@@ -758,8 +863,10 @@ git diff --check
 - 17개 광역자치단체마다 공식 Source의 최종 상태와 근거가 있음
 - 승인 Source는 재현 가능한 Browser action profile, 허용된 목록·상세 endpoint,
   collection mode와 interaction/request 예산을 가짐
-- 최소 3개 대표 Source의 실제 지역 정책이 기존 파이프라인과 PostgreSQL에
-  연결됨
+- 지원하는 비차단 지역은 실제 open 고유 정책이 있으면 사용자 검색에 노출되고,
+  0건이면 원문에 근거한 open 정책 부재가 확인됨
+- Source가 제공하는 지역·청년 대상·신청 상태를 추출하지 못해 review 또는
+  0건으로 남은 지역이 없음
 - 전국 재게시·마감·거짓·온통청년·복지로 중복이 새 사용자 Policy row를 만들지
   않음
 - 제목만 같은 다른 정책과 불확실 후보를 자동 삭제하지 않음
@@ -784,7 +891,8 @@ RYP1 Browser Discovery preflight를 병렬 수행할 수 있다.
 - DTL4-5 / W4-G1: Data 05는 기존 Schema를 바꾸지 않는다는 소비 경계를 대조
 - DTL4-6 / W4-G2: RYP0~RYP4 inventory·Adapter·지역 판정·중복 제외 테스트 통과
 - DTL4-7 / W4-G3: RYP5 대표 Source actual DB → API → Browser 인수
-- DTL4-8 / W4-G4: RYP6 지역별 최종 상태·전체 회귀·문서 대조
+- DTL4-8 / W4-G4: RYP6 전체 순회 뒤 RYP7~RYP9 review 해소·지역별 실제 검색·
+  전체 회귀·문서 대조
 
 따라서 DTL4-8을 끝낸 뒤 Data 05를 시작하지 않는다. Data 05가 위 Gate를
 통과하지 못하면 `v0.5.0` 기본 기능이 미완료이므로 W4-G4를 통과시키지 않는다.

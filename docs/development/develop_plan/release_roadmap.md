@@ -244,7 +244,9 @@ snapshot으로 신규 여부를 다시 판정한다. 자격요건 화면은 Sour
 - 승인된 사용자·관리자 기능이 실제 API와 DB로 동작한다.
 - 승인 웹 Source의 제한 actual 수집과 조건 요약 lineage가 검증됐다.
 - Data 05 승인 지역 Source의 실제 정책이 중복 제외를 거쳐 DB·API·Browser에
-  연결되고 17개 지역의 implemented·blocked·rejected 상태가 기록됐다.
+  연결되고 17개 지역의 implemented·blocked·rejected 상태가 기록됐다. 지원하는
+  비차단 지역은 open 고유 정책이 있으면 검색에 노출되고, 0건이면 추출 누락이
+  아닌 원문상 open 정책 부재가 확인됐다.
 - Data 06의 모든 계획 Source군이 최종 상태를 가지고 최소 4개 승인 공식
   Source의 신규 정책이 중복 제외를 거쳐 DB·API·Browser에 연결됐다.
 - 관리자 정책 데이터 표와 파일 로그·조회·보호된 삭제가 실제 환경에서

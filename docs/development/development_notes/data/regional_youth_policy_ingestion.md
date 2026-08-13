@@ -4,7 +4,7 @@
 
 - 작업일: `2026-08-11`
 - 작업 영역: Data
-- 상태: completed
+- 상태: in-progress
 - 브랜치: `feature/data/regional-youth-policy-ingestion`
 - 시작 커밋: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
 - 관련 계획: [Data 05 Regional Youth Policy Ingestion](../../develop_plan/data/05_regional_youth_policy_ingestion.md)
@@ -32,6 +32,9 @@
 | RYP4 | completed | snapshot·PostgreSQL 기준선과 보수적 교차 Source 제외 Gate |
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
+| RYP7 | in-progress | review 1,903건 Source별 사유 감사와 승격 계약 보강 |
+| RYP8 | planned | Source별 지역·청년 대상·신청 상태 field·selector 보강 |
+| RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
 ## 구현 내용
 
@@ -525,4 +528,37 @@ failed로 보존했다. 경남은 5 page 이후 공식 카드의 `기간: 마감
 
 Release 1 감사의 `gate_verdict=blocked`는 기존 수동 QA·사용성 증거 대기를
 뜻한다. 자동 golden 회귀는 통과했으며 해당 수동 증거를 이번 Data 05 결과로
-소급 처리하지 않았다. Data 05의 `RYP-G4`는 pass이고 Forest는 completed다.
+소급 처리하지 않았다. Data 05의 `RYP-G4`는 전체 수집 인프라 Gate로 pass다.
+
+### RYP7 - 완료 판정 재검토와 review 사유 기준선
+
+RYP6은 승인 Source 전체 identity를 누락 없이 판정하는 목표를 달성했지만,
+사용자 검색 DB에는 부산 16건·경북 2건만 남았다. 지역별 실제 검색 가능성을
+Data 05의 사용자 완료 조건으로 다시 확인해 Forest 상태를 `in-progress`로
+정정했다. RYP6 결과와 `RYP-G4` 통과를 취소하지 않고 후속 RYP7~RYP9의 입력
+기준선으로 사용한다.
+
+동일 Raw를 현재 판정기로 다시 집계한 결과는 다음과 같다.
+
+| Source | 지역 Gate accepted (중복 전) | 지역 근거 부족 open review | 기간 누락·미해석 review | 비고 |
+| --- | ---: | ---: | ---: | --- |
+| 부산 | 16 | 105 | 0 | 전국 재게시 2건 별도 제외 |
+| 대구 | 0 | 183 | 12 | scheduled 2건 별도 |
+| 광주 | 0 | 31 | 0 | 지역 근거 보강 우선 |
+| 경북 | 3 | 53 | 5 | 3건 중 1건 교차 중복 제외 |
+| 인천 | 0 | 17 | 11 | 기간 누락 9·미해석 2 |
+| 전북 | 0 | 64 | 1 | 전국 재게시 24건 별도 제외 |
+| 서울 | 0 | 3 | 94 | 종료 13건 별도 제외 |
+| 충북 | 0 | 0 | 441 | 신청기간 field 미추출 |
+| 대전 | 0 | 0 | 12 | 신청기간 field 미추출 |
+| 강원 | 0 | 0 | 12 | 별도 상세 capture 실패 325건 |
+| 울산 | 0 | 0 | 596 | 종료 1건 별도 |
+| 경남 | 0 | 0 | 28 | 종료 1,419건은 승격 대상 아님 |
+| 제주 | 0 | 0 | 207 | 종료 924·capture 실패 2건 별도 |
+
+현재 공통 지역 판정은 Source 지역·지원 대상·시행기관 세 필드에 기대 지역명이
+모두 있어야 통과한다. 공식 관할 정책 목록과 진행중 filter의 Source-level
+provenance를 사용하지 못하는 과도하게 엄격한 부분이 확인됐다. 다음 구현에서는
+이를 무조건 완화하지 않고, 고정된 공식 목록 scope와 policy-level 지역·청년
+근거를 함께 요구하는 조합을 fixture와 actual 표본으로 승인한다. 실제 원문에
+없는 지역·연령·기간은 합성하지 않는다.
