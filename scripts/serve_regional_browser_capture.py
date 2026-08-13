@@ -224,14 +224,34 @@ def _store_recapture(
     )
     checkpoint = RegionalCheckpointStore(checkpoint_root).load(source_id)
     detail_ids = tuple(item["external_id"] for item in capture["items"])
+    excluded_ids = capture.get("recapture_excluded_ids")
+    checkpoint_ids = set(checkpoint.discovered_ids) if checkpoint else set()
+    total_matches = excluded_ids is None and (
+        total_count is None
+        or checkpoint is not None
+        and total_count == checkpoint.total_count
+    )
+    if excluded_ids is not None and checkpoint is not None:
+        valid_exclusions = (
+            isinstance(excluded_ids, list)
+            and bool(excluded_ids)
+            and all(isinstance(value, str) and value for value in excluded_ids)
+            and len(excluded_ids) == len(set(excluded_ids))
+            and not set(excluded_ids) & checkpoint_ids
+        )
+        total_matches = bool(
+            valid_exclusions
+            and checkpoint.total_count is not None
+            and total_count is not None
+            and total_count == checkpoint.total_count + len(excluded_ids)
+        )
     if (
         checkpoint is None
         or not checkpoint.complete
         or page >= checkpoint.next_page
         or not set(discovered_ids).issubset(checkpoint.discovered_ids)
         or not set(detail_ids).issubset(checkpoint.captured_ids)
-        or total_count is not None
-        and total_count != checkpoint.total_count
+        or not total_matches
     ):
         raise ValueError("recapture does not match completed checkpoint")
     return capture_store.save(capture), checkpoint

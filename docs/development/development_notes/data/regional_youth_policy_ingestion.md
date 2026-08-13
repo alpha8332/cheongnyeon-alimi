@@ -969,3 +969,47 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
   `18/1/1,905/2,360/322`, failed 분류 `322/322`; `data_ready=false`의 유일한
   blocker는 아직 수치 기준이 없는 `legacy_null_within_target`
 - `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+### RYP8 대전 교집합·강원 기존 상세 제한 재캡처 (`2026-08-13`)
+
+- 대전 현재 공식 목록은 13건이고 완료 checkpoint 12건은 모두 남아 있으며
+  current-only identity `CT_000000000042` 한 건만 맨 앞에 추가됐다. 후속 승인에
+  따라 current-only identity를 명시하는 `/recapture` 예외를 추가했다. 제외 목록은
+  고유한 비어 있지 않은 문자열이어야 하고 checkpoint·선택 identity와 겹치지
+  않으며, 현재 total이 `checkpoint total + 제외 수`와 정확히 일치해야 한다.
+  선택 상세는 계속 완료 checkpoint의 captured identity 부분집합으로 제한된다.
+- `CT_000000000541` canary 1건에서 공식 상세 DOM과 replay를 확인한 뒤 page 1의
+  나머지 8건, page 2의 3건만 재캡처했다. 신규 `CT_000000000042`는 상세 요청,
+  Raw 저장, checkpoint 판정에 포함하지 않았다. 대전 field slot은
+  `V 0/E 0/N 0/L 72 → V 23/E 0/N 49/L 0`이다.
+- 강원은 현재 공식 total 337건과 checkpoint 337건이 같고 page 1의 첫 12개
+  identity·순서도 일치했다. 첫 identity canary는 이미 최신 구조화 근거를 가진
+  항목임을 확인했고, 같은 DOM인 나머지 기존 상세 11건만 재캡처했다. field slot은
+  `V 15/E 0/N 3/L 66 → V 70/E 0/N 14/L 0`이다. `source_region`은 원문 라벨이
+  없어 `label_not_found`로 남겼고 synthetic 지역값을 만들지 않았다.
+- 강원 failed 322건은 이번 batch와 분리했다. 해당 identity를 재요청하거나
+  `/recover`로 판정을 바꾸지 않았으며, 기존 3구간 순환 canary 운영 계약을
+  유지한다.
+- 전체 field slot은 `V 3,159/E 7/N 5,504/L 2,760 →
+  V 3,237/E 7/N 5,564/L 2,622`로 변했다. 고정 outcome은 `accepted 18`,
+  `duplicate 1`, `review 1,905`, `closed 2,360`, `failed 322`이고, 대전 checkpoint
+  digest `191ec67e1c5418779f6e5f0c41d920ad1d46ecd7a7e542047aee007e22049c83`와
+  강원 digest `1580c7c29a226d8111abba36a773c0b82074609935bd759406ee1aa979debe8a`는
+  유지됐다. DB 동기화는 실행하지 않았다.
+- 다음 순서 서울은 완료 checkpoint와 현재 공식 목록의 identity 교체 drift가
+  이미 확인된 Source다. 기존 상세 URL이 열리는지만으로 `/recapture`를 허용하지
+  않고, 별도 재수집 범위가 승인될 때까지 중단한다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `33 passed`
+- regional Gate·review audit·expansion·RYP8 감사 집중 Python:
+  `53 passed, 12 subtests passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `402 passed, 96 subtests passed` (기존 deprecation warning 1건)
+- RYP8 감사: 전체 legacy `2,622`, failed 분류 `322/322`, 고정 outcome 일치;
+  `data_ready=false`의 유일한 blocker는 합의 수치가 없는
+  `legacy_null_within_target`
+- 테스트 DB는 `alpha8332@cheongnyeon_alimi_test`로 연결했고 public table은
+  `alembic_version`만 남았다. 운영 projection 동기화는 실행하지 않았다.
+- `python scripts/validate_docs.py`, `git diff --check`: 통과

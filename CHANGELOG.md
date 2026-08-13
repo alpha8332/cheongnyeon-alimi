@@ -33,6 +33,10 @@
   않은 채 review 근거로 보존
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 대전 current-only identity를 판정에 편입하지 않는 명시적 교집합 재캡처 경계와
+  강원 기존 상세 12건 제한 보강으로 두 Source의 legacy 필드 상태를 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,

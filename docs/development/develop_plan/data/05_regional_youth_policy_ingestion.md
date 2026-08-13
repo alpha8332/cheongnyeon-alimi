@@ -828,13 +828,23 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   이 PC의 연속 상세 렌더 race는 identity마다 새 tab을 사용해 격리했다. 울산
   `null_unverifiable`는 `3,563 → 0`, 전체는 `6,323 → 2,760`이다.
 - 다음 대전은 현재 13건이고 checkpoint 12건에 신규 `CT_000000000042`가 추가된
-  상태임을 다시 확인해 중단했다. 대전 Raw·checkpoint·DB는 쓰지 않았고 강원·
-  서울도 시작하지 않았다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 2,760개다.
+  상태임을 다시 확인해 중단했다. 후속 승인에 따라 신규 identity를 current-only
+  drift로 명시하고, checkpoint에 이미 있는 12건만 선택하는 제한 재캡처 계약을
+  추가했다. 제외 identity는 비어 있지 않은 고유 문자열이어야 하고 checkpoint와
+  겹치지 않으며, 현재 total은 `checkpoint total + 제외 수`와 정확히 같아야 한다.
+- 대전은 `CT_000000000541` canary 뒤 checkpoint 12건만 재캡처했다. 신규
+  `CT_000000000042`는 Raw·checkpoint outcome에 편입하지 않았다. 대전
+  `null_unverifiable`는 `72 → 0`, 전체는 `2,760 → 2,688`이다.
+- 강원은 현재 공식 total 337과 checkpoint 337, 첫 page 12건의 identity·순서를
+  읽기 전용으로 대조했다. 기존 상세 12건만 canary 후 제한 재캡처했고 failed
+  322건은 요청하지 않았다. 강원 `null_unverifiable`는 `66 → 0`, 전체는
+  `2,688 → 2,622`이다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 2,622개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
-  종료하지 않는다. 대전의 신규 identity 처리 방식을 결정한 뒤 대전·강원·서울
-  순서를 유지한다. 제주 1,239개 등 그 밖의 legacy는 현재 Slice에서 임의로
-  재배치하지 않고 별도 범위 결정 대상으로 남긴다.
+  종료하지 않는다. 다음 순서는 서울이지만 완료 checkpoint와 현재 identity
+  drift가 중단 조건이므로 별도 재수집 범위가 승인되기 전에는 재캡처하지 않는다.
+  제주 1,239개 등 그 밖의 legacy는 현재 Slice에서 임의로 재배치하지 않고 별도
+  범위 결정 대상으로 남긴다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

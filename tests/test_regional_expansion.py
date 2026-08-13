@@ -358,6 +358,99 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
                 checkpoint_store.load(DAEGU_SOURCE_ID),
             )
 
+    def test_recapture_allows_explicit_current_only_identity(self) -> None:
+        capture = daegu_capture()
+        capture["total_count"] = 2
+        capture["recapture_excluded_ids"] = ["8345"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                DAEGU_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=("8366",),
+                total_count=1,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(("8366",)).decide(
+                {"8366": RegionalOutcome.REVIEW}
+            )
+            checkpoint_store.save(checkpoint)
+
+            result, unchanged = _store_recapture(
+                capture,
+                raw_root=root / "raw",
+                checkpoint_root=root / "checkpoints",
+            )
+
+            self.assertEqual(3, result.raw_document_count)
+            self.assertEqual(checkpoint, unchanged)
+            self.assertEqual(checkpoint, checkpoint_store.load(DAEGU_SOURCE_ID))
+
+    def test_recapture_rejects_checkpoint_identity_as_current_only(self) -> None:
+        capture = daegu_capture()
+        capture["total_count"] = 2
+        capture["recapture_excluded_ids"] = ["8366"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                DAEGU_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=("8366",),
+                total_count=1,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(("8366",)).decide(
+                {"8366": RegionalOutcome.REVIEW}
+            )
+            checkpoint_store.save(checkpoint)
+
+            with self.assertRaisesRegex(
+                ValueError,
+                "recapture does not match completed checkpoint",
+            ):
+                _store_recapture(
+                    capture,
+                    raw_root=root / "raw",
+                    checkpoint_root=root / "checkpoints",
+                )
+
+            self.assertFalse((root / "raw").exists())
+
+    def test_recapture_rejects_unnecessary_current_only_identity(self) -> None:
+        capture = daegu_capture()
+        capture["recapture_excluded_ids"] = ["8345"]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                DAEGU_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=("8366",),
+                total_count=1,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(("8366",)).decide(
+                {"8366": RegionalOutcome.REVIEW}
+            )
+            checkpoint_store.save(checkpoint)
+
+            with self.assertRaisesRegex(
+                ValueError,
+                "recapture does not match completed checkpoint",
+            ):
+                _store_recapture(
+                    capture,
+                    raw_root=root / "raw",
+                    checkpoint_root=root / "checkpoints",
+                )
+
+            self.assertFalse((root / "raw").exists())
+
     def test_capture_cli_rejects_invalid_root_without_raw(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

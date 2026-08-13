@@ -98,6 +98,26 @@ export async function withSingleDetailRetry(observe, enabled = false) {
   }
 }
 
+export function validateRecaptureExclusions(
+  recapture,
+  recaptureIds,
+  recaptureExcludedIds,
+) {
+  if (recaptureExcludedIds === null) return null;
+  if (
+    !recapture
+    || !Array.isArray(recaptureExcludedIds)
+    || !recaptureExcludedIds.length
+    || recaptureExcludedIds.length !== new Set(recaptureExcludedIds).size
+    || recaptureExcludedIds.some((value) => typeof value !== "string" || !value)
+    || Array.isArray(recaptureIds)
+    && recaptureIds.some((value) => recaptureExcludedIds.includes(value))
+  ) {
+    throw new Error("recapture excluded identities are invalid");
+  }
+  return recaptureExcludedIds;
+}
+
 export async function collectQueryPage({
   tab,
   endpoint,
@@ -139,6 +159,7 @@ export async function collectQueryPage({
   sourceScopeSelectors = null,
   recapture = false,
   recaptureIds = null,
+  recaptureExcludedIds = null,
   recover = false,
   recoverIds = null,
 }) {
@@ -230,6 +251,7 @@ export async function collectQueryPage({
     throw new Error("recapture and failed recovery are mutually exclusive");
   }
   const selectedRecoveryIds = recover ? recoverIds : recapture ? recaptureIds : null;
+  validateRecaptureExclusions(recapture, recaptureIds, recaptureExcludedIds);
   if (selectedRecoveryIds !== null) {
     if (
       !(recapture || recover)
@@ -407,6 +429,9 @@ export async function collectQueryPage({
       total_count: totalCount,
       has_next: hasNext,
       discovered_ids: discovered.map((item) => item.external_id),
+      ...(recaptureExcludedIds === null
+        ? {}
+        : {recapture_excluded_ids: recaptureExcludedIds}),
       action_trace: [
         "goto approved list",
         "apply approved scope filter",

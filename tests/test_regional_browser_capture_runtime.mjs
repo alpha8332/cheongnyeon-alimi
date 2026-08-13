@@ -16,6 +16,7 @@ import {
   waitForReadySelector,
   waitForExpectedTitle,
   withSingleDetailRetry,
+  validateRecaptureExclusions,
 } from "../scripts/regional-browser-capture-runtime.mjs";
 
 test("navigation timeout continues only when the target DOM already loaded", async () => {
@@ -272,6 +273,25 @@ test("detail retry preserves non-title failures", async () => {
     /detail access denied/,
   );
   assert.equal(attempts, 1);
+});
+
+test("recapture exclusions are explicit and disjoint from selected identities", () => {
+  assert.deepEqual(
+    validateRecaptureExclusions(true, ["checkpoint-id"], ["current-only-id"]),
+    ["current-only-id"],
+  );
+  assert.throws(
+    () => validateRecaptureExclusions(
+      true,
+      ["checkpoint-id"],
+      ["checkpoint-id"],
+    ),
+    /recapture excluded identities are invalid/,
+  );
+  assert.throws(
+    () => validateRecaptureExclusions(false, null, ["current-only-id"]),
+    /recapture excluded identities are invalid/,
+  );
 });
 
 const fixtureUrl = new URL(

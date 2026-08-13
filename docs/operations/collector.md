@@ -369,6 +369,16 @@ RYP8 Browser 제한 재캡처는 loopback 서버의 `/recapture`를 사용한다
 사용한다. source scope는 Raw list response에 staging되지만 RYP9 전에는 Gate의
 승격 근거로 소비하지 않는다.
 
+현재 목록에 신규 identity만 추가되고 checkpoint identity의 누락이 없는 경우는
+Source별 승인을 받은 뒤에만 `recaptureExcludedIds`로 current-only identity를
+명시할 수 있다. 값은 비어 있지 않은 고유 문자열 목록이어야 하며 checkpoint
+identity와 선택 `recaptureIds`에 겹치면 안 된다. 서버는 현재 total이
+`checkpoint total + 제외 identity 수`와 정확히 같고, 재캡처 identity가 기존
+captured 범위의 부분집합일 때만 저장한다. 이 예외는 신규 identity를 checkpoint에
+추가하거나 outcome을 만들지 않으며, total 차이가 없거나 감소·교체 drift인
+Source에는 사용할 수 없다. 대전은 current-only `CT_000000000042` 한 건을 이
+방식으로 기록하고 기존 12건만 재캡처했다.
+
 Browser navigation timeout은 실패 응답으로 단정하기 전에 요청한 URL의
 origin·path·query와 Source별 준비 DOM이 이미 로드됐는지 확인한다. 둘 다
 일치할 때만 현재 DOM으로 계속한다. 준비 selector는 locator wait 신호에
