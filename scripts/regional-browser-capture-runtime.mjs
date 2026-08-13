@@ -20,6 +20,9 @@ export async function collectQueryPage({
   detailUrlTemplate = null,
   detailTitleSelector = null,
   detailContentSelector = null,
+  detailPairRowSelector = null,
+  detailPairLabelSelector = null,
+  detailPairValueSelector = null,
   detailPost = null,
   detailClickTemplate = null,
   detailReadySelector = null,
@@ -218,6 +221,9 @@ export async function collectQueryPage({
           item.title,
           detailTitleSelector,
           detailContentSelector,
+          detailPairRowSelector,
+          detailPairLabelSelector,
+          detailPairValueSelector,
         );
       } catch (error) {
         if (recapture) throw error;
@@ -320,8 +326,17 @@ export async function extractDetail(
   expectedTitle,
   detailTitleSelector,
   detailContentSelector,
+  detailPairRowSelector = null,
+  detailPairLabelSelector = null,
+  detailPairValueSelector = null,
 ) {
-  const extracted = await tab.playwright.evaluate(({titleSelector, contentSelector}) => {
+  const extracted = await tab.playwright.evaluate(({
+    titleSelector,
+    contentSelector,
+    pairRowSelector,
+    pairLabelSelector,
+    pairValueSelector,
+  }) => {
     const squash = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
     const compact = (value) => squash(value).replace(/\s/g, "");
     const pairs = {};
@@ -338,27 +353,60 @@ export async function extractDetail(
       }
       if (key && !(key in pairs)) pairs[key] = value;
     }
-    for (const element of document.querySelectorAll("h3,h4")) {
-      const key = squash(element.textContent).replace(/[:：]\s*$/, "");
-      const value = squash(element.nextElementSibling?.textContent);
-      if (key && value && !(key in pairs)) pairs[key] = value;
+    if (!pairRowSelector) {
+      for (const element of document.querySelectorAll("h3,h4")) {
+        const key = squash(element.textContent).replace(/[:：]\s*$/, "");
+        const chunks = [];
+        for (
+          let sibling = element.nextElementSibling;
+          sibling;
+          sibling = sibling.nextElementSibling
+        ) {
+          if (sibling.matches("h3,h4")) break;
+          const value = squash(sibling.textContent);
+          if (value) chunks.push(value);
+        }
+        const value = squash(chunks.join(" "));
+        if (key && value && !(key in pairs)) pairs[key] = value;
+      }
+    }
+    if (pairRowSelector && pairLabelSelector && pairValueSelector) {
+      for (const row of document.querySelectorAll(pairRowSelector)) {
+        const key = squash(row.querySelector(pairLabelSelector)?.textContent)
+          .replace(/[:：]\s*$/, "");
+        const value = squash(row.querySelector(pairValueSelector)?.textContent);
+        if (key && !(key in pairs)) pairs[key] = value;
+      }
     }
     const contentRoot = contentSelector
       ? document.querySelector(contentSelector)
       : null;
+    const contentBlocks = [];
+    if (contentRoot) {
+      for (const element of contentRoot.querySelectorAll("p")) {
+        const value = squash(element.textContent);
+        if (value && !contentBlocks.includes(value)) contentBlocks.push(value);
+      }
+      for (const line of String(contentRoot.innerText ?? "").split(/\n+/)) {
+        const value = squash(line);
+        if (value && !contentBlocks.includes(value)) contentBlocks.push(value);
+      }
+    }
     return {
       body: compact(document.body?.innerText || document.body?.textContent),
       pairs,
-      contentBlocks: contentRoot
-        ? Array.from(contentRoot.querySelectorAll("p"))
-          .map((element) => squash(element.textContent))
-          .filter(Boolean)
-        : [],
+      contentBlocks,
       actualTitle: titleSelector
         ? squash(document.querySelector(titleSelector)?.textContent)
         : null,
     };
-  }, {titleSelector: detailTitleSelector, contentSelector: detailContentSelector});
+  }, {
+    titleSelector: detailTitleSelector,
+    contentSelector: detailContentSelector,
+    pairRowSelector: detailPairRowSelector,
+    pairLabelSelector: detailPairLabelSelector,
+    pairValueSelector: detailPairValueSelector,
+  });
   const actualTitle = extracted.actualTitle || expectedTitle;
   if (detailTitleSelector) {
     const expectedPrefix = clean(expectedTitle).replace(/\.{2,}\s*$/, "");
@@ -371,7 +419,7 @@ export async function extractDetail(
 
 function pairsWithProseLabels(pairs, contentBlocks = []) {
   const selected = {...pairs};
-  const labelPattern = /^[\u200B\uFEFF\s]*(?:[□■▪●○]\s*)?(지원대상|신청대상|대상|자격|지원조건|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|신청기간|접수기간|모집기간|신청방법|접수방법|신청링크|접수처)\s*(?::|：)?\s*(.*)$/;
+  const labelPattern = /^[\u200B\uFEFF\s]*(?:[□■▪●○]\s*)?(?:\d+[.)]\s*)?(지원대상|신청대상|모집대상|대상|자격|지원조건|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|신청기간|접수기간|접수일정|모집기간|신청방법|접수방법|신청링크|접수처)\s*(?::|：)?\s*(.*)$/;
   for (let index = 0; index < contentBlocks.length; index += 1) {
     const block = clean(contentBlocks[index]);
     const match = block.match(labelPattern);
@@ -441,10 +489,10 @@ export function buildDetail(title, extracted) {
   const detail = {
     title,
     organization: find("organization", ["기관명", "담당기관명", "주관기관", "운영기관", "담당기관", "시행기관"]),
-    category: find("category", ["정책유형", "분야", "유형", "카테고리"]),
-    application_period: find("application_period", ["사업신청기간", "신청기간", "접수기간", "모집기간", "모집일시"]),
+    category: find("category", ["정책유형", "정책분야", "분야", "유형", "카테고리"]),
+    application_period: combine("application_period", ["사업신청기간", "신청기간", "접수기간", "접수일정", "모집기간", "모집일시", "신청기한"]),
     source_region: find("source_region", ["해당지역", "사업지역", "지역", "거주지"]),
-    eligibility: combine("eligibility", ["지원대상", "신청대상", "참여요건", "지원조건", "추가단서사항", "대상", "자격"]),
+    eligibility: combine("eligibility", ["지원대상", "신청대상", "모집대상", "신청자격", "참여요건", "지원조건", "거주지및소득", "추가단서사항", "대상", "자격"]),
     support_content: find("support_content", ["지원내용", "사업내용", "정책내용", "주요내용", "혜택", "지원규모"]),
     application_method: fromMarker(
       find("application_method", ["신청방법", "접수방법", "신청링크", "공고상세보기URL", "접수처", "신청절차"]),
@@ -452,7 +500,7 @@ export function buildDetail(title, extracted) {
     ),
     contact: find("contact", ["문의처", "문의", "담당자", "연락처"]),
     required_documents: find("required_documents", ["필요서류", "제출서류", "구비서류", "첨부파일"]),
-    exclusions: find("exclusions", ["참여제한대상", "지원제외", "제외", "제한"]),
+    exclusions: find("exclusions", ["참여제한대상", "참여제한사항", "지원제외", "제외", "제한"]),
     age: find("age", ["지원연령", "연령제한", "연령", "나이"]),
   };
   return {...detail, evidence_observations: observations};
@@ -557,5 +605,72 @@ export function jeonbukConfig(page) {
       youth_policy_scope_text: "h1",
       application_scope_text: 'select[name="dateCheck"] option:checked',
     },
+  };
+}
+
+export function chungbukConfig(page) {
+  return {
+    sourceId: "regional-chungbuk-youth-platform",
+    listUrl: `https://www.chungbuk.go.kr/young/selectBbsNttList.do?key=1283&bbsNo=174&pageIndex=${page}`,
+    page,
+    idParam: "nttNo",
+    pageParam: "pageIndex",
+    titleSelector: ".p-subject span",
+    closestSelector: "tr",
+    linkSelector: '.p-subject a[href*="selectBbsNttView.do"][href*="nttNo="]',
+    detailContentSelector: ".p-table__content",
+  };
+}
+
+export function ulsanConfig(page) {
+  return {
+    sourceId: "regional-ulsan-youth-platform",
+    listUrl: `https://www.ulsan.go.kr/s/ulsanyouth/bbs/list.ulsan?bbsId=BBS_0000000000000309&mId=008001002000000000&page=${page}`,
+    page,
+    idParam: "dataId",
+    pageParam: "page",
+    titleSelector: ".tit",
+    closestSelector: "li",
+    linkSelector: '.bodo_list a[href*="view.do"][href*="dataId="]',
+    titlePrefixPattern: "^접수(?:중|마감)\\s*",
+  };
+}
+
+export function daejeonConfig(page) {
+  return {
+    sourceId: "regional-daejeon-youth-platform",
+    listUrl: `https://www.daejeonyouthportal.kr/biz/integratedYouth.do?section=1&commonMenuNo=438_323_514_517&pageIndex=${page}`,
+    page,
+    idParam: "identity-path",
+    pageParam: "pageIndex",
+    titleSelector: ".cont_tit",
+    closestSelector: "li",
+    linkSelector: '.bd_thum.type_biz > li > a[href*="/content/CT_"]',
+    identityPattern: "/content/(CT_[^/]+)/cntPage\\.do",
+    identityAttribute: "href",
+  };
+}
+
+export function gangwonConfig(page) {
+  if (page !== 1) {
+    throw new Error("Gangwon RYP8 config is limited to the actual first page");
+  }
+  return {
+    sourceId: "regional-gangwon-youth-platform",
+    listUrl: "https://job.gwd.go.kr/youth/policies/search/gangwon_policies",
+    page,
+    idParam: "data-id",
+    pageParam: "pageIndex",
+    titleSelector: "a.tit.detail",
+    closestSelector: ".result-card-box",
+    linkSelector: "a.tit.detail[data-id]",
+    identityPattern: "^(.+)$",
+    identityAttribute: "data-id",
+    detailPost: {identityField: "bizId", fields: {mode: "gw"}},
+    detailClickTemplate: 'a.tit.detail[data-id="{id}"]',
+    detailReadySelector: ".skinTb-data-resList",
+    detailPairRowSelector: ".skinTb-tr",
+    detailPairLabelSelector: ".skinTb-th",
+    detailPairValueSelector: ".skinTb-td",
   };
 }

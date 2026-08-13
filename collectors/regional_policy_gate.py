@@ -24,7 +24,10 @@ from collectors.regions import (
 
 KOREA_TIMEZONE = timezone(timedelta(hours=9))
 _DATE_TOKEN = re.compile(
-    r"(?<!\d)(\d{4})[.\-/년]\s*(\d{1,2})[.\-/월]\s*(\d{1,2})(?:일)?"
+    r"(?<!\d)(?:"
+    r"(\d{4})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})(?:일)?"
+    r"|(\d{4})(\d{2})(\d{2})"
+    r")(?!\d)"
 )
 _EVIDENCE_FIELDS = frozenset(
     {
@@ -480,7 +483,12 @@ def _application_availability(
 
     dates: list[date] = []
     try:
-        for year, month, day in _DATE_TOKEN.findall(normalized):
+        for match in _DATE_TOKEN.finditer(normalized):
+            year, month, day = (
+                match.group(1, 2, 3)
+                if match.group(1) is not None
+                else match.group(4, 5, 6)
+            )
             dates.append(date(int(year), int(month), int(day)))
     except ValueError:
         return (

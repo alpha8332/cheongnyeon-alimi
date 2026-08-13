@@ -366,6 +366,26 @@ class RegionalPolicyGateTests(unittest.TestCase):
         self.assertFalse(decision.accepted)
         self.assertIs(ApplicationAvailability.CLOSED, decision.application)
 
+    def test_compact_seoul_period_is_classified_from_actual_dates(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(),
+            organization="서울특별시 청년정책과",
+            eligibility="서울특별시 거주 청년",
+            application_period="20260520 ~ 20260529",
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="서울특별시",
+            as_of=date(2026, 8, 11),
+        )
+
+        self.assertIs(ApplicationAvailability.CLOSED, decision.application)
+        self.assertIn("application_period_ended", decision.reason_codes)
+
     def test_youth_scope_needs_item_marker_or_explicit_age(self) -> None:
         case = self.fixture["cases"][0]
         selected_policy, selected_evidence = scoped_policy_and_evidence(

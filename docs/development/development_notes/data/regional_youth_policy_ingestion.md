@@ -681,3 +681,43 @@ PostgreSQL 통합은 기존 로컬 전용 `_test` DB와 pgpass를 사용했으�
   조건으로 고정했다. 과거 완료 checkpoint의 110개 identity와 현재 공식 목록
   identity가 교체돼 제한 recapture 조건을 만족하지 않으므로 새 Raw는 만들지
   않고 공식 상세 DOM과 fixture 회귀만 검증했다.
+
+### RYP8 충북·울산·대전·강원·서울 신청기간 보강 (`2026-08-13`)
+
+- 충북은 공지 상세의 `<br>` 구분 본문에서 번호가 붙은 `모집기간·모집대상`을
+  읽도록 했다. `nttNo=440062` 한 건을 제한 재캡처해 신청기간 누락은
+  `441 → 440`, 기간 open 근거는 `0 → 1`이 됐다.
+- 울산은 상세 `dt/dd`의 `접수일정`을 신청기간으로 매핑했다. checkpoint의
+  597 identity는 review 596건과 closed 1건이며, 계획의 595는 review 수가 아니라
+  작업 전 신청기간 null 수다. `dataId=60156` 재캡처 뒤 null은 `595 → 594`이고,
+  기간 open 1건과 연도 생략 형식으로 남은 unresolved 1건을 구분한다.
+- 대전은 `h4` 다음의 빈 문단을 건너뛰어 `접수기간`을 찾고 `신청기한`과
+  결합한다. 현재 공식 목록은 13건으로 완료 checkpoint 12건과 달라 `/recapture`
+  경계가 실제 total 13 요청을 거부했다. checkpoint total을 거짓으로 맞추지 않고
+  공식 상세 DOM·fixture 검증만 남겼으므로 감사의 기간 누락 12건은 유지된다.
+- 강원 actual 첫 페이지는 실제 표가 `<th>/<td>`가 아니라
+  `.skinTb-th/.skinTb-td` 행으로 구성돼 있었다. class-row selector로 신청기간,
+  주관 기관, 거주·소득과 제외 조건을 추출하고
+  `bizId=A2026021200300200900000001`만 제한 재캡처했다. actual 12건 중 신청기간
+  누락은 `12 → 11`, 기간 open 근거는 `0 → 1`이며 실패 325건은 이번 Slice에서
+  건드리지 않았다.
+- 서울의 기간 미확인 17건 중 공식 상세 2건을 대조한 결과 모두
+  `사업신청기간` 라벨은 있으나 값이 비어 있었다. identity가 교체된 현재 목록과
+  완료 checkpoint가 맞지 않아 Raw를 우회 생성하지 않고 빈 값 observation
+  fixture만 고정했다. `YYYYMMDD ~ YYYYMMDD` Gate 지원으로 전체 110건의
+  `application_period_unresolved 76 → 25`, `application_period_ended 13 → 62`,
+  `application_period_open 2 → 4`가 됐으며 기간 미확인 17건은 그대로다.
+- replay 감사 합계는 `discovered 4,606`, `accepted 18`, `duplicate 1`,
+  `review 1,903`, `closed 2,357`, `failed 327`, checkpoint drift 1로 유지됐다.
+  importer나 DB 동기화는 실행하지 않았고 checkpoint 파일도 갱신하지 않았다.
+
+검증 결과:
+
+- Browser capture Node fixture·config: `11 passed`, syntax check 통과
+- 지역 Gate·audit·expansion·normalization·pilot 집중 회귀:
+  `68 passed, 12 subtests passed`
+- 전체 Python: `366 passed, 24 skipped, 96 subtests passed`; skip 24건은
+  `TEST_DATABASE_URL` 미주입 PostgreSQL 테스트
+- 전용 `cheongnyeon_alimi_test` Data 통합: `8 passed` (기존 warning 1건)
+- actual Browser 표본은 충북·울산·대전·강원·서울 공식 상세와 대조했고,
+  대전 total drift 차단 및 서울 identity drift 미재캡처를 확인했다.

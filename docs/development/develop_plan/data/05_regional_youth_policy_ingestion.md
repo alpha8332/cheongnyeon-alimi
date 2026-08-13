@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP7`·`RYP-G4` 완료, `RYP8` Source별 필드 추출 예정
+- 현재 진행: `RYP0`~`RYP7`·`RYP-G4` 완료, `RYP8` Source별 필드 추출 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -775,8 +775,19 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
 - 목록 1건·상세 1건 limited actual 재캡처와 동일 checkpoint 감사를 통과했다.
   전체 outcome은 4,606·review 1,903·failed 327·drift 1로 유지됐고 legacy capture
   gap Source는 12개에서 11개로 줄었다.
-- 부산만 완료한 중간 상태이며 나머지 11개 legacy gap Source와 강원·제주 실패
-  identity 보강 전에는 RYP8 또는 `RYP-G5`를 완료로 판정하지 않는다.
+- 대구·광주·경북·인천·전북·서울의 지역·대상 필드와 충북·울산·대전·강원의
+  신청기간 locator를 fixture와 공식 상세 표본으로 고정했다. 충북·울산·강원은
+  완료 checkpoint identity 각 1건만 제한 재캡처했고 대전은 현재 공식 total
+  `13`과 checkpoint total `12`가 달라 안전 경계가 재캡처를 거부했다.
+- 서울은 `YYYYMMDD ~ YYYYMMDD`를 application Gate가 해석하도록 보강해
+  `application_period_unresolved 76 → 25`, `application_period_ended 13 → 62`,
+  `application_period_open 2 → 4`를 확인했다. 기간 미확인 17건은 공식 상세 표본상
+  `사업신청기간` 라벨의 실제 빈 값이며 synthetic 날짜를 만들지 않는다.
+- 전체 checkpoint outcome과 DB projection은 변경하지 않았다. 감사 합계는
+  `discovered 4,606 = accepted 18 + duplicate 1 + review 1,903 + closed 2,357 +
+  failed 327`, drift 1을 유지한다.
+- 아직 강원 실패 325건·제주 실패 2건의 제한 재시도와 경남·제주 종료 이력
+  대조가 남아 있으므로 RYP8 또는 `RYP-G5`를 완료로 판정하지 않는다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

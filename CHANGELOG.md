@@ -8,6 +8,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 충북·울산·대전·강원 공식 상세의 신청기간 selector와 서울 compact 날짜 해석을
+  보강하고, 원문 빈 값·목록 total/identity drift는 checkpoint·DB 판정을 바꾸지
+  않은 채 review 근거로 보존
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 지역 Source review 1,903건을 사유·필드 coverage로 감사하고, 공식 목록 scope와
