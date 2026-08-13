@@ -625,3 +625,22 @@ RYP7 검증:
 PostgreSQL 통합은 기존 로컬 전용 `_test` DB와 pgpass를 사용했으며 새 패키지를
 설치하지 않았다. RYP7은 DB transaction을 실행하지 않는 actual 감사 Slice이고,
 통합 테스트만 임시 테스트 transaction·migration 경계에서 실행했다.
+
+### RYP8 부산 Source field observation 착수 (`2026-08-13`)
+
+- 새 PC 인계 기준 `0cf1a1e`, `runtime/raw` 14,163개와
+  `runtime/decisions` 49개를 확인하고 RYP7 actual 감사를 그대로 재현했다.
+- 부산 공식 목록 HTML의 `meta[name=author]`, `<title>`,
+  `select[name=endstat] option[selected]`을 각각 관할·운영 주체, 청년지원 taxonomy,
+  현재 모집 scope locator로 고정했다. 값은 `extra.source_scope`에 staging하고
+  RYP9 전에는 regional Gate의 accepted 근거로 소비하지 않는다.
+- 상세 `dtif_atc`·`dtif_cont` pair에서 신청기간·담당기관·지원대상 관찰 상태를
+  복원했다. 부산 review 107건의 legacy null은 0이 되었고, 원문 값 부재 2건과
+  capture contract gap을 구분한다.
+- unit fixture와 limited actual 목록 1건·상세 1건을 검증했다. checkpoint outcome은
+  변하지 않았으며 감사 결과는 legacy gap Source `12 → 11`이다.
+- 집중 회귀 `45 passed, 12 subtests passed`, 전체 Python `363 passed, 24 skipped,
+  96 subtests passed`, Node syntax·문서 검증·`git diff --check`를 통과했다.
+- 새 PC PostgreSQL은 5432에서 실행 중이나 pgpass 인증이 실패해 관련 통합 테스트
+  9건은 실패하고 1건만 통과했다. 이를 성공으로 기록하지 않으며 로컬 역할·비밀번호·
+  `_test` DB 권한을 복구한 뒤 재실행한다.

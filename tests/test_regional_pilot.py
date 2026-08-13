@@ -51,6 +51,12 @@ def response(body: str) -> TransportResponse:
 
 
 BUSAN_LIST = """
+<title>청년지원 프로그램 : 부산청년플랫폼</title>
+<meta name="author" content="부산광역시" />
+<select id="endstat" name="endstat">
+ <option value="">전체</option>
+ <option value="Y" selected>모집중</option>
+</select>
 <div class="total">총 <span class="blue">1</span>건</div>
 <a href="/policySupport/view.nm?menuCd=13&bizSid=SUP0000003570">
  <div class="cd_state ing">모집중</div>
@@ -97,6 +103,56 @@ class BusanPilotTests(unittest.TestCase):
             decision.regionality,
         )
         self.assertIs(ApplicationAvailability.OPEN, decision.application)
+        self.assertFalse(decision.accepted)
+        self.assertEqual(
+            {
+                "application_scope_text": "모집중",
+                "jurisdiction_text": "부산광역시",
+                "operator_text": "부산광역시",
+                "youth_policy_scope_text": "청년지원 프로그램",
+            },
+            policy.extra["source_scope"],
+        )
+        self.assertEqual(
+            {
+                "application_period_text": "value_extracted",
+                "implementing_organization_text": "value_extracted",
+                "region_eligibility_text": "value_extracted",
+            },
+            {
+                key: value
+                for key, value in decision.evidence.field_observations
+                if value == "value_extracted"
+            },
+        )
+
+    def test_ryp8_scope_is_staged_without_premature_promotion(self) -> None:
+        detail = BUSAN_DETAIL.replace(
+            ">청년</span>", ">부산광역시에 거주하는 청년</span>"
+        ).replace(">부산광역시 사상구</span>", ">공간숲</span>")
+        client = StubHttpClient([response(BUSAN_LIST), response(detail)])
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            result = BusanYouthCollector(
+                http_client=client,
+                store=store,
+                now=lambda: NOW,
+            ).collect(CollectionOptions(limit=1, detail_limit=1))
+            policy = BusanYouthExtractor().extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+
+        decision = decide_representative_regional_policy(
+            policy, as_of=date(2026, 8, 11)
+        )
+        self.assertEqual(
+            "부산광역시",
+            policy.extra["source_scope"]["jurisdiction_text"],
+        )
+        self.assertIs(
+            RegionalityStatus.REGIONAL_REVIEW_REQUIRED,
+            decision.regionality,
+        )
         self.assertFalse(decision.accepted)
 
     def test_detail_identity_drift_stores_no_partial_raw(self) -> None:

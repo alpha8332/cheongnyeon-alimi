@@ -10,7 +10,8 @@
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
 - 현재 Slice: Data 05 `RYP0`~`RYP7`·`RYP-G4` 완료,
-  `RYP8` Source별 필드 추출 예정 (`DTL4-4B`·`ES4` actual 세로 인수 포함),
+  `RYP8` Source별 필드 추출 진행 중 (부산 관찰 계약 완료,
+  `DTL4-4B`·`ES4` actual 세로 인수 포함),
   이후 RYP9·Data 06 구현과 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
@@ -107,6 +108,10 @@ Source별 필드 추출·지역 검색 actual을 마친 뒤 완료 판정한다.
 미확인 725건으로 중복 사유 감사하고 Source-scope·필드 관찰 계약을 고정해
 완료했다. legacy null이 남은 12개 Source의 실제 라벨·값 보강은 RYP8, 전체
 accepted 재판정과 지역 검색 actual은 RYP9에서 수행한다.
+
+같은 날 RYP8 부산 목록·상세 locator와 field observation을 추가해 legacy capture
+gap Source를 12개에서 11개로 줄였다. checkpoint와 accepted DB는 유지하며 나머지
+11개 Source 보강 전에는 RYP8을 완료로 판정하지 않는다.
 
 ## 권장 5일 배치
 

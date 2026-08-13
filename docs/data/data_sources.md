@@ -95,6 +95,12 @@ EligibilitySummary에 Source field evidence로 연결하며 개인 휴대전화�
 DB·API·Browser 검색에 노출해야 하며, 추출 누락 때문에 accepted가 0건인 상태는
 완료로 인정하지 않는다.
 
+RYP8은 부산부터 시작했다. 부산 목록의 공식 관할·운영 주체·청년지원 taxonomy·
+모집중 선택값을 `extra.source_scope`에 staging하고 상세 라벨의 관찰 상태를
+replay해 legacy capture gap Source를 12개에서 11개로 줄였다. 이 단계에서는
+checkpoint·accepted DB projection을 변경하지 않으며 staged scope의 승격 소비는
+RYP9 전체 재판정에서 수행한다.
+
 RYP7은 지역 포털이라는 위치를 정책 근거로 치환하지 않으면서 승인된 목록
 scope를 사용할 수 있는 내부 계약을 고정한다. Source-scope는 같은 정책의
 `list_response` provenance, 공식 관할·운영 주체와 정책별 대상 또는 시행기관

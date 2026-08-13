@@ -63,6 +63,10 @@ def _clean(value: str) -> str:
 class _BusanList:
     items: tuple[dict[str, str], ...]
     total_count: int
+    jurisdiction_text: str
+    operator_text: str
+    youth_policy_scope_text: str
+    application_scope_text: str
 
 
 class _BusanListParser(HTMLParser):
@@ -74,12 +78,36 @@ class _BusanListParser(HTMLParser):
         self.items: list[dict[str, str]] = []
         self.total_count: int | None = None
         self._total_pending = False
+        self._scope_field: str | None = None
+        self._scope_chunks: list[str] = []
+        self._in_endstat_select = False
+        self.jurisdiction_text: str | None = None
+        self.youth_policy_scope_text: str | None = None
+        self.application_scope_text: str | None = None
 
     def handle_starttag(
         self, tag: str, attrs: list[tuple[str, str | None]]
     ) -> None:
         values = dict(attrs)
         classes = set((values.get("class") or "").split())
+        if (
+            tag == "meta"
+            and values.get("name") == "author"
+            and values.get("content")
+        ):
+            self.jurisdiction_text = _clean(values["content"] or "")
+        elif tag == "title":
+            self._scope_field = "title"
+            self._scope_chunks = []
+        elif tag == "select" and values.get("name") == "endstat":
+            self._in_endstat_select = True
+        elif (
+            tag == "option"
+            and self._in_endstat_select
+            and "selected" in values
+        ):
+            self._scope_field = "application_scope"
+            self._scope_chunks = []
         if tag == "a":
             href = values.get("href") or ""
             parsed = urllib.parse.urlsplit(href)
@@ -109,12 +137,25 @@ class _BusanListParser(HTMLParser):
     def handle_data(self, data: str) -> None:
         if self._field is not None:
             self._chunks.append(data)
+        if self._scope_field is not None:
+            self._scope_chunks.append(data)
         if self._total_pending and self.total_count is None:
             text = _clean(data)
             if text.isdigit():
                 self.total_count = int(text)
 
     def handle_endtag(self, tag: str) -> None:
+        if self._scope_field == "title" and tag == "title":
+            value = _clean("".join(self._scope_chunks))
+            self.youth_policy_scope_text = value.split(":", 1)[0].strip()
+            self._scope_field = None
+            self._scope_chunks = []
+        elif self._scope_field == "application_scope" and tag == "option":
+            self.application_scope_text = _clean("".join(self._scope_chunks))
+            self._scope_field = None
+            self._scope_chunks = []
+        if tag == "select":
+            self._in_endstat_select = False
         if self._field is not None and tag in {"div", "span"}:
             value = _clean("".join(self._chunks))
             if value and self._active is not None:
@@ -132,9 +173,22 @@ class _BusanListParser(HTMLParser):
         unique: dict[str, dict[str, str]] = {}
         for item in self.items:
             unique.setdefault(item["external_id"], item)
-        if not unique or self.total_count is None:
+        if (
+            not unique
+            or self.total_count is None
+            or not self.jurisdiction_text
+            or not self.youth_policy_scope_text
+            or not self.application_scope_text
+        ):
             raise ExtractionError("Busan list selector drift")
-        return _BusanList(tuple(unique.values()), self.total_count)
+        return _BusanList(
+            tuple(unique.values()),
+            self.total_count,
+            self.jurisdiction_text,
+            self.jurisdiction_text,
+            self.youth_policy_scope_text,
+            self.application_scope_text,
+        )
 
 
 class _BusanDetailParser(HTMLParser):
@@ -177,10 +231,37 @@ class _BusanDetailParser(HTMLParser):
         self._field = None
         self._chunks = []
 
-    def payload(self) -> dict[str, str]:
+    def payload(self) -> dict[str, Any]:
         if not self.fields.get("title") or not self.fields.get("신청기간"):
             raise ExtractionError("Busan detail selector drift")
-        return self.fields
+        observations = {
+            "implementing_organization_text": _label_observation(
+                self.fields, "담당기관"
+            ),
+            "region_eligibility_text": _label_observation(
+                self.fields, "지원대상"
+            ),
+            "application_period_text": _label_observation(
+                self.fields, "신청기간"
+            ),
+            "application_channel_text": _label_observation(
+                self.fields, "신청방법"
+            ),
+            "additional_benefit_text": _label_observation(
+                self.fields, "지원내용"
+            ),
+        }
+        return self.fields | {"evidence_observations": observations}
+
+
+def _label_observation(fields: Mapping[str, str], label: str) -> str:
+    if label not in fields:
+        return "label_not_found"
+    return (
+        "value_extracted"
+        if _text(fields.get(label)) is not None
+        else "label_present_value_empty"
+    )
 
 
 class BusanYouthCollector:
@@ -338,6 +419,7 @@ class BusanYouthExtractor:
                 document.raw_bytes
             ),
             field_mapper=_busan_fields,
+            list_scope_mapper=_busan_source_scope,
         )
 
 
@@ -487,6 +569,18 @@ def decide_representative_regional_policy(
         "source_region_text": policy.region_text,
         "application_period_text": policy.application_period_text,
     }
+    detail_observations = detail.get("evidence_observations")
+    field_observations = tuple(
+        (field_name, status)
+        for field_name, status in (
+            detail_observations.items()
+            if isinstance(detail_observations, Mapping)
+            else ()
+        )
+        if field_name in values
+        and isinstance(status, str)
+        and ((status == "value_extracted") == (values[field_name] is not None))
+    )
     evidence = RegionalPolicyEvidence(
         **values,
         field_locators=tuple(
@@ -495,6 +589,7 @@ def decide_representative_regional_policy(
             if value is not None
         ),
         provenance=policy.provenance,
+        field_observations=field_observations,
     )
     return enforce_youth_target(
         policy,
@@ -534,6 +629,9 @@ def _extract_structured_regional(
     version: str,
     parse_detail: Callable[[RawPolicyDocument], dict[str, Any]],
     field_mapper: Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]],
+    list_scope_mapper: (
+        Callable[[RawPolicyDocument], dict[str, str]] | None
+    ) = None,
 ) -> tuple[ExtractedPolicy, ...]:
     selected = tuple(documents)
     if not selected or any(value.source_id != source_id for value in selected):
@@ -585,6 +683,11 @@ def _extract_structured_regional(
         provenance = tuple(
             SourceProvenance.from_raw(value) for value in provenance_documents
         )
+        source_scope = (
+            list_scope_mapper(parents[document.parent_document_id])
+            if list_scope_mapper is not None
+            else None
+        )
         policies.append(
             ExtractedPolicy(
                 source_id=source_id,
@@ -609,6 +712,7 @@ def _extract_structured_regional(
                         "list_item": deepcopy(item),
                         "detail_response": deepcopy(detail),
                     },
+                    "source_scope": deepcopy(source_scope),
                     "institutional_contact": fields.get("contact"),
                     "required_documents": fields.get("required_documents"),
                     "exclusion_conditions": fields.get("exclusions"),
@@ -647,6 +751,22 @@ def _busan_fields(
         "source_url": (
             f"{BUSAN_DETAIL_URL}?menuCd=13&bizSid={external_id}"
         ),
+    }
+
+
+def _busan_source_scope(document: RawPolicyDocument) -> dict[str, str]:
+    parser = _BusanListParser()
+    try:
+        parser.feed(document.raw_bytes.decode("utf-8"))
+        parser.close()
+        payload = parser.payload()
+    except UnicodeDecodeError:
+        raise ExtractionError("Busan list scope encoding drift") from None
+    return {
+        "jurisdiction_text": payload.jurisdiction_text,
+        "operator_text": payload.operator_text,
+        "youth_policy_scope_text": payload.youth_policy_scope_text,
+        "application_scope_text": payload.application_scope_text,
     }
 
 
@@ -784,7 +904,7 @@ def _parse_busan_list(response: TransportResponse) -> _BusanList:
         ) from None
 
 
-def _parse_busan_detail(response: TransportResponse) -> dict[str, str]:
+def _parse_busan_detail(response: TransportResponse) -> dict[str, Any]:
     try:
         return _parse_busan_detail_bytes(response.body)
     except ExtractionError:
@@ -796,7 +916,7 @@ def _parse_busan_detail(response: TransportResponse) -> dict[str, str]:
         ) from None
 
 
-def _parse_busan_detail_bytes(payload: bytes) -> dict[str, str]:
+def _parse_busan_detail_bytes(payload: bytes) -> dict[str, Any]:
     try:
         parser = _BusanDetailParser()
         parser.feed(payload.decode("utf-8"))

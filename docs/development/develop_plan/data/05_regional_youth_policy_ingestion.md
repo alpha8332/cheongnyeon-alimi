@@ -765,6 +765,19 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
 - 실패 identity는 성공으로 위장하지 않고 재현 실패 근거 또는 Source 상태를
   가짐
 
+#### 진행 결과 (`2026-08-13`)
+
+- 부산 목록의 `meta[name=author]`, 문서 제목, `endstat=Y` 선택값에서 공식 관할·
+  운영 주체·청년지원 taxonomy·`모집중` scope를 추출해 policy `extra.source_scope`에
+  보존했다. 이 staged scope는 RYP9 전까지 accepted 판정에 연결하지 않는다.
+- 부산 상세 `dtif_atc`·`dtif_cont` 라벨을 replay해 신청기간·담당기관·지원대상의
+  `value_extracted`, `label_present_value_empty`, `label_not_found`를 구분한다.
+- 목록 1건·상세 1건 limited actual 재캡처와 동일 checkpoint 감사를 통과했다.
+  전체 outcome은 4,606·review 1,903·failed 327·drift 1로 유지됐고 legacy capture
+  gap Source는 12개에서 11개로 줄었다.
+- 부산만 완료한 중간 상태이며 나머지 11개 legacy gap Source와 강원·제주 실패
+  identity 보강 전에는 RYP8 또는 `RYP-G5`를 완료로 판정하지 않는다.
+
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 
 #### 작업

@@ -349,6 +349,18 @@ closed outcome이 현재 regional Gate와 충돌해 DB projection에 영향을 �
 숨기지 않고 `checkpoint_decision_drift`로 집계한다. 보고서는 Git 제외 Runtime
 경계에 원자적으로 작성되며 Raw payload를 포함하지 않는다.
 
+RYP8 부산 replay는 목록 HTML의 `meta[name=author]`, `<title>`,
+`select[name=endstat] option[selected]`을 Source scope locator로 보존하고 상세
+`dtif_atc`·`dtif_cont` pair를 field observation으로 변환한다. Source scope는
+RYP9 전까지 판정에 적용하지 않으므로 기존 checkpoint outcome과 DB는 유지된다.
+limited actual은 다음처럼 목록·상세 각 1건만 요청할 수 있다.
+
+```powershell
+.\.venv\Scripts\python.exe -m collectors `
+  --source regional-busan-youth-platform `
+  --page 1 --limit 1 --detail-limit 1
+```
+
 | 옵션 | 기본값 | 규칙 |
 | --- | --- | --- |
 | `--source` | 필수 | Runtime이 지원하는 16개 source ID 중 하나 |
