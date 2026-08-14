@@ -6,7 +6,13 @@ import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PartialBadge from '@/components/policy/PartialBadge';
+import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
+import PolicyIcsDownloadButton from '@/components/user/PolicyIcsDownloadButton';
+import EligibilitySummary from '@/components/policy/EligibilitySummary';
 import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
+import {
+  isPolicyDetailApiError,
+} from '@/utils/policyDetailErrorToast';
 import {
   formatAge,
   formatApplicationPeriod,
@@ -60,12 +66,15 @@ export default function ProgramDetailPage() {
   const [searchParams] = useSearchParams();
   const policyId = parsePolicyId(id);
   const includePartial = searchParams.get('include_partial') === 'true';
+
   const {
     data: policy,
     isLoading,
     isError,
+    error,
     refetch,
   } = usePolicyQuery(policyId, includePartial);
+  const hasCachedPolicy = policy != null;
 
   if (policyId === null) {
     return (
@@ -75,7 +84,7 @@ export default function ProgramDetailPage() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !hasCachedPolicy) {
     return (
       <DetailShell>
         <LoadingState message="정책 상세를 불러오는 중입니다." />
@@ -83,7 +92,15 @@ export default function ProgramDetailPage() {
     );
   }
 
-  if (isError) {
+  if (isError && !hasCachedPolicy) {
+    if (isPolicyDetailApiError(error) && error.status === 422) {
+      return (
+        <DetailShell>
+          <ErrorState message={error.detail} />
+        </DetailShell>
+      );
+    }
+
     return (
       <DetailShell>
         <ErrorState
@@ -110,9 +127,15 @@ export default function ProgramDetailPage() {
         <Link to="/programs">← 목록으로</Link>
       </p>
 
-      <h1 className="detail-title">
-        {policy.title}
-        <PartialBadge policy={policy} />
+      <h1 className="detail-title detail-title--with-actions">
+        <span className="detail-title__text">
+          {policy.title}
+          <PartialBadge policy={policy} />
+        </span>
+        <FavoriteToggleButton
+          policyId={policy.id}
+          className="detail-title__favorite"
+        />
       </h1>
 
       <Card title="📄 정책 정보">
@@ -169,7 +192,7 @@ export default function ProgramDetailPage() {
         />
         <DetailField label="D-Day" value={getDDayLabel(policy)} />
 
-        <div style={{ marginTop: '16px' }}>
+        <div className="detail-actions">
           <Button
             variant="gradient"
             onClick={() => {
@@ -178,8 +201,11 @@ export default function ProgramDetailPage() {
           >
             원문 링크 열기
           </Button>
+          <PolicyIcsDownloadButton policy={policy} />
         </div>
       </Card>
+
+      <EligibilitySummary summary={policy.eligibility_summary} />
     </div>
   );
 }

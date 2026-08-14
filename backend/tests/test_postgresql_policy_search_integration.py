@@ -210,6 +210,64 @@ def test_postgresql_golden_query_unmatched_term_zero(postgresql_session):
     assert items == []
 
 
+def test_explicit_region_is_match_only_but_inferred_region_keeps_unknown(
+    postgresql_session,
+):
+    session = postgresql_session
+    unknown = Policy(
+        source_id="pg_test_unknown_region",
+        source_name="테스트",
+        title="청년 지역 미확인 지원",
+        summary="지역 근거가 없는 청년 지원",
+        categories=["welfare"],
+        application_schedule="always",
+        application_status="open",
+        region_text=None,
+        regions=[],
+        coverage_scope="unknown",
+        data_quality_status="partial",
+        source_url="https://example.com/pg_unknown_region",
+        collected_at=utc_now(),
+    )
+    session.add(unknown)
+    session.flush()
+    session.add(
+        PolicySearchDocument(
+            policy_id=unknown.id,
+            title_text=unknown.title,
+            keyword_text="청년 지원",
+            summary_text=unknown.summary,
+            eligibility_text=None,
+            support_text=None,
+            search_text=f"{unknown.title} {unknown.summary}",
+            projection_version="1.1.0",
+            updated_at=utc_now(),
+        )
+    )
+    session.commit()
+
+    repo = PolicySearchRepository(session)
+    inferred = parse_search_query(q="천안 청년", db=session)
+    inferred_items, _ = repo.search_policies(
+        inferred, include_partial=True, page=1, limit=100
+    )
+    inferred_unknown = next(
+        item for item in inferred_items if item.policy.id == unknown.id
+    )
+    assert inferred_unknown.verdicts.region == "unknown"
+
+    explicit = parse_search_query(
+        q="청년",
+        region="충청남도 천안시",
+        db=session,
+    )
+    explicit_items, _ = repo.search_policies(
+        explicit, include_partial=True, page=1, limit=100
+    )
+    assert unknown.id not in {item.policy.id for item in explicit_items}
+    assert all(item.verdicts.region == "match" for item in explicit_items)
+
+
 def test_postgresql_explain_query_plan(postgresql_session):
     session = postgresql_session
 

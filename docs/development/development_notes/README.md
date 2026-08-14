@@ -13,8 +13,17 @@
 | Release Dataset Bootstrap | [개발 기록](data/release_dataset_bootstrap.md) | DT0~DT4 | Release 1 실제 정책 수집·적재 기준선과 검증 |
 | Recurrent Collection and Quality Operations | [개발 기록](data/recurrent_collection_quality_operations.md) | DTL4-2A~2B | 반복·수정·중복·실패 판정과 품질 운영 |
 | Public HTTPS Policy Ingestion | [개발 기록](data/public_https_policy_ingestion.md) | DTL4-3A~ | 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증 |
+| Regional Youth Policy Ingestion | [개발 기록](data/regional_youth_policy_ingestion.md) | RYP0~ | 17개 Source inventory·지역 mapping 검토 경계와 후속 수집 검증 |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
+| Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00 | recommendation DTO·Mock·`/recommendations` route |
+| Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00~05 | 조건 form·결과·error·Browser E2E |
+| User Service Features | [개발 기록](frontend/user_service_features.md) | FE5-00~08, FE5-07 E2E | localStorage·즐겨찾기·조건·D-Day·Browser |
+| CollectionRun Admin UI | [개발 기록](frontend/collection_run_admin_ui.md) | FE3-00~06 | PIN session·실행 기록·Toast·E2E |
+| Eligibility Summary UI | [개발 기록](frontend/eligibility_summary_ui.md) | FE7-00~05 | eligibility_summary DTO·카드 UI·Browser E2E |
+| Admin Observability UI | [개발 기록](frontend/admin_observability_ui.md) | FE8-00~05 | policy·log DTO·admin UI·Browser E2E |
+| Integration Fix and Regression | [개발 기록](frontend/integration_and_regression.md) | FE9-02 | W4-F10 Mock-first 회귀·W4-I3 golden (Mock) |
+| Real API manual testing | [수동 테스트 가이드](../frontend_real_api_manual_testing_guide.md) | — | `VITE_USE_MOCK=false` Browser 검증 (E2E skip 대응) |
 | React Router Advisory Review | [개발 기록](frontend/react_router_advisory.md) | F0~F3 | v8 migration·자동 회귀 완료, 데스크톱 Browser 회귀 대기 |
 | Backend Baseline | [개발 기록](backend/policy_baseline.md) | Backend 0 | DB Schema, ORM 모델, Importer 및 Policy API 구축 |
 | Backend Policy Persistence Hardening | [개발 기록](backend/policy_persistence_hardening.md) | B0~B6 | PostgreSQL 저장·Importer·Repository·Policy API 종단 검증 |
@@ -29,6 +38,7 @@
 | Policy Search Data Foundation | [개발 기록](integration/policy_search_data_foundation.md) | PSF0~PSF8 | Source 중립 검색 데이터·지역 관계·projection 기반과 소비 검증 |
 | Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA3F | 실제 snapshot DB → API → UI 인수, 경량 팀 리뷰와 Release 1 G4 통과 |
 | v0.5.0 Contract Baseline | [개발 기록](integration/v0_5_0_contract_baseline.md) | DTL4-0~ | 4주차 시작 기준·실행 환경·Forest 소유와 W4-G0 진행 근거 |
+| Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | DTL4-4A~ | 조건·서류·시설 연락처 공통 계약과 Source evidence mapping |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
 함께 갱신한다.

@@ -19,7 +19,7 @@
 - [컨테이너 구조](architecture/container_structure.md): 초기 실행 단위,
   영역별 산출물과 통합·배포 시점
 - [Policy 데이터베이스 매핑](architecture/policy_database_mapping.md):
-  NormalizedProgram 1.1.0의 36개 논리 필드, 행정구역·검색 projection
+  NormalizedProgram 1.2.0의 37개 논리 필드, Eligibility Summary와 행정구역·검색 projection
   PostgreSQL·Importer·공개 API 경계
 - [CollectionRun 데이터베이스 계약](architecture/collection_run_database.md):
   Seed·Runtime 실행 이력의 PostgreSQL 필드, 상태 전이와 보안 경계
@@ -34,6 +34,14 @@
   원본 byte와 수집 메타데이터의 실행 가능한 Raw 계약
 - [NormalizedProgram JSON Schema](../data/schema/normalized_program.schema.json):
   정규화 필드, provenance와 품질 분류의 실행 가능한 계약
+- [Eligibility Summary 공통 계약](data/eligibility_summary_contract.md):
+  제외 조건·필요 서류·공개 시설 연락처와 Source evidence의 승인 의미
+- [EligibilitySummary JSON Schema](../data/schema/eligibility_summary.schema.json):
+  Data·Backend·Frontend가 공유하는 실행 가능한 nested 계약
+- [Regional Youth Policy Source Inventory JSON Schema](../data/schema/regional_youth_policy_source_inventory.schema.json):
+  지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태의 실행 계약
+- [지역 청년정책 Source inventory](../data/reference/regional_youth_policy_sources.json):
+  17개 지역 포털의 RYP1 action profile과 13개 승인·3개 차단·1개 제외 판정
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
@@ -63,6 +71,8 @@
   병렬 실행과 Release 2 midpoint
 - [4주차 Data·Team Leader 실행 계획](development/weekly_plan/week_04_data_team_leader.md):
   Data 03·04, 자격요건 evidence, 공동 계약과 W4-G0~G4 actual 통합·판정
+- [5주차 상세 실행 계획](development/weekly_plan/week_05_release_2.md):
+  Data·Backend·Frontend 안정화, 사용성 리뷰·QA와 Release 2 `v0.5.0` 판정
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
@@ -73,9 +83,19 @@
 - [React Router Advisory Review Forest 계획](development/develop_plan/frontend/02_react_router_advisory.md):
   현재 client-only Frontend의 RSC advisory 영향과 호환 대응 검토
 - [CollectionRun Admin UI Forest 계획](development/develop_plan/frontend/03_collection_run_admin_ui.md):
-  관리자 실행 이력·수동 실행의 Frontend 소비 계획
+  관리자 PIN·실행 이력·수동 실행 UI (FE3-xx Slice)
 - [Policy Search Forest 계획](development/develop_plan/frontend/04_policy_search.md):
   Gate G1 승인 `GET /api/v1/policies/search` flat query 소비, Filter Chip·Reason UI
+- [User Service Features Forest 계획](development/develop_plan/frontend/05_user_service_features.md):
+  브라우저 로컬 조건·즐겨찾기·D-Day·내부 알림·`.ics` (FE5-xx Slice)
+- [Recommendation UI Forest 계획](development/develop_plan/frontend/06_recommendation_ui.md):
+  결정적 추천 조건·결과·이유 UI (FE6-xx Slice)
+- [Eligibility Summary UI Forest 계획](development/develop_plan/frontend/07_eligibility_summary_ui.md):
+  정책 상세 핵심 신청 조건 카드 (FE7-xx Slice)
+- [Admin Observability UI Forest 계획](development/develop_plan/frontend/08_admin_observability_ui.md):
+  관리자 정책 데이터 표·로그 콘솔 UI (FE8-xx Slice)
+- [Integration Fix and Regression Forest 계획](development/develop_plan/frontend/09_integration_and_regression.md):
+  W4-F9 통합 수정·W4-F10 전체 회귀 (FE9-xx Slice)
 - [Backend Baseline Forest 계획](development/develop_plan/backend/01_policy_baseline.md)
 - [Backend Policy Persistence Hardening Forest 계획](development/develop_plan/backend/02_policy_persistence_hardening.md):
   기존 Policy ORM·Importer·API를 실제 Migration·PostgreSQL·transaction
@@ -100,18 +120,23 @@
   사용자 저장·관리자 인증·추천·수동 실행·품질 노출의 W4-G0 공동 계약
 - [Recommendation Vertical Slice Forest 계획](development/develop_plan/integration/06_recommendation_vertical_slice.md):
   결정적 추천 API와 이유·미확정 조건 UI의 실제 세로 연결
+  (Frontend UI Slice: [FE6-xx](development/develop_plan/frontend/06_recommendation_ui.md))
 - [Release 2 Feature Acceptance Forest 계획](development/develop_plan/integration/07_release_2_feature_acceptance.md):
   4주차 midpoint와 5주차 리뷰·QA·Release 2 Gate
-- [User Service Features Forest 계획](development/develop_plan/frontend/05_user_service_features.md):
-  브라우저 로컬 조건·즐겨찾기·D-Day·내부 알림·`.ics`
 - [Recurrent Collection and Quality Operations Forest 계획](development/develop_plan/data/03_recurrent_collection_quality_operations.md):
   반복 수집의 수정·중복·실패 격리와 안전한 품질 통계
 - [Public HTTPS Policy Ingestion Forest 계획](development/develop_plan/data/04_public_https_policy_ingestion.md):
   승인 공식 웹 Source 한 곳의 목록·상세·자격요건 근거 수집과 PostgreSQL 적재
+- [Regional Youth Policy Ingestion Forest 계획](development/develop_plan/data/05_regional_youth_policy_ingestion.md):
+  `v0.5.0` 지역 공식 포털 탐색, 지역 고유 정책 판정과 온통청년·복지로 중복 제외
+- [Supplemental Official Policy Ingestion Forest 계획](development/develop_plan/data/06_supplemental_official_policy_ingestion.md):
+  온통청년·복지로 누락 가능 중앙·공공기관 Source의 중복 감사와 실제 적재
 - [Eligibility Evidence and Summary Forest 계획](development/develop_plan/integration/08_eligibility_evidence_summary.md):
   정책 상세의 핵심 신청 조건·제외·서류·확인 필요와 Source evidence 세로 연결
+  (Frontend UI Slice: [FE7-xx](development/develop_plan/frontend/07_eligibility_summary_ui.md))
 - [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
   관리자 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사
+  (Frontend UI Slice: [FE8-xx](development/develop_plan/frontend/08_admin_observability_ui.md))
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
@@ -124,9 +149,28 @@
   DTL4-2A~2B 반복·수정·중복·실패 판정, CollectionRun 영속과 PostgreSQL 검증
 - [Public HTTPS Policy Ingestion Forest 개발 기록](development/development_notes/data/public_https_policy_ingestion.md):
   DTL4-3A 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증
+- [Regional Youth Policy Ingestion Forest 개발 기록](development/development_notes/data/regional_youth_policy_ingestion.md):
+  RYP0 inventory부터 RYP2 경북 Adapter, RYP3 지역·신청 상태와 RYP4 교차 Source
+  제외 Gate 검증 결과
+- [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
+  DTL4-4 조건·서류·시설 연락처 계약부터 실제 PostgreSQL·API·Browser 인수까지
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
 - [Policy Search Forest 개발 기록](development/development_notes/frontend/policy_search.md):
   Gate G1 search contract TypeScript types promote (FE4-11)
+- [Recommendation UI Forest 개발 기록](development/development_notes/frontend/recommendation_ui.md):
+  FE6-00~04 DTO·조건 form·결과·error·region collapse·FE6-05 Playwright E2E
+- [User Service Features Forest 개발 기록](development/development_notes/frontend/user_service_features.md):
+  FE5-00~06,08 localStorage·즐겨찾기·조건·D-Day·cross-route identity·FE5-07 Playwright E2E
+- [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
+  FE3-00~06 PIN session·실행 기록·수동 실행·ApiErrorToast·Playwright E2E
+- [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
+  FE7-00~06 DTO·핵심 신청 조건 카드·비교 badge·evidence link·Toast·a11y·Playwright E2E
+- [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):
+  FE8-00~06 admin policy·log DTO·표·drawer·maintenance·Toast·a11y·Playwright E2E
+- [Integration Fix and Regression Forest 개발 기록](development/development_notes/frontend/integration_and_regression.md):
+  FE9-01 W4-F9 Frontend-only 통합 수정·blocker triage; FE9-02 W4-F10 Mock-first 회귀
+- [Frontend Real API 수동 테스트 가이드](development/frontend_real_api_manual_testing_guide.md):
+  `VITE_USE_MOCK=false` + localhost:8000 Browser 수동 검증 절차 (Real API E2E skip 대응)
 - [React Router Advisory Review Forest 개발 기록](development/development_notes/frontend/react_router_advisory.md):
   advisory 재현과 현재 client-only 앱의 RSC 도달 가능성
 - [Backend Baseline Forest 개발 기록](development/development_notes/backend/policy_baseline.md)
@@ -230,8 +274,15 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 | `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock을 승인 계약과 대조 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
-`W4-G0_APPROVED`로 판정했다. 두 후속 항목은 W4-G1 구현 적합성 확인이며 Data
-03·04와 Integration 08의 기반 구현을 막지 않는다.
+`W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 구현 적합성
+확인이며 Data 03·04의 기반 구현과 완료된 Integration 08을 막지 않는다.
+`W4-ES2-BE-CONSUMER`는 NormalizedProgram 1.2.0, Migration `20260810_0006`,
+상세 DTO와 PostgreSQL actual 대조를 통과해 `2026-08-10` 완료 처리했다.
+`W4-ES3-FE-CONSUMER`는 상세 TypeScript·Mock·UI와 승인 문구, 시설 전화 링크,
+키보드·모바일 Browser 검증을 통과해 같은 날 완료 처리했다. 현재 상세에는 개인
+조건 비교 기능이 없어 `조건상 일치`·`조건상 불일치`를 임의 표시하지 않는다.
+`W4-ES4-ACTUAL`은 승인 천안 fixture의 실제 PostgreSQL → 상세 API → Browser
+대조와 Release 1 snapshot 3,156건의 HTTP·Browser golden 회귀를 통과했다.
 
 미래 계획 자체나 아직 발생하지 않은 위험은 인계사항으로 등록하지 않는다.
 

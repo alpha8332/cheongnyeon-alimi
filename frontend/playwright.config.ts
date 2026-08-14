@@ -18,5 +18,10 @@ export default defineConfig({
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: true,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      VITE_USE_MOCK: process.env.VITE_USE_MOCK ?? 'true',
+      VITE_API_BASE_URL: process.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000',
+    },
   },
 });

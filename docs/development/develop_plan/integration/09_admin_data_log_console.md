@@ -143,8 +143,8 @@ Frontend TypeScript 소비 초안을 대조한 뒤 확정한다.
 - 활성 파일 선택 시 직접 삭제하지 않고 `현재 로그 정리`가 rotate 후 삭제됨을
   안내한다.
 - 삭제 성공·실패, 파일이 이미 없음, 활성 파일 보호와 권한 상태를 표시한다.
-
-### AO5 - 실제 진단 E2E
+- 세부 Slice: [Frontend 08 Admin Observability UI](../frontend/08_admin_observability_ui.md) FE8-xx;
+  회귀: [Frontend 09 Integration and Regression](../frontend/09_integration_and_regression.md) FE9-xx
 
 - 실제 PostgreSQL 정책 row가 관리자 표와 상세에 일치하는지 검증한다.
 - 의도된 API·수집 실패를 발생시켜 file log → 조회 API → UI correlation을

@@ -3,9 +3,9 @@
 ## 문서 상태
 
 - 상태: 현재 구현 기준
-- 입력 계약: `NormalizedProgram` 1.0.0·1.1.0
+- 입력 계약: `NormalizedProgram` 1.0.0·1.1.0·1.2.0
 - 저장 모델: Backend `Policy`, 행정구역·정책 지역 관계·검색 projection 모델
-- Migration head: `20260803_0004`
+- Migration head: `20260810_0006`
 
 이 문서는 Data의 canonical JSON, Backend importer, PostgreSQL `policies`
 테이블과 공개 Policy API 사이의 현재 필드 매핑을 정의한다. 논리 필드의 의미와
@@ -14,7 +14,7 @@
 
 ## 매핑 원칙
 
-- `region_rules`를 제외한 Normalized 35개 필드는 이름을 바꾸지 않고 같은
+- `region_rules`를 제외한 Normalized 36개 필드는 이름을 바꾸지 않고 같은
   이름의 DB 컬럼에 저장한다. `region_rules`는 관계형 테이블에 저장한다.
 - 선택 단일 값은 nullable 컬럼에 `NULL`, 복수 값은 non-null JSONB에 JSON
   배열로 저장한다.
@@ -26,14 +26,14 @@
 - 저장 계층이 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력
   계약에는 없고 공개 Policy DTO에 추가된다.
 
-## 36개 필드 매핑
+## 37개 필드 매핑
 
 `직접`은 JSON 값과 DB 조회 값이 같은 의미와 값을 유지한다는 뜻이다. 날짜와
 시각만 Python·PostgreSQL 타입으로 변환한 뒤 아래 비교 기준을 적용한다.
 
 | Normalized 필드 | JSON 타입 | PostgreSQL 컬럼 타입 | DB null | Importer 변환 | 공개 API |
 | --- | --- | --- | --- | --- | --- |
-| `schema_version` | string `1.0.0` 또는 `1.1.0` | `varchar(32)` | 아니요 | 직접 | 노출 |
+| `schema_version` | string `1.0.0`, `1.1.0` 또는 `1.2.0` | `varchar(32)` | 아니요 | 직접 | 노출 |
 | `source_id` | string | `text` | 아니요 | 비어 있지 않은 string | 노출 |
 | `source_name` | string | `varchar(255)` | 아니요 | 직접 | 노출 |
 | `external_id` | string 또는 null | `varchar(512)` | 예 | 현재 admission 후 string | 노출 |
@@ -58,6 +58,7 @@
 | `age_max` | integer 또는 null | `integer` | 예 | 직접 | 노출 |
 | `age_condition_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `eligibility_text` | string 또는 null | `text` | 예 | 직접 | 노출 |
+| `eligibility_summary` | object | `jsonb` | 아니요 | 객체 그대로 | 상세만 노출 |
 | `support_content` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `application_method` | string 또는 null | `text` | 예 | 직접 | 노출 |
 | `education_statuses` | string 배열 | `jsonb` | 아니요 | 배열 그대로 | 노출 |
@@ -72,7 +73,7 @@
 
 ### JSONB 배열
 
-다음 11개 필드는 PostgreSQL JSONB에 원소 순서와 값을 그대로 저장한다.
+다음 12개 필드는 PostgreSQL JSONB에 원소 순서와 값을 그대로 저장한다.
 
 ```text
 categories
@@ -85,6 +86,7 @@ employment_statuses
 required_conditions
 preferred_conditions
 excluded_conditions
+eligibility_summary
 provenance
 ```
 
@@ -105,9 +107,9 @@ index가 있다. 기존 Repository는 categories·regions의 exact membership
 ### provenance와 공개 API
 
 `provenance`는 Raw 문서 ID·역할·hash·수집 시각·안전한 source URL의 object
-배열로 DB에 보존한다. 일반 사용자 `PolicyRead`에는 포함하지 않는다. 검색
-전용 5개 필드도 기존 목록·상세 DTO에 추가하지 않는다. 기존 공개 필드와
-저장 계층이 생성한 다음 필드만 기존 API에 유지된다.
+배열로 DB에 보존하며 일반 사용자 API에는 포함하지 않는다. 검색 전용 5개
+필드는 목록·상세 DTO에 추가하지 않는다. `eligibility_summary`는
+`PolicyDetailRead`에만 추가하고 목록 `PolicyRead`는 기존 payload를 유지한다.
 
 | 저장 계층 생성 필드 | PostgreSQL 타입 | 현재 생성 경계 | 공개 API |
 | --- | --- | --- | --- |
@@ -130,7 +132,7 @@ invalid는 DB enum에는 존재하지만 importer admission에서 거부되므�
 Policy API에 도달하지 않는다. partial은 저장하며
 `include_partial=true`일 때만 공개한다.
 
-## Normalized 1.1.0 저장 경계
+## Normalized 1.2.0 저장 경계
 
 PSF1에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
 `target_groups`, `coverage_scope`, `region_rules`를 더한 36개 필드가 됐다.
@@ -148,8 +150,19 @@ Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저�
 - `region_rules` 관계 교체와 projection 동기화는 Policy upsert와 같은
   transaction에서 수행한다. importer 밖에서는 중간 관계 상태를 관찰할 수
   없고 어느 write라도 실패하면 Policy·rule·projection 전체를 rollback한다.
-- 1.0.0 입력은 Normalized compatibility adapter에서만 1.1.0 안전 기본값으로
-  확장하며 지역·전국 여부를 추정하지 않는다.
+- 1.0.0 입력은 Normalized compatibility adapter에서 검색 안전 기본값을 먼저
+  추가하며 지역·전국 여부를 추정하지 않는다.
+
+Integration 08 ES2는 1.2.0에 `eligibility_summary`를 추가했다. Migration
+`20260810_0006`은 non-null JSONB를 추가하고 기존 행에는 빈 unknown 요약을
+backfill하지만 기존 `schema_version`을 소급 변경하지 않는다. 신규 ORM default는
+1.2.0이다. 1.0.0·1.1.0 adapter도 기존 자격 원문을 구조화 조건으로 추정하지
+않고 같은 빈 unknown 요약만 추가한다.
+
+Importer는 요약의 조건·문서·연락처·공개 evidence를 business 값으로 비교한다.
+동일 근거를 다시 수집해 evidence `collected_at`만 달라진 경우에는 기존 Data 03
+metadata-only 규칙과 같이 `unchanged`이며 저장 시각도 바꾸지 않는다. 요약 text,
+category, source URL, locator 또는 연락처가 달라지면 `updated`다.
 
 PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 identity로
 사용한다. `administrative_regions`는 공식 `parent_code`와 별도로 nullable
@@ -264,8 +277,8 @@ PSF7은 이 측정만으로 index, locale 또는 DB 설정을 바꾸지 않는�
 canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 다음처럼
 비교한다.
 
-1. Seed 객체와 `NormalizedProgram.FIELD_NAMES`는 36개로 같고 Policy ORM의
-   system field 제외 컬럼은 `region_rules`를 제외한 35개다.
+1. Seed 객체와 `NormalizedProgram.FIELD_NAMES`는 37개로 같고 Policy ORM의
+   system field 제외 컬럼은 `region_rules`를 제외한 36개다.
 2. string, integer, enum, null과 JSONB 배열·object는 값과 배열 순서를 exact
    equality로 비교한다.
 3. `application_start`·`application_end`는 DB `date.isoformat()`과 Seed의
@@ -275,9 +288,9 @@ canonical Seed와 DB 조회 결과는 `(source_id, external_id)`로 짝지어 �
 6. 다중 category와 provenance object의 누락·병합·축약이 없어야 한다.
 7. `region_rules`는 여섯 필드의 관계 집합과 DB 행을 비교하고 정책당 검색
    문서 한 행의 field별 text와 projection version을 비교한다.
-8. 기존 공개 API 필드 집합은 기존 31개에서 `provenance`만 제외하고
-   `id`·`created_at`·`updated_at`을 더한 집합이다. 검색 5개 필드는 기존
-   목록·상세 DTO에 노출하지 않는다.
+8. 목록 공개 API 필드 집합은 기존 31개에서 `provenance`와 검색 5개,
+   `eligibility_summary`를 제외하고 `id`·`created_at`·`updated_at`을 더한
+   집합이다. 상세 응답만 `eligibility_summary`를 추가한다.
 
 구조적 집합과 변환은
 `backend/tests/test_policy_mapping_contract.py`, 실제 PostgreSQL 왕복은

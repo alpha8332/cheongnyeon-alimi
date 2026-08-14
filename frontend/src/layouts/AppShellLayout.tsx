@@ -1,4 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router';
+import ApiErrorToastProvider from '@/components/common/ApiErrorToastProvider';
+import LayoutErrorBoundary from '@/components/common/LayoutErrorBoundary';
+import UserLocalStorageRecoveryBanner from '@/components/user/UserLocalStorageRecoveryBanner';
 
 function navClass(isActive: boolean): string {
   return `app-shell__nav-btn${isActive ? ' app-shell__nav-btn--active' : ''}`;
@@ -9,12 +12,15 @@ export default function AppShellLayout() {
 
   const isHome = pathname === '/';
   const isSearch = pathname.startsWith('/search');
+  const isRecommendations = pathname.startsWith('/recommendations');
   const isPrograms = pathname.startsWith('/programs');
   const isFavorites = pathname.startsWith('/favorites');
   const isNotifications = pathname.startsWith('/notifications');
+  const isCalendar = pathname.startsWith('/calendar');
   const isAdmin = pathname.startsWith('/admin');
 
   return (
+    <ApiErrorToastProvider>
     <div className="app-shell">
       <nav className="app-shell__sidebar" aria-label="메인 내비게이션">
         <Link to="/" className="app-shell__logo" title="청년알리미">
@@ -32,6 +38,14 @@ export default function AppShellLayout() {
           🔍
         </Link>
         <Link
+          to="/recommendations"
+          className={navClass(isRecommendations)}
+          title="맞춤 추천"
+          aria-label="맞춤 추천"
+        >
+          🎯
+        </Link>
+        <Link
           to="/programs"
           className={navClass(isPrograms)}
           title="정책 목록"
@@ -46,6 +60,14 @@ export default function AppShellLayout() {
           aria-label="북마크"
         >
           🔖
+        </Link>
+        <Link
+          to="/calendar"
+          className={navClass(isCalendar)}
+          title="마감 달력"
+          aria-label="마감 달력"
+        >
+          📅
         </Link>
         <Link
           to="/notifications"
@@ -70,8 +92,14 @@ export default function AppShellLayout() {
       </nav>
 
       <main className="app-shell__main">
-        <Outlet />
+        <LayoutErrorBoundary fallbackTitle="저장 데이터 안내를 표시하지 못했습니다">
+          <UserLocalStorageRecoveryBanner />
+        </LayoutErrorBoundary>
+        <LayoutErrorBoundary>
+          <Outlet />
+        </LayoutErrorBoundary>
       </main>
     </div>
+    </ApiErrorToastProvider>
   );
 }

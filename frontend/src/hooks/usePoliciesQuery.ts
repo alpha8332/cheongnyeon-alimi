@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getPolicies, getPolicyById } from '@/api/policies';
 import { resolvePolicyListQuery } from '@/api/policyRequest';
 import type { PolicyListQuery } from '@/types/policy';
@@ -20,5 +20,6 @@ export function usePolicyQuery(
     queryKey: ['policy', policyId, { include_partial: includePartial }],
     queryFn: () => getPolicyById(policyId!, includePartial),
     enabled: policyId !== null,
+    placeholderData: keepPreviousData,
   });
 }

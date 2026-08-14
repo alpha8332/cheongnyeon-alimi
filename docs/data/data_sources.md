@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 온통청년·복지로 API와 천안청년센터 승인 웹 Collector,
-  Runtime replay·PostgreSQL 적재와 제한 actual 검증 완료
+- 현재 구현 상태: 온통청년·복지로 API, 천안청년센터와 13개 승인 지역 Source
+  Adapter, Runtime replay와 지역별 제한 actual 검증 완료
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -20,6 +20,7 @@
 | 온통청년 청년정책 API | `youthcenter-api` | 공식 API | JSON 목록 10건 Raw 수집 확인 |
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
 | 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 actual Raw → PostgreSQL·API 확인 |
+| 경북 청년정책 플랫폼 | `regional-gyeongbuk-youth-platform` | 공개 JSON·modal | 제한 preflight·offline Raw replay 확인 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
@@ -34,6 +35,124 @@ replay·정규화·PostgreSQL 적재를 포함한다. 웹 Source의 Source 전�
 따른다.
 요청 파라미터, 실제 응답 필드와 호출 결과는
 [API Source Profile](source_profiles.md)에서 관리한다.
+
+## 지역 청년정책 Source inventory
+
+Data 05는 사용자 제공 XLSX의 17개 지역 포털 URL을
+[`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)으로
+변환해 실행 기준으로 사용한다. 구조와 허용 상태는
+[`regional_youth_policy_source_inventory.schema.json`](../../data/schema/regional_youth_policy_source_inventory.schema.json)이
+검증한다.
+
+RYP1은 17개 모두의 상세 identity를 재검증해 13개 승인, 3개 차단, 1개 제외로
+확정했다. 승인 Source는 서버 HTML 8개, 공개 JSON 1개(경북), Browser 4개
+(서울·강원·충북·제주)로 분리한다. 경북은 `/policy/list.json`과
+`/policy/detail.modal`을 제한 호출하며, robots의 `/policy/list.tc/` 규칙은 실제
+목록·JSON·modal 경로와 일치하지 않는다. 화면 discovery가 성공해도 robots 허용
+경계가 없는 세종·경기·충남은 운영 collection을 승인하지 않는다.
+
+Schema `1.2.0`은 `browser_access`, discovery 상태, collection mode, interaction
+budget, 재현 action profile, 상세 표본 identity와 RYP6 최종 구현 상태를 검증한다.
+
+RYP2는 승인 inventory를 실행 profile로 읽는 공통 loader, 의미 기반 fixture
+discovery, JSON subprocess Browser runner 경계와 경북 Adapter를 구현했다. 경북은
+홈 GET으로 cookie·CSRF를 확보한 뒤 page 1 목록 JSON 1회와 상세 modal 최대 3건만
+POST하며 최소 요청 간격은 2초다. 목록·item·상세 Raw identity와 hash를 연결하고
+같은 Raw의 offline replay가 같은 추출 결과를 내는지 검증한다. 제한 실사이트
+preflight에서 총 243건과 표본 `no=1098` 한 건을 확인했지만 실제 응답 원문은
+Git이나 운영 DB에 남기지 않았다.
+
+RYP3는 지역 포털에 게시됐다는 사실과 실제 지역 정책 evidence를 분리한다.
+Source 지역·시행기관·지원 대상이 같은 canonical 관할을 가리키고 신청 상태가
+현재 `open`일 때만 정규화 후보로 전달한다. 전국·타 지역은 제외하고 지역 근거가
+부족하거나 신청기간·예산 소진 상태를 확인할 수 없으면 review로 격리한다.
+경북 표본 `no=1098`은 지역 고유성은 확인됐지만 수집일 기준 closed이므로 사용자
+정책으로 전달하지 않는다.
+
+RYP4는 지역·open 후보만 최신 온통청년·복지로 완료 snapshot과 PostgreSQL row에
+대조한다. 명시적 aggregator ID·canonical URL·공식 공고 identity exact 일치는
+제외하고, 제목·기관·canonical 지역·기간·지원내용 전체 fingerprint 일치는 자동
+병합하지 않고 review로 격리한다. 제목만 같은 다른 사업은 비교 필드가 명확히
+다르면 유지한다. 기존 aggregator row는 읽기만 하며 교차 Source 제외는 Source
+내부 `duplicate_count`가 아니라 `skipped_count`로 집계한다.
+
+RYP6는 기존 HTTP 2개와 Browser 11개 Adapter로 13개 승인 Source의 구현 상태와
+전체 수집을 확정했다. 공통 Browser capture는 승인 URL·상세 identity·제한 건수·
+제목 일치를 검증하며, 전체 pagination은 page별 checkpoint를 전진시킨다. 포털 게시 사실은
+청년 대상 근거가 아니므로 제목·지원대상·연령에 청년·청소년·대학생 근거가 없는
+정책은 review로 격리한다. 13개 Source에서 4,606개 identity를
+`accepted 18`, `duplicate 1`, `review 1,903`, `closed 2,357`, `failed 327`로
+완전 판정했고, 부산 16건·경북 2건만 DB에 유지했다. accepted 정책의 실제
+연령·대상·제외·서류·기관 문의처는 공통
+EligibilitySummary에 Source field evidence로 연결하며 개인 휴대전화·이메일은
+구조화하지 않는다.
+
+이 수치는 pagination·checkpoint·누락 없는 outcome 합계의 RYP6 기준선이지
+지역별 사용자 검색 커버리지 완료를 뜻하지 않는다. RYP7에서 Source별 review
+사유와 field coverage를 감사했고, RYP8~RYP9에서 공식 관할 목록·청년정책 taxonomy·
+진행중 상태의 Source-level provenance와 정책별 원문 근거를 함께 만족하는
+정책만 재판정한다. 지원하는 비차단 지역에서 open 고유 정책이 실제로 존재하면
+DB·API·Browser 검색에 노출해야 하며, 추출 누락 때문에 accepted가 0건인 상태는
+완료로 인정하지 않는다.
+
+RYP8은 부산부터 시작했다. 부산 목록의 공식 관할·운영 주체·청년지원 taxonomy·
+모집중 선택값을 `extra.source_scope`에 staging하고 상세 라벨의 관찰 상태를
+replay해 legacy capture gap Source를 12개에서 11개로 줄였다. 이 단계에서는
+checkpoint·accepted DB projection을 변경하지 않으며 staged scope의 승격 소비는
+RYP9 전체 재판정에서 수행한다.
+
+대구는 상세 본문 문단의 `지원대상·지원내용`을, 광주는 클릭형 정책 상세의
+`참여요건·신청절차`를 Source별 locator로 보강했다. 완료 checkpoint identity만
+허용하는 제한 recapture로 대구 마지막 페이지 8건과 광주 1건의 새 Raw를
+확인했으며 staged scope와 observation은 RYP9 전까지 판정에 적용하지 않는다.
+경북은 기존 JSON·modal locator가 이미 field coverage를 만족해 신청중 표본
+1건만 재확인했다.
+
+인천은 지원규모와 지원내용의 우선순위를 분리하고 대상·지원조건을 결합했으며,
+전북은 해당지역과 공식 신청 상세 URL 별칭을 보강했다. 서울은 지원내용·사업
+신청기간·금천구 계속 거주 조건을 공식 상세에서 확인했지만 현재 목록 identity가
+완료 checkpoint와 교체되어 제한 recapture는 수행하지 않았다. 현재 목록에 없는
+과거 identity를 새 목록 관찰로 가장하지 않는 것이 RYP8 재캡처 경계다.
+
+RYP7은 지역 포털이라는 위치를 정책 근거로 치환하지 않으면서 승인된 목록
+scope를 사용할 수 있는 내부 계약을 고정한다. Source-scope는 같은 정책의
+`list_response` provenance, 공식 관할·운영 주체와 정책별 대상 또는 시행기관
+지역 근거 중 하나가 함께 있어야 지역 근거로 사용할 수 있다. 청년정책 목록도
+단독으로는 부족하고 정책별 청년 문구 또는 명시 숫자 연령이 필요하다. 진행중
+목록 scope는 정책별 마감·종료 근거보다 우선하지 않는다.
+
+Browser capture는 다음 실제 수집부터 필드별 `value_extracted`,
+`label_present_value_empty`, `label_not_found`를 Raw detail에 함께 보존한다. 이를
+통해 원문 라벨의 빈 값과 공통 selector가 라벨을 찾지 못한 경우를 구분한다.
+이 관찰 계약이 없던 기존 Raw null은 `null_unverifiable`이며 값 부재로 단정하지
+않는다. RYP7 actual 감사는 review 1,903건 중 지역 근거 부족 1,875건, 신청 상태
+검토 1,419건, 청년 대상 미확인 725건을 확인했다. 사유는 중복될 수 있다.
+
+RYP8 실패 제한 복구는 강원 325건을 2~29 page의 동일한 목록 page 컨텍스트·
+POST 클릭 계약 유형으로 분류하고 대표 3건만 재요청했다. 제주의 failed 2건은
+상세 응답은 성공했으나 구조화 field row가 없는 유형으로 분리해 제목의 명시
+기한과 공식 등록일 연도만 보존했다. 복구 결과 전체 checkpoint는
+`accepted 18`, `duplicate 1`, `review 1,905`, `closed 2,360`, `failed 322`이며,
+DB projection은 변경하지 않았다. `/recover`는 강원·제주 기존 failed identity의
+`review/closed` 전이만 허용하고 accepted는 중복 기준선 검토 전 거부한다.
+
+홈 URL은 Source 발견의 필수 시작점이다. 최초 등록과 drift 복구 때 Browser가
+메뉴·검색·select·tab·pagination을 제한 탐색해 action profile을 만들고, 운영
+Collector는 profile을 재사용한다. 매 실행마다 홈이나 외부 인터넷을 무제한
+재귀 순회하지 않는다.
+
+inventory의 관할 라벨은 제공 자료의 광주·전남 분리 17개를 보존한다. 현재
+행정구역 기준 `kr-bjd-20260803`은 광주 `2900000000`과 전남 `4600000000`을
+퇴역으로, `전남광주통합특별시(1200000000)`를 활성으로 관리한다. Source
+RYP1에서 기존 광주 센터가 연결하는 현행 공식 통합 플랫폼을 확인해 광주
+Source를 활성 통합 코드 `1200000000`으로 연결했다. 전남 구 포털은 robots가
+홈만 허용하고 현행 통합 플랫폼으로 대체되어 `rejected`로 두며 퇴역 코드
+lineage를 유지한다. 실제 Policy region rule은 공식 원문의 시행·대상 관할을
+확인한 뒤 기존 행정구역 계약에 따라 생성한다.
+
+승인 여부는 원문·이미지 재배포 허가를 뜻하지 않는다. 명시적 개방 라이선스가
+없는 Source는 최소 정책 사실과 provenance만 Runtime에서 처리하며 실제 HTML,
+이미지와 첨부파일을 Git에 저장하지 않는다.
 
 ## 온통청년 API
 

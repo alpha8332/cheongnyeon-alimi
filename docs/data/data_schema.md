@@ -179,13 +179,13 @@ fallback한다.
 
 현재 실행 가능한 계약은
 [`normalized_program.schema.json`](../../data/schema/normalized_program.schema.json)
-Schema version `1.1.0`이다. 객체의 필드는 모두 required로 고정하고 의미상
+Schema version `1.2.0`이다. 객체의 필드는 모두 required로 고정하고 의미상
 선택 단일 값은 null, 복수 값은 빈 배열로 표현한다. 이 방식으로 필드 생략과
 값 없음이 섞이지 않게 한다.
 
 | 필드 | 논리 타입 | 기준 |
 | --- | --- | --- |
-| `schema_version` | string | 현재 계약 `1.1.0` |
+| `schema_version` | string | 현재 계약 `1.2.0` |
 | `source_id` | string | 안정적인 내부 source ID |
 | `source_name` | string | 사용자에게 표시할 소스 이름 |
 | `external_id` | string 또는 null | source-scoped 외부 ID |
@@ -210,6 +210,7 @@ Schema version `1.1.0`이다. 객체의 필드는 모두 required로 고정하�
 | `age_max` | integer 또는 null | 0~150 |
 | `age_condition_text` | string 또는 null | 연령 원문 text |
 | `eligibility_text` | string 또는 null | 자격 원문 |
+| `eligibility_summary` | Eligibility Summary object | 구조화 조건·서류·시설 문의처와 공개 evidence |
 | `support_content` | string 또는 null | 지원 내용 |
 | `application_method` | string 또는 null | 신청 방법 |
 | `education_statuses` | string 배열 | 없으면 `[]` |
@@ -255,9 +256,10 @@ exact 중복을 제거한다. Source에 없는 청년·지역·대상 값을 시
 
 기존 `regions`는 표시·exact filter 호환용 이름 배열이며 canonical identity가
 아니다. 1.0.0 입력은 compatibility adapter가 검색 배열 `[]`,
-`coverage_scope=unknown`, `region_rules=[]`인 1.1.0 객체로 변환한다. 기존
-`regions`나 문자열 `전국`을 generic adapter가 canonical rule로 추정하지
-않는다.
+`coverage_scope=unknown`, `region_rules=[]`를 추가하고, 1.0.0·1.1.0 입력 모두에
+빈 unknown `eligibility_summary`를 추가해 1.2.0 객체로 변환한다. 기존
+`regions`나 문자열 `전국`, 자격 원문을 generic adapter가 구조화 조건으로
+추정하지 않는다.
 
 ### 날짜와 시간
 
@@ -340,6 +342,7 @@ invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하�
 
 Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
 버전이고 1.1.0은 PSF1에서 검색 데이터 5개 필드를 추가한 minor version이다.
+1.2.0은 Integration 08에서 source-backed `eligibility_summary`를 추가했다.
 Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical Seed를
 구현했다. Backend Policy ORM은 PSF3에서 `region_rules`를 제외한 35개 필드와
 관계형 지역·검색 projection 모델로 확장됐다. 배열·조건·provenance는
@@ -370,19 +373,34 @@ Policy upsert와 같은 transaction에서 수행한다. Runtime replay는 accept
 program과 Normalizer warning을 순서대로 전달하므로 `other` category fallback
 같이 canonical 객체만으로 재구성할 수 없는 partial 근거도 DB admission에서
 유실되지 않는다.
-Frontend는 1.0.0·1.1.0 `schema_version`을 모두 허용하되 새 검색 5개 필드를
-기존 `PolicyDto`에 포함하지 않는다.
+ES2는 ORM에 `eligibility_summary` JSONB를 추가하고 기존 행을 빈 unknown
+요약으로 backfill했다. 상세 DTO만 이 객체를 공개하고 목록·검색 DTO에는
+포함하지 않는다. Frontend는 ES3에서 1.0.0·1.1.0·1.2.0 version union과 상세
+응답 타입을 반영한다.
 
-현재 1.1.0의 36개 필드와 PostgreSQL 컬럼·관계 매핑은
+현재 1.2.0의 37개 필드와 PostgreSQL 컬럼·관계 매핑은
 [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
 따른다.
 
-[Fixture와 Seed 계약](fixture_seed_contract.md)은 1.1.0의 Backend 저장 후보,
+[Fixture와 Seed 계약](fixture_seed_contract.md)은 1.2.0의 Backend 저장 후보,
 Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 PostgreSQL
 구조와 Source 값 채움은 PSF3·PSF4에서 구현됐고 관계·projection의 원자적
 transaction은 PSF5에서 완성했다.
 
 ## JSON Schema 동기화 규칙
+
+### Eligibility Summary 1.0.0 nested 계약
+
+정책 상세 자격요건 확장은
+[Eligibility Summary 공통 계약](eligibility_summary_contract.md)과
+`data/schema/eligibility_summary.schema.json`을 실행 기준으로 사용한다.
+`coverage`, 조건·제외·우대·서류·unknown·공개 시설 연락처와 각 항목의 공개
+evidence를 별도 객체로 고정하며 배열은 required이고 값이 없으면 `[]`다.
+
+DTL4-4A에서는 독립 nested Schema로 먼저 승인했고 ES2에서
+`NormalizedProgram 1.2.0`의 required `$defs.eligibilitySummary`로 삽입했다.
+Fixture·Seed·ORM·Importer는 37개 exact field parity를 사용한다. 1.0.0·1.1.0
+compatibility adapter는 근거 없는 조건을 만들지 않고 unknown 빈 객체만 추가한다.
 
 구현된 계층은 `data/schema/*.schema.json`이 기계 검증의 기준이고 이 문서는
 사람을 위한 설명이다. 둘은 같은 변경에서 함께 수정한다.

@@ -13,11 +13,17 @@
 | Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | completed |
 | Data 03 | Recurrent Collection and Quality Operations | [개발 계획](data/03_recurrent_collection_quality_operations.md) | completed |
 | Data 04 | Public HTTPS Policy Ingestion | [개발 계획](data/04_public_https_policy_ingestion.md) | in-progress |
+| Data 05 | Regional Youth Policy Ingestion | [개발 계획](data/05_regional_youth_policy_ingestion.md) | in-progress |
+| Data 06 | Supplemental Official Policy Ingestion | [개발 계획](data/06_supplemental_official_policy_ingestion.md) | draft |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
 | Frontend 04 | Policy Search | [개발 계획](frontend/04_policy_search.md) | completed |
 | Frontend 05 | User Service Features | [개발 계획](frontend/05_user_service_features.md) | draft |
+| Frontend 06 | Recommendation UI | [개발 계획](frontend/06_recommendation_ui.md) | draft |
+| Frontend 07 | Eligibility Summary UI | [개발 계획](frontend/07_eligibility_summary_ui.md) | draft |
+| Frontend 08 | Admin Observability UI | [개발 계획](frontend/08_admin_observability_ui.md) | draft |
+| Frontend 09 | Integration Fix and Regression | [개발 계획](frontend/09_integration_and_regression.md) | draft |
 | Backend 01 | Backend Baseline | [개발 계획](backend/01_policy_baseline.md) | completed |
 | Backend 02 | Policy Persistence Hardening | [개발 계획](backend/02_policy_persistence_hardening.md) | completed |
 | Backend 03 | Policy Runtime Safety | [개발 계획](backend/03_policy_runtime_safety.md) | completed |
@@ -27,10 +33,10 @@
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 | Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 | Integration 04 | Release 1 Acceptance | [개발 계획](integration/04_release_1_acceptance.md) | completed |
-| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | draft |
+| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | approved |
 | Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
 | Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | draft |
-| Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | draft |
+| Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | completed |
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
@@ -71,6 +77,8 @@ Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, �
 | W4-G0 뒤 | `R2-RECOMMENDATION` | 결정적 추천 API → 이유·미확정 조건 UI | Backend·Frontend 추천 브랜치 |
 | W4-G0 뒤 | `R2-USER-SERVICE` | localStorage 조건·즐겨찾기·D-Day·알림·`.ics` | `feature/frontend/user-service-features` |
 | W4-G0 뒤 | `R2-DATA-QUALITY` | 반복 수집·수정·중복·실패 통계 | `feature/data/recurrent-quality-operations` |
+| W4-G1 병렬·`v0.5.0` 필수 | `REGIONAL-YOUTH-POLICY-INGESTION` | 지역 고유 정책 Source 탐색·중복 제외·실데이터 적재 | `feature/data/regional-youth-policy-ingestion` |
+| Data 05 공통 엔진 뒤·`v0.5.0` 필수 | `SUPPLEMENTAL-OFFICIAL-POLICY-INGESTION` | 온통청년·복지로 누락 중앙·공공기관 Source 중복 감사·실데이터 적재 | Data 06 승인 뒤 Forest 브랜치 한 개 |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text

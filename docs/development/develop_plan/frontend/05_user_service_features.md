@@ -4,12 +4,17 @@
 
 - 번호: Frontend 05
 - 담당 영역: Frontend
-- 상태: draft
+- 상태: completed
 - 계획일: `2026-08-07`
+- Slice 계획 갱신: `2026-08-11`
+- 구현 시작: `2026-08-11` (FE5-00)
 - 대상 Release: `v0.5.0`
+- 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
+- 4주차 대응: `W4-F4`, Critical Path C (`week_04_v0_5_0.md`)
 - 선행 Forest: Integration 05 Contract Baseline
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/user-service-features`
+- 현재 Slice: FE5-07 completed
 
 ## 목적
 
@@ -49,25 +54,211 @@
 
 ## Slice 계획
 
+4주차 [`week_04_v0_5_0.md`](../../weekly_plan/week_04_v0_5_0.md) 사용자 Frontend
+(`W4-F4`)를 FE5-xx 실행 단위로 나눈다. U0~U3 Forest 묶음과 대응 관계는
+아래 표를 따른다.
+
+| Forest 묶음 | FE5 Slice | 4주차 | 책임 |
+| --- | --- | --- | --- |
+| U0 | FE5-00 | F4 | versioned localStorage 계약 | completed |
+| U1 | FE5-01 | F4 | 즐겨찾기 UI·State | completed |
+| U1 | FE5-02 | F4 | 저장 조건 UI·State | completed |
+| U2 | FE5-03 | F4 | KST D-Day·달력 보기 | completed |
+| U2 | FE5-04 | F4 | 앱 내부 마감 임박 알림 | completed |
+| U3 | FE5-05 | F4 | `.ics` 다운로드 | completed |
+| U1~U3 | FE5-06 | F4 | route 간 상태 일치 | completed |
+| U0 | FE5-08 | F4 | 사용자 localStorage 전체 초기화 UX | completed |
+| W4-F5 | FE5-07 | F5 | Browser·a11y·Release 1 회귀 |
+
+**W4-G0 미승인:** localStorage key·version·KST 날짜 규칙은 Integration 05
+초안을 proposal로만 기록한다. Gate 승인 전 임의 key를 production 상수로
+고정하지 않는다.
+
+**Mock-first:** W4-G0 대기 중에도 FE5-00·FE5-01은 Policy API numeric id만
+사용하므로 Mock policy detail과 병렬 가능(week_04 실행 원칙 5·7).
+
+---
+
+### FE5-00 — versioned localStorage 계약 — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | browser-only user payload key·schema_version·허용 필드·corrupt recovery |
+| **예상 변경 파일** | `types/userLocalStorage.ts`, `utils/userLocalStorage.ts` |
+| **선행** | Policy `id` numeric contract (Frontend 01) |
+| **인터페이스** | `favorites: number[]`, `conditions: {region,age,category}|null`, `updated_at` |
+| **검증** | unit test (normalize·parse); SSR/no-storage graceful |
+| **완료 기준** | corrupt·wrong version → reset; 검색·상세 flow 차단 없음 |
+
+2026-08-11 구현: key `cheongnyeon-alimi.user-local.v1`, schema version `1`(W4-G0
+proposal). `readUserLocalStorage`는 corrupt·unsupported version·invalid shape 시
+default payload로 reset persist. storage unavailable 시 in-memory default만
+반환. 후속 Slice(FE5-01~)는 `updateUserLocalStorage`·`clearUserLocalStorage`를
+사용한다.
+
+---
+
+### FE5-01 — 즐겨찾기 UI·State — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | Policy id toggle·`/favorites` list·card·detail 동기 state |
+| **예상 변경 파일** | `utils/userFavoritesStorage.ts`, `hooks/useFavorites.ts`, `FavoriteToggleButton.tsx`, `FavoritesPage.tsx`, `PolicyCard.tsx`, `ProgramDetailPage.tsx` |
+| **선행** | FE5-00 |
+| **세부 작업** | ☆/★ toggle; per-id detail fetch; no server sync copy |
+| **검증** | unit test; Browser toggle·reload |
+| **완료 기준** | 목록·상세·북마크 동일 id 상태 |
+
+2026-08-11 구현: `useSyncExternalStore` 기반 `useFavorites`, `FavoriteToggleButton`을
+PolicyCard·ProgramDetailPage에 연결. `/favorites`는 id별 `getPolicyById(include_partial=true)`
+병렬 fetch. storage `storage` 이벤트로 탭 간 favorites 동기화.
+
+2026-08-11 hotfix: `getFavoritePolicyIdsSnapshot`이 매 렌더 새 배열 참조를 반환해
+`/`·`/favorites`에서 error boundary(404 UI)가 발생하던 문제를 snapshot cache로
+수정. `App.tsx` 라우트 등록은 변경 없음.
+
+---
+
+### FE5-02 — 저장 조건 UI·State — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | region·age·category 저장·복원·**조건 필드만** 초기화 |
+| **예상 변경 파일** | `utils/userConditionsStorage.ts`, conditions editor UI |
+| **선행** | FE5-00 |
+| **세부 작업** | FE6 recommendation·FE7 comparison과 동일 conditions 객체 공유; **즐겨찾기·알림 cache는 유지** |
+| **검증** | unit + Browser reload |
+| **완료 기준** | URL·서버·log에 조건 영구 저장 없음; favorites unchanged after conditions-only clear |
+
+2026-08-11 구현: `userConditionsStorage` + `useSavedConditions` +
+`SavedConditionsPanel`(홈 `/`). `saveSavedConditions`·`clearSavedConditions`는
+FE5-00 `UserSavedConditions` 계약만 사용. 조건 초기화 시 favorites 유지.
+Browser reload 검증은 FE5-07 범위.
+
+---
+
+### FE5-03 — D-Day·달력 보기 — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | `Asia/Seoul` D-Day·마감·상시·미상; 즐겨찾기/전체 달력 route |
+| **예상 변경 파일** | `utils/policyDeadline.ts`, `CalendarPage.tsx`, 기존 `getDDayLabel` 통합 |
+| **선행** | FE5-01, Policy API 신청기간 의미 |
+| **세부 작업** | 종료일 null → D-Day·달력 slot 생성 금지 |
+| **검증** | unit KST boundary; Browser |
+| **완료 기준** | week_04 날짜 미상·상시 규칙 준수 |
+
+2026-08-11 구현: `policyDeadline.ts`(KST `Intl`), `CalendarPage` `/calendar`,
+`policyDisplay.getDDayLabel` 통합, `PolicyCard` 마감 임박 tag. unit
+`policyDeadline.test.ts`. Browser 검증은 FE5-07.
+
+---
+
+### FE5-04 — 앱 내부 알림 — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | 즐겨찾기 ∩ 마감 임박 정책을 `/notifications` in-app 목록 |
+| **예상 변경 파일** | `NotificationsPage.tsx`, `utils/favoriteDeadlineAlerts.ts` |
+| **선행** | FE5-01, FE5-03 |
+| **세부 작업** | 외부 push·Service Worker 없음 |
+| **검증** | unit intersection logic; Browser |
+| **완료 기준** | 비즐겨찾기·무기한 정책 알림 없음 |
+
+2026-08-11 구현: `favoriteDeadlineAlerts.ts`, `NotificationsPage` in-app 목록.
+unit `favoriteDeadlineAlerts.test.ts`. Browser 검증은 FE5-07.
+
+---
+
+### FE5-05 — `.ics` 다운로드 — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | 정책별 마감 `.ics` 생성·download·RFC5545 subset escaping |
+| **예상 변경 파일** | `utils/policyIcs.ts`, detail·favorites action button |
+| **선행** | FE5-03, W4-G0 날짜 계약 |
+| **검증** | unit escape; 대표 calendar client import |
+| **완료 기준** | 종료일 없으면 버튼 disabled |
+
+2026-08-11 구현: `policyIcs.ts`, `PolicyIcsDownloadButton`, `ProgramDetailPage`
+detail action. favorites 목록 action은 FE5-07 Browser 회귀와 함께 검토.
+unit `policyIcs.test.ts`.
+
+---
+
+### FE5-06 — route 간 상태 일치 — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | search·recommend·detail·favorites·calendar에서 동일 policy identity |
+| **예상 변경 파일** | shared navigation utils, store hydrate on route enter |
+| **선행** | FE5-01·02, Frontend 06 FE6-02 (추천) |
+| **검증** | Browser cross-route scenario |
+| **완료 기준** | favorite toggle이 route 이동 후 유지 |
+
+2026-08-11 구현: `userRouteIdentity.ts`, `buildRecommendationItemDetailPath`,
+추천 결과 `FavoriteToggleButton`, AppShell `/recommendations`·`/calendar` nav.
+unit `userRouteIdentity.test.ts`, `recommendationDetailNavigation.test.ts`.
+Browser cross-route 시나리오는 FE5-07.
+
+---
+
+### FE5-07 — Browser·a11y·회귀 — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | W4-F5 loading·empty·error·partial·keyboard·mobile; Release 1 golden |
+| **예상 변경 파일** | Playwright user-service spec, a11y copy |
+| **선행** | FE5-01~06 |
+| **검증** | `npm run test:e2e`; home→search golden |
+| **완료 기준** | Forest Browser 완료 기준·W4-I2 사용자 E2E 준비 |
+
+2026-08-12 구현: `frontend/e2e/user-service-features.spec.ts` — Mock-first 13 scenarios
+(저장 조건·북마크 cross-route·reload·조건-only clear·달력·알림 empty·전체 reset·ICS
+disabled·nav·keyboard·mobile·home→search golden) + Real API skip 1건.
+unit·lint·build·`validate_docs.py` 통과.
+
+### FE5-08 — 사용자 localStorage 전체 초기화 UX — completed
+
+| 항목 | 내용 |
+| --- | --- |
+| **목표** | 즐겨찾기·저장 조건·앱 내부 알림 derived state·localStorage payload **전체 삭제** UX |
+| **예상 변경 파일** | `UserDataResetPanel.tsx`, `clearUserLocalStorage()`, settings 또는 `/favorites` footer |
+| **선행** | FE5-00, FE5-01~04 (초기화 대상 state 존재) |
+| **세부 작업** | 이중 확인 dialog(「모든 북마크·조건·알림 설정이 삭제됩니다」); `USER_LOCAL_STORAGE_KEY` remove; in-memory Zustand/store reset; **서버 API 호출 없음** |
+| **초기화 범위** | `favorites[]`, `conditions`, `schema_version` key 삭제; D-Day·알림·`.ics`는 저장 데이터 없음 — UI cache만 refresh |
+| **검증** | unit `clearUserLocalStorage`; Browser: reset → favorites empty → notifications empty → reload 유지 |
+| **완료 기준** | week_04 Forest 범위 「전체 삭제」; FE5-02 conditions-only clear와 UX·copy 구분; 검색·상세 기본 flow 차단 없음 |
+
+**FE5-02 vs FE5-08:**
+
+| Slice | 삭제 범위 | UX 위치 |
+| --- | --- | --- |
+| FE5-02 | `conditions` 필드만 null | 조건 편집 UI |
+| FE5-08 | key 전체 remove (favorites+conditions) | 설정·북마크 footer 등 명시적 위험 action |
+
+2026-08-11 구현: `userDataReset.ts`, `UserDataResetPanel`, `FavoritesPage`
+footer. unit `userDataReset.test.ts`. Browser reset→reload 검증은 FE5-07.
+
+---
+
 ### U0 - 로컬 저장 계약
 
-- key, schema version, 허용 필드와 최대 저장 범위를 고정한다.
-- 잘못된 JSON·구버전·삭제·브라우저 저장소 실패를 테스트한다.
+- FE5-00·FE5-08. key, schema version, 허용 필드, corrupt recovery와 **전체 삭제**.
 
 ### U1 - 조건과 즐겨찾기
 
-- 조건 저장·복원·초기화와 즐겨찾기 추가·해제를 구현한다.
-- 목록·추천·상세에서 같은 정책 identity를 사용한다.
+- FE5-01·FE5-02·FE5-06. identity 일치.
 
 ### U2 - D-Day와 내부 알림
 
-- KST 날짜 경계, 오늘·마감·상시·미상 상태를 구현한다.
-- 즐겨찾기 중 마감 임박 정책을 앱 내부에서만 계산한다.
+- FE5-03·FE5-04. KST·즐겨찾기 기반 in-app only.
 
 ### U3 - 캘린더와 Browser 인수
 
-- `.ics` 필수 필드·시간대·escaping을 검증하고 다운로드를 제공한다.
-- mobile, keyboard, loading·empty·error·partial과 실제 API 회귀를 확인한다.
+- FE5-05·FE5-07·FE5-08. `.ics`, Browser 회귀, 전체 초기화.
+
+전체 cross-Forest 회귀는 [Frontend 09 FE9-02](09_integration_and_regression.md).
 
 ## Forest 완료 기준
 
@@ -101,7 +292,10 @@ git diff --check
 
 ## 관련 문서
 
+- [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
+- [Frontend 06 Recommendation UI](06_recommendation_ui.md)
+- [Frontend 07 Eligibility Summary UI](07_eligibility_summary_ui.md)
+- [Frontend 09 Integration and Regression](09_integration_and_regression.md)
 - [v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - [Recommendation Vertical Slice](../integration/06_recommendation_vertical_slice.md)
-- [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
 - [Policy API 계약](../../../api/policies.md)

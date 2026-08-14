@@ -31,6 +31,49 @@ partial opt-in 계약을 따른다. 기본 목록은 valid만 표시하며 목�
 “정보가 일부 누락된 정책 포함”을 선택하면 목록·상세에
 `include_partial=true`를 사용한다.
 
+관리자 CollectionRun UI(FE3)도 동일한 Mock 토글을 사용한다. 기본값은 Mock
+admin session·run list·trigger이며, Backend Admin API(Backend 04·05) merge
+후 아래처럼 Real API 모드로 전환한다.
+
+```powershell
+$env:VITE_USE_MOCK = 'false'
+$env:VITE_API_BASE_URL = 'http://127.0.0.1:8000'
+npm run dev
+```
+
+## E2E (Playwright)
+
+Chromium 설치(최초 1회):
+
+```powershell
+npm run test:e2e:install
+```
+
+Mock-first admin flow(FE3-05):
+
+```powershell
+npm run test:e2e -- e2e/admin-collection-run.spec.ts
+```
+
+Week 4 Frontend regression matrix (FE9-02, W4-F10·W4-I3 Mock-first):
+
+```powershell
+npm run test:e2e -- e2e/week4-regression.spec.ts
+```
+
+Real API 수동 Browser 검증 절차는
+[Frontend Real API 수동 테스트 가이드](../docs/development/frontend_real_api_manual_testing_guide.md)를
+참고한다.
+
+Real API admin golden은 Backend admin path가 `:8000`에 노출된 환경에서만
+실행한다.
+
+```powershell
+$env:VITE_USE_MOCK = 'false'
+$env:VITE_API_BASE_URL = 'http://127.0.0.1:8000'
+npm run test:e2e -- e2e/admin-collection-run.spec.ts
+```
+
 ## 검증
 
 ```powershell

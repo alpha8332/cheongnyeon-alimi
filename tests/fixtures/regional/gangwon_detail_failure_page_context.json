@@ -1,0 +1,29 @@
+{
+  "classification": "detail_click_or_post_contract",
+  "affected_count": 325,
+  "unaffected_first_page_count": 12,
+  "observed_pages": {
+    "first_failed": 2,
+    "last_failed": 29
+  },
+  "representatives": [
+    {
+      "page": 2,
+      "external_id": "A2026040800300200900100004",
+      "title": "2026 청년도전지원사업",
+      "detail_row_count": 27
+    },
+    {
+      "page": 15,
+      "external_id": "A2023100600300200900200152",
+      "title": "찾아가는 청년 희망 드림 버스",
+      "detail_row_count": 27
+    },
+    {
+      "page": 29,
+      "external_id": "A2026032700300200900100001",
+      "title": "춘천시 청년네트워크 운영",
+      "detail_row_count": 27
+    }
+  ]
+}

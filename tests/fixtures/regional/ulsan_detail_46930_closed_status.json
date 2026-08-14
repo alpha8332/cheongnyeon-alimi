@@ -1,0 +1,18 @@
+{
+  "list_title": "마감 (울산 중구) 2025년 청년도전지원사업 참여자 모집",
+  "scheduled_list_title": "접수전 (울산광역시) 제4기 청년정책조정위원회 청년위원 공개모집",
+  "scheduled_expected_title": "(울산광역시) 제4기 청년정책조정위원회 청년위원 공개모집",
+  "no_schedule_list_title": "접수일정 없음 [국세청] 취업 후 학자금 상환제도 안내",
+  "no_schedule_expected_title": "[국세청] 취업 후 학자금 상환제도 안내",
+  "expected_title": "(울산 중구) 2025년 청년도전지원사업 참여자 모집",
+  "extracted": {
+    "body": "(울산중구)2025년청년도전지원사업참여자모집접수일정2025-02-06~2025-08-31접수기간상시모집(선착순마감)",
+    "pairs": {
+      "접수일정": "2025-02-06 ~ 2025-08-31",
+      "접수기간": "상시모집(선착순 마감)"
+    },
+    "contentBlocks": [],
+    "actualTitle": null,
+    "metadataText": null
+  }
+}

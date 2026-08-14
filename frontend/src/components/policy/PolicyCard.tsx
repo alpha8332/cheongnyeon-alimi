@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PartialBadge from '@/components/policy/PartialBadge';
 import type { PolicyDto } from '@/types/policy';
 import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
@@ -9,6 +10,7 @@ import {
   formatRegion,
   getDDayLabel,
 } from '@/utils/policyDisplay';
+import { isImminentDeadline } from '@/utils/policyDeadline';
 
 interface PolicyCardProps {
   policy: PolicyDto;
@@ -19,12 +21,8 @@ function getCardTag(policy: PolicyDto): { label: string; variant: '' | 'warn' | 
     return { label: '정보 미확인', variant: 'warn' };
   }
 
-  const dDay = getDDayLabel(policy);
-  if (dDay.startsWith('D-')) {
-    const days = Number(dDay.replace('D-', ''));
-    if (!Number.isNaN(days) && days <= 7) {
-      return { label: '마감 임박', variant: 'hot' };
-    }
+  if (isImminentDeadline(policy)) {
+    return { label: '마감 임박', variant: 'hot' };
   }
 
   if (policy.application_status === 'open') {
@@ -57,6 +55,7 @@ export default function PolicyCard({ policy }: PolicyCardProps) {
         <h3 className="policy-card__title">
           <Link to={detailPath}>{policy.title}</Link>
           <PartialBadge policy={policy} />
+          <FavoriteToggleButton policyId={policy.id} />
         </h3>
         <p className="policy-card__meta">
           {[formatRegion(policy), formatOrganization(policy), getDDayLabel(policy)]

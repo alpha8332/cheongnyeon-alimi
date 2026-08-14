@@ -24,6 +24,8 @@ from collectors.errors import (
     ResponseParseError,
 )
 from collectors.extracted import ExtractionError
+from collectors.eligibility import EligibilityCoverage
+from collectors.eligibility_mapping import map_cheonan_eligibility
 from collectors.http import TransportResponse
 from collectors.normalized import DataQualityStatus
 from collectors.normalizer import Normalizer
@@ -250,6 +252,47 @@ class CheonanExtractorTests(unittest.TestCase):
             detail_fields["institutional_contact"],
         )
         self.assertEqual(3, len(policy.provenance))
+
+    def test_maps_approved_sections_to_shared_eligibility_contract(self) -> None:
+        policy = CheonanYouthCenterExtractor().extract(
+            extraction_documents()
+        )[0]
+
+        summary = map_cheonan_eligibility(policy)
+
+        self.assertIs(EligibilityCoverage.PARTIAL, summary.coverage)
+        self.assertEqual(
+            ["천안시에 거주하는 1인가구 청년"],
+            [item.text for item in summary.requirements],
+        )
+        self.assertEqual(
+            ["타 지역 이사 시 지원 종료"],
+            [item.text for item in summary.exclusions],
+        )
+        self.assertEqual(
+            ["거주 사실 확인서류"],
+            [item.text for item in summary.documents],
+        )
+        self.assertEqual(
+            ["설치 환경에 따라 지원이 제한될 수 있음"],
+            [item.text for item in summary.unknowns],
+        )
+        self.assertEqual(
+            ["041-000-0000", "카카오채널"],
+            [item.value for item in summary.institutional_contacts],
+        )
+        self.assertTrue(
+            all(
+                evidence.locator == "#bo_v_con"
+                for group in (
+                    summary.requirements,
+                    summary.exclusions,
+                    summary.unknowns,
+                )
+                for item in group
+                for evidence in item.evidence
+            )
+        )
 
     def test_personal_mobile_number_is_not_extracted(self) -> None:
         detail = fixture("detail_normal.html").replace(
