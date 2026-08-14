@@ -433,6 +433,14 @@ checkpoint total 31과 선택 `discovered_ids`의 완전 일치, 기존 captured
 편입하지 않는다. 목록에서 빠진 기존 `1419`도 현재 상세 제목이 고정 Raw 제목과
 일치할 때만 재캡처하며 한 batch는 최대 3건이다.
 
+인천의 `checkpoint_detail_url` 모드는 현재 접수중 목록 27건에서 완료 checkpoint의
+`420`이 빠진 상태 전환에 한해 사용한다. 기존 Raw list item의 상세 URL·제목을
+입력으로 사용하고 공식 origin·`/youthpolicy/youthPolicyInfoDetail.do` path·
+`poly_seq`, checkpoint total 28, 선택 identity와 captured 부분집합을 검증한다.
+현재 상세 제목은 고정 Raw 제목으로 시작해야 하며 `420`처럼 뒤에 붙은 공식 마감
+상태는 보존한다. 신청 버튼이 없는 상시형 상세는 `#contents` 본문을 application
+scope 근거로 저장하고 신청 상태를 임의로 생성하지 않는다. 한 batch는 최대 3건이다.
+
 강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
 `/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고
 해당 outcome이 `failed`인 경우에만 Raw를 저장한다. 저장한 Raw를 같은 checkpoint

@@ -50,6 +50,10 @@
   상태를 전건 해소
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 인천 접수중 목록에서 빠진 마감 전환 정책을 checkpoint 고정 `poly_seq` 상세
+  계약으로 격리하고, 기존 28건의 상세 필드 관찰 상태를 전건 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,

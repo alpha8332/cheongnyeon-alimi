@@ -11,6 +11,7 @@ import {
   gangwonConfig,
   gotoWithReadyFallback,
   gwangjuCheckpointDetailConfig,
+  incheonCheckpointDetailConfig,
   jejuConfig,
   normalizeCheckpointDetailTitle,
   classifyDetailCanaryObservation,
@@ -317,6 +318,13 @@ const gwangjuCheckpointDetailFixture = JSON.parse(await readFile(
   ),
   "utf8",
 ));
+const incheonCheckpointDetailFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/incheon_checkpoint_detail_recapture.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
 const gwangjuFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/gwangju_detail_1248.json", import.meta.url),
   "utf8",
@@ -422,6 +430,36 @@ test("Gwangju checkpoint detail recapture rejects a detail URL identity drift", 
     () => validateCheckpointDetailRecaptureContracts(
       gwangjuCheckpointDetailFixture.source_id,
       gwangjuCheckpointDetailFixture.list_url,
+      drifted,
+    ),
+    /checkpoint detail recapture contract is invalid/,
+  );
+});
+
+test("Incheon checkpoint detail recapture accepts its frozen identity contract", () => {
+  assert.deepEqual(
+    validateCheckpointDetailRecaptureContracts(
+      incheonCheckpointDetailFixture.source_id,
+      incheonCheckpointDetailFixture.list_url,
+      incheonCheckpointDetailFixture.items,
+    ),
+    incheonCheckpointDetailFixture.items,
+  );
+  assert.ok(
+    normalizeCheckpointDetailTitle(
+      incheonCheckpointDetailFixture.observed_title,
+      incheonCheckpointDetailFixture.items[0].title,
+    ).startsWith(incheonCheckpointDetailFixture.items[0].title),
+  );
+});
+
+test("Incheon checkpoint detail recapture rejects a poly_seq drift", () => {
+  const drifted = structuredClone(incheonCheckpointDetailFixture.items);
+  drifted[0].detail_url = drifted[0].detail_url.replace("420", "421");
+  assert.throws(
+    () => validateCheckpointDetailRecaptureContracts(
+      incheonCheckpointDetailFixture.source_id,
+      incheonCheckpointDetailFixture.list_url,
       drifted,
     ),
     /checkpoint detail recapture contract is invalid/,
@@ -777,6 +815,11 @@ test("remaining RYP8 Source configs pin the observed list and detail selectors",
   assert.equal(
     gwangjuCheckpointDetailConfig().detailContentSelector,
     ".detail-policy",
+  );
+  assert.equal(incheonCheckpointDetailConfig().detailContentSelector, "#contents");
+  assert.equal(
+    incheonCheckpointDetailConfig().sourceScopeSelectors.application_scope_text,
+    "#contents",
   );
   assert.equal(chungbukConfig(1).detailContentSelector, ".p-table__content");
   assert.match(ulsanConfig(1).linkSelector, /dataId/);

@@ -142,7 +142,12 @@ export function validateCheckpointDetailRecaptureContracts(
     && approvedList.searchParams.get("pageIndex") === "1"
     && approvedList.searchParams.get("url")
       === "/www/policy/gjYgPolicyList";
-  const validList = validDaeguList || validGwangjuList;
+  const validIncheonList = sourceId === "regional-incheon-youth-platform"
+    && approvedList.origin === "https://youth.incheon.go.kr"
+    && approvedList.pathname === "/youthpolicy/youthPolicyInfoList.do"
+    && approvedList.searchParams.get("acptrun") === "ing"
+    && approvedList.searchParams.get("pgno") === "1";
+  const validList = validDaeguList || validGwangjuList || validIncheonList;
   const validItems = Array.isArray(items)
     && items.length >= 1
     && items.length <= 3
@@ -162,10 +167,16 @@ export function validateCheckpointDetailRecaptureContracts(
             && detailUrl.pathname === "/open_content/info/info_list_01_view"
             && detailUrl.searchParams.get("ap_seq") === item.external_id;
         }
-        return validGwangjuList
+        if (validGwangjuList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname === "/www/50"
+            && detailUrl.searchParams.get("policyId") === item.external_id;
+        }
+        return validIncheonList
           && detailUrl.origin === approvedList.origin
-          && detailUrl.pathname === "/www/50"
-          && detailUrl.searchParams.get("policyId") === item.external_id;
+          && detailUrl.pathname
+            === "/youthpolicy/youthPolicyInfoDetail.do"
+          && detailUrl.searchParams.get("poly_seq") === item.external_id;
       } catch {
         return false;
       }
@@ -997,6 +1008,18 @@ export function incheonConfig(page) {
       operator_text: "h1",
       youth_policy_scope_text: "#con-tit h3",
       application_scope_text: '#search-select2 option[selected="selected"]',
+    },
+  };
+}
+
+export function incheonCheckpointDetailConfig() {
+  const config = incheonConfig(1);
+  return {
+    ...config,
+    detailContentSelector: "#contents",
+    sourceScopeSelectors: {
+      ...config.sourceScopeSelectors,
+      application_scope_text: "#contents",
     },
   };
 }

@@ -250,6 +250,7 @@ def _store_recapture(
     checkpoint_detail_sources = {
         "regional-daegu-youth-platform",
         "regional-gwangju-integrated-youth-platform",
+        "regional-incheon-youth-platform",
     }
     checkpoint_detail_matches = bool(
         checkpoint_detail_mode

@@ -1131,3 +1131,39 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - RYP8 감사: 전체 legacy `1,775`, failed 분류 `322/322`, 고정 outcome 일치;
   `data_ready=false`의 남은 blocker는 합의 수치가 없는
   `legacy_null_within_target`
+
+### RYP8 인천 checkpoint 상세 고정 재캡처 (`2026-08-14`)
+
+- 공식 접수중 목록 3 page를 쓰기 전에 읽기 전용으로 대조했다. 현재 total은
+  27, 완료 checkpoint는 28이며 공통 27건의 순서는 같고 `420`만 목록에서
+  빠졌다. `420` 상세는 현재도 열리며 고정 제목 뒤에 `예산소진 마감`이 추가되고
+  상세 상태가 `접수마감`으로 바뀐 상태 전환임을 확인했다.
+- 인천을 `recapture_mode=checkpoint_detail_url` 승인 범위에 추가했다. 기존 Raw
+  list item 28건의 제목·상세 URL을 복원하고 공식 origin·detail path·`poly_seq`,
+  checkpoint total 28, captured 부분집합, 선택 batch와 `discovered_ids`의 완전
+  일치를 검증한다. 현재 제목은 고정 제목으로 시작해야 하므로 임의 identity나
+  다른 정책 상세는 저장할 수 없다.
+- `420` 1건 canary 뒤 replay에서 인천 legacy `71 → 68`, 전체
+  `1,775 → 1,772`, 고정 outcome 무변경을 확인했다. 나머지 27건을 최대 3건
+  batch와 상세 간 최소 2초 간격으로 처리했다. active 상세 중 신청 버튼이 없는
+  상시형 정책은 빈 상태를 만들지 않고 공식 `#contents` 본문을 application scope
+  근거로 저장했다.
+- 최종 인천 field slot은 `V 96/E 0/N 1/L 71 → V 115/E 0/N 53/L 0`, 전체
+  legacy는 `1,775 → 1,704`다. 인천 checkpoint SHA-256은
+  `b98e1dbf20181f82daf87460b05fc8b9a2bceabd5624ef2216eb2a095bb987ce`이며
+  outcome `18/1/1,905/2,360/322`, failed 분류 `322/322`, decision drift 1은
+  유지됐다. 운영 DB projection은 실행하지 않았다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `43 passed`
+- 인천 checkpoint 저장 경계 포함 regional expansion: `33 passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `406 passed, 96 subtests passed`
+- 첫 전체 실행은 `TEST_DATABASE_URL` 대신 `DATABASE_URL`을 사용해 PostgreSQL
+  24건이 skip됐고, 두 번째 실행은 `PGPASSFILE`이 전달되지 않아 인증 실패
+  `21 failed, 3 errors`가 발생했다. 기존 pgpass를 변경하지 않고 두 환경변수를
+  모두 바로잡은 최종 실행에서 전건 통과했다.
+- RYP8 감사: 전체 legacy `1,704`, failed 분류 `322/322`, 고정 outcome 일치;
+  `data_ready=false`의 남은 blocker는 합의 수치가 없는
+  `legacy_null_within_target`
