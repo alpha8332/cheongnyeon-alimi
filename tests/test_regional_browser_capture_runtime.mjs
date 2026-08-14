@@ -9,6 +9,7 @@ import {
   buildDetail,
   chungbukConfig,
   daejeonConfig,
+  daejeonCheckpointDetailConfig,
   gangwonConfig,
   gotoWithReadyFallback,
   gwangjuConfig,
@@ -939,6 +940,8 @@ test("remaining RYP8 Source configs pin the observed list and detail selectors",
   assert.equal(chungbukConfig(1).detailContentSelector, ".p-table__content");
   assert.match(ulsanConfig(1).linkSelector, /dataId/);
   assert.match(daejeonConfig(1).identityPattern, /CT_/);
+  assert.equal(daejeonCheckpointDetailConfig().detailTitleSelector, "h3");
+  assert.equal(daejeonCheckpointDetailConfig().detailContentSelector, "#txt");
   assert.deepEqual(
     {
       row: gangwonConfig(1).detailPairRowSelector,

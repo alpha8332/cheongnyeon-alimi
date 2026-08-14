@@ -147,6 +147,11 @@ export function validateCheckpointDetailRecaptureContracts(
     && approvedList.pathname === "/youthpolicy/youthPolicyInfoList.do"
     && approvedList.searchParams.get("acptrun") === "ing"
     && approvedList.searchParams.get("pgno") === "1";
+  const validDaejeonList = sourceId === "regional-daejeon-youth-platform"
+    && approvedList.origin === "https://www.daejeonyouthportal.kr"
+    && approvedList.pathname === "/biz/integratedYouth.do"
+    && approvedList.searchParams.get("section") === "1"
+    && approvedList.searchParams.get("pageIndex") === "1";
   const validJeonbukList = sourceId === "regional-jeonbuk-youth-platform"
     && approvedList.origin === "https://www.jb2030.or.kr"
     && approvedList.pathname === "/policy/p2_pol.html"
@@ -163,7 +168,8 @@ export function validateCheckpointDetailRecaptureContracts(
     && approvedList.searchParams.get("bo_table") === "1_2_2_1"
     && approvedList.searchParams.get("page") === "1";
   const validList = validDaeguList || validGwangjuList || validIncheonList
-    || validJeonbukList || validGyeongnamList || validJejuList;
+    || validDaejeonList || validJeonbukList || validGyeongnamList
+    || validJejuList;
   const validItems = Array.isArray(items)
     && items.length >= 1
     && items.length <= 3
@@ -193,6 +199,11 @@ export function validateCheckpointDetailRecaptureContracts(
             && detailUrl.pathname
               === "/youthpolicy/youthPolicyInfoDetail.do"
             && detailUrl.searchParams.get("poly_seq") === item.external_id;
+        }
+        if (validDaejeonList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname
+              === `/content/${item.external_id}/cntPage.do`;
         }
         if (validJeonbukList) {
           return detailUrl.origin === approvedList.origin
@@ -1550,6 +1561,21 @@ export function jejuCheckpointDetailConfig(asOfDate) {
       operator_text: ".mb_area",
       youth_policy_scope_text: ".view_title",
       application_scope_text: ".mb_area",
+    },
+  };
+}
+
+export function daejeonCheckpointDetailConfig() {
+  const config = daejeonConfig(1);
+  return {
+    ...config,
+    detailTitleSelector: "h3",
+    detailContentSelector: "#txt",
+    sourceScopeSelectors: {
+      jurisdiction_text: "h1",
+      operator_text: "h1",
+      youth_policy_scope_text: "h3",
+      application_scope_text: "#txt",
     },
   };
 }

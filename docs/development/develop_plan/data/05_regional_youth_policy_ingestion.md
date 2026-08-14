@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천 보강 및
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전 보강 및
   명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
@@ -943,7 +943,11 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   허용해 open 15건을 accepted로 승격했고, 마감 2건과 신청기간·지역 근거가
   미완결인 11건은 승격하지 않았다. outcome은 `accepted 66 / duplicate 1 /
   review 1,193 / closed 3,024 / failed 322`다.
-- 잔여 Source에 review 1,193건이 남아 있다. Source별
+- 대전은 승인 포털 scope와 정책 본문의 대전 거주·활동 조건을 함께 요구한다.
+  월 단위 접수기간을 달력 월 경계로 해석해 대표 1건을 accepted로 승격했고,
+  기간·대상 근거가 부족한 10건과 마감 1건은 유지했다. outcome은
+  `accepted 67 / duplicate 1 / review 1,192 / closed 3,024 / failed 322`다.
+- 잔여 Source에 review 1,192건이 남아 있다. Source별
   `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
   RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
 

@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건 승격, accepted 66건 DB 동기화·review 1,193건 잔여 Source 보강 진행 |
+| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건 승격, accepted 67건 DB 동기화·review 1,192건 잔여 Source 보강 진행 |
 
 ## 구현 내용
 
@@ -1323,3 +1323,27 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 인천 RYP9 감사: 전환 15, blocker 0, `ready_for_redecision=true`
 - 인천 DB actual 2회: `inserted 15` 뒤 `unchanged 15`
 - 인천 목록·검색·상세 API actual: `15/15/15`, 타 regional Source 혼입 0
+
+### RYP9 대전 Source scope·월 단위 접수기간 보강 (`2026-08-14`)
+
+- 대전 checkpoint 12건과 현재 목록 13건의 기존 identity drift를 유지하고 신규
+  1건은 편입하지 않았다. 대표 `CT_000000000541` 상세만 제한 재캡처해 공식
+  `대전청년포털` Source scope와 정책 본문의 대전 거주·활동 조건을 같은 3종
+  provenance에 보존했다.
+- `2026. 3. ~ 2026. 12.`처럼 일자가 없는 월 단위 기간은 시작 월 1일과 종료 월
+  말일로 해석하도록 regional Gate와 공통 Normalizer를 맞췄다. 따라서 회차별
+  행사 7일 전 신청이라는 상대 기한을 임의 날짜로 생성하지 않으면서 현재
+  접수기간을 `2026-03-01~2026-12-31`, `open`으로 구조화한다.
+- 감사 결과 대표 1건만 `review → accepted`, 신청기간·지역·청년 대상 근거가
+  미완결인 10건은 review, 명시적 마감 1건은 closed를 유지했다. 최종 outcome은
+  `accepted 67 / duplicate 1 / review 1,192 / closed 3,024 / failed 322`다.
+- PostgreSQL actual은 최초 `inserted 1`, Normalizer 정렬 뒤 `updated 1`, 최종
+  동일 재실행 `unchanged 1`이다. 실제 open 목록·명시적 검색·상세 API는 대전
+  1건만 반환하고 지역 verdict `match`, 기간·상태와 Source identity가 일치했다.
+
+검증 결과:
+
+- Normalizer·regional Gate·expansion 집중 테스트: `77 passed, 12 subtests passed`
+- 대전 RYP9 감사: 전환 1, blocker 0, `ready_for_redecision=true`
+- 대전 DB actual: `inserted 1 → updated 1 → unchanged 1`
+- 대전 open 목록·검색·상세 API actual: `1/1/1`, 타 지역 혼입 0

@@ -483,6 +483,36 @@ class RegionalPolicyGateTests(unittest.TestCase):
         self.assertIs(ApplicationAvailability.CLOSED, decision.application)
         self.assertIn("application_period_ended", decision.reason_codes)
 
+    def test_month_range_and_approved_portal_alias_are_source_backed(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(
+                jurisdiction_text="대전청년포털",
+                operator_text="대전청년포털",
+            ),
+            organization=None,
+            eligibility="대전광역시 거주 만 25~39세 청년",
+            source_region=None,
+            application_period=(
+                "2026. 3. ~ 2026. 12. 각 회차별 행사일 7일 전까지"
+            ),
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="대전광역시",
+            as_of=date(2026, 8, 14),
+            additional_region_aliases=("대전청년포털",),
+        )
+
+        self.assertTrue(decision.accepted)
+        self.assertIs(ApplicationAvailability.OPEN, decision.application)
+        self.assertIn("source_scope_region_confirmed", decision.reason_codes)
+        self.assertIn("target_region_confirmed", decision.reason_codes)
+        self.assertIn("application_period_open", decision.reason_codes)
+
     def test_single_application_deadline_is_classified_as_end_date(self) -> None:
         case = self.fixture["cases"][0]
         selected_policy, selected_evidence = scoped_policy_and_evidence(

@@ -670,6 +670,11 @@ def decide_expanded_regional_policy(
         allow_target_region_plus_organization=(
             policy.source_id == "regional-incheon-youth-platform"
         ),
+        additional_region_aliases=(
+            ("대전청년포털",)
+            if policy.source_id == "regional-daejeon-youth-platform"
+            else ()
+        ),
     )
     return enforce_youth_target(policy, decision)
 

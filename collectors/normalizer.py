@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from calendar import monthrange
 from collections.abc import Iterable
 from datetime import date, timedelta, timezone
 from html.parser import HTMLParser
@@ -48,6 +49,10 @@ _DATE_TOKEN = re.compile(
     r"(\d{4})\s*[./-]\s*(\d{1,2})\s*[./-]\s*(\d{1,2})"
     r"|(\d{4})(\d{2})(\d{2})"
     r")(?!\d)"
+)
+_MONTH_RANGE = re.compile(
+    r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
+    r"(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?(?!\d)"
 )
 _NUMBER = re.compile(r"(?<!\d)(\d{1,3})(?!\d)")
 _RANGE_MARKER = re.compile(r"~|～|이상.*이하")
@@ -387,6 +392,50 @@ def _normalize_application_period(
         return (
             start,
             None,
+            ApplicationSchedule.FIXED_PERIOD,
+            status,
+            [],
+        )
+    month_range = _MONTH_RANGE.search(value)
+    if month_range is not None:
+        start_year, start_month, end_year, end_month = map(
+            int, month_range.groups()
+        )
+        try:
+            start = date(start_year, start_month, 1)
+            end = date(
+                end_year,
+                end_month,
+                monthrange(end_year, end_month)[1],
+            )
+        except ValueError:
+            return None, None, None, None, [
+                _warning(
+                    "$.application_period_text",
+                    "invalid_application_date",
+                    "application period contains an invalid calendar month",
+                )
+            ]
+        if start > end:
+            return None, None, None, None, [
+                _warning(
+                    "$.application_period_text",
+                    "invalid_application_date_order",
+                    "application period start is after its end",
+                )
+            ]
+        status = (
+            ApplicationStatus.SCHEDULED
+            if as_of < start
+            else (
+                ApplicationStatus.CLOSED
+                if as_of > end
+                else ApplicationStatus.OPEN
+            )
+        )
+        return (
+            start,
+            end,
             ApplicationSchedule.FIXED_PERIOD,
             status,
             [],

@@ -298,6 +298,24 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(34, future.age_max)
 
+    def test_month_range_uses_calendar_month_boundaries(self) -> None:
+        program = self.normalizer.normalize(
+            extracted_policy(
+                application_period_text=(
+                    "2026. 3. ~ 2026. 12. 각 회차별 행사일 7일 전까지"
+                )
+            )
+        ).program
+
+        assert program is not None
+        self.assertEqual("2026-03-01", str(program.application_start))
+        self.assertEqual("2026-12-31", str(program.application_end))
+        self.assertEqual(
+            ApplicationSchedule.FIXED_PERIOD,
+            program.application_schedule,
+        )
+        self.assertEqual(ApplicationStatus.OPEN, program.application_status)
+
     def test_partial_fixture_keeps_text_and_reports_field_locations(
         self,
     ) -> None:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from calendar import monthrange
 from dataclasses import dataclass, replace
 from datetime import date, timedelta, timezone
 from enum import Enum
@@ -28,6 +29,10 @@ _DATE_TOKEN = re.compile(
     r"(\d{4})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})(?:일)?"
     r"|(\d{4})(\d{2})(\d{2})"
     r")(?!\d)"
+)
+_MONTH_RANGE = re.compile(
+    r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
+    r"(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?(?!\d)"
 )
 _EVIDENCE_FIELDS = frozenset(
     {
@@ -276,6 +281,7 @@ def evaluate_regional_policy(
     region_reference: RegionReference | None = None,
     allow_policy_region_plus_organization: bool = False,
     allow_target_region_plus_organization: bool = False,
+    additional_region_aliases: tuple[str, ...] = (),
 ) -> RegionalPolicyDecision:
     """Classify one policy without inferring region from its portal."""
     if evidence.provenance != policy.provenance:
@@ -286,6 +292,7 @@ def evaluate_regional_policy(
         territorial_codes,
         aliases,
     ) = _regional_context(reference, expected_region_text)
+    aliases = frozenset((*aliases, *additional_region_aliases))
 
     canonical_region_text = expected_region_full_name
     source_region = evidence.source_region_text
@@ -538,6 +545,33 @@ def _application_availability(
         return ApplicationAvailability.OPEN, "application_period_open"
     if len(dates) == 1:
         end = dates[0]
+        if as_of > end:
+            return ApplicationAvailability.CLOSED, "application_period_ended"
+        return ApplicationAvailability.OPEN, "application_period_open"
+    month_range = _MONTH_RANGE.search(normalized)
+    if month_range is not None:
+        start_year, start_month, end_year, end_month = map(
+            int, month_range.groups()
+        )
+        try:
+            start = date(start_year, start_month, 1)
+            end = date(
+                end_year,
+                end_month,
+                monthrange(end_year, end_month)[1],
+            )
+        except ValueError:
+            return (
+                ApplicationAvailability.REVIEW_REQUIRED,
+                "application_period_invalid",
+            )
+        if start > end:
+            return (
+                ApplicationAvailability.REVIEW_REQUIRED,
+                "application_period_invalid",
+            )
+        if as_of < start:
+            return ApplicationAvailability.SCHEDULED, "application_not_started"
         if as_of > end:
             return ApplicationAvailability.CLOSED, "application_period_ended"
         return ApplicationAvailability.OPEN, "application_period_open"
