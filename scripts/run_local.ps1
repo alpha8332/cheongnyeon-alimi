@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$PgpassFile,
+    [string]$NodeExecutable,
     [ValidatePattern("^[A-Za-z_][A-Za-z0-9_-]*$")]
     [string]$DatabaseName = "cheongnyeon_alimi",
     [switch]$NoBrowser,
@@ -148,6 +149,32 @@ function Resolve-PgpassFile {
     )
 }
 
+function Resolve-NodeExecutable {
+    $pathCommand = Get-Command node.exe -ErrorAction SilentlyContinue
+    $pathNode = if ($null -ne $pathCommand) { $pathCommand.Source } else { $null }
+    $bundledNode = if ([string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
+        $null
+    }
+    else {
+        Join-Path $env:USERPROFILE (
+            ".cache\codex-runtimes\codex-primary-runtime\dependencies" +
+            "\node\bin\node.exe"
+        )
+    }
+    $candidates = @($NodeExecutable, $pathNode, $bundledNode) |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    foreach ($candidate in $candidates) {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+    throw (
+        "Node.js was not found. Install Node.js 22.22 or newer, add node.exe " +
+        "to PATH, or pass -NodeExecutable <path> to run.bat."
+    )
+}
+
 function Resolve-RuntimeRole {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -173,7 +200,7 @@ foreach ($requiredFile in @($PythonExe, $ViteBin)) {
         throw "Required local dependency is missing: $requiredFile"
     }
 }
-$NodeExe = (Get-Command node.exe -ErrorAction Stop).Source
+$NodeExe = Resolve-NodeExecutable
 
 if (-not (Test-TcpPort -Address "127.0.0.1" -Port 5432)) {
     throw "PostgreSQL is not listening on 127.0.0.1:5432."

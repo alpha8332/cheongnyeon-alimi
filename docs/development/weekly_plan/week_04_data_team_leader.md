@@ -644,6 +644,14 @@ Data 06을 제외한 4주차 승인 기본 기능 구현과 담당자 자체 검
   전용 test DB는 검증 뒤 빈 `alembic_version`만 남김
 - README·`.env.example`·운영 문서의 관리자 PIN, DB 선택, Runtime·로그 경계와
   실제 구현이 일치함
+- 사용자 기본 셸에서 발견한 Node PATH 의존을 번들 Node fallback과
+  `-NodeExecutable` 인자로 보정하고 `run.bat -NoBrowser -ExitAfterReady`의
+  Backend health 200·Frontend 준비·정상 종료를 실제 확인
+- 기본 `cheongnyeon_alimi` DB의 pgpass 역할 권한과 Migration `0004` 잔존을
+  확인해 최소 DML·sequence 권한과 `0005`·`0006`을 적용하고, 기존 3,159건을
+  보존한 채 천안 웹 1건·지역정책 109건을 실제 적재
+- 동일 Raw 재실행은 천안 1건·지역 109건 모두 unchanged, 실패·prune 0건이며
+  최종 DB 3,269건과 서울 목록·검색·상세 Browser 실제 노출을 확인
 - 기존 Starlette/httpx 전환 warning 1건과 Frontend build의 번들 크기·Vite 향후
   호환 warning은 기능·보안·계약을 막지 않는 5주차 유지보수 후보로 분류
 - 서울 지역 Source 110건 중 accepted 1·review 94·closed 15인 보수적 판정은

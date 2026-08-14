@@ -307,6 +307,30 @@ TypeScript·Mock 소비 계약을 함께 통과했다. README·환경 예시·Co
 분리한 actual 시나리오이며, DTL4-7에서 실제 PostgreSQL·FastAPI·React를 연결해
 해당 핵심 경로를 별도로 통과했으므로 미실행을 성공으로 바꾸어 기록하지 않는다.
 
+완료 직후 사용자 기본 PowerShell에서 `run.bat`가 `node.exe`를 PATH에서만 찾아
+시작하지 못하는 실행기 결함을 재현했다. PATH 우선 계약은 유지하고 Codex 데스크톱
+번들 Node fallback과 `-NodeExecutable` 명시 인자를 추가했다. 같은 셸에서
+`run.bat -NoBrowser -ExitAfterReady`를 실행해 Backend health `200`, Frontend
+`127.0.0.1:3000` 준비와 두 서비스 정상 종료를 확인했다.
+
+이어 기본 `cheongnyeon_alimi` DB가 PostgreSQL에는 존재하지만 pgpass
+애플리케이션 역할에 DML·sequence 권한이 없고 Alembic version도 `20260803_0004`에
+머물러 실제 UI가 데이터를 읽지 못하는 환경 불일치를 확인했다. DB 소유자 권한으로
+최소 schema usage, 테이블 DML, sequence 권한과 Migration `0005`·`0006`을 적용한
+뒤 기존 온통청년·복지로 3,159건을 보존했다.
+
+Git 제외 Runtime Raw와 완료 checkpoint를 먼저 dry-run해 천안 1건·지역 109건,
+교차중복 2건 제외·충북 open 0건·실패 0건을 확인한 후 같은 기본 DB에 실제
+적재했다. 최종 DB는 3,269건이며 Source별 지역 projection은 부산 16·경북 2·
+경남 7·전북 16·광주 10·인천 15·대전 1·강원 2·대구 33·서울 1·울산 5·제주 1,
+충북 0이다. 동일 Raw 재실행은 천안 1건과 지역 109건 모두 unchanged이고
+실패·prune 0건이다.
+
+실제 `run.bat`의 PostgreSQL → FastAPI → React에서 서울 `청년` 검색 결과에
+`2025 서울시 고립 은둔청년 지원사업` 카드가 나타나고, 상세의 지역·연령·접수
+상태·신청 방법·공식 evidence를 확인했다. 지역명 검색의 regional hit는 서울 1,
+대구 33, 부산 16으로 DB projection과 일치한다.
+
 서울 Source는 110건 중 accepted 1·review 94·closed 15다. 이는 서울 정책이
 1건뿐이라는 의미가 아니라 명시적 지역·시행 기관·청년 대상·현재 신청 근거를
 동시에 확인하지 못한 후보를 보수적으로 review에 둔 결과다. 거짓 accepted나
