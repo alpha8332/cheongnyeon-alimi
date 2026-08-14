@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param(
     [string]$PgpassFile,
+    [string]$NodeExecutable,
+    [ValidatePattern("^[A-Za-z_][A-Za-z0-9_-]*$")]
+    [string]$DatabaseName = "cheongnyeon_alimi",
     [switch]$NoBrowser,
     [switch]$ExitAfterReady
 )
@@ -146,6 +149,32 @@ function Resolve-PgpassFile {
     )
 }
 
+function Resolve-NodeExecutable {
+    $pathCommand = Get-Command node.exe -ErrorAction SilentlyContinue
+    $pathNode = if ($null -ne $pathCommand) { $pathCommand.Source } else { $null }
+    $bundledNode = if ([string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
+        $null
+    }
+    else {
+        Join-Path $env:USERPROFILE (
+            ".cache\codex-runtimes\codex-primary-runtime\dependencies" +
+            "\node\bin\node.exe"
+        )
+    }
+    $candidates = @($NodeExecutable, $pathNode, $bundledNode) |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    foreach ($candidate in $candidates) {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+    throw (
+        "Node.js was not found. Install Node.js 22.22 or newer, add node.exe " +
+        "to PATH, or pass -NodeExecutable <path> to run.bat."
+    )
+}
+
 function Resolve-RuntimeRole {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -158,12 +187,12 @@ function Resolve-RuntimeRole {
         }
         $hostMatches = $Matches.host -in @("127.0.0.1", "localhost", "*")
         $portMatches = $Matches.port -in @("5432", "*")
-        $databaseMatches = $Matches.database -in @("cheongnyeon_alimi", "*")
+        $databaseMatches = $Matches.database -in @($DatabaseName, "*")
         if ($hostMatches -and $portMatches -and $databaseMatches) {
             return $Matches.role
         }
     }
-    throw "pgpass has no entry usable for 127.0.0.1:5432/cheongnyeon_alimi."
+    throw "pgpass has no entry usable for 127.0.0.1:5432/$DatabaseName."
 }
 
 foreach ($requiredFile in @($PythonExe, $ViteBin)) {
@@ -171,7 +200,7 @@ foreach ($requiredFile in @($PythonExe, $ViteBin)) {
         throw "Required local dependency is missing: $requiredFile"
     }
 }
-$NodeExe = (Get-Command node.exe -ErrorAction Stop).Source
+$NodeExe = Resolve-NodeExecutable
 
 if (-not (Test-TcpPort -Address "127.0.0.1" -Port 5432)) {
     throw "PostgreSQL is not listening on 127.0.0.1:5432."
@@ -185,7 +214,10 @@ foreach ($port in @(8000, 3000)) {
 $ResolvedPgpass = Resolve-PgpassFile
 $RuntimeRole = Resolve-RuntimeRole -Path $ResolvedPgpass
 $EncodedRole = [Uri]::EscapeDataString($RuntimeRole)
-$DatabaseUrl = "postgresql+psycopg2://$EncodedRole@127.0.0.1:5432/cheongnyeon_alimi"
+$EncodedDatabaseName = [Uri]::EscapeDataString($DatabaseName)
+$DatabaseUrl = (
+    "postgresql+psycopg2://$EncodedRole@127.0.0.1:5432/$EncodedDatabaseName"
+)
 
 $backendProcess = $null
 $frontendProcess = $null

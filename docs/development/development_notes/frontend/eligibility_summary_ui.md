@@ -1,153 +1,112 @@
-# Frontend Eligibility Summary UI Forest 개발 기록
+# Frontend Eligibility Summary UI 개발 기록
 
 ## 작업 정보
 
-- 작업일: 2026-08-11 (FE7-05 Browser E2E: 2026-08-12, FE7-06 Toast·a11y: 2026-08-12)
+- 작업일: `2026-08-10`~`2026-08-14`
 - 담당 영역: Frontend
 - 상태: completed
-- 브랜치: `feature/frontend/bookmarks-calendar-admin`
-- 관련 계획:
-  [Eligibility Summary UI Forest 개발 계획](../../develop_plan/frontend/07_eligibility_summary_ui.md)
-- 현재 Slice: FE7-06 completed (Forest 완료)
+- 현재 권위 계약: [Integration 08 Eligibility Evidence](../../develop_plan/integration/08_eligibility_evidence_summary.md)
+- 관련 계획: [Frontend 07 계획](../../develop_plan/frontend/07_eligibility_summary_ui.md)
 
 ## 목적
 
-정책 상세 `핵심 신청 조건` 카드(FE7-01~04)를 Integration 08 W4-G0 proposal
-DTO·Mock-first detail envelope에 맞춰 구현하고 Browser E2E(FE7-05)·Toast·a11y(FE7-06)로
-검증한다.
+정책 상세의 `핵심 신청 조건`을 Integration 08 승인 계약으로 표시하고,
+필수·제외·우대·필요 서류·자동 분류 불가 조건과 근거 원문을 사용자가 직접
+확인할 수 있게 한다. 이 UI는 최종 신청 가능 여부나 개인 조건 일치 여부를
+판정하지 않는다.
 
 ## Forest 범위
 
-이 기록은 Frontend 07 Slice 구현·검증 결과를 누적한다. W4-G0 승인 전
-`eligibility_summary` nested 구조는 proposal이며 Real API summary 필드는
-Backend merge 후 Real API golden E2E에서 재검증한다.
+- Integration 08 승인 DTO의 Frontend 소비
+- 정책 상세 조건·서류·문의처·evidence 표시
+- 단위·Mock Browser·Real API 조건부 회귀
+- DTL4-5~6의 과거 proposal 정리와 계약 정합성 확인
 
 ## Slice 진행 현황
 
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
-| FE7-00 | completed | DTO·Mock fixtures·contract tests |
-| FE7-01 | completed | EligibilitySummaryCard shell·ProgramDetailPage wiring |
-| FE7-02 | completed | EligibilitySectionList·category badge·long text expand |
-| FE7-03 | completed | EligibilityComparisonBadge·local conditions compare util |
-| FE7-04 | completed | EligibilityEvidenceLink·공식 원문 CTA |
-| FE7-05 | completed | Playwright Browser E2E·search golden 회귀 |
-| FE7-06 | completed | Detail Toast·5xx summary refetch·a11y Browser E2E |
+| FE7-00~05 | completed | 승인 DTO·UI·단위·Browser 구현 |
+| DTL4-5 | completed | 중복 proposal 구현 제거 |
+| DTL4-6 | completed | 잔여 E2E·API hook·CSS·문서 정리 |
 
 ## 구현 내용
 
-### FE7-00 — Eligibility summary DTO·Mock
+- `frontend/src/types/policy.ts`: `EligibilitySummaryDto`와 coverage enum
+- `frontend/src/components/policy/EligibilitySummary.tsx`: coverage 안내, 섹션 목록, evidence와 원문 링크
+- `frontend/src/pages/user/ProgramDetailPage.tsx`: 상세 응답의 summary 렌더링
+- `frontend/src/mocks/policyContract.ts`: 승인 DTO 기반 Mock detail
+- `data/fixtures/contracts/eligibility_evidence_cases.json`: 공통 계약 fixture
+- `frontend/tests/eligibilitySummary.test.ts`: 표시 계약 단위 테스트
+- `frontend/e2e/eligibility-summary-ui.spec.ts`: complete·partial·unknown, evidence, 모바일·검색 회귀와 Real API 조건부 검증
+- `frontend/e2e/week4-regression.spec.ts`: 상세 → 근거 → 공식 원문 Critical Path B
 
-- `frontend/src/types/eligibilitySummary.ts`
-- `frontend/src/mocks/policyDetailFixtures.ts` (id 9101~9103)
-- `frontend/tests/eligibilitySummary.contract.test.ts`
+## 표시 계약
 
-### FE7-01~04 — 핵심 신청 조건 카드 UI
+| 필드 | 표시 규칙 |
+| --- | --- |
+| `coverage` | `complete`·`partial`·`unknown`을 비단정 안내 문구로 표시 |
+| `requirements` | 필수 조건 목록 |
+| `exclusions` | 제외 조건 목록 |
+| `preferences` | 우대 조건 목록 |
+| `documents` | 필요 서류 목록 |
+| `unknowns` | 자동 분류할 수 없어 원문 확인이 필요한 조건 |
+| `contacts` | 공개된 문의처 |
+| `evidence` | 근거 문구, 수집 시각, 안전한 공식 원문 링크 |
 
-- `frontend/src/components/eligibility/EligibilitySummaryCard.tsx`
-  - loading·error·empty shell, partial·unknown banner
-  - `POLICY_ELIGIBILITY_NOTICE`와 역할 분리(정책 정보 카드 vs summary 카드)
-- `frontend/src/components/eligibility/EligibilitySectionList.tsx`
-  - requirements·exclusions·preferences·documents·unknown_conditions 섹션
-  - category badge, 긴 문장 expand toggle (`aria-expanded`)
-- `frontend/src/components/eligibility/EligibilityComparisonBadge.tsx`
-- `frontend/src/components/eligibility/EligibilityEvidenceLink.tsx`
-  - `source_id`·`collected_at`·`source_url` only; credential·internal id 미표시
-- `frontend/src/utils/eligibilitySummaryDisplay.ts` — category label·text truncate
-- `frontend/src/utils/eligibilityComparison.ts`
-  - FE5 saved conditions 대비 age·region·category compare
-  - copy: `조건상 일치|불일치|추가 확인 필요`
-- `frontend/src/pages/user/ProgramDetailPage.tsx` — summary 카드 추가
-- `frontend/src/mocks/policyContract.ts` — Mock detail fixture lookup wiring
+빈 목록과 `unknown`은 임의로 보완하지 않는다. 증거가 없으면 원문 확인 안내만
+표시하며, 비밀값·내부 식별자·Raw 응답은 노출하지 않는다.
 
-### FE7-05 — Real API·Browser E2E (Playwright)
+## DTL4-5 계약 정리
 
-- `frontend/e2e/eligibility-summary-ui.spec.ts`
-  - Mock-first 12 scenarios: complete·partial·unknown fixtures(9101~9103),
-    seed policy empty summary, saved conditions comparison badges,
-    evidence link `rel` attributes, keyboard·mobile, `/search` golden 회귀,
-    search→detail navigation regression, mock detail envelope golden
-  - Real API golden: `VITE_USE_MOCK=false` 환경에서만 실행(skip)
-- Backend `eligibility_summary` 미merge — Real API golden은 summary card 또는
-  empty state 분기만 검증.
+과거 FE7 proposal의 `status`·`required_documents`·`unknown_conditions`와
+Integration 08의 `coverage`·`documents`·`unknowns`가 중복되어 있었다.
+DTL4-5에서 실제 소비 중인 Integration 08 DTO를 권위로 확정하고 사용되지 않는
+proposal 타입·컴포넌트·fixture·단위 테스트를 제거했다.
 
-### FE7-06 — Detail Toast·a11y
+## DTL4-6 회귀 정리
 
-- `frontend/src/layouts/AppShellLayout.tsx` — user route `ApiErrorToastProvider`
-- `frontend/src/api/policyDetailApiError.ts` · `frontend/src/utils/policyDetailErrorToast.ts`
-- `frontend/src/api/policies.ts` — `PolicyDetailFetchOptions.summaryRefetch`, Mock audit
-  (9101→503, 9102+include_partial→422)
-- `frontend/src/pages/user/ProgramDetailPage.tsx` — summary refetch control, 5xx Toast
-  (detail 본문·이전 summary 유지), 422 inline alert, `keepPreviousData` query
-- `frontend/src/components/eligibility/EligibilitySummaryCard.tsx` — refresh button,
-  validation inline alert
-- a11y: comparison badge `aria-label`, section `nav`, expand `aria-label`, mobile stack CSS
-- `frontend/e2e/eligibility-detail-toast-a11y.spec.ts` — 6 Mock-first scenarios
-- `frontend/tests/policyDetailErrorToast.test.ts`
+코드 정리 뒤에도 과거 proposal의 fixture id `9101`~`9103`, summary 전용
+새로고침 오류 hook, 개인 조건 비교 배지, 전용 Toast E2E와 CSS가 남아 있음을
+발견했다. 다음과 같이 승인 계약으로 다시 정렬했다.
 
-### 계약 정렬 메모
-
-| 영역 | FE7 proposal | Backend 상태 |
-| --- | --- | --- |
-| Detail `eligibility_summary` | optional nested | `feature/backend/policy-recommendation` 미merge |
-| Evidence fields | `source_id`, `source_url`, `collected_at` | Backend draft 동일 |
-| Mock Browser ids | 9101~9103 | `findMockPolicyById` fixture fallback |
-
-Real API detail에 summary가 없으면 카드 empty state를 표시한다(FE7-05 Mock·Real API 분기 검증).
-
-## 설계 결정
-
-- List·search 응답은 `eligibility_summary`를 생략; detail Mock fixture(9101~9103)만
-  구조화 summary를 포함.
-- evidence 없는 항목은 UI에서 "원문 근거 확인 필요" copy; 임의 구조화하지 않음.
-- age·region compare는 policy numeric bounds·regions 배열을 우선 사용; 복잡한
-  income·asset category는 badge 미표시 또는 evidence null 시 `추가 확인 필요`.
-- 카드 footer·banner copy는 W4-G0 비단정 원칙(신청 가능/불가 단정 금지) 준수.
-- summary refetch 5xx는 global Toast only; 카드 `ErrorState`와 중복 표시하지 않음.
-- summary refetch는 별도 `getPolicyById(..., { summaryRefetch: true })` 호출로
-  Mock audit·Toast contract를 명시적으로 검증.
+- `eligibility-summary-ui.spec.ts`를 현재 seed와 DTO 기반 시나리오로 교체
+- `week4-regression.spec.ts`의 Path B를 seed policy id 1과 현재 문구로 수정
+- 더 이상 존재하지 않는 summary refetch option·Mock 오류 hook 제거
+- 전용 `eligibility-detail-toast-a11y.spec.ts`와 미사용 proposal CSS 제거
+- Real API 수동 가이드와 회귀 기록에서 비교·새로고침 설명 제거
 
 ## 주요 변경 파일
 
-- `frontend/src/components/eligibility/*.tsx`
-- `frontend/src/utils/eligibilitySummaryDisplay.ts`
-- `frontend/src/utils/eligibilityComparison.ts`
-- `frontend/src/utils/policyDetailErrorToast.ts`
-- `frontend/src/api/policyDetailApiError.ts`
 - `frontend/src/api/policies.ts`
-- `frontend/src/pages/user/ProgramDetailPage.tsx`
-- `frontend/src/layouts/AppShellLayout.tsx`
-- `frontend/src/mocks/policyContract.ts`
-- `frontend/src/mocks/policyDetailFixtures.ts`
 - `frontend/src/styles/theme.css`
-- `frontend/tests/eligibilityComparison.test.ts`
-- `frontend/tests/policyMockDetail.test.ts`
-- `frontend/tests/eligibilitySummary.contract.test.ts`
-- `frontend/tests/policyDetailErrorToast.test.ts`
-- `frontend/tsconfig.test.json`
 - `frontend/e2e/eligibility-summary-ui.spec.ts`
-- `frontend/e2e/eligibility-detail-toast-a11y.spec.ts`
+- `frontend/e2e/week4-regression.spec.ts`
+- `frontend/e2e/eligibility-detail-toast-a11y.spec.ts` (삭제)
+- `docs/development/frontend_real_api_manual_testing_guide.md`
 
 ## 검증 결과
 
-```text
-cd frontend && npm test   — 168 passed
-cd frontend && npx eslint src/pages/user/ProgramDetailPage.tsx — passed
-cd frontend && npm run test:e2e -- e2e/eligibility-detail-toast-a11y.spec.ts — 6 passed
-python3 scripts/validate_docs.py — passed
-```
+| 검증 | 결과 |
+| --- | --- |
+| Frontend unit | 162 passed |
+| lint | passed |
+| production build | passed |
+| Mock Browser 전체 분할 실행 | 79 passed, 11 conditional skips |
+| Eligibility UI + Week 4 regression | 10 passed, 2 Real API conditional skips |
+| 현재 계약 문자열·fixture id 잔재 검색 | active source/test 0건 |
 
-Browser·Playwright E2E는 FE7-05·FE7-06에서 실행 완료.
-전체 `npm run lint`는 `AdminLoginPage.tsx` 기존 `react-hooks/purity` 1건으로
-실패(FE3-06 선행 코드, 본 Slice 범위 밖).
+조건부 skip은 `VITE_USE_MOCK=false`와 실제 Backend가 필요한 DTL4-7 항목이다.
+Mock 실행의 실패나 미실행으로 통과 처리하지 않았다.
+
+## 설계 결정
+
+- 승인 DTO에 개인 프로필 비교 결과가 없으므로 일치·불일치 배지를 표시하지 않는다.
+- 상세 응답 외 별도 eligibility refetch 계약이 없으므로 카드 전용 새로고침을 제공하지 않는다.
+- evidence 링크는 공식 원문 확인 수단이며 신청 가능 판정 근거로 단정하지 않는다.
+- 향후 필드 변경은 `docs/api/policies.md`, 공통 fixture, Backend schema와 Frontend 타입·Mock·테스트를 같은 Slice에서 함께 변경한다.
 
 ## 남은 작업
 
-- W4-G0 Gate 승인 후 `docs/api/policies.md` detail `eligibility_summary` 절 추가
-- Backend Integration 08 ES2 merge 후 Real API eligibility summary golden 재검증
-- FE9-02 Integration Regression matrix B cross-Forest Toast dedupe 회귀
-
-## 관련 문서
-
-- [Integration 08 Eligibility Evidence](../../develop_plan/integration/08_eligibility_evidence_summary.md)
-- [User Service Features (FE5)](../../develop_plan/frontend/05_user_service_features.md)
+DTL4-7에서 실제 PostgreSQL·FastAPI·React를 연결해 조건부 Real API Browser
+시나리오와 세 Critical Path를 검증한다.

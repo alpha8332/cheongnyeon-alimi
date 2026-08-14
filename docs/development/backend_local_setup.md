@@ -135,7 +135,8 @@ try {
 
 ## 관리자 PIN 설정 및 해시 생성 (Backend 04)
 
-`development`, `local`, `test` 환경에서는 별도 설정이 없을 경우 기본 PIN `0000`을 사용한다.
+`development`, `local`, `test` 환경에서는 별도 설정이 없고 실제 요청 client가
+loopback일 경우에만 기본 PIN `0000`을 사용한다.
 프로덕션 배포 또는 커스텀 PIN을 사용하려면 4자리 숫자 PIN의 SHA-256 해시를 생성하여 `.env`에 설정한다.
 
 1. **PowerShell에서 4자리 PIN 해시 생성**:
@@ -149,7 +150,9 @@ try {
    ADMIN_SESSION_EXPIRE_MINUTES=60
    ```
 3. **전체 서명 토큰 일괄 폐기**:
-   - `ADMIN_TOKEN_SECRET` 또는 `SECRET_KEY`를 교체하면 기존에 발급된 모든 관리자 세션 토큰이 즉시 서버 검증에서 무효화된다.
+   - production은 `ADMIN_TOKEN_SECRET`이 필수이며 `SECRET_KEY`로 fallback하지 않는다.
+   - 사용 중인 `ADMIN_TOKEN_SECRET`을 교체하면 기존 관리자 세션 토큰이 즉시
+     서버 검증에서 무효화된다.
 
 ## 안전 수칙
 

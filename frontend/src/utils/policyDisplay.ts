@@ -36,7 +36,9 @@ export function getCategoryLabel(category: PolicyCategory): string {
   return CATEGORY_LABELS[category];
 }
 
-export function formatCategoryTags(policy: PolicyDto): string[] {
+export function formatCategoryTags(
+  policy: Pick<PolicyDto, 'categories' | 'category_text'>,
+): string[] {
   if (policy.categories.length > 0) {
     return policy.categories.map(getCategoryLabel);
   }
@@ -48,11 +50,15 @@ export function formatCategoryTags(policy: PolicyDto): string[] {
   return ['분류 없음'];
 }
 
-export function formatOrganization(policy: PolicyDto): string {
+export function formatOrganization(
+  policy: Pick<PolicyDto, 'organization'>,
+): string {
   return policy.organization ?? '기관 정보 없음';
 }
 
-export function formatRegion(policy: PolicyDto): string {
+export function formatRegion(
+  policy: Pick<PolicyDto, 'regions' | 'region_text'>,
+): string {
   if (policy.regions.length > 0) {
     return policy.regions.join(', ');
   }

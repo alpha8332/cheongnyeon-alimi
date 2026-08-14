@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const MOCK_ARCHIVE_DELETE_409_FILE_ID = 'log-file-archive-mock409';
+const MOCK_ARCHIVE_DELETE_409_FILE_ID = 'app.log.mock409';
 const MOCK_POLICY_TITLE = '합성 청년 주거 지원';
 
 async function loginAsAdmin(page: Page, pin = '0000') {
@@ -16,7 +16,7 @@ async function waitForPolicyDataLoaded(page: Page) {
 }
 
 async function waitForLogEventsLoaded(page: Page) {
-  await expect(page.getByText('Log event를 불러오는 중입니다.')).toHaveCount(0, {
+  await expect(page.getByText('로그 이벤트를 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
   });
 }
@@ -129,6 +129,6 @@ test.describe('Admin observability Toast and a11y (FE8-06)', () => {
     await waitForLogEventsLoaded(page);
 
     await expect(page.getByLabel('Log event 필터')).toBeVisible();
-    await expect(page.getByText('Log events')).toBeVisible();
+    await expect(page.getByText('로그 이벤트')).toBeVisible();
   });
 });

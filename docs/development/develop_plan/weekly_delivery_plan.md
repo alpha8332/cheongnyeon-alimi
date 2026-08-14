@@ -188,11 +188,12 @@ fast-forward해 4주차의 공통 시작점으로 사용한다.
 
 ### 상태
 
-in progress (`W4-G0`, Data 03·04와 Integration 08 기반 완료;
+completed (`W4-G4_MIDPOINT_PASS`; `W4-G0`, Data 03·04와 Integration 08 기반 완료;
 Data 05 `RYP0`~`RYP9`·`RYP-G6` 완료 (광주·인천·대전·강원·대구·서울·울산·제주
 보강, 충북 open 0건 확정, accepted 109·review 1,140, Source 필드 상태 전건
 reconcile, legacy null 0과 고정 outcome·종료 이력·실패 분류 감사 통과),
-Data 06 계획 확정)
+Data 06 계획 확정; 실제 DB 3,269건·Migration `20260810_0006`·지역 검색
+DB → API → Browser 확인)
 
 ### 목표
 

@@ -49,8 +49,8 @@ HTTP 링크의 실제 접속 가능 여부와 Markdown 문법 전체 lint는 현
 - 루트 `CHANGELOG.md`
 - `docs/**/*.md`
 
-`opensource_plan/`은 원본 Word 계획과 참고 자료를 보존하는 읽기 전용
-영역이므로 검사 대상에서 제외한다.
+과거 binary 계획 자료는 결정이 `docs/` 기준선에 반영된 뒤 저장소에서 제거됐다.
+문서 검증은 현재 유지되는 Markdown 계약만 대상으로 한다.
 
 ## Forest 문서 규칙
 

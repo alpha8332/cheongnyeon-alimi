@@ -24,15 +24,15 @@ export const EMPTY_ADMIN_POLICY_FILTER_DRAFT: AdminPolicyFilterDraft = {
 export function toAdminPolicyListQueryFromDraft(
   draft: AdminPolicyFilterDraft,
   page: number,
-  size: number,
+  limit: number,
   sortBy: AdminPolicyListQuery['sort_by'],
-  sortOrder: AdminPolicyListQuery['sort_order'],
+  sortOrder: AdminPolicyListQuery['order'],
 ): AdminPolicyListQuery {
   return {
     page,
-    size,
+    limit,
     sort_by: sortBy,
-    sort_order: sortOrder,
+    order: sortOrder,
     ...(draft.source_id.trim() ? { source_id: draft.source_id.trim() } : {}),
     ...(draft.category ? { category: draft.category } : {}),
     ...(draft.region.trim() ? { region: draft.region.trim() } : {}),

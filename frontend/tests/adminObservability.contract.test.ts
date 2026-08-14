@@ -3,11 +3,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import {
-  assertAdminLogEventListItemContract,
-  assertAdminLogFileListItemContract,
+  assertAdminLogEventListResponseContract,
+  assertAdminLogFileListResponseContract,
   assertAdminObservabilityErrorBody,
   assertAdminPolicyListItemContract,
-  assertPaginationEnvelope,
 } from '../src/mocks/adminObservabilityContract.js';
 import {
   handleAdminLogArchiveDeleteMock,
@@ -21,19 +20,14 @@ import {
   MOCK_ACTIVE_LOG_FILE_ID,
   MOCK_ARCHIVE_LOG_FILE_ID,
 } from '../src/mocks/adminObservabilityFixtures.js';
-import {
-  createMockPolicies,
-  type SeedPolicyProgram,
-} from '../src/mocks/policyContract.js';
+import { createMockPolicies, type SeedPolicyProgram } from '../src/mocks/policyContract.js';
 import {
   ADMIN_LOG_ENDPOINTS,
+  ADMIN_LOG_EVENTS_PATH,
   ADMIN_LOG_FILES_PATH,
   ADMIN_LOG_ROTATE_CURRENT_PATH,
   buildAdminLogArchiveDeletePath,
-  buildAdminLogEventListPath,
-  buildAdminLogFileDetailPath,
   resolveAdminLogEventListQuery,
-  resolveAdminLogFileListQuery,
 } from '../src/types/adminLog.js';
 import {
   ADMIN_POLICY_DATA_ENDPOINTS,
@@ -42,19 +36,11 @@ import {
   resolveAdminPolicyListQuery,
 } from '../src/types/adminPolicyData.js';
 
-const seedPath = resolve(
-  process.cwd(),
-  '..',
-  'data',
-  'seeds',
-  'initial_programs.json',
-);
-const seedPrograms = JSON.parse(
-  readFileSync(seedPath, 'utf8'),
-) as SeedPolicyProgram[];
+const seedPath = resolve(process.cwd(), '..', 'data', 'seeds', 'initial_programs.json');
+const seedPrograms = JSON.parse(readFileSync(seedPath, 'utf8')) as SeedPolicyProgram[];
 const mockPolicies = createMockPolicies(seedPrograms);
 
-test('Admin policy data endpoint 경로가 W4-G0 proposal과 일치한다', () => {
+test('관리자 정책 endpoint가 Backend 계약과 일치한다', () => {
   assert.equal(ADMIN_POLICY_DATA_ENDPOINTS.list.path, ADMIN_POLICY_DATA_PATH);
   assert.equal(ADMIN_POLICY_DATA_ENDPOINTS.list.method, 'GET');
   assert.equal(
@@ -63,125 +49,143 @@ test('Admin policy data endpoint 경로가 W4-G0 proposal과 일치한다', () =
   );
 });
 
-test('Admin log endpoint 경로가 W4-G0 proposal과 일치한다', () => {
+test('관리자 로그 endpoint가 Backend 계약과 일치한다', () => {
   assert.equal(ADMIN_LOG_ENDPOINTS.fileList.path, ADMIN_LOG_FILES_PATH);
+  assert.equal(ADMIN_LOG_ENDPOINTS.eventList.path, ADMIN_LOG_EVENTS_PATH);
   assert.equal(ADMIN_LOG_ENDPOINTS.rotateCurrent.path, ADMIN_LOG_ROTATE_CURRENT_PATH);
   assert.equal(
-    buildAdminLogEventListPath(MOCK_ACTIVE_LOG_FILE_ID),
-    `${ADMIN_LOG_FILES_PATH}/${MOCK_ACTIVE_LOG_FILE_ID}/events`,
-  );
-  assert.equal(
     buildAdminLogArchiveDeletePath(MOCK_ARCHIVE_LOG_FILE_ID),
-    buildAdminLogFileDetailPath(MOCK_ARCHIVE_LOG_FILE_ID),
+    `/api/v1/admin/logs/archives/${MOCK_ARCHIVE_LOG_FILE_ID}`,
   );
 });
 
-test('handleAdminPolicyListMock는 page·size·pages envelope를 반환한다', () => {
+test('정책 목록 Mock이 Backend page·limit envelope와 공개 projection을 반환한다', () => {
   const response = handleAdminPolicyListMock(mockPolicies, {
     page: 1,
-    size: 5,
+    limit: 5,
     sort_by: 'id',
-    sort_order: 'asc',
+    order: 'asc',
   });
 
-  assertPaginationEnvelope(response, 'admin policy list response');
   assert.equal(response.page, 1);
-  assert.equal(response.size, 5);
+  assert.equal(response.limit, 5);
   assert.equal(response.total, mockPolicies.length);
-  assert.ok(response.pages >= 1);
   assert.equal(response.items.length, Math.min(5, mockPolicies.length));
-
   for (const item of response.items) {
     assertAdminPolicyListItemContract(item);
     assert.equal('provenance' in item, false);
     assert.equal('eligibility_text' in item, false);
+    assert.equal('age_min' in item, false);
   }
 });
 
-test('handleAdminPolicyDetailMock는 404 safe error와 detail DTO를 반환한다', () => {
+test('policy region mock includes nationwide and empty-region policies like Backend', () => {
+  const template = mockPolicies[0];
+  assert.ok(template);
+  if (!template) return;
+
+  const response = handleAdminPolicyListMock(
+    [
+      { ...template, id: 10_001, regions: ['서울'] },
+      { ...template, id: 10_002, regions: ['전국'] },
+      { ...template, id: 10_003, regions: [] },
+      { ...template, id: 10_004, regions: ['부산'] },
+    ],
+    {
+      page: 1,
+      limit: 10,
+      region: '서울',
+      sort_by: 'id',
+      order: 'asc',
+    },
+  );
+
+  assert.deepEqual(
+    response.items.map((item) => item.id),
+    [10_001, 10_002, 10_003],
+  );
+  assert.equal(response.total, 3);
+});
+
+test('정책 상세 Mock은 404 safe error와 Backend detail DTO를 반환한다', () => {
   const missing = handleAdminPolicyDetailMock(mockPolicies, 999_999);
   assert.equal(missing.status, 404);
-  if (missing.status === 404) {
-    assertAdminObservabilityErrorBody(missing.body);
-  }
+  if (missing.status === 404) assertAdminObservabilityErrorBody(missing.body);
 
   const found = handleAdminPolicyDetailMock(mockPolicies, mockPolicies[0]?.id ?? 1);
   assert.equal(found.status, 200);
   if (found.status === 200) {
     assert.equal(found.body.id, mockPolicies[0]?.id);
-    assert.equal('provenance' in found.body, false);
+    assert.equal('schema_version' in found.body, false);
+    assert.equal('application_schedule' in found.body, false);
   }
 });
 
-test('resolveAdminPolicyListQuery는 page·size·sort allowlist를 검증한다', () => {
+test('정책 query resolver가 limit·sort allowlist를 검증한다', () => {
   assert.throws(() => resolveAdminPolicyListQuery({ page: 0 }));
-  assert.throws(() => resolveAdminPolicyListQuery({ size: 101 }));
+  assert.throws(() => resolveAdminPolicyListQuery({ limit: 101 }));
   assert.throws(() => resolveAdminPolicyListQuery({ sort_by: 'sql' as 'id' }));
-
-  assert.deepEqual(
-    resolveAdminPolicyListQuery({ page: 2, size: 10, sort_by: 'title' }),
-    {
-      page: 2,
-      size: 10,
-      sort_by: 'title',
-      sort_order: 'asc',
-    },
-  );
+  assert.deepEqual(resolveAdminPolicyListQuery({ page: 2, limit: 10, sort_by: 'title' }), {
+    page: 2,
+    limit: 10,
+    sort_by: 'title',
+    order: 'desc',
+  });
 });
 
-test('handleAdminLogFileListMock는 pagination envelope와 basename filename을 반환한다', () => {
-  const response = handleAdminLogFileListMock({ page: 1, size: 2 });
-
-  assertPaginationEnvelope(response, 'admin log file list response');
-  assert.equal(response.items.length, 2);
-
-  for (const item of response.items) {
-    assertAdminLogFileListItemContract(item);
+test('로그 파일 Mock은 Backend files envelope와 basename만 반환한다', () => {
+  const response = handleAdminLogFileListMock();
+  assertAdminLogFileListResponseContract(response);
+  assert.ok(response.files.length >= 2);
+  for (const item of response.files) {
     assert.equal(item.filename.includes('/'), false);
+    assert.equal('path' in item, false);
   }
 });
 
-test('handleAdminLogEventListMock는 safe event 필드만 list item에 노출한다', () => {
+test('로그 이벤트 Mock은 Backend events envelope와 safe allowlist만 반환한다', () => {
   const response = handleAdminLogEventListMock({
     page: 1,
-    size: 10,
+    limit: 10,
     file_id: MOCK_ACTIVE_LOG_FILE_ID,
   });
-
-  assertPaginationEnvelope(response, 'admin log event list response');
-  assert.ok(response.items.length >= 1);
-
-  for (const item of response.items) {
-    assertAdminLogEventListItemContract(item);
+  assertAdminLogEventListResponseContract(response);
+  assert.ok(response.events.length >= 1);
+  for (const item of response.events) {
     assert.equal('message' in item, false);
     assert.equal('stack_trace' in item, false);
+    assert.equal('raw' in item, false);
+    assert.equal('sql_parameters' in item, false);
   }
 });
 
-test('handleAdminLogArchiveDeleteMock는 active file 409와 archive delete를 구분한다', () => {
+test('archive 삭제 Mock은 active 400과 archive 감사 응답을 구분한다', () => {
   const active = handleAdminLogArchiveDeleteMock(MOCK_ACTIVE_LOG_FILE_ID);
-  assert.equal(active.status, 409);
-  if (active.status === 409) {
-    assertAdminObservabilityErrorBody(active.body);
-  }
+  assert.equal(active.status, 400);
+  assertAdminObservabilityErrorBody(active.body);
 
   const archive = handleAdminLogArchiveDeleteMock(MOCK_ARCHIVE_LOG_FILE_ID);
   assert.equal(archive.status, 200);
   if (archive.status === 200) {
     assert.equal(archive.body.deleted, true);
-    assert.equal(archive.body.file_id, MOCK_ARCHIVE_LOG_FILE_ID);
+    assert.ok(archive.body.audit_id.length > 0);
   }
 });
 
-test('handleAdminLogRotateCurrentMock는 rotate 결과 DTO를 반환한다', () => {
+test('현재 로그 정리 Mock은 rotate·생성 archive 삭제·감사 의미를 반환한다', () => {
   const result = handleAdminLogRotateCurrentMock();
-  assert.equal(result.previous_active_file_id, MOCK_ACTIVE_LOG_FILE_ID);
-  assert.ok(result.rotated_file_id.length > 0);
-  assert.ok(result.message.length > 0);
+  assert.equal(result.rotated_file_id, MOCK_ACTIVE_LOG_FILE_ID);
+  assert.ok(result.deleted_archive_file_id.startsWith('app.log.'));
+  assert.ok(result.audit_id.length > 0);
 });
 
-test('resolveAdminLogFileListQuery와 resolveAdminLogEventListQuery는 size 경계를 검증한다', () => {
-  assert.throws(() => resolveAdminLogFileListQuery({ size: 0 }));
-  assert.throws(() => resolveAdminLogEventListQuery({ size: 101 }));
+test('로그 query resolver가 Backend limit·level 경계를 검증한다', () => {
+  assert.throws(() => resolveAdminLogEventListQuery({ limit: 101 }));
   assert.throws(() => resolveAdminLogEventListQuery({ level: 'TRACE' as 'INFO' }));
+  assert.deepEqual(resolveAdminLogEventListQuery({ file_id: ' app.log.1 ', q: ' fail ' }), {
+    file_id: 'app.log.1',
+    page: 1,
+    limit: 20,
+    q: 'fail',
+  });
 });

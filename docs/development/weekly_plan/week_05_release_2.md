@@ -2,7 +2,8 @@
 
 ## 계획 정보
 
-- 상태: approved (4주차 DTL4-5·`W4-G4_MIDPOINT_PASS` 뒤 착수 대기)
+- 상태: approved (4주차 `W4-G4_MIDPOINT_PASS` 완료, `develop` 병합·W5-G0
+  기준선 확정 뒤 착수)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
 - 독립 검증 역할: 사용성 리뷰어, QA
@@ -56,6 +57,9 @@ blocker로 유지한다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.
 - 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.
+- 4주차 완료 브랜치 `feature/integration/week-04-acceptance`는 실제 DB
+  3,269건·Migration `20260810_0006`·지역정책 109건과 검색 Browser 인수를
+  통과했다. 5주차 공통 시작 SHA는 이 결과를 `develop`에 병합한 뒤 고정한다.
 
 ## 범위
 

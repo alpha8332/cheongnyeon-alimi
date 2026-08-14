@@ -101,7 +101,28 @@
 
 ---
 
-## 4. 오류 응답 규격 (Error Responses)
+## 4. 현재 로그 rotate 정리
+
+- **Endpoint**: `POST /api/v1/admin/logs/rotate-current`
+- **인증**: 필요 (`Authorization: Bearer <admin_token>`)
+- **의미**: 활성 `app.log`를 직접 삭제하지 않는다. 기존 numbered archive를
+  이동·정리하지 않는 고유 임시 archive로 먼저 회전하고, 그 작업으로 생성된
+  archive만 삭제한다. 기존 archive는 보존하며 작업별 Audit Trail을 남긴다.
+
+### 성공 응답 (200 OK)
+
+```json
+{
+  "rotated_file_id": "app.log",
+  "deleted_archive_file_id": "app.log.rotate-a1b2c3d4",
+  "audit_id": "audit-a1b2c3d4",
+  "message": "Current log rotated and its generated archive deleted successfully."
+}
+```
+
+---
+
+## 5. 오류 응답 규격 (Error Responses)
 
 * **400 Bad Request**: 활성 파일(`app.log`) 직접 삭제 시도 또는 Path Traversal 시도 시
 * **401 Unauthorized**: 세션 토큰 미제공 또는 만료 시

@@ -6,11 +6,14 @@ from app.schemas.admin_log import (
     LogDeleteResponse,
     LogEventListResponse,
     LogFileListResponse,
+    LogLevel,
+    LogRotateResponse,
 )
 from app.services.admin_log import (
     delete_archived_log_file_service,
     get_log_events_service,
     list_log_files_service,
+    rotate_current_log_service,
 )
 
 router = APIRouter()
@@ -47,12 +50,12 @@ def get_log_files_endpoint(
     },
 )
 def get_log_events_endpoint(
-    file_id: str = Query(default="app.log", description="조회 대상 로그 파일 ID"),
+    file_id: str = Query(default="app.log", min_length=1, max_length=255, description="조회 대상 로그 파일 ID"),
     page: int = Query(default=1, ge=1, description="페이지 번호"),
     limit: int = Query(default=20, ge=1, le=100, description="페이지 당 항목 수"),
-    level: Optional[str] = Query(default=None, description="로그 레벨 필터 (INFO, ERROR 등)"),
-    component: Optional[str] = Query(default=None, description="컴포넌트 필터"),
-    query_str: Optional[str] = Query(default=None, alias="q", description="이벤트 검색어"),
+    level: Optional[LogLevel] = Query(default=None, description="로그 레벨 필터"),
+    component: Optional[str] = Query(default=None, min_length=1, max_length=100, description="컴포넌트 필터"),
+    query_str: Optional[str] = Query(default=None, alias="q", min_length=1, max_length=200, description="이벤트 검색어"),
     admin_payload: dict = Depends(get_current_admin_payload),
 ) -> LogEventListResponse:
     """인증된 관리자 전용 파싱된 JSON Lines 로그 이벤트 목록을 페이징 및 필터하여 반환한다."""
@@ -69,7 +72,33 @@ def get_log_events_endpoint(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
+
+
+@router.post(
+    "/rotate-current",
+    response_model=LogRotateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Rotate and clear the current log with an audit record",
+    responses={
+        200: {"description": "Current log rotate-and-cleanup succeeded"},
+        401: {"description": "Admin session authentication failed"},
+        403: {"description": "Admin permission denied"},
+        500: {"description": "Current log rotate-and-cleanup failed"},
+    },
+)
+def rotate_current_log_endpoint(
+    admin_payload: dict = Depends(get_current_admin_payload),
+) -> LogRotateResponse:
+    """Clear the current log without exposing arbitrary file operations."""
+
+    try:
+        return rotate_current_log_service(admin_id=admin_payload.get("sub", "admin"))
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
 
 
 @router.delete(

@@ -4,6 +4,7 @@ from typing import Optional, Tuple
 from uuid import UUID
 from sqlalchemy.orm import Session
 
+from app.core.logging import logger
 from app.models.collection_run import CollectionRun
 from app.schemas.collection_run_admin import (
     CollectionRunAdminItem,
@@ -37,6 +38,14 @@ def trigger_manual_collection_run_service(
         is_stale = check_is_stale(active_run.started_at, active_run.finished_at, str(active_run.status))
         if not is_stale:
             # 정상 진행 중인 2시간 미만의 수집건이 존재함 -> Conflict 409
+            logger.warning(
+                "manual_collection_conflict",
+                extra={
+                    "component": "collector",
+                    "collection_run_id": str(active_run.run_id),
+                    "source_id": source_id,
+                },
+            )
             return None, active_run
 
     # 중복 진행 건이 없거나, 기존 건이 Stale인 경우 새 수동 수집건 시작
@@ -56,6 +65,15 @@ def trigger_manual_collection_run_service(
         status=str(new_run.status),
         started_at=new_run.started_at,
         message="Manual collection run initiated successfully.",
+    )
+
+    logger.info(
+        "manual_collection_started",
+        extra={
+            "component": "collector",
+            "collection_run_id": str(new_run.run_id),
+            "source_id": new_run.source_id,
+        },
     )
 
     return response_dto, None

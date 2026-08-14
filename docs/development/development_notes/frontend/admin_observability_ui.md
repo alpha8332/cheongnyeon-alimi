@@ -18,9 +18,9 @@ Toast·a11y(FE8-06)를 Integration 09 proposal 계약에 맞춰 구현·검증�
 
 ## Forest 범위
 
-이 기록은 Frontend 08 Slice 구현·검증 결과를 누적한다. W4-G0 승인 전
-admin policy·log API path·DTO는 proposal이며 Real API 연동은 Backend merge 후
-Real API golden E2E에서 재검증한다.
+이 기록은 Frontend 08 Slice 구현·검증 결과를 누적한다. 최초 구현은 W4-G0
+proposal이었고, `2026-08-14` DTL4-5에서 현재 Backend OpenAPI 기준으로
+TypeScript·Mock·소비 테스트를 정렬했다. Real API golden E2E는 AO5에 남아 있다.
 
 ## Slice 진행 현황
 
@@ -105,16 +105,20 @@ Real API golden E2E에서 재검증한다.
   `aria-describedby`, refresh focus return
 - `frontend/e2e/admin-observability-toast-a11y.spec.ts` — 7 Mock-first scenarios
 
-### 계약 정렬 메모 (Backend 미구현)
+### DTL4-5 계약 정렬 (`2026-08-14`)
 
-| 영역 | FE8 proposal | Backend 상태 |
+| 영역 | 과거 FE8 proposal | DTL4-5 확정 소비 |
 | --- | --- | --- |
-| Policy admin API | `/api/v1/admin/policies` | `feature/backend/admin-observability` 브랜치 없음 |
-| Log admin API | `/api/v1/admin/log-files` | 동일 — AO1~AO3 미merge |
-| List envelope | `page`·`size`·`pages`·`total` | Backend 05 CollectionRun 패턴 따름 |
-| Error body | protected route `detail` | Backend 04·FE3와 동일 |
+| Policy admin API | `/api/v1/admin/policies` | 같은 경로, `limit`·`order`, Backend allowlist sort |
+| Log admin API | `/api/v1/admin/log-files` | `/api/v1/admin/logs/files`·`/events`·`/archives/{file_id}`·`/rotate-current` |
+| List envelope | `page`·`size`·`pages`·`total` | Policy `{items,total,page,limit}`, log files `{files}`, events `{events,total,page,limit}` |
+| Error body | protected route `detail` | Backend `detail`, active delete `400` |
 
-Real API 연동·Browser E2E는 Integration 09 Backend merge 후 Real API golden 재검증.
+Mock fixture와 공개 DTO 소비 테스트 및 production build는 통과했다. Real API
+Browser E2E는 Integration 09 AO5에서 재검증한다.
+
+DTL4-5 재검증에서 관리자 observability Playwright는 **19 passed, 1 skipped**
+(Real API 조건부 golden)였다.
 
 ## 설계 결정
 

@@ -22,7 +22,6 @@ class SecretBoundaryTests(unittest.TestCase):
             "APIkey.txt",
             ".env",
             ".env.local",
-            "opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx",
             "runtime/raw/youthcenter-api/response.json",
             "data/runtime/raw/bokjiro-central-welfare-api/response.xml",
         )

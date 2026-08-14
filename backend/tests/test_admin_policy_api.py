@@ -95,3 +95,28 @@ def test_get_admin_policy_detail_not_found_404(admin_token):
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert response.status_code == 404
+
+
+def test_admin_policy_json_filters_apply_before_total_and_pagination(admin_token, db):
+    policies = db.query(Policy).all()
+    category = next(category for policy in policies for category in policy.categories)
+    expected = [policy for policy in policies if category in policy.categories]
+
+    response = client.get(
+        f"/api/v1/admin/policies?category={category}&limit=1",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == len(expected)
+    assert len(data["items"]) <= 1
+    assert all(category in item["categories"] for item in data["items"])
+
+
+def test_admin_policy_filter_enums_reject_unknown_values(admin_token):
+    response = client.get(
+        "/api/v1/admin/policies?category=arbitrary_sql&status=unknown",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert response.status_code == 422

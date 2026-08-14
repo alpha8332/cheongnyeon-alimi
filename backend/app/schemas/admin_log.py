@@ -1,6 +1,9 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
+
+
+LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 class LogFileItem(BaseModel):
@@ -22,7 +25,7 @@ class LogFileListResponse(BaseModel):
 class LogEventItem(BaseModel):
     """파싱된 구조화 JSON 로그 이벤트 DTO."""
     timestamp: str
-    level: str
+    level: LogLevel
     component: str = "app"
     event: str
     request_id: Optional[str] = None
@@ -45,4 +48,15 @@ class LogDeleteResponse(BaseModel):
     file_id: str
     deleted: bool
     audit_id: str = Field(description="생성된 삭제 감사 기록 ID")
+    message: str
+
+
+class LogRotateResponse(BaseModel):
+    """Result of rotating and clearing only the current application log."""
+
+    rotated_file_id: str = Field(description="Active log file recreated after rotation")
+    deleted_archive_file_id: str = Field(
+        description="Archive created from the active log and then deleted"
+    )
+    audit_id: str = Field(description="Audit trail ID for the rotate-and-clear action")
     message: str

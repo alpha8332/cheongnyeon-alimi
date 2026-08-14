@@ -164,7 +164,7 @@
 - [CollectionRun Admin UI Forest 개발 기록](development/development_notes/frontend/collection_run_admin_ui.md):
   FE3-00~06 PIN session·실행 기록·수동 실행·ApiErrorToast·Playwright E2E
 - [Eligibility Summary UI Forest 개발 기록](development/development_notes/frontend/eligibility_summary_ui.md):
-  FE7-00~06 DTO·핵심 신청 조건 카드·비교 badge·evidence link·Toast·a11y·Playwright E2E
+  Integration 08 승인 DTO·핵심 신청 조건·evidence 원문·a11y·Playwright E2E와 DTL4-6 회귀 정리
 - [Admin Observability UI Forest 개발 기록](development/development_notes/frontend/admin_observability_ui.md):
   FE8-00~06 admin policy·log DTO·표·drawer·maintenance·Toast·a11y·Playwright E2E
 - [Integration Fix and Regression Forest 개발 기록](development/development_notes/frontend/integration_and_regression.md):
@@ -270,12 +270,26 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 
 | ID | 상태 | 다음 담당 | 완료·재개 조건 |
 | --- | --- | --- | --- |
-| `W4-G1-BE-AUTH` | review-pending | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
-| `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock을 승인 계약과 대조 |
+| `W4-G1-BE-AUTH` | completed (`2026-08-14`) | Team Leader 검토 | local client+local/test 기본 `0000`, production 전용 token secret fail-closed 테스트 통과 |
+| `W4-G1-FE-CONSUMER` | completed (`2026-08-14`) | Team Leader 검토 | 관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 소비 대조와 Frontend 162건 통과 |
+| `W4-G2-PG-READINESS` | completed (`2026-08-14`) | DTL4-7 actual E2E | PostgreSQL 포함 Python 487건·95 subtests, Migration 단일 head와 격리 test DB 확인 |
+| `W4-G2-FE-READINESS` | completed (`2026-08-14`) | DTL4-7 actual E2E | unit·lint·build 통과, Mock Browser 79건 통과·Real API 조건부 11건 실행 조건 명시 |
+| `W4-G3-ACTUAL-E2E` | completed (`2026-08-14`) | DTL4-8 전체 회귀 | 실제 PostgreSQL·Runtime·FastAPI·React 관리자·웹 Source·사용자 E2E와 Release 1 검색·상세 회귀 통과 |
+| `W4-G4-MIDPOINT` | completed (`2026-08-14`) | 5주차 승인 작업·독립 검증 | 전체 회귀·계약·문서·비추적 대조, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건 검색 인수 통과; Release 2 최종 Gate는 아님 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
 `W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 구현 적합성
 확인이며 Data 03·04의 기반 구현과 완료된 Integration 08을 막지 않는다.
+DTL4-5는 위 두 항목과 관리자 Policy·로그 DTO, Eligibility 중복 proposal,
+Data 05 재사용·중복 경계를 함께 대조해 `W4-G1_APPROVED`로 판정했다. 상세 근거는
+[v0.5.0 Contract Baseline 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md)에 둔다.
+DTL4-6은 실제 PostgreSQL과 전 영역 자체 검증을 통과하고 Eligibility 과거 proposal
+잔재를 정리해 `W4-G2_APPROVED`로 판정했다. DTL4-7은 실제 PostgreSQL·Runtime·
+FastAPI·React에서 관리자·웹 Source·사용자 세 Critical Path와 Release 1 검색·
+상세 회귀를 통과해 `W4-G3_APPROVED`로 판정했다. 이어 DTL4-8 전 영역 회귀·
+문서 대조와 비추적 감사를 완료해
+`W4-G4_MIDPOINT_PASS`로 판정했다. 5주차에는 Data 06·승인 추가 기능·결함 수정·
+UI/UX 최적화와 독립 QA·사용성 리뷰·보고서 대조를 수행한다.
 `W4-ES2-BE-CONSUMER`는 NormalizedProgram 1.2.0, Migration `20260810_0006`,
 상세 DTO와 PostgreSQL actual 대조를 통과해 `2026-08-10` 완료 처리했다.
 `W4-ES3-FE-CONSUMER`는 상세 TypeScript·Mock·UI와 승인 문구, 시설 전화 링크,

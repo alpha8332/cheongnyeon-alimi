@@ -8,8 +8,37 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 4주차 실제 로컬 DB를 Migration `20260810_0006`과 정책 3,269건으로 정렬하고,
+  지역 청년정책 109건의 멱등 적재와 서울·대구·부산 검색·상세 노출을 검증했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- DTL4-7에서 실제 PostgreSQL·Runtime·FastAPI·React를 연결해 관리자 데이터·
+  CollectionRun·로그 정리, 공식 Source 자격요건, 추천·북마크·달력·알림·`.ics`
+  세 Critical Path와 Release 1 검색·상세 회귀를 검증했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- DTL4-5에서 관리자 Policy·로그 Backend OpenAPI와 Frontend TypeScript·Mock을
+  동일 DTO·pagination·오류 계약으로 정렬하고, 현재 로그 rotate 정리·감사와
+  request/run/source correlation을 연결했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- 관리자 기본 PIN `0000`을 local client의 development/local/test로 제한하고,
+  production token 서명은 전용 `ADMIN_TOKEN_SECRET` 없이는 fail-closed 처리했다
+  ([개발 기록](docs/development/development_notes/backend/admin_access_control.md))
+
 ### Fixed
 
+- `run.bat`가 Node.js를 시스템 PATH에서만 찾아 Codex 데스크톱 환경에서 시작하지
+  못하던 문제를 수정하고, 번들 Node.js 자동 탐색과 명시적 실행 파일 인자를 추가
+- Windows actual 실행기가 DB 이름을 `cheongnyeon_alimi`로 고정해 격리 검증 DB를
+  선택할 수 없던 문제를 수정하고, 검증된 `DatabaseName` 인자로 pgpass 대상 DB를
+  명시할 수 있게 했다
+  ([검증 안내](docs/contest/release_1_evidence_guide.md))
+- Runtime 로그 `backend/logs/app.log`가 Git에 추적되던 경계를 정리하고 Backend
+  로그 디렉터리 전체를 비추적 대상으로 고정했다
+- DTL4-6에서 Integration 08 승인 Eligibility DTO와 충돌하던 과거 fixture id,
+  개인 조건 비교·summary 새로고침 E2E/API hook·미사용 CSS를 제거하고 현재
+  seed·evidence 원문 계약으로 Browser 회귀와 수동 검증 문서를 정렬
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
 - Frontend `/` white screen after FE9-01: harden localStorage recovery notice reads,
   module-init storage sync, layout error boundaries, and route error fallback
   ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))

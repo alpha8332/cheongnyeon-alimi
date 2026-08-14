@@ -12,6 +12,7 @@ from app.services.admin_access import (
     verify_admin_session_token,
     get_admin_token_secret,
     calculate_cooldown_seconds,
+    verify_admin_pin,
 )
 from app.api.deps import get_current_admin_payload
 from app.api.v1.endpoints.admin_access import router as admin_router
@@ -79,10 +80,20 @@ def test_admin_session_production_fail_closed():
     assert response.status_code == 401
 
 
+def test_default_pin_requires_local_request_boundary():
+    """개발 기본 PIN도 loopback 요청 경계를 명시하지 않으면 허용하지 않는다."""
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+
+    assert verify_admin_pin("0000", allow_local_default_pin=False) is False
+    assert verify_admin_pin("0000", allow_local_default_pin=True) is True
+
+
 def test_admin_session_custom_hash_success():
     """명시적 ADMIN_PIN_HASH(예: 1234 해시) 설정 시 해당 PIN으로만 성공."""
     settings.ENVIRONMENT = "production"
     settings.ADMIN_PIN_HASH = hashlib.sha256(b"1234").hexdigest()
+    settings.ADMIN_TOKEN_SECRET = "production-admin-token-secret-for-test"
 
     # 0000 요청 -> 실패 401
     resp_fail = client.post("/api/v1/admin/session", json={"pin": "0000"})
@@ -92,6 +103,17 @@ def test_admin_session_custom_hash_success():
     resp_ok = client.post("/api/v1/admin/session", json={"pin": "1234"})
     assert resp_ok.status_code == 200
     assert resp_ok.json()["role"] == "admin"
+
+
+def test_admin_session_production_requires_dedicated_token_secret():
+    """Production은 공용 SECRET_KEY fallback 없이 전용 token secret 미설정을 거부한다."""
+    settings.ENVIRONMENT = "production"
+    settings.ADMIN_PIN_HASH = hashlib.sha256(b"1234").hexdigest()
+    settings.ADMIN_TOKEN_SECRET = None
+
+    response = client.post("/api/v1/admin/session", json={"pin": "1234"})
+    assert response.status_code == 401
+    assert get_admin_token_secret() is None
 
 
 def test_progressive_lockout_calculation():

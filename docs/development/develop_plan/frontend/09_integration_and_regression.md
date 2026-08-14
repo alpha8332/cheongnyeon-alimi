@@ -14,7 +14,8 @@
   FE8-05) 및 Backend·Integration Phase 2~3 머지
 - 후속 Forest: Integration 07 Release 2 Feature Acceptance
 - 권장 브랜치: `feature/frontend/week4-integration-regression`
-- 현재 Slice: FE9-02 completed (Mock-first, W4-G4 `CONDITIONAL`)
+- 현재 Slice: FE9-02 completed (담당자 자체 Mock-first 판정은
+  `CONDITIONAL`; DTL4-7·DTL4-8 actual 통합 뒤 최종 `W4-G4_MIDPOINT_PASS`)
 
 ## 목적
 

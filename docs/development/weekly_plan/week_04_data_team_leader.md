@@ -2,7 +2,8 @@
 
 ## 계획 정보
 
-- 상태: in progress (`DTL4-1`·`W4-G0` 완료, 후속 Forest 착수 가능)
+- 상태: completed (`DTL4-8` 전체 회귀·문서 대조 완료,
+  `W4-G4_MIDPOINT_PASS`)
 - 대상 주차: 4주차
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data 담당, Team Leader - Integration
@@ -11,8 +12,11 @@
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
 - 현재 Slice: Data 05 `RYP0`~`RYP9`·`RYP-G6` 완료,
   accepted 109건 적재·충북 open 0건 확정·명시적 지역 검색 match-only·전체 감사
-  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), 이후 Backend·Frontend 병합과
-  `DTL4-5` 소비 대조·W4-G4 예정. Data 06 구현은 5주차로 이동
+  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), `DTL4-5` 소비 대조와
+  `W4-G1_APPROVED` 완료, `DTL4-6` PostgreSQL·영역별 검증을 통과해
+  `W4-G2_APPROVED`, `DTL4-7` 세 actual E2E·Release 1 회귀를 통과해
+  `W4-G3_APPROVED`, `DTL4-8` 전체 회귀·문서·비추적 대조를 통과해
+  `W4-G4_MIDPOINT_PASS`. Data 06 구현과 독립 QA·사용성 리뷰는 5주차로 이동
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -479,6 +483,24 @@ actual 통합 전에 각 영역의 단위·통합 결과와 Data 실제 수집·
 - actual DB·API·Browser 실행에 필요한 Migration·환경변수·fixture가 준비됨
 - blocker가 없거나 담당·수정·재검증 조건이 명확함
 
+### DTL4-6 완료 기록 (`2026-08-14`)
+
+- 시작 기준: `feature/integration/week-04-acceptance`의 `1036e8a`
+- 실제 PostgreSQL 포함 Backend·Data 전체: 487 passed, 0 skipped,
+  95 subtests passed
+- Regional Browser Runtime: 52 passed
+- Frontend: unit 162 passed, lint·production build passed
+- Mock Browser 전체 분할 실행: 79 passed, Real API 조건부 11 skipped
+- Eligibility UI·Week 4 회귀: 10 passed, Real API 조건부 2 skipped
+- Alembic 단일 head `20260810_0006`, 격리 test DB와 Chromium 준비 확인
+- 과거 Eligibility proposal의 fixture id·개인 비교·summary refetch E2E/API hook·
+  미사용 CSS·문서 잔재를 승인 DTO와 현재 seed 기준으로 정리
+
+Data 03~05와 Integration 08의 actual 인수 기록, 이번 실제 PostgreSQL 전체 회귀와
+Backend·Frontend 자체 검증을 근거로 `W4-G2_APPROVED`로 판정한다. 조건부 skip은
+실패 은폐가 아니라 실제 Backend가 필요한 DTL4-7 실행 목록이며, 실제 FastAPI·
+React에서 11건과 세 Critical Path를 재검증한다.
+
 ## Slice DTL4-7 - 세 actual E2E와 W4-G3
 
 ### 목적
@@ -555,6 +577,25 @@ Critical Path를 검증한다.
 - 비밀·Raw·Runtime log·DB 파일이 Git에 포함되지 않음
 - Data·API·UI의 identity·상태·evidence·시간 의미가 일치함
 
+### DTL4-7 완료 기록 (`2026-08-14`)
+
+- 시작 기준: `feature/integration/week-04-acceptance`의 `c163235`
+- 격리 PostgreSQL에 Migration head·행정구역·canonical Seed를 적용하고 저장된
+  Runtime Raw로 온통청년 2,695건·복지로 461건·천안 웹 1건·부산 지역 1건 적재
+- 경북·서울 대표 표본은 현재 Gate에 따라 각 3건 격리, 임의 accepted 승격 없음
+- 기존 Real API golden 7건과 ES4 PostgreSQL 상세 1건 통과
+- actual 전용 관리자·웹 Source·사용자 세 Critical Path 3건 통과
+- 관리자 Policy·CollectionRun·log rotate/archive 감사, `401`·`400`·`429` 확인
+- Release 1 golden 검색·상세, Eligibility evidence·비확정 의미와 부산 partial
+  정책의 DB → API → Browser identity 일치 확인
+- 추천·북마크 reload·달력·알림·`.ics`·손상 localStorage 복구 확인
+- Frontend 162건·lint·build, 관련 Backend 65건, PostgreSQL 통합 최종 3건 통과
+- `run_local.ps1`의 고정 DB 이름 결함을 수정해 검증된 격리 DB 선택 지원
+
+위 실제 결과와 비추적 경계를 근거로 `W4-G3_APPROVED`로 판정한다. DTL4-8
+전체 회귀·문서 대조와 W4-G4 midpoint, 독립 QA·사용성 리뷰는 아직 수행하지
+않았다.
+
 ## Slice DTL4-8 - 전체 회귀·문서·W4-G4 midpoint
 
 ### 목적
@@ -588,6 +629,39 @@ Data 06을 제외한 4주차 승인 기본 기능 구현과 담당자 자체 검
   위험 결함 또는 비차단
   검증 제약의 담당·완료 조건이 명확함
 - `W4-G4_BLOCKED`: 기본 기능 하나라도 미구현, 필수 E2E·계약·보안 경계 실패
+
+### DTL4-8 완료 기록 (`2026-08-14`)
+
+- 시작 기준: `feature/integration/week-04-acceptance`의 `d8952a4`
+- Data 전체 unittest 282건, Backend 전체 pytest 187건, PostgreSQL Data
+  Integration 8건 통과
+- Frontend unit 162건, lint, production build 통과
+- 전체 Mock Browser 회귀 79건 통과·Real API/ES4 조건부 14건 skip; 조건부
+  actual은 DTL4-7의 Real API 8건과 관리자·웹 Source·사용자 3건으로 별도 통과
+- Migration 단일 head `20260810_0006`, NormalizedProgram Schema·OpenAPI·
+  TypeScript·Mock 소비 계약의 전체 회귀 통과
+- 금지된 API key·pgpass·Runtime Raw/HTML/log/decision·DB 산출물 Git 추적 0건,
+  전용 test DB는 검증 뒤 빈 `alembic_version`만 남김
+- README·`.env.example`·운영 문서의 관리자 PIN, DB 선택, Runtime·로그 경계와
+  실제 구현이 일치함
+- 사용자 기본 셸에서 발견한 Node PATH 의존을 번들 Node fallback과
+  `-NodeExecutable` 인자로 보정하고 `run.bat -NoBrowser -ExitAfterReady`의
+  Backend health 200·Frontend 준비·정상 종료를 실제 확인
+- 기본 `cheongnyeon_alimi` DB의 pgpass 역할 권한과 Migration `0004` 잔존을
+  확인해 최소 DML·sequence 권한과 `0005`·`0006`을 적용하고, 기존 3,159건을
+  보존한 채 천안 웹 1건·지역정책 109건을 실제 적재
+- 동일 Raw 재실행은 천안 1건·지역 109건 모두 unchanged, 실패·prune 0건이며
+  최종 DB 3,269건과 서울 목록·검색·상세 Browser 실제 노출을 확인
+- 기존 Starlette/httpx 전환 warning 1건과 Frontend build의 번들 크기·Vite 향후
+  호환 warning은 기능·보안·계약을 막지 않는 5주차 유지보수 후보로 분류
+- 서울 지역 Source 110건 중 accepted 1·review 94·closed 15인 보수적 판정은
+  거짓 승격 없이 유지하며, 5주차 필수 기본 기능 이월이 아닌 후속 데이터 품질
+  보강 후보로 기록
+
+Data 06을 제외한 승인 기본 기능, 세 actual E2E, 담당자 전체 회귀와 문서 대조가
+완료됐으므로 `W4-G4_MIDPOINT_PASS`로 판정한다. 이는 Release 2 최종 Gate나
+`v0.5.0` tag 승인 근거가 아니다. 독립 QA·사용성 리뷰·보고서 대조는 수행하지
+않았고 5주차에서 별도로 실행한다.
 
 다음 중 하나라도 빠지면 `PASS`나 `CONDITIONAL`을 사용할 수 없다.
 
@@ -712,25 +786,25 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
 - [x] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
 - [x] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
-- [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
+- [x] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
 - [x] Data 05 RYP0 후보 inventory·검증 계약 완료
 - [x] Data 05 RYP1 Browser Discovery preflight·Source 승인 완료
 - [x] Data 05 RYP2~RYP4 Adapter·지역·중복 제외 Gate 통과
-- [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
+- [x] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
 - [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
 - [x] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료
 - [x] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
 - [x] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
 - Data 06 SOP0~SOP5는 5주차 W5-G0~G1로 이동
-- [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
-- [ ] Release 1 golden 검색·상세 회귀 통과
-- [ ] Data·Backend·Frontend 전체 담당자 회귀 결과 대조
-- [ ] Schema·API·DB·운영·README·개발 기록과 실제 구현 일치
-- [ ] 비밀·Runtime Raw·HTML·로그·DB 파일 Git 비추적 확인
-- [ ] `python scripts/validate_docs.py`와 `git diff --check` 통과
-- [ ] W4-G4 midpoint 판정과 5주차 시작 조건 기록
-- [ ] 독립 QA·사용성 리뷰·보고서 미수행 상태를 정확히 기록
+- [x] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
+- [x] Release 1 golden 검색·상세 회귀 통과
+- [x] Data·Backend·Frontend 전체 담당자 회귀 결과 대조
+- [x] Schema·API·DB·운영·README·개발 기록과 실제 구현 일치
+- [x] 비밀·Runtime Raw·HTML·로그·DB 파일 Git 비추적 확인
+- [x] `python scripts/validate_docs.py`와 `git diff --check` 통과
+- [x] W4-G4 midpoint 판정과 5주차 시작 조건 기록
+- [x] 독립 QA·사용성 리뷰·보고서 미수행 상태를 정확히 기록
 
 ## 관련 문서
 

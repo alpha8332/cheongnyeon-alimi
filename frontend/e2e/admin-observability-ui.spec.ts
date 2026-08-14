@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const MOCK_ARCHIVE_LOG_FILE_ID = 'log-file-archive-20260810';
+const MOCK_ARCHIVE_LOG_FILE_ID = 'app.log.1';
 const MOCK_POLICY_TITLE = '합성 청년 주거 지원';
 const MOCK_PARTIAL_POLICY_TITLE = '합성 청년 자산 지원 상세';
 
@@ -17,7 +17,7 @@ async function waitForPolicyDataLoaded(page: Page) {
 }
 
 async function waitForLogEventsLoaded(page: Page) {
-  await expect(page.getByText('Log event를 불러오는 중입니다.')).toHaveCount(0, {
+  await expect(page.getByText('로그 이벤트를 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
   });
 }
@@ -106,12 +106,12 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
   test('6. log files summary·event list·filter', async ({ page }) => {
     await openLogsPage(page);
 
-    await expect(page.getByRole('heading', { name: '구조화 Log', level: 1 })).toBeVisible();
-    await expect(page.getByLabel('Log files')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '로그 조회 및 정리', level: 1 })).toBeVisible();
+    await expect(page.getByLabel('로그 파일 목록')).toBeVisible();
     await expect(page.getByText('app.log', { exact: true })).toBeVisible();
     await expect(page.getByText(MOCK_ARCHIVE_LOG_FILE_ID).first()).toBeVisible();
 
-    await expect(page.getByRole('table').getByText('Log events')).toBeVisible();
+    await expect(page.getByRole('table').getByText('로그 이벤트')).toBeVisible();
     await expect(page.getByText('request_completed')).toBeVisible();
 
     const filters = page.getByLabel('Log event 필터');
@@ -123,7 +123,7 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
     await expect(page.getByText('request_completed')).toHaveCount(0);
   });
 
-  test('7. log event detail — message·safe error_type·no stack trace', async ({ page }) => {
+  test('7. log event detail — safe allowlist·no Raw/SQL parameter', async ({ page }) => {
     await openLogsPage(page);
 
     const filters = page.getByLabel('Log event 필터');
@@ -133,14 +133,11 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
 
     await page.getByRole('button', { name: /2026\./ }).first().click();
 
-    const detail = page.getByLabel('Log event 상세');
+    const detail = page.getByLabel('로그 이벤트 상세');
     await expect(detail).toBeVisible();
     await expect(detail.getByText('ValidationError')).toBeVisible();
     await expect(
-      detail.getByText('Extracted document failed validation.'),
-    ).toBeVisible();
-    await expect(
-      detail.getByText('stack trace·credential·SQL parameter는 표시하지 않습니다.'),
+      detail.getByText('스택 추적, 자격 증명, 원문 및 SQL 매개변수는 표시하지 않습니다.'),
     ).toBeVisible();
     await expect(page.getByText('Traceback (most recent call last)')).toHaveCount(0);
   });
@@ -150,7 +147,7 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
 
     await page.getByLabel('Log event 필터').getByRole('button', { name: '새로고침' }).click();
     await waitForLogEventsLoaded(page);
-    await expect(page.getByRole('table').getByText('Log events')).toBeVisible();
+    await expect(page.getByRole('table').getByText('로그 이벤트')).toBeVisible();
   });
 
   test('9. log rotate confirm — Mock success', async ({ page }) => {
@@ -162,7 +159,7 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
     await dialog.getByRole('button', { name: 'rotate 실행' }).click();
 
     await expect(
-      page.getByText('Current log rotated and previous archive deleted.'),
+      page.getByText('Current log rotated and its generated archive deleted successfully.'),
     ).toBeVisible();
   });
 
@@ -180,7 +177,7 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
     await expect(dialog.getByRole('button', { name: 'archive 삭제' })).toBeEnabled();
     await dialog.getByRole('button', { name: 'archive 삭제' }).click();
 
-    await expect(page.getByText('Archive log file deleted successfully.')).toBeVisible();
+    await expect(page.getByText(/Log archive file 'app\.log\..+' deleted successfully\./)).toBeVisible();
   });
 
   test('11. admin nav cross-route — policies ↔ logs', async ({ page }) => {
@@ -216,7 +213,7 @@ test.describe('Admin Observability browser flow (FE8-05)', () => {
 
     await page.getByRole('link', { name: '구조화 Log' }).click();
     await waitForLogEventsLoaded(page);
-    await expect(page.getByLabel('Log files')).toBeVisible();
-    await expect(page.getByRole('table').getByText('Log events')).toBeVisible();
+    await expect(page.getByLabel('로그 파일 목록')).toBeVisible();
+    await expect(page.getByRole('table').getByText('로그 이벤트')).toBeVisible();
   });
 });

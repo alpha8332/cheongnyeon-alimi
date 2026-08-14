@@ -24,18 +24,16 @@ export const ADMIN_POLICY_TABLE_COLUMNS: readonly AdminPolicyTableColumnDef[] = 
   {
     key: 'application_start',
     label: '시작일',
-    sortable: true,
+    sortable: false,
     defaultVisible: false,
   },
   {
     key: 'application_end',
     label: '종료일',
-    sortable: true,
+    sortable: false,
     defaultVisible: false,
   },
   { key: 'regions', label: '지역', sortable: false, defaultVisible: false },
-  { key: 'age_min', label: '최소연령', sortable: false, defaultVisible: false },
-  { key: 'age_max', label: '최대연령', sortable: false, defaultVisible: false },
   {
     key: 'data_quality_status',
     label: '품질',
@@ -49,6 +47,7 @@ export const ADMIN_POLICY_TABLE_COLUMNS: readonly AdminPolicyTableColumnDef[] = 
     defaultVisible: true,
   },
   { key: 'updated_at', label: '갱신 시각', sortable: true, defaultVisible: false },
+  { key: 'created_at', label: '생성 시각', sortable: true, defaultVisible: false },
   { key: 'source_id', label: 'source_id', sortable: false, defaultVisible: false },
   { key: 'external_id', label: 'external_id', sortable: false, defaultVisible: false },
 ] as const;

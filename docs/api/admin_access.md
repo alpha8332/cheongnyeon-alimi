@@ -120,6 +120,10 @@ PIN이 4자리 숫자가 아니거나 유효하지 않은 JSON 요청인 경우 
 ## 4. 환경별 PIN 검증 규칙
 
 1. **로컬 / 개발 환경 (`ENVIRONMENT` = `development` / `local` / `test`)**:
-   - `ADMIN_PIN_HASH` 환경변수가 설정되지 않은 경우, 로컬 시연 편의를 위해 최초 기본 PIN `0000` (SHA-256 해시)을 허용한다.
+   - `ADMIN_PIN_HASH` 환경변수가 설정되지 않고 실제 요청 client가 loopback인 경우에만
+     로컬 시연용 최초 PIN `0000`을 허용한다. 외부 client 요청에는 개발 환경이어도
+     기본 PIN을 허용하지 않는다.
 2. **배포 / 프로덕션 환경 (`ENVIRONMENT` = `production`)**:
    - 명시적 `ADMIN_PIN_HASH`가 지정되지 않은 경우 **Fail-closed** 정책을 적용하여 `0000`을 포함한 모든 PIN 로그인을 `401`로 즉시 거부한다.
+   - `ADMIN_TOKEN_SECRET`을 별도로 지정해야 하며, 미설정 시 공용 `SECRET_KEY`로
+     fallback하지 않고 세션 발급을 거부한다.

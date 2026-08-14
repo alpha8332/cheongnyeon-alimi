@@ -70,19 +70,7 @@ export default function AdminLogEventFilters({
         </label>
 
         <label className="admin-log-event-filters__field">
-          <span className="admin-log-event-filters__label">collection_run_id</span>
-          <input
-            className="admin-log-event-filters__input"
-            type="text"
-            value={draft.collection_run_id}
-            onChange={(event) =>
-              onChange({ ...draft, collection_run_id: event.target.value })
-            }
-          />
-        </label>
-
-        <label className="admin-log-event-filters__field">
-          <span className="admin-log-event-filters__label">search</span>
+          <span className="admin-log-event-filters__label">q</span>
           <input
             className="admin-log-event-filters__input"
             type="search"

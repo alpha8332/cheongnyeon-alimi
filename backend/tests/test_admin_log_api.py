@@ -1,11 +1,13 @@
-from pathlib import Path
+import logging
+from logging.handlers import RotatingFileHandler
+
 import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.core.database import get_db
 from app.core.logging_config import LOG_DIR
-from app.services.admin_log import AUDIT_TRAIL
+from app.services.admin_log import AUDIT_TRAIL, rotate_current_log_service
 
 client = TestClient(app)
 
@@ -99,3 +101,68 @@ def test_path_traversal_protection_400(admin_token):
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert response.status_code in (400, 404)
+
+
+def test_rotate_current_log_clears_only_generated_archive(tmp_path):
+    """Current cleanup recreates app.log, removes its generated archive, and audits."""
+
+    active_file = tmp_path / "app.log"
+    existing_archive = tmp_path / "app.log.2"
+    active_file.write_text('{"event":"current-sensitive-log"}\n', encoding="utf-8")
+    existing_archive.write_text('{"event":"older-diagnostic"}\n', encoding="utf-8")
+    initial_audit_count = len(AUDIT_TRAIL)
+
+    result = rotate_current_log_service(admin_id="test-admin", log_dir=tmp_path)
+
+    assert result.rotated_file_id == "app.log"
+    assert result.deleted_archive_file_id.startswith("app.log.")
+    assert result.audit_id.startswith("audit-")
+    assert active_file.exists()
+    assert active_file.read_text(encoding="utf-8") == ""
+    assert not (tmp_path / result.deleted_archive_file_id).exists()
+    assert existing_archive.exists()
+    assert len(AUDIT_TRAIL) == initial_audit_count + 1
+    assert AUDIT_TRAIL[-1]["action"] == "rotate_current_cleanup"
+    assert AUDIT_TRAIL[-1]["success"] is True
+
+
+def test_rotate_current_log_preserves_full_handler_archive_set(tmp_path):
+    """Current cleanup must not renumber or evict existing handler archives."""
+
+    active_file = tmp_path / "app.log"
+    first_archive = tmp_path / "app.log.1"
+    second_archive = tmp_path / "app.log.2"
+    first_archive.write_text('{"event":"archive-one"}\n', encoding="utf-8")
+    second_archive.write_text('{"event":"archive-two"}\n', encoding="utf-8")
+
+    logger = logging.getLogger("cheongnyeon-alimi")
+    handler = RotatingFileHandler(
+        active_file,
+        maxBytes=1,
+        backupCount=2,
+        encoding="utf-8",
+    )
+    logger.addHandler(handler)
+    try:
+        handler.stream.write('{"event":"current"}\n')
+        handler.stream.flush()
+
+        result = rotate_current_log_service(admin_id="test-admin", log_dir=tmp_path)
+
+        assert result.deleted_archive_file_id.startswith("app.log.rotate-")
+        assert active_file.read_text(encoding="utf-8") == ""
+        assert first_archive.read_text(encoding="utf-8") == '{"event":"archive-one"}\n'
+        assert second_archive.read_text(encoding="utf-8") == '{"event":"archive-two"}\n'
+        assert not (tmp_path / result.deleted_archive_file_id).exists()
+
+        handler.stream.write('{"event":"after-cleanup"}\n')
+        handler.stream.flush()
+        assert "after-cleanup" in active_file.read_text(encoding="utf-8")
+    finally:
+        logger.removeHandler(handler)
+        handler.close()
+
+
+def test_rotate_current_log_requires_authentication():
+    response = client.post("/api/v1/admin/logs/rotate-current")
+    assert response.status_code == 401
