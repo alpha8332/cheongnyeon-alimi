@@ -8,7 +8,8 @@
 - 브랜치: `feature/frontend/bookmarks-calendar-admin`
 - 관련 계획:
   [Integration Fix and Regression Forest 개발 계획](../../develop_plan/frontend/09_integration_and_regression.md)
-- 현재 Slice: FE9-02 completed (Mock-first, W4-G4 `CONDITIONAL`)
+- 현재 Slice: FE9-02 completed (담당자 자체 Mock-first 판정은
+  `CONDITIONAL`; DTL4-7·DTL4-8 actual 통합 뒤 최종 `W4-G4_MIDPOINT_PASS`)
 
 ## 목적
 

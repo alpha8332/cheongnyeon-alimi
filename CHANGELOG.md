@@ -10,6 +10,9 @@
 
 ### Changed
 
+- 4주차 실제 로컬 DB를 Migration `20260810_0006`과 정책 3,269건으로 정렬하고,
+  지역 청년정책 109건의 멱등 적재와 서울·대구·부산 검색·상세 노출을 검증했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
 - DTL4-7에서 실제 PostgreSQL·Runtime·FastAPI·React를 연결해 관리자 데이터·
   CollectionRun·로그 정리, 공식 Source 자격요건, 추천·북마크·달력·알림·`.ics`
   세 Critical Path와 Release 1 검색·상세 회귀를 검증했다
