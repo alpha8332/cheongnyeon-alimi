@@ -425,6 +425,14 @@ identity의 완전 일치, 기존 captured 부분집합을 모두 확인한다. 
 사용할 수 없다. 분류 접두어는 기존 Raw 제목이 시작될 때까지만 제거해 제목 자체의
 대괄호를 보존한다.
 
+광주의 `checkpoint_detail_url` 모드는 현재 접수중 목록 34건과 완료 checkpoint
+31건의 추가 4·누락 1 교체 drift에 한해 별도 승인된 예외다. 기존 Raw list item의
+상세 URL·제목을 입력으로 사용하고, 공식 origin·`/www/50` path·`policyId`,
+checkpoint total 31과 선택 `discovered_ids`의 완전 일치, 기존 captured 부분집합을
+서버와 Browser runtime 양쪽에서 확인한다. 신규 4건은 입력·Raw·checkpoint에
+편입하지 않는다. 목록에서 빠진 기존 `1419`도 현재 상세 제목이 고정 Raw 제목과
+일치할 때만 재캡처하며 한 batch는 최대 3건이다.
+
 강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
 `/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고
 해당 outcome이 `failed`인 경우에만 Raw를 저장한다. 저장한 Raw를 같은 checkpoint

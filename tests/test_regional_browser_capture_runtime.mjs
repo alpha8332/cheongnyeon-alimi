@@ -10,6 +10,7 @@ import {
   daejeonConfig,
   gangwonConfig,
   gotoWithReadyFallback,
+  gwangjuCheckpointDetailConfig,
   jejuConfig,
   normalizeCheckpointDetailTitle,
   classifyDetailCanaryObservation,
@@ -309,6 +310,13 @@ const daeguCheckpointDetailFixture = JSON.parse(await readFile(
   ),
   "utf8",
 ));
+const gwangjuCheckpointDetailFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/gwangju_checkpoint_detail_recapture.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
 const gwangjuFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/gwangju_detail_1248.json", import.meta.url),
   "utf8",
@@ -390,6 +398,30 @@ test("Daegu checkpoint detail recapture rejects a detail URL identity drift", ()
     () => validateCheckpointDetailRecaptureContracts(
       daeguCheckpointDetailFixture.source_id,
       daeguCheckpointDetailFixture.list_url,
+      drifted,
+    ),
+    /checkpoint detail recapture contract is invalid/,
+  );
+});
+
+test("Gwangju checkpoint detail recapture accepts a frozen Raw identity contract", () => {
+  assert.deepEqual(
+    validateCheckpointDetailRecaptureContracts(
+      gwangjuCheckpointDetailFixture.source_id,
+      gwangjuCheckpointDetailFixture.list_url,
+      gwangjuCheckpointDetailFixture.items,
+    ),
+    gwangjuCheckpointDetailFixture.items,
+  );
+});
+
+test("Gwangju checkpoint detail recapture rejects a detail URL identity drift", () => {
+  const drifted = structuredClone(gwangjuCheckpointDetailFixture.items);
+  drifted[0].detail_url = drifted[0].detail_url.replace("1419", "1420");
+  assert.throws(
+    () => validateCheckpointDetailRecaptureContracts(
+      gwangjuCheckpointDetailFixture.source_id,
+      gwangjuCheckpointDetailFixture.list_url,
       drifted,
     ),
     /checkpoint detail recapture contract is invalid/,
@@ -742,6 +774,10 @@ test("Seoul distinguishes an empty official period from a missing label", () => 
 });
 
 test("remaining RYP8 Source configs pin the observed list and detail selectors", () => {
+  assert.equal(
+    gwangjuCheckpointDetailConfig().detailContentSelector,
+    ".detail-policy",
+  );
   assert.equal(chungbukConfig(1).detailContentSelector, ".p-table__content");
   assert.match(ulsanConfig(1).linkSelector, /dataId/);
   assert.match(daejeonConfig(1).identityPattern, /CT_/);

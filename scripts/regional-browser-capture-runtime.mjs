@@ -129,10 +129,20 @@ export function validateCheckpointDetailRecaptureContracts(
   } catch {
     throw new Error("checkpoint detail recapture contract is invalid");
   }
-  const validList = sourceId === "regional-daegu-youth-platform"
+  const validDaeguList = sourceId === "regional-daegu-youth-platform"
     && approvedList.origin === "https://www.dgjump.com"
     && approvedList.pathname === "/open_content/info/info_list_01"
     && approvedList.searchParams.get("search_flag") === "1";
+  const validGwangjuList = sourceId
+    === "regional-gwangju-integrated-youth-platform"
+    && approvedList.origin === "https://youth.jeonnam-gwangju.go.kr"
+    && approvedList.pathname === "/www/50"
+    && approvedList.searchParams.get("siteId") === "www"
+    && approvedList.searchParams.get("status") === "ing"
+    && approvedList.searchParams.get("pageIndex") === "1"
+    && approvedList.searchParams.get("url")
+      === "/www/policy/gjYgPolicyList";
+  const validList = validDaeguList || validGwangjuList;
   const validItems = Array.isArray(items)
     && items.length >= 1
     && items.length <= 3
@@ -147,9 +157,15 @@ export function validateCheckpointDetailRecaptureContracts(
       ) return false;
       try {
         const detailUrl = new URL(item.detail_url);
-        return detailUrl.origin === approvedList.origin
-          && detailUrl.pathname === "/open_content/info/info_list_01_view"
-          && detailUrl.searchParams.get("ap_seq") === item.external_id;
+        if (validDaeguList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname === "/open_content/info/info_list_01_view"
+            && detailUrl.searchParams.get("ap_seq") === item.external_id;
+        }
+        return validGwangjuList
+          && detailUrl.origin === approvedList.origin
+          && detailUrl.pathname === "/www/50"
+          && detailUrl.searchParams.get("policyId") === item.external_id;
       } catch {
         return false;
       }
@@ -191,6 +207,7 @@ export async function collectCheckpointDetailRecapture({
   detailPairValueSelector = null,
   detailMetadataSelector = null,
   sourceScopeSelectors,
+  checkpointTotalCount = null,
 }) {
   const contracts = validateCheckpointDetailRecaptureContracts(
     sourceId,
@@ -262,7 +279,7 @@ export async function collectCheckpointDetailRecapture({
     source_scope: sourceScope,
     list_url: listUrl,
     page: 1,
-    total_count: null,
+    total_count: checkpointTotalCount,
     has_next: false,
     discovered_ids: contracts.map((item) => item.external_id),
     action_trace: [
@@ -954,6 +971,13 @@ export function gwangjuConfig(page) {
       youth_policy_scope_text: ".sub-title h2",
       application_scope_text: ".state-ing",
     },
+  };
+}
+
+export function gwangjuCheckpointDetailConfig() {
+  return {
+    ...gwangjuConfig(1),
+    detailContentSelector: ".detail-policy",
   };
 }
 

@@ -247,9 +247,13 @@ def _store_recapture(
             and total_count == checkpoint.total_count + len(excluded_ids)
         )
     checkpoint_detail_mode = recapture_mode == "checkpoint_detail_url"
+    checkpoint_detail_sources = {
+        "regional-daegu-youth-platform",
+        "regional-gwangju-integrated-youth-platform",
+    }
     checkpoint_detail_matches = bool(
         checkpoint_detail_mode
-        and source_id == "regional-daegu-youth-platform"
+        and source_id in checkpoint_detail_sources
         and excluded_ids is None
         and checkpoint is not None
         and page == 1

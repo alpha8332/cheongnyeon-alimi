@@ -1093,3 +1093,41 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
   `data_ready=false`의 남은 blocker는 합의 수치가 없는
   `legacy_null_within_target`
 - `python scripts/validate_docs.py`, `git diff --check`: 통과
+
+### RYP8 광주 checkpoint 상세 고정 재캡처 (`2026-08-14`)
+
+- Runtime 인계 뒤 고정 outcome `accepted 18`, `duplicate 1`, `review 1,905`,
+  `closed 2,360`, `failed 322`, legacy `1,865`, failed 분류 `322/322`를 먼저
+  재현했다. 운영 DB projection은 변경하지 않았다.
+- 쓰기 전에 공식 접수중 목록 4 page를 최소 2초 간격으로 읽기 전용 대조했다.
+  현재 34건과 완료 checkpoint 31건 사이에 신규 `1432`·`1430`·`1429`·`1428`,
+  누락 `1419`가 있어 단순 current-only 추가가 아닌 identity 교체 drift였다.
+  공통 30건의 순서는 같았으며 일반 `/recapture`와 current-only 제외 예외는
+  적용하지 않았다.
+- 승인 범위에 따라 광주에서도 `recapture_mode=checkpoint_detail_url`을 허용했다.
+  기존 Raw list item에서 checkpoint 31건의 제목·상세 URL을 복원하고 공식
+  origin·`/www/50` path·`policyId`, total 31, captured 부분집합, 선택 batch와
+  `discovered_ids`의 완전 일치를 검증한다. 신규 4건은 입력·Raw·checkpoint에
+  편입하지 않았다.
+- 목록에서 빠진 `1419` 상세가 현재도 열리고 고정 제목과 일치하며 신청기간·
+  참여요건·신청절차 등 14개 구조화 라벨을 제공함을 확인했다. `1419` 1건 canary
+  뒤 즉시 replay해 광주 legacy `90 → 87`, 전체 `1,865 → 1,862`, 고정 outcome
+  무변경을 확인했다.
+- 나머지 30건은 최대 3건 batch와 상세 간 최소 2초 간격으로 재캡처했다. 최종
+  광주 field slot은 `V 95/E 0/N 1/L 90 → V 155/E 0/N 31/L 0`, 전체 legacy는
+  `1,865 → 1,775`다. 광주 checkpoint SHA-256은
+  `42451d906de91805c4e62eeee8b63d3cf69e351478c7f8dc662d13ef1910899c`이며
+  outcome `18/1/1,905/2,360/322`와 decision drift 1은 유지됐다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `41 passed`
+- 광주 checkpoint 저장 경계 포함 regional expansion: `32 passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `405 passed, 96 subtests passed`
+- 최초 전체 실행은 DB URL `localhost`가 pgpass의 `127.0.0.1` 항목과 달라
+  인증 실패 `21 failed, 3 errors`가 발생했다. pgpass나 패키지를 바꾸지 않고
+  URL host를 `127.0.0.1`로 맞춘 재실행에서 전건 통과했다.
+- RYP8 감사: 전체 legacy `1,775`, failed 분류 `322/322`, 고정 outcome 일치;
+  `data_ready=false`의 남은 blocker는 합의 수치가 없는
+  `legacy_null_within_target`

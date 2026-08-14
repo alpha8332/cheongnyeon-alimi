@@ -852,10 +852,17 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   요청하지 않고, 상세 URL의 `ap_seq`와 현재 제목이 기존 Raw 계약에 일치하는
   경우에만 1건 canary와 3건 단위 batch를 저장했다. 대구
   `null_unverifiable`는 `568 → 0`, 전체는 `2,433 → 1,865`다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 1,865개다.
+- 광주는 현재 접수중 목록 34건과 완료 checkpoint 31건 사이에 신규 4건·누락
+  1건의 identity 교체 drift가 있어 일반 `/recapture`와 current-only 제외 예외를
+  중단했다. 별도 승인 뒤 checkpoint 31건의 기존 Raw 상세 URL·제목만 사용하는
+  광주 `checkpoint_detail_url` 재캡처를 추가했다. 신규 4건은 편입하지 않고
+  URL origin·path·`policyId`, checkpoint total 31, 최대 3건 batch와 현재 상세
+  제목이 모두 일치할 때만 저장했다. 광주 `null_unverifiable`는 `90 → 0`, 전체는
+  `1,865 → 1,775`다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 1,775개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
-  종료하지 않는다. 제주 1,239개, 전북 261개, 경남 168개 등 남은 Source는
-  대구 Slice에서 임의로 재배치하지 않고 기존 순서의 다음 범위로 남긴다.
+  종료하지 않는다. 제주 1,239개, 전북 261개, 경남 168개, 인천 71개, 경북
+  36개가 남았다. 다음 범위는 기존 순서를 유지해 인천부터 진행한다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

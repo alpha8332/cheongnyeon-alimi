@@ -45,6 +45,11 @@
   격리하고, 기존 197건만 제한 재캡처해 legacy 필드 상태를 전건 해소
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 광주 접수중 목록의 추가 4·누락 1 identity 교체 drift를 checkpoint 고정
+  `policyId` 상세 계약으로 격리하고, 기존 31건만 제한 재캡처해 legacy 필드
+  상태를 전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,
