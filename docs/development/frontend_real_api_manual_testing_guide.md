@@ -126,7 +126,8 @@ http://127.0.0.1:3000/search?q=%EC%B2%9C%EC%95%88+%EC%82%AC%EB%8A%94+27%EC%82%B4
 
 ## 시나리오 2 — Eligibility Summary (자격 요건 요약)
 
-**대응 E2E:** `eligibility-summary-ui.spec.ts` test 13
+**대응 E2E:** `eligibility-summary.spec.ts`의 Real API 조건부 4건,
+`eligibility-summary-ui.spec.ts`의 현재 계약 회귀
 
 ### URL
 
@@ -142,28 +143,23 @@ http://127.0.0.1:3000/programs/{id}
 
 1. 상세 로딩 종료(`정책 상세를 불러오는 중입니다.` 사라짐).
 2. **핵심 신청 조건** 카드 영역 확인.
-3. 카드 헤더 **새로고침** 클릭.
-4. (저장 조건 있을 때) 홈에서 조건 저장 후 재방문 → comparison badge 확인.
+3. coverage 안내와 필수·제외·우대·필요 서류·확인 필요 섹션을 확인.
+4. evidence의 **원문 링크 열기**를 눌러 공식 URL 이동을 확인.
 
 ### 기대 (summary API merge됨)
 
 | 단계 | Network | 화면 |
 | --- | --- | --- |
-| 최초 로드 | `GET /api/v1/policies/{id}` **200**, body에 `eligibility_summary` | status badge(구조화 완료/불완/불가), requirements·evidence·**공식 원문 확인** |
+| 최초 로드 | `GET /api/v1/policies/{id}` **200**, body에 `eligibility_summary` | coverage 안내, requirements·evidence·공식 원문 링크 |
 | | | `note`: **최종 신청 가능 여부를 확정하지 않습니다** |
-| 새로고침 | 동일 `GET` 재호출 **200** | **새로고침 중…** → 갱신된 summary 또는 동일 데이터 |
-| partial | | banner: **일부 조건은 원문 확인…** |
+| partial | | 일부 조건은 원문 확인이 필요하다는 안내 |
+| unknown | | 구조화할 수 없는 조건과 공식 원문 확인 안내 |
 
 ### API·데이터 미비 시
 
-- `eligibility_summary` **null/없음**: EmptyState — **구조화된 핵심 신청 조건이 아직 제공되지 않습니다.**
-  (E2E golden은 card **또는** empty 중 하나면 pass)
-- **503** on refresh: retryable Toast + **다시 시도**
-- **422** on refresh: 카드 내 inline validation alert (`include_partial` 미지원 등)
-
-> **구조 주의:** Frontend **새로고침**은 Real API mode에서 별도 refetch query
-> 없이 `GET /api/v1/policies/{id}`를 재호출한다. Backend가 캐시 무효·강제
-> 재구조화 query param을 요구하면 계약 추가가 필요하다 (현재 Frontend 미전송).
+- `coverage=unknown`: 빈 값을 추정하지 않고 원문 확인 안내와 `unknowns`를 표시한다.
+- evidence URL이 없으면 임의 링크를 만들지 않는다.
+- 개인 조건 비교와 eligibility 전용 새로고침은 현재 승인 계약에 없다.
 
 ---
 

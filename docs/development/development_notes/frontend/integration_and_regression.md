@@ -105,7 +105,7 @@ Frontend 수정 가능 항목 closure + `CONDITIONAL` 근거 기록으로 마감
 | Path | W4 | 시나리오 | 결과 | 비고 |
 | --- | --- | --- | --- | --- |
 | A | W4-I1 | PIN → runs → manual run → policies → logs | pass | Mock admin flow |
-| B | W4-IE1 | detail → eligibility card → evidence → 원문 | pass | fixture id 9101 |
+| B | W4-IE1 | detail → eligibility card → evidence → 원문 | pass | seed policy id 1, 승인 DTO |
 | C | W4-I2 | conditions → recommend → favorite → calendar → notify → `.ics` | pass | ICS disabled — seed id 1 `application_status: closed` |
 | Release 1 | W4-I3 | home → `/search?q=` → detail `include_partial` | pass | M4 partial golden |
 | Cross | W4-F5 | mobile viewport·keyboard favorite·search | pass | mobile sidebar hidden — `/search` direct navigation |

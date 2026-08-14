@@ -7,8 +7,6 @@ import { expect, test, type Page } from '@playwright/test';
 
 const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
 
-const MOCK_COMPLETE_POLICY_ID = 9101;
-const MOCK_COMPLETE_POLICY_TITLE = 'Mock Complete Eligibility Policy';
 const MOCK_HOUSING_POLICY_TITLE = '합성 청년 주거 지원';
 /** Seed id 1 — has `application_end` but `application_status: closed` (ICS disabled in Mock). */
 const MOCK_HOUSING_POLICY_ID = 1;
@@ -69,8 +67,8 @@ async function waitForRecommendationSettled(page: Page) {
   });
 }
 
-function eligibilityCard(page: Page) {
-  return page.locator('article.eligibility-summary-card');
+function eligibilitySummary(page: Page) {
+  return page.getByRole('region', { name: '핵심 신청 조건' });
 }
 
 test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
@@ -110,26 +108,26 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await page.getByRole('link', { name: '구조화 Log' }).click();
     await expect(page).toHaveURL(/\/admin\/logs$/);
     await waitForLogEventsLoaded(page);
-    await expect(page.getByRole('table').getByText('Log events')).toBeVisible();
+    await expect(page.getByRole('table').getByText('로그 이벤트')).toBeVisible();
     await expect(page.getByText('request_completed')).toBeVisible();
   });
 
   test('Path B — eligibility: detail → card → evidence → 원문 (W4-IE1)', async ({
     page,
   }) => {
-    await page.goto(`/programs/${MOCK_COMPLETE_POLICY_ID}`);
+    await page.goto(`/programs/${MOCK_HOUSING_POLICY_ID}`);
     await waitForProgramDetailSettled(page);
 
     await expect(
-      page.getByRole('heading', { name: MOCK_COMPLETE_POLICY_TITLE }),
+      page.getByRole('heading', { name: MOCK_HOUSING_POLICY_TITLE }),
     ).toBeVisible();
 
-    const card = eligibilityCard(page);
-    await expect(card.getByRole('heading', { name: '핵심 신청 조건', level: 2 })).toBeVisible();
-    await expect(card.getByRole('link', { name: '원문 근거 보기' }).first()).toBeVisible();
-    await expect(card.getByRole('button', { name: '공식 원문 확인' })).toBeVisible();
-    await expect(card.getByRole('note')).toContainText(
-      '최종 신청 가능 여부를 확정하지 않습니다',
+    const summary = eligibilitySummary(page);
+    await expect(summary.getByRole('heading', { name: '핵심 신청 조건', level: 2 })).toBeVisible();
+    await expect(summary.getByRole('link', { name: /근거 1 원문 열기/ }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: '원문 링크 열기' })).toBeVisible();
+    await expect(summary.getByRole('note')).toContainText(
+      '실제 자격 충족이나 선정을 확정하지 않습니다',
     );
   });
 

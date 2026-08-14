@@ -53,9 +53,12 @@ async def test_unhandled_exception_log_does_not_expose_details():
         "postgresql://service:R2_DB_PASSWORD@database:5432/policies"
     )
 
+    request = Mock()
+    request.state.request_id = "req-policy-api-test"
+
     with patch("app.main.logger.critical") as critical:
         response = await unhandled_exception_handler(
-            Mock(),
+            request,
             RuntimeError(secret_url),
         )
 
@@ -63,6 +66,11 @@ async def test_unhandled_exception_log_does_not_expose_details():
     critical.assert_called_once_with(
         "Unhandled exception. error_type=%s",
         "RuntimeError",
+        extra={
+            "component": "api",
+            "request_id": "req-policy-api-test",
+            "error_type": "RuntimeError",
+        },
     )
     assert "R2_DB_PASSWORD" not in repr(critical.call_args)
     assert secret_url not in repr(critical.call_args)

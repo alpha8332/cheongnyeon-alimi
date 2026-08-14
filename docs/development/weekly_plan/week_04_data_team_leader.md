@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in progress (`DTL4-1`·`W4-G0` 완료, 후속 Forest 착수 가능)
+- 상태: in progress (`DTL4-6`·`W4-G2` 완료, `DTL4-7`·`W4-G3` 준비)
 - 대상 주차: 4주차
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data 담당, Team Leader - Integration
@@ -11,8 +11,10 @@
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
 - 현재 Slice: Data 05 `RYP0`~`RYP9`·`RYP-G6` 완료,
   accepted 109건 적재·충북 open 0건 확정·명시적 지역 검색 match-only·전체 감사
-  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), 이후 Backend·Frontend 병합과
-  `DTL4-5` 소비 대조·W4-G4 예정. Data 06 구현은 5주차로 이동
+  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), `DTL4-5` 소비 대조와
+  `W4-G1_APPROVED` 완료, `DTL4-6` PostgreSQL·영역별 검증을 통과해
+  `W4-G2_APPROVED`. 다음은 `DTL4-7` actual E2E와 `W4-G3`.
+  Data 06 구현은 5주차로 이동
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -479,6 +481,24 @@ actual 통합 전에 각 영역의 단위·통합 결과와 Data 실제 수집·
 - actual DB·API·Browser 실행에 필요한 Migration·환경변수·fixture가 준비됨
 - blocker가 없거나 담당·수정·재검증 조건이 명확함
 
+### DTL4-6 완료 기록 (`2026-08-14`)
+
+- 시작 기준: `feature/integration/week-04-acceptance`의 `1036e8a`
+- 실제 PostgreSQL 포함 Backend·Data 전체: 487 passed, 0 skipped,
+  95 subtests passed
+- Regional Browser Runtime: 52 passed
+- Frontend: unit 162 passed, lint·production build passed
+- Mock Browser 전체 분할 실행: 79 passed, Real API 조건부 11 skipped
+- Eligibility UI·Week 4 회귀: 10 passed, Real API 조건부 2 skipped
+- Alembic 단일 head `20260810_0006`, 격리 test DB와 Chromium 준비 확인
+- 과거 Eligibility proposal의 fixture id·개인 비교·summary refetch E2E/API hook·
+  미사용 CSS·문서 잔재를 승인 DTO와 현재 seed 기준으로 정리
+
+Data 03~05와 Integration 08의 actual 인수 기록, 이번 실제 PostgreSQL 전체 회귀와
+Backend·Frontend 자체 검증을 근거로 `W4-G2_APPROVED`로 판정한다. 조건부 skip은
+실패 은폐가 아니라 실제 Backend가 필요한 DTL4-7 실행 목록이며, 실제 FastAPI·
+React에서 11건과 세 Critical Path를 재검증한다.
+
 ## Slice DTL4-7 - 세 actual E2E와 W4-G3
 
 ### 목적
@@ -712,11 +732,11 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] DTL4-2 Data 03 반복·수정·중복·실패·품질 통계 완료
 - [x] DTL4-3 Data 04 공식 Source actual 수집·DB 적재 완료
 - [x] DTL4-4 Integration 08 자격요건 evidence Data 구현·소비 검토 완료
-- [ ] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
+- [x] DTL4-5 Data·OpenAPI·TypeScript·Mock parity와 W4-G1 통과
 - [x] Data 05 RYP0 후보 inventory·검증 계약 완료
 - [x] Data 05 RYP1 Browser Discovery preflight·Source 승인 완료
 - [x] Data 05 RYP2~RYP4 Adapter·지역·중복 제외 Gate 통과
-- [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
+- [x] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
 - [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
 - [x] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료

@@ -20,6 +20,10 @@
 
 ### Fixed
 
+- DTL4-6에서 Integration 08 승인 Eligibility DTO와 충돌하던 과거 fixture id,
+  개인 조건 비교·summary 새로고침 E2E/API hook·미사용 CSS를 제거하고 현재
+  seed·evidence 원문 계약으로 Browser 회귀와 수동 검증 문서를 정렬
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
 - Frontend `/` white screen after FE9-01: harden localStorage recovery notice reads,
   module-init storage sync, layout error boundaries, and route error fallback
   ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))

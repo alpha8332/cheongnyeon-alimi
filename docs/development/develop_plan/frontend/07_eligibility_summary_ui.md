@@ -1,205 +1,84 @@
-# Frontend Eligibility Summary UI Forest 개발 계획
+# Frontend 07 Eligibility Summary UI 계획
 
 ## 계획 정보
 
 - 번호: Frontend 07
 - 담당 영역: Frontend
 - 상태: completed
-- 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
-- 공통 시작 커밋: `22118b8e618c3b15464865be3113157888197a02`
-- 4주차 대응: `W4-FE1`, Critical Path B (`week_04_v0_5_0.md`)
-- 선행 Forest:
-  [Integration 05 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md),
-  [Integration 08 Eligibility Evidence](../integration/08_eligibility_evidence_summary.md)
-  (ES2 Backend DTO)
-- 후속 Forest: Integration 07 Release 2 Feature Acceptance
-- 권장 브랜치: `feature/frontend/eligibility-summary`
-- 현재 Slice: FE7-06 completed (Forest 완료)
+- 권위 계약: [Integration 08 Eligibility Evidence](../integration/08_eligibility_evidence_summary.md)
+- 후속 검증: DTL4-7 Real API E2E
 
 ## 목적
 
-정책 상세에 `핵심 신청 조건` 카드를 추가해 필수·제외·우대·서류·확인 필요
-항목을 evidence와 함께 표시하고, 로컬 사용자 조건이 있을 때 비교 상태만
-제공한다. 최종 신청 가능 여부를 단정하지 않는다.
-
-## 범위
-
-- Integration 08 eligibility summary DTO TypeScript 소비
-- `ProgramDetailPage` 핵심 신청 조건 카드 UI
-- 필수·제외·우대·서류·unknown 섹션 시각 구분
-- Source URL·수집 시각·원문 이동 링크
-- 로컬 조건(FE5-02) 대비 `조건상 일치|불일치|추가 확인 필요` badge
-- partial·unknown·empty·error·긴 문장 표시
-- Mock-first → actual API 연결과 Browser E2E
-
-## 범위 밖
-
-- Data Extractor·Normalizer·evidence 수집 (Integration 08 ES1)
-- Backend 상세 DTO 구현 (Integration 08 ES2)
-- LLM 요약·자격 자동 판정 UI
-- 추천 결과 UI (Frontend 06)
-
-## 선행 조건
-
-- W4-G0 eligibility summary 필드·`complete|partial|unknown` 의미 확정
-- 기존 `eligibility_text` 호환·폐기 여부 소비자 검토
-- Policy detail API numeric id·`include_partial` opt-in 유지 (Frontend 01)
+정책 상세에서 구조화된 핵심 신청 조건과 공식 근거를 표시한다. 사용자가
+필수·제외·우대 조건, 필요 서류, 자동 분류 불가 조건과 문의처를 확인하도록
+돕되 최종 신청 가능 여부는 판정하지 않는다.
 
 ## 공통 설계 원칙
 
-- 카드 제목 기본: `핵심 신청 조건`; `신청 가능`/`불가` 단정 금지.
-- evidence 없는 항목은 확인 필요로 표시하고 임의 구조화하지 않는다.
-- 개인 비교는 FE5 conditions와 연동하되 서버 전송 없음.
-- 기존 Release 1 상세 필드(출처·수집 시각) 레이아웃 유지.
+| 구분 | 필드·규칙 |
+| --- | --- |
+| 상태 | `coverage`: `complete`·`partial`·`unknown` |
+| 조건 | `requirements`, `exclusions`, `preferences` |
+| 추가 확인 | `documents`, `unknowns`, `contacts` |
+| 근거 | `evidence`의 문구·수집 시각·공식 원문 URL |
+| 안전 | 비밀값·내부 식별자·Raw 응답 비노출 |
+| 문구 | 신청 가능·불가를 단정하지 않고 원문 확인을 안내 |
 
-## 공통 API 오류 Toast·접근성 (W4-F5·W4-F8)
+## 범위
 
-자격요건 카드(FE7)는 Policy detail fetch 실패·summary block 오류에 공통 Toast를
-사용한다. 전체 회귀는 [Frontend 09 FE9-02](09_integration_and_regression.md).
+- `PolicyDto.eligibility_summary` TypeScript 계약
+- `ProgramDetailPage`의 핵심 신청 조건 영역
+- coverage 안내와 조건별 섹션
+- evidence와 공식 원문 링크
+- complete·partial·unknown Mock fixture와 단위·Browser 검증
+- 실제 Backend 연결 시 조건부 Real API Browser 검증
 
-### API 오류 Toast
+## 범위 밖
 
-| HTTP | UX | 재시도 | 비고 |
-| --- | --- | --- | --- |
-| `404` | detail not found shell (기존) | no | summary block hide |
-| `422` | validation inline (include_partial 등) | no | |
-| `5xx` | retryable Toast on summary refetch | yes | detail 본문은 유지 |
-| partial envelope | 카드 내부 partial banner | no | `complete\|partial\|unknown` |
+- Extractor·Normalizer·evidence 수집
+- Backend 상세 DTO와 DB mapping
+- LLM 기반 신청 가능 판정
+- 로컬 사용자 조건과의 자동 일치·불일치 비교
+- 별도 eligibility summary 재생성·새로고침 API
+- 검색 목록 응답에 summary 전문 포함
 
-- eligibility evidence fetch 실패 시 항목별 fallback copy; stack trace 비노출.
-- Toast dedupe 3s; 카드 내부 error와 global Toast 중복 금지.
+## 선행 조건
 
-### 키보드·모바일 접근성 (a11y)
-
-- 긴 조건 문장: wrap·expand toggle, `aria-expanded` on truncate control.
-- evidence link: visible focus ring, 새 탭 `rel="noopener noreferrer"`.
-- comparison badge: text+icon, color-only 금지.
-- section heading hierarchy (`h2` card → `h3` section).
-- 모바일: section stack, horizontal scroll on wide evidence table 금지.
+- Integration 08의 `EligibilitySummaryDto`와 Policy detail 응답이 확정돼야 한다.
+- 공통 계약 fixture와 Backend schema·Frontend type이 동일해야 한다.
+- Real API 검증에는 PostgreSQL test DB, Alembic head, FastAPI와 Chromium이 필요하다.
 
 ## Slice 계획
 
-4주차 `W4-FE1`을 FE7-xx로 분해한다. Integration 08 ES3 Frontend 책임과
-대응한다.
-
-| Integration 08 | FE7 Slice | 책임 |
+| Slice | 상태 | 결과 |
 | --- | --- | --- |
-| ES0 | FE7-00 | DTO·Mock·표본 fixture |
-| ES3 | FE7-01 | 상세 카드 shell·layout |
-| ES3 | FE7-02 | requirements/exclusions/documents/unknown |
-| ES3 | FE7-03 | 로컬 조건 비교 badge |
-| ES3 | FE7-04 | evidence·원문 링크 |
-| ES4 | FE7-05 | Real API·Browser E2E |
-| W4-F5·F8 | FE7-06 | Detail Toast·a11y | completed |
+| FE7-00 | completed | 승인 DTO·Mock·공통 fixture |
+| FE7-01 | completed | 상세 페이지 카드와 coverage 안내 |
+| FE7-02 | completed | 조건·서류·unknown·문의처 섹션 |
+| FE7-03 | completed | evidence와 공식 원문 링크 |
+| FE7-04 | completed | 단위·키보드·모바일 검증 |
+| FE7-05 | completed | Mock Browser와 Real API 조건부 시나리오 |
+| DTL4-5 | completed | 과거 proposal과 승인 DTO 중복 제거 |
+| DTL4-6 | completed | 남은 E2E·API hook·CSS·문서 회귀 정리 |
 
----
+## 권위 파일
 
-### FE7-00 — Eligibility summary DTO·Mock — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | W4-G0 `eligibility_summary` 후보 필드를 TypeScript·Mock detail envelope에 반영 |
-| **예상 변경 파일** | `types/eligibilitySummary.ts`, `mocks/policyDetailFixtures.ts` |
-| **선행** | Integration 08 ES0, W4-G0 필드 표 |
-| **검증** | contract test vs OpenAPI draft |
-| **완료 기준** | complete·partial·unknown fixture 각 1건 |
-
----
-
-### FE7-01 — 핵심 신청 조건 카드 shell — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | `ProgramDetailPage`에 summary 카드 영역·loading·error·empty |
-| **예상 변경 파일** | `EligibilitySummaryCard.tsx`, `ProgramDetailPage.tsx` |
-| **선행** | FE7-00 |
-| **세부 작업** | `POLICY_ELIGIBILITY_NOTICE`와 카드 역할 분리 |
-| **검증** | Browser Mock detail |
-| **완료 기준** | partial policy에서 카드·PartialBadge 공존 |
-
----
-
-### FE7-02 — 조건 섹션 UI — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | requirements·exclusions·preferences·documents·unknown_conditions 목록 |
-| **예상 변경 파일** | `EligibilitySectionList.tsx`, category label helpers |
-| **선행** | FE7-01 |
-| **세부 작업** | age·region·income 등 category badge; 긴 문장 wrap |
-| **검증** | Mock complete·partial·unknown |
-| **완료 기준** | 빈 배열 vs null 의미 Backend와 일치 |
-
----
-
-### FE7-03 — 로컬 조건 비교 badge — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | FE5 `conditions` 있을 때 항목별 비교 상태 표시 |
-| **예상 변경 파일** | `EligibilityComparisonBadge.tsx`, comparison util |
-| **선행** | FE7-02, FE5-02 (또는 Mock conditions) |
-| **검증** | unit test; Browser with saved conditions |
-| **완료 기준** | `조건상 일치|불일치|추가 확인 필요` only |
-
----
-
-### FE7-04 — evidence·공식 원문 링크 — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | 항목 evidence(source·collected_at·snippet)와 `source_url` CTA |
-| **예상 변경 파일** | `EligibilityEvidenceLink.tsx` |
-| **선행** | FE7-02 |
-| **검증** | Browser; credential·internal id 비노출 checklist |
-| **완료 기준** | evidence DTO에 없는 DB 필드 UI 미표시 |
-
----
-
-### FE7-05 — Real API·Browser E2E — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | actual detail API → 카드 → 원문 링크 E2E |
-| **예상 변경 파일** | API client, Playwright detail spec |
-| **선행** | FE7-03·04, Integration 08 ES2 |
-| **검증** | golden policy detail; Release 1 회귀 |
-| **완료 기준** | Integration 08 ES4 Frontend 항목 충족 |
-
-2026-08-12 구현: `frontend/e2e/eligibility-summary-ui.spec.ts` — Mock-first 12 scenarios
-(complete·partial·unknown fixtures 9101~9103, empty summary seed policy, saved conditions
-comparison badges, evidence link attributes, keyboard·mobile, `/search` golden·search→detail
-regression, mock detail envelope golden) + Real API skip 1건.
-Mock fixture에 120자 초과 문장 없음 — long text expand toggle E2E는 FE7-06에서
-complete fixture region 항목으로 Browser 검증.
-Backend `eligibility_summary` Real API merge 전 — Real API golden은 card 또는 empty state 분기.
-
-### FE7-06 — Detail API Toast·접근성 — completed
-
-| 항목 | 내용 |
-| --- | --- |
-| **목표** | FE7 카드·detail에 Toast·a11y 명세 적용 |
-| **예상 변경 파일** | `EligibilitySummaryCard.tsx`, shared Toast, a11y CSS |
-| **선행** | FE7-01~04 |
-| **세부 작업** | 본 문서 「공통 API 오류 Toast·접근성」표 준수 |
-| **검증** | Browser 5xx refetch; keyboard section nav; long text expand |
-| **완료 기준** | W4-F5·F8 eligibility subset; [FE9-02](09_integration_and_regression.md) matrix B |
-
-2026-08-12 구현: `AppShellLayout`에 `ApiErrorToastProvider` wiring,
-`policyDetailApiError`·`policyDetailErrorToast` mapper, `ProgramDetailPage` summary
-refetch(5xx Toast·detail 본문 유지·422 inline), `EligibilitySummaryCard` 새로고침
-control, comparison badge·section nav·expand a11y, Mock audit hooks
-(9101 summary refetch→503, 9102+include_partial refetch→422).
-`frontend/e2e/eligibility-detail-toast-a11y.spec.ts` 6 scenarios.
-FE9-02 cross-Forest Toast dedupe·full matrix B regression은 Integration Regression
-(FE9-02) 범위.
+- `backend/app/schemas/policy.py`
+- `frontend/src/types/policy.ts`
+- `frontend/src/components/policy/EligibilitySummary.tsx`
+- `frontend/src/mocks/policyContract.ts`
+- `data/fixtures/contracts/eligibility_evidence_cases.json`
+- `frontend/tests/eligibilitySummary.test.ts`
+- `frontend/e2e/eligibility-summary-ui.spec.ts`
+- `frontend/e2e/week4-regression.spec.ts`
 
 ## 검증 계획
 
 ```powershell
 Set-Location frontend
-npm run test
+npm test
 npm run lint
 npm run build
 npm run test:e2e
@@ -207,23 +86,27 @@ Set-Location ..
 python scripts/validate_docs.py
 ```
 
+전체 Browser 명령이 실행기 시간 제한에 걸리면 spec 그룹별로 분할하되, 모든
+활성 spec의 종료 코드와 조건부 skip 수를 합산해 기록한다. `VITE_USE_MOCK=false`
+시나리오는 실제 PostgreSQL·FastAPI가 준비된 DTL4-7에서 실행한다.
+
 ## Forest 완료 기준
 
-- 대표 complete·partial·unknown 정책 Browser 검증
-- UI copy가 W4-G0 비단정 원칙 준수
-- Release 1 상세·검색 golden 회귀
-- Integration 08 ES3·ES4 Frontend 완료 기준 충족
+- 승인 DTO와 TypeScript·Mock·UI가 동일한 필드명과 null/빈 목록 규칙을 사용한다.
+- complete·partial·unknown과 evidence 원문 이동을 Browser에서 확인한다.
+- 개인 조건 비교나 별도 refetch처럼 승인되지 않은 동작이 남아 있지 않다.
+- unit·lint·build·Mock Browser와 문서 검증이 통과한다.
+- Real API 조건부 항목의 실행 조건과 후속 Slice가 명시된다.
 
 ## 위험과 미확정 사항
 
-- W4-G0 전 `eligibility_summary` nested 구조가 변경될 수 있다.
-- Data 04 웹 Source 필드는 점진 적재; UI는 API null·partial을 허용해야 한다.
-- FE5-02 없이 비교 badge는 Mock-only 조건으로 검증 가능.
+- 실제 Backend를 연결하는 조건부 Browser 11건은 DTL4-7 실행 대상으로 남아 있다.
+- 승인 DTO에 개인 비교나 강제 재구조화 계약이 추가되면 계약 문서와 세 영역
+  소비 테스트를 먼저 함께 갱신해야 한다.
 
 ## 관련 문서
 
-- [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
+- [Eligibility Summary UI 개발 기록](../../development_notes/frontend/eligibility_summary_ui.md)
 - [Integration 08 Eligibility](../integration/08_eligibility_evidence_summary.md)
-- [User Service Features (FE5)](05_user_service_features.md)
-- [Frontend 09 Integration and Regression](09_integration_and_regression.md)
 - [Policy API 계약](../../../api/policies.md)
+- [Frontend Real API 수동 테스트 가이드](../../frontend_real_api_manual_testing_guide.md)

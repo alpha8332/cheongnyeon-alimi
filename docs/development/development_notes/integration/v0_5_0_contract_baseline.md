@@ -32,6 +32,7 @@
 | DTL4-0 | 완료 | 시작 SHA·환경·Forest 소유·merge target과 비추적 경계 확인 |
 | DTL4-1 / C0~C4 | 완료 | Data inventory·Backend 대조·웹 Source 경계 승인, `W4-G0_APPROVED` |
 | DTL4-5 | 완료 | Data·OpenAPI·TypeScript·Mock 소비 대조, 관리자 보안·로그 계약 정렬, `W4-G1_APPROVED` |
+| DTL4-6 | 완료 | PostgreSQL 포함 전 영역 자체 검증·actual 환경 준비·Eligibility 잔재 정리, `W4-G2_APPROVED` |
 
 ## 구현 내용
 
@@ -197,6 +198,40 @@ W4-G1 승인 조건인 공개 DTO fixture 소비, 비밀 비노출, 계약 우�
 log·Real API Browser 종단 검증은 W4-G2/AO5 범위이며, `TEST_DATABASE_URL`
 미주입으로 이번 집중 테스트 중 PostgreSQL 2건은 skip됐다. 관리자 Mock Browser
 E2E는 19건 통과했고 Real API 조건부 1건은 skip됐다.
+
+### DTL4-6 영역별 검증과 W4-G2 (`2026-08-14`)
+
+시작 기준은 `feature/integration/week-04-acceptance`의
+`1036e8a0d3e872f52ba4bfdc54fec5cd849bac56`이다. PostgreSQL 18 서비스와
+격리된 `cheongnyeon_alimi_test` DB, Alembic 단일 head `20260810_0006`,
+Chromium과 Playwright 실행 환경을 확인했다. 접속 비밀은 출력하거나 문서에
+기록하지 않았고 테스트 뒤 임시 pgpass를 삭제한다.
+
+| 검증 | 결과 |
+| --- | --- |
+| Backend·Data 전체 Python, 실제 PostgreSQL | 487 passed, 0 skipped, 95 subtests passed |
+| Regional Browser Runtime | 52 passed |
+| Frontend unit | 162 passed |
+| Frontend lint·production build | passed |
+| Mock Browser 전체 분할 실행 | 79 passed, 11 Real API conditional skips |
+| Eligibility UI + Week 4 regression | 10 passed, 2 Real API conditional skips |
+
+첫 PostgreSQL 전체 실행에서 DTL4-5가 추가한 request correlation과 맞지 않는
+`test_unhandled_exception_log_does_not_expose_details` 한 건이 실패했다. 테스트를
+현재 로깅 계약의 `request_id`·`component`·`error_type`까지 검증하도록 수정한 뒤
+전체 487건을 다시 통과했다.
+
+또한 DTL4-5에서 과거 Eligibility proposal 구현을 제거한 뒤에도 fixture id
+`9101`~`9103`, summary 전용 refetch hook, 개인 조건 비교 E2E·CSS와 오래된 문서가
+남아 있음을 확인했다. 승인된 Integration 08 DTO와 현재 seed 기준으로 Browser
+회귀를 다시 작성하고 미사용 API option·spec·CSS를 제거했다. 활성 Frontend
+source·test에는 해당 proposal 식별자가 남아 있지 않다.
+
+Data 03~05와 Integration 08의 실제 수집·PostgreSQL·API·Browser 인수 기록,
+이번 실제 PostgreSQL 전체 회귀, Backend·Frontend 자체 검증, Migration·fixture·
+Chromium 준비를 근거로 `W4-G2_APPROVED`로 판정한다. DTL4-7에서는 실제 FastAPI와
+React를 연결해 조건부 Real API Browser 11건과 관리자·자격요건·추천 세 Critical
+Path를 실행한다. Runtime 로그 rotate·감사 지속성도 같은 actual E2E에서 확인한다.
 
 ## 주요 변경 파일
 
