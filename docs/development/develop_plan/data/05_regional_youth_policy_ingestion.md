@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전·강원·대구·서울 보강 및
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전·강원·대구·서울 보강·충북 0건 근거 확정 및
   명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
@@ -958,7 +958,12 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   확인되는 1건만 accepted로 승격하고, 제외조건의 `서울 청년수당` 문구는 거주
   근거로 보지 않았다. 기간 종료가 확인된 서울 2건은 closed로 전환했다. outcome은
   `accepted 103 / duplicate 2 / review 1,153 / closed 3,026 / failed 322`다.
-- 잔여 Source에 review 1,153건이 남아 있다. Source별
+- 충북은 checkpoint 441건 중 신청 가능 후보 2건을 공식 상세와 재대조했다.
+  `440062`는 2026-08-13 모집 종료, `213117`은 상시모집 문구와 달리 2022-10-31
+  운영 종료가 확인되어 모두 closed로 전환했다. 실제 open 목록과 명시적 지역
+  검색도 0건이므로 충북은 실제 open 고유 정책 0건 근거로 완료한다. outcome은
+  `accepted 103 / duplicate 2 / review 1,151 / closed 3,028 / failed 322`다.
+- 잔여 Source에 review 1,151건이 남아 있다. Source별
   `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
   RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
 

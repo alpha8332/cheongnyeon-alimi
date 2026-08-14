@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건 승격, accepted 103건 DB 동기화·review 1,153건 잔여 Source 보강 진행 |
+| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건 승격·충북 open 0건 확정, accepted 103건 DB 동기화·review 1,151건 잔여 Source 보강 진행 |
 
 ## 구현 내용
 
@@ -1409,3 +1409,32 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 대구 DB actual: `inserted 33 → unchanged 33`, 중복 후보 1건 적재 제외
 - 서울 DB actual: `inserted 1 → unchanged 1`, 종료 2건 checkpoint 반영
 - 대구·서울 open 목록·명시적 검색·대표 상세 API actual: `33/33/1`, `1/1/1`
+
+### RYP9 충북 실제 open 0건 근거 확정 (`2026-08-14`)
+
+- 완료 checkpoint 441건을 동일 Raw로 재생했을 때 open 후보는 `440062`와
+  `213117` 두 건뿐이었다. 공식 충북 청년포털 상세를 사용자 동선으로 다시 열어
+  제목·본문·모집기간·대상·문의처를 대조했다.
+- `440062` 쉼표하우스는 충청북도 내 미취업 청년 대상과 제천시 청년센터 시행·
+  시설 대표전화 근거가 있지만 모집기간이 `2026-07-24~2026-08-13`이므로
+  2026-08-14 현재 closed다. `213117` 청년도전지원사업은 `상시모집`이라고
+  적혀 있으나 동일 본문에 운영기간 `2022-05-02~2022-10-31`이 명시된 과거
+  사업이므로 closed다.
+- 충북 prose extractor가 상시모집과 종료된 운영기간을 함께 발견하면 bounded
+  운영기간을 canonical 신청기간으로 보존하도록 수정했다. 공통 Gate의 상시 계약은
+  변경하지 않아 전북·서울 등 기존 accepted 정책에는 영향이 없다. 재캡처 중 발견한
+  공통 Browser 함수의 누락된 `detailRegionSelector` 인자도 선언부에 복구했다.
+- 두 identity만 제한 재캡처하고 감사 승인 뒤 `review → closed`로 반영했다. outcome은
+  `accepted 103 / duplicate 2 / review 1,151 / closed 3,028 / failed 322`이며,
+  기존 accepted·failed identity가 모두 보존됐다. 적용 후 재감사 전환은 0이다.
+- PostgreSQL에는 accepted 대상이 없어 insert/update/prune이 모두 0이다. partial 포함
+  open 목록과 명시적 충청북도 match-only 검색도 각각 0건을 반환해, 충북은 추출
+  미완료가 아니라 실제 open 고유 정책 0건으로 판정한다.
+
+검증 결과:
+
+- Browser Runtime 집중 테스트: `49 passed`
+- regional Gate 집중 테스트: `22 passed, 12 subtests passed`
+- 충북 RYP9 감사: 전환 2, blocker 0; 적용 후 전환 0
+- 충북 DB actual 2회: accepted·inserted·updated·pruned·failed 모두 0
+- 충북 open 목록·명시적 지역 검색 API actual: `0/0`

@@ -376,6 +376,7 @@ export async function collectQueryPage({
   detailPairLabelSelector = null,
   detailPairValueSelector = null,
   detailMetadataSelector = null,
+  detailRegionSelector = null,
   detailDateInference = null,
   detailPost = null,
   detailClickTemplate = null,
@@ -894,7 +895,7 @@ export function buildRegisteredTitleDeadlineDetail(
 
 function pairsWithProseLabels(pairs, contentBlocks = []) {
   const selected = {...pairs};
-  const labelPattern = /^[\u200B\uFEFF\s]*(?:[□■▪●○]\s*)?(?:(?:\d+|[가-힣])[.)]\s*)?(지원대상|신청대상|모집대상|대상|자격|지원조건|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|신청기간|접수기간|접수일정|모집기간|제출기한|신청방법|접수방법|신청링크|접수처)\s*(?::|：)?\s*(.*)$/;
+  const labelPattern = /^[\u200B\uFEFF\s]*(?:[□■▪●○]\s*)?(?:(?:\d+|[가-힣])[.)]\s*)?(지원대상|신청대상|모집대상|대상|자격|지원조건|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|운영기간|신청기간|접수기간|접수일정|모집기간|제출기한|신청방법|접수방법|신청링크|접수처)\s*(?::|：)?\s*(.*)$/;
   for (let index = 0; index < contentBlocks.length; index += 1) {
     const block = clean(contentBlocks[index]);
     const match = block.match(labelPattern);
@@ -978,6 +979,22 @@ export function buildDetail(title, extracted) {
     exclusions: find("exclusions", ["참여제한대상", "참여제한사항", "지원제외", "제외", "제한"]),
     age: find("age", ["지원연령", "연령제한", "연령", "나이"]),
   };
+  const operationPeriod = normalizedPairs.find(
+    ({normalizedKey}) => normalizedKey === "운영기간",
+  );
+  if (
+    detail.application_period?.includes("상시")
+    && clean(operationPeriod?.value)
+  ) {
+    detail.application_period = `운영기간: ${clean(operationPeriod.value)}`;
+    observations.application_period = {
+      label: [
+        observations.application_period.label,
+        operationPeriod.key,
+      ].filter(Boolean).join(" + "),
+      status: "value_extracted",
+    };
+  }
   return {...detail, evidence_observations: observations};
 }
 

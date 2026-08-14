@@ -757,6 +757,27 @@ test("Chungbuk uses the submission deadline instead of the training period", () 
   );
 });
 
+test("Chungbuk bounded operation period overrides a stale always-open label", () => {
+  const title = "2022년 청년도전지원사업 참가자 모집 안내";
+  const detail = buildDetail(title, {
+    body: title.replace(/\s/g, ""),
+    pairs: {},
+    contentBlocks: [
+      "1. 모집기간 : 상시모집",
+      "4. 운영기간 : 2022.05.02.(월)-10.31.(월)",
+    ],
+  });
+
+  assert.equal(
+    detail.application_period,
+    "운영기간: 2022.05.02.(월)-10.31.(월)",
+  );
+  assert.equal(
+    detail.evidence_observations.application_period.label,
+    "모집기간 + 운영기간",
+  );
+});
+
 test("Ulsan maps the official reception schedule label", () => {
   const detail = buildDetail(
     ulsanFixture.expected_title,
