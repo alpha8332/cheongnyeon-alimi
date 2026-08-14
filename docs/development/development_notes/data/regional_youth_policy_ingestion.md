@@ -33,7 +33,7 @@
 | RYP5 | completed | 경북 JSON·부산 HTML·서울 Browser actual과 DB·API·Browser 인수 |
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
-| RYP8 | in-progress | 충북·울산 보강 완료, 대전 current 13/checkpoint 12 identity drift로 중단, legacy null 2,760개 |
+| RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
 | RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
 
 ## 구현 내용
@@ -1206,3 +1206,29 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - RYP8 감사: 전체 legacy `1,239`, 고정 outcome 일치;
   `data_ready=false`의 남은 blocker는 합의 수치가 없는
   `legacy_null_within_target`
+
+### RYP8 제주 review 보강·완료 판정 (`2026-08-14`)
+
+- 제주 checkpoint `1,133`건의 `closed 926`은 재요청하지 않고 `review 207`만
+  frozen Raw 제목과 공식 `wr_id` 상세 URL로 재캡처했다. URL origin·path·
+  `bo_table=1_2_2_1`·`wr_id`, checkpoint total과 최대 3건 batch를 Browser와
+  loopback 저장 경계 양쪽에서 검증했고 요청 간 최소 2초를 유지했다.
+- 이미지 포스터만 있어 `#writeContents` 텍스트가 비어 있는 `wr_id=953`은 공식
+  제목·등록 메타데이터로 Source scope만 증명하고 정책 필드는 명시적
+  `label_not_found`로 남겼다. 원문에 없는 지역·대상·신청기간은 생성하지 않았다.
+- 제주 field slot은 `V 3/E 0/N 0/L 1,239 → V 51/E 1/N 1,190/L 0`, 전체
+  `null_unverifiable`는 `1,239 → 0`이다. checkpoint와 운영 DB projection은
+  변경하지 않았다.
+- closed-history 감사가 checkpoint review 중 현재 replay에서 마감으로 해석된
+  제주 7건을 기존 closed 이력에 섞던 문제를 수정했다. 이제 checkpoint에서
+  closed였던 identity만 `경남 1,419 / 제주 926`의 replay·3종 provenance와
+  대조하고, review-now-closed는 별도 수치로 보고한다.
+- 최종 RYP8 감사는 `data_ready=true`, blocker 0, failed 분류 `322/322`, 고정
+  outcome `accepted 18 / duplicate 1 / review 1,905 / closed 2,360 / failed 322`다.
+  따라서 RYP8을 완료하고 RYP9 전체 재판정·검색 커버리지 인수로 전환한다.
+
+검증 결과:
+
+- RYP8 audit·regional expansion 집중 Python: `39 passed`
+- Browser runtime Node: `47 passed`
+- 최종 RYP8 감사: legacy `0`, closed history complete, `data_ready=true`

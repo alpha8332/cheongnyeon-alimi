@@ -157,8 +157,13 @@ export function validateCheckpointDetailRecaptureContracts(
     && approvedList.pathname === "/youth/youthPolicySearchPageNew.es"
     && approvedList.searchParams.get("mid") === "a10101020000"
     && approvedList.searchParams.get("policy_subject_office") === "0";
+  const validJejuList = sourceId === "regional-jeju-youth-platform"
+    && approvedList.origin === "https://jejuyouth.com"
+    && approvedList.pathname === "/m/bbs/board.php"
+    && approvedList.searchParams.get("bo_table") === "1_2_2_1"
+    && approvedList.searchParams.get("page") === "1";
   const validList = validDaeguList || validGwangjuList || validIncheonList
-    || validJeonbukList || validGyeongnamList;
+    || validJeonbukList || validGyeongnamList || validJejuList;
   const validItems = Array.isArray(items)
     && items.length >= 1
     && items.length <= 3
@@ -193,6 +198,12 @@ export function validateCheckpointDetailRecaptureContracts(
           return detailUrl.origin === approvedList.origin
             && detailUrl.pathname === "/policy/p2_pol_view.html"
             && detailUrl.searchParams.get("id") === item.external_id;
+        }
+        if (validJejuList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname === approvedList.pathname
+            && detailUrl.searchParams.get("bo_table") === "1_2_2_1"
+            && detailUrl.searchParams.get("wr_id") === item.external_id;
         }
         return validGyeongnamList
           && detailUrl.origin === approvedList.origin
@@ -941,7 +952,11 @@ export function buildDetail(title, extracted) {
 }
 
 async function postCapture(endpoint, token, capture, mode = "capture") {
-  const response = await fetch(endpoint.replace(/\/capture$/, `/${mode}`), {
+  const baseEndpoint = endpoint.replace(
+    /\/(?:capture|discover|failure|recapture|recover)\/?$/,
+    "",
+  );
+  const response = await fetch(`${baseEndpoint}/${mode}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -1503,5 +1518,18 @@ export function jejuConfig(page, asOfDate) {
     detailMetadataSelector: ".mb_area",
     detailDateInference: "registered_title_deadline",
     closedTextPattern: "모집마감",
+  };
+}
+
+export function jejuCheckpointDetailConfig(asOfDate) {
+  const config = jejuConfig(1, asOfDate);
+  return {
+    ...config,
+    sourceScopeSelectors: {
+      jurisdiction_text: ".view_title",
+      operator_text: ".mb_area",
+      youth_policy_scope_text: ".view_title",
+      application_scope_text: ".mb_area",
+    },
   };
 }

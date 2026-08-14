@@ -166,11 +166,12 @@ def _closed_history(
         for item in decisions
         if isinstance(item, Mapping) and item.get("outcome") == "closed"
     }
-    replay_closed = {
+    all_replay_closed = {
         str(item.get("external_id"))
         for item in replay
         if item.get("application") == "closed"
     }
+    replay_closed = all_replay_closed & expected
     provenance_complete = set()
     reason_counts = {"explicitly_closed": 0, "period_ended": 0}
     for item in replay:
@@ -196,6 +197,7 @@ def _closed_history(
         "source_id": source_id,
         "checkpoint_closed": len(expected),
         "replay_closed": len(replay_closed),
+        "review_now_closed": len(all_replay_closed - expected),
         "provenance_complete": len(provenance_complete),
         "reason_counts": reason_counts,
         "complete": expected == replay_closed == provenance_complete,

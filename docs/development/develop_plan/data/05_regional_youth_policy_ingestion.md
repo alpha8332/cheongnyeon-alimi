@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP7`·`RYP-G4` 완료, `RYP8` Source별 필드 추출 진행 중
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 전체 재판정·검색 인수 예정
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -17,7 +17,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP8` Source별 지역·청년 대상·신청 상태 필드 추출 보강
+- 현재 Slice: `RYP9` 전체 재판정·검색 커버리지 인수
 
 ## 목적
 
@@ -879,6 +879,16 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
   종료하지 않는다. 남은 값은 제주 1,239개뿐이며 다음 범위는 제주 review
   identity 보강이다.
+- 제주는 종료 이력 926건을 다시 요청하지 않고 review 207건만 frozen 제목과
+  `bo_table=1_2_2_1&wr_id=` 상세 identity로 최대 3건씩 재캡처했다. 텍스트 본문이
+  없는 이미지-only 게시물도 값을 추론하지 않고 `label_not_found`로 보존했다.
+  제주 `null_unverifiable`는 `1,239 → 0`, 전체 legacy도 `0`이 됐다.
+- `max_legacy_null_slots=0`으로 최종 감사를 실행해 13개 Source field slot 전부를
+  관찰 상태로 설명했고, closed checkpoint 이력 `경남 1,419 / 제주 926`, failed
+  분류 `322/322`, 고정 outcome `18/1/1,905/2,360/322`를 모두 대조했다.
+  checkpoint review 중 현재 replay가 closed인 제주 7건은 기존 closed 이력과
+  분리해 보고하며 outcome을 소급 변경하지 않는다. `data_ready=true`로 RYP8을
+  완료하고 다음 Slice를 RYP9으로 전환한다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

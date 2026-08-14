@@ -460,6 +460,13 @@ closed 1,419건은 다시 요청하지 않는다. 상세 화면의 공통 스크
 한 batch는 최대 3건이며 요청 간 최소 2초를 지킨다. JSON에 값이 없는 필드는
 `label_not_found`로 보존하고 임의 값을 만들지 않는다.
 
+제주는 완료 checkpoint의 review 207건만 `checkpoint_detail_url` 경계로 처리하고
+closed 926건은 다시 요청하지 않는다. frozen Raw 제목과 공식
+`/m/bbs/board.php?bo_table=1_2_2_1&wr_id=`를 고정하고 origin·path·`bo_table`·
+`wr_id`, checkpoint total 1,133, captured 부분집합과 최대 3건 batch를 검증한다.
+본문 텍스트가 없는 이미지-only 게시물은 공식 제목·등록 메타데이터로 Source
+scope를 증명하되 정책 필드는 `label_not_found`로 보존한다.
+
 강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
 `/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고
 해당 outcome이 `failed`인 경우에만 Raw를 저장한다. 저장한 Raw를 같은 checkpoint
@@ -490,10 +497,15 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
   --output runtime/decisions/regional-ryp8-audit.json
 ```
 
-`--max-legacy-null-slots`는 계획에서 승인된 수치가 있을 때만 지정한다. 생략하면
+`--max-legacy-null-slots`는 계획에서 승인된 수치가 있을 때만 지정한다. RYP8
+최종 판정은 모든 legacy slot 해소 뒤 `0`으로 실행한다. 생략하면
 감사기는 임의 기준을 만들지 않고 `legacy_null_within_target=null`과
 `data_ready=false`를 기록한다. 이 명령은 Raw·checkpoint·DB를 변경하지 않고
 Git 제외 감사 보고서만 원자적으로 교체한다.
+closed-history 완전성은 checkpoint에서 이미 closed였던 identity의 replay와
+provenance만 대조한다. checkpoint review가 새 필드 관찰로 현재 closed로 replay된
+경우는 `review_now_closed`로 별도 보고하고 고정 outcome이나 기존 closed 이력에
+소급 합산하지 않는다.
 
 신청기간 필드에서 날짜가 하나만 추출되면 그 날짜를 신청 마감일로 판정한다.
 as-of가 마감일을 지났으면 `application_period_ended`, 같거나 이전이면

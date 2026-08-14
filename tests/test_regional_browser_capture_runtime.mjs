@@ -15,6 +15,7 @@ import {
   incheonCheckpointDetailConfig,
   jeonbukCheckpointDetailConfig,
   jejuConfig,
+  jejuCheckpointDetailConfig,
   normalizeCheckpointDetailTitle,
   classifyDetailCanaryObservation,
   seoulConfig,
@@ -506,6 +507,32 @@ test("Jeonbuk checkpoint detail recapture rejects an id drift", () => {
   );
 });
 
+test("Jeju checkpoint detail recapture pins bo_table and wr_id", () => {
+  const items = [{
+    external_id: "1196",
+    title: "제주형 청년기본소득 토론장 참여 청년 모집",
+    detail_url: "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1&wr_id=1196",
+  }];
+  assert.deepEqual(
+    validateCheckpointDetailRecaptureContracts(
+      "regional-jeju-youth-platform",
+      "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1&page=1",
+      items,
+    ),
+    items,
+  );
+  const drifted = structuredClone(items);
+  drifted[0].detail_url = drifted[0].detail_url.replace("1196", "1195");
+  assert.throws(
+    () => validateCheckpointDetailRecaptureContracts(
+      "regional-jeju-youth-platform",
+      "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1&page=1",
+      drifted,
+    ),
+    /checkpoint detail recapture contract is invalid/,
+  );
+});
+
 test("Gyeongnam API detail maps official fields and explicit label absence", () => {
   assert.deepEqual(
     validateCheckpointDetailRecaptureContracts(
@@ -883,6 +910,14 @@ test("Seoul distinguishes an empty official period from a missing label", () => 
 });
 
 test("remaining RYP8 Source configs pin the observed list and detail selectors", () => {
+  assert.equal(
+    jejuCheckpointDetailConfig("2026-08-14").sourceScopeSelectors.jurisdiction_text,
+    ".view_title",
+  );
+  assert.equal(
+    jejuCheckpointDetailConfig("2026-08-14").sourceScopeSelectors.application_scope_text,
+    ".mb_area",
+  );
   assert.equal(
     gwangjuCheckpointDetailConfig().detailContentSelector,
     ".detail-policy",

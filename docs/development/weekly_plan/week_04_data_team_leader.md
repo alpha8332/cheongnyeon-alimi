@@ -9,8 +9,8 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0`~`RYP7`·`RYP-G4` 완료,
-  `RYP8` Source별 필드 추출 진행 중 (경남까지 legacy 보강, 제주 잔여 1,239,
+- 현재 Slice: Data 05 `RYP0`~`RYP8`·`RYP-G4` 완료,
+  `RYP9` 전체 재판정·검색 커버리지 인수 예정 (legacy null 0·RYP8 감사 통과,
   `DTL4-4B`·`ES4` actual 세로 인수 포함),
   이후 RYP9·Data 06 구현과 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
@@ -717,7 +717,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
 - [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
 - [x] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료
-- [ ] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
+- [x] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
 - [ ] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
 - [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과
 - [ ] Data 06 SOP5 Source군별 최종 상태·전체 회귀 완료

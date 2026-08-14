@@ -59,6 +59,10 @@
   전건 해소
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 제주 review 207건의 공식 상세를 checkpoint 고정 `wr_id` 계약으로 보강해 지역
+  Source 전체 legacy 필드 상태를 0으로 해소하고 RYP8 완료 감사를 통과
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,

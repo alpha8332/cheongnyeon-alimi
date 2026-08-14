@@ -253,6 +253,7 @@ def _store_recapture(
         "regional-incheon-youth-platform",
         "regional-jeonbuk-youth-platform",
         "regional-gyeongnam-youth-platform",
+        "regional-jeju-youth-platform",
     }
     checkpoint_detail_matches = bool(
         checkpoint_detail_mode

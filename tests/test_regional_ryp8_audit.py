@@ -102,6 +102,25 @@ def test_audit_reconciles_closed_history_and_classifies_failed_identity() -> Non
     assert all(item["complete"] for item in report["closed_history"])
 
 
+def test_closed_history_ignores_review_identity_that_now_replays_closed() -> None:
+    inputs = _inputs()
+    inputs["closed_replays"]["regional-jeju-youth-platform"].append(
+        _closed_decision("jeju-review-now-closed")
+    )
+
+    report = build_regional_ryp8_audit(**inputs, max_legacy_null_slots=0)
+
+    jeju = next(
+        item
+        for item in report["closed_history"]
+        if item["source_id"] == "regional-jeju-youth-platform"
+    )
+    assert jeju["checkpoint_closed"] == jeju["replay_closed"] == 1
+    assert jeju["review_now_closed"] == 1
+    assert jeju["complete"] is True
+    assert report["data_ready"] is True
+
+
 def test_audit_does_not_invent_an_undefined_legacy_null_target() -> None:
     report = build_regional_ryp8_audit(
         **_inputs(),
