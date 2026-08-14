@@ -54,6 +54,10 @@ _MONTH_RANGE = re.compile(
     r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
     r"(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?(?!\d)"
 )
+_SAME_YEAR_MONTH_RANGE = re.compile(
+    r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
+    r"(\d{1,2})(?:월|\.)?(?!\d)"
+)
 _NUMBER = re.compile(r"(?<!\d)(\d{1,3})(?!\d)")
 _RANGE_MARKER = re.compile(r"~|～|이상.*이하")
 _REGION_CODES = re.compile(r"^\d{5}(?:\s*,\s*\d{5})*$")
@@ -397,10 +401,19 @@ def _normalize_application_period(
             [],
         )
     month_range = _MONTH_RANGE.search(value)
+    same_year_month_range = _SAME_YEAR_MONTH_RANGE.search(value)
     if month_range is not None:
         start_year, start_month, end_year, end_month = map(
             int, month_range.groups()
         )
+    elif same_year_month_range is not None:
+        start_year, start_month, end_month = map(
+            int, same_year_month_range.groups()
+        )
+        end_year = start_year
+    else:
+        start_year = start_month = end_year = end_month = None
+    if start_year is not None:
         try:
             start = date(start_year, start_month, 1)
             end = date(

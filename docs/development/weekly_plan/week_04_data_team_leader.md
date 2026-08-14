@@ -10,8 +10,8 @@
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
 - 현재 Slice: Data 05 `RYP0`~`RYP8`·`RYP-G4` 완료,
-  `RYP9` 감사 재판정·accepted 67건 부분 적재와 명시적 지역 검색 match-only 완료,
-  review 1,192건 Source별 보강 진행 (legacy null 0·RYP8 감사 통과,
+  `RYP9` 감사 재판정·accepted 103건 부분 적재와 명시적 지역 검색 match-only 완료,
+  review 1,153건 Source별 보강 진행 (legacy null 0·RYP8 감사 통과,
   `DTL4-4B`·`ES4` actual 세로 인수 포함),
   이후 RYP9·Data 06 구현과 `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)

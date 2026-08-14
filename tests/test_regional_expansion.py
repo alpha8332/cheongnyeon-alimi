@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from copy import deepcopy
+from dataclasses import replace
 from datetime import date, datetime, timezone
 from io import StringIO
 from pathlib import Path
@@ -39,6 +40,7 @@ from scripts.serve_regional_browser_capture import (
 
 NOW = datetime(2026, 8, 11, 5, tzinfo=timezone.utc)
 DAEGU_SOURCE_ID = "regional-daegu-youth-platform"
+SEOUL_SOURCE_ID = "regional-seoul-youth-platform"
 GWANGJU_SOURCE_ID = "regional-gwangju-integrated-youth-platform"
 INCHEON_SOURCE_ID = "regional-incheon-youth-platform"
 JEONBUK_SOURCE_ID = "regional-jeonbuk-youth-platform"
@@ -927,6 +929,112 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
         )
         self.assertEqual(
             ["대구광역시 청년정책과 053-000-0000"],
+            [
+                item.value
+                for item in normalized.eligibility_summary.institutional_contacts
+            ],
+        )
+
+    def test_regional_contact_omits_email_but_keeps_facility_phone(self) -> None:
+        capture = daegu_capture()
+        capture["items"][0]["detail"]["contact"] = (
+            "대구광역시 청년정책과 053-000-0000 / policy@example.test"
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID, store=store, now=lambda: NOW
+            ).save(capture)
+            policy = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+
+        normalized = Normalizer().normalize(policy).program
+
+        assert normalized is not None
+        self.assertEqual(
+            ["대구광역시 청년정책과 053-000-0000"],
+            [
+                item.value
+                for item in normalized.eligibility_summary.institutional_contacts
+            ],
+        )
+
+    def test_source_specific_seoul_aliases_require_target_and_operator(self) -> None:
+        capture = daegu_capture()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID, store=store, now=lambda: NOW
+            ).save(capture)
+            base = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+        policy = replace(
+            base,
+            source_id=SEOUL_SOURCE_ID,
+            title="서울 고립은둔청년 지원",
+            organization="서울시",
+            eligibility_text="서울 거주 만 19~39세 청년",
+            region_text=None,
+        )
+
+        decision = decide_expanded_regional_policy(
+            policy, as_of=date(2026, 8, 11)
+        )
+
+        self.assertTrue(decision.accepted)
+        self.assertIn("target_region_confirmed", decision.reason_codes)
+        self.assertIn("implementing_region_confirmed", decision.reason_codes)
+
+    def test_seoul_program_name_in_exclusion_is_not_residency_evidence(self) -> None:
+        capture = daegu_capture()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID, store=store, now=lambda: NOW
+            ).save(capture)
+            base = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+        policy = replace(
+            base,
+            source_id=SEOUL_SOURCE_ID,
+            title="청년 자격증 응시료 지원",
+            organization="서울특별시 중랑구",
+            eligibility_text="만 19~39세, 서울 청년수당 참여자는 제외",
+            region_text=None,
+        )
+
+        decision = decide_expanded_regional_policy(
+            policy, as_of=date(2026, 8, 11)
+        )
+
+        self.assertFalse(decision.accepted)
+        self.assertIs(
+            RegionalityStatus.REGIONAL_REVIEW_REQUIRED,
+            decision.regionality,
+        )
+
+    def test_regional_contact_omits_mobile_but_keeps_facility_phone(self) -> None:
+        capture = daegu_capture()
+        capture["items"][0]["detail"]["contact"] = (
+            "대표 053-000-0000 / 담당자 010-1234-5678"
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(temp_dir)
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID, store=store, now=lambda: NOW
+            ).save(capture)
+            policy = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+
+        normalized = Normalizer().normalize(policy).program
+
+        assert normalized is not None
+        self.assertEqual(
+            ["대표 053-000-0000"],
             [
                 item.value
                 for item in normalized.eligibility_summary.institutional_contacts

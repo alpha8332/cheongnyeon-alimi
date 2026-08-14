@@ -189,8 +189,8 @@ fast-forward해 4주차의 공통 시작점으로 사용한다.
 ### 상태
 
 in progress (`W4-G0`, Data 03·04와 Integration 08 기반 완료;
-Data 05 `RYP0`~`RYP8`·`RYP-G4` 완료·`RYP9` 광주 보강 및 명시적 지역 검색
-match-only 완료 (accepted 67·review 1,192, Source 필드 상태 전건 reconcile,
+Data 05 `RYP0`~`RYP8`·`RYP-G4` 완료·`RYP9` 광주·인천·대전·강원·대구·서울 보강 및 명시적 지역 검색
+match-only 완료 (accepted 103·review 1,153, Source 필드 상태 전건 reconcile,
 legacy null 0과 고정 outcome·종료 이력·실패 분류 감사 통과),
 Data 06 계획 확정)
 

@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건 승격, accepted 67건 DB 동기화·review 1,192건 잔여 Source 보강 진행 |
+| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건 승격, accepted 103건 DB 동기화·review 1,153건 잔여 Source 보강 진행 |
 
 ## 구현 내용
 
@@ -1347,3 +1347,65 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 대전 RYP9 감사: 전환 1, blocker 0, `ready_for_redecision=true`
 - 대전 DB actual: `inserted 1 → updated 1 → unchanged 1`
 - 대전 open 목록·검색·상세 API actual: `1/1/1`, 타 지역 혼입 0
+
+### RYP9 강원 성공 Raw 지역 근거 보강 (`2026-08-14`)
+
+- 공식 목록에서 total 337과 첫 page 12개 identity·순서, 신청기간·기관·연령을
+  checkpoint와 대조했다. failed 322건은 열거나 재요청하지 않았고 기존 초기·
+  중기·후기 3구간 canary 분류를 유지했다. RYP8 감사기의 failed 분류는
+  `322/322`로 일치했지만, 이 감사기는 RYP9 outcome 변경을 완료 조건으로
+  설계하지 않아 post-RYP9 완료 판정에는 사용하지 않았다.
+- 강원 Source에 한해서 정책 `지원대상` 지역과 `주관기관` 지역이 함께 확인되는
+  조합을 허용했다. 월 축약 `2026. 1월~12월`도 같은 연도의 1월 1일~12월 31일로
+  구조화하되, 다른 도의 동명 `고성군`과 구분할 상위 지역 근거가 없어 해당
+  정책은 승격하지 않았다.
+- 영월 청년 주거비와 속초 청년 이사비용 2건만 `review → accepted`로 승인했다.
+  강원 성공 Raw의 나머지는 마감 9, review 4이며 failed 322는 그대로다. 전체
+  outcome은 `accepted 69 / duplicate 1 / review 1,190 / closed 3,024 /
+  failed 322`다.
+- PostgreSQL actual은 첫 실행 `inserted 2`, 두 번째 실행 `unchanged 2`, prune·
+  중복·실패 0이다. 실제 open 목록·명시적 검색은 강원 2건만 반환하고 전건
+  `region=match`, `application_status=open`, 강원 Source identity와 일치했다.
+- 월 범위 해석으로 서울 review 2건이 `review → closed` 후보가 되는 영향도
+  발견했지만 현재 강원 범위에서 적용하지 않았다. 서울 우선순위에서 별도
+  감사·승인한다.
+
+검증 결과:
+
+- Normalizer·regional Gate·expansion·감사 집중 테스트:
+  `86 passed, 12 subtests passed`
+- 강원 RYP9 감사: 승격 2, blocker 0; failed 322 보존
+- 강원 DB actual: `inserted 2 → unchanged 2`
+- 강원 open 목록·검색·상세 API actual: `2/2/2`, 타 지역 혼입 0
+
+### RYP9 대구·서울 정책 단위 지역 근거 보강 (`2026-08-14`)
+
+- 대구 197건과 서울 110건의 완료 checkpoint를 동일 Raw로 재생했다. 대구는
+  공식 `젊프` 관할·운영 scope와 정책별 `대구` 시행 기관 또는 대상 지역을 함께
+  요구했다. 청년 대상과 open 근거까지 확인된 33건을 `review → accepted`로,
+  기존 Source와 겹친 1건을 `review → duplicate`로 판정했다. 전국 재게시 1건과
+  지역·청년 대상 근거가 부족한 정책은 review에 남겼다.
+- 서울은 일반 `서울` 문자열을 지역 근거로 쓰지 않았다. `서울 거주` 대상과
+  `서울시` 시행 기관이 함께 확인되는 고립·은둔청년 지원 1건만 accepted로
+  승격했다. 제외조건의 `서울 청년수당` 문구가 있던 중랑구 정책은 거주 근거가
+  아니므로 review로 유지했다. 앞서 발견한 기간 종료 2건은 감사 승인 뒤
+  `review → closed`로 전환했다.
+- 승격 후보의 문의처에서 이메일과 개인 휴대전화가 발견됐다. 공통 연락처 계약에
+  따라 이 값만 제외하고 같은 문자열의 시설 대표전화는 보존했다. 정책·전화번호
+  provenance는 기존 상세 필드 locator를 유지한다.
+- 최종 outcome은 `accepted 103 / duplicate 2 / review 1,153 / closed 3,026 /
+  failed 322`이며 전환 37건, blocker 0, `ready_for_redecision=true`다. PostgreSQL
+  actual은 대구 `inserted 33`, 서울 `inserted 1` 뒤 동일 Raw 재실행에서 각각
+  `unchanged 33/1`, prune·실패 0을 확인했다.
+- 실제 partial 포함 open 목록과 명시적 match-only 검색은 대구 `33/33`, 서울
+  `1/1`을 반환했다. 대표 상세는 대구 `external_id=8370`, 서울
+  `external_id=V202500009`이며 모두 canonical regions와 open 상태가 DB와
+  일치했다.
+
+검증 결과:
+
+- regional expansion·Gate 집중 테스트: `61 passed, 12 subtests passed`
+- 대구·서울 RYP9 감사: 전환 37, blocker 0; 재적용 감사 전환 0
+- 대구 DB actual: `inserted 33 → unchanged 33`, 중복 후보 1건 적재 제외
+- 서울 DB actual: `inserted 1 → unchanged 1`, 종료 2건 checkpoint 반영
+- 대구·서울 open 목록·명시적 검색·대표 상세 API actual: `33/33/1`, `1/1/1`

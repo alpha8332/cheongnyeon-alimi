@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from collectors.bokjiro import SOURCE_ID as BOKJIRO_SOURCE_ID
@@ -97,7 +98,9 @@ def map_regional_eligibility(
             ),
         )
     )
-    contact = _source_text(policy.extra.get("institutional_contact"))
+    contact = _supported_institutional_contact(
+        _source_text(policy.extra.get("institutional_contact"))
+    )
     contacts = (
         ()
         if contact is None
@@ -412,3 +415,26 @@ def _source_text(value: Any) -> str | None:
         raise ValueError("eligibility source text must be a string")
     selected = value.replace("\r\n", "\n").replace("\r", "\n").strip()
     return None if selected in {"", "-", "--"} else selected
+
+
+def _supported_institutional_contact(value: str | None) -> str | None:
+    """Keep public contact text while excluding email and personal mobile data."""
+
+    if value is None:
+        return None
+    selected = re.sub(r"\b[^\s@]+@[^\s@]+\b", "", value)
+    selected = re.sub(
+        r"(?<!\d)(?:\+?82[-.\s]?(?:\(0\))?[-.\s]?10|01[016789])"
+        r"[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)",
+        "",
+        selected,
+    )
+    selected = re.sub(
+        r"\s*[/|,;]?\s*(?:담당자(?:\s*연락처)?|휴대전화|핸드폰)\s*$",
+        "",
+        selected,
+    )
+    selected = re.sub(r"\s*[/|,;]\s*(?=$|\n)", "", selected)
+    selected = "\n".join(line.strip(" /|,;") for line in selected.splitlines())
+    selected = "\n".join(line for line in selected.splitlines() if line)
+    return selected or None

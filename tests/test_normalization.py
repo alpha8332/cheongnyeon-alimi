@@ -316,6 +316,16 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(ApplicationStatus.OPEN, program.application_status)
 
+    def test_same_year_month_range_inherits_the_start_year(self) -> None:
+        program = self.normalizer.normalize(
+            extracted_policy(application_period_text="2026. 1월~12월")
+        ).program
+
+        assert program is not None
+        self.assertEqual("2026-01-01", str(program.application_start))
+        self.assertEqual("2026-12-31", str(program.application_end))
+        self.assertEqual(ApplicationStatus.OPEN, program.application_status)
+
     def test_partial_fixture_keeps_text_and_reports_field_locations(
         self,
     ) -> None:

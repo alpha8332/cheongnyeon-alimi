@@ -34,6 +34,10 @@ _MONTH_RANGE = re.compile(
     r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
     r"(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?(?!\d)"
 )
+_SAME_YEAR_MONTH_RANGE = re.compile(
+    r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
+    r"(\d{1,2})(?:월|\.)?(?!\d)"
+)
 _EVIDENCE_FIELDS = frozenset(
     {
         "implementing_organization_text",
@@ -549,10 +553,19 @@ def _application_availability(
             return ApplicationAvailability.CLOSED, "application_period_ended"
         return ApplicationAvailability.OPEN, "application_period_open"
     month_range = _MONTH_RANGE.search(normalized)
+    same_year_month_range = _SAME_YEAR_MONTH_RANGE.search(normalized)
     if month_range is not None:
         start_year, start_month, end_year, end_month = map(
             int, month_range.groups()
         )
+    elif same_year_month_range is not None:
+        start_year, start_month, end_month = map(
+            int, same_year_month_range.groups()
+        )
+        end_year = start_year
+    else:
+        start_year = start_month = end_year = end_month = None
+    if start_year is not None:
         try:
             start = date(start_year, start_month, 1)
             end = date(

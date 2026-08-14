@@ -668,12 +668,18 @@ def decide_expanded_regional_policy(
             == "regional-gwangju-integrated-youth-platform"
         ),
         allow_target_region_plus_organization=(
-            policy.source_id == "regional-incheon-youth-platform"
+            policy.source_id in {
+                "regional-incheon-youth-platform",
+                "regional-gangwon-youth-platform",
+                "regional-seoul-youth-platform",
+            }
         ),
         additional_region_aliases=(
-            ("대전청년포털",)
-            if policy.source_id == "regional-daejeon-youth-platform"
-            else ()
+            {
+                "regional-daejeon-youth-platform": ("대전청년포털",),
+                "regional-daegu-youth-platform": ("대구",),
+                "regional-seoul-youth-platform": ("서울 거주", "서울시"),
+            }.get(policy.source_id, ())
         ),
     )
     return enforce_youth_target(policy, decision)

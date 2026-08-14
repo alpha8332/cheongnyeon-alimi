@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전 보강 및
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전·강원·대구·서울 보강 및
   명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
@@ -947,7 +947,18 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   월 단위 접수기간을 달력 월 경계로 해석해 대표 1건을 accepted로 승격했고,
   기간·대상 근거가 부족한 10건과 마감 1건은 유지했다. outcome은
   `accepted 67 / duplicate 1 / review 1,192 / closed 3,024 / failed 322`다.
-- 잔여 Source에 review 1,192건이 남아 있다. Source별
+- 강원은 성공 Raw 15건만 재판정하고 failed 322건은 재요청하지 않았다. 정책
+  대상 지역과 시행 기관 지역이 함께 확인되고 청년 대상·open 근거가 있는 영월·
+  속초 정책 2건만 accepted로 승격했다. 고성의 모호한 지역명, 춘천의 대상 지역
+  누락과 청년 대상 미확인 정책은 review로 유지했다. outcome은
+  `accepted 69 / duplicate 1 / review 1,190 / closed 3,024 / failed 322`다.
+- 대구는 공식 포털의 관할·운영 scope와 정책별 `대구` 시행 기관 또는 대상 지역을
+  결합하고 청년 대상·open 근거를 요구해 33건을 accepted, 기존 Source 중복 1건을
+  duplicate로 판정했다. 서울은 `서울 거주` 대상과 `서울시` 시행 기관이 함께
+  확인되는 1건만 accepted로 승격하고, 제외조건의 `서울 청년수당` 문구는 거주
+  근거로 보지 않았다. 기간 종료가 확인된 서울 2건은 closed로 전환했다. outcome은
+  `accepted 103 / duplicate 2 / review 1,153 / closed 3,026 / failed 322`다.
+- 잔여 Source에 review 1,153건이 남아 있다. Source별
   `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
   RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
 

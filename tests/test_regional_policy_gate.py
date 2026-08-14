@@ -513,6 +513,29 @@ class RegionalPolicyGateTests(unittest.TestCase):
         self.assertIn("target_region_confirmed", decision.reason_codes)
         self.assertIn("application_period_open", decision.reason_codes)
 
+    def test_same_year_month_range_is_current(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(),
+            organization="강원특별자치도 고성군청",
+            eligibility="강원특별자치도 고성군 거주 청년",
+            source_region=None,
+            application_period="2026. 1월~12월",
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="강원특별자치도",
+            as_of=date(2026, 8, 14),
+            allow_target_region_plus_organization=True,
+        )
+
+        self.assertTrue(decision.accepted)
+        self.assertIs(ApplicationAvailability.OPEN, decision.application)
+        self.assertIn("application_period_open", decision.reason_codes)
+
     def test_single_application_deadline_is_classified_as_end_date(self) -> None:
         case = self.fixture["cases"][0]
         selected_policy, selected_evidence = scoped_policy_and_evidence(
