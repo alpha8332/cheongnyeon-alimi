@@ -1,0 +1,239 @@
+# 5주차 - 안정화·사용자 검증과 Release 2
+
+## 계획 정보
+
+- 상태: approved (4주차 `W4-G4_MIDPOINT_PASS` 뒤 착수 대기)
+- 대상 Release: `v0.5.0`
+- 수행 역할: Data, Backend, Frontend, Team Leader - Integration
+- 독립 검증 역할: 사용성 리뷰어, QA
+- 근거 정리 역할: 보고서 담당
+- 상위 Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
+- 공통 시작점: 4주차 전체 기본 기능이 `develop`에 병합되고
+  `W4-G4_MIDPOINT_PASS`로 판정된 커밋
+
+5주차는 Team Leader 단독 작업이 아니다. Data·Backend·Frontend가 각 담당
+영역의 결함 수정과 자체 회귀를 수행하고, Team Leader는 실제
+PostgreSQL → FastAPI → React 통합, 독립 리뷰·QA와 Release 2 Gate를 주관한다.
+
+## 목표
+
+- 4주차에 완성한 사용자·관리자·데이터 기능을 실제 환경에서 안정화한다.
+- 실제 데이터, 실패·partial·invalid, 권한과 오류 경계를 영역별로 검증한다.
+- 팀 외 사용성 리뷰와 QA에서 발견한 결함을 수정하고 같은 시나리오로
+  재검증한다.
+- Release 2 완료 조건을 충족한 `develop`만 `main` PR과 `v0.5.0` tag 후보로
+  승인한다.
+
+## 시작 조건
+
+- 4주차의 모든 필수 Forest가 완료되고 결과가 `develop`에 병합돼야 한다.
+- Data 05·06 actual 적재, Backend·Frontend 기능과 Integration 06·07·09의
+  선행 범위가 미완성 상태가 아니어야 한다.
+- `W4-G4_MIDPOINT_PASS`와 공통 시작 SHA, Migration head, 실제 snapshot,
+  Frontend actual API mode가 기록돼야 한다.
+- 사용성 리뷰어·QA·보고서 역할과 증거 양식이 정해져야 한다.
+
+선행 조건을 충족하지 못하면 5주차 기본 작업으로 이월하지 않고 4주차
+blocker로 유지한다.
+
+## 현재 기준선
+
+- 이 문서는 4주차 전체 완료를 전제로 한 실행 계획이며 실제 완료를 뜻하지
+  않는다.
+- `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
+- Release 2 인수·판정은 Integration 07을 따른다.
+- 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.
+
+## 범위
+
+### Data
+
+- Data 03~06 수집·replay·정규화·중복·품질 전체 회귀
+- 성공·실패·중단·checkpoint 재개와 동일 Raw `unchanged` 검증
+- partial·invalid·마감·중복 후보와 provenance 정확성 확인
+- Data 05 비차단 지역의 open 고유 정책 검색 노출과 0건 근거 확인
+- Data 06 승인 Source의 신규 정책과 온통청년·복지로·Data 05 중복 제외 확인
+- accepted projection 재동기화의 row 유지·prune·반복 실행 안전성 확인
+
+### Backend
+
+- 전체 단위·PostgreSQL 통합 회귀와 주요 API 안정성·성능 확인
+- Migration upgrade·rollback, transaction rollback과 기존 데이터 유지 검증
+- 정책 검색·상세·추천, 관리자 인증·권한·실행 이력·수동 실행 검증
+- 관리자 정책 데이터·영속 로그 조회와 archive 삭제 보호·감사 확인
+- partial·invalid 데이터와 `401`·`403`·`404`·`409`·`422`·`500` 오류 계약 검증
+- Data 05·06 accepted 결과의 검색·상세 API 노출 대조
+
+### Frontend
+
+- 검색·목록·상세·추천의 actual API 회귀
+- 제외 조건·필요 서류·시설 문의처·추가 확인 필요 표시 검증
+- 지역 검색, 0건 설명, 즐겨찾기·D-Day·웹 알림·`.ics` 검증
+- 관리자 인증·실행 이력·수동 실행·정책 데이터·로그 화면 검증
+- loading·empty·partial·error·권한 부족·세션 만료 UX 개선
+- 키보드·접근성·모바일·반응형과 주요 지원 Browser 회귀
+
+### Team Leader - Integration
+
+- 공통 시작 SHA·Migration·snapshot·actual API mode 고정
+- Data → PostgreSQL → Backend API → Frontend Browser E2E 주관
+- 영역 간 계약 충돌과 결함의 담당·심각도·재검증 조건 확정
+- 사용성 리뷰와 QA 결과의 릴리스 차단 여부 triage
+- 수정본 근거, 문서·CHANGELOG와 Release 체크리스트 대조
+- `pass`, `conditional`, `blocked` Release 2 판정
+
+### 사용성 리뷰어·QA·보고서
+
+- 사용성 리뷰어는 팀 외 사용자 관점의 사용자·관리자 시나리오를 수행한다.
+- QA는 전체 기능·통합·회귀·경계·실패 탐색 테스트와 수정본 재검증을 수행한다.
+- 보고서 담당은 실행한 리뷰·QA·수정·재검증 근거와 미실행 항목을 구분해
+  Release 2 결과로 연결한다.
+
+## 범위 밖
+
+- 4주차 기본 기능의 미완료분을 5주차 추가 기능으로 재분류하는 작업
+- 승인되지 않은 신규 기능과 계약 확장
+- Production Dockerfile·Compose·Nginx·CI와 clean-room 배포
+- 이메일 발송이나 Google Calendar 직접 연동
+- QA·사용성 검증 없이 담당자 자체 테스트만으로 Release 2를 승인하는 작업
+
+배포 파이프라인과 `v1.0.0` clean-room 검증은 6주차 범위다.
+
+## 실행 원칙
+
+1. 기능 확장보다 결함 수정·UI/UX 최적화·검증을 우선한다.
+2. Mock·Seed 성공을 실제 PostgreSQL·API·Browser 통과로 대신하지 않는다.
+3. 최초 실패, 원인, 수정과 재검증 결과를 함께 보존한다.
+4. 실제 최신 웹 관찰과 고정 snapshot 회귀를 서로 다른 증거로 관리한다.
+5. Data·Backend·Frontend는 자기 영역을 수정하고 Team Leader가 계약과 E2E를
+   조정한다.
+6. 사용성 리뷰와 QA는 구현자의 자체 검증과 구분한다.
+7. Runtime Raw·DB 파일·인증정보·개인정보를 Git에 포함하지 않는다.
+
+## 선행 관계와 Critical Path
+
+```text
+4주차 전체 Forest 완료·develop 병합
+  → W5-G0 통합 기준선 고정
+  ├→ Data 안정화
+  ├→ Backend 안정화
+  └→ Frontend 안정화
+  → W5-G1 actual E2E
+  → 사용성 리뷰·QA
+  → 영역별 결함 수정
+  → 수정본 독립 재검증
+  → W5-G2 Release 2 Gate
+  → main PR·v0.5.0 tag 후보
+```
+
+영역별 안정화는 공통 기준선 뒤 병렬로 진행할 수 있다. 사용성 리뷰와 QA는
+담당자 자체 회귀와 actual E2E가 끝난 뒤 시작한다.
+
+## 권장 5일 배치
+
+| 일차 | Data | Backend | Frontend | Team Leader·독립 검증 |
+| --- | --- | --- | --- | --- |
+| 1일차 | Runtime·snapshot·품질 기준 확인 | Migration·DB·API 기준 확인 | actual API·지원 Browser 기준 확인 | W5-G0 시작 SHA·환경·증거 양식 고정 |
+| 2일차 | 수집·replay·중복·실패 회귀 | API·권한·transaction 회귀 | 사용자·관리자 UI·오류 상태 회귀 | 영역별 결함 triage |
+| 3일차 | Data 05·06 actual 대조 | DB·API actual 대조 | Browser E2E·접근성·반응형 | W5-G1 E2E 판정 |
+| 4일차 | 승인 결함 수정·재검증 | 승인 결함 수정·재검증 | 승인 결함·UX 수정·재검증 | 사용성 리뷰·QA 수행과 재현 근거 정리 |
+| 5일차 | 수정본 회귀 | 수정본 회귀 | 수정본 Browser 회귀 | 독립 재검증·W5-G2 Release 2 판정 |
+
+## 단계별 Gate
+
+### W5-G0 - 통합 기준선
+
+- 4주차 필수 결과가 `develop`에 모두 병합됨
+- 시작 SHA, Migration head, snapshot과 actual API mode가 고정됨
+- 영역별 테스트 명령, 지원 환경과 증거 양식이 확정됨
+- 기본 기능 미완료가 0건임
+
+하나라도 충족하지 못하면 `W5-G0_BLOCKED`로 기록하고 4주차 완료 조건으로
+돌려보낸다.
+
+### W5-G1 - actual E2E와 독립 검증 준비
+
+- Data·Backend·Frontend 담당자 전체 회귀가 통과함
+- 사용자·관리자 핵심 흐름이 실제 PostgreSQL·API·Browser에서 동작함
+- Data 05·06 정책의 lineage와 검색 노출이 대조됨
+- 리뷰어·QA에 넘길 알려진 제약과 테스트 환경이 기록됨
+
+### W5-G2 - Release 2 Gate
+
+- 리뷰어 시나리오와 QA 전체 검증이 수행됨
+- 릴리스 차단 결함 수정본이 같은 시나리오로 재검증됨
+- 낮은 위험 미해결 사항이 릴리스 노트에 기록됨
+- 핵심 단위·통합·PostgreSQL·Frontend·Browser·문서 검증이 통과함
+- 문서·CHANGELOG·실제 기능과 검증 근거가 일치함
+
+판정은 `W5-G2_PASS`, `W5-G2_CONDITIONAL`, `W5-G2_BLOCKED` 중 하나로
+기록한다. `PASS`인 `develop`만 `main` PR과 `v0.5.0` tag 후보가 된다.
+
+## 역할별 산출물
+
+| 역할 | 산출물 |
+| --- | --- |
+| Data | 수집·replay·품질 회귀, Data 05·06 actual 및 lineage 대조 근거 |
+| Backend | PostgreSQL·Migration·transaction·API·권한 회귀와 결함 수정 근거 |
+| Frontend | 사용자·관리자 actual Browser, 접근성·반응형·오류 UX 근거 |
+| Team Leader | 시작 기준선, E2E 결과, 결함 triage, Release 2 Gate 결정 |
+| 사용성 리뷰어 | 사용자·관리자 시나리오 관찰과 재확인 결과 |
+| QA | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 결과 |
+| 보고서 | Release 2 근거 목록과 문서·화면·테스트 대조 |
+
+## 테스트와 검증
+
+- Data 전체 단위·통합·Runtime replay·수집 재개 검증
+- Backend 전체 단위·PostgreSQL·Migration·transaction·권한 검증
+- Frontend unit·lint·build·Browser·접근성·반응형 검증
+- 실제 웹 Source → Raw → 결정 → DB → API → Browser E2E
+- Release 1 golden 검색과 기존 사용자·관리자 회귀
+- `python scripts/validate_docs.py`
+- 증거 JSON parse와 `git diff --check`
+
+정확한 명령과 실행 수치는 각 Forest 설정에서 확인하고 실제 실행 결과만
+development notes에 기록한다.
+
+## 위험과 결정 필요 사항
+
+- 외부 Source의 최신 상태 변화가 고정 snapshot과 다를 수 있다. 데이터 drift와
+  코드 회귀를 분리해 판정한다.
+- 리뷰·QA가 늦어지면 담당자 자체 검증만으로 Release 2를 통과시키지 않는다.
+- 영역별 변경이 공통 계약을 바꾸면 단독 수정하지 않고 영향 담당자와 다시
+  승인한다.
+- Integration 07의 cross-area 작업 브랜치는 착수 시점의 `develop` 상태와
+  브랜치 전략을 확인한 뒤 하나의 통합 목표 단위로 정한다.
+
+## 인계사항 발생 조건
+
+- Data 결과와 DB row 또는 API projection이 일치하지 않음
+- API 오류·권한·null 계약과 Frontend 소비가 충돌함
+- 리뷰·QA에서 재현 가능한 릴리스 차단 결함이 발견됨
+- Migration·transaction·재실행에서 데이터 손실이나 중복 위험이 발견됨
+- 문서 완료 상태와 실제 구현·테스트 결과가 다름
+
+미래 위험이나 예정된 QA 자체는 활성 인계사항으로 등록하지 않는다.
+
+## 완료 체크리스트
+
+- [ ] `W5-G0` 통합 기준선 통과
+- [ ] Data 수집·품질·Data 05·06 actual 회귀 통과
+- [ ] Backend PostgreSQL·API·권한·transaction 회귀 통과
+- [ ] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
+- [ ] `W5-G1` 실제 DB → API → Browser E2E 통과
+- [ ] 팀 외 사용성 리뷰 수행 및 승인 피드백 반영
+- [ ] QA 전체 검증과 릴리스 차단 결함 수정본 재검증
+- [ ] Release 2 문서·CHANGELOG·알려진 제약 대조
+- [ ] `python scripts/validate_docs.py`와 저장소 전체 관련 회귀 통과
+- [ ] `W5-G2` Release 2 판정 기록
+- [ ] `PASS`일 때만 `main` PR과 `v0.5.0` tag 후보 지정
+
+## 관련 문서
+
+- [주차별 실행 계획](../develop_plan/weekly_delivery_plan.md)
+- [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
+- [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
+- [4주차 상세 실행 계획](week_04_v0_5_0.md)
+- [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
+- [역할과 책임](../../governance/role_assignment.md)
+

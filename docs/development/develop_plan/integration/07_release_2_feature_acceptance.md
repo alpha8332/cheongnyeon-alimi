@@ -118,6 +118,7 @@ Forest에서 관리한다.
 ## 관련 문서
 
 - [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
+- [5주차 상세 실행 계획](../../weekly_plan/week_05_release_2.md)
 - [Release와 Milestone 계획](../release_roadmap.md)
 - [Recommendation Vertical Slice](06_recommendation_vertical_slice.md)
 - [User Service Features](../frontend/05_user_service_features.md)
