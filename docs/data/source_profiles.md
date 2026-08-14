@@ -540,7 +540,7 @@ mode로 고정한다.
 | `regional-chungbuk-youth-platform` | Browser | `nttNo` | 공개 정책 상세 최소 사실만 |
 | `regional-jeonbuk-youth-platform` | 서버 HTML GET | `id` | robots 미게시, 약관 제한 |
 | `regional-gyeongbuk-youth-platform` | JSON POST·상세 modal POST | `no` | 실제 허용 경로, 최소 사실만 |
-| `regional-gyeongnam-youth-platform` | 서버 HTML GET | `policy_no` | robots 미게시, 약관 제한 |
+| `regional-gyeongnam-youth-platform` | HTML GET·공식 상세 JSON GET | `policy_no` | robots 미게시, 약관 제한 |
 | `regional-jeju-youth-platform` | Browser | `wr_id` | 공개 정책 상세 최소 사실만 |
 
 비승인 Source는 세종·경기·충남과 전남 구 포털이다. 세종·경기·충남은

@@ -147,7 +147,18 @@ export function validateCheckpointDetailRecaptureContracts(
     && approvedList.pathname === "/youthpolicy/youthPolicyInfoList.do"
     && approvedList.searchParams.get("acptrun") === "ing"
     && approvedList.searchParams.get("pgno") === "1";
-  const validList = validDaeguList || validGwangjuList || validIncheonList;
+  const validJeonbukList = sourceId === "regional-jeonbuk-youth-platform"
+    && approvedList.origin === "https://www.jb2030.or.kr"
+    && approvedList.pathname === "/policy/p2_pol.html"
+    && approvedList.searchParams.get("offset") === "0"
+    && approvedList.searchParams.get("strstate") === "ing";
+  const validGyeongnamList = sourceId === "regional-gyeongnam-youth-platform"
+    && approvedList.origin === "https://youth.gyeongnam.go.kr"
+    && approvedList.pathname === "/youth/youthPolicySearchPageNew.es"
+    && approvedList.searchParams.get("mid") === "a10101020000"
+    && approvedList.searchParams.get("policy_subject_office") === "0";
+  const validList = validDaeguList || validGwangjuList || validIncheonList
+    || validJeonbukList || validGyeongnamList;
   const validItems = Array.isArray(items)
     && items.length >= 1
     && items.length <= 3
@@ -172,11 +183,23 @@ export function validateCheckpointDetailRecaptureContracts(
             && detailUrl.pathname === "/www/50"
             && detailUrl.searchParams.get("policyId") === item.external_id;
         }
-        return validIncheonList
+        if (validIncheonList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname
+              === "/youthpolicy/youthPolicyInfoDetail.do"
+            && detailUrl.searchParams.get("poly_seq") === item.external_id;
+        }
+        if (validJeonbukList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname === "/policy/p2_pol_view.html"
+            && detailUrl.searchParams.get("id") === item.external_id;
+        }
+        return validGyeongnamList
           && detailUrl.origin === approvedList.origin
           && detailUrl.pathname
-            === "/youthpolicy/youthPolicyInfoDetail.do"
-          && detailUrl.searchParams.get("poly_seq") === item.external_id;
+            === "/youth/youthPolicySearchViewNew.es"
+          && detailUrl.searchParams.get("mid") === "a10101020000"
+          && detailUrl.searchParams.get("policy_no") === item.external_id;
       } catch {
         return false;
       }
@@ -985,6 +1008,160 @@ export function gwangjuConfig(page) {
   };
 }
 
+export function buildGyeongnamApiDetail(result) {
+  const decodeEntities = (input) => String(input ?? "")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&middot;/gi, "·")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_match, code) => (
+      String.fromCodePoint(Number.parseInt(code, 16))
+    ));
+  const value = (...names) => {
+    for (const name of names) {
+      const selected = clean(decodeEntities(result?.[name]));
+      if (selected) return selected;
+    }
+    return null;
+  };
+  const periodParts = [
+    value("policy_apply_start_date"),
+    value("policy_apply_end_date"),
+  ];
+  const fields = {
+    organization: value(
+      "policy_agency_name",
+      "policy_operation_office",
+      "policy_subject_office_str",
+    ),
+    category: value("policy_type_str"),
+    application_period: periodParts.every(Boolean)
+      ? `${periodParts[0]} ~ ${periodParts[1]}`
+      : periodParts.find(Boolean) || null,
+    source_region: value("policy_area_str", "policy_location"),
+    eligibility: value("policy_target_content", "policy_target_str"),
+    support_content: value("policy_content", "policy_howtouse"),
+    application_method: value("private_url", "policy_apply_site"),
+    contact: [value("policy_agency_name"), value("policy_agency_tel")]
+      .filter(Boolean).join(" ") || null,
+    required_documents: value("policy_document"),
+    exclusions: value("policy_restrict"),
+    age: value("policy_age_str") || (
+      value("begin_age") && value("end_age")
+        ? `${value("begin_age")} ~ ${value("end_age")}`
+        : null
+    ),
+  };
+  const labels = {
+    organization: "policy_agency_name|policy_operation_office|policy_subject_office_str",
+    category: "policy_type_str",
+    application_period: "policy_apply_start_date|policy_apply_end_date",
+    source_region: "policy_area_str|policy_location",
+    eligibility: "policy_target_content|policy_target_str",
+    support_content: "policy_content|policy_howtouse",
+    application_method: "private_url|policy_apply_site",
+    contact: "policy_agency_name|policy_agency_tel",
+    required_documents: "policy_document",
+    exclusions: "policy_restrict",
+    age: "policy_age_str|begin_age|end_age",
+  };
+  return {
+    title: value("policy_title"),
+    ...fields,
+    evidence_observations: Object.fromEntries(
+      Object.entries(fields).map(([field, fieldValue]) => [
+        field,
+        {
+          status: fieldValue ? "value_extracted" : "label_not_found",
+          label: fieldValue ? labels[field] : null,
+        },
+      ]),
+    ),
+  };
+}
+
+export async function collectGyeongnamApiCheckpointRecapture({
+  endpoint,
+  token,
+  listUrl,
+  items,
+  checkpointTotalCount,
+  requestJson = async (url) => {
+    const response = await fetch(url, {headers: {Accept: "application/json"}});
+    if (!response.ok) throw new Error(`Gyeongnam API HTTP ${response.status}`);
+    return response.json();
+  },
+}) {
+  const sourceId = "regional-gyeongnam-youth-platform";
+  const contracts = validateCheckpointDetailRecaptureContracts(
+    sourceId,
+    listUrl,
+    items,
+  );
+  const captured = [];
+  for (const contract of contracts) {
+    const startedAt = Date.now();
+    try {
+      const apiUrl = new URL(
+        "/youth/youthPolicyInfoNew.es",
+        "https://youth.gyeongnam.go.kr",
+      );
+      apiUrl.searchParams.set("policy_no", contract.external_id);
+      const payload = await requestJson(apiUrl.toString());
+      if (payload?.apiResponse?.status !== 200) {
+        throw new Error("Gyeongnam API response is unsuccessful");
+      }
+      const detail = buildGyeongnamApiDetail(payload.result);
+      if (
+        String(payload?.result?.policy_no) !== contract.external_id
+        || !detail.title
+        || !detail.title.startsWith(clean(contract.title))
+      ) {
+        throw new Error("Gyeongnam API identity does not match frozen Raw");
+      }
+      captured.push({
+        external_id: contract.external_id,
+        title: detail.title,
+        summary: null,
+        category: detail.category,
+        detail_url: contract.detail_url,
+        request_identity: `GET ${apiUrl.pathname}?policy_no=${contract.external_id}`,
+        detail,
+      });
+    } finally {
+      const remaining = Math.max(0, 2000 - (Date.now() - startedAt));
+      if (remaining) await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
+  }
+  await postCapture(endpoint, token, {
+    source_id: sourceId,
+    recapture_mode: "checkpoint_detail_url",
+    source_scope: {
+      jurisdiction_text: "경상남도",
+      operator_text: "경상남도 청년정보플랫폼",
+      youth_policy_scope_text: "경남 청년정책",
+      application_scope_text: "공식 정책 상세 API 신청기간·신청방법 필드",
+    },
+    list_url: listUrl,
+    page: 1,
+    total_count: checkpointTotalCount,
+    has_next: false,
+    discovered_ids: contracts.map((item) => item.external_id),
+    action_trace: [
+      "load frozen checkpoint Raw identity contract",
+      "GET official policy detail JSON endpoint",
+      "verify policy_no and title against frozen Raw",
+      "recapture review detail fields",
+    ],
+    items: captured,
+  }, "recapture");
+  return {count: captured.length, ids: captured.map((item) => item.external_id)};
+}
+
 export function gwangjuCheckpointDetailConfig() {
   return {
     ...gwangjuConfig(1),
@@ -1042,6 +1219,18 @@ export function jeonbukConfig(page) {
       operator_text: "footer p",
       youth_policy_scope_text: "h1",
       application_scope_text: 'select[name="dateCheck"] option:checked',
+    },
+  };
+}
+
+export function jeonbukCheckpointDetailConfig() {
+  const config = jeonbukConfig(1);
+  return {
+    ...config,
+    detailContentSelector: ".board_view",
+    sourceScopeSelectors: {
+      ...config.sourceScopeSelectors,
+      application_scope_text: ".board_view",
     },
   };
 }

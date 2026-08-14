@@ -1167,3 +1167,42 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - RYP8 감사: 전체 legacy `1,704`, failed 분류 `322/322`, 고정 outcome 일치;
   `data_ready=false`의 남은 blocker는 합의 수치가 없는
   `legacy_null_within_target`
+
+### RYP8 전북·경북·경남 Source 보강 (`2026-08-14`)
+
+- 전북 공식 접수중 목록 8 page를 쓰기 전에 대조했다. 현재 72건은 checkpoint
+  89건의 순서 보존 부분집합이고 신규는 없으며 `485` 등 17건이 빠졌다. 누락
+  `485` 상세가 현재도 열리고 고정 제목·`id`가 일치함을 확인한 뒤 전북
+  `checkpoint_detail_url` 계약을 추가했다.
+- 전북 `485` canary와 나머지 88건을 최대 3건 batch, 상세 간 최소 2초 간격으로
+  재캡처했다. field slot은 `V 271/E 0/N 2/L 261 → V 331/E 39/N 164/L 0`,
+  checkpoint SHA-256은
+  `5e42edb40ac1e03dc84791b443ada573184ccfeb94856db34b942c91425f6b1d`다.
+- 경북 Browser DOM은 사이트 스크립트와 제어 계층이 충돌해 승인된 HTTP/CSRF
+  collector를 임시 저장소에서 사용했다. 8 page 61건은 checkpoint와 total·
+  identity·순서가 완전히 일치했다. 기존 현재 상세 Raw의 값 없는 라벨을 명시적
+  `label_not_found`로 기록해 field slot `V 312/E 0/N 0/L 36 →
+  V 312/E 0/N 36/L 0`으로 보강했다. checkpoint는 변경되지 않았다.
+- 경남 상세 화면은 본문을 JSON으로 후加载한다. 최초 POST와 잘못된 root GET은
+  404였으나 공식 `common.js`의 `callApi` 계약을 확인해
+  `GET /youth/youthPolicyInfoNew.es?policy_no=`가 정상 endpoint임을 검증했다.
+  closed 1,419건은 요청하지 않고 review 28건만 처리했다.
+- 경남 `2225` canary 뒤 나머지 27건을 최대 3건 batch로 처리했다. 제목의
+  `&quot;`·`&middot;` entity는 공식 표시 문자열로 복원한 뒤 frozen 제목과 대조했다.
+  field slot은 `V 0/E 0/N 0/L 168 → V 133/E 0/N 35/L 0`, checkpoint
+  SHA-256은 `19f4713322bd3853050f44f973655d346256b84e202cecab19ae26e0df1082bc`다.
+- 세 Source 처리 뒤 전체 legacy는 `1,704 → 1,239`이며 남은 값은 제주뿐이다.
+  outcome `18/1/1,905/2,360/322`, failed 분류 `322/322`, decision drift 1은
+  유지됐다. 운영 DB projection은 실행하지 않았다.
+
+검증 결과:
+
+- Browser runtime syntax·fixture: `46 passed`
+- 전북 checkpoint 저장 경계·경북 Gate 집중 Python: `48 passed, 2 subtests passed`
+- Source inventory·경남 공식 GET 상세 계약: `15 passed, 48 subtests passed`
+- 전용 `cheongnyeon_alimi_test`를 포함한 전체 Python·PostgreSQL:
+  `409 passed, 96 subtests passed`
+- `python scripts/validate_docs.py`, `git diff --check`: 통과
+- RYP8 감사: 전체 legacy `1,239`, 고정 outcome 일치;
+  `data_ready=false`의 남은 blocker는 합의 수치가 없는
+  `legacy_null_within_target`

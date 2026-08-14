@@ -1,0 +1,25 @@
+{
+  "source_id": "regional-gyeongnam-youth-platform",
+  "list_url": "https://youth.gyeongnam.go.kr/youth/youthPolicySearchPageNew.es?mid=a10101020000&policy_subject_office=0",
+  "items": [
+    {
+      "external_id": "2225",
+      "title": "산채, 시작해도 될까요? 3기 모집│ 한국임업진흥원 청년임업인 교육",
+      "detail_url": "https://youth.gyeongnam.go.kr/youth/youthPolicySearchViewNew.es?mid=a10101020000&policy_no=2225"
+    }
+  ],
+  "result": {
+    "policy_no": "2225",
+    "policy_title": "산채, 시작해도 될까요? 3기 모집│ 한국임업진흥원 청년임업인 교육",
+    "policy_type_str": "교육",
+    "policy_apply_start_date": "2026-07-27",
+    "policy_apply_end_date": "2026-08-16",
+    "policy_target_content": "임업에 관심 있거나 종사하는 만 49세 이하 청년",
+    "policy_content": "청년임업인 산채 교육",
+    "policy_apply_site": "http://www.kofpi.or.kr/edu/edu_application_view.do?bb_seq=1930",
+    "policy_agency_name": "푸른산림",
+    "policy_agency_tel": "07046400333",
+    "begin_age": "19",
+    "end_age": "49"
+  }
+}

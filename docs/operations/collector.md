@@ -441,6 +441,25 @@ checkpoint total 31과 선택 `discovered_ids`의 완전 일치, 기존 captured
 상태는 보존한다. 신청 버튼이 없는 상시형 상세는 `#contents` 본문을 application
 scope 근거로 저장하고 신청 상태를 임의로 생성하지 않는다. 한 batch는 최대 3건이다.
 
+전북의 `checkpoint_detail_url` 모드는 현재 접수중 72건이 완료 checkpoint 89건의
+순서 보존 부분집합이고 신규 identity가 없을 때 사용한다. 기존 Raw의 제목·
+`p2_pol_view.html?id=` URL을 고정하고 checkpoint total 89, captured 부분집합과
+최대 3건 batch를 검증한다. 접수중 목록에서 빠진 17건도 상세 제목과 `id`가
+일치할 때만 관찰하며 outcome을 변경하지 않는다.
+
+경북은 승인된 HTTP/CSRF collector의 현재 61건과 checkpoint가 total·identity·
+순서까지 일치하는지 임시 저장소에서 먼저 확인한다. 현재 상세 Raw가 있는 정책의
+공식 상세·목록 fallback 필드가 모두 비어 있으면 이를 과거 legacy null로 두지
+않고 `label_not_found`로 기록한다. 이는 값을 추론하거나 outcome을 바꾸는 규칙이
+아니다.
+
+경남은 완료 checkpoint의 review 28건만 `checkpoint_detail_url` 경계로 처리하고
+closed 1,419건은 다시 요청하지 않는다. 상세 화면의 공통 스크립트가 사용하는
+공식 `GET /youth/youthPolicyInfoNew.es?policy_no=` JSON을 요청하고, 응답
+`policy_no`·HTML entity를 복원한 제목이 frozen Raw와 일치할 때만 저장한다.
+한 batch는 최대 3건이며 요청 간 최소 2초를 지킨다. JSON에 값이 없는 필드는
+`label_not_found`로 보존하고 임의 값을 만들지 않는다.
+
 강원·제주의 기존 `failed` identity를 유형별 대표 표본으로 복구할 때만
 `/recover`를 사용한다. 완료 checkpoint의 기존 total·page·identity와 일치하고
 해당 outcome이 `failed`인 경우에만 Raw를 저장한다. 저장한 Raw를 같은 checkpoint

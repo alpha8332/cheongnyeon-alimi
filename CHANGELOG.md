@@ -54,6 +54,11 @@
   계약으로 격리하고, 기존 28건의 상세 필드 관찰 상태를 전건 보강
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
+- 전북 checkpoint 89건, 경북 review 58건, 경남 review 28건의 공식 상세 근거를
+  재대조하고 HTML entity와 공식 경남 JSON endpoint를 반영해 legacy 필드 상태를
+  전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 ### Added
 
 - 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,

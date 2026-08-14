@@ -190,7 +190,7 @@ fast-forward해 4주차의 공통 시작점으로 사용한다.
 
 in progress (`W4-G0`, Data 03·04와 Integration 08 기반 완료;
 Data 05 `RYP0`~`RYP7`·`RYP-G4` 완료·`RYP8` 진행 중(Source 필드 관찰 및
-강원·제주 실패·종료 이력 대조와 인천까지 legacy 보강 완료, 잔여 1,704),
+강원·제주 실패·종료 이력 대조와 경남까지 legacy 보강 완료, 제주 잔여 1,239),
 Data 06 계획 확정)
 
 ### 목표

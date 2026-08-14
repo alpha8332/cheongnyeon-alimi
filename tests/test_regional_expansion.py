@@ -41,6 +41,7 @@ NOW = datetime(2026, 8, 11, 5, tzinfo=timezone.utc)
 DAEGU_SOURCE_ID = "regional-daegu-youth-platform"
 GWANGJU_SOURCE_ID = "regional-gwangju-integrated-youth-platform"
 INCHEON_SOURCE_ID = "regional-incheon-youth-platform"
+JEONBUK_SOURCE_ID = "regional-jeonbuk-youth-platform"
 GANGWON_SOURCE_ID = "regional-gangwon-youth-platform"
 
 
@@ -559,6 +560,70 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
             self.assertEqual(
                 checkpoint,
                 checkpoint_store.load(INCHEON_SOURCE_ID),
+            )
+
+    def test_jeonbuk_checkpoint_detail_recapture_preserves_checkpoint(
+        self,
+    ) -> None:
+        capture = daegu_capture()
+        capture.update(
+            {
+                "source_id": JEONBUK_SOURCE_ID,
+                "list_url": (
+                    "https://www.jb2030.or.kr/policy/p2_pol.html"
+                    "?offset=0&strstate=ing&strbunya=&strarea=&strtarget=&strage="
+                ),
+                "recapture_mode": "checkpoint_detail_url",
+                "total_count": 89,
+                "has_next": False,
+                "discovered_ids": ["485"],
+            }
+        )
+        capture["items"] = [
+            {
+                **capture["items"][0],
+                "external_id": "485",
+                "title": "전북사랑 서포터즈 1기 모집 안내 및 홍보 협조 요청",
+                "detail_url": (
+                    "https://www.jb2030.or.kr/policy/p2_pol_view.html?id=485"
+                ),
+                "detail": {
+                    **capture["items"][0]["detail"],
+                    "title": "전북사랑 서포터즈 1기 모집 안내 및 홍보 협조 요청",
+                },
+            }
+        ]
+        checkpoint_ids = tuple(["485", *[str(value) for value in range(1, 89)]])
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            checkpoint_store = RegionalCheckpointStore(root / "checkpoints")
+            checkpoint = RegionalBatchCheckpoint.initial(
+                JEONBUK_SOURCE_ID
+            ).discover(
+                page=1,
+                external_ids=checkpoint_ids,
+                total_count=89,
+                has_next=False,
+            )
+            checkpoint = checkpoint.capture(checkpoint_ids).decide(
+                {
+                    external_id: RegionalOutcome.REVIEW
+                    for external_id in checkpoint_ids
+                }
+            )
+            checkpoint_store.save(checkpoint)
+
+            result, unchanged = _store_recapture(
+                capture,
+                raw_root=root / "raw",
+                checkpoint_root=root / "checkpoints",
+            )
+
+            self.assertEqual(3, result.raw_document_count)
+            self.assertEqual(checkpoint, unchanged)
+            self.assertEqual(
+                checkpoint,
+                checkpoint_store.load(JEONBUK_SOURCE_ID),
             )
 
     def test_recapture_allows_explicit_current_only_identity(self) -> None:

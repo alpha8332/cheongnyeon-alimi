@@ -4,6 +4,7 @@ import test from "node:test";
 
 import {
   buildGangwonCanaryPlan,
+  buildGyeongnamApiDetail,
   buildRegisteredTitleDeadlineDetail,
   buildDetail,
   chungbukConfig,
@@ -12,6 +13,7 @@ import {
   gotoWithReadyFallback,
   gwangjuCheckpointDetailConfig,
   incheonCheckpointDetailConfig,
+  jeonbukCheckpointDetailConfig,
   jejuConfig,
   normalizeCheckpointDetailTitle,
   classifyDetailCanaryObservation,
@@ -325,6 +327,20 @@ const incheonCheckpointDetailFixture = JSON.parse(await readFile(
   ),
   "utf8",
 ));
+const jeonbukCheckpointDetailFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/jeonbuk_checkpoint_detail_recapture.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
+const gyeongnamApiFixture = JSON.parse(await readFile(
+  new URL(
+    "./fixtures/regional/gyeongnam_api_detail_2225.json",
+    import.meta.url,
+  ),
+  "utf8",
+));
 const gwangjuFixture = JSON.parse(await readFile(
   new URL("./fixtures/regional/gwangju_detail_1248.json", import.meta.url),
   "utf8",
@@ -463,6 +479,61 @@ test("Incheon checkpoint detail recapture rejects a poly_seq drift", () => {
       drifted,
     ),
     /checkpoint detail recapture contract is invalid/,
+  );
+});
+
+test("Jeonbuk checkpoint detail recapture accepts its frozen identity contract", () => {
+  assert.deepEqual(
+    validateCheckpointDetailRecaptureContracts(
+      jeonbukCheckpointDetailFixture.source_id,
+      jeonbukCheckpointDetailFixture.list_url,
+      jeonbukCheckpointDetailFixture.items,
+    ),
+    jeonbukCheckpointDetailFixture.items,
+  );
+});
+
+test("Jeonbuk checkpoint detail recapture rejects an id drift", () => {
+  const drifted = structuredClone(jeonbukCheckpointDetailFixture.items);
+  drifted[0].detail_url = drifted[0].detail_url.replace("485", "486");
+  assert.throws(
+    () => validateCheckpointDetailRecaptureContracts(
+      jeonbukCheckpointDetailFixture.source_id,
+      jeonbukCheckpointDetailFixture.list_url,
+      drifted,
+    ),
+    /checkpoint detail recapture contract is invalid/,
+  );
+});
+
+test("Gyeongnam API detail maps official fields and explicit label absence", () => {
+  assert.deepEqual(
+    validateCheckpointDetailRecaptureContracts(
+      gyeongnamApiFixture.source_id,
+      gyeongnamApiFixture.list_url,
+      gyeongnamApiFixture.items,
+    ),
+    gyeongnamApiFixture.items,
+  );
+  const detail = buildGyeongnamApiDetail(gyeongnamApiFixture.result);
+  assert.equal(detail.title, gyeongnamApiFixture.items[0].title);
+  assert.equal(detail.application_period, "2026-07-27 ~ 2026-08-16");
+  assert.equal(detail.eligibility, gyeongnamApiFixture.result.policy_target_content);
+  assert.equal(
+    detail.evidence_observations.source_region.status,
+    "label_not_found",
+  );
+  assert.equal(
+    detail.evidence_observations.application_method.status,
+    "value_extracted",
+  );
+  assert.equal(
+    buildGyeongnamApiDetail({policy_title: "나도 &quot;혼자&quot; 산다"}).title,
+    '나도 "혼자" 산다',
+  );
+  assert.equal(
+    buildGyeongnamApiDetail({policy_title: "A&middot;B"}).title,
+    "A·B",
   );
 });
 
@@ -821,6 +892,7 @@ test("remaining RYP8 Source configs pin the observed list and detail selectors",
     incheonCheckpointDetailConfig().sourceScopeSelectors.application_scope_text,
     "#contents",
   );
+  assert.equal(jeonbukCheckpointDetailConfig().detailContentSelector, ".board_view");
   assert.equal(chungbukConfig(1).detailContentSelector, ".p-table__content");
   assert.match(ulsanConfig(1).linkSelector, /dataId/);
   assert.match(daejeonConfig(1).identityPattern, /CT_/);

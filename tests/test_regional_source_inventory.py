@@ -167,6 +167,24 @@ class RegionalSourceInventoryTests(unittest.TestCase):
         self.assertEqual(243, gyeongbuk["discovery"]["observed_list_count"])
         self.assertIsNone(gyeongbuk["discovery"]["failure_reason"])
 
+    def test_gyeongnam_approves_the_detail_page_and_backing_json(self) -> None:
+        gyeongnam = next(
+            source
+            for source in self.inventory["sources"]
+            if source["jurisdiction_key"] == "gyeongnam"
+        )
+
+        self.assertEqual(
+            [
+                "https://youth.gyeongnam.go.kr/youth/"
+                "youthPolicySearchViewNew.es?mid=a10101020000"
+                "&policy_no={positive_integer}",
+                "GET https://youth.gyeongnam.go.kr/youth/"
+                "youthPolicyInfoNew.es?policy_no={positive_integer}",
+            ],
+            gyeongnam["approved_detail_url_patterns"],
+        )
+
     def test_ryp6_has_one_final_implementation_status_per_region(self) -> None:
         statuses: dict[str, int] = {}
         for source in self.inventory["sources"]:

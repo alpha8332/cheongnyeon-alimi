@@ -866,10 +866,19 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   `poly_seq`, checkpoint total 28, 최대 3건 batch를 검증하고 기존 제목 뒤의
   현재 상태 접미사만 허용했다. 인천 `null_unverifiable`는 `71 → 0`, 전체는
   `1,775 → 1,704`다.
-- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 1,704개다.
+- 전북은 현재 접수중 72건이 checkpoint 89건의 순서 보존 부분집합이고 신규 없이
+  17건만 빠진 상태 전환이었다. checkpoint 89건의 `id` 상세를 고정 재캡처해
+  `null_unverifiable`를 `261 → 0`으로 해소했다.
+- 경북은 승인 HTTP/CSRF collector로 현재 61건을 임시 저장소에서 전건 대조했고
+  checkpoint와 total·identity·순서가 모두 일치했다. 현재 상세 Raw가 존재할 때
+  값이 없는 필드를 명시적 `label_not_found`로 기록해 `36 → 0`으로 해소했다.
+- 경남은 종료 이력 1,419건을 다시 요청하지 않고 review 28건만 처리했다. 상세
+  화면이 호출하는 공식 GET JSON endpoint의 `policy_no`·제목을 frozen Raw와
+  대조하고 최대 3건 batch로 재캡처해 `168 → 0`으로 해소했다.
+- 현재 review 1,905건의 11,430 field slot 중 `null_unverifiable`가 1,239개다.
   계획에 legacy 허용치가 수치로 정의되지 않았고 현 수치도 충분히 크므로 RYP8은
-  종료하지 않는다. 제주 1,239개, 전북 261개, 경남 168개, 경북 36개가 남았다.
-  다음 범위는 기존 순서를 유지해 전북부터 진행한다.
+  종료하지 않는다. 남은 값은 제주 1,239개뿐이며 다음 범위는 제주 review
+  identity 보강이다.
 
 ### RYP9 - 전체 재판정·검색 커버리지 인수
 

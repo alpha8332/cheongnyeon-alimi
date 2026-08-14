@@ -371,6 +371,25 @@ class GyeongbukExtractorTests(unittest.TestCase):
         self.assertIs(CoverageScope.REGIONAL, normalized.program.coverage_scope)
         self.assertEqual("4700000000", normalized.program.region_rules[0].region_code)
 
+    def test_missing_current_detail_label_is_explicitly_observed(self) -> None:
+        policy = GyeongbukYouthExtractor().extract(extraction_documents())[0]
+        policy.extra["source_fields"]["detail_response"].pop(
+            "application_method",
+            None,
+        )
+
+        decision = decide_gyeongbuk_regional_policy(
+            policy,
+            as_of=date(2026, 6, 10),
+        )
+
+        self.assertEqual(
+            "label_not_found",
+            dict(decision.evidence.field_observations)[
+                "application_channel_text"
+            ],
+        )
+
     def test_raw_replay_is_network_free_and_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             store = RawDocumentStore(temp_dir)

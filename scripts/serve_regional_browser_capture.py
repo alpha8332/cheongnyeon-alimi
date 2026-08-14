@@ -251,6 +251,8 @@ def _store_recapture(
         "regional-daegu-youth-platform",
         "regional-gwangju-integrated-youth-platform",
         "regional-incheon-youth-platform",
+        "regional-jeonbuk-youth-platform",
+        "regional-gyeongnam-youth-platform",
     }
     checkpoint_detail_matches = bool(
         checkpoint_detail_mode

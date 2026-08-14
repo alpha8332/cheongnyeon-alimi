@@ -1105,7 +1105,7 @@
       "status": "approved",
       "implementation_status": "implemented_browser",
       "source_id": "regional-gyeongnam-youth-platform",
-      "decision_reason": "경상남도 청년정보플랫폼의 공개 정책 목록과 policy_no 기반 POST 상세 요청을 확인했다. robots 문서는 게시되지 않았으며 최소 정책 사실과 provenance만 제한 수집한다.",
+      "decision_reason": "경상남도 청년정보플랫폼의 공개 정책 목록과 policy_no 상세 화면, 화면이 사용하는 공식 GET JSON endpoint를 확인했다. robots 문서는 게시되지 않았으며 최소 정책 사실과 provenance만 제한 수집한다.",
       "region_reference": {
         "mapping_status": "matched_active",
         "active_code": "4800000000",
@@ -1125,7 +1125,8 @@
         "https://youth.gyeongnam.go.kr/youth/youthPolicySearchPageNew.es?mid=a10101020000&policy_subject_office=0"
       ],
       "approved_detail_url_patterns": [
-        "https://youth.gyeongnam.go.kr/youth/youthPolicySearchViewNew.es?mid=a10101020000&policy_no={positive_integer}"
+        "https://youth.gyeongnam.go.kr/youth/youthPolicySearchViewNew.es?mid=a10101020000&policy_no={positive_integer}",
+        "GET https://youth.gyeongnam.go.kr/youth/youthPolicyInfoNew.es?policy_no={positive_integer}"
       ],
       "request_budget": {
         "max_list_requests": 1,

@@ -335,7 +335,11 @@ def _approved_source_issues(
     for index, pattern in enumerate(
         source["approved_detail_url_patterns"]
     ):
-        target = pattern.removeprefix("POST ").split(" (", 1)[0]
+        target = (
+            pattern.removeprefix("POST ")
+            .removeprefix("GET ")
+            .split(" (", 1)[0]
+        )
         if urlsplit(target).hostname != home_host:
             issues.append(
                 _error(

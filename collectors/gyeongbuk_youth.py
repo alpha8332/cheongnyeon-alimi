@@ -603,6 +603,11 @@ def decide_gyeongbuk_regional_policy(
             for field_name, value in values.items()
             if value is not None
         ),
+        field_observations=tuple(
+            (field_name, "label_not_found")
+            for field_name, value in values.items()
+            if value is None and isinstance(detail_fields, dict)
+        ),
         provenance=policy.provenance,
     )
     return enforce_youth_target(
