@@ -4,9 +4,9 @@
 
 - 번호: Data 05
 - 담당 영역: Data
-- 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전·강원·대구·서울·울산 보강·충북 0건 근거 확정 및
-  명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
+- 상태: completed
+- 현재 진행: `RYP0`~`RYP9`·`RYP-G6` 완료, 13개 승인 Source 전체 재판정·
+  명시적 지역 검색 match-only·PostgreSQL/API 반복 실행 인수 완료
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -18,7 +18,7 @@
 - 권장 브랜치: `feature/data/regional-youth-policy-ingestion`
   한 개. 지역·Slice별 브랜치는 만들지 않음
 - 구현 시작점: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
-- 현재 Slice: `RYP9` 전체 재판정·검색 커버리지 인수
+- 현재 Slice: `RYP9` 완료
 
 ## 목적
 
@@ -968,9 +968,16 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   함께 확인된 5건을 accepted로 승격하고 종료 근거가 확인된 4건을 closed로
   전환했다. 동일 Raw 재적용은 unchanged 5건이며 outcome은
   `accepted 108 / duplicate 2 / review 1,142 / closed 3,032 / failed 322`다.
-- 잔여 Source에 review 1,142건이 남아 있다. Source별
-  `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
-  RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
+- 제주는 checkpoint 1,133건 중 신청 가능 후보 7건과 예산 소진형 1건만 공식
+  상세에서 제한 재캡처했다. 서귀포 시행·39세 이하 청년 창업자·2026-08-18
+  마감이 함께 확인된 1건을 accepted, 종료일이 확인된 1건을 closed로 전환했다.
+  전국 정책 2건과 종료 정책, 예산 잔여 미확인 정책은 승격하지 않았다. 최종
+  outcome은 `accepted 109 / duplicate 2 / review 1,140 / closed 3,033 /
+  failed 322`다.
+- 승인 Source 13개 중 충북만 공식 open 고유 정책 0건이며, 나머지 12개는
+  accepted가 최소 1건 존재한다. 최종 감사 transition 0·blocker 0, 제주 동일
+  Raw 재실행 unchanged 1건, 명시적 제주 open 목록·검색·상세 각 1건을 확인해
+  RYP9와 `RYP-G6`를 완료한다.
 
 ## Gate와 실행 순서
 

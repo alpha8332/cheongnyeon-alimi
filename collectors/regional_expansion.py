@@ -673,6 +673,7 @@ def decide_expanded_regional_policy(
                 "regional-gangwon-youth-platform",
                 "regional-seoul-youth-platform",
                 "regional-ulsan-youth-platform",
+                "regional-jeju-youth-platform",
             }
         ),
         additional_region_aliases=(
@@ -681,6 +682,14 @@ def decide_expanded_regional_policy(
                 "regional-daegu-youth-platform": ("대구",),
                 "regional-seoul-youth-platform": ("서울 거주", "서울시"),
                 "regional-ulsan-youth-platform": ("울산",),
+                "regional-jeju-youth-platform": (
+                    "제주",
+                    "제주도",
+                    "제주특별자치도",
+                    "제주시",
+                    "서귀포",
+                    "서귀포시",
+                ),
             }.get(policy.source_id, ())
         ),
     )

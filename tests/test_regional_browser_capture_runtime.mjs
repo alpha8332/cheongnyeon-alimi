@@ -969,6 +969,24 @@ test("Jeju recovers dated closed posts without structured field rows", () => {
   assert.throws(() => jejuConfig(1), /requires an as-of date/);
 });
 
+test("Jeju slash title maps a regional implementing organization", () => {
+  const title = "서귀포시 스타트업베이 / 청년 창업자 모집";
+  const detail = buildDetail(title, {
+    body: title.replace(/\s/g, ""),
+    pairs: {},
+    contentBlocks: [
+      "■ 접수기간 : ~2026. 8. 18.(화) 11:00까지",
+      "■ 모집대상 : 39세 이하 초기(예비) 청년 창업자",
+      "■ 위치 : 제주특별자치도 서귀포시 중정로 86",
+    ],
+  });
+
+  assert.equal(detail.organization, "서귀포시 스타트업베이");
+  assert.match(detail.eligibility, /39세 이하/);
+  assert.match(detail.application_period, /2026\. 8\. 18/);
+  assert.match(detail.source_region, /제주특별자치도 서귀포시/);
+});
+
 test("Seoul distinguishes an empty official period from a missing label", () => {
   const detail = buildDetail(
     seoulEmptyPeriodFixture.expected_title,

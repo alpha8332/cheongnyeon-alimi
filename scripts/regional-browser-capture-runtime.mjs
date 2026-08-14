@@ -910,7 +910,7 @@ export function buildRegisteredTitleDeadlineDetail(
 
 function pairsWithProseLabels(pairs, contentBlocks = []) {
   const selected = {...pairs};
-  const labelPattern = /^[^가-힣A-Za-z0-9]*(?:(?:\d+|[가-힣])[.)]\s*)?(지원대상|신청대상|모집대상|참여자격|대상|자격|지원조건|거주지|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|운영기간|운영일정|신청기간|접수기간|접수일정|모집기간|제출기한|신청방법|접수방법|신청링크|접수처|제외대상|문의처)\s*(?::|：)?\s*(.*)$/;
+  const labelPattern = /^[^가-힣A-Za-z0-9]*(?:(?:\d+|[가-힣])[.)]\s*)?(지원대상|신청대상|모집대상|참여자격|대상|자격|지원조건|거주지|위치|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|운영기간|운영일정|신청기간|접수기간|접수일정|모집기간|제출기한|신청방법|접수방법|신청링크|접수처|제외대상|문의처)\s*(?::|：)?\s*(.*)$/;
   for (let index = 0; index < contentBlocks.length; index += 1) {
     const block = clean(contentBlocks[index]);
     const match = block.match(labelPattern);
@@ -982,7 +982,7 @@ export function buildDetail(title, extracted) {
     organization: find("organization", ["기관명", "담당기관명", "주관기관", "운영기관", "담당기관", "시행기관"]),
     category: find("category", ["정책유형", "정책분야", "분야", "유형", "카테고리"]),
     application_period: combine("application_period", ["접수일정", "사업신청기간", "신청기간", "접수기간", "모집기간", "모집일시", "신청기한", "제출기한"]),
-    source_region: find("source_region", ["해당지역", "사업지역", "지역", "거주지"]),
+    source_region: find("source_region", ["해당지역", "사업지역", "지역", "거주지", "위치"]),
     eligibility: combine("eligibility", ["지원대상", "신청대상", "모집대상", "신청자격", "참여자격", "참여요건", "지원조건", "거주지및소득", "거주지", "추가단서사항", "대상", "자격"]),
     support_content: find("support_content", ["지원내용", "사업내용", "정책내용", "주요내용", "혜택", "지원규모"]),
     application_method: fromMarker(
@@ -994,13 +994,19 @@ export function buildDetail(title, extracted) {
     exclusions: find("exclusions", ["참여제한대상", "참여제한사항", "제외대상", "지원제외", "제외", "제한"]),
     age: find("age", ["지원연령", "연령제한", "연령", "나이"]),
   };
-  const titleOrganization = clean(title).match(/^\s*[([]([^\])]+)[\])]/)?.[1];
+  const titleOrganization = clean(
+    clean(title).match(/^\s*[([]([^\])]+)[\])]/)?.[1],
+  );
+  const slashTitleOrganization = clean(
+    clean(title).match(/^([^/]{2,80})\s*\/\s+/)?.[1],
+  );
+  const inferredTitleOrganization = titleOrganization || slashTitleOrganization;
   if (
     !detail.organization
-    && titleOrganization
-    && /(울산|광역시|특별시|특별자치도|도청|시청|구청|군청|센터|복지관|진흥원|공단|재단|부|청|원)$/.test(titleOrganization)
+    && inferredTitleOrganization
+    && /(울산|광역시|특별시|특별자치도|도청|시청|구청|군청|센터|복지관|진흥원|공단|재단|상공회의소|스타트업베이|부|청|원)$/.test(inferredTitleOrganization)
   ) {
-    detail.organization = titleOrganization;
+    detail.organization = inferredTitleOrganization;
     observations.organization = {
       label: "상세 제목 기관 접두어",
       status: "value_extracted",

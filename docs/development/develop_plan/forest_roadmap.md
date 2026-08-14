@@ -95,7 +95,7 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 | 8 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05·08, v0.1.0 검색 |
 | 9 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
 | 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
-| 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | in-progress | 13개 승인 Source 전체 순회 뒤 review 사유 해소, 지역별 실제 open 고유 정책의 DB·API·Browser 검색 연결 | Data 03·04, Integration 08 |
+| 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 13개 승인 Source 전체 순회·지역별 실제 open 고유 정책 DB·API·Browser 검색 연결·RYP-G6 통과 | Data 03·04, Integration 08 |
 | 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | draft | 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 RYP2~RYP4, Data 02·04 |
 | 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
 

@@ -298,6 +298,18 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(34, future.age_max)
 
+    def test_single_until_date_is_an_open_deadline_not_a_future_start(self) -> None:
+        program = self.normalizer.normalize(
+            extracted_policy(
+                application_period_text="~2026. 8. 18.(화) 11:00까지"
+            )
+        ).program
+
+        assert program is not None
+        self.assertIsNone(program.application_start)
+        self.assertEqual("2026-08-18", str(program.application_end))
+        self.assertEqual(ApplicationStatus.OPEN, program.application_status)
+
     def test_month_range_uses_calendar_month_boundaries(self) -> None:
         program = self.normalizer.normalize(
             extracted_policy(

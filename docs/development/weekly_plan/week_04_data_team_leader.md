@@ -9,11 +9,10 @@
 - 연계 담당: Backend, Frontend
 - 후속 역할: 보고서 담당, 사용성 리뷰어, QA는 5주차 추가 기능·오류 수정·
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
-- 현재 Slice: Data 05 `RYP0`~`RYP8`·`RYP-G4` 완료,
-  `RYP9` 감사 재판정·accepted 108건 부분 적재와 명시적 지역 검색 match-only 완료,
-  충북 open 0건 확정·울산 5건 승격·review 1,142건 Source별 보강 진행 (legacy null 0·RYP8 감사 통과,
-  `DTL4-4B`·`ES4` actual 세로 인수 포함),
-  이후 RYP9·Data 06 구현과 `DTL4-5` 소비 대조 예정
+- 현재 Slice: Data 05 `RYP0`~`RYP9`·`RYP-G6` 완료,
+  accepted 109건 적재·충북 open 0건 확정·명시적 지역 검색 match-only·전체 감사
+  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), 이후 Data 06 구현과
+  `DTL4-5` 소비 대조 예정
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -719,7 +718,7 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
 - [x] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료
 - [x] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
-- [ ] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
+- [x] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
 - [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과
 - [ ] Data 06 SOP5 Source군별 최종 상태·전체 회귀 완료
 - [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과

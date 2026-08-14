@@ -387,7 +387,21 @@ def _normalize_application_period(
             issues,
         )
     if len(parsed_dates) == 1:
-        start = parsed_dates[0]
+        boundary = parsed_dates[0]
+        if "까지" in value:
+            status = (
+                ApplicationStatus.CLOSED
+                if as_of > boundary
+                else ApplicationStatus.OPEN
+            )
+            return (
+                None,
+                boundary,
+                ApplicationSchedule.FIXED_PERIOD,
+                status,
+                [],
+            )
+        start = boundary
         status = (
             ApplicationStatus.SCHEDULED
             if as_of < start

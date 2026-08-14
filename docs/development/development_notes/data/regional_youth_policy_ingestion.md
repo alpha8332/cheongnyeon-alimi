@@ -4,7 +4,7 @@
 
 - 작업일: `2026-08-11`
 - 작업 영역: Data
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/data/regional-youth-policy-ingestion`
 - 시작 커밋: `ee23bc80e642e3b4dccd1f803abf61d2a02fc0b8`
 - 관련 계획: [Data 05 Regional Youth Policy Ingestion](../../develop_plan/data/05_regional_youth_policy_ingestion.md)
@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건·울산 5건 승격·충북 open 0건 확정, accepted 108건 DB 동기화·review 1,142건 잔여 Source 보강 진행 |
+| RYP9 | completed | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건·울산 5건·제주 1건 승격·충북 open 0건 확정, accepted 109건 DB 동기화·RYP-G6 통과 |
 
 ## 구현 내용
 
@@ -1464,3 +1464,37 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 울산 RYP9 감사: 전환 9, blocker 0; 적용 후 전환 0
 - 울산 DB actual: accepted 5·inserted 5; 재실행 unchanged 5
 - 울산 open 목록·명시적 지역 검색·상세 API actual: `5/5/5`
+
+### RYP9 제주 보강·RYP-G6 완료 판정 (`2026-08-14`)
+
+- 제주 checkpoint `1,133`건의 종료 이력은 재요청하지 않고, 동일 Raw에서 현재
+  신청 가능성이 남은 7건과 예산 소진형 1건만 공식 상세에서 제한 재캡처했다.
+  `1182`는 서귀포시 스타트업베이 시행, 39세 이하 초기·예비 청년 창업자,
+  제주특별자치도 서귀포시 위치와 `2026-08-18 11:00까지` 접수 근거를 확인했다.
+- 슬래시 앞 공식 기관명을 기관형 접두사일 때만 시행 기관으로 사용하고, 상세의
+  `위치` 라벨을 지역 근거로 추출했다. 시작일 없이 `~날짜까지`로 표시된 단일
+  마감일을 미래 시작일로 오인하던 정규화를 종료일로 보정해 DB/API 상태를
+  regional Gate의 open 판정과 일치시켰다.
+- `1182` 1건을 accepted, 신청 종료가 확인된 `1130` 1건을 closed로 전환했다.
+  전국 단위 재게시 2건, 이미 종료된 3건과 예산 잔여 여부를 확인할 수 없는 제주
+  전입 장려금 `1075`는 승격하지 않았다. 최종 outcome은 `accepted 109 /
+  duplicate 2 / review 1,140 / closed 3,033 / failed 322`다.
+- PostgreSQL actual은 최초 1건 inserted, 상태 보정 1건 updated, 최종 동일 Raw
+  재실행 1건 unchanged다. 명시적 제주특별자치도 open 목록·`청년` 검색·상세가
+  각각 1건이며 Source ID `regional-jeju-youth-platform`, external ID `1182`,
+  지역과 open 상태가 모두 일치했다.
+- 승인 13개 Source 중 충북만 공식 open 고유 정책 0건으로 확정됐고 나머지
+  12개 Source는 accepted가 1건 이상 존재한다. 세종·경기·충남 blocked와 구 전남
+  rejected 상태를 유지한 채 최종 감사 transition 0·blocker 0을 확인해 RYP9와
+  `RYP-G6`, Data 05를 completed로 판정한다.
+
+검증 결과:
+
+- 제주 제한 actual: 후보 8건 공식 Browser 상세 대조
+- 제주 RYP9 감사: 전환 2, blocker 0; 적용 후 전환 0
+- 제주 DB actual: inserted 1·updated 1; 최종 재실행 unchanged 1
+- 제주 open 목록·명시적 검색·상세 API actual: `1/1/1`
+- 전체 Python 회귀: `403 passed, 25 skipped, 96 subtests passed`
+- 전체 Browser Runtime: `52 passed`
+- Frontend test·build·lint: `50 passed`, build·lint 통과
+- 문서 검증: `python scripts/validate_docs.py` 통과
