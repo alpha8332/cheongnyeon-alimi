@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$PgpassFile,
+    [ValidatePattern("^[A-Za-z_][A-Za-z0-9_-]*$")]
+    [string]$DatabaseName = "cheongnyeon_alimi",
     [switch]$NoBrowser,
     [switch]$ExitAfterReady
 )
@@ -158,12 +160,12 @@ function Resolve-RuntimeRole {
         }
         $hostMatches = $Matches.host -in @("127.0.0.1", "localhost", "*")
         $portMatches = $Matches.port -in @("5432", "*")
-        $databaseMatches = $Matches.database -in @("cheongnyeon_alimi", "*")
+        $databaseMatches = $Matches.database -in @($DatabaseName, "*")
         if ($hostMatches -and $portMatches -and $databaseMatches) {
             return $Matches.role
         }
     }
-    throw "pgpass has no entry usable for 127.0.0.1:5432/cheongnyeon_alimi."
+    throw "pgpass has no entry usable for 127.0.0.1:5432/$DatabaseName."
 }
 
 foreach ($requiredFile in @($PythonExe, $ViteBin)) {
@@ -185,7 +187,10 @@ foreach ($port in @(8000, 3000)) {
 $ResolvedPgpass = Resolve-PgpassFile
 $RuntimeRole = Resolve-RuntimeRole -Path $ResolvedPgpass
 $EncodedRole = [Uri]::EscapeDataString($RuntimeRole)
-$DatabaseUrl = "postgresql+psycopg2://$EncodedRole@127.0.0.1:5432/cheongnyeon_alimi"
+$EncodedDatabaseName = [Uri]::EscapeDataString($DatabaseName)
+$DatabaseUrl = (
+    "postgresql+psycopg2://$EncodedRole@127.0.0.1:5432/$EncodedDatabaseName"
+)
 
 $backendProcess = $null
 $frontendProcess = $null

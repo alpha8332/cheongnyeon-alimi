@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in progress (`DTL4-6`·`W4-G2` 완료, `DTL4-7`·`W4-G3` 준비)
+- 상태: in progress (`DTL4-7`·`W4-G3` 완료, `DTL4-8`·`W4-G4` 준비)
 - 대상 주차: 4주차
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data 담당, Team Leader - Integration
@@ -13,7 +13,8 @@
   accepted 109건 적재·충북 open 0건 확정·명시적 지역 검색 match-only·전체 감사
   통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), `DTL4-5` 소비 대조와
   `W4-G1_APPROVED` 완료, `DTL4-6` PostgreSQL·영역별 검증을 통과해
-  `W4-G2_APPROVED`. 다음은 `DTL4-7` actual E2E와 `W4-G3`.
+  `W4-G2_APPROVED`, `DTL4-7` 세 actual E2E·Release 1 회귀를 통과해
+  `W4-G3_APPROVED`. 다음은 `DTL4-8` 전체 회귀·문서 대조와 `W4-G4`.
   Data 06 구현은 5주차로 이동
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
@@ -575,6 +576,25 @@ Critical Path를 검증한다.
 - 비밀·Raw·Runtime log·DB 파일이 Git에 포함되지 않음
 - Data·API·UI의 identity·상태·evidence·시간 의미가 일치함
 
+### DTL4-7 완료 기록 (`2026-08-14`)
+
+- 시작 기준: `feature/integration/week-04-acceptance`의 `c163235`
+- 격리 PostgreSQL에 Migration head·행정구역·canonical Seed를 적용하고 저장된
+  Runtime Raw로 온통청년 2,695건·복지로 461건·천안 웹 1건·부산 지역 1건 적재
+- 경북·서울 대표 표본은 현재 Gate에 따라 각 3건 격리, 임의 accepted 승격 없음
+- 기존 Real API golden 7건과 ES4 PostgreSQL 상세 1건 통과
+- actual 전용 관리자·웹 Source·사용자 세 Critical Path 3건 통과
+- 관리자 Policy·CollectionRun·log rotate/archive 감사, `401`·`400`·`429` 확인
+- Release 1 golden 검색·상세, Eligibility evidence·비확정 의미와 부산 partial
+  정책의 DB → API → Browser identity 일치 확인
+- 추천·북마크 reload·달력·알림·`.ics`·손상 localStorage 복구 확인
+- Frontend 162건·lint·build, 관련 Backend 65건, PostgreSQL 통합 최종 3건 통과
+- `run_local.ps1`의 고정 DB 이름 결함을 수정해 검증된 격리 DB 선택 지원
+
+위 실제 결과와 비추적 경계를 근거로 `W4-G3_APPROVED`로 판정한다. DTL4-8
+전체 회귀·문서 대조와 W4-G4 midpoint, 독립 QA·사용성 리뷰는 아직 수행하지
+않았다.
+
 ## Slice DTL4-8 - 전체 회귀·문서·W4-G4 midpoint
 
 ### 목적
@@ -743,8 +763,8 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
 - [x] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
 - Data 06 SOP0~SOP5는 5주차 W5-G0~G1로 이동
-- [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
-- [ ] Release 1 golden 검색·상세 회귀 통과
+- [x] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
+- [x] Release 1 golden 검색·상세 회귀 통과
 - [ ] Data·Backend·Frontend 전체 담당자 회귀 결과 대조
 - [ ] Schema·API·DB·운영·README·개발 기록과 실제 구현 일치
 - [ ] 비밀·Runtime Raw·HTML·로그·DB 파일 Git 비추적 확인

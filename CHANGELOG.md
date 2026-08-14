@@ -10,6 +10,10 @@
 
 ### Changed
 
+- DTL4-7에서 실제 PostgreSQL·Runtime·FastAPI·React를 연결해 관리자 데이터·
+  CollectionRun·로그 정리, 공식 Source 자격요건, 추천·북마크·달력·알림·`.ics`
+  세 Critical Path와 Release 1 검색·상세 회귀를 검증했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
 - DTL4-5에서 관리자 Policy·로그 Backend OpenAPI와 Frontend TypeScript·Mock을
   동일 DTO·pagination·오류 계약으로 정렬하고, 현재 로그 rotate 정리·감사와
   request/run/source correlation을 연결했다
@@ -20,6 +24,12 @@
 
 ### Fixed
 
+- Windows actual 실행기가 DB 이름을 `cheongnyeon_alimi`로 고정해 격리 검증 DB를
+  선택할 수 없던 문제를 수정하고, 검증된 `DatabaseName` 인자로 pgpass 대상 DB를
+  명시할 수 있게 했다
+  ([검증 안내](docs/contest/release_1_evidence_guide.md))
+- Runtime 로그 `backend/logs/app.log`가 Git에 추적되던 경계를 정리하고 Backend
+  로그 디렉터리 전체를 비추적 대상으로 고정했다
 - DTL4-6에서 Integration 08 승인 Eligibility DTO와 충돌하던 과거 fixture id,
   개인 조건 비교·summary 새로고침 E2E/API hook·미사용 CSS를 제거하고 현재
   seed·evidence 원문 계약으로 Browser 회귀와 수동 검증 문서를 정렬

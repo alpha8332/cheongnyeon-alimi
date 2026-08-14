@@ -274,6 +274,7 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 | `W4-G1-FE-CONSUMER` | completed (`2026-08-14`) | Team Leader 검토 | 관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 소비 대조와 Frontend 162건 통과 |
 | `W4-G2-PG-READINESS` | completed (`2026-08-14`) | DTL4-7 actual E2E | PostgreSQL 포함 Python 487건·95 subtests, Migration 단일 head와 격리 test DB 확인 |
 | `W4-G2-FE-READINESS` | completed (`2026-08-14`) | DTL4-7 actual E2E | unit·lint·build 통과, Mock Browser 79건 통과·Real API 조건부 11건 실행 조건 명시 |
+| `W4-G3-ACTUAL-E2E` | completed (`2026-08-14`) | DTL4-8 전체 회귀 | 실제 PostgreSQL·Runtime·FastAPI·React 관리자·웹 Source·사용자 E2E와 Release 1 검색·상세 회귀 통과 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
 `W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 구현 적합성
@@ -282,8 +283,10 @@ DTL4-5는 위 두 항목과 관리자 Policy·로그 DTO, Eligibility 중복 pro
 Data 05 재사용·중복 경계를 함께 대조해 `W4-G1_APPROVED`로 판정했다. 상세 근거는
 [v0.5.0 Contract Baseline 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md)에 둔다.
 DTL4-6은 실제 PostgreSQL과 전 영역 자체 검증을 통과하고 Eligibility 과거 proposal
-잔재를 정리해 `W4-G2_APPROVED`로 판정했다. 조건부 Real API Browser 11건과 세
-Critical Path는 DTL4-7에서 실제 FastAPI·React 연결로 실행한다.
+잔재를 정리해 `W4-G2_APPROVED`로 판정했다. DTL4-7은 실제 PostgreSQL·Runtime·
+FastAPI·React에서 관리자·웹 Source·사용자 세 Critical Path와 Release 1 검색·
+상세 회귀를 통과해 `W4-G3_APPROVED`로 판정했다. 다음 Gate는 DTL4-8 전체 회귀·
+문서 대조와 W4-G4 midpoint다.
 `W4-ES2-BE-CONSUMER`는 NormalizedProgram 1.2.0, Migration `20260810_0006`,
 상세 DTO와 PostgreSQL actual 대조를 통과해 `2026-08-10` 완료 처리했다.
 `W4-ES3-FE-CONSUMER`는 상세 TypeScript·Mock·UI와 승인 문구, 시설 전화 링크,

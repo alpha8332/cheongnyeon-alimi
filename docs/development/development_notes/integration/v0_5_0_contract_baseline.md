@@ -33,6 +33,7 @@
 | DTL4-1 / C0~C4 | 완료 | Data inventory·Backend 대조·웹 Source 경계 승인, `W4-G0_APPROVED` |
 | DTL4-5 | 완료 | Data·OpenAPI·TypeScript·Mock 소비 대조, 관리자 보안·로그 계약 정렬, `W4-G1_APPROVED` |
 | DTL4-6 | 완료 | PostgreSQL 포함 전 영역 자체 검증·actual 환경 준비·Eligibility 잔재 정리, `W4-G2_APPROVED` |
+| DTL4-7 | 완료 | 실제 PostgreSQL·Runtime·FastAPI·React 세 Critical Path와 Release 1 회귀, `W4-G3_APPROVED` |
 
 ## 구현 내용
 
@@ -233,9 +234,56 @@ Chromium 준비를 근거로 `W4-G2_APPROVED`로 판정한다. DTL4-7에서는 �
 React를 연결해 조건부 Real API Browser 11건과 관리자·자격요건·추천 세 Critical
 Path를 실행한다. Runtime 로그 rotate·감사 지속성도 같은 actual E2E에서 확인한다.
 
+### DTL4-7 세 actual E2E와 W4-G3 (`2026-08-14`)
+
+시작 기준은 `feature/integration/week-04-acceptance`의
+`c163235a734b3168fe13e726047348a1c3f63b3e`다. 기존
+`cheongnyeon_alimi` DB는 pgpass 역할이 테이블 조회 권한을 갖지 않아 정책 검색과
+관리자 실행 목록이 500을 반환했다. 기존 DB 권한을 바꾸지 않고 역할이 소유한
+격리 `cheongnyeon_alimi_test`를 선택하려 했으나 `run_local.ps1`가 DB 이름을
+고정한 결함을 확인했다. 실행기에 검증된 `DatabaseName` 입력을 추가하고 기본값은
+기존 `cheongnyeon_alimi`로 유지했다.
+
+격리 DB에 Alembic `20260810_0006`, 행정구역 538건·alias 1,080건과 canonical
+Seed 4건을 적용했다. 저장된 Runtime Raw를 외부 호출 없이 재생해 온통청년
+2,695건, 복지로 461건, 천안 웹 1건을 실패 없이 적재했다. 대표 지역 Source는
+부산 accepted 1건을 적재했고 경북·서울은 현재 Gate에 따라 각 3건을 격리했다.
+review·closed를 accepted로 승격하지 않았다.
+
+| 검증 | 결과 |
+| --- | --- |
+| 기존 Real API golden | 7 passed: 관리자 run·observability, 검색, Eligibility, 추천, 북마크, Week 4 회귀 |
+| ES4 PostgreSQL 상세 대조 | 1 passed |
+| DTL4-7 actual Critical Path | 3 passed: 관리자·웹 Source·사용자 |
+| Frontend unit·lint·build | 162 passed, lint passed, production build passed |
+| 관련 Backend 단위·API | 65 passed, 기존 deprecation warning 1건 |
+| PostgreSQL Seed·API·CollectionRun 통합 | 최종 3 passed, 기존 deprecation warning 1건 |
+
+관리자 actual은 실제 Policy 표·상세, CollectionRun 목록·상세, 구조화 log,
+rotate, 임시 archive typed-delete와 감사 ID, invalid token `401`, active log 삭제
+`400`, 잘못된 PIN 4회 `401` 뒤 5회째 `429`를 확인했다. 웹 Source actual은
+Release 1 golden 검색, 정책 ID 167의 evidence·비확정 안내와 부산 대표 partial
+정책 ID 3162를 대조했다. 사용자 actual은 추천 의미, 북마크 reload, 달력·알림,
+정책 ID 1566의 `.ics` 다운로드와 손상 localStorage 복구를 확인했다.
+
+PostgreSQL 통합 첫 실행은 actual 데이터가 남은 DB에서 canonical Seed가 신규
+4건이 아니라 unchanged 4건으로 판정돼 1건 실패했다. 테스트 정리 뒤 동일 3건을
+재실행해 모두 통과했다. 첫 실패를 기능 성공으로 숨기지 않는다. 실제 E2E 뒤
+서비스를 종료했고 통합 테스트가 격리 DB Migration과 데이터를 정리했다.
+
+최종 Git Gate에서 과거 `backend/logs/app.log`가 추적 중인 사실을 확인했다.
+actual 실행으로 바뀐 내용은 시작 HEAD로 먼저 복원해 기존 기록과 섞이지 않게 한
+뒤, Runtime log 비추적 계약에 맞춰 파일을 Git에서 제거하고 `backend/logs/`를
+ignore했다. 로그 디렉터리와 활성 파일은 Backend 시작 시 다시 생성된다.
+
+세 actual E2E와 Release 1 검색·상세 회귀, 비밀·Runtime 비추적 경계를 근거로
+`W4-G3_APPROVED`로 판정한다. DTL4-8의 전체 회귀·문서 대조·W4-G4 midpoint와
+5주차 독립 QA·사용성 리뷰는 수행하지 않았으며 완료로 판정하지 않는다.
+
 ## 주요 변경 파일
 
 - `.gitignore`
+- `backend/logs/app.log` (추적 제거)
 - `docs/development/develop_plan/integration/05_v0_5_0_contract_baseline.md`
 - `docs/development/weekly_plan/week_04_data_team_leader.md`
 - `docs/development/development_notes/integration/v0_5_0_contract_baseline.md`
@@ -245,6 +293,10 @@ Path를 실행한다. Runtime 로그 rotate·감사 지속성도 같은 actual E
 - `docs/data/collection_policy.md`
 - `docs/data/source_profiles.md`
 - `docs/development/develop_plan/data/04_public_https_policy_ingestion.md`
+- `scripts/run_local.ps1`
+- `frontend/e2e/dtl4-7-actual.spec.ts`
+- `README.md`
+- `docs/contest/release_1_evidence_guide.md`
 - `CHANGELOG.md`
 
 ## 설계 결정

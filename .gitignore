@@ -19,6 +19,7 @@ runtime/html/
 runtime/logs/
 runtime/decisions/
 data/runtime/raw/
+backend/logs/
 
 # Python local artifacts
 __pycache__/

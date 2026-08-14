@@ -25,3 +25,8 @@ pgpass 경로가 필요하면 첫 번째 인자로 전달할 수 있다. Release
 항목은
 [Release 1 독립 검증 증거 안내](docs/contest/release_1_evidence_guide.md)를
 따른다.
+
+기본 DB가 아닌 명시적으로 준비한 격리 DB를 사용하려면 PowerShell에서
+`run.bat -PgpassFile <path> -DatabaseName <database>`로 실행한다. DB 이름은
+영문자·숫자·밑줄·하이픈만 허용하며 pgpass에도 해당 DB 또는 `*` 항목이 있어야
+한다.
