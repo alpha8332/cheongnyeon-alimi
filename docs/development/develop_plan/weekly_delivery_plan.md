@@ -190,7 +190,7 @@ fast-forward해 4주차의 공통 시작점으로 사용한다.
 
 in progress (`W4-G0`, Data 03·04와 Integration 08 기반 완료;
 Data 05 `RYP0`~`RYP8`·`RYP-G4` 완료·`RYP9` 광주 보강 및 명시적 지역 검색
-match-only 완료 (accepted 51·review 1,208, Source 필드 상태 전건 reconcile,
+match-only 완료 (accepted 66·review 1,193, Source 필드 상태 전건 reconcile,
 legacy null 0과 고정 outcome·종료 이력·실패 분류 감사 통과),
 Data 06 계획 확정)
 

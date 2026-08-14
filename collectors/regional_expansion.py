@@ -667,6 +667,9 @@ def decide_expanded_regional_policy(
             policy.source_id
             == "regional-gwangju-integrated-youth-platform"
         ),
+        allow_target_region_plus_organization=(
+            policy.source_id == "regional-incheon-youth-platform"
+        ),
     )
     return enforce_youth_target(policy, decision)
 

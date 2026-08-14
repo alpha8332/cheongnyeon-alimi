@@ -306,6 +306,43 @@ class RegionalPolicyGateTests(unittest.TestCase):
             decision.regionality,
         )
 
+    def test_target_region_and_implementing_region_require_source_approval(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(
+                jurisdiction_text="청년정책 포털",
+                operator_text="청년정책 포털",
+            ),
+            organization="인천광역시 부평구 일자리창출과",
+            eligibility="인천광역시 부평구 거주 청년",
+            source_region=None,
+        )
+
+        default_decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="인천광역시",
+            as_of=date(2026, 8, 11),
+        )
+        approved_decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="인천광역시",
+            as_of=date(2026, 8, 11),
+            allow_target_region_plus_organization=True,
+        )
+
+        self.assertFalse(default_decision.accepted)
+        self.assertTrue(approved_decision.accepted)
+        self.assertIn("target_region_confirmed", approved_decision.reason_codes)
+        self.assertIn(
+            "implementing_region_confirmed", approved_decision.reason_codes
+        )
+        self.assertNotIn(
+            "source_region_confirmed", approved_decision.reason_codes
+        )
+
     def test_evidence_value_without_locator_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "requires one locator"):
             RegionalPolicyEvidence(

@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주 보강 및
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천 보강 및
   명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
@@ -938,7 +938,12 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
 - 광주 상세의 정책 지역 badge와 시행 기관을 정책 단위 근거로 수집해 10건을
   accepted로 승격했다. outcome은 `accepted 51 / duplicate 1 / review 1,208 /
   closed 3,024 / failed 322`이며 동일 재실행은 `unchanged 10`이다.
-- 잔여 Source에 review 1,208건이 남아 있다. Source별
+- 인천은 상세 `지원대상`의 거주 지역과 `주관기관/운영기관`의 시행 지역을
+  정책 단위 독립 근거로 사용한다. 인천 Source에 한해서만 이 두 근거 조합을
+  허용해 open 15건을 accepted로 승격했고, 마감 2건과 신청기간·지역 근거가
+  미완결인 11건은 승격하지 않았다. outcome은 `accepted 66 / duplicate 1 /
+  review 1,193 / closed 3,024 / failed 322`다.
+- 잔여 Source에 review 1,193건이 남아 있다. Source별
   `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
   RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
 

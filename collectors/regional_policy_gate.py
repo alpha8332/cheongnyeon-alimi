@@ -275,6 +275,7 @@ def evaluate_regional_policy(
     as_of: date | None = None,
     region_reference: RegionReference | None = None,
     allow_policy_region_plus_organization: bool = False,
+    allow_target_region_plus_organization: bool = False,
 ) -> RegionalPolicyDecision:
     """Classify one policy without inferring region from its portal."""
     if evidence.provenance != policy.provenance:
@@ -303,6 +304,9 @@ def evaluate_regional_policy(
         reference=reference,
         allow_policy_region_plus_organization=(
             allow_policy_region_plus_organization
+        ),
+        allow_target_region_plus_organization=(
+            allow_target_region_plus_organization
         ),
     )
     application, application_reason = _application_availability(
@@ -391,6 +395,7 @@ def _regionality(
     expected_aliases: frozenset[str],
     reference: RegionReference,
     allow_policy_region_plus_organization: bool = False,
+    allow_target_region_plus_organization: bool = False,
 ) -> tuple[RegionalityStatus, tuple[str, ...]]:
     source_region = evidence.source_region_text
     eligibility = evidence.region_eligibility_text
@@ -422,6 +427,10 @@ def _regionality(
     ) or (
         allow_policy_region_plus_organization
         and expected_in_region
+        and expected_in_organization
+    ) or (
+        allow_target_region_plus_organization
+        and expected_in_target
         and expected_in_organization
     ):
         return (

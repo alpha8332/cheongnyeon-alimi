@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | in-progress | 감사 재판정·accepted 41건 DB 동기화·strict 목록/상세 Browser 인수 완료, review 1,218건과 검색 soft-filter 보완 대기 |
+| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건 승격, accepted 66건 DB 동기화·review 1,193건 잔여 Source 보강 진행 |
 
 ## 구현 내용
 
@@ -1298,3 +1298,28 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - regional Gate·expansion 집중 테스트: `56 passed, 12 subtests passed`
 - Browser runtime Node: `48 passed`
 - 광주 RYP9 감사: 전환 10, blocker 0, `ready_for_redecision=true`
+
+### RYP9 인천 정책 단위 지역 근거 보강 (`2026-08-14`)
+
+- 인천 완료 checkpoint 28건과 현재 목록 27건의 기존 drift 경계를 유지했다.
+  신규 identity를 편입하거나 마감 이력을 재수집하지 않고 저장된 Raw 28건과
+  공식 상세 대표 `poly_seq=420`을 읽기 전용으로 대조했다.
+- 인천 상세에는 별도 지역 badge가 없지만 `지원대상`에 인천 또는 관할 군·구
+  거주·활동 조건이, `주관기관/운영기관`에 인천 시행 기관이 함께 명시된다.
+  인천 Source에 한해서만 이 정책 단위 두 근거 조합을 허용했고, 포털 제목·관할
+  자체는 승격 근거로 사용하지 않았다.
+- 재판정 결과 open 15건을 `review → accepted`로 승인했다. closed 2건,
+  신청기간 미확정 10건과 대상 문구에 지역 근거가 없는 open 1건은 review로
+  유지했다. 감사 결과 전환 15·blocker 0이며 outcome은 `accepted 66 /
+  duplicate 1 / review 1,193 / closed 3,024 / failed 322`다.
+- PostgreSQL actual은 첫 실행 `inserted 15`, 두 번째 실행 `unchanged 15`,
+  prune·중복·실패 0이다. 실제 목록·명시적 자연어 검색은 인천 15건만 반환하고
+  검색 verdict는 전건 `region=match`였으며, 상세 15건의 source_id도 모두
+  `regional-incheon-youth-platform`과 일치했다.
+
+검증 결과:
+
+- regional Gate·expansion·RYP9 감사 집중 테스트: `57 passed, 12 subtests passed`
+- 인천 RYP9 감사: 전환 15, blocker 0, `ready_for_redecision=true`
+- 인천 DB actual 2회: `inserted 15` 뒤 `unchanged 15`
+- 인천 목록·검색·상세 API actual: `15/15/15`, 타 regional Source 혼입 0
