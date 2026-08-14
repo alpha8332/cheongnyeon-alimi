@@ -31,6 +31,7 @@ from collectors.regional_policy_gate import (
     ApplicationAvailability,
     RegionalPolicyDecision,
     RegionalPolicyEvidence,
+    RegionalSourceScopeEvidence,
     RegionalityStatus,
     enforce_youth_target,
     evaluate_regional_policy,
@@ -654,6 +655,7 @@ def decide_expanded_regional_policy(
             if value is not None
         ),
         provenance=policy.provenance,
+        source_scope=_regional_source_scope(policy),
         field_observations=_regional_field_observations(detail),
     )
     decision = evaluate_regional_policy(
@@ -661,8 +663,40 @@ def decide_expanded_regional_policy(
         evidence,
         expected_region_text=spec.expected_region_text,
         as_of=as_of,
+        allow_policy_region_plus_organization=(
+            policy.source_id
+            == "regional-gwangju-integrated-youth-platform"
+        ),
     )
     return enforce_youth_target(policy, decision)
+
+
+def _regional_source_scope(
+    policy: ExtractedPolicy,
+) -> RegionalSourceScopeEvidence | None:
+    value = policy.extra.get("source_scope")
+    if not isinstance(value, Mapping):
+        return None
+    normalized = {
+        field_name: _text(value.get(field_name))
+        for field_name in _SOURCE_SCOPE_FIELDS
+    }
+    if normalized["jurisdiction_text"] is None or normalized["operator_text"] is None:
+        raise ExtractionError("expanded regional Source scope is incomplete")
+    provenance = tuple(
+        item
+        for item in policy.provenance
+        if item.document_role is RawDocumentRole.LIST_RESPONSE
+    )
+    return RegionalSourceScopeEvidence(
+        **normalized,
+        field_locators=tuple(
+            (field_name, f"list_response:source_scope.{field_name}")
+            for field_name, field_value in normalized.items()
+            if field_value is not None
+        ),
+        provenance=provenance,
+    )
 
 
 def _regional_field_observations(
@@ -1036,6 +1070,42 @@ class RegionalBatchCheckpoint:
             discovery_complete=self.discovery_complete,
             complete=self.discovery_complete
             and len(decisions) == len(self.discovered_ids),
+            discovered_ids=self.discovered_ids,
+            captured_ids=self.captured_ids,
+            decisions=decisions,
+        )
+
+    def redecide(
+        self, outcomes: Mapping[str, RegionalOutcome | str]
+    ) -> "RegionalBatchCheckpoint":
+        """Replace a complete decision set after an explicit audited replay."""
+
+        if not self.complete or set(outcomes) != set(self.discovered_ids):
+            raise ValueError("regional checkpoint redecision set is incomplete")
+        try:
+            normalized = {
+                external_id: RegionalOutcome(outcome)
+                for external_id, outcome in outcomes.items()
+            }
+        except (TypeError, ValueError):
+            raise ValueError("regional checkpoint outcome is invalid") from None
+        if any(
+            outcome is not RegionalOutcome.FAILED
+            and external_id not in set(self.captured_ids)
+            for external_id, outcome in normalized.items()
+        ):
+            raise ValueError("regional checkpoint redecision requires captured detail")
+        decisions = tuple(
+            (external_id, normalized[external_id])
+            for external_id in self.discovered_ids
+        )
+        return RegionalBatchCheckpoint(
+            source_id=self.source_id,
+            collection_mode=self.collection_mode,
+            next_page=self.next_page,
+            total_count=self.total_count,
+            discovery_complete=self.discovery_complete,
+            complete=True,
             discovered_ids=self.discovered_ids,
             captured_ids=self.captured_ids,
             decisions=decisions,

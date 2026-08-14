@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from collections.abc import Mapping
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import delete, or_
 from sqlalchemy.orm import Session
@@ -48,6 +50,7 @@ def import_runtime_raw(
     dry_run: bool = False,
     decision_root: str | Path | None = None,
     checkpoint_root: str | Path | None = None,
+    regional_redecision_audit: Mapping[str, Any] | None = None,
 ) -> RuntimeImportResult:
     """Replay one source batch and pass accepted programs to the importer."""
     replay = replay_runtime_raw(
@@ -95,6 +98,8 @@ def import_runtime_raw(
         checkpoint = _finalize_regional_checkpoint(
             replay,
             checkpoint_root=checkpoint_root,
+            redecision_audit=regional_redecision_audit,
+            persist=not dry_run,
         )
         if not dry_run:
             accepted_ids = {
@@ -139,7 +144,11 @@ def _prune_regional_policies(
 
 
 def _finalize_regional_checkpoint(
-    replay: RuntimeReplayResult, *, checkpoint_root: str | Path
+    replay: RuntimeReplayResult,
+    *,
+    checkpoint_root: str | Path,
+    redecision_audit: Mapping[str, Any] | None = None,
+    persist: bool = True,
 ) -> RegionalBatchCheckpoint:
     store = RegionalCheckpointStore(checkpoint_root)
     checkpoint = store.load(replay.source_id)
@@ -165,9 +174,15 @@ def _finalize_regional_checkpoint(
     for external_id in missing:
         outcomes[external_id] = RegionalOutcome.FAILED
     existing = dict(checkpoint.decisions)
-    if any(
+    drifted = any(
         external_id in outcomes and outcomes[external_id] != outcome
         for external_id, outcome in existing.items()
+    )
+    if drifted and not _matches_redecision_audit(
+        replay.source_id,
+        existing,
+        outcomes,
+        redecision_audit,
     ):
         raise ValueError("regional checkpoint decisions drifted")
     pending = {
@@ -175,8 +190,59 @@ def _finalize_regional_checkpoint(
         for external_id, outcome in outcomes.items()
         if external_id not in existing
     }
-    finalized = checkpoint if not pending else checkpoint.decide(pending)
+    finalized = (
+        checkpoint.redecide(outcomes)
+        if drifted
+        else checkpoint if not pending else checkpoint.decide(pending)
+    )
     if not finalized.complete:
         raise ValueError("regional checkpoint decision set is incomplete")
-    store.save(finalized)
+    if persist:
+        store.save(finalized)
     return finalized
+
+
+def _matches_redecision_audit(
+    source_id: str,
+    existing: Mapping[str, RegionalOutcome],
+    outcomes: Mapping[str, RegionalOutcome],
+    audit: Mapping[str, Any] | None,
+) -> bool:
+    if not isinstance(audit, Mapping) or audit.get("ready_for_redecision") is not True:
+        return False
+    sources = audit.get("sources")
+    if not isinstance(sources, list):
+        return False
+    source = next(
+        (
+            value
+            for value in sources
+            if isinstance(value, Mapping) and value.get("source_id") == source_id
+        ),
+        None,
+    )
+    if source is None:
+        return False
+    expected = {
+        (
+            str(item.get("external_id")),
+            str(item.get("from")),
+            str(item.get("to")),
+        )
+        for item in source.get("transitions", ())
+        if isinstance(item, Mapping)
+    }
+    actual = {
+        (external_id, old.value, outcomes[external_id].value)
+        for external_id, old in existing.items()
+        if outcomes.get(external_id) != old
+    }
+    return (
+        bool(actual)
+        and actual == expected
+        and source.get("transition_scope_valid") is True
+        and source.get("closed_evidence_complete") is True
+        and source.get("existing_accepted_preserved") is True
+        and source.get("failed_identity_preserved") is True
+        and source.get("promotion_evidence_complete") is True
+    )

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -80,6 +81,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="optional completed regional batch checkpoint root",
     )
+    parser.add_argument(
+        "--regional-redecision-audit",
+        type=Path,
+        help="approved RYP9 audit required to replace completed decisions",
+    )
     return parser
 
 
@@ -122,6 +128,11 @@ def main(
                 requested_count=args.limit,
             )
         db = selected_session_factory()
+        redecision_audit = (
+            json.loads(args.regional_redecision_audit.read_text(encoding="utf-8"))
+            if args.regional_redecision_audit is not None
+            else None
+        )
         result = import_runtime_raw(
             db,
             raw_root=args.raw_root,
@@ -131,6 +142,7 @@ def main(
             dry_run=args.dry_run,
             decision_root=args.decision_root,
             checkpoint_root=args.checkpoint_root,
+            regional_redecision_audit=redecision_audit,
         )
         if run_writer is not None and run_id is not None:
             run_writer.finish(

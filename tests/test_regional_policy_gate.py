@@ -225,6 +225,15 @@ class RegionalPolicyGateTests(unittest.TestCase):
             case["expected_region_code"],
             result.program.region_rules[0].region_code,
         )
+        self.assertEqual(
+            ("경상북도 경주시", "경상북도"),
+            result.program.regions,
+        )
+        self.assertEqual(2, len(result.program.region_rules))
+        self.assertEqual(
+            "4700000000",
+            result.program.region_rules[1].region_code,
+        )
 
     def test_portal_location_alone_never_creates_region_evidence(self) -> None:
         case = next(
@@ -245,6 +254,57 @@ class RegionalPolicyGateTests(unittest.TestCase):
             decision.regionality,
         )
         self.assertIsNone(decision.accepted_policy)
+
+    def test_policy_region_and_implementing_region_are_sufficient(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(
+                jurisdiction_text="청년정책 포털",
+                operator_text="청년정책 포털",
+            ),
+            organization="경상북도 경주시 청년정책과",
+            eligibility="만 19세 이상 청년",
+            source_region="경상북도 경주시",
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="경상북도",
+            as_of=date(2026, 8, 11),
+            allow_policy_region_plus_organization=True,
+        )
+
+        self.assertTrue(decision.accepted)
+        self.assertIn("source_region_confirmed", decision.reason_codes)
+        self.assertIn("implementing_region_confirmed", decision.reason_codes)
+        self.assertNotIn("target_region_confirmed", decision.reason_codes)
+
+    def test_policy_region_without_second_policy_signal_stays_review(self) -> None:
+        case = self.fixture["cases"][0]
+        selected_policy, selected_evidence = scoped_policy_and_evidence(
+            case,
+            scope=source_scope(
+                jurisdiction_text="청년정책 포털",
+                operator_text="청년정책 포털",
+            ),
+            organization="청년지원센터",
+            eligibility="만 19세 이상 청년",
+            source_region="경상북도 경주시",
+        )
+
+        decision = evaluate_regional_policy(
+            selected_policy,
+            selected_evidence,
+            expected_region_text="경상북도",
+            as_of=date(2026, 8, 11),
+        )
+
+        self.assertIs(
+            RegionalityStatus.REGIONAL_REVIEW_REQUIRED,
+            decision.regionality,
+        )
 
     def test_evidence_value_without_locator_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "requires one locator"):

@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | planned | 전체 재판정·accepted DB 동기화·지역 검색 DB→API→Browser 인수 |
+| RYP9 | in-progress | 감사 재판정·accepted 41건 DB 동기화·strict 목록/상세 Browser 인수 완료, review 1,218건과 검색 soft-filter 보완 대기 |
 
 ## 구현 내용
 
@@ -1232,3 +1232,69 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - RYP8 audit·regional expansion 집중 Python: `39 passed`
 - Browser runtime Node: `47 passed`
 - 최종 RYP8 감사: legacy `0`, closed history complete, `data_ready=true`
+
+### RYP9 감사 재판정·부분 적재와 검색 인수 (`2026-08-14`)
+
+- `regional_ryp9_audit`은 완료 checkpoint와 현재 Raw replay의 전환 identity를
+  Source·external_id·from·to 단위로 고정한다. 기존 accepted와 failed identity,
+  closed evidence, 승격 evidence와 허용 전환 범위를 모두 만족할 때만 완료된
+  checkpoint의 명시적 재판정을 허용한다. dry-run은 checkpoint를 저장하지 않는다.
+- 첫 감사에서 665건(`review → closed` 664, `duplicate → review` 1)을 승인해
+  outcome을 `18/0/1,242/3,024/322`로 맞췄다. 경북 `1009`는 청년 대상 근거가
+  없어 기준선 손실이 아니라 review가 맞다.
+- RYP8에서 staging한 Source scope를 RYP9 regional Gate가 소비하도록 연결했다.
+  Source 관할·운영 주체만으로는 승격하지 않고 정책 단위 지역/시행 주체, 청년 대상,
+  신청 가능 근거와 3종 provenance가 함께 있을 때만 허용한다. 두 번째 감사로
+  경남 7건과 전북 16건을 accepted, 전북 1건을 duplicate로 재판정했다.
+- 최종 checkpoint outcome은 `accepted 41 / duplicate 1 / review 1,218 /
+  closed 3,024 / failed 322`, decision drift 0이다. PostgreSQL regional projection은
+  부산 16·경북 2·경남 7·전북 16이다. 첫 replay에서 경남 7건 insert, 전북 16건
+  insert·중복 1건 skip을 확인했고 이후 관할 계층 보강 재생은 경북 1·전북 9건만
+  update했다. 최종 두 번째 replay는 네 Source 모두 `unchanged 41`, prune·실패 0이다.
+- 기초자치단체 정책이 광역 검색에서 누락되지 않도록 accepted region evidence에
+  세부 canonical 지역과 승인 광역 관할을 함께 보존했다. strict 목록 API actual은
+  부산 16·경북 2·경남 7·전북 16 전건과 타 regional Source 혼입 0건이며, 41개
+  상세 API의 source_id·external_id·title·regions가 DB와 일치한다.
+- 실제 Browser에서 전북 `id=9558`의 지역·연령·지원 내용·신청 방법·접수 상태,
+  원문 provenance가 붙은 신청 조건과 기관 문의처 전화 링크를 확인했다.
+- 자연어 검색은 명시적 region을 hard filter가 아닌 판정·ranking에만 사용한다.
+  전북 검색 첫 페이지에 전국/지역 미확정 정책과 인천 regional 정책이 함께 나타나
+  RYP9의 지역 검색 격리 완료 기준을 충족하지 못했다. Backend 검색 계약 변경이
+  필요한 별도 영향 사항이므로 Data 범위에서 수정하지 않았다.
+- 최종 review 감사는 discovered 4,606·review 1,218·failed 322·capture evidence
+  gap Source 11·checkpoint drift 0이다. 따라서 RYP9와 RYP-G6는 in-progress다.
+
+검증 결과:
+
+- regional Gate·expansion 집중 Python: `52 passed, 12 subtests passed`
+- 네 accepted Source dry-run: 갱신 예상 경북 1·전북 9, 판정 drift·실패 0
+- 네 accepted Source actual 2회: 첫 갱신 뒤 `unchanged 41`, prune·실패 0
+- strict 목록 API: `16/2/7/16`, 타 regional Source 혼입 0
+- 상세 API: regional 41건 DB 필드 불일치 0
+- Browser actual: 전북 검색 결과와 `id=9558` 상세·문의처 렌더링 확인
+
+### RYP9 명시적 지역 검색·광주 정책 근거 보강 (`2026-08-14`)
+
+- Backend 자연어 검색에서 명시적 `region`은 `match` 정책만 반환하도록
+  확정했다. 명시적 지역의 `unknown`·`mismatch`는 제외하지만 `q`에서 추론한
+  지역은 기존 계약대로 지역 근거 누락 정책을 `unknown` 후보로 보존한다.
+- 광주 완료 checkpoint 31건은 현재 목록 drift를 편입하지 않고 기존 identity만
+  제한 재캡처했다. 상세 상단의 공식 정책 지역 badge를 별도 locator로 추출하고,
+  정책 지역과 시행 기관이 모두 통합 광역 관할에 속할 때만 광주 Source에 한해
+  지역 Gate를 충족한다. 포털 관할만으로는 승격하지 않는다.
+- 재판정 결과 광주 10건이 `review → accepted`, 20건은 open review, 1건은
+  closed review로 남았다. 감사 전환 10건을 승인해 최종 outcome은
+  `accepted 51 / duplicate 1 / review 1,208 / closed 3,024 / failed 322`이며,
+  PostgreSQL actual은 첫 실행 `inserted 10`, 두 번째 실행 `unchanged 10`,
+  prune·실패 0이다.
+- 실제 목록 API에서 전남광주통합특별시 10건을 반환했고, 명시적 자연어 검색도
+  10건 모두 `region=match`로 격리됐다. 최초 개발 서버의 HTTP 500은 pgpass가
+  전달되지 않은 실행 환경 문제였으며 동일 자격 증명 파일을 명시한 검증에서는
+  200 응답을 확인했다.
+
+검증 결과:
+
+- PostgreSQL 명시적 지역 검색 집중 테스트: `17 passed`
+- regional Gate·expansion 집중 테스트: `56 passed, 12 subtests passed`
+- Browser runtime Node: `48 passed`
+- 광주 RYP9 감사: 전환 10, blocker 0, `ready_for_redecision=true`

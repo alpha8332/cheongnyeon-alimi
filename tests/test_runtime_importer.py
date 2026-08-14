@@ -13,7 +13,11 @@ for import_root in (ROOT, BACKEND_ROOT):
         sys.path.insert(0, str(import_root))
 
 from app.models.policy import Policy
-from app.services.runtime_importer import _prune_regional_policies
+from app.services.runtime_importer import (
+    _matches_redecision_audit,
+    _prune_regional_policies,
+)
+from collectors.regional_expansion import RegionalOutcome
 
 
 def _policy(source_id: str, external_id: str | None) -> Policy:
@@ -85,3 +89,32 @@ def test_prune_regional_policies_removes_source_when_none_are_accepted() -> None
 
         assert pruned == 1
         assert db.scalar(select(Policy.id)) is None
+
+
+def test_redecision_audit_must_match_the_exact_source_delta() -> None:
+    existing = {"one": RegionalOutcome.REVIEW, "failed": RegionalOutcome.FAILED}
+    outcomes = {"one": RegionalOutcome.CLOSED, "failed": RegionalOutcome.FAILED}
+    audit = {
+        "ready_for_redecision": True,
+        "sources": [
+            {
+                "source_id": "regional-busan-youth-platform",
+                "transitions": [
+                    {"external_id": "one", "from": "review", "to": "closed"}
+                ],
+                "transition_scope_valid": True,
+                "closed_evidence_complete": True,
+                "existing_accepted_preserved": True,
+                "failed_identity_preserved": True,
+                "promotion_evidence_complete": True,
+            }
+        ],
+    }
+
+    assert _matches_redecision_audit(
+        "regional-busan-youth-platform", existing, outcomes, audit
+    )
+    audit["sources"][0]["transitions"][0]["external_id"] = "other"
+    assert not _matches_redecision_audit(
+        "regional-busan-youth-platform", existing, outcomes, audit
+    )

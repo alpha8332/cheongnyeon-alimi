@@ -251,6 +251,7 @@ export async function collectCheckpointDetailRecapture({
   detailPairLabelSelector = null,
   detailPairValueSelector = null,
   detailMetadataSelector = null,
+  detailRegionSelector = null,
   sourceScopeSelectors,
   checkpointTotalCount = null,
 }) {
@@ -303,6 +304,7 @@ export async function collectCheckpointDetailRecapture({
         detailPairLabelSelector,
         detailPairValueSelector,
         detailMetadataSelector,
+        detailRegionSelector,
       );
       captured.push({
         external_id: contract.external_id,
@@ -604,6 +606,7 @@ export async function collectQueryPage({
             detailPairLabelSelector,
             detailPairValueSelector,
             detailMetadataSelector,
+            detailRegionSelector,
             detailDateInference,
             asOfDate,
           );
@@ -720,6 +723,7 @@ export async function extractDetail(
   detailPairLabelSelector = null,
   detailPairValueSelector = null,
   detailMetadataSelector = null,
+  detailRegionSelector = null,
   detailDateInference = null,
   detailAsOfDate = null,
 ) {
@@ -730,6 +734,7 @@ export async function extractDetail(
     pairLabelSelector,
     pairValueSelector,
     metadataSelector,
+    regionSelector,
   }) => {
     const squash = (value) => String(value ?? "").replace(/\s+/g, " ").trim();
     const compact = (value) => squash(value).replace(/\s/g, "");
@@ -796,6 +801,9 @@ export async function extractDetail(
       metadataText: metadataSelector
         ? squash(document.querySelector(metadataSelector)?.textContent)
         : null,
+      sourceRegionText: regionSelector
+        ? squash(document.querySelector(regionSelector)?.textContent)
+        : null,
     };
   }, {
     titleSelector: detailTitleSelector,
@@ -804,6 +812,7 @@ export async function extractDetail(
     pairLabelSelector: detailPairLabelSelector,
     pairValueSelector: detailPairValueSelector,
     metadataSelector: detailMetadataSelector,
+    regionSelector: detailRegionSelector,
   });
   const actualTitle = extracted.actualTitle || expectedTitle;
   if (detailTitleSelector) {
@@ -816,9 +825,19 @@ export async function extractDetail(
       throw new Error("detail title does not match truncated list title");
     }
   }
-  return detailDateInference === "registered_title_deadline"
+  const detail = detailDateInference === "registered_title_deadline"
     ? buildRegisteredTitleDeadlineDetail(actualTitle, extracted, detailAsOfDate)
     : buildDetail(actualTitle, extracted);
+  if (detailRegionSelector) {
+    detail.source_region = clean(extracted.sourceRegionText) || null;
+    detail.evidence_observations.source_region = {
+      label: detailRegionSelector,
+      status: detail.source_region
+        ? "value_extracted"
+        : "label_present_value_empty",
+    };
+  }
+  return detail;
 }
 
 export function buildRegisteredTitleDeadlineDetail(
@@ -1014,6 +1033,7 @@ export function gwangjuConfig(page) {
     detailPost: {identityField: "policyId", fields: {}},
     detailClickTemplate: 'a[onclick="policyView(\'{id}\')"]',
     detailReadySelector: ".dt-tit",
+    detailRegionSelector: ".detail-policy .detail-into-top .tag .badge.type07",
     sourceScopeSelectors: {
       jurisdiction_text: "h1",
       operator_text: "h1",

@@ -5,7 +5,8 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 전체 재판정·검색 인수 예정
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주 보강 및
+  명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 01 Data Pipeline, Data 03 Recurrent Collection and Quality
@@ -918,6 +919,28 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
 - accepted 원문 → Raw → 결정 → DB → API → Browser lineage와 반복 실행이
   일치함
 - 전체 Python·PostgreSQL·Frontend·Release 1 회귀와 문서 검증을 통과함
+
+#### 현재 실행 결과와 남은 경계 (`2026-08-14`)
+
+- 감사된 checkpoint 재판정으로 outcome은 `accepted 41 / duplicate 1 /
+  review 1,218 / closed 3,024 / failed 322`다. accepted는 부산 16·경북 2·
+  경남 7·전북 16이며 PostgreSQL 동기화와 두 번째 replay `unchanged 41`을
+  확인했다.
+- 광역·기초 지역을 함께 가진 accepted 정책은 세부 지역과 광역 관할을 모두
+  canonical include evidence로 보존한다. 이 보강 뒤 strict 목록 API는 부산 16·
+  경북 2·경남 7·전북 16을 전건 반환하고 다른 regional Source 혼입은 0건이다.
+- 실제 상세 Browser에서 전북 정책의 지역·연령·지원 내용·신청 방법·접수 상태와
+  provenance 기반 신청 조건·기관 문의처 렌더링을 확인했다.
+- 자연어 검색 API는 명시적 `region`을 match-only로 확정했다. `mismatch`와
+  `unknown`은 결과에서 제외하고, `q`에서만 지역을 추론한 경우에는 기존 탐색
+  계약대로 `unknown`을 미확인 후보로 보존한다. PostgreSQL 통합 테스트와 실제
+  광주 검색에서 명시적 지역 결과가 전건 `match`임을 대조했다.
+- 광주 상세의 정책 지역 badge와 시행 기관을 정책 단위 근거로 수집해 10건을
+  accepted로 승격했다. outcome은 `accepted 51 / duplicate 1 / review 1,208 /
+  closed 3,024 / failed 322`이며 동일 재실행은 `unchanged 10`이다.
+- 잔여 Source에 review 1,208건이 남아 있다. Source별
+  `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
+  RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
 
 ## Gate와 실행 순서
 

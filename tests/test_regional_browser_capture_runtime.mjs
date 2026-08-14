@@ -11,6 +11,7 @@ import {
   daejeonConfig,
   gangwonConfig,
   gotoWithReadyFallback,
+  gwangjuConfig,
   gwangjuCheckpointDetailConfig,
   incheonCheckpointDetailConfig,
   jeonbukCheckpointDetailConfig,
@@ -655,6 +656,13 @@ test("Gwangju detail aliases preserve eligibility and application method", () =>
   assert.equal(
     detail.evidence_observations.application_method.label,
     "신청절차",
+  );
+});
+
+test("Gwangju config captures the policy-level region badge", () => {
+  assert.equal(
+    gwangjuConfig(1).detailRegionSelector,
+    ".detail-policy .detail-into-top .tag .badge.type07",
   );
 });
 

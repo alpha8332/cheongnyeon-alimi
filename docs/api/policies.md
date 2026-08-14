@@ -33,6 +33,12 @@ GET /api/v1/policies/search
 | `page` | integer | `1` | 1 이상 |
 | `limit` | integer | `20` | 1~100 |
 
+`region`을 명시적으로 전달하면 검색 결과는 해당 지역이 `match`로 확인된
+정책만 반환한다. 지역 근거가 없는 `unknown`과 다른 지역인 `mismatch`는
+반환하지 않는다. 반면 `q`에서만 지역을 해석한 경우에는 기존 탐색 계약을
+유지해 `unknown`을 미확인 후보로 남기며, 응답의 `verdicts.region`과
+`unconfirmed_conditions`로 이를 구분한다.
+
 ### 응답
 
 ```json

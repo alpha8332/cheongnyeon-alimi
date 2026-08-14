@@ -10,6 +10,10 @@
 
 ### Fixed
 
+- 명시적 지역 자연어 검색을 match-only로 격리하고 광주 정책 상세의 공식 지역
+  badge·시행 기관 근거로 실제 신청 가능한 지역 정책 10건을 검색 DB에 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
 - Browser navigation timeout 뒤 요청 URL과 준비 DOM을 검증하고 locator 신호
   대신 페이지 DOM selector를 polling해, 정상 로드된 충북·울산 페이지의 false
   timeout으로 인한 중단을 방지

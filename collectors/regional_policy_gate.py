@@ -274,6 +274,7 @@ def evaluate_regional_policy(
     expected_region_text: str,
     as_of: date | None = None,
     region_reference: RegionReference | None = None,
+    allow_policy_region_plus_organization: bool = False,
 ) -> RegionalPolicyDecision:
     """Classify one policy without inferring region from its portal."""
     if evidence.provenance != policy.provenance:
@@ -300,6 +301,9 @@ def evaluate_regional_policy(
         territorial_codes=territorial_codes,
         expected_aliases=aliases,
         reference=reference,
+        allow_policy_region_plus_organization=(
+            allow_policy_region_plus_organization
+        ),
     )
     application, application_reason = _application_availability(
         evidence.application_period_text,
@@ -315,17 +319,21 @@ def evaluate_regional_policy(
         regionality is RegionalityStatus.REGIONAL_CONFIRMED
         and application is ApplicationAvailability.OPEN
     ):
+        accepted_region_names = tuple(
+            dict.fromkeys((canonical_region_text, expected_region_full_name))
+        )
         accepted_policy = replace(
             policy,
             region_text=policy.region_text or canonical_region_text,
             coverage_scope_hint=ExtractedCoverageScope.REGIONAL,
-            region_evidence=(
+            region_evidence=tuple(
                 SourceRegionEvidence(
                     relation=ExtractedRegionRelation.INCLUDE,
                     external_scheme=None,
                     source_code=None,
-                    source_text=canonical_region_text,
-                ),
+                    source_text=region_name,
+                )
+                for region_name in accepted_region_names
             ),
         )
     return RegionalPolicyDecision(
@@ -382,6 +390,7 @@ def _regionality(
     territorial_codes: frozenset[str],
     expected_aliases: frozenset[str],
     reference: RegionReference,
+    allow_policy_region_plus_organization: bool = False,
 ) -> tuple[RegionalityStatus, tuple[str, ...]]:
     source_region = evidence.source_region_text
     eligibility = evidence.region_eligibility_text
@@ -410,13 +419,24 @@ def _regionality(
         expected_in_region
         and expected_in_target
         and expected_in_organization
+    ) or (
+        allow_policy_region_plus_organization
+        and expected_in_region
+        and expected_in_organization
     ):
         return (
             RegionalityStatus.REGIONAL_CONFIRMED,
-            (
-                "source_region_confirmed",
-                "target_region_confirmed",
-                "implementing_region_confirmed",
+            tuple(
+                reason
+                for confirmed, reason in (
+                    (expected_in_region, "source_region_confirmed"),
+                    (expected_in_target, "target_region_confirmed"),
+                    (
+                        expected_in_organization,
+                        "implementing_region_confirmed",
+                    ),
+                )
+                if confirmed
             ),
         )
     if source_scope is not None:

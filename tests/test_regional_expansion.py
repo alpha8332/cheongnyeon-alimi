@@ -280,6 +280,41 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
         )
         self.assertFalse(decision.accepted)
 
+    def test_ryp9_consumes_source_scope_only_with_policy_region_evidence(
+        self,
+    ) -> None:
+        capture = daegu_capture()
+        capture["source_scope"] = {
+            "jurisdiction_text": "대구광역시 청년정책",
+            "operator_text": "대구광역시 청년센터",
+            "youth_policy_scope_text": "청년 정책",
+            "application_scope_text": "현재 모집 중",
+        }
+        detail = capture["items"][0]["detail"]
+        detail["organization"] = "대구광역시 청년센터"
+        detail["source_region"] = None
+        detail["eligibility"] = "청년"
+        detail["application_period"] = "2026-01-01 ~ 2026-12-31"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = RawDocumentStore(Path(temp_dir) / "raw")
+            result = RegionalBrowserCaptureStore(
+                DAEGU_SOURCE_ID,
+                store=store,
+                now=lambda: NOW,
+            ).save(capture)
+            policy = RegionalBrowserExtractor(DAEGU_SOURCE_ID).extract(
+                store.load(path) for path in result.stored_paths
+            )[0]
+
+        decision = decide_expanded_regional_policy(
+            policy, as_of=date(2026, 8, 11)
+        )
+
+        self.assertTrue(decision.accepted)
+        self.assertIn("source_scope_region_confirmed", decision.reason_codes)
+
+        self.assertIn("implementing_region_confirmed", decision.reason_codes)
+
     def test_capture_rejects_observation_that_disagrees_with_value(self) -> None:
         capture = daegu_capture()
         detail = capture["items"][0]["detail"]
@@ -394,6 +429,20 @@ class RegionalBrowserExpansionTests(unittest.TestCase):
             self.assertEqual(3, result.raw_document_count)
             self.assertEqual(checkpoint, unchanged)
             self.assertEqual(checkpoint, checkpoint_store.load(DAEGU_SOURCE_ID))
+
+    def test_complete_checkpoint_redecision_requires_exact_identity_set(self) -> None:
+        checkpoint = RegionalBatchCheckpoint.initial(DAEGU_SOURCE_ID).discover(
+            page=1,
+            external_ids=("8366",),
+            total_count=1,
+            has_next=False,
+        ).capture(("8366",)).decide({"8366": RegionalOutcome.REVIEW})
+
+        changed = checkpoint.redecide({"8366": RegionalOutcome.CLOSED})
+
+        self.assertEqual((("8366", RegionalOutcome.CLOSED),), changed.decisions)
+        with self.assertRaisesRegex(ValueError, "redecision set is incomplete"):
+            checkpoint.redecide({})
 
     def test_checkpoint_detail_recapture_rejects_non_exact_batch(self) -> None:
         capture = daegu_capture()
