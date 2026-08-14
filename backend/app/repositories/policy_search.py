@@ -434,14 +434,17 @@ class PolicySearchRepository:
                     is_mismatch = True
                 else:
                     verdicts.region = "unknown"
-                    reason_codes.append("REGION_UNKNOWN")
-                    unconfirmed.append(
-                        UnconfirmedCondition(
-                            field="region",
-                            reason_code="DATA_MISSING_REGION",
-                            message="지역 제한 근거 데이터가 누락되었습니다.",
+                    if req_region.source == "explicit":
+                        is_mismatch = True
+                    else:
+                        reason_codes.append("REGION_UNKNOWN")
+                        unconfirmed.append(
+                            UnconfirmedCondition(
+                                field="region",
+                                reason_code="DATA_MISSING_REGION",
+                                message="지역 제한 근거 데이터가 누락되었습니다.",
+                            )
                         )
-                    )
             else:
                 verdicts.region = None
 

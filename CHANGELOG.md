@@ -23,9 +23,89 @@
 - Frontend `/`·`/favorites` 접속 시 404 UI가 뜨던 문제: `useFavorites` snapshot
   참조 불안정으로 layout error boundary가 트리거되던 것을 수정
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 충북의 과거 상시모집 공고에서 종료된 운영기간을 우선 판정해 만료 정책이 현재
+  신청 가능한 정책으로 노출되지 않도록 보정
+
+- 명시적 지역 자연어 검색을 match-only로 격리하고 광주·인천·울산·제주 정책 상세의
+  공식 지역·대상·시행 기관 근거와 대구·서울의 정책 단위 지역 표기를 보강해 실제
+  신청 가능한 지역 정책 68건을 검색 DB에 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- Browser navigation timeout 뒤 요청 URL과 준비 DOM을 검증하고 locator 신호
+  대신 페이지 DOM selector를 polling해, 정상 로드된 충북·울산 페이지의 false
+  timeout으로 인한 중단을 방지
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 울산 목록 상태 badge와 상세 제목·본문 렌더 race를 구분하고 identity별 tab
+  격리로 597건의 신청기간 관찰 상태를 전건 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 충북 공식 상세의 한글 순번 `제출기한`을 `훈련기간`과 구분해 신청 마감으로
+  추출하고, 단일 신청 마감일을 open·ended 상태로 판정하도록 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 강원 상세 실패 325건을 목록 page 컨텍스트가 유실된 동일 유형으로 분류해
+  대표 3건만 복구하고, 제주 비정형 상세 2건은 공식 제목 기한·등록일 근거로
+  종료 판정을 복구하면서 failed 자동 승격을 제한
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 충북·울산·대전·강원 공식 상세의 신청기간 selector와 서울 compact 날짜 해석을
+  보강하고, 원문 빈 값·목록 total/identity drift는 checkpoint·DB 판정을 바꾸지
+  않은 채 review 근거로 보존
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 대전 current-only identity를 판정에 편입하지 않는 명시적 교집합 재캡처 경계와
+  강원 기존 상세 12건 제한 보강으로 두 Source의 legacy 필드 상태를 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 서울시·자치구 정책 110건을 공식 목록과 재대조하고 review 97건의 구조화 상세를
+  제한 재캡처해 빈 신청기간과 실제 라벨 부재를 구분
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 대구 현재목록의 identity 교체 drift를 checkpoint 고정 상세 URL·제목 계약으로
+  격리하고, 기존 197건만 제한 재캡처해 legacy 필드 상태를 전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 광주 접수중 목록의 추가 4·누락 1 identity 교체 drift를 checkpoint 고정
+  `policyId` 상세 계약으로 격리하고, 기존 31건만 제한 재캡처해 legacy 필드
+  상태를 전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 인천 접수중 목록에서 빠진 마감 전환 정책을 checkpoint 고정 `poly_seq` 상세
+  계약으로 격리하고, 기존 28건의 상세 필드 관찰 상태를 전건 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 전북 checkpoint 89건, 경북 review 58건, 경남 review 28건의 공식 상세 근거를
+  재대조하고 HTML entity와 공식 경남 JSON endpoint를 반영해 legacy 필드 상태를
+  전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 제주 review 207건의 공식 상세를 checkpoint 고정 `wr_id` 계약으로 보강해 지역
+  Source 전체 legacy 필드 상태를 0으로 해소하고 RYP8 완료 감사를 통과
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
 ### Added
 
+- 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,
+  경남·제주 종료 이력·필드 null 상태·실패 원인·checkpoint outcome을 함께
+  대조하는 RYP8 완료 감사를 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 지역 Source review 1,903건을 사유·필드 coverage로 감사하고, 공식 목록 scope와
+  정책별 지역·청년 근거를 함께 요구하는 안전한 승격 계약 및 Browser 필드 관찰
+  상태를 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 13개 승인 지역 Source에서 4,606개 정책 identity를 checkpoint 기반으로 전체
+  순회해 수집 인프라 기준 신청 가능성·지역 고유성·온통청년/복지로 중복을
+  누락 없이 분류하고,
+  accepted 부산 16건·경북 2건만 PostgreSQL에 동기화
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 정책 상세에 Source 근거가 있는 신청 조건·제외 조건·필요 서류·공개 시설
+  문의처 요약을 추가하고 NormalizedProgram 1.2·PostgreSQL JSONB·반응형 UI와
+  실제 세로 인수로 연결
+  ([개발 기록](docs/development/development_notes/integration/eligibility_evidence_summary.md))
 - 승인한 천안청년센터 공개 공지를 제한 수집하고 Runtime Raw → 정규화 →
   PostgreSQL → partial 정책 상세 API까지 재처리하는 첫 공식 웹 Source 기반 추가
   ([개발 기록](docs/development/development_notes/data/public_https_policy_ingestion.md))

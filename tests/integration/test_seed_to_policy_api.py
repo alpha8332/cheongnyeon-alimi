@@ -59,15 +59,34 @@ def _parse_datetime(value: str) -> datetime:
     return selected
 
 
+def _normalize_evidence_datetimes(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: (
+                _parse_datetime(item)
+                if key == "collected_at"
+                else _normalize_evidence_datetimes(item)
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_normalize_evidence_datetimes(item) for item in value]
+    return value
+
+
 def _assert_public_program(
     response_item: dict[str, Any],
     seed_program: dict[str, Any],
+    *,
+    include_eligibility: bool = False,
 ) -> None:
     expected_fields = (
         set(seed_program)
         - {"provenance"}
         - NormalizedProgram.SEARCH_FIELD_NAMES
     )
+    if not include_eligibility:
+        expected_fields.remove("eligibility_summary")
     assert set(response_item) == expected_fields | SYSTEM_FIELDS
     assert "provenance" not in response_item
 
@@ -76,6 +95,10 @@ def _assert_public_program(
             assert _parse_datetime(response_item[field]) == _parse_datetime(
                 seed_program[field]
             )
+        elif field == "eligibility_summary":
+            assert _normalize_evidence_datetimes(
+                response_item[field]
+            ) == _normalize_evidence_datetimes(seed_program[field])
         else:
             assert response_item[field] == seed_program[field]
 
@@ -284,11 +307,19 @@ def test_canonical_seed_postgresql_policy_api_contract():
         )
 
         assert valid_detail.status_code == 200
-        _assert_public_program(valid_detail.json(), valid_program)
+        _assert_public_program(
+            valid_detail.json(),
+            valid_program,
+            include_eligibility=True,
+        )
         assert hidden_partial.status_code == 404
         assert hidden_partial.json() == {"detail": "Policy not found"}
         assert visible_partial.status_code == 200
-        _assert_public_program(visible_partial.json(), partial_program)
+        _assert_public_program(
+            visible_partial.json(),
+            partial_program,
+            include_eligibility=True,
+        )
         assert missing.status_code == 404
         assert missing.json() == {"detail": "Policy not found"}
 

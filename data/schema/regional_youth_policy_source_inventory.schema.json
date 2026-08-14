@@ -1,0 +1,535 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:regional-youth-policy-source-inventory:1.2.0",
+  "title": "RegionalYouthPolicySourceInventory",
+  "description": "Candidate and approved regional youth policy source discovery contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inventory_id",
+    "inventory_date",
+    "region_reference_scheme",
+    "input_evidence",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.2.0"
+    },
+    "inventory_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "inventory_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "region_reference_scheme": {
+      "const": "kr-bjd-20260803"
+    },
+    "input_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/inputEvidence"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 17,
+      "maxItems": 17,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/sourceCandidate"
+      }
+    }
+  },
+  "$defs": {
+    "httpsUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "inputEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_name",
+        "sha256",
+        "sheet_name",
+        "range"
+      ],
+      "properties": {
+        "file_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sheet_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "type": "string",
+          "pattern": "^[A-Z]+[0-9]+:[A-Z]+[0-9]+$"
+        }
+      }
+    },
+    "sourceCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jurisdiction_key",
+        "jurisdiction_label",
+        "home_url",
+        "status",
+        "implementation_status",
+        "source_id",
+        "decision_reason",
+        "region_reference",
+        "preflight",
+        "discovery",
+        "approved_list_urls",
+        "approved_detail_url_patterns",
+        "request_budget",
+        "discovery_seeds"
+      ],
+      "properties": {
+        "jurisdiction_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "jurisdiction_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "home_url": {
+          "$ref": "#/$defs/httpsUrl"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "candidate",
+            "approved",
+            "blocked",
+            "rejected"
+          ]
+        },
+        "implementation_status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "implemented_http",
+            "implemented_browser",
+            "blocked",
+            "rejected"
+          ]
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "decision_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "region_reference": {
+          "$ref": "#/$defs/regionReference"
+        },
+        "preflight": {
+          "$ref": "#/$defs/preflight"
+        },
+        "discovery": {
+          "$ref": "#/$defs/discovery"
+        },
+        "approved_list_urls": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/httpsUrl"
+          }
+        },
+        "approved_detail_url_patterns": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "request_budget": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "max_list_requests",
+            "max_detail_requests",
+            "minimum_interval_seconds"
+          ],
+          "properties": {
+            "max_list_requests": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_detail_requests": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minimum_interval_seconds": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "discovery_seeds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/discoverySeed"
+          }
+        }
+      }
+    },
+    "regionReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapping_status",
+        "active_code",
+        "historical_codes",
+        "note"
+      ],
+      "properties": {
+        "mapping_status": {
+          "type": "string",
+          "enum": [
+            "matched_active",
+            "historical_review_required"
+          ]
+        },
+        "active_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]{10}$"
+        },
+        "historical_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{10}$"
+          }
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "robots",
+        "terms",
+        "license",
+        "technical_access",
+        "browser_access",
+        "last_checked_at"
+      ],
+      "properties": {
+        "operator": {
+          "type": "string",
+          "enum": [
+            "unchecked",
+            "verified",
+            "failed"
+          ]
+        },
+        "robots": {
+          "type": "string",
+          "enum": [
+            "unchecked",
+            "allowed",
+            "disallowed",
+            "not_published"
+          ]
+        },
+        "terms": {
+          "type": "string",
+          "enum": [
+            "unchecked",
+            "allowed",
+            "restricted",
+            "not_found"
+          ]
+        },
+        "license": {
+          "type": "string",
+          "enum": [
+            "unchecked",
+            "allowed",
+            "restricted",
+            "not_found"
+          ]
+        },
+        "technical_access": {
+          "type": "string",
+          "enum": [
+            "unchecked",
+            "available",
+            "blocked"
+          ]
+        },
+        "browser_access": {
+          "type": "string",
+          "enum": [
+            "unchecked",
+            "available",
+            "blocked"
+          ]
+        },
+        "last_checked_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "collection_mode",
+        "last_checked_at",
+        "interaction_budget",
+        "actions",
+        "observed_list_count",
+        "sample_external_id",
+        "sample_title",
+        "failure_reason"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "home_loaded",
+            "policy_menu_found",
+            "list_found",
+            "detail_found",
+            "extraction_ready",
+            "discovery_review_required",
+            "blocked"
+          ]
+        },
+        "collection_mode": {
+          "type": "string",
+          "enum": [
+            "api",
+            "http_html",
+            "http_json",
+            "browser",
+            "none"
+          ]
+        },
+        "last_checked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "interaction_budget": {
+          "$ref": "#/$defs/interactionBudget"
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/discoveryAction"
+          }
+        },
+        "observed_list_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sample_external_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "sample_title": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "failure_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "discoveryAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "target",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "goto",
+            "click",
+            "fill",
+            "select",
+            "paginate",
+            "observe_list",
+            "observe_detail"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "interactionBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_depth",
+        "max_interactions",
+        "max_list_pages",
+        "max_detail_pages",
+        "minimum_interval_seconds"
+      ],
+      "properties": {
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "max_interactions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "max_list_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "max_detail_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "minimum_interval_seconds": {
+          "type": "number",
+          "minimum": 2
+        }
+      }
+    },
+    "discoverySeed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "label",
+        "url",
+        "status",
+        "input_reference"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "list_candidate",
+            "detail_candidate"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "url": {
+          "$ref": "#/$defs/httpsUrl"
+        },
+        "status": {
+          "const": "candidate"
+        },
+        "input_reference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "file_name",
+            "sheet_name",
+            "row"
+          ],
+          "properties": {
+            "file_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sheet_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "row": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

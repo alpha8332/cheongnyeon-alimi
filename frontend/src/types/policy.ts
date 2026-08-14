@@ -1,5 +1,3 @@
-import type { EligibilitySummaryDto } from './eligibilitySummary.js';
-
 export type PolicyCategory =
   | 'housing'
   | 'finance'
@@ -18,8 +16,57 @@ export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 
 export type PublicDataQualityStatus = 'valid' | 'partial';
 
+export type EligibilityCoverage = 'complete' | 'partial' | 'unknown';
+
+export type EligibilityCategory =
+  | 'age'
+  | 'region'
+  | 'income'
+  | 'asset'
+  | 'employment'
+  | 'education'
+  | 'housing'
+  | 'household'
+  | 'other';
+
+export interface EligibilityEvidenceDto {
+  source_id: string;
+  source_url: string;
+  collected_at: string;
+  locator_type: 'source_field' | 'css_selector';
+  locator: string;
+}
+
+export interface EligibilityConditionDto {
+  category: EligibilityCategory;
+  text: string;
+  evidence: EligibilityEvidenceDto[];
+}
+
+export interface EligibilityDocumentDto {
+  text: string;
+  evidence: EligibilityEvidenceDto[];
+}
+
+export interface InstitutionalContactDto {
+  kind: 'phone' | 'official_channel';
+  label: string;
+  value: string;
+  evidence: EligibilityEvidenceDto[];
+}
+
+export interface EligibilitySummaryDto {
+  coverage: EligibilityCoverage;
+  requirements: EligibilityConditionDto[];
+  exclusions: EligibilityConditionDto[];
+  preferences: EligibilityConditionDto[];
+  documents: EligibilityDocumentDto[];
+  unknowns: EligibilityConditionDto[];
+  institutional_contacts: InstitutionalContactDto[];
+}
+
 export interface PolicyDto {
-  schema_version: '1.0.0' | '1.1.0';
+  schema_version: '1.0.0' | '1.1.0' | '1.2.0';
   source_id: string;
   source_name: string;
   external_id: string | null;
@@ -52,14 +99,11 @@ export interface PolicyDto {
   id: number;
   created_at: string;
   updated_at: string;
-  /** Structured eligibility summary on detail responses (W4-G0 proposal). */
-  eligibility_summary?: EligibilitySummaryDto | null;
 }
 
-/** Policy detail envelope; list items may omit or null `eligibility_summary`. */
-export type PolicyDetailDto = PolicyDto & {
-  eligibility_summary?: EligibilitySummaryDto | null;
-};
+export interface PolicyDetailDto extends PolicyDto {
+  eligibility_summary: EligibilitySummaryDto;
+}
 
 export interface PolicyListResponse {
   total: number;

@@ -7,15 +7,15 @@
 - 상태: draft
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
-- 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04,
+- 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05·06,
   Integration 06·08·09
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
 - 작업 브랜치: 착수 전에 현재 브랜치 전략에 맞는 cross-area domain 합의 필요
 
 ## 목적
 
-4주차 공식 웹 Source·자격요건·사용자·관리자 기본 기능 전체를 실제
-PostgreSQL → FastAPI → React 흐름으로 중간 인수하고, 5주차 추가 기능·독립
+4주차 공식 웹 Source·자격요건·지역 정책·사용자·관리자 기본 기능을 실제
+PostgreSQL → FastAPI → React 흐름으로 중간 인수하고, 5주차 Data 06 구현·독립
 리뷰·QA·결함 수정·UI/UX 최적화와 Release 2 Gate까지 하나의 목표 기반
 Forest에서 관리한다.
 
@@ -26,6 +26,8 @@ Forest에서 관리한다.
 - 관리자 로그인 → 정책 데이터 표·row 상세 → 로그 검색·correlation → 회전
   archive 삭제·감사 E2E
 - 공식 HTTPS Source → Raw·정규화·DB → 핵심 신청 조건 상세 UI E2E
+- 지역 공식 Source → 지역 고유성·온통청년/복지로 중복 제외 → DB·검색·상세 E2E
+- 중앙·공공기관 보완 Source → 중복·마감·근거 부족 제외 → DB·검색·상세 E2E
 - 사용자 조건 → 추천 → 이유 → 즐겨찾기 → D-Day·알림·`.ics` E2E
 - 기존 검색·상세·Release 1 golden 회귀
 - 실제·경계·실패 데이터와 loading·empty·error·partial 상태
@@ -61,18 +63,23 @@ Forest에서 관리한다.
 - 공통 시작 SHA, Migration, snapshot과 실제 API 모드를 고정한다.
 - 역할별 테스트 명령·지원 환경·증거 양식을 확정한다.
 
-### A1 - 4주차 전체 기본 기능 midpoint acceptance
+### A1 - 4주차 승인 기본 기능 midpoint acceptance
 
-- 관리자 실행·데이터·영속 로그, 웹 Source·자격요건,
+- 관리자 실행·데이터·영속 로그, 웹 Source·자격요건·지역 고유 정책 수집,
   추천·즐겨찾기·D-Day·알림·`.ics` E2E와 기존 검색 회귀를 실제 환경에서
   실행한다.
-- 설계한 기본 기능 중 하나라도 미구현이면 W4-G4를 통과시키지 않는다.
+- 일정 재승인으로 Data 06은 A1 완료 조건에서 제외하고 A2의 첫 기능 Gate로
+  이동한다. 다른 4주차 미완료 기능은 같은 방식으로 이월하지 않는다.
+- Data 06을 제외한 4주차 승인 기본 기능 중 하나라도 미구현이면 W4-G4를
+  통과시키지 않는다.
 - 미완성·결함·계약 충돌을 blocker 또는 5주차 수정 대상으로 분류한다.
 - 기능 연결이 확인되면 `W4-G4_MIDPOINT_PASS`를 기록한다.
 
 ### A2 - 5주차 추가 기능·최적화와 리뷰어·QA hardening
 
-- 5주차 승인 추가 기능, 오류 수정·UI/UX 최적화와 담당자 자체 검증이 끝난 뒤
+- Data 06 SOP0~SOP5와 actual·Forest 판정을 먼저 완료하고 기존 기능 전체와
+  함께 W5-G1 기능 동결을 판정한다.
+- 5주차 오류 수정·UI/UX 최적화와 담당자 자체 검증이 끝난 뒤
   팀 외 사용성 시나리오와 QA 전체 회귀를 수행한다.
 - 재현 가능한 결함을 수정 담당·심각도·재검증 조건과 연결한다.
 - 보고서 담당은 이 단계의 결정·화면·테스트와 미실행 검증을 대조한다.
@@ -84,7 +91,8 @@ Forest에서 관리한다.
 
 ## Forest 완료 기준
 
-- 웹 Source·자격요건, 사용자·관리자 E2E와 기존 검색 회귀가 Release 2 Gate
+- 웹 Source·자격요건·지역 고유·보완 공식 정책, 사용자·관리자 E2E와 기존 검색 회귀가
+  Release 2 Gate
   전 실제 환경에서 통과함
 - 관리자 데이터가 읽기 전용이고 로그 archive 삭제가 path 보호·감사를 거침
 - 사용성 리뷰·QA·수정·재검증 증거가 서로 독립적으로 기록됨
@@ -96,7 +104,8 @@ Forest에서 관리한다.
 
 - Data 전체 단위·통합, Backend PostgreSQL, Frontend unit·lint·build·Browser
   명령을 각 Forest의 확정 명령으로 실행한다.
-- 실제 웹 Source·자격요건, 사용자·관리자 데이터·로그 E2E와 Release 1 golden
+- 실제 웹 Source·자격요건·지역 고유·보완 공식 정책, 사용자·관리자 데이터·로그 E2E와
+  Release 1 golden
   검색 회귀를 수행한다.
 - `python scripts/validate_docs.py`, 증거 JSON parse와 `git diff --check`를
   실행한다.
@@ -113,11 +122,14 @@ Forest에서 관리한다.
 ## 관련 문서
 
 - [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
+- [5주차 상세 실행 계획](../../weekly_plan/week_05_release_2.md)
 - [Release와 Milestone 계획](../release_roadmap.md)
 - [Recommendation Vertical Slice](06_recommendation_vertical_slice.md)
 - [User Service Features](../frontend/05_user_service_features.md)
 - [Data Quality Operations](../data/03_recurrent_collection_quality_operations.md)
 - [Public HTTPS Policy Ingestion](../data/04_public_https_policy_ingestion.md)
+- [Regional Youth Policy Ingestion](../data/05_regional_youth_policy_ingestion.md)
+- [Supplemental Official Policy Ingestion](../data/06_supplemental_official_policy_ingestion.md)
 - [Eligibility Evidence and Summary](08_eligibility_evidence_summary.md)
 - [Admin Data and Log Console](09_admin_data_log_console.md)
 - [Backend Admin Access Control](../backend/04_admin_access_control.md)

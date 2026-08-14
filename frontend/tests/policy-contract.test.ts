@@ -9,6 +9,7 @@ import {
 } from '../src/api/policyRequest.js';
 import {
   createMockPolicies,
+  createMockPolicyDetails,
   createMockPolicyListResponse,
   findMockPolicyById,
   type SeedPolicyProgram,
@@ -26,6 +27,7 @@ const seedPrograms = JSON.parse(
   readFileSync(seedPath, 'utf8'),
 ) as SeedPolicyProgram[];
 const policies = createMockPolicies(seedPrograms);
+const policyDetails = createMockPolicyDetails(seedPrograms);
 
 test('canonical Seed를 provenance 없는 공개 PolicyDto로 변환한다', () => {
   assert.equal(policies.length, 4);
@@ -41,6 +43,7 @@ test('canonical Seed를 provenance 없는 공개 PolicyDto로 변환한다', () 
     assert.equal('target_groups' in policy, false);
     assert.equal('coverage_scope' in policy, false);
     assert.equal('region_rules' in policy, false);
+    assert.equal('eligibility_summary' in policy, false);
     assert.notEqual(policy.data_quality_status, 'invalid');
     assert.match(policy.created_at, /Z$/);
     assert.match(policy.updated_at, /Z$/);
@@ -109,17 +112,22 @@ test('partial opt-in과 필터·pagination을 Mock에서도 API와 동일하게 
 });
 
 test('상세 조회는 숫자 id와 partial opt-in 경계를 사용한다', () => {
-  const partialPolicy = policies.find(
+  const partialPolicy = policyDetails.find(
     (policy) => policy.data_quality_status === 'partial',
   );
   assert.ok(partialPolicy);
 
-  assert.equal(findMockPolicyById(policies, partialPolicy.id), null);
+  assert.equal(findMockPolicyById(policyDetails, partialPolicy.id), null);
   assert.equal(
-    findMockPolicyById(policies, partialPolicy.id, true)?.id,
+    findMockPolicyById(policyDetails, partialPolicy.id, true)?.id,
     partialPolicy.id,
   );
-  assert.equal(findMockPolicyById(policies, 999_999, true), null);
+  assert.deepEqual(
+    findMockPolicyById(policyDetails, partialPolicy.id, true)
+      ?.eligibility_summary,
+    seedPrograms[partialPolicy.id - 1]?.eligibility_summary,
+  );
+  assert.equal(findMockPolicyById(policyDetails, 999_999, true), null);
 });
 
 test('API endpoint와 route id는 Policy API 숫자 계약을 따른다', () => {

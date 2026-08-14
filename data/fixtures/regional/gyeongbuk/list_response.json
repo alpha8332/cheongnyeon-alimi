@@ -1,0 +1,31 @@
+{
+  "paginationInfo": {
+    "currentPageNo": 1,
+    "recordCountPerPage": 15,
+    "totalRecordCount": 0
+  },
+  "resultList1": [
+    {
+      "no": 1098,
+      "rgnSe": "PLA0010001",
+      "rgnSeNm": "경상북도",
+      "policyType": "YTH0040005",
+      "policyTypeNm": "복지",
+      "policyYr": "2026",
+      "sprvsnInstNm": "경상북도",
+      "operInstNm": "(재)경상북도경제진흥원",
+      "policyNm": "2026 경북 청년 행복카드 지원사업",
+      "policyBgngYmd": "2026-03-23",
+      "policyEndYmd": "2026-12-31",
+      "policyScl": "경상북도 거주 도내 중소기업 재직 청년 885명",
+      "policyCn": "도내 중소기업 재직 청년근로자의 복지 지원",
+      "policyCnDtl": "1인당 100만원 복지포인트 지원",
+      "policyEnq": "054-470-8589",
+      "aplyBgngDt": "2026-06-01 09:00",
+      "aplyEndDt": "2026-06-15 23:50"
+    }
+  ],
+  "resultList2": [],
+  "totCnt1": 41,
+  "totCnt2": 202
+}

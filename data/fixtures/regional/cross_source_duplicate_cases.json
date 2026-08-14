@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "synthetic_contract_fixture": true,
+  "cases": [
+    {
+      "name": "explicit_youthcenter_identity",
+      "mode": "external_id",
+      "expected": "excluded_aggregator_duplicate",
+      "reason": "aggregator_external_id_match"
+    },
+    {
+      "name": "canonical_application_url",
+      "mode": "canonical_url",
+      "expected": "excluded_aggregator_duplicate",
+      "reason": "canonical_url_match"
+    },
+    {
+      "name": "official_announcement_identity",
+      "mode": "announcement_id",
+      "expected": "excluded_aggregator_duplicate",
+      "reason": "official_announcement_id_match"
+    },
+    {
+      "name": "complete_business_fingerprint",
+      "mode": "fingerprint",
+      "expected": "duplicate_review_required",
+      "reason": "full_fingerprint_match_requires_review"
+    },
+    {
+      "name": "same_title_incomplete_evidence",
+      "mode": "title_incomplete",
+      "expected": "duplicate_review_required",
+      "reason": "same_title_with_incomplete_comparison_evidence"
+    },
+    {
+      "name": "same_title_materially_different",
+      "mode": "title_different",
+      "expected": "accepted_regional",
+      "reason": "same_title_but_material_fields_differ"
+    },
+    {
+      "name": "new_regional_policy",
+      "mode": "new_policy",
+      "expected": "accepted_regional",
+      "reason": "no_cross_source_candidate"
+    }
+  ]
+}

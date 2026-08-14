@@ -85,23 +85,32 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | draft | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0 | `v0.1.0` publication |
+| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | approved | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0 | `v0.1.0` publication |
 | 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
 | 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
 | 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
 | 5 | [Data 04 Public HTTPS Policy Ingestion](data/04_public_https_policy_ingestion.md) | Data | Team Leader Source 승인, Backend 소비 검토 | in-progress | 공식 HTTPS Source 1곳의 목록·상세·조건 근거 수집과 DB 적재 | Integration 05, Data 01 |
-| 6 | [Integration 08 Eligibility Evidence and Summary](integration/08_eligibility_evidence_summary.md) | Data·Backend·Frontend | Team Leader 계약·실제 E2E | draft | 핵심 신청 조건·제외·서류·확인 필요와 근거 있는 상세 UI | Integration 05, Data 04 병렬 보강 |
+| 6 | [Integration 08 Eligibility Evidence and Summary](integration/08_eligibility_evidence_summary.md) | Data·Backend·Frontend | Team Leader 계약·실제 E2E | completed | 조건·서류·문의처를 실제 DB→API→Browser로 대조하고 Release 1 golden 회귀 통과 | Integration 05, Data 04 병렬 보강 |
 | 7 | [Integration 09 Admin Data and Log Console](integration/09_admin_data_log_console.md) | Backend·Frontend | Team Leader 보안·운영 검토 | draft | 읽기 전용 정책 데이터 표, 구조화 파일 로그·조회·archive 삭제 UI | Integration 05, Backend 04 |
 | 8 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05·08, v0.1.0 검색 |
 | 9 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
 | 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
-| 11 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능 |
+| 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 13개 승인 Source 전체 순회·지역별 실제 open 고유 정책 DB·API·Browser 검색 연결·RYP-G6 통과 | Data 03·04, Integration 08 |
+| 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | draft | 5주차 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 completed, Data 02·04 |
+| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
 다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
 독립 완료 기준이 있어 Data 03 품질 운영에 섞지 않는다. Integration 08은
 Data Schema·Backend 상세 DTO·Frontend 상세 UI가 함께 바뀌므로 Integration
 Forest로 관리한다. Integration 06은 승인된 조건 구조를 추천에 소비한다.
+Data 05는 Data 04의 단일 웹 Source 세로 기준선을 재사용하되 지역 고유성·
+교차 Source 중복 제외와 광역 inventory라는 별도 완료 기준을 가지며,
+Integration 07 전에 완료해야 하는 `v0.5.0` Data Forest로 둔다.
+Data 06은 Data 05의 공통 실행·중복 Gate를 재사용하지만 지역 고유 정책이 아닌
+중앙·공공기관 누락 정책을 대상으로 하므로 별도 Source inventory·신청 가능성·
+actual 완료 기준을 가진 독립 Data Forest로 둔다. `2026-08-14` 일정 재승인에
+따라 4주차 DTL4-5와 W4-G4를 먼저 닫고 5주차 W5-G0~G1에서 구현한다.
 Integration 09는 관리자 인증 위에서 DB projection·파일 보존·API·UI와 삭제
 감사 경계가 함께 바뀌므로 독립 Integration Forest로 둔다. Schema, `null`,
 빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와 기준 문서를
@@ -115,7 +124,9 @@ v0.1.0 → W4-G0
   ├→ 공식 웹 Source → 자격요건 상세 API·UI ┤
   ├→ 자격요건 → 추천 API·UI ──────────────┤
   ├→ Frontend 로컬 사용자 기능 ───────────┤
-  └→ 데이터 품질 운영 ────────────────────┘
+  ├→ 데이터 품질 운영 ────────────────────┤
+  ├→ 지역 Source 탐색·중복 제외·actual ───┤
+  └→ 보완 공식 Source 중복 감사·actual ───┘
                   → midpoint → 리뷰·수정 → v0.5.0
 ```
 
@@ -155,6 +166,7 @@ feature/frontend/recommendation
 feature/frontend/user-service-features
 feature/data/recurrent-quality-operations
 feature/data/public-web-policy-source
+feature/data/regional-youth-policy-ingestion
 feature/backend/admin-observability
 feature/frontend/admin-observability
 feature/deploy/open-source-runtime
@@ -197,6 +209,7 @@ Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함�
 - [Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md)
 - [User Service Features](frontend/05_user_service_features.md)
 - [Data Quality Operations](data/03_recurrent_collection_quality_operations.md)
+- [Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md)
 - [Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)

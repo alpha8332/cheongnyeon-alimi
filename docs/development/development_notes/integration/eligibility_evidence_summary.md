@@ -1,77 +1,249 @@
-# Integration 08 Eligibility Evidence and Summary Forest 개발 기록
+# Eligibility Evidence and Summary Forest 개발 기록
 
 ## 작업 정보
 
-- 기간: `2026-08-11`
-- 담당 영역: Data·Backend·Frontend
-- 상태: in-progress
-- 브랜치: `feature/backend/policy-recommendation`
-- 선행 Forest: Integration 05 Contract Baseline
-- 관련 계획: [Integration 08 Eligibility Evidence Plan](../../develop_plan/integration/08_eligibility_evidence_summary.md)
-- 현재 Slice: ES0, ES2 completed (`2026-08-11`)
+- 기간: `2026-08-10`
+- 상태: completed
+- 담당 영역: Data, Team Leader - Integration
+- 브랜치: `feature/schema/eligibility-evidence-contract`
+- 병합 대상: `develop`
+- 시작 기준: `951fc61` (`merge crawling web policy data into develop`)
+- 계획:
+  [Integration 08 Eligibility Evidence and Summary](../../develop_plan/integration/08_eligibility_evidence_summary.md)
+- 기준 계약:
+  [Eligibility Summary 공통 계약](../../../data/eligibility_summary_contract.md)
 
 ## 목적
 
-정책 상세에서 긴 원문을 그대로 읽지 않고도 필수 신청 조건, 제외 조건, 우대 조건, 필요 제출 서류 및 공식 문의처를 빠르게 파악할 수 있도록, 출처 보증(Evidence) 메타데이터가 연결된 구조화된 자격요건 응답 DTO(`eligibility_summary`)를 정책 상세 API(`GET /api/v1/policies/{id}`)에 제공하기 위한 개발 기록이다.
+제외 조건·필요 서류·시설 연락처와 각 항목의 Source evidence를 Data·Backend·
+Frontend가 같은 의미로 구현하도록 공통 계약을 먼저 고정하고, 같은 Integration
+브랜치에서 담당별 Conventional Commit 경계를 유지하며 실제 저장·API·UI로
+연결한다.
 
 ## Forest 범위
 
-- 자격요건 구조화 응답 DTO (`EligibilitySummaryResponse`, `ItemCondition`, `ItemDocument`, `ItemEvidence`, `InstitutionalContact`)
-- 필수 조건(`requirements[]`), 제외 조건(`exclusions[]`), 우대 조건(`preferences[]`), 제출 서류(`required_documents[]`), 미확정 조건(`unknown_conditions[]`), 공식 문의처(`institutional_contacts[]`) 구조체 분류
-- 각 조건 항목별 `source_id`, `source_url`, `collected_at` 메타데이터 바인딩
-- 자격 상태 (`complete`, `partial`, `unknown`) 자동 판정 로직
-- 정책 상세 API 엔드포인트(`GET /api/v1/policies/{policy_id}`) 응답 DTO 연동 및 단위 테스트
+- 조건·서류·시설 연락처의 필드·배열·enum·coverage 의미
+- 공개 evidence와 내부 Raw provenance 경계
+- 온통청년·복지로·천안청년센터 Source mapping
+- 정상·경계·긴 문장·누락·충돌 합성 fixture
+- 후속 DB → API → Browser 실제 인수
 
 ## Slice 진행 현황
 
-| Slice | 목표 | 상태 | 검증 내용 |
-| --- | --- | --- | --- |
-| **ES0** | **원문 coverage와 계약 Gate** | **completed** | `EligibilitySummaryResponse` 및 서브 DTO 스키마 명세 확정 |
-| **ES1** | Data 구조화와 provenance | draft | Data 04 웹 Source 자격요건 추출 및 provenance 매핑 |
-| **ES2** | **Backend 상세 API** | **completed** | `build_eligibility_summary` 서비스 구현 및 `GET /api/v1/policies/{id}` 응답 연동, 2개 테스트 100% 통과 |
-| **ES3** | Frontend 핵심 신청 조건 UI | draft | 상세 화면 `핵심 신청 조건` 카드 및 서류/문의처 UI 구현 예정 |
-| **ES4** | actual 세로 인수 | draft | 실제 DB -> API -> Browser 세로 인수 검증 예정 |
+| Slice | 상태 | 결과 |
+| --- | --- | --- |
+| DTL4-4A / ES0 | 완료 | Eligibility Summary 1.0.0 계약·Schema·Python 모델·fixture 승인 |
+| DTL4-4A / ES1 기반 | 완료 | API 두 Source와 승인 웹 Source의 보수적 mapping·evidence 검증 |
+| DTL4-4B / ES1 actual 인계 | 완료 | Source dispatcher·정책 identity 기반 5건 소비 fixture 완료 |
+| ES2 Backend 상세 API | 완료 | NormalizedProgram 1.2.0·Migration 0006·JSONB·상세 DTO·PostgreSQL actual 완료 |
+| ES3 Frontend 핵심 조건 UI | 완료 | 상세 타입·Mock·제외조건·서류·문의처·근거·반응형·접근성 검증 완료 |
+| ES4 actual 세로 인수 | 완료 | 승인 웹 표본 DB→API→Browser parity와 Release 1 golden 회귀 통과 |
 
 ## 구현 내용
 
-### Slice ES0 & ES2 - Backend 상세 API 및 자격요건 DTO 연동
+### Coverage와 호환 경계
 
-1. **자격요건 DTO 스키마 구현 ([policy.py](../../../../backend/app/schemas/policy.py))**
-   - `ItemEvidence`: `source_id`, `source_url`, `collected_at` 메타데이터
-   - `ItemCondition`: `category` (`age`, `region`, `other` 등), `content`, `evidence`
-   - `ItemDocument`: 제출 서류 항목 (`name`, `content`, `evidence`)
-   - `InstitutionalContact`: 공식 기관 문의처 (`label`, `value`, `contact_type`)
-   - `EligibilitySummaryResponse`: `status` (`complete`, `partial`, `unknown`), `requirements[]`, `exclusions[]`, `preferences[]`, `required_documents[]`, `unknown_conditions[]`, `institutional_contacts[]`
-   - `PolicyRead`: `eligibility_summary: Optional[EligibilitySummaryResponse]` 필드 바인딩.
+- Release snapshot 3,156건을 외부 호출 없이 다시 재생해 accepted 3,156,
+  invalid 0과 기존 신청기간 safety 통과를 확인했다.
+- DTL4-1 inventory의 `eligibility_text` coverage는 온통청년 2,695건 중
+  1,024건, 복지로 461건 중 5건이며 기존 required·preferred·excluded 및
+  education·employment 구조화 배열은 두 Source 모두 0건이다.
+- 기존 값에서 새 조건 종류를 추정해 채우지 않고, 새 mapper도 안전하게
+  분류할 수 없는 `ptcpPrpTrgtCn`·`slctCritCn`은 `unknowns`로 보낸다.
+- DTL4-4A 당시 `NormalizedProgram 1.1.0`은 Backend ORM·Importer·API와 exact
+  field parity를 검사했다. 새 필드는 독립 nested 계약으로 먼저 고정했고
+  ES2에서 Data·Backend parity를 함께 1.2.0으로 올렸다.
 
-2. **자격요건 구축 서비스 ([eligibility_evidence.py](../../../../backend/app/services/eligibility_evidence.py))**
-   - Policy DB 모델로부터 연령 조건, 거주지 조건, `required_conditions`, `excluded_conditions`, `preferred_conditions`, `organization` 문의처를 파싱 및 `ItemEvidence` 결합.
-   - 조건 항목 수에 따라 `complete` / `partial` / `unknown` 상태 자동 부여.
+### Eligibility Summary 1.0.0
 
-3. **정책 상세 API 라우터 연동 ([policies.py](../../../../backend/app/api/v1/endpoints/policies.py))**
-   - `GET /api/v1/policies/{policy_id}` 응답 생성 시 `build_eligibility_summary(policy)`를 수행하여 DTO 확장.
+- `coverage`, `requirements`, `exclusions`, `preferences`, `documents`,
+  `unknowns`, `institutional_contacts` 7개 필드를 required로 고정했다.
+- 복수 값은 항상 배열이고 값이 없으면 `[]`이다. `null`이나 필드 생략은
+  허용하지 않는다.
+- condition은 category·원문 text·evidence, document는 text·evidence,
+  시설 연락처는 kind·label·value·evidence를 가진다.
+- 공개 evidence는 source ID·URL·수집 시각·source field 또는 CSS selector만
+  포함하고 Raw ID·hash·경로는 노출하지 않는다.
+- complete는 unknown이 없을 때만, unknown은 조건·서류 원문이 전혀 없을 때만
+  허용하도록 Python 의미 검증을 추가했다.
+
+### Source mapping과 개인정보
+
+- 온통청년은 명시 연령과 `addAplyQlfcCndCn`을 requirements,
+  `sbmsnDcmntCn`을 documents로 보존한다. 실제 값이 대상·제외 의미를 함께
+  가질 수 있는 `ptcpPrpTrgtCn`은 unknowns로 둔다.
+- 복지로는 `tgtrDtlCn`을 requirements, 선정 의미를 추가 해석해야 하는
+  `slctCritCn`을 unknowns로 둔다.
+- 천안 웹 Source의 승인 section은 requirements·exclusions·documents·unknowns로
+  매핑하고 모두 `#bo_v_con` evidence와 공식 상세 URL·수집 시각을 가진다.
+- 공개 시설 대표전화와 공식 채널만 `phone`·`official_channel`로 승격한다.
+  개인 휴대전화와 이메일은 Python 계약에서 거부하며 담당자 성명 필드 자체를
+  제공하지 않는다.
+
+### 대표 fixture
+
+정상 완전 계약, partial 웹 경계, 완전 누락 unknown, 긴 가구 조건, API·웹 충돌의
+5개 비밀 없는 합성 사례를 고정했다. 충돌 사례는 서로 다른 원문과 evidence를
+모두 유지하며 수집 시각이 늦은 값을 정답으로 선택하지 않는다.
+
+### DTL4-4B 소비 인계
+
+- Source ID에 따라 승인 mapper만 선택하고 미등록 Source는 오류로 거부하는
+  공통 dispatcher를 추가했다.
+- canonical Seed에 포함되는 온통청년 2건·복지로 2건과 승인 웹 Source 합성
+  표본 `notice:674` 1건을 `source_id + external_id`와
+  `eligibility_summary`로 묶었다. invalid 정책은 인계에서 제외했다.
+- 이 인계 envelope는 nested 소비 검토용이며 `NormalizedProgram`·DB·공개 API
+  전체 계약으로 가장하지 않는다. ES2에서는 같은 nested 객체를 실제 1.2.0
+  Schema·canonical Seed·DB·상세 API에 편입했다.
+- 기존 Frontend 검색 문구 `조건 일치`·`조건 불일치`·`정보 미확인`은 Release 1
+  검색 표시 계약이다. Eligibility UI가 이를 그대로 재사용하면 승인 문구인
+  `조건상 일치`·`조건상 불일치`·`추가 확인 필요`와 달라지므로 FE 소비 검토
+  항목으로 남겼다.
+- Backend DTO parity는 ES2에서 완료했다. Frontend 타입·Mock parity와 추천
+  비확률화 검토는 ES3에서 수행한다.
+
+승인 공지 `notice:674`를 임시 Runtime 디렉터리에서 actual 재검증했다. 공개
+요청 2회로 Raw 3건·정책 1건을 만들었고, mapper 결과는 `partial`, requirements
+1건·exclusions 4건·documents 5건·unknowns 6건·institutional contacts 2건이었다.
+모든 항목은 공식 상세 URL과 `#bo_v_con` evidence를 가지며 Schema issue는
+0건이었다. 연락처 값과 HTML은 출력·Git에 남기지 않았고 임시 디렉터리는
+검증 종료와 함께 제거했다. 이번 확인은 Data actual이며 DB·API·Browser
+완료를 뜻하지 않는다.
+
+### ES2 Normalized 1.2·DB·상세 API
+
+- `NormalizedProgram`을 1.2.0·37 required 필드로 올리고 등록 Source는 승인
+  mapper를 호출하도록 연결했다. 미등록 generic Source와 1.0.0·1.1.0 legacy
+  입력은 근거를 추정하지 않고 빈 unknown 요약을 사용한다.
+- Migration `20260810_0006`은 `policies.eligibility_summary` non-null JSONB를
+  추가한다. 기존 행은 unknown 요약으로 backfill하되 기존 `schema_version`은
+  소급 변경하지 않는다.
+- Importer·ORM은 요약 전체를 저장한다. 동일 내용을 새 시각에 재수집한 경우
+  evidence `collected_at`만으로 update하지 않고, 조건·서류·문의처·locator 변화는
+  update로 분류한다.
+- `GET /api/v1/policies/{id}`는 공개 evidence만 포함한 요약을 반환한다. 목록·
+  검색 DTO는 새 필드를 제외해 기존 payload와 비용을 유지한다.
+- 실제 PostgreSQL에서 Migration 0005→0006 보존, canonical Seed→API, 천안
+  Runtime Raw→DB→상세 API와 멱등 재수집을 검증했다.
+
+### ES3 Frontend 핵심 신청 조건 UI
+
+- 목록 `PolicyDto`에는 Eligibility Summary를 추가하지 않고
+  `PolicyDetailDto`와 상세 API Client·Mock만 1.2.0 nested 객체를 소비한다.
+- 정책 상세에 신청·제외·우대 조건, 필요 서류, 추가 확인 필요와 문의처를
+  독립된 semantic section으로 표시한다. 빈 배열도 빈 화면으로 숨기지 않는다.
+- coverage별 안내는 `원문 기준 주요 조건 확인`, `일부 조건만 확인됨`,
+  `구조화된 조건 미확인`으로 구분하고 실제 자격이나 선정 결과를 단정하지 않는다.
+- 각 항목은 공개 Source URL·수집 시각·locator 근거 링크를 제공한다. 내부 Raw
+  provenance는 Frontend 타입과 화면에 추가하지 않았다.
+- 시설 대표전화는 `tel:` 링크, 공식 채널은 HTTP(S)일 때만 외부 링크로 만든다.
+  키보드 focus와 최소 44px 터치 영역, 긴 문장 줄바꿈과 760px 이하 1열 배치를
+  적용했다.
+- canonical Seed Mock은 실제 요약을 상세에서 보존하고 목록에서는 제거한다.
+  승인 천안 표본은 HTTP 응답 주입 Browser 테스트로 제외조건·서류·문의처를
+  검증하며 실제 DB 연결 완료로 소급하지 않는다.
+
+### ES4 actual 세로 인수
+
+- 승인 천안 목록·상세 HTML fixture를 Runtime Raw로 만든 뒤 전용
+  `cheongnyeon_alimi_test` PostgreSQL에 실제 importer로 적재했다. 생성된 partial
+  정책은 requirement·exclusion·document·unknown 각 1건과 공개 시설 연락처
+  2건을 가졌다.
+- DB JSONB와 `GET /api/v1/policies/{id}?include_partial=true`의 요약은 수집 시각의
+  동등한 UTC 표현을 정규화한 뒤 exact 일치했다. 상세 응답은 200이었고 내부
+  `provenance`는 노출되지 않았다.
+- 실제 API를 소비한 Chromium에서 coverage와 모든 항목 문자열, 전화 `tel:` 링크,
+  공식 채널, 6개 evidence URL을 API 응답과 대조했다. ES3 주입 사례 3건을 함께
+  실행해 4건 모두 통과했다.
+- Release 1 승인 snapshot을 외부 호출 없이 같은 테스트 DB에 재생했다. 행정구역
+  Seed 538건·alias 1,080건 뒤 온통청년 2,695건과 복지로 461건을 적재했고,
+  HTTP 기술 감사 2개 시나리오와 실제 Browser golden이 통과했다.
+- 첫 Browser golden 실행에서 ES3가 추가한 두 번째 `role="note"` 때문에 기존
+  locator가 모호해진 것을 발견했다. 비확정 문구가 있는 note로 locator 범위를
+  좁힌 뒤 재실행해 통과했으며 UI 동작이나 계약 값은 변경하지 않았다.
+- 검증에 사용한 Uvicorn을 종료하고 테스트 DB를 Alembic base로 되돌려 정책
+  테이블이 남지 않은 것을 확인했다.
 
 ## 주요 변경 파일
 
-- `backend/app/schemas/policy.py`: `EligibilitySummaryResponse` 및 서브 DTO 스키마 정의, `PolicyRead` 확장
-- `backend/app/services/eligibility_evidence.py`: 자격요건 구조화 및 Evidence 바인딩 서비스 구현
-- `backend/app/api/v1/endpoints/policies.py`: `get_policy_detail` 엔드포인트 연동
-- `backend/tests/test_eligibility_evidence_api.py`: 자격요건 응답 및 Evidence 매핑 테스트 (2 passed)
-- `docs/development/development_notes/integration/eligibility_evidence_summary.md`: Integration 08 ES0/ES2 개발 기록
+- `collectors/eligibility.py`
+- `collectors/eligibility_mapping.py`
+- `collectors/validation.py`
+- `data/schema/eligibility_summary.schema.json`
+- `data/fixtures/contracts/eligibility_evidence_cases.json`
+- `tests/test_eligibility_contract.py`
+- `tests/test_cheonan_youthcenter_web.py`
+- `docs/data/eligibility_summary_contract.md`
+- `scripts/build_data_fixtures.py`
+- `docs/data/fixture_seed_contract.md`
+- `backend/requirements.txt`
+- `backend/app/api/v1/endpoints/policy_search.py`
+- `collectors/normalized.py`
+- `collectors/normalizer.py`
+- `data/schema/normalized_program.schema.json`
+- `backend/app/models/policy.py`
+- `backend/app/services/seed_importer.py`
+- `backend/app/schemas/policy.py`
+- `backend/app/api/v1/endpoints/policies.py`
+- `backend/alembic/versions/20260810_0006_policy_eligibility_summary.py`
+- `tests/integration/test_seed_to_policy_api.py`
+- `tests/integration/test_cheonan_web_runtime_to_database.py`
+- `backend/tests/test_postgresql_migration.py`
+- `frontend/src/types/policy.ts`
+- `frontend/src/api/policies.ts`
+- `frontend/src/mocks/policyContract.ts`
+- `frontend/src/components/policy/EligibilitySummary.tsx`
+- `frontend/src/components/policy/EligibilitySummary.css`
+- `frontend/src/pages/user/ProgramDetailPage.tsx`
+- `frontend/src/utils/eligibilitySummary.ts`
+- `frontend/tests/eligibilitySummary.test.ts`
+- `frontend/e2e/eligibility-summary.spec.ts`
+- `frontend/e2e/policy-search-audit.spec.ts`
+- `docs/development/develop_plan/forest_roadmap.md`
+- `docs/development/develop_plan/README.md`
 
 ## 설계 결정
 
-1. **하위 호환성 유지 (Backward Compatibility)**:
-   - 기존 `PolicyRead` 응답의 모든 필드를 그대로 유지하면서 `eligibility_summary` 필드를 선택적(Optional)으로 확장하여 기존 API 소비자와의 호환성을 보장함.
-2. **출처 보증 메타데이터 분리 (ItemEvidence)**:
-   - 구조화된 각 자격 요건 항목마다 `source_id`, `source_url`, `collected_at`을 명시하여 데이터의 출처를 투명하게 제공함.
+- 독립 nested 계약을 먼저 승인하고 `NormalizedProgram`·DB·API 편입은 ES2,
+  TypeScript·UI 소비는 ES3에서 같은 계약으로 검증한다.
+- 새 공통 객체가 편입돼도 기존 `eligibility_text`와 조건 문자열 배열을
+  제거하거나 자동 변환하지 않는다.
+- Source field 이름만으로 필수·제외·우대를 단정하지 않고 실제 의미가
+  혼재하면 unknown으로 보존한다.
+- 시설 문의에 필요한 기관 연락처는 제공하되 개인 식별 가능 연락처는
+  Schema 바깥에서 차단한다.
 
 ## 검증 결과
 
-- **자격요건 API 단위/통합 테스트**: `pytest backend/tests/test_eligibility_evidence_api.py` ➔ **2 Passed**
-- **백엔드 전체 회귀 테스트**: `pytest backend/tests` ➔ **147 Passed, 15 Skipped**
-- **문서 무결성 검증**: `python scripts/validate_docs.py` ➔ **Pass**
+| 검증 | 결과 |
+| --- | --- |
+| 전체 Data 단위·통합 pytest (`tests`) | 통과: 168건, subtest 27건, warning 0건 |
+| 전체 Backend pytest (`backend/tests`) | 통과: 126건, warning 0건 |
+| 전체 Frontend 단위 계약 (`npm.cmd test`) | 통과: 50건 |
+| Frontend production build·lint | 통과: TypeScript·Vite build와 ESLint |
+| ES3 승인 표본 Browser (`VITE_USE_MOCK=false`) | 통과: 3건, 제외·서류·문의처·unknown·긴 문장·오류·키보드·모바일 검증 |
+| 기본 Frontend Browser 회귀 | 통과: 10건, 조건부 actual 5건은 기본 Mock 환경에서 정상 skip |
+| ES4 승인 웹 actual Browser | 통과: 실제 API parity 포함 4건 |
+| Release 1 실제 HTTP·Browser golden | 통과: 기술 감사 2개 시나리오, Chromium 1건 |
+| Backend exact field parity pytest | 통과: Normalized 37필드·ORM·Importer·목록/상세 API 계약 회귀 없음 |
+| DTL4-4B Source 소비 fixture | 통과: 승인 Source 3종·적재 후보 5건, Schema issue 0건 |
+| 천안 승인 공지 actual mapper | 통과: 요청 2회, Raw 3건, 정책 1건, Schema issue 0건 |
+| Release snapshot strict offline replay | 통과: accepted 3,156, invalid 0, period safety pass |
+| PostgreSQL 통합 경계 | 통과: Migration 0005→0006 기존 행 보존, canonical Seed→상세 API, 천안 Runtime 적재·재수집 멱등성 검증 |
+| 결정적 Fixture 재생성 검사 | 통과: 관리 대상 15개와 생성 결과 일치 |
+| 문서 검증 | 통과: `scripts/validate_docs.py` |
+| diff 검사 | 통과: `git diff --check` (Windows CRLF 안내만 출력) |
+
+Starlette 1.3.1 `TestClient`가 우선 사용하는 `httpx2`를 테스트 의존성에 추가했다.
+운영 수집 HTTP client인 `httpx`는 그대로 유지했으며, Integration 05의 Forest·계획 색인
+상태는 개별 승인 문서의 `approved`와 일치시켰다.
 
 ## 남은 작업
 
-- Frontend 핵심 신청 조건 카드 UI 연결 (`Slice ES3`) 및 actual 세로 인수 (`Slice ES4`)
+- Integration 08의 Data 계약, Backend 저장·상세 API, Frontend 상세 UI와 actual
+  세로 인수는 완료했다.
+- 사용자 로컬 조건과의 실제 비교·추천 이유 생성은 이 Forest 범위가 아니며
+  후속 Integration 06에서 승인 문구와 비확률화 경계를 소비한다.
+- W4-G1 이후 공통 parity와 Release 2 Gate는 별도 주차 Slice이므로 이번 완료로
+  소급 승인하지 않는다.

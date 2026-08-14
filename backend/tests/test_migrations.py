@@ -14,7 +14,8 @@ INITIAL_REVISION = "20260728_0001"
 COLLECTION_RUN_REVISION = "20260730_0002"
 TIMESTAMP_REVISION = "20260730_0003"
 SEARCH_REVISION = "20260803_0004"
-HEAD_REVISION = "20260810_0005"
+QUALITY_REVISION = "20260810_0005"
+HEAD_REVISION = "20260810_0006"
 
 
 def alembic_config() -> Config:
@@ -52,6 +53,10 @@ def test_collection_quality_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == QUALITY_REVISION
+    )
+    assert (
+        scripts.get_revision(QUALITY_REVISION).down_revision
         == SEARCH_REVISION
     )
     assert (
@@ -80,6 +85,7 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
     assert "ADD COLUMN keywords JSONB" in sql
     assert "ADD COLUMN life_stages JSONB" in sql
     assert "ADD COLUMN target_groups JSONB" in sql
+    assert "ADD COLUMN eligibility_summary JSONB" in sql
     assert "external_codes JSONB" in sql
     assert "TIMESTAMP WITH TIME ZONE" in sql
     assert "CREATE TYPE policy_application_schedule AS ENUM" in sql
@@ -110,9 +116,10 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
         if column.name in {
             "keywords",
             "life_stages",
-            "target_groups",
-            "coverage_scope",
-        }:
+                "target_groups",
+                "coverage_scope",
+                "eligibility_summary",
+            }:
             assert f"ADD COLUMN {column.name} " in sql
         else:
             assert f"\n    {column.name} " in sql
@@ -144,6 +151,7 @@ def test_downgrade_sql_removes_table_indexes_and_enum_types():
 
     assert "DROP COLUMN rejected_count" in sql
     assert "DROP COLUMN duplicate_count" in sql
+    assert "DROP COLUMN eligibility_summary" in sql
     assert "DROP TABLE collection_runs" in sql
     assert "DROP CONSTRAINT ck_policies_timestamp_order" in sql
     assert "DROP TYPE collection_run_status" in sql

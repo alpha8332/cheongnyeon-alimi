@@ -184,6 +184,11 @@ def test_partial_detail_requires_opt_in_and_invalid_is_never_public(
     assert opted_in_detail.status_code == 200
     assert opted_in_detail.json()["data_quality_status"] == "partial"
     assert "provenance" not in opted_in_detail.json()
+    assert "eligibility_summary" in opted_in_detail.json()
+    assert "eligibility_summary" not in client.get(
+        "/api/v1/policies",
+        params={"include_partial": "true"},
+    ).json()["items"][0]
 
     partial.data_quality_status = "invalid"
     db.commit()

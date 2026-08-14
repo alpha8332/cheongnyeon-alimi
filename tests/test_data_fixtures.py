@@ -53,7 +53,7 @@ class DataFixtureContractTests(unittest.TestCase):
         ) as connection:
             outputs = build_outputs()
 
-            self.assertEqual(14, len(outputs))
+            self.assertEqual(15, len(outputs))
         connection.assert_not_called()
 
     def test_raw_fixtures_are_synthetic_and_contract_valid(self) -> None:
@@ -206,7 +206,7 @@ class DataFixtureContractTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            all(candidate["schema_version"] == "1.1.0" for candidate in seed)
+            all(candidate["schema_version"] == "1.2.0" for candidate in seed)
         )
         by_external_id = {
             candidate["external_id"]: candidate

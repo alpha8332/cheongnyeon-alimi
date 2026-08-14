@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -68,6 +69,23 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="validate and project database changes, then roll them back",
     )
+    parser.add_argument(
+        "--decision-root",
+        type=Path,
+        default=Path("runtime/decisions"),
+        help="Git-excluded cross-source decision root",
+    )
+    parser.add_argument(
+        "--checkpoint-root",
+        type=Path,
+        default=None,
+        help="optional completed regional batch checkpoint root",
+    )
+    parser.add_argument(
+        "--regional-redecision-audit",
+        type=Path,
+        help="approved RYP9 audit required to replace completed decisions",
+    )
     return parser
 
 
@@ -110,6 +128,11 @@ def main(
                 requested_count=args.limit,
             )
         db = selected_session_factory()
+        redecision_audit = (
+            json.loads(args.regional_redecision_audit.read_text(encoding="utf-8"))
+            if args.regional_redecision_audit is not None
+            else None
+        )
         result = import_runtime_raw(
             db,
             raw_root=args.raw_root,
@@ -117,6 +140,9 @@ def main(
             limit=args.limit,
             snapshot_id=args.snapshot_id,
             dry_run=args.dry_run,
+            decision_root=args.decision_root,
+            checkpoint_root=args.checkpoint_root,
+            regional_redecision_audit=redecision_audit,
         )
         if run_writer is not None and run_id is not None:
             run_writer.finish(
@@ -172,14 +198,18 @@ def _print_summary(
         f"partial={replay.partial_count} "
         f"invalid={replay.invalid_count} "
         f"accepted={replay.accepted_count} "
+        f"regional_skipped={replay.regional_skipped_count} "
+        f"cross_source_skipped={replay.cross_source_skipped_count} "
         f"inserted={database.inserted} "
         f"updated={database.updated} "
         f"unchanged={database.unchanged} "
+        f"pruned={result.pruned} "
         f"duplicate={database.duplicate} "
         f"skipped={database.skipped} "
         f"rejected={database.rejected} "
         f"failed={database.failed} "
-        f"run_id={run_id}",
+        f"run_id={run_id} "
+        f"decision_manifest_id={result.decision_manifest_id}",
         file=stdout,
     )
 
@@ -265,7 +295,11 @@ def _runtime_run_counts(
         inserted_count=database.inserted,
         updated_count=database.updated,
         unchanged_count=database.unchanged,
-        skipped_count=database.skipped,
+        skipped_count=(
+            database.skipped
+            + replay.regional_skipped_count
+            + replay.cross_source_skipped_count
+        ),
         failed_count=database.failed,
     )
 

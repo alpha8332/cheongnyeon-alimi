@@ -8,6 +8,10 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, ClassVar
 
+from collectors.eligibility import (
+    EligibilitySummary,
+    empty_eligibility_summary,
+)
 from collectors.extracted import SourceProvenance
 from collectors.raw import RawDocumentRole
 from collectors.registry import SOURCE_ID_PATTERN
@@ -161,8 +165,9 @@ class RegionRule:
 class NormalizedProgram:
     """Schema-valid normalized policy ready for quality-aware consumers."""
 
-    SCHEMA_VERSION: ClassVar[str] = "1.1.0"
+    SCHEMA_VERSION: ClassVar[str] = "1.2.0"
     LEGACY_SCHEMA_VERSION: ClassVar[str] = "1.0.0"
+    PREVIOUS_SCHEMA_VERSION: ClassVar[str] = "1.1.0"
     SEARCH_FIELD_NAMES: ClassVar[frozenset[str]] = frozenset(
         {
             "keywords",
@@ -199,6 +204,7 @@ class NormalizedProgram:
             "age_max",
             "age_condition_text",
             "eligibility_text",
+            "eligibility_summary",
             "support_content",
             "application_method",
             "education_statuses",
@@ -237,6 +243,7 @@ class NormalizedProgram:
     age_max: int | None
     age_condition_text: str | None
     eligibility_text: str | None
+    eligibility_summary: EligibilitySummary
     support_content: str | None
     application_method: str | None
     education_statuses: tuple[str, ...]
@@ -287,6 +294,10 @@ class NormalizedProgram:
             "target_groups",
         ):
             _string_tuple(getattr(self, field_name), field_name)
+        if not isinstance(self.eligibility_summary, EligibilitySummary):
+            raise NormalizedProgramValidationError(
+                "eligibility_summary must match the approved contract"
+            )
         _optional_enum(
             self.application_schedule,
             ApplicationSchedule,
@@ -399,7 +410,7 @@ class NormalizedProgram:
         selected = upgrade_normalized_program(value)
         if set(selected) != cls.FIELD_NAMES:
             raise NormalizedProgramValidationError(
-                "NormalizedProgram fields do not match schema version 1.1.0"
+                "NormalizedProgram fields do not match schema version 1.2.0"
             )
         if selected.get("schema_version") != cls.SCHEMA_VERSION:
             raise NormalizedProgramValidationError(
@@ -422,19 +433,19 @@ class NormalizedProgram:
                 target_groups=_parse_string_array(
                     selected["target_groups"]
                 ),
-                application_period_text=value[
+                application_period_text=selected[
                     "application_period_text"
                 ],
                 application_start=_parse_date(
-                    value["application_start"]
+                    selected["application_start"]
                 ),
-                application_end=_parse_date(value["application_end"]),
+                application_end=_parse_date(selected["application_end"]),
                 application_schedule=_parse_optional_enum(
-                    value["application_schedule"],
+                    selected["application_schedule"],
                     ApplicationSchedule,
                 ),
                 application_status=_parse_optional_enum(
-                    value["application_status"],
+                    selected["application_status"],
                     ApplicationStatus,
                 ),
                 region_text=selected["region_text"],
@@ -445,32 +456,35 @@ class NormalizedProgram:
                 region_rules=_parse_region_rule_array(
                     selected["region_rules"]
                 ),
-                age_min=value["age_min"],
-                age_max=value["age_max"],
-                age_condition_text=value["age_condition_text"],
-                eligibility_text=value["eligibility_text"],
-                support_content=value["support_content"],
-                application_method=value["application_method"],
+                age_min=selected["age_min"],
+                age_max=selected["age_max"],
+                age_condition_text=selected["age_condition_text"],
+                eligibility_text=selected["eligibility_text"],
+                eligibility_summary=EligibilitySummary.from_dict(
+                    selected["eligibility_summary"]
+                ),
+                support_content=selected["support_content"],
+                application_method=selected["application_method"],
                 education_statuses=_parse_string_array(
-                    value["education_statuses"]
+                    selected["education_statuses"]
                 ),
                 employment_statuses=_parse_string_array(
-                    value["employment_statuses"]
+                    selected["employment_statuses"]
                 ),
                 required_conditions=_parse_string_array(
-                    value["required_conditions"]
+                    selected["required_conditions"]
                 ),
                 preferred_conditions=_parse_string_array(
-                    value["preferred_conditions"]
+                    selected["preferred_conditions"]
                 ),
                 excluded_conditions=_parse_string_array(
-                    value["excluded_conditions"]
+                    selected["excluded_conditions"]
                 ),
-                source_url=value["source_url"],
-                collected_at=_parse_datetime(value["collected_at"]),
-                provenance=_parse_provenance_array(value["provenance"]),
+                source_url=selected["source_url"],
+                collected_at=_parse_datetime(selected["collected_at"]),
+                provenance=_parse_provenance_array(selected["provenance"]),
                 data_quality_status=DataQualityStatus(
-                    value["data_quality_status"]
+                    selected["data_quality_status"]
                 ),
             )
         except (
@@ -529,6 +543,7 @@ class NormalizedProgram:
             "age_max": self.age_max,
             "age_condition_text": self.age_condition_text,
             "eligibility_text": self.eligibility_text,
+            "eligibility_summary": self.eligibility_summary.to_dict(),
             "support_content": self.support_content,
             "application_method": self.application_method,
             "education_statuses": list(self.education_statuses),
@@ -547,7 +562,7 @@ class NormalizedProgram:
 
 
 def upgrade_normalized_program(value: dict[str, Any]) -> dict[str, Any]:
-    """Upgrade an exact 1.0.0 object without inventing search evidence."""
+    """Upgrade exact 1.0.0/1.1.0 objects without inventing evidence."""
 
     if not isinstance(value, dict):
         raise NormalizedProgramValidationError(
@@ -557,27 +572,40 @@ def upgrade_normalized_program(value: dict[str, Any]) -> dict[str, Any]:
     version = selected.get("schema_version")
     if version == NormalizedProgram.SCHEMA_VERSION:
         return selected
-    if version != NormalizedProgram.LEGACY_SCHEMA_VERSION:
+    if version not in {
+        NormalizedProgram.LEGACY_SCHEMA_VERSION,
+        NormalizedProgram.PREVIOUS_SCHEMA_VERSION,
+    }:
         raise NormalizedProgramValidationError(
             "unsupported NormalizedProgram schema version"
         )
 
-    legacy_fields = (
-        NormalizedProgram.FIELD_NAMES
-        - NormalizedProgram.SEARCH_FIELD_NAMES
+    previous_fields = NormalizedProgram.FIELD_NAMES - {
+        "eligibility_summary"
+    }
+    expected_fields = (
+        previous_fields - NormalizedProgram.SEARCH_FIELD_NAMES
+        if version == NormalizedProgram.LEGACY_SCHEMA_VERSION
+        else previous_fields
     )
-    if set(selected) != legacy_fields:
+    if set(selected) != expected_fields:
         raise NormalizedProgramValidationError(
-            "legacy NormalizedProgram fields do not match schema version 1.0.0"
+            "legacy NormalizedProgram fields do not match its schema version"
+        )
+    if version == NormalizedProgram.LEGACY_SCHEMA_VERSION:
+        selected.update(
+            {
+                "keywords": [],
+                "life_stages": [],
+                "target_groups": [],
+                "coverage_scope": CoverageScope.UNKNOWN.value,
+                "region_rules": [],
+            }
         )
     selected.update(
         {
             "schema_version": NormalizedProgram.SCHEMA_VERSION,
-            "keywords": [],
-            "life_stages": [],
-            "target_groups": [],
-            "coverage_scope": CoverageScope.UNKNOWN.value,
-            "region_rules": [],
+            "eligibility_summary": empty_eligibility_summary().to_dict(),
         }
     )
     return selected

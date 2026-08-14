@@ -159,6 +159,7 @@ def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
         "age_max": item.get("age_max"),
         "age_condition_text": item.get("age_condition_text"),
         "eligibility_text": item.get("eligibility_text"),
+        "eligibility_summary": item["eligibility_summary"],
         "support_content": item.get("support_content"),
         "application_method": item.get("application_method"),
         "education_statuses": item["education_statuses"],
@@ -179,6 +180,24 @@ def _postgresql_upsert(
     db: Session,
     values: Mapping[str, Any],
 ) -> tuple[str, int]:
+    existing = db.execute(
+        select(Policy)
+        .where(
+            Policy.source_id == values["source_id"],
+            Policy.external_id == values["external_id"],
+        )
+        .with_for_update()
+    ).scalar_one_or_none()
+    if existing is not None and all(
+        _business_values_equal(
+            field,
+            getattr(existing, field),
+            values[field],
+        )
+        for field in BUSINESS_MUTABLE_FIELDS
+    ):
+        return "unchanged", existing.id
+
     statement = postgresql_insert(Policy).values(**values)
     changed = or_(
         *(
@@ -237,6 +256,30 @@ def _values_equal(current: Any, incoming: Any) -> bool:
     return current == incoming
 
 
+def _eligibility_business_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {
+            key: _eligibility_business_value(item)
+            for key, item in value.items()
+            if key != "collected_at"
+        }
+    if isinstance(value, list):
+        return [_eligibility_business_value(item) for item in value]
+    return value
+
+
+def _business_values_equal(
+    field: str,
+    current: Any,
+    incoming: Any,
+) -> bool:
+    if field == "eligibility_summary":
+        return _eligibility_business_value(
+            current
+        ) == _eligibility_business_value(incoming)
+    return _values_equal(current, incoming)
+
+
 def _nondecreasing_datetime(
     current: datetime,
     incoming: datetime,
@@ -263,7 +306,11 @@ def _portable_upsert(
         return "inserted", existing.id
 
     if all(
-        _values_equal(getattr(existing, field), values[field])
+        _business_values_equal(
+            field,
+            getattr(existing, field),
+            values[field],
+        )
         for field in BUSINESS_MUTABLE_FIELDS
     ):
         return "unchanged", existing.id

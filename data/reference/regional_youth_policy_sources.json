@@ -1,0 +1,1246 @@
+{
+  "schema_version": "1.2.0",
+  "inventory_id": "regional-youth-policy-sources-20260811",
+  "inventory_date": "2026-08-11",
+  "region_reference_scheme": "kr-bjd-20260803",
+  "input_evidence": [
+    {
+      "file_name": "광역자치단체별 청년정책사이트 정리.xlsx",
+      "sha256": "4fdb52e67ca5a78e0e84416faba7a575f6c77e15126edd6622b787d3f3263b2d",
+      "sheet_name": "Sheet1",
+      "range": "A2:C18"
+    }
+  ],
+  "sources": [
+    {
+      "jurisdiction_key": "seoul",
+      "jurisdiction_label": "서울",
+      "home_url": "https://youth.seoul.go.kr/mainA.do",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-seoul-youth-platform",
+      "decision_reason": "Browser에서 홈 → 맞춤서비스 → 서울시 정책 90건·자치구 정책 21건 → plcyBizId 상세와 구조화 필드를 재현했다. 원시 HTTP WebGate와 무관하게 Browser collection을 승인한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "1100000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "not_found",
+        "license": "not_found",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://youth.seoul.go.kr/infoData/plcyInfo/list.do?key=2309150002",
+        "https://youth.seoul.go.kr/infoData/plcyInfo/ctList.do?key=2309150002",
+        "https://youth.seoul.go.kr/infoData/plcyInfo/guList.do?key=2309150002"
+      ],
+      "approved_detail_url_patterns": [
+        "https://youth.seoul.go.kr/infoData/plcyInfo/view.do?key=2309150002&plcyBizId={non_empty}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "browser",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://youth.seoul.go.kr/mainA.do#none",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "맞춤서비스",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "서울시 정책",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://youth.seoul.go.kr/infoData/plcyInfo/list.do?key=2309150002",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://youth.seoul.go.kr/infoData/plcyInfo/view.do?key=2309150002&plcyBizId=V202600006",
+            "value": null
+          }
+        ],
+        "observed_list_count": 111,
+        "sample_external_id": "V202600006",
+        "sample_title": "청년 부동산 중개보수 및 이사비 지원사업",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "busan",
+      "jurisdiction_label": "부산",
+      "home_url": "https://young.busan.go.kr/index.nm",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "regional-busan-youth-platform",
+      "decision_reason": "부산광역시 청년플랫폼의 공개 정책지원 목록과 bizSid 상세 경로를 확인했다. robots 공개 경로를 위반하지 않으며 약관상 원문·이미지를 재배포하지 않고 최소 정책 사실과 provenance만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "2600000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://young.busan.go.kr/policySupport/list.nm?menuCd=12"
+      ],
+      "approved_detail_url_patterns": [
+        "https://young.busan.go.kr/policySupport/view.nm?menuCd=13&bizSid={SUP followed by digits}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [
+        {
+          "kind": "detail_candidate",
+          "label": "[HUG]청년이 만드는 부산의 새로운 업",
+          "url": "https://ccei.creativekorea.or.kr/busan/custom/notice_view.do?no=38189&rnum=7752&kind=relation&sPtime=relation",
+          "status": "candidate",
+          "input_reference": {
+            "file_name": "청년정책_데이터수집_완료.xlsx",
+            "sheet_name": "청년정책 세부 수집방안",
+            "row": 32
+          }
+        }
+      ],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://young.busan.go.kr/index.nm",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "부산청년정책",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://young.busan.go.kr/policySupport/list.nm?menuCd=12",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://young.busan.go.kr/policySupport/view.nm?menuCd=13&bizSid=SUP0000003570",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "SUP0000003570",
+        "sample_title": "사상청년브릿지 한국사 스터디",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "daegu",
+      "jurisdiction_label": "대구",
+      "home_url": "https://www.dgjump.com/",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-daegu-youth-platform",
+      "decision_reason": "대구 청년정책 플랫폼의 공개 목록과 ap_seq 상세 identity를 확인했다. robots 공개 경로를 위반하지 않으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "2700000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.dgjump.com/open_content/info/info_list_01"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.dgjump.com/open_content/info/info_list_01_view?ap_seq={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.dgjump.com/",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년 꿀정보",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.dgjump.com/open_content/info/info_list_01",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.dgjump.com/open_content/info/info_list_01_view?ap_seq=8290",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "8290",
+        "sample_title": "Pre D-Link 5기 청년 예비창업자 지원사업",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "incheon",
+      "jurisdiction_label": "인천",
+      "home_url": "https://youth.incheon.go.kr/",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-incheon-youth-platform",
+      "decision_reason": "인천청년포털의 공개 검색 목록과 poly_seq 상세 identity를 확인했다. 공개 경로의 최소 정책 사실만 제한 수집하고 원문·이미지는 저장소에 재배포하지 않는다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "2800000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://youth.incheon.go.kr/policy/search_incheon.jsp",
+        "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoList.do"
+      ],
+      "approved_detail_url_patterns": [
+        "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoDetail.do?poly_seq={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://youth.incheon.go.kr/",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "맞춤 정책 찾기",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://youth.incheon.go.kr/policy/search_incheon.jsp",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoDetail.do?poly_seq=467",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "467",
+        "sample_title": "(영종구) 청년 자격증 응시료 지원",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "gwangju",
+      "jurisdiction_label": "광주",
+      "home_url": "https://youth.jeonnam-gwangju.go.kr/www/",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-gwangju-integrated-youth-platform",
+      "decision_reason": "기존 광주청년센터가 연결하는 현행 공식 전남광주통합특별시 청년통합플랫폼에서 공개 정책 목록과 policyId 상세 identity를 확인했다. 구 광주 후보 대신 통합 플랫폼의 최소 정책 사실만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "1200000000",
+        "historical_codes": [],
+        "note": "현행 공식 플랫폼이 전남광주통합특별시를 운영 주체와 서비스 관할로 표시하므로 활성 통합 코드에 연결한다. 정책별 실제 대상 지역은 RYP3 원문 evidence로 별도 판정한다."
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://youth.jeonnam-gwangju.go.kr/www/50"
+      ],
+      "approved_detail_url_patterns": [
+        "https://youth.jeonnam-gwangju.go.kr/www/50?policyId={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://youth.jeonnam-gwangju.go.kr/www/",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년정책",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://youth.jeonnam-gwangju.go.kr/www/50",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://youth.jeonnam-gwangju.go.kr/www/50?policyId=1424",
+            "value": null
+          }
+        ],
+        "observed_list_count": 53,
+        "sample_external_id": "1424",
+        "sample_title": "청년 주도 정책 설계 워크숍 참여자 모집",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "daejeon",
+      "jurisdiction_label": "대전",
+      "home_url": "https://www.daejeonyouthportal.kr/index.do",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-daejeon-youth-platform",
+      "decision_reason": "대전청년포털의 공개 통합지원 목록과 CT 식별자 상세 경로를 확인했다. robots 문서는 게시되지 않았으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "3000000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.daejeonyouthportal.kr/biz/integratedYouth.do?section=1&commonMenuNo=438_323_514_517"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.daejeonyouthportal.kr/content/CT_{12_digits}/cntPage.do?dpmSectionFst={positive_integer}&dpmSectionScd={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.daejeonyouthportal.kr/index.do",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년정책·사업",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.daejeonyouthportal.kr/biz/integratedYouth.do?section=1&commonMenuNo=438_323_514_517",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.daejeonyouthportal.kr/content/CT_000000000541/cntPage.do",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "CT_000000000541",
+        "sample_title": "청년만남지원사업 연In대전",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "ulsan",
+      "jurisdiction_label": "울산",
+      "home_url": "https://www.ulsan.go.kr/s/ulsanyouth/main.ulsan",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-ulsan-youth-platform",
+      "decision_reason": "울산광역시 청년정책 게시판의 고정 bbsId 목록과 dataId 상세 identity를 확인했다. robots는 공개 경로를 허용하며 최소 정책 사실만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "3100000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.ulsan.go.kr/s/ulsanyouth/bbs/list.ulsan?bbsId=BBS_0000000000000309&mId=008001002000000000"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.ulsan.go.kr/s/ulsanyouth/bbs/view.do?bbsId=BBS_0000000000000309&mId=008001002000000000&dataId={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.ulsan.go.kr/s/ulsanyouth/main.ulsan",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "공모·지원사업 바로가기",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.ulsan.go.kr/s/ulsanyouth/bbs/list.ulsan?bbsId=BBS_0000000000000309&mId=008001002000000000",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.ulsan.go.kr/s/ulsanyouth/bbs/view.ulsan?bbsId=BBS_0000000000000309&mId=008001002000000000&dataId=60156",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "60156",
+        "sample_title": "2026 글로벌 OTA 연계 관광상품 개발 지원",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "sejong",
+      "jurisdiction_label": "세종",
+      "home_url": "https://www.4242.or.kr/",
+      "status": "blocked",
+      "implementation_status": "blocked",
+      "source_id": null,
+      "decision_reason": "Browser에서 홈 → 모집중 청년정보 → 상세 id 경로를 재현했다. 다만 robots.txt가 일반 크롤러 전체 경로를 차단하므로 discovery 성공과 별개로 운영 collection은 승인하지 않는다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "3611000000",
+        "historical_codes": [],
+        "note": "kr-bjd-20260803 기준정보에서는 세종특별자치시를 district level code로 보존한다."
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "request_budget": null,
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "none",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.4242.or.kr/",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "현재 모집중인 청년정보를 확인하세요",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.4242.or.kr/total_search/index",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.4242.or.kr/sub0506/view/id/2618",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "2618",
+        "sample_title": "청년 마음상담소 참여 청년 모집",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "gyeonggi",
+      "jurisdiction_label": "경기",
+      "home_url": "https://youth.gg.go.kr/gg/index.do",
+      "status": "blocked",
+      "implementation_status": "blocked",
+      "source_id": null,
+      "decision_reason": "Browser에서 맞춤 정책과 arcNo 상세 경로를 재현했다. robots 일반 규칙이 정책 경로를 허용하지 않으므로 discovery profile만 보존하고 운영 collection은 승인하지 않는다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "4100000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "request_budget": null,
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "none",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://youth.gg.go.kr/gg/index.do",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "맞춤 정책 찾기",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://youth.gg.go.kr/gg/archive-policy-search.do",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://youth.gg.go.kr/gg/info/housing-welfare.do?mode=view&arcNo=11722",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "11722",
+        "sample_title": "청년영화상영회 오늘, 우리가 연결되는 시간",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "gangwon",
+      "jurisdiction_label": "강원",
+      "home_url": "https://job.gwd.go.kr/youth",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-gangwon-youth-platform",
+      "decision_reason": "Browser에서 JavaScript 링크를 클릭해 bizId 상세와 정책개요·자격·신청방법·제출서류·기관 연락처를 재현했다. POST action profile 기반 Browser collection을 승인한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "5100000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://job.gwd.go.kr/youth/policies/search/gangwon_policies"
+      ],
+      "approved_detail_url_patterns": [
+        "POST https://job.gwd.go.kr/youth/policies/search/gangwon_policies (bizId={non_empty}&mode=gw)"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "browser",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://job.gwd.go.kr/youth",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "26년 강원특별자치도 청년취업준비쿠폰 지원사업",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://job.gwd.go.kr/youth/policies/search/gangwon_policies",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "POST bizId=A2026021300300200900000001&mode=gw",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "A2026021300300200900000001",
+        "sample_title": "26년 강원특별자치도 청년취업준비쿠폰 지원사업",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "chungbuk",
+      "jurisdiction_label": "충북",
+      "home_url": "https://www.chungbuk.go.kr/young/index.do",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-chungbuk-youth-platform",
+      "decision_reason": "Browser에서 홈의 청년 지원 목록과 nttNo 상세 원문을 재현했다. 공통 urllib 연결 문제와 별개로 robots 허용 /young 범위의 Browser collection을 승인하며 개인 성명·이메일은 구조화하지 않는다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "4300000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.chungbuk.go.kr/young/selectBbsNttList.do?key=1283&bbsNo=174"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.chungbuk.go.kr/young/selectBbsNttView.do?key=1283&bbsNo=174&nttNo={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "browser",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.chungbuk.go.kr/young/index.do",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.chungbuk.go.kr/young/selectBbsNttList.do?key=1283&bbsNo=174",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.chungbuk.go.kr/young/selectBbsNttView.do?key=1283&bbsNo=174&nttNo=440062",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "440062",
+        "sample_title": "청년리트릿 프로그램 쉼표하우스 참여자 모집",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "chungnam",
+      "jurisdiction_label": "충남",
+      "home_url": "https://youth.chungnam.go.kr/web/main/customSupp/list",
+      "status": "blocked",
+      "implementation_status": "blocked",
+      "source_id": null,
+      "decision_reason": "Browser에서 검색 가능한 충청남도정책 목록과 bizId 상세를 재현했다. robots 허용 목록에 customSupp 정책 경로가 없어 discovery 성공과 별개로 운영 collection은 승인하지 않는다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "4400000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "request_budget": null,
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "none",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://youth.chungnam.go.kr/web/main/customSupp/list",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://youth.chungnam.go.kr/web/main/customSupp/list",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://youth.chungnam.go.kr/web/main/customSupp/M040-06/view?bizId=A20260310CT000000000003066",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "A20260310CT000000000003066",
+        "sample_title": "청년 정신건강 관리 협력·홍보체계 구축·운영",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "jeonbuk",
+      "jurisdiction_label": "전북",
+      "home_url": "https://www.jb2030.or.kr/",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-jeonbuk-youth-platform",
+      "decision_reason": "전북청년허브의 공개 정책 목록과 id 상세 identity를 확인했다. robots 문서는 게시되지 않았으며 이용 조건에 따라 최소 정책 사실과 provenance만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "5200000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.jb2030.or.kr/policy/p2_pol.html",
+        "https://www.jb2030.or.kr/policy/p2_pol.html?strstate=ing"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.jb2030.or.kr/policy/p2_pol_view.html?id={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.jb2030.or.kr/",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.jb2030.or.kr/policy/p2_pol.html",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.jb2030.or.kr/policy/p2_pol_view.html?id=136&tname=employ",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "136",
+        "sample_title": "2026 청년 일자리 도약장려금",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "jeonnam",
+      "jurisdiction_label": "전남",
+      "home_url": "https://www.jnyouthcenter.kr/index.php",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "Browser에서 구 전남 포털의 정책통합검색과 최근 wr_id 상세를 재현했다. 현행 공식 정책은 통합특별시 플랫폼과 중복되고 robots가 홈만 허용하므로 별도 운영 Source는 rejected로 유지한다.",
+      "region_reference": {
+        "mapping_status": "historical_review_required",
+        "active_code": null,
+        "historical_codes": [
+          "4600000000"
+        ],
+        "note": "kr-bjd-20260803에서 전라남도는 2026-07-01 퇴역하고 전남광주통합특별시 1200000000이 활성화됐지만 후계 지역으로 자동 치환하지 않는다."
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "disallowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "request_budget": null,
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "none",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://www.jnyouthcenter.kr/index.php",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년정책통합검색",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://www.jnyouthcenter.kr/bbs/board.php?bo_table=bbs05_03",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://www.jnyouthcenter.kr/bbs/board.php?bo_table=bbs05_03&wr_id=956",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "956",
+        "sample_title": "청년 주도 정책 설계 워크숍 참여자 모집",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "gyeongbuk",
+      "jurisdiction_label": "경북",
+      "home_url": "https://gbyouth.go.kr/main.tc",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "regional-gyeongbuk-youth-platform",
+      "decision_reason": "공개 정책 화면과 POST /policy/list.json, POST /policy/detail.modal을 재검증해 실제 정책 JSON·상세 HTML을 확인했다. robots의 /policy/list.tc/ 규칙은 실제 /policy/list.tc 및 JSON·modal 경로와 일치하지 않는다. Browser DOM instrumentation 충돌과 무관하게 http_json collection을 승인한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "4700000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:27:31+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://gbyouth.go.kr/policy/list.json"
+      ],
+      "approved_detail_url_patterns": [
+        "POST https://gbyouth.go.kr/policy/detail.modal (no={positive_integer})"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_json",
+        "last_checked_at": "2026-08-11T14:27:31+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://gbyouth.go.kr/main.tc",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년알림(정책) > 경북청년정책",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "POST https://gbyouth.go.kr/policy/list.json",
+            "value": "pageIndex=1&searchCondition=0&type=0"
+          },
+          {
+            "kind": "observe_detail",
+            "target": "POST https://gbyouth.go.kr/policy/detail.modal",
+            "value": "no=1098"
+          }
+        ],
+        "observed_list_count": 243,
+        "sample_external_id": "1098",
+        "sample_title": "2026 경북 청년 행복카드 지원사업",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "gyeongnam",
+      "jurisdiction_label": "경남",
+      "home_url": "https://youth.gyeongnam.go.kr/youth/index.es?sid=a1",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-gyeongnam-youth-platform",
+      "decision_reason": "경상남도 청년정보플랫폼의 공개 정책 목록과 policy_no 상세 화면, 화면이 사용하는 공식 GET JSON endpoint를 확인했다. robots 문서는 게시되지 않았으며 최소 정책 사실과 provenance만 제한 수집한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "4800000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "not_published",
+        "terms": "restricted",
+        "license": "restricted",
+        "technical_access": "available",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://youth.gyeongnam.go.kr/youth/youthPolicySearchPageNew.es?mid=a10101020000&policy_subject_office=0"
+      ],
+      "approved_detail_url_patterns": [
+        "https://youth.gyeongnam.go.kr/youth/youthPolicySearchViewNew.es?mid=a10101020000&policy_no={positive_integer}",
+        "GET https://youth.gyeongnam.go.kr/youth/youthPolicyInfoNew.es?policy_no={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "http_html",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://youth.gyeongnam.go.kr/youth/index.es?sid=a1",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://youth.gyeongnam.go.kr/youth/youthPolicySearchPageNew.es?mid=a10101020000&policy_subject_office=0",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://youth.gyeongnam.go.kr/youth/youthPolicySearchViewNew.es?mid=a10101020000&policy_no=2226",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "2226",
+        "sample_title": "2026 모다드림 청년통장 지원사업 하반기 참여자 모집",
+        "failure_reason": null
+      }
+    },
+    {
+      "jurisdiction_key": "jeju",
+      "jurisdiction_label": "제주",
+      "home_url": "https://jejuyouth.com/m/index.php",
+      "status": "approved",
+      "implementation_status": "implemented_browser",
+      "source_id": "regional-jeju-youth-platform",
+      "decision_reason": "Browser에서 홈 → 청년DB → wr_id 상세 정책을 재현했다. 공통 urllib TLS 문제와 별개로 공개 Browser collection을 승인한다.",
+      "region_reference": {
+        "mapping_status": "matched_active",
+        "active_code": "5000000000",
+        "historical_codes": [],
+        "note": null
+      },
+      "preflight": {
+        "operator": "verified",
+        "robots": "allowed",
+        "terms": "not_found",
+        "license": "restricted",
+        "technical_access": "blocked",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "browser_access": "available"
+      },
+      "approved_list_urls": [
+        "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1"
+      ],
+      "approved_detail_url_patterns": [
+        "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1&wr_id={positive_integer}"
+      ],
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "discovery_seeds": [],
+      "discovery": {
+        "status": "extraction_ready",
+        "collection_mode": "browser",
+        "last_checked_at": "2026-08-11T14:02:00+09:00",
+        "interaction_budget": {
+          "max_depth": 4,
+          "max_interactions": 30,
+          "max_list_pages": 2,
+          "max_detail_pages": 3,
+          "minimum_interval_seconds": 2
+        },
+        "actions": [
+          {
+            "kind": "goto",
+            "target": "https://jejuyouth.com/m/index.php",
+            "value": null
+          },
+          {
+            "kind": "click",
+            "target": "청년DB",
+            "value": null
+          },
+          {
+            "kind": "observe_list",
+            "target": "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1",
+            "value": null
+          },
+          {
+            "kind": "observe_detail",
+            "target": "https://jejuyouth.com/m/bbs/board.php?bo_table=1_2_2_1&wr_id=1186",
+            "value": null
+          }
+        ],
+        "observed_list_count": null,
+        "sample_external_id": "1186",
+        "sample_title": "빛나는 제주 청년희망 대출 3.0 이자 지원사업",
+        "failure_reason": null
+      }
+    }
+  ]
+}

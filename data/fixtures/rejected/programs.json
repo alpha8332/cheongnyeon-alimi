@@ -18,6 +18,29 @@
       "coverage_scope": "nationwide",
       "data_quality_status": "invalid",
       "education_statuses": [],
+      "eligibility_summary": {
+        "coverage": "partial",
+        "documents": [],
+        "exclusions": [],
+        "institutional_contacts": [],
+        "preferences": [],
+        "requirements": [
+          {
+            "category": "age",
+            "evidence": [
+              {
+                "collected_at": "2026-07-26T06:00:00+00:00",
+                "locator": "sprtTrgtAgeLmtYn",
+                "locator_type": "source_field",
+                "source_id": "youthcenter-api",
+                "source_url": "https://fixture.invalid/youth/rejected"
+              }
+            ],
+            "text": "연령 제한 없음"
+          }
+        ],
+        "unknowns": []
+      },
       "eligibility_text": null,
       "employment_statuses": [],
       "excluded_conditions": [],
@@ -51,7 +74,7 @@
         "전국"
       ],
       "required_conditions": [],
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "source_url": "https://fixture.invalid/youth/rejected",

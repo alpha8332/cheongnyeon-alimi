@@ -1,0 +1,19 @@
+{
+  "classification": "response_success_without_structured_field_dom",
+  "cases": [
+    {
+      "external_id": "864",
+      "title": "여성영화제 / <이반리 장만옥> 상영 & 양말복 배우 초청 GV(~8.13. 19:00)",
+      "metadata_text": "작성자 : 제주청년센터 등록일 : 2025.07.31 조회수 903",
+      "content_text": "2025 제주씨네페미학교 두 번째 상영작. 일시 : 2025년 8월 13일(수) 19:00",
+      "expected_application_period": "2025-08-13 19:00 마감 (상세 등록일 2025-07-31)"
+    },
+    {
+      "external_id": "862",
+      "title": "와이앤아처 / '신사업창업사관학교×로컬크리에이터' 지역자원 제품 판매 팝업스토어(~8.14.)",
+      "metadata_text": "작성자 : 제주청년센터 등록일 : 2025.07.29 조회수 656",
+      "content_text": "관련링크와 문의연락만 제공",
+      "expected_application_period": "2025-08-14 마감 (상세 등록일 2025-07-29)"
+    }
+  ]
+}

@@ -81,6 +81,7 @@
     "src/mocks/collectionRunFixtures.ts",
     "src/mocks/collectionRunHandlers.ts",
     "tests/helpers/memoryStorage.ts",
+    "src/utils/eligibilitySummary.ts",
     "tests/**/*.ts"
   ]
 }

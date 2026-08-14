@@ -15,6 +15,16 @@ from app.core.database import create_db_engine
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 PRE_TIMESTAMP_CONSTRAINT_REVISION = "20260730_0002"
+PRE_ELIGIBILITY_REVISION = "20260810_0005"
+EMPTY_ELIGIBILITY_SUMMARY = {
+    "coverage": "unknown",
+    "requirements": [],
+    "exclusions": [],
+    "preferences": [],
+    "documents": [],
+    "unknowns": [],
+    "institutional_contacts": [],
+}
 
 
 def require_test_database_url() -> str:
@@ -57,6 +67,7 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
         )
         assert isinstance(policies.c.categories.type, JSONB)
         assert isinstance(policies.c.provenance.type, JSONB)
+        assert isinstance(policies.c.eligibility_summary.type, JSONB)
         assert policies.c.collected_at.type.timezone is True
         assert collection_runs.c.started_at.type.timezone is True
         assert collection_runs.c.finished_at.type.timezone is True
@@ -97,12 +108,14 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
                 sa.select(
                     policies.c.categories,
                     policies.c.provenance,
+                    policies.c.eligibility_summary,
                     policies.c.collected_at,
                 ).where(policies.c.id == policy_id)
             ).one()
 
         assert row.categories == ["housing", "welfare"]
         assert row.provenance == provenance
+        assert row.eligibility_summary == EMPTY_ELIGIBILITY_SUMMARY
         assert row.collected_at.astimezone(timezone.utc) == collected_at
 
         with pytest.raises(IntegrityError):
@@ -149,6 +162,76 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
                     )
                 ).scalar_one()
             assert enum_count == 0
+        finally:
+            db_engine.dispose()
+
+
+def test_postgresql_eligibility_migration_backfills_without_version_rewrite():
+    database_url = require_test_database_url()
+    config = migration_config(database_url)
+    db_engine = create_db_engine(database_url)
+    collected_at = datetime(2026, 8, 10, tzinfo=timezone.utc)
+
+    try:
+        command.upgrade(config, PRE_ELIGIBILITY_REVISION)
+        before_metadata = sa.MetaData()
+        before = sa.Table(
+            "policies",
+            before_metadata,
+            autoload_with=db_engine,
+        )
+        with db_engine.begin() as connection:
+            policy_id = connection.execute(
+                before.insert()
+                .values(
+                    source_id="eligibility-migration",
+                    source_name="Eligibility Migration 테스트",
+                    external_id="ES2-BACKFILL-001",
+                    title="기존 정책",
+                    categories=[],
+                    regions=[],
+                    education_statuses=[],
+                    employment_statuses=[],
+                    required_conditions=[],
+                    preferred_conditions=[],
+                    excluded_conditions=[],
+                    source_url=(
+                        "https://fixture.invalid/policies/ES2-BACKFILL-001"
+                    ),
+                    collected_at=collected_at,
+                    provenance=[],
+                    data_quality_status="valid",
+                )
+                .returning(before.c.id)
+            ).scalar_one()
+
+        command.upgrade(config, "head")
+        after_metadata = sa.MetaData()
+        after = sa.Table(
+            "policies",
+            after_metadata,
+            autoload_with=db_engine,
+        )
+        with db_engine.connect() as connection:
+            row = connection.execute(
+                sa.select(
+                    after.c.schema_version,
+                    after.c.eligibility_summary,
+                ).where(after.c.id == policy_id)
+            ).one()
+
+        assert row.schema_version == "1.1.0"
+        assert row.eligibility_summary == EMPTY_ELIGIBILITY_SUMMARY
+
+        command.downgrade(config, PRE_ELIGIBILITY_REVISION)
+        downgraded_columns = {
+            column["name"]
+            for column in sa.inspect(db_engine).get_columns("policies")
+        }
+        assert "eligibility_summary" not in downgraded_columns
+    finally:
+        try:
+            command.downgrade(config, "base")
         finally:
             db_engine.dispose()
 

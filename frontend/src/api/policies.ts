@@ -10,9 +10,9 @@ import {
   createMockPolicyListResponse,
   findMockPolicyById,
 } from '@/mocks/policyContract';
-import { mockPolicies } from '@/mocks/policies';
+import { mockPolicies, mockPolicyDetails } from '@/mocks/policies';
 import type {
-  PolicyDto,
+  PolicyDetailDto,
   PolicyListQuery,
   PolicyListResponse,
 } from '@/types/policy';
@@ -82,12 +82,11 @@ export async function getPolicyById(
   policyId: number,
   includePartial = false,
   options: PolicyDetailFetchOptions = {},
-): Promise<PolicyDto | null> {
+): Promise<PolicyDetailDto | null> {
   const detailPath = buildPolicyDetailPath(policyId);
 
   if (USE_MOCK) {
     await delay(MOCK_DELAY_MS);
-
     if (
       options.summaryRefetch &&
       policyId === MOCK_POLICY_SUMMARY_REFETCH_503_ID
@@ -109,11 +108,15 @@ export async function getPolicyById(
       );
     }
 
-    return findMockPolicyById(mockPolicies, policyId, includePartial);
+    return findMockPolicyById(
+      mockPolicyDetails,
+      policyId,
+      includePartial,
+    );
   }
 
   try {
-    const response = await apiClient.get<PolicyDto>(
+    const response = await apiClient.get<PolicyDetailDto>(
       detailPath,
       {
         params: {

@@ -1,5 +1,9 @@
 import type { EligibilitySummaryDto } from '../types/eligibilitySummary.js';
-import type { PolicyDetailDto } from '../types/policy.js';
+import type { PolicyDto } from '../types/policy.js';
+
+type EligibilityFixturePolicyDetail = PolicyDto & {
+  eligibility_summary: EligibilitySummaryDto;
+};
 
 const MOCK_DETAIL_TIMESTAMP = '2026-08-11T00:00:00.000Z';
 
@@ -169,7 +173,7 @@ function createPolicyDetailFixture(
   id: number,
   title: string,
   eligibilitySummary: EligibilitySummaryDto,
-): PolicyDetailDto {
+): EligibilityFixturePolicyDetail {
   return {
     schema_version: '1.1.0',
     source_id: 'mock-eligibility',
@@ -209,7 +213,7 @@ function createPolicyDetailFixture(
 }
 
 /** Mock policy detail envelopes for Browser·contract tests (FE7-00). */
-export const MOCK_POLICY_DETAIL_FIXTURES: readonly PolicyDetailDto[] = [
+export const MOCK_POLICY_DETAIL_FIXTURES: readonly EligibilityFixturePolicyDetail[] = [
   createPolicyDetailFixture(
     9101,
     'Mock Complete Eligibility Policy',
@@ -235,7 +239,7 @@ export const MOCK_ELIGIBILITY_POLICY_IDS = {
 
 export function getMockPolicyDetailById(
   policyId: number,
-): PolicyDetailDto | undefined {
+): EligibilityFixturePolicyDetail | undefined {
   return MOCK_POLICY_DETAIL_FIXTURES.find((policy) => policy.id === policyId);
 }
 
@@ -246,9 +250,9 @@ export function getEligibilitySummaryFixture(
 }
 
 export function attachEligibilitySummary(
-  policy: PolicyDetailDto,
+  policy: PolicyDto,
   summary: EligibilitySummaryDto,
-): PolicyDetailDto {
+): EligibilityFixturePolicyDetail {
   return {
     ...policy,
     eligibility_summary: summary,

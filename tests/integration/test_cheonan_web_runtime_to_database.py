@@ -43,6 +43,21 @@ FIXTURE_ROOT = (
 )
 
 
+def _normalize_evidence_datetimes(value):
+    if isinstance(value, dict):
+        return {
+            key: (
+                datetime.fromisoformat(item.replace("Z", "+00:00"))
+                if key == "collected_at"
+                else _normalize_evidence_datetimes(item)
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_normalize_evidence_datetimes(item) for item in value]
+    return value
+
+
 def _require_test_database_url() -> str:
     database_url = os.getenv("TEST_DATABASE_URL")
     if not database_url:
@@ -179,6 +194,14 @@ def test_cheonan_web_runtime_is_idempotent_and_drift_safe() -> None:
             assert policy.data_quality_status == "partial"
             assert policy.required_conditions == []
             assert policy.excluded_conditions == []
+            assert policy.eligibility_summary["coverage"] == "partial"
+            assert len(policy.eligibility_summary["requirements"]) == 1
+            assert len(policy.eligibility_summary["exclusions"]) == 1
+            assert len(policy.eligibility_summary["documents"]) == 1
+            assert len(policy.eligibility_summary["unknowns"]) == 1
+            assert len(
+                policy.eligibility_summary["institutional_contacts"]
+            ) == 2
             assert {
                 item["raw_document_id"] for item in policy.provenance
             } == {document.document_id for document in first_batch}
@@ -207,7 +230,38 @@ def test_cheonan_web_runtime_is_idempotent_and_drift_safe() -> None:
             assert visible.json()["external_id"] == APPROVED_EXTERNAL_ID
             assert visible.json()["application_status"] is None
             assert visible.json()["data_quality_status"] == "partial"
+            assert (
+                _normalize_evidence_datetimes(
+                    visible.json()["eligibility_summary"]
+                )
+                == _normalize_evidence_datetimes(
+                    policy.eligibility_summary
+                )
+            )
             assert "provenance" not in visible.json()
+
+            refreshed_batch = _save_batch(
+                store,
+                collected_at=collected_at + timedelta(hours=12),
+                detail_payload=normal_detail,
+            )
+            with session_factory() as db:
+                refreshed = import_runtime_raw(
+                    db,
+                    raw_root=temp_dir,
+                    source_id=SOURCE_ID,
+                    limit=1,
+                )
+                refreshed_policy = db.get(Policy, policy_id)
+                assert refreshed_policy is not None
+
+            assert refreshed.database.updated == 0
+            assert refreshed.database.unchanged == 1
+            assert refreshed_batch != first_batch
+            assert {
+                item["raw_document_id"]
+                for item in refreshed_policy.provenance
+            } == {document.document_id for document in first_batch}
 
             changed_batch = _save_batch(
                 store,
