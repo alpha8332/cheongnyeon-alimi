@@ -6,6 +6,7 @@
 - 담당 영역: Data
 - 상태: draft
 - 계획일: `2026-08-11`
+- 실행 일정: `2026-08-14` 재승인으로 4주차에서 5주차로 이동
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 02 Release Dataset Bootstrap, Data 03 Recurrent Collection
   and Quality Operations, Data 04 Public HTTPS Policy Ingestion, Data 05
@@ -220,7 +221,7 @@ XLSX를 검증 가능한 Source·Policy 후보 inventory로 변환한다.
 #### 완료 기준
 
 - 최소 2개 서로 다른 구조의 승인 Source actual 인수 통과
-- 최소 기준을 충족하지 못하면 W4-G3를 통과시키지 않고 원인 기록
+- 최소 기준을 충족하지 못하면 W5-G1을 통과시키지 않고 원인 기록
 - 신규·중복·검토·실패 수치와 lineage가 개발 기록에 있음
 
 ### SOP5 - 승인 Source 확대와 Forest 판정
@@ -240,7 +241,7 @@ XLSX를 검증 가능한 Source·Policy 후보 inventory로 변환한다.
 
 - 계획의 모든 Source군이 근거 있는 최종 상태를 가짐
 - 모든 approved Source가 제한 actual·재실행·DB 인수를 통과함
-- 최소 4개 공식 Source가 implemented이거나, 부족 시 W4-G4가 blocked로 기록됨
+- 최소 4개 공식 Source가 implemented이거나, 부족 시 W5-G1이 blocked로 기록됨
 - 기존 Policy identity와 검색 golden이 회귀하지 않음
 
 ## Gate와 실행 순서
@@ -264,8 +265,9 @@ Data 05 RYP2~RYP4 공통 엔진·중복 Gate
   → SOP5 Source 확대·전체 회귀
 ```
 
-Data-only 구현은 DTL4-5를 기다리지 않고 진행할 수 있지만 W4-G2 이후의 공식
-통합 판정은 W4-G1을 먼저 통과한 뒤 기록한다.
+Data-only 구현은 4주차 DTL4-5와 W4-G4가 끝난 뒤 5주차 W5-G0 기준선에서
+시작한다. SOP0~SOP3는 Backend·Frontend 안정화와 병렬로 진행할 수 있지만,
+SOP4~SOP5 actual과 전체 통합 판정은 같은 W5-G1에서 대조한다.
 
 ## 역할 분담
 
@@ -319,15 +321,17 @@ git diff --check
 - 실제 Raw·운영 HTML·첨부·개인정보·비밀키가 Git에 없음
 - 단위·PostgreSQL·actual API·Browser·문서 검증 결과가 개발 기록에 있음
 
-## v0.5.0과 DTL Gate 연결
+## v0.5.0과 5주차 Gate 연결
 
-- DTL4-5 / W4-G1: 기존 Schema·Importer·API 소비 경계 재확인
-- DTL4-6 / W4-G2: SOP0~SOP3 inventory·중복·preflight·Adapter 테스트
-- DTL4-7 / W4-G3: SOP4 우선 Source actual DB → API → Browser
-- DTL4-8 / W4-G4: SOP5 전체 Source 상태·전체 데이터 회귀·문서 대조
+- W5-G0: 4주차 병합 기준선·Data 05 snapshot·기존 중복 Gate 고정
+- W5-D1: SOP0~SOP2 inventory·중복·Source preflight
+- W5-D2: SOP3 Adapter·판정 fixture와 공통 회귀
+- W5-D3 / W5-G1: SOP4~SOP5 actual DB → API → Browser, 전체 Source 상태와
+  Forest 완료 판정
 
-Data 06이 완료 기준을 충족하지 못하면 설계한 보완 Source 기능이 미완료이므로
-W4-G4를 통과시키지 않는다.
+Data 06이 완료 기준을 충족하지 못하면 `v0.5.0` 보완 Source 기능이 미완료이므로
+W5-G1을 통과시키지 않는다. 이 일정 변경은 최소 4개 Source 목표나 품질 Gate를
+축소하지 않는다.
 
 ## 위험과 미확정 사항
 
@@ -338,7 +342,7 @@ W4-G4를 통과시키지 않는다.
 - 일부 Source는 로그인·첨부파일 또는 JavaScript 요청에 핵심 조건이 있을 수 있다.
 - Source군 확대는 요청 예산·실행 시간·drift 유지 비용을 크게 늘린다.
 - 최소 4개 actual 목표가 이용 조건·기술 접근 때문에 불가능하면 Release 범위를
-  조용히 축소하지 않고 W4-G4 blocked 또는 명시적 계획 재승인을 선택한다.
+  조용히 축소하지 않고 W5-G1 blocked 또는 명시적 계획 재승인을 선택한다.
 
 ## 관련 문서
 

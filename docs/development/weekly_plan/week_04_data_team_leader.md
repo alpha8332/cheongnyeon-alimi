@@ -11,8 +11,8 @@
   UI/UX 최적화와 담당자 자체 검증 종료 뒤 수행
 - 현재 Slice: Data 05 `RYP0`~`RYP9`·`RYP-G6` 완료,
   accepted 109건 적재·충북 open 0건 확정·명시적 지역 검색 match-only·전체 감사
-  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), 이후 Data 06 구현과
-  `DTL4-5` 소비 대조 예정
+  통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), 이후 Backend·Frontend 병합과
+  `DTL4-5` 소비 대조·W4-G4 예정. Data 06 구현은 5주차로 이동
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -47,7 +47,7 @@ Integration 05·07·09의 계약과 실제 연결을 조정한다. 자신의 Dat
 | Data 03 Recurrent Quality Operations | Data 구현 | `feature/data/recurrent-quality-operations` | 반복·수정·중복·실패·품질 통계 검증 |
 | Data 04 Public HTTPS Ingestion | Data 구현 | `feature/data/public-web-policy-source` | 공식 Source 1곳 actual 수집·DB 적재 |
 | Data 05 Regional Youth Policy Ingestion | Data 구현 | `feature/data/regional-youth-policy-ingestion` | 지역 고유 정책 수집·온통청년/복지로 중복 제외·actual 적재 |
-| Data 06 Supplemental Official Policy Ingestion | Data 계획·후속 구현 | Data 05 공통 Gate 뒤 Forest 브랜치 한 개 | 중앙·공공기관 후보 정제·중복 감사·actual 적재 |
+| Data 06 Supplemental Official Policy Ingestion | 5주차 Data 구현 | Data 05 공통 Gate 뒤 Forest 브랜치 한 개 | 중앙·공공기관 후보 정제·중복 감사·actual 적재 |
 | Integration 08 Eligibility Summary | Data 구현·공동 소비 검토 | `feature/schema/eligibility-evidence-contract` 단일 Integration 브랜치 | evidence 구조 → 상세 API → UI E2E |
 | Integration 09 Admin Data and Log Console | Data 의미 검토, Team Leader 보안·E2E | Backend·Frontend observability 브랜치 | 읽기 전용 DB 표와 로그 조회·삭제 감사 E2E |
 | Integration 07 Release 2 Acceptance | Team Leader midpoint 주관 | cross-area domain 합의 전 생성 금지 | W4-G1~G4 근거와 5주차 시작 조건 |
@@ -94,8 +94,9 @@ discovery·Browser runner 경계와 경북 JSON·modal Adapter의 offline replay
 검증했다. RYP3에서 지역 evidence·신청 상태 Gate와 경북 closed 격리를 추가했다.
 RYP4 교차 Source Gate와 RYP5 대표 actual DB·API·Browser 인수를 완료했다.
 RYP0~RYP4는 DTL4-6 W4-G2, 완료한 RYP5 actual은 DTL4-7 W4-G3, RYP6
-지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06 SOP0~SOP3,
-SOP4 actual과 SOP5 최종 상태도 각각 같은 W4-G2~G4의 필수 입력으로 둔다.
+지역별 최종 상태와 회귀는 DTL4-8 W4-G4의 필수 입력이다. Data 06은
+`2026-08-14` 일정 재승인에 따라 5주차 W5-G0~G1에서 수행하며 W4-G2~G4
+입력에서는 제외한다.
 
 `2026-08-13`에 RYP6는 13개 승인 Source 4,606건 전체 판정, accepted 18건
 PostgreSQL 동기화, 동일 Raw unchanged, Release 1 golden 기술 회귀를 완료해
@@ -119,12 +120,12 @@ gap Source를 12개에서 11개로 줄였다. checkpoint와 accepted DB는 유�
 | --- | --- | --- | --- |
 | 1일차 | 현재 Source·field coverage·품질 inventory, 웹 Source 후보 preflight | 역할·브랜치·OpenAPI·TypeScript 초안 대조, PIN·로그·저장·날짜 계약 동결 | W4-G0 |
 | 2일차 | Data 03 fixture, Data 04 Adapter, 자격 mapping, Data 05 inventory·Source 승인 | Backend·Frontend Mock 소비 대조, 병합 충돌·계약 변경 관리 | W4-G1 |
-| 3일차 | Data 05 Adapter·지역·중복 제외, Data 06 후보 정제·중복 감사 | 관리자 데이터·로그와 자격요건·추천 actual API 소비 확인 | W4-G2 |
-| 4일차 | Data 05 대표 지역·Data 06 우선 Source DB·API·Browser | 관리자·웹 Source·사용자 세 E2E, 최초 실패·수정·재검증 기록 | W4-G3 |
-| 5일차 | Data 03~06 전체 회귀·Source별 최종 상태·문서 | 전 담당 회귀·문서·비밀 경계 대조와 W4-G4 판정 | W4-G4 |
+| 3일차 | Data 05 Adapter·지역·중복 제외 | 관리자 데이터·로그와 자격요건·추천 actual API 소비 확인 | W4-G2 |
+| 4일차 | Data 05 대표 지역 DB·API·Browser | 관리자·웹 Source·사용자 세 E2E, 최초 실패·수정·재검증 기록 | W4-G3 |
+| 5일차 | Data 03~05 전체 회귀·Source별 최종 상태·문서 | BE·FE 병합, DTL4-5와 전 담당 회귀·W4-G4 판정 | W4-G4 |
 
-기본 기능이 밀리면 5주차 범위로 바꾸지 않는다. 완료하지 못한 기능과 원인을
-기록하고 W4-G4를 `BLOCKED`로 판정한다.
+Data 06만 일정 재승인으로 5주차에 이동한다. 그 밖의 기본 기능이 밀리면
+5주차 범위로 바꾸지 않고 원인을 기록해 W4-G4를 `BLOCKED`로 판정한다.
 
 ## Slice DTL4-0 - 시작 기준과 실행 경계 확정
 
@@ -456,7 +457,7 @@ actual 통합 전에 각 영역의 단위·통합 결과와 Data 실제 수집·
 - Data 04 HTML fixture·HTTP 경계·actual 제한 수집·DB 적재
 - Data 05 RYP0~RYP5 inventory·Source 승인·Adapter·지역 고유성·온통청년/복지로
   중복 제외와 대표 actual 단위·통합 준비
-- Data 06 SOP0~SOP3 후보 정제·snapshot 중복 감사·Source 승인·Adapter 단위·통합 준비
+- Data 06 후보·Source 입력 인계 확인. SOP0~SOP5 구현·검증은 5주차 수행
 - Integration 08 Schema·mapping·provenance·호환 테스트
 - Runtime Raw·HTML·로그와 비밀·DB 파일 Git 비추적 확인
 
@@ -558,8 +559,9 @@ Critical Path를 검증한다.
 
 ### 목적
 
-모든 기본 기능 구현과 담당자 자체 검증을 확인하고 5주차 추가 기능·오류 수정·
-UI/UX 최적화 및 독립 리뷰를 시작할 수 있는지 판정한다.
+Data 06을 제외한 4주차 승인 기본 기능 구현과 담당자 자체 검증을 확인하고,
+5주차 Data 06 구현·오류 수정·UI/UX 최적화 및 독립 리뷰를 시작할 수 있는지
+판정한다.
 
 ### Data 마감
 
@@ -580,8 +582,10 @@ UI/UX 최적화 및 독립 리뷰를 시작할 수 있는지 판정한다.
 
 ### W4-G4 판정
 
-- `W4-G4_MIDPOINT_PASS`: 모든 기본 기능·세 E2E·담당자 회귀·문서 완료
-- `W4-G4_CONDITIONAL`: 모든 기본 기능은 구현됐고 낮은 위험 결함 또는 비차단
+- `W4-G4_MIDPOINT_PASS`: Data 06을 제외한 4주차 승인 기본 기능·세 E2E·담당자
+  회귀·문서 완료
+- `W4-G4_CONDITIONAL`: Data 06을 제외한 4주차 승인 기본 기능은 구현됐고 낮은
+  위험 결함 또는 비차단
   검증 제약의 담당·완료 조건이 명확함
 - `W4-G4_BLOCKED`: 기본 기능 하나라도 미구현, 필수 E2E·계약·보안 경계 실패
 
@@ -712,15 +716,13 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - [x] Data 05 RYP0 후보 inventory·검증 계약 완료
 - [x] Data 05 RYP1 Browser Discovery preflight·Source 승인 완료
 - [x] Data 05 RYP2~RYP4 Adapter·지역·중복 제외 Gate 통과
-- [ ] Data 06 SOP0~SOP3 후보 정제·중복 감사·승인·Adapter Gate 통과
 - [ ] DTL4-6 영역별 단위·통합·actual 준비와 W4-G2 통과
 - [x] Data 05 RYP5 대표 Source actual DB·API·Browser 인수 통과
 - [x] Data 05 RYP6 13개 승인 Source 전체 pagination·판정·DB 동기화·회귀 완료
 - [x] Data 05 RYP7 review 사유·field coverage·승격 계약 감사 완료
 - [x] Data 05 RYP8 Source별 지역·청년 대상·신청 상태 추출 보강 완료
 - [x] Data 05 RYP9 전체 재판정·지역 검색 DB·API·Browser 인수와 RYP-G6 통과
-- [ ] Data 06 SOP4 우선 Source actual DB·API·Browser 인수 통과
-- [ ] Data 06 SOP5 Source군별 최종 상태·전체 회귀 완료
+- Data 06 SOP0~SOP5는 5주차 W5-G0~G1로 이동
 - [ ] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
 - [ ] Release 1 golden 검색·상세 회귀 통과
 - [ ] Data·Backend·Frontend 전체 담당자 회귀 결과 대조

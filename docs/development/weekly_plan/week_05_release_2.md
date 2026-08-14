@@ -2,18 +2,29 @@
 
 ## 계획 정보
 
-- 상태: approved (4주차 `W4-G4_MIDPOINT_PASS` 뒤 착수 대기)
+- 상태: approved (4주차 DTL4-5·`W4-G4_MIDPOINT_PASS` 뒤 착수 대기)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
 - 독립 검증 역할: 사용성 리뷰어, QA
 - 근거 정리 역할: 보고서 담당
 - 상위 Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
-- 공통 시작점: 4주차 전체 기본 기능이 `develop`에 병합되고
-  `W4-G4_MIDPOINT_PASS`로 판정된 커밋
+- 공통 시작점: Data 06을 제외한 4주차 기본 기능과 Data 05가 `develop`에
+  병합되고 `W4-G4_MIDPOINT_PASS`로 판정된 커밋
 
 5주차는 Team Leader 단독 작업이 아니다. Data·Backend·Frontend가 각 담당
 영역의 결함 수정과 자체 회귀를 수행하고, Team Leader는 실제
 PostgreSQL → FastAPI → React 통합, 독립 리뷰·QA와 Release 2 Gate를 주관한다.
+
+## 일정 재승인 (`2026-08-14`)
+
+- 4주차 데드라인 경과와 Backend·Frontend 통합 대기 상태를 반영해 Data 06
+  구현을 4주차에서 5주차로 이동한다.
+- 4주차는 Data 05 완료 결과와 Backend·Frontend 변경을 병합한 뒤 DTL4-5,
+  담당자 회귀와 W4-G4 midpoint를 먼저 닫는다.
+- Data 06은 범위 삭제가 아니라 실행 시점 변경이다. `v0.5.0` 필수 범위와 최소
+  4개 승인 Source 완료 기준은 유지하며 W5-G1 전까지 완료한다.
+- Data 06이 지연되면 독립 사용성 리뷰·QA를 먼저 시작하지 않는다. Backend·
+  Frontend는 기다리는 동안 자기 영역 회귀와 결함 수정을 병렬로 수행한다.
 
 ## 목표
 
@@ -26,9 +37,11 @@ PostgreSQL → FastAPI → React 통합, 독립 리뷰·QA와 Release 2 Gate를 
 
 ## 시작 조건
 
-- 4주차의 모든 필수 Forest가 완료되고 결과가 `develop`에 병합돼야 한다.
-- Data 05·06 actual 적재, Backend·Frontend 기능과 Integration 06·07·09의
-  선행 범위가 미완성 상태가 아니어야 한다.
+- Data 05 완료 결과와 4주차 Backend·Frontend 필수 기능이 `develop`에 병합돼야 한다.
+- DTL4-5 실제 PostgreSQL → API → Browser 소비 대조와 `W4-G4_MIDPOINT_PASS`가
+  기록돼야 한다.
+- Data 06은 일정 재승인에 따라 5주차 구현 범위로 이동하며, 미완료 자체를
+  4주차 blocker로 보지 않는다. 다만 `v0.5.0` 최종 Gate 전에는 완료해야 한다.
 - `W4-G4_MIDPOINT_PASS`와 공통 시작 SHA, Migration head, 실제 snapshot,
   Frontend actual API mode가 기록돼야 한다.
 - 사용성 리뷰어·QA·보고서 역할과 증거 양식이 정해져야 한다.
@@ -38,8 +51,8 @@ blocker로 유지한다.
 
 ## 현재 기준선
 
-- 이 문서는 4주차 전체 완료를 전제로 한 실행 계획이며 실제 완료를 뜻하지
-  않는다.
+- Data 05는 completed이며 Data 06은 draft다. 5주차는 Data 06 구현과 기존
+  기능 안정화를 함께 수행하도록 재기준화됐고 실제 착수를 뜻하지 않는다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.
 - 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.
@@ -48,7 +61,8 @@ blocker로 유지한다.
 
 ### Data
 
-- Data 03~06 수집·replay·정규화·중복·품질 전체 회귀
+- Data 06 SOP0~SOP5 후보 정제·중복 감사·Source 승인·Adapter·actual 구현
+- Data 03~05와 완료된 Data 06 범위의 수집·replay·정규화·중복·품질 전체 회귀
 - 성공·실패·중단·checkpoint 재개와 동일 Raw `unchanged` 검증
 - partial·invalid·마감·중복 후보와 provenance 정확성 확인
 - Data 05 비차단 지역의 open 고유 정책 검색 노출과 0건 근거 확인
@@ -91,7 +105,7 @@ blocker로 유지한다.
 
 ## 범위 밖
 
-- 4주차 기본 기능의 미완료분을 5주차 추가 기능으로 재분류하는 작업
+- Data 06 외 4주차 기본 기능의 미완료분을 5주차 추가 기능으로 재분류하는 작업
 - 승인되지 않은 신규 기능과 계약 확장
 - Production Dockerfile·Compose·Nginx·CI와 clean-room 배포
 - 이메일 발송이나 Google Calendar 직접 연동
@@ -113,12 +127,12 @@ blocker로 유지한다.
 ## 선행 관계와 Critical Path
 
 ```text
-4주차 전체 Forest 완료·develop 병합
+4주차 DTL4-5·W4-G4 완료·develop 병합
   → W5-G0 통합 기준선 고정
-  ├→ Data 안정화
+  ├→ Data 06 SOP0~SOP5 구현·actual·Forest Gate
   ├→ Backend 안정화
   └→ Frontend 안정화
-  → W5-G1 actual E2E
+  → W5-G1 기능 동결·Data 06 포함 actual E2E
   → 사용성 리뷰·QA
   → 영역별 결함 수정
   → 수정본 독립 재검증
@@ -133,9 +147,9 @@ blocker로 유지한다.
 
 | 일차 | Data | Backend | Frontend | Team Leader·독립 검증 |
 | --- | --- | --- | --- | --- |
-| 1일차 | Runtime·snapshot·품질 기준 확인 | Migration·DB·API 기준 확인 | actual API·지원 Browser 기준 확인 | W5-G0 시작 SHA·환경·증거 양식 고정 |
-| 2일차 | 수집·replay·중복·실패 회귀 | API·권한·transaction 회귀 | 사용자·관리자 UI·오류 상태 회귀 | 영역별 결함 triage |
-| 3일차 | Data 05·06 actual 대조 | DB·API actual 대조 | Browser E2E·접근성·반응형 | W5-G1 E2E 판정 |
+| 1일차 | Data 06 SOP0~SOP2 inventory·중복·Source preflight | Migration·DB·API 기준 확인 | actual API·지원 Browser 기준 확인 | W5-G0 시작 SHA·환경·증거 양식 고정 |
+| 2일차 | Data 06 SOP3 Adapter fixture·공통 회귀 | API·권한·transaction 회귀 | 사용자·관리자 UI·오류 상태 회귀 | Source 승인·영역별 결함 triage |
+| 3일차 | Data 06 SOP4~SOP5 actual·재실행·Forest 판정 | Data 06 DB·API와 전체 actual 대조 | Data 06 포함 Browser E2E·접근성·반응형 | W5-G1 기능 동결·E2E 판정 |
 | 4일차 | 승인 결함 수정·재검증 | 승인 결함 수정·재검증 | 승인 결함·UX 수정·재검증 | 사용성 리뷰·QA 수행과 재현 근거 정리 |
 | 5일차 | 수정본 회귀 | 수정본 회귀 | 수정본 Browser 회귀 | 독립 재검증·W5-G2 Release 2 판정 |
 
@@ -143,7 +157,7 @@ blocker로 유지한다.
 
 ### W5-G0 - 통합 기준선
 
-- 4주차 필수 결과가 `develop`에 모두 병합됨
+- Data 06을 제외한 4주차 필수 결과와 Data 05가 `develop`에 병합됨
 - 시작 SHA, Migration head, snapshot과 actual API mode가 고정됨
 - 영역별 테스트 명령, 지원 환경과 증거 양식이 확정됨
 - 기본 기능 미완료가 0건임
@@ -153,6 +167,7 @@ blocker로 유지한다.
 
 ### W5-G1 - actual E2E와 독립 검증 준비
 
+- Data 06 `SOP-G5`와 Forest 완료 기준이 통과함
 - Data·Backend·Frontend 담당자 전체 회귀가 통과함
 - 사용자·관리자 핵심 흐름이 실제 PostgreSQL·API·Browser에서 동작함
 - Data 05·06 정책의 lineage와 검색 노출이 대조됨
@@ -173,7 +188,7 @@ blocker로 유지한다.
 
 | 역할 | 산출물 |
 | --- | --- |
-| Data | 수집·replay·품질 회귀, Data 05·06 actual 및 lineage 대조 근거 |
+| Data | Data 06 구현·Forest 판정, 수집·replay·품질 회귀와 Data 05·06 actual 근거 |
 | Backend | PostgreSQL·Migration·transaction·API·권한 회귀와 결함 수정 근거 |
 | Frontend | 사용자·관리자 actual Browser, 접근성·반응형·오류 UX 근거 |
 | Team Leader | 시작 기준선, E2E 결과, 결함 triage, Release 2 Gate 결정 |
@@ -217,6 +232,7 @@ development notes에 기록한다.
 ## 완료 체크리스트
 
 - [ ] `W5-G0` 통합 기준선 통과
+- [ ] Data 06 SOP0~SOP5·SOP-G5와 Forest 완료 판정
 - [ ] Data 수집·품질·Data 05·06 actual 회귀 통과
 - [ ] Backend PostgreSQL·API·권한·transaction 회귀 통과
 - [ ] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
@@ -236,4 +252,3 @@ development notes에 기록한다.
 - [4주차 상세 실행 계획](week_04_v0_5_0.md)
 - [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - [역할과 책임](../../governance/role_assignment.md)
-
