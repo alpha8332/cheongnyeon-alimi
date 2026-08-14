@@ -22,6 +22,7 @@ import {
   classifyDetailCanaryObservation,
   seoulConfig,
   ulsanConfig,
+  ulsanCheckpointDetailConfig,
   waitForReadySelector,
   waitForExpectedTitle,
   withSingleDetailRetry,
@@ -791,6 +792,44 @@ test("Ulsan maps the official reception schedule label", () => {
   );
 });
 
+test("Ulsan maps title organization and prose policy evidence", () => {
+  const title = "(울산경제일자리진흥원) 청년 일경험 참여자 모집";
+  const detail = buildDetail(title, {
+    body: title.replace(/\s/g, ""),
+    pairs: {"접수일정": "2026-08-05 ~ 2026-10-05"},
+    contentBlocks: [
+      "👥 참여자격",
+      "1. 19세 이상 39세 이하 청년",
+      "2. 참여기간 동안 울산광역시 거주자",
+      "📅 운영일정",
+      "일경험기간: ~26. 12. 31",
+      "📞 문의처",
+      "울산경제일자리진흥원 일자리지원부 052-283-7190",
+    ],
+  });
+
+  assert.equal(detail.organization, "울산경제일자리진흥원");
+  assert.match(detail.eligibility, /울산광역시 거주자/);
+  assert.equal(
+    detail.contact,
+    "울산경제일자리진흥원 일자리지원부 052-283-7190",
+  );
+});
+
+test("Ulsan complete reception schedule precedes a shorthand prose period", () => {
+  const title = "(울산광역시) 울산청년 스포츠+문화패스 지원자 모집";
+  const detail = buildDetail(title, {
+    body: title.replace(/\s/g, ""),
+    pairs: {"접수일정": "2026-05-26 ~ 2026-11-30"},
+    contentBlocks: ["📆 신청기간 : 2026. 5. 26.(화) ~ 11. 30.(월)"],
+  });
+
+  assert.equal(
+    detail.application_period,
+    "2026-05-26 ~ 2026-11-30 2026. 5. 26.(화) ~ 11. 30.(월)",
+  );
+});
+
 test("Ulsan removes the bare closed badge from historical list titles", () => {
   const pattern = new RegExp(ulsanConfig(30).titlePrefixPattern);
   const normalizedTitle = ulsanClosedFixture.list_title.replace(pattern, "");
@@ -799,7 +838,7 @@ test("Ulsan removes the bare closed badge from historical list titles", () => {
   assert.equal(normalizedTitle, ulsanClosedFixture.expected_title);
   assert.equal(
     detail.application_period,
-    "상시모집(선착순 마감) 2025-02-06 ~ 2025-08-31",
+    "2025-02-06 ~ 2025-08-31 상시모집(선착순 마감)",
   );
   assert.equal(
     ulsanClosedFixture.scheduled_list_title.replace(pattern, ""),
@@ -818,6 +857,10 @@ test("Ulsan pins the official detail title and content roots", () => {
   assert.equal(config.detailReadySelector, ".title_here");
   assert.equal(config.detailFromListContext, true);
   assert.equal(config.detailRetryOnMismatch, true);
+  assert.equal(
+    ulsanCheckpointDetailConfig().sourceScopeSelectors.operator_text,
+    "header",
+  );
 });
 
 test("Daejeon combines the reception period and per-event deadline", () => {

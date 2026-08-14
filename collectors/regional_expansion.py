@@ -672,6 +672,7 @@ def decide_expanded_regional_policy(
                 "regional-incheon-youth-platform",
                 "regional-gangwon-youth-platform",
                 "regional-seoul-youth-platform",
+                "regional-ulsan-youth-platform",
             }
         ),
         additional_region_aliases=(
@@ -679,6 +680,7 @@ def decide_expanded_regional_policy(
                 "regional-daejeon-youth-platform": ("대전청년포털",),
                 "regional-daegu-youth-platform": ("대구",),
                 "regional-seoul-youth-platform": ("서울 거주", "서울시"),
+                "regional-ulsan-youth-platform": ("울산",),
             }.get(policy.source_id, ())
         ),
     )

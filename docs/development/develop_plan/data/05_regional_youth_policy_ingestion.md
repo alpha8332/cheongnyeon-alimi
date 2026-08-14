@@ -5,7 +5,7 @@
 - 번호: Data 05
 - 담당 영역: Data
 - 상태: in-progress
-- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전·강원·대구·서울 보강·충북 0건 근거 확정 및
+- 현재 진행: `RYP0`~`RYP8`·`RYP-G4` 완료, `RYP9` 재판정·광주·인천·대전·강원·대구·서울·울산 보강·충북 0건 근거 확정 및
   명시적 지역 검색 match-only 계약 완료, 잔여 Source 보강 진행 중
 - 계획일: `2026-08-11`
 - 대상 Release: `v0.5.0`
@@ -963,7 +963,12 @@ provenance로 사용할 수 있도록 지역·청년 대상·신청 가능 계�
   운영 종료가 확인되어 모두 closed로 전환했다. 실제 open 목록과 명시적 지역
   검색도 0건이므로 충북은 실제 open 고유 정책 0건 근거로 완료한다. outcome은
   `accepted 103 / duplicate 2 / review 1,151 / closed 3,028 / failed 322`다.
-- 잔여 Source에 review 1,151건이 남아 있다. Source별
+- 울산은 checkpoint 597건 중 open·scheduled 후보 32건만 공식 상세에서 제한
+  재캡처했다. 정책 본문의 울산 거주·청년 대상, 제목의 시행 기관, 현재 신청기간이
+  함께 확인된 5건을 accepted로 승격하고 종료 근거가 확인된 4건을 closed로
+  전환했다. 동일 Raw 재적용은 unchanged 5건이며 outcome은
+  `accepted 108 / duplicate 2 / review 1,142 / closed 3,032 / failed 322`다.
+- 잔여 Source에 review 1,142건이 남아 있다. Source별
   `accepted >= 1` 또는 실제 open 고유 정책 0건 근거가 아직 완결되지 않았으므로
   RYP9와 `RYP-G6`는 완료로 판정하지 않는다.
 

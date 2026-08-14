@@ -167,9 +167,15 @@ export function validateCheckpointDetailRecaptureContracts(
     && approvedList.pathname === "/m/bbs/board.php"
     && approvedList.searchParams.get("bo_table") === "1_2_2_1"
     && approvedList.searchParams.get("page") === "1";
+  const validUlsanList = sourceId === "regional-ulsan-youth-platform"
+    && approvedList.origin === "https://www.ulsan.go.kr"
+    && approvedList.pathname === "/s/ulsanyouth/bbs/list.ulsan"
+    && approvedList.searchParams.get("bbsId") === "BBS_0000000000000309"
+    && approvedList.searchParams.get("mId") === "008001002000000000"
+    && approvedList.searchParams.get("page") === "1";
   const validList = validDaeguList || validGwangjuList || validIncheonList
     || validDaejeonList || validJeonbukList || validGyeongnamList
-    || validJejuList;
+    || validJejuList || validUlsanList;
   const validItems = Array.isArray(items)
     && items.length >= 1
     && items.length <= 3
@@ -215,6 +221,15 @@ export function validateCheckpointDetailRecaptureContracts(
             && detailUrl.pathname === approvedList.pathname
             && detailUrl.searchParams.get("bo_table") === "1_2_2_1"
             && detailUrl.searchParams.get("wr_id") === item.external_id;
+        }
+        if (validUlsanList) {
+          return detailUrl.origin === approvedList.origin
+            && detailUrl.pathname === "/s/ulsanyouth/bbs/view.do"
+            && detailUrl.searchParams.get("bbsId")
+              === "BBS_0000000000000309"
+            && detailUrl.searchParams.get("mId")
+              === "008001002000000000"
+            && detailUrl.searchParams.get("dataId") === item.external_id;
         }
         return validGyeongnamList
           && detailUrl.origin === approvedList.origin
@@ -895,7 +910,7 @@ export function buildRegisteredTitleDeadlineDetail(
 
 function pairsWithProseLabels(pairs, contentBlocks = []) {
   const selected = {...pairs};
-  const labelPattern = /^[\u200B\uFEFF\s]*(?:[□■▪●○]\s*)?(?:(?:\d+|[가-힣])[.)]\s*)?(지원대상|신청대상|모집대상|대상|자격|지원조건|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|운영기간|신청기간|접수기간|접수일정|모집기간|제출기한|신청방법|접수방법|신청링크|접수처)\s*(?::|：)?\s*(.*)$/;
+  const labelPattern = /^[^가-힣A-Za-z0-9]*(?:(?:\d+|[가-힣])[.)]\s*)?(지원대상|신청대상|모집대상|참여자격|대상|자격|지원조건|거주지|지원내용|지원규모|사업내용|정책내용|주요내용|혜택|지원기간|운영기간|운영일정|신청기간|접수기간|접수일정|모집기간|제출기한|신청방법|접수방법|신청링크|접수처|제외대상|문의처)\s*(?::|：)?\s*(.*)$/;
   for (let index = 0; index < contentBlocks.length; index += 1) {
     const block = clean(contentBlocks[index]);
     const match = block.match(labelPattern);
@@ -966,9 +981,9 @@ export function buildDetail(title, extracted) {
     title,
     organization: find("organization", ["기관명", "담당기관명", "주관기관", "운영기관", "담당기관", "시행기관"]),
     category: find("category", ["정책유형", "정책분야", "분야", "유형", "카테고리"]),
-    application_period: combine("application_period", ["사업신청기간", "신청기간", "접수기간", "접수일정", "모집기간", "모집일시", "신청기한", "제출기한"]),
+    application_period: combine("application_period", ["접수일정", "사업신청기간", "신청기간", "접수기간", "모집기간", "모집일시", "신청기한", "제출기한"]),
     source_region: find("source_region", ["해당지역", "사업지역", "지역", "거주지"]),
-    eligibility: combine("eligibility", ["지원대상", "신청대상", "모집대상", "신청자격", "참여요건", "지원조건", "거주지및소득", "추가단서사항", "대상", "자격"]),
+    eligibility: combine("eligibility", ["지원대상", "신청대상", "모집대상", "신청자격", "참여자격", "참여요건", "지원조건", "거주지및소득", "거주지", "추가단서사항", "대상", "자격"]),
     support_content: find("support_content", ["지원내용", "사업내용", "정책내용", "주요내용", "혜택", "지원규모"]),
     application_method: fromMarker(
       find("application_method", ["신청방법", "접수방법", "신청링크", "공고상세보기URL", "접수처", "신청절차"]),
@@ -976,9 +991,21 @@ export function buildDetail(title, extracted) {
     ),
     contact: find("contact", ["문의처", "문의", "담당자", "연락처"]),
     required_documents: find("required_documents", ["필요서류", "제출서류", "구비서류", "첨부파일"]),
-    exclusions: find("exclusions", ["참여제한대상", "참여제한사항", "지원제외", "제외", "제한"]),
+    exclusions: find("exclusions", ["참여제한대상", "참여제한사항", "제외대상", "지원제외", "제외", "제한"]),
     age: find("age", ["지원연령", "연령제한", "연령", "나이"]),
   };
+  const titleOrganization = clean(title).match(/^\s*[([]([^\])]+)[\])]/)?.[1];
+  if (
+    !detail.organization
+    && titleOrganization
+    && /(울산|광역시|특별시|특별자치도|도청|시청|구청|군청|센터|복지관|진흥원|공단|재단|부|청|원)$/.test(titleOrganization)
+  ) {
+    detail.organization = titleOrganization;
+    observations.organization = {
+      label: "상세 제목 기관 접두어",
+      status: "value_extracted",
+    };
+  }
   const operationPeriod = normalizedPairs.find(
     ({normalizedKey}) => normalizedKey === "운영기간",
   );
@@ -1566,6 +1593,19 @@ export function jejuConfig(page, asOfDate) {
     detailMetadataSelector: ".mb_area",
     detailDateInference: "registered_title_deadline",
     closedTextPattern: "모집마감",
+  };
+}
+
+export function ulsanCheckpointDetailConfig() {
+  const config = ulsanConfig(1);
+  return {
+    ...config,
+    sourceScopeSelectors: {
+      jurisdiction_text: "header",
+      operator_text: "header",
+      youth_policy_scope_text: "h1",
+      application_scope_text: "#board_normal_view",
+    },
   };
 }
 

@@ -13,9 +13,9 @@
 - 충북의 과거 상시모집 공고에서 종료된 운영기간을 우선 판정해 만료 정책이 현재
   신청 가능한 정책으로 노출되지 않도록 보정
 
-- 명시적 지역 자연어 검색을 match-only로 격리하고 광주·인천 정책 상세의 공식
-  지역·대상·시행 기관 근거와 대구·서울의 정책 단위 지역 표기를 보강해 실제
-  신청 가능한 지역 정책 62건을 검색 DB에 추가
+- 명시적 지역 자연어 검색을 match-only로 격리하고 광주·인천·울산 정책 상세의
+  공식 지역·대상·시행 기관 근거와 대구·서울의 정책 단위 지역 표기를 보강해 실제
+  신청 가능한 지역 정책 67건을 검색 DB에 추가
   ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
 
 - Browser navigation timeout 뒤 요청 URL과 준비 DOM을 검증하고 locator 신호

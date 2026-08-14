@@ -34,7 +34,7 @@
 | RYP6 | completed | 승인 13개 Source 4,606 identity 전체 판정·accepted 18건 DB 동기화·RYP-G4 pass |
 | RYP7 | completed | review 1,903건 Source별 사유·필드 coverage 감사와 Source-scope 승격 계약 고정 |
 | RYP8 | completed | 13개 Source field 상태 전건 reconcile, legacy null 0, 고정 outcome·closed 이력·failed 분류 감사 통과 |
-| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건 승격·충북 open 0건 확정, accepted 103건 DB 동기화·review 1,151건 잔여 Source 보강 진행 |
+| RYP9 | in-progress | 명시적 지역 검색 match-only·광주 10건·인천 15건·대전 1건·강원 2건·대구 33건·서울 1건·울산 5건 승격·충북 open 0건 확정, accepted 108건 DB 동기화·review 1,142건 잔여 Source 보강 진행 |
 
 ## 구현 내용
 
@@ -1438,3 +1438,29 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 충북 RYP9 감사: 전환 2, blocker 0; 적용 후 전환 0
 - 충북 DB actual 2회: accepted·inserted·updated·pruned·failed 모두 0
 - 충북 open 목록·명시적 지역 검색 API actual: `0/0`
+
+### RYP9 울산 정책 단위 지역·대상·신청기간 보강 (`2026-08-14`)
+
+- 완료 checkpoint 597건에서 현재 open·scheduled로 재판정 가능한 32 identity만
+  공식 상세에서 제한 재캡처했다. 대표 표본 `57904`는 울산 거주 19~39세와
+  `2026-05-26~2026-11-30`, `60093`은 울산 거주 미취업 19~39세와 울산경제일자리
+  진흥원 시행 근거를 사용자 동선으로 대조했다.
+- 울산 상세의 `참여자격·거주지·운영일정·제외대상·문의처` prose label을 공통
+  추출기에 추가하고, 제목의 기관 표기는 기관형 접두사일 때만 organization으로
+  사용했다. `접수일정`의 완전한 날짜 범위를 축약 본문 날짜보다 우선해 동일 기간이
+  중복 결합되며 open 정책이 closed로 오판되는 문제를 보정했다.
+- 감사 결과 5건(`57904`, `60176`, `60174`, `60093`, `54036`)을 accepted,
+  종료 근거가 확인된 4건을 closed로 전환했다. 나머지 48건은 정책 단위 지역·청년
+  대상·현재 신청 근거가 모두 확인되지 않아 review로 유지했다. outcome은
+  `accepted 108 / duplicate 2 / review 1,142 / closed 3,032 / failed 322`이며,
+  기존 accepted·failed identity는 보존되고 적용 후 재감사 전환은 0이다.
+- PostgreSQL actual은 5건 inserted, 동일 Raw 재실행은 5건 unchanged였다. partial
+  포함 울산 open 목록과 명시적 지역 검색이 모두 5건을 반환했고, 5개 상세의
+  Source ID·open 상태·울산 지역 계약이 적재 대상과 일치했다.
+
+검증 결과:
+
+- Browser Runtime 집중 테스트: `51 passed`
+- 울산 RYP9 감사: 전환 9, blocker 0; 적용 후 전환 0
+- 울산 DB actual: accepted 5·inserted 5; 재실행 unchanged 5
+- 울산 open 목록·명시적 지역 검색·상세 API actual: `5/5/5`
