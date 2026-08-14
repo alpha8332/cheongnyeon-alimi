@@ -34,6 +34,7 @@
 | DTL4-5 | 완료 | Data·OpenAPI·TypeScript·Mock 소비 대조, 관리자 보안·로그 계약 정렬, `W4-G1_APPROVED` |
 | DTL4-6 | 완료 | PostgreSQL 포함 전 영역 자체 검증·actual 환경 준비·Eligibility 잔재 정리, `W4-G2_APPROVED` |
 | DTL4-7 | 완료 | 실제 PostgreSQL·Runtime·FastAPI·React 세 Critical Path와 Release 1 회귀, `W4-G3_APPROVED` |
+| DTL4-8 | 완료 | 전 영역 전체 회귀·계약·문서·비추적 대조, `W4-G4_MIDPOINT_PASS` |
 
 ## 구현 내용
 
@@ -279,6 +280,43 @@ ignore했다. 로그 디렉터리와 활성 파일은 Backend 시작 시 다시 
 세 actual E2E와 Release 1 검색·상세 회귀, 비밀·Runtime 비추적 경계를 근거로
 `W4-G3_APPROVED`로 판정한다. DTL4-8의 전체 회귀·문서 대조·W4-G4 midpoint와
 5주차 독립 QA·사용성 리뷰는 수행하지 않았으며 완료로 판정하지 않는다.
+
+### DTL4-8 전체 회귀·문서 대조와 W4-G4 (`2026-08-14`)
+
+시작 기준은 `feature/integration/week-04-acceptance`의
+`d8952a4b058e640b01e3448db4880010e2aef319`다. DTL4-8은 새 기능을 추가하지
+않고 Data 03~05, Backend·Frontend 승인 기본 기능과 DTL4-7 actual 결과를 전체
+회귀하고 계약·운영 문서·Git 경계를 대조했다.
+
+| 검증 | 결과 |
+| --- | --- |
+| Data 전체 단위 | 282 passed |
+| Backend 전체 | PostgreSQL 포함 187 passed, 기존 deprecation warning 1건 |
+| Data PostgreSQL Integration | 8 passed, 기존 deprecation warning 1건 |
+| Frontend unit·lint·build | 162 passed, lint·production build passed |
+| Frontend 전체 Browser | Mock 79 passed, Real API/ES4 조건부 14 skipped |
+| DTL4-7 actual 보완 증거 | Real API 8 passed, actual Critical Path 3 passed |
+| Migration | 단일 head `20260810_0006` |
+| 비밀·Runtime 경계 | 금지 경로·파일 Git 추적 0건 |
+| test DB 정리 | `alembic_version` 외 테이블 0건 |
+
+전체 Python과 Frontend 회귀가 NormalizedProgram Schema, Migration, OpenAPI,
+TypeScript·Mock 소비 계약을 함께 통과했다. README·환경 예시·Collector 운영 문서의
+4자리 관리자 PIN, pgpass 기반 DB 선택, Runtime Raw와 구조화 file log 비추적
+경계도 실제 구현과 일치한다. Browser 14건 skip은 Mock 전체 회귀에서 환경변수로
+분리한 actual 시나리오이며, DTL4-7에서 실제 PostgreSQL·FastAPI·React를 연결해
+해당 핵심 경로를 별도로 통과했으므로 미실행을 성공으로 바꾸어 기록하지 않는다.
+
+서울 Source는 110건 중 accepted 1·review 94·closed 15다. 이는 서울 정책이
+1건뿐이라는 의미가 아니라 명시적 지역·시행 기관·청년 대상·현재 신청 근거를
+동시에 확인하지 못한 후보를 보수적으로 review에 둔 결과다. 거짓 accepted나
+필수 기능 결함은 아니므로 W4-G4를 막지 않되 후속 데이터 품질 보강 후보로 남긴다.
+
+Data 06을 제외한 4주차 승인 기본 기능, 실제 관리자·웹 Source·사용자 E2E,
+담당자 전체 회귀와 문서 대조가 완료돼 `W4-G4_MIDPOINT_PASS`로 판정한다. 5주차는
+Data 06, 승인 추가 기능, 결함 수정, UI/UX 최적화와 독립 QA·사용성 리뷰·보고서
+대조를 시작할 수 있다. 이 판정은 Release 2 최종 Gate나 `v0.5.0` tag 승인이
+아니다.
 
 ## 주요 변경 파일
 

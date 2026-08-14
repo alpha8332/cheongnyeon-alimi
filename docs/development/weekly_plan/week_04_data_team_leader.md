@@ -2,7 +2,8 @@
 
 ## 계획 정보
 
-- 상태: in progress (`DTL4-7`·`W4-G3` 완료, `DTL4-8`·`W4-G4` 준비)
+- 상태: completed (`DTL4-8` 전체 회귀·문서 대조 완료,
+  `W4-G4_MIDPOINT_PASS`)
 - 대상 주차: 4주차
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data 담당, Team Leader - Integration
@@ -14,8 +15,8 @@
   통과 (`DTL4-4B`·`ES4` actual 세로 인수 포함), `DTL4-5` 소비 대조와
   `W4-G1_APPROVED` 완료, `DTL4-6` PostgreSQL·영역별 검증을 통과해
   `W4-G2_APPROVED`, `DTL4-7` 세 actual E2E·Release 1 회귀를 통과해
-  `W4-G3_APPROVED`. 다음은 `DTL4-8` 전체 회귀·문서 대조와 `W4-G4`.
-  Data 06 구현은 5주차로 이동
+  `W4-G3_APPROVED`, `DTL4-8` 전체 회귀·문서·비추적 대조를 통과해
+  `W4-G4_MIDPOINT_PASS`. Data 06 구현과 독립 QA·사용성 리뷰는 5주차로 이동
 - 상위 계획: [4주차 전체 상세 계획](week_04_v0_5_0.md)
 - 공통 Release 기준점: `2b33ed7` (`v0.1.0`)
 
@@ -629,6 +630,31 @@ Data 06을 제외한 4주차 승인 기본 기능 구현과 담당자 자체 검
   검증 제약의 담당·완료 조건이 명확함
 - `W4-G4_BLOCKED`: 기본 기능 하나라도 미구현, 필수 E2E·계약·보안 경계 실패
 
+### DTL4-8 완료 기록 (`2026-08-14`)
+
+- 시작 기준: `feature/integration/week-04-acceptance`의 `d8952a4`
+- Data 전체 unittest 282건, Backend 전체 pytest 187건, PostgreSQL Data
+  Integration 8건 통과
+- Frontend unit 162건, lint, production build 통과
+- 전체 Mock Browser 회귀 79건 통과·Real API/ES4 조건부 14건 skip; 조건부
+  actual은 DTL4-7의 Real API 8건과 관리자·웹 Source·사용자 3건으로 별도 통과
+- Migration 단일 head `20260810_0006`, NormalizedProgram Schema·OpenAPI·
+  TypeScript·Mock 소비 계약의 전체 회귀 통과
+- 금지된 API key·pgpass·Runtime Raw/HTML/log/decision·DB 산출물 Git 추적 0건,
+  전용 test DB는 검증 뒤 빈 `alembic_version`만 남김
+- README·`.env.example`·운영 문서의 관리자 PIN, DB 선택, Runtime·로그 경계와
+  실제 구현이 일치함
+- 기존 Starlette/httpx 전환 warning 1건과 Frontend build의 번들 크기·Vite 향후
+  호환 warning은 기능·보안·계약을 막지 않는 5주차 유지보수 후보로 분류
+- 서울 지역 Source 110건 중 accepted 1·review 94·closed 15인 보수적 판정은
+  거짓 승격 없이 유지하며, 5주차 필수 기본 기능 이월이 아닌 후속 데이터 품질
+  보강 후보로 기록
+
+Data 06을 제외한 승인 기본 기능, 세 actual E2E, 담당자 전체 회귀와 문서 대조가
+완료됐으므로 `W4-G4_MIDPOINT_PASS`로 판정한다. 이는 Release 2 최종 Gate나
+`v0.5.0` tag 승인 근거가 아니다. 독립 QA·사용성 리뷰·보고서 대조는 수행하지
+않았고 5주차에서 별도로 실행한다.
+
 다음 중 하나라도 빠지면 `PASS`나 `CONDITIONAL`을 사용할 수 없다.
 
 - 공식 웹 Source actual 수집·DB 적재
@@ -765,12 +791,12 @@ PostgreSQL, Browser, API key 또는 Source 접근 환경이 준비되지 않으�
 - Data 06 SOP0~SOP5는 5주차 W5-G0~G1로 이동
 - [x] DTL4-7 관리자·웹 Source·사용자 세 E2E와 W4-G3 통과
 - [x] Release 1 golden 검색·상세 회귀 통과
-- [ ] Data·Backend·Frontend 전체 담당자 회귀 결과 대조
-- [ ] Schema·API·DB·운영·README·개발 기록과 실제 구현 일치
-- [ ] 비밀·Runtime Raw·HTML·로그·DB 파일 Git 비추적 확인
-- [ ] `python scripts/validate_docs.py`와 `git diff --check` 통과
-- [ ] W4-G4 midpoint 판정과 5주차 시작 조건 기록
-- [ ] 독립 QA·사용성 리뷰·보고서 미수행 상태를 정확히 기록
+- [x] Data·Backend·Frontend 전체 담당자 회귀 결과 대조
+- [x] Schema·API·DB·운영·README·개발 기록과 실제 구현 일치
+- [x] 비밀·Runtime Raw·HTML·로그·DB 파일 Git 비추적 확인
+- [x] `python scripts/validate_docs.py`와 `git diff --check` 통과
+- [x] W4-G4 midpoint 판정과 5주차 시작 조건 기록
+- [x] 독립 QA·사용성 리뷰·보고서 미수행 상태를 정확히 기록
 
 ## 관련 문서
 
