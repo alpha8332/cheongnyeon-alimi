@@ -270,12 +270,15 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 
 | ID | 상태 | 다음 담당 | 완료·재개 조건 |
 | --- | --- | --- | --- |
-| `W4-G1-BE-AUTH` | review-pending | Backend | localhost 기본 `0000` 경계와 production 별도 token secret fail-closed 근거를 구현·테스트로 대조 |
-| `W4-G1-FE-CONSUMER` | review-pending | Frontend | PIN·관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock을 승인 계약과 대조 |
+| `W4-G1-BE-AUTH` | completed (`2026-08-14`) | Team Leader 검토 | local client+local/test 기본 `0000`, production 전용 token secret fail-closed 테스트 통과 |
+| `W4-G1-FE-CONSUMER` | completed (`2026-08-14`) | Team Leader 검토 | 관리자·자격요건·추천·localStorage·날짜 TypeScript·Mock 소비 대조와 Frontend 161건 통과 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
 `W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 구현 적합성
 확인이며 Data 03·04의 기반 구현과 완료된 Integration 08을 막지 않는다.
+DTL4-5는 위 두 항목과 관리자 Policy·로그 DTO, Eligibility 중복 proposal,
+Data 05 재사용·중복 경계를 함께 대조해 `W4-G1_APPROVED`로 판정했다. 상세 근거는
+[v0.5.0 Contract Baseline 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md)에 둔다.
 `W4-ES2-BE-CONSUMER`는 NormalizedProgram 1.2.0, Migration `20260810_0006`,
 상세 DTO와 PostgreSQL actual 대조를 통과해 `2026-08-10` 완료 처리했다.
 `W4-ES3-FE-CONSUMER`는 상세 TypeScript·Mock·UI와 승인 문구, 시설 전화 링크,

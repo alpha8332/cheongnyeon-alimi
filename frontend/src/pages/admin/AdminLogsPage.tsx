@@ -1,25 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { AdminApiError } from '@/api/adminApiError';
 import AdminLogEventFilters from '@/components/admin/AdminLogEventFilters';
-import {
-  EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT,
-  toAdminLogEventListQueryFromDraft,
-  type AdminLogEventFilterDraft,
-} from '@/utils/adminLogEventFilters';
 import AdminLogEventTable, {
   AdminLogEventDetailPanel,
 } from '@/components/admin/AdminLogEventTable';
 import AdminLogMaintenanceActions from '@/components/admin/AdminLogMaintenanceActions';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
-import { AdminApiError } from '@/api/adminApiError';
-import { useAdminSession } from '@/hooks/useAdminSession';
-import { useAdminUnauthorizedRedirect } from '@/hooks/useAdminUnauthorizedRedirect';
 import {
   useAdminLogEventListQuery,
   useAdminLogFileListQuery,
 } from '@/hooks/useAdminObservabilityQuery';
-import type { AdminLogEventListResponse } from '@/types/adminLog';
-import { findMockAdminLogEventById } from '@/mocks/adminObservabilityFixtures';
+import { useAdminSession } from '@/hooks/useAdminSession';
+import { useAdminUnauthorizedRedirect } from '@/hooks/useAdminUnauthorizedRedirect';
+import {
+  getAdminLogEventKey,
+  type AdminLogEventListResponse,
+} from '@/types/adminLog';
+import {
+  EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT,
+  toAdminLogEventListQueryFromDraft,
+  type AdminLogEventFilterDraft,
+} from '@/utils/adminLogEventFilters';
 
 const PAGE_SIZE = 10;
 
@@ -46,8 +48,7 @@ export default function AdminLogsPage() {
     data: fileResponse,
     refetch: refetchFiles,
     isFetching: isFilesFetching,
-  } = useAdminLogFileListQuery({ page: 1, size: 20 }, accessToken);
-
+  } = useAdminLogFileListQuery(accessToken);
   const {
     data: eventResponse,
     isLoading,
@@ -58,11 +59,7 @@ export default function AdminLogsPage() {
   } = useAdminLogEventListQuery(eventQuery, accessToken);
 
   useEffect(() => {
-    if (!eventResponse) {
-      return;
-    }
-
-    // Cache last successful list so 5xx Toast keeps the table visible.
+    if (!eventResponse) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional stale-while-error UX
     setCachedEventResponse(eventResponse);
   }, [eventResponse]);
@@ -72,80 +69,67 @@ export default function AdminLogsPage() {
     onRetry: () => void refetchEvents(),
   });
 
+  const displayEventResponse = eventResponse ?? cachedEventResponse;
+  const hasEventItems = (displayEventResponse?.events.length ?? 0) > 0;
+  const showEventLoading = isLoading && !hasEventItems;
+  const totalPages = displayEventResponse
+    ? Math.max(1, Math.ceil(displayEventResponse.total / displayEventResponse.limit))
+    : 1;
+  const selectedEvent =
+    displayEventResponse?.events.find(
+      (item) => getAdminLogEventKey(item) === selectedEventId,
+    ) ?? null;
+
   const errorMessage =
     error instanceof AdminApiError
       ? error.detail
       : error instanceof Error
         ? error.message
-        : 'Log event를 불러오지 못했습니다.';
-
-  const displayEventResponse = eventResponse ?? cachedEventResponse;
-  const hasEventItems = (displayEventResponse?.items.length ?? 0) > 0;
-  const showEventLoading = isLoading && !hasEventItems;
-
-  const selectedEvent =
-    displayEventResponse?.items.find((item) => item.event_id === selectedEventId) ??
-    null;
-  const selectedEventDetail = selectedEventId
-    ? findMockAdminLogEventById(selectedEventId)
-    : undefined;
-  const selectedEventMessage = selectedEventDetail?.message ?? null;
+        : '로그 이벤트를 불러오지 못했습니다.';
 
   const handleApplyFilters = () => {
     setAppliedFilters(filterDraft);
     setPage(1);
     setSelectedEventId(null);
   };
-
   const handleResetFilters = () => {
     setFilterDraft(EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT);
     setAppliedFilters(EMPTY_ADMIN_LOG_EVENT_FILTER_DRAFT);
     setPage(1);
     setSelectedEventId(null);
   };
-
   const handleRefresh = () => {
-    void refetchFiles();
-    void refetchEvents().finally(() => {
-      refreshButtonRef.current?.focus();
-    });
-  };
-
-  const handleMaintenanceComplete = () => {
-    void refetchFiles();
-    void refetchEvents();
-  };
-
-  const handleUnauthorized = () => {
-    redirectToLogin();
+    void Promise.all([refetchFiles(), refetchEvents()]);
   };
 
   return (
-    <div className="page admin-logs-page">
-      <header className="greeting">
-        <h1 className="greeting__title">구조화 Log</h1>
-        <p className="greeting__subtitle">
-          log file·event read-only 조회와 archive maintenance (Mock-first)
-        </p>
+    <div className="admin-logs-page">
+      <header className="admin-page-header">
+        <div>
+          <p className="admin-page-header__eyebrow">Data operations</p>
+          <h1 className="admin-page-header__title">로그 조회 및 정리</h1>
+          <p className="admin-page-header__description">
+            구조화된 이벤트만 읽기 전용으로 조회하고, 보관 로그만 감사 기록과 함께 정리합니다.
+          </p>
+        </div>
       </header>
 
-      <section className="admin-log-files-summary" aria-label="Log files">
-        <h2 className="admin-log-files-summary__title">Log files</h2>
-        {isFilesFetching ? <p role="status">파일 목록 갱신 중…</p> : null}
-        <ul className="admin-log-files-summary__list">
-          {(fileResponse?.items ?? []).map((file) => (
-            <li key={file.file_id}>
-              <strong>{file.filename}</strong> · {file.status} · {file.file_id}
-            </li>
-          ))}
-        </ul>
+      <section className="admin-log-files" aria-label="로그 파일 목록">
+        <h2>로그 파일</h2>
+        {fileResponse?.files.map((file) => (
+          <p key={file.file_id}>
+            <strong>{file.filename}</strong> · {file.is_active ? 'active' : 'archive'} ·{' '}
+            {file.size_bytes.toLocaleString()} bytes
+          </p>
+        ))}
+        {isFilesFetching ? <p role="status">파일 목록 새로고침 중…</p> : null}
       </section>
 
       <AdminLogMaintenanceActions
-        files={fileResponse?.items ?? []}
+        files={fileResponse?.files ?? []}
         accessToken={accessToken}
-        onMaintenanceComplete={handleMaintenanceComplete}
-        onUnauthorized={handleUnauthorized}
+        onMaintenanceComplete={handleRefresh}
+        onUnauthorized={redirectToLogin}
       />
 
       <AdminLogEventFilters
@@ -158,16 +142,13 @@ export default function AdminLogsPage() {
         refreshButtonRef={refreshButtonRef}
       />
 
-      {showEventLoading ? (
-        <LoadingState message="Log event를 불러오는 중입니다." />
-      ) : null}
+      {showEventLoading ? <LoadingState message="로그 이벤트를 불러오는 중입니다." /> : null}
       {isError && !(error instanceof AdminApiError) ? (
         <ErrorState message={errorMessage} />
       ) : null}
-
-      {!showEventLoading && !isError && eventResponse && eventResponse.items.length === 0 ? (
+      {!showEventLoading && !isError && eventResponse?.events.length === 0 ? (
         <p className="state-message state-message--empty" role="status">
-          조건에 맞는 log event가 없습니다.
+          조건에 맞는 로그 이벤트가 없습니다.
         </p>
       ) : null}
 
@@ -175,12 +156,11 @@ export default function AdminLogsPage() {
         {hasEventItems && displayEventResponse ? (
           <>
             <AdminLogEventTable
-              items={displayEventResponse.items}
+              items={displayEventResponse.events}
               selectedEventId={selectedEventId}
               onSelectEvent={setSelectedEventId}
             />
-
-            <nav className="collection-run-pagination" aria-label="Log event pagination">
+            <nav className="collection-run-pagination" aria-label="로그 이벤트 페이지">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -190,15 +170,13 @@ export default function AdminLogsPage() {
                 이전
               </button>
               <span className="collection-run-pagination__status" role="status">
-                {displayEventResponse.page} / {displayEventResponse.pages} 페이지
+                {displayEventResponse.page} / {totalPages} 페이지
               </span>
               <button
                 type="button"
                 className="btn btn-secondary"
-                disabled={page >= displayEventResponse.pages}
-                onClick={() =>
-                  setPage((current) => Math.min(displayEventResponse.pages, current + 1))
-                }
+                disabled={page >= totalPages}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
               >
                 다음
               </button>
@@ -208,7 +186,6 @@ export default function AdminLogsPage() {
 
         <AdminLogEventDetailPanel
           event={selectedEvent}
-          message={selectedEventMessage}
           onClose={() => setSelectedEventId(null)}
         />
       </div>

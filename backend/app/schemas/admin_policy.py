@@ -2,6 +2,8 @@ from datetime import date, datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
+from app.schemas.policy import ApplicationStatus, DataQualityStatus, PolicyCategory
+
 
 AdminPolicySortBy = Literal["id", "created_at", "updated_at", "title", "collected_at"]
 SortOrder = Literal["asc", "desc"]
@@ -15,10 +17,10 @@ class AdminPolicyItem(BaseModel):
     external_id: Optional[str] = None
     title: str
     organization: Optional[str] = None
-    categories: List[str] = Field(default_factory=list)
+    categories: List[PolicyCategory] = Field(default_factory=list)
     regions: List[str] = Field(default_factory=list)
-    data_quality_status: str
-    application_status: Optional[str] = None
+    data_quality_status: DataQualityStatus
+    application_status: Optional[ApplicationStatus] = None
     application_start: Optional[date] = None
     application_end: Optional[date] = None
     collected_at: datetime

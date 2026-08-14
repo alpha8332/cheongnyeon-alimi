@@ -31,6 +31,7 @@
 | --- | --- | --- |
 | DTL4-0 | 완료 | 시작 SHA·환경·Forest 소유·merge target과 비추적 경계 확인 |
 | DTL4-1 / C0~C4 | 완료 | Data inventory·Backend 대조·웹 Source 경계 승인, `W4-G0_APPROVED` |
+| DTL4-5 | 완료 | Data·OpenAPI·TypeScript·Mock 소비 대조, 관리자 보안·로그 계약 정렬, `W4-G1_APPROVED` |
 
 ## 구현 내용
 
@@ -169,6 +170,33 @@ Team Leader가 `W4-G0_APPROVED`로 판정했다. FE TypeScript·Mock 미착수�
 localhost `0000`·별도 token secret 차이는 승인 계약의 미확정이 아니라
 `W4-G1` 구현 적합성 항목으로 이관했다. 이에 DTL4-2A·3A·4A 기반 구현을
 해제하며 실제 Schema·Migration·actual 구현은 각 후속 Forest에서 수행한다.
+
+### DTL4-5 소비 계약 대조와 W4-G1 (`2026-08-14`)
+
+시작 기준은 `feature/integration/dtl4-5-contract-parity`의
+`c4c6434aa18eb5c5f9e77498a80ea54149546c51`이다. 실제 병합 순서는 다음과 같다.
+
+1. `5343b55650794886c9b6ea8ebbdaae9257d33454`: Frontend 브랜치에 develop 병합
+2. `ac2b64d79128a1b5e74a88d010b8534faad32404`: 지역 정책 Data 결과 병합
+3. `c4c6434aa18eb5c5f9e77498a80ea54149546c51`: develop에 Week 4 Data·Frontend 병합
+
+대조 결과와 조치는 다음과 같다.
+
+| 영역 | 발견한 차이 | DTL4-5 결과 |
+| --- | --- | --- |
+| 관리자 인증 | `0000`이 environment 문자열에만 의존, production token secret fallback | local client+local/test에서만 기본 PIN 허용, production 전용 secret fail-closed |
+| 관리자 Policy | FE proposal의 `size`·`pages`·추가 sort/row field가 Backend와 다름 | Backend `{items,total,page,limit}`·allowlist sort·detail DTO로 통일 |
+| 관리자 로그 | FE proposal path/envelope와 Backend가 다르고 rotate endpoint 누락 | `/admin/logs/*` DTO 통일, rotate→생성 archive 삭제→감사 API 추가 |
+| Eligibility | 과거 FE proposal과 Integration 08 승인 DTO가 중복 | 실제 소비 중인 `coverage/documents/unknowns/evidence`만 보존 |
+| correlation·비밀 | 로그 DTO는 correlation field가 있으나 producer가 연결되지 않음 | request/run/source producer 연결, PIN·token·Raw·SQL parameter 회귀 보강 |
+| Data 05 | 새 지역 Source의 중복 row 위험 | NormalizedProgram 1.2.0·기존 Runtime Importer·상세/검색 projection 재사용과 교차 Source duplicate Gate 테스트 확인 |
+| 사용자 기능 | 일정상 누락 가능성 | 즐겨찾기·KST D-Day·D-7 내부 알림·all-day `.ics` 소비 테스트 존재 확인 |
+
+W4-G1 승인 조건인 공개 DTO fixture 소비, 비밀 비노출, 계약 우선 변경과 실제
+병합 순서 기록을 충족해 `W4-G1_APPROVED`로 판정한다. 실제 PostgreSQL·Runtime
+log·Real API Browser 종단 검증은 W4-G2/AO5 범위이며, `TEST_DATABASE_URL`
+미주입으로 이번 집중 테스트 중 PostgreSQL 2건은 skip됐다. 관리자 Mock Browser
+E2E는 19건 통과했고 Real API 조건부 1건은 skip됐다.
 
 ## 주요 변경 파일
 

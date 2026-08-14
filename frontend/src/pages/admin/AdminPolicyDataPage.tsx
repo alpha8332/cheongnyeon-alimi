@@ -99,6 +99,9 @@ export default function AdminPolicyDataPage() {
         : '정책 데이터를 불러오지 못했습니다.';
 
   const displayListResponse = listResponse ?? cachedListResponse;
+  const totalPages = displayListResponse
+    ? Math.max(1, Math.ceil(displayListResponse.total / displayListResponse.limit))
+    : 1;
   const hasListItems = (displayListResponse?.items.length ?? 0) > 0;
   const showListLoading = isLoading && !hasListItems;
 
@@ -203,14 +206,14 @@ export default function AdminPolicyDataPage() {
                 이전
               </button>
               <span className="collection-run-pagination__status" role="status">
-                {displayListResponse.page} / {displayListResponse.pages} 페이지
+                {displayListResponse.page} / {totalPages} 페이지
               </span>
               <button
                 type="button"
                 className="btn btn-secondary"
-                disabled={page >= displayListResponse.pages}
+                disabled={page >= totalPages}
                 onClick={() =>
-                  setPage((current) => Math.min(displayListResponse.pages, current + 1))
+                  setPage((current) => Math.min(totalPages, current + 1))
                 }
               >
                 다음

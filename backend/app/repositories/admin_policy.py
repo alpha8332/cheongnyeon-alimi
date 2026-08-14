@@ -1,5 +1,5 @@
 from typing import List, Optional, Tuple
-from sqlalchemy import asc, desc
+from sqlalchemy import asc, desc, exists, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.policy import Policy
@@ -11,6 +11,21 @@ ALLOWLIST_SORT_FIELDS = {
     "title": Policy.title,
     "collected_at": Policy.collected_at,
 }
+
+
+def _json_array_contains(db: Session, column, value: str):
+    """Build a database-side JSON array membership predicate."""
+
+    if db.get_bind().dialect.name == "sqlite":
+        values = func.json_each(column).table_valued("key", "value").alias()
+        return exists(select(1).select_from(values).where(values.c.value == value))
+    return column.contains([value])
+
+
+def _json_array_is_empty(db: Session, column):
+    if db.get_bind().dialect.name == "postgresql":
+        return func.jsonb_array_length(column) == 0
+    return func.json_array_length(column) == 0
 
 
 def get_admin_policies(
@@ -39,6 +54,16 @@ def get_admin_policies(
         query = query.filter(Policy.application_status == status)
     if data_quality_status:
         query = query.filter(Policy.data_quality_status == data_quality_status)
+    if category:
+        query = query.filter(_json_array_contains(db, Policy.categories, category))
+    if region:
+        query = query.filter(
+            or_(
+                _json_array_is_empty(db, Policy.regions),
+                _json_array_contains(db, Policy.regions, "전국"),
+                _json_array_contains(db, Policy.regions, region),
+            )
+        )
 
     total = query.count()
 
@@ -52,16 +77,6 @@ def get_admin_policies(
     # 페이징 적용
     offset = (page - 1) * limit
     items = query.offset(offset).limit(limit).all()
-
-    # 인메모리 category / region 추가 필터링 (JSONB 내 필터)
-    if category or region:
-        filtered_items = []
-        for policy in items:
-            cat_match = not category or (policy.categories and category in policy.categories)
-            reg_match = not region or (not policy.regions or "전국" in policy.regions or region in policy.regions)
-            if cat_match and reg_match:
-                filtered_items.append(policy)
-        items = filtered_items
 
     return items, total
 

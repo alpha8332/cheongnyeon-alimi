@@ -1,7 +1,7 @@
 /**
  * Admin read-only Policy data API contract (Frontend 08 / FE8-00).
  *
- * W4-G0 proposal aligned with Integration 09 AO1.
+ * Consumer contract aligned with the current Backend OpenAPI.
  * Exposes approved Policy projection only — no provenance, Raw, or arbitrary SQL.
  *
  * @see docs/development/develop_plan/integration/09_admin_data_log_console.md
@@ -40,71 +40,70 @@ export interface AdminPolicyListItemDto {
   application_start: string | null;
   application_end: string | null;
   regions: string[];
-  age_min: number | null;
-  age_max: number | null;
   data_quality_status: PublicDataQualityStatus;
   collected_at: string;
+  created_at: string;
   updated_at: string;
 }
 
 /** Full approved Policy projection for admin row detail. */
-export type AdminPolicyDetailDto = PolicyDto;
+export type AdminPolicyDetailDto = Omit<
+  PolicyDto,
+  'schema_version' | 'application_period_text' | 'application_schedule'
+>;
 
 export type AdminPolicySortField =
   | 'id'
+  | 'created_at'
   | 'title'
   | 'collected_at'
-  | 'updated_at'
-  | 'application_start'
-  | 'application_end';
+  | 'updated_at';
 
 export type AdminPolicySortOrder = 'asc' | 'desc';
 
 export interface AdminPolicyListQuery {
   page?: number;
-  size?: number;
+  limit?: number;
   source_id?: string;
   category?: PolicyCategory;
   region?: string;
   status?: ApplicationStatus;
   data_quality_status?: PublicDataQualityStatus;
   sort_by?: AdminPolicySortField;
-  sort_order?: AdminPolicySortOrder;
+  order?: AdminPolicySortOrder;
 }
 
 export interface AdminPolicyListResponse {
   items: AdminPolicyListItemDto[];
   total: number;
   page: number;
-  size: number;
-  pages: number;
+  limit: number;
 }
 
 export const ADMIN_POLICY_SORT_FIELDS: readonly AdminPolicySortField[] = [
   'id',
+  'created_at',
   'title',
   'collected_at',
   'updated_at',
-  'application_start',
-  'application_end',
 ] as const;
 
 export const ADMIN_POLICY_LIST_SIZE_LIMITS = {
   min: 1,
   max: 100,
-  default: 20,
+  default: 10,
 } as const;
 
 export interface ResolvedAdminPolicyListQuery {
   page: number;
-  size: number;
+  limit: number;
   source_id?: string;
   category?: PolicyCategory;
   region?: string;
   status?: ApplicationStatus;
   data_quality_status?: PublicDataQualityStatus;
   sort_by: AdminPolicySortField;
-  sort_order: AdminPolicySortOrder;
+  order: AdminPolicySortOrder;
 }
 
 const POLICY_CATEGORIES = new Set<PolicyCategory>([
@@ -142,21 +141,21 @@ export function resolveAdminPolicyListQuery(
   query: AdminPolicyListQuery = {},
 ): ResolvedAdminPolicyListQuery {
   const page = query.page ?? 1;
-  const size = query.size ?? ADMIN_POLICY_LIST_SIZE_LIMITS.default;
+  const limit = query.limit ?? ADMIN_POLICY_LIST_SIZE_LIMITS.default;
   const sort_by = query.sort_by ?? 'id';
-  const sort_order = query.sort_order ?? 'asc';
+  const order = query.order ?? 'desc';
 
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new Error('Admin policy list page must be an integer greater than 0.');
   }
 
   if (
-    !Number.isSafeInteger(size) ||
-    size < ADMIN_POLICY_LIST_SIZE_LIMITS.min ||
-    size > ADMIN_POLICY_LIST_SIZE_LIMITS.max
+    !Number.isSafeInteger(limit) ||
+    limit < ADMIN_POLICY_LIST_SIZE_LIMITS.min ||
+    limit > ADMIN_POLICY_LIST_SIZE_LIMITS.max
   ) {
     throw new Error(
-      `Admin policy list size must be an integer from ${ADMIN_POLICY_LIST_SIZE_LIMITS.min} to ${ADMIN_POLICY_LIST_SIZE_LIMITS.max}.`,
+      `Admin policy list limit must be an integer from ${ADMIN_POLICY_LIST_SIZE_LIMITS.min} to ${ADMIN_POLICY_LIST_SIZE_LIMITS.max}.`,
     );
   }
 
@@ -164,8 +163,8 @@ export function resolveAdminPolicyListQuery(
     throw new Error('Admin policy list sort_by is not in the allowlist.');
   }
 
-  if (sort_order !== 'asc' && sort_order !== 'desc') {
-    throw new Error('Admin policy list sort_order must be asc or desc.');
+  if (order !== 'asc' && order !== 'desc') {
+    throw new Error('Admin policy list order must be asc or desc.');
   }
 
   if (query.category !== undefined && !POLICY_CATEGORIES.has(query.category)) {
@@ -192,9 +191,9 @@ export function resolveAdminPolicyListQuery(
 
   return {
     page,
-    size,
+    limit,
     sort_by,
-    sort_order,
+    order,
     ...(query.source_id ? { source_id: query.source_id } : {}),
     ...(query.category ? { category: query.category } : {}),
     ...(query.region ? { region: query.region } : {}),
@@ -218,10 +217,9 @@ export function toAdminPolicyListItem(policy: PolicyDto): AdminPolicyListItemDto
     application_start: policy.application_start,
     application_end: policy.application_end,
     regions: [...policy.regions],
-    age_min: policy.age_min,
-    age_max: policy.age_max,
     data_quality_status: policy.data_quality_status,
     collected_at: policy.collected_at,
+    created_at: policy.created_at,
     updated_at: policy.updated_at,
   };
 }

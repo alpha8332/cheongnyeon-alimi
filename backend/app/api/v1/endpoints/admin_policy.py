@@ -10,6 +10,7 @@ from app.schemas.admin_policy import (
     AdminPolicySortBy,
     SortOrder,
 )
+from app.schemas.policy import ApplicationStatus, DataQualityStatus, PolicyCategory
 from app.services.admin_policy import (
     get_admin_policy_detail_service,
     list_admin_policies_service,
@@ -34,11 +35,11 @@ def get_admin_policies_endpoint(
     limit: int = Query(default=10, ge=1, le=100, description="페이지 당 항목 수 (최대 100)"),
     sort_by: AdminPolicySortBy = Query(default="id", description="Allowlist 정렬 컬럼"),
     order: SortOrder = Query(default="desc", description="정렬 순서 (asc, desc)"),
-    category: Optional[str] = Query(default=None, description="카테고리 필터"),
-    region: Optional[str] = Query(default=None, description="지역 필터"),
-    source_id: Optional[str] = Query(default=None, description="수집 출처 ID 필터"),
-    status_param: Optional[str] = Query(default=None, alias="status", description="신청 상태 필터"),
-    data_quality_status: Optional[str] = Query(default=None, description="데이터 품질 상태 필터 (valid, partial)"),
+    category: Optional[PolicyCategory] = Query(default=None, description="카테고리 필터"),
+    region: Optional[str] = Query(default=None, min_length=1, max_length=100, description="지역 필터"),
+    source_id: Optional[str] = Query(default=None, min_length=1, max_length=200, description="수집 출처 ID 필터"),
+    status_param: Optional[ApplicationStatus] = Query(default=None, alias="status", description="신청 상태 필터"),
+    data_quality_status: Optional[DataQualityStatus] = Query(default=None, description="데이터 품질 상태 필터 (valid, partial)"),
     db: Session = Depends(get_db),
     admin_payload: dict = Depends(get_current_admin_payload),
 ) -> AdminPolicyListResponse:

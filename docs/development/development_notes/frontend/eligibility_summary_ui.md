@@ -107,7 +107,27 @@ Real API detail에 summary가 없으면 카드 empty state를 표시한다(FE7-0
 - summary refetch는 별도 `getPolicyById(..., { summaryRefetch: true })` 호출로
   Mock audit·Toast contract를 명시적으로 검증.
 
+### DTL4-5 승인 계약 정리 (`2026-08-14`)
+
+병합 뒤 FE7의 과거 proposal(`status`·`required_documents`·
+`unknown_conditions`)과 Integration 08 승인 계약(`coverage`·`documents`·
+`unknowns`·`evidence`)이 동시에 남아 있음을 확인했다. 실제 상세 화면이 이미
+사용하던 다음 승인 소비만 보존하고, import되지 않는 proposal 구현·fixture·
+테스트를 제거했다.
+
+- `frontend/src/types/policy.ts`의 `EligibilitySummaryDto`
+- `frontend/src/components/policy/EligibilitySummary.tsx`
+- `frontend/src/mocks/policyContract.ts`
+- `data/fixtures/contracts/eligibility_evidence_cases.json`
+- `frontend/tests/eligibilitySummary.test.ts`
+
+승인 계약 소비 테스트는 Frontend 전체 161건과 Backend Eligibility·mapping
+집중 테스트에 포함해 통과했다.
+
 ## 주요 변경 파일
+
+다음은 FE7 당시 기록이며, DTL4-5에서 제거한 과거 proposal 파일은 위 계약 정리
+절을 기준으로 해석한다.
 
 - `frontend/src/components/eligibility/*.tsx`
 - `frontend/src/utils/eligibilitySummaryDisplay.ts`
@@ -143,9 +163,9 @@ Browser·Playwright E2E는 FE7-05·FE7-06에서 실행 완료.
 
 ## 남은 작업
 
-- W4-G0 Gate 승인 후 `docs/api/policies.md` detail `eligibility_summary` 절 추가
-- Backend Integration 08 ES2 merge 후 Real API eligibility summary golden 재검증
-- FE9-02 Integration Regression matrix B cross-Forest Toast dedupe 회귀
+- DTL4-5 계약 소비 대조는 완료됐다. 이후 Eligibility field 변경은
+  `docs/api/policies.md`와 공통 fixture를 먼저 갱신한 뒤 Backend·Frontend 소비를
+  함께 변경한다.
 
 ## 관련 문서
 

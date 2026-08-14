@@ -15,7 +15,7 @@ PROGRESSIVE_LOCKOUT_STEPS = [5, 10, 30, 60, 120, 300]
 _failed_attempts: Dict[str, Tuple[int, float]] = {}
 
 
-def get_effective_pin_hash() -> Optional[str]:
+def get_effective_pin_hash(*, allow_local_default_pin: bool = False) -> Optional[str]:
     """
     유효한 관리자 PIN 해시를 반환한다.
     - ADMIN_PIN_HASH가 설정되어 있으면 그 값을 사용.
@@ -25,18 +25,23 @@ def get_effective_pin_hash() -> Optional[str]:
     if settings.ADMIN_PIN_HASH:
         return settings.ADMIN_PIN_HASH.lower()
 
-    if settings.ENVIRONMENT.lower() in ("development", "local", "test"):
+    if (
+        allow_local_default_pin
+        and settings.ENVIRONMENT.lower() in ("development", "local", "test")
+    ):
         return DEFAULT_LOCAL_PIN_HASH
 
     return None
 
 
-def verify_admin_pin(pin: str) -> bool:
+def verify_admin_pin(pin: str, *, allow_local_default_pin: bool = False) -> bool:
     """
     입력된 4자리 PIN의 SHA-256 해시값을 유효 해시와 비교한다.
     원문 PIN은 로그나 예외 메시지에 남기지 않는다.
     """
-    effective_hash = get_effective_pin_hash()
+    effective_hash = get_effective_pin_hash(
+        allow_local_default_pin=allow_local_default_pin,
+    )
     if not effective_hash:
         # Fail-closed: production에서 설정 미비 시 모든 PIN 거부
         return False
@@ -45,10 +50,15 @@ def verify_admin_pin(pin: str) -> bool:
     return hmac.compare_digest(input_hash, effective_hash)
 
 
-def get_admin_token_secret() -> bytes:
-    """관리자 토큰 서명에 사용할 시크릿 바이트를 반환한다."""
-    secret = settings.ADMIN_TOKEN_SECRET or settings.SECRET_KEY
-    return secret.encode("utf-8")
+def get_admin_token_secret() -> Optional[bytes]:
+    """관리자 토큰 서명 시크릿을 반환하며 production은 전용 설정만 허용한다."""
+    if settings.ADMIN_TOKEN_SECRET:
+        return settings.ADMIN_TOKEN_SECRET.encode("utf-8")
+
+    if settings.ENVIRONMENT.lower() in ("development", "local", "test"):
+        return settings.SECRET_KEY.encode("utf-8")
+
+    return None
 
 
 def create_admin_session_token(expires_minutes: Optional[int] = None) -> str:
@@ -60,6 +70,8 @@ def create_admin_session_token(expires_minutes: Optional[int] = None) -> str:
     expires_at = int(time.time()) + (minutes * 60)
     payload = f"admin:{expires_at}".encode("utf-8")
     secret = get_admin_token_secret()
+    if secret is None:
+        raise RuntimeError("Admin token signing is not configured")
     signature = hmac.new(secret, payload, hashlib.sha256).hexdigest()[:16]
     return f"admin.{expires_at}.{signature}"
 
@@ -88,6 +100,8 @@ def verify_admin_session_token(token: str) -> Optional[dict]:
     # 서명 검증
     payload = f"admin:{expires_at}".encode("utf-8")
     secret = get_admin_token_secret()
+    if secret is None:
+        return None
     expected_signature = hmac.new(secret, payload, hashlib.sha256).hexdigest()[:16]
 
     if not hmac.compare_digest(parts[2], expected_signature):

@@ -9,7 +9,18 @@ LOG_DIR = Path(__file__).resolve().parents[2] / "logs"
 LOG_FILE_PATH = LOG_DIR / "app.log"
 
 # 민감 키어 목록
-REDACT_KEYS = {"pin", "token", "password", "secret", "api_key", "authorization"}
+REDACT_KEYS = {
+    "pin",
+    "token",
+    "password",
+    "secret",
+    "api_key",
+    "authorization",
+    "raw_document",
+    "raw_payload",
+    "sql_parameter",
+    "sql_parameters",
+}
 
 
 def sanitize_value(key: str, value: Any) -> Any:
@@ -27,7 +38,12 @@ def sanitize_value(key: str, value: Any) -> Any:
         if any(rk in lower_val for rk in REDACT_KEYS):
             # "pin": "0000" 형태 마스킹
             import re
-            return re.sub(r'("(?:pin|token|password|secret|api_key|authorization)"\s*:\s*)"[^"]+"', r'\1"***REDACTED***"', value, flags=re.IGNORECASE)
+            return re.sub(
+                r'("(?:pin|token|password|secret|api_key|authorization|raw_document|raw_payload|sql_parameter|sql_parameters)"\s*:\s*)"[^"]+"',
+                r'\1"***REDACTED***"',
+                value,
+                flags=re.IGNORECASE,
+            )
     return value
 
 
@@ -50,15 +66,17 @@ class RedactingJsonFormatter(logging.Formatter):
 
         # 선택적 correlation 정보 추가
         if hasattr(record, "request_id"):
-            log_data["request_id"] = record.request_id
+            log_data["request_id"] = sanitize_value("request_id", record.request_id)
         if hasattr(record, "collection_run_id"):
-            log_data["collection_run_id"] = record.collection_run_id
+            log_data["collection_run_id"] = sanitize_value(
+                "collection_run_id", record.collection_run_id
+            )
         if hasattr(record, "source_id"):
-            log_data["source_id"] = record.source_id
+            log_data["source_id"] = sanitize_value("source_id", record.source_id)
         if hasattr(record, "duration_ms"):
             log_data["duration_ms"] = record.duration_ms
         if hasattr(record, "error_type"):
-            log_data["error_type"] = record.error_type
+            log_data["error_type"] = sanitize_value("error_type", record.error_type)
 
         return json.dumps(log_data, ensure_ascii=False)
 

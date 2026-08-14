@@ -1,3 +1,4 @@
+from ipaddress import ip_address
 from typing import Dict, Any
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
@@ -15,9 +16,22 @@ from app.services.admin_access import (
     is_rate_limited,
     record_failed_attempt,
     reset_failed_attempts,
+    get_admin_token_secret,
 )
 
 router = APIRouter()
+
+
+def is_local_admin_client(client_host: str) -> bool:
+    """기본 개발 PIN을 허용할 실제 loopback/TestClient 요청인지 판정한다."""
+    normalized = client_host.strip().lower()
+    if normalized in {"localhost", "testclient"}:
+        return True
+
+    try:
+        return ip_address(normalized).is_loopback
+    except ValueError:
+        return False
 
 
 @router.post(
@@ -52,8 +66,12 @@ def create_admin_session(
         )
 
     # 2. PIN 검증 (fail-closed 및 로컬 0000 규칙 포함)
-    is_valid = verify_admin_pin(body.pin)
-    if not is_valid:
+    is_valid = verify_admin_pin(
+        body.pin,
+        allow_local_default_pin=is_local_admin_client(client_ip),
+    )
+    token_signing_ready = get_admin_token_secret() is not None
+    if not is_valid or not token_signing_ready:
         attempts, locked, cooldown_sec = record_failed_attempt(client_ip)
         if locked:
             return JSONResponse(

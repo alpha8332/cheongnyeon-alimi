@@ -19,10 +19,9 @@ const SAMPLE_ITEM: AdminPolicyListItemDto = {
   application_start: '2026-01-01',
   application_end: '2026-12-31',
   regions: ['서울', '경기'],
-  age_min: 19,
-  age_max: 39,
   data_quality_status: 'valid',
   collected_at: '2026-08-01T00:00:00Z',
+  created_at: '2026-08-01T00:00:00Z',
   updated_at: '2026-08-02T00:00:00Z',
   source_id: 'welfare',
   external_id: 'ext-001',
@@ -42,7 +41,7 @@ test('isAdminPolicySortField는 sortable 컬럼만 true를 반환한다', () => 
 
 test('formatAdminPolicyCellValue는 배열·null을 표시 문자열로 변환한다', () => {
   assert.equal(formatAdminPolicyCellValue(SAMPLE_ITEM, 'categories'), 'housing, welfare');
-  assert.equal(formatAdminPolicyCellValue({ ...SAMPLE_ITEM, age_min: null }, 'age_min'), '—');
+  assert.equal(formatAdminPolicyCellValue({ ...SAMPLE_ITEM, organization: null }, 'organization'), '—');
 });
 
 test('truncateAdminPolicyCell은 긴 문자열을 잘라낸다', () => {

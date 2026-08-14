@@ -1,8 +1,8 @@
 """Validate the cheongnyeon-alimi documentation system.
 
-The validator intentionally scans project documentation only. Reference planning
-artifacts under ``opensource_plan/`` are read-only inputs and are not part of
-the published Markdown contract.
+The validator intentionally scans the repository's published Markdown contract.
+Legacy binary planning inputs were retired after their decisions were captured
+in ``docs/`` and are not required by validation.
 """
 
 from __future__ import annotations

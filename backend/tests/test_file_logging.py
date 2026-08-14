@@ -3,6 +3,7 @@ import logging
 import tempfile
 from pathlib import Path
 from app.core.logging_config import RedactingJsonFormatter, setup_file_logging
+from app.main import resolve_request_id
 
 
 def test_redacting_json_formatter_masking():
@@ -32,6 +33,59 @@ def test_redacting_json_formatter_masking():
     assert "secret-admin-token-12345" not in formatted_str
     assert "supersecretpassword" not in formatted_str
     assert "***REDACTED***" in formatted_str
+
+
+def test_redacting_json_formatter_masks_raw_and_sql_parameters():
+    formatter = RedactingJsonFormatter()
+    record = logging.LogRecord(
+        name="cheongnyeon-alimi",
+        level=logging.INFO,
+        pathname="test.py",
+        lineno=10,
+        msg=(
+            'collector payload {"raw_payload": "full-source-document", '
+            '"sql_parameters": "resident-registration-number"}'
+        ),
+        args=(),
+        exc_info=None,
+    )
+
+    formatted_str = formatter.format(record)
+
+    assert "full-source-document" not in formatted_str
+    assert "resident-registration-number" not in formatted_str
+    assert formatted_str.count("***REDACTED***") == 2
+
+
+def test_redacting_json_formatter_preserves_safe_correlation_fields():
+    formatter = RedactingJsonFormatter()
+    record = logging.LogRecord(
+        name="cheongnyeon-alimi",
+        level=logging.INFO,
+        pathname="test.py",
+        lineno=10,
+        msg="collection_step_completed",
+        args=(),
+        exc_info=None,
+    )
+    record.request_id = "req-safe"
+    record.collection_run_id = "run-safe"
+    record.source_id = "source-safe"
+    record.duration_ms = 12.5
+
+    log_json = json.loads(formatter.format(record))
+
+    assert log_json["request_id"] == "req-safe"
+    assert log_json["collection_run_id"] == "run-safe"
+    assert log_json["source_id"] == "source-safe"
+    assert log_json["duration_ms"] == 12.5
+
+
+def test_request_id_accepts_only_bounded_opaque_values():
+    assert resolve_request_id("req-client_01") == "req-client_01"
+    generated = resolve_request_id("unsafe request id with spaces")
+    assert generated.startswith("req-")
+    assert "unsafe" not in generated
 
 
 def test_setup_file_logging_creates_file():

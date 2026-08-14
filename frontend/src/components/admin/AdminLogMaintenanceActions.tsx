@@ -28,7 +28,7 @@ export default function AdminLogMaintenanceActions({
 }: AdminLogMaintenanceActionsProps) {
   const { showToast } = useApiErrorToast();
   const archiveFiles = useMemo(
-    () => files.filter((file) => file.status === 'archive'),
+    () => files.filter((file) => !file.is_active),
     [files],
   );
   const [selectedArchiveId, setSelectedArchiveId] = useState('');

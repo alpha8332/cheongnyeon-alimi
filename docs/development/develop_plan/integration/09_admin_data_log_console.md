@@ -4,7 +4,7 @@
 
 - 번호: Integration 09
 - 담당 영역: Backend·Frontend
-- 상태: draft
+- 상태: in-progress
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Backend 04 Admin Access Control, Integration 05 Contract Baseline
@@ -84,9 +84,11 @@
 - 로그 삭제 사실은 삭제 대상 파일 밖의 `AdminAuditEvent` 또는 별도 비삭제
   감사 저장소에 관리자·시각·대상·결과로 남긴다.
 
-## W4-G0 계약 후보
+## W4-G1 확인 계약
 
-다음은 승인 전 제안이며 현재 API·DB 계약이 아니다.
+다음 기준은 DTL4-5에서 Backend OpenAPI와 Frontend TypeScript·Mock 소비를
+대조해 확인했다. 정확한 endpoint와 DTO는 `docs/api/admin_policies.md`와
+`docs/api/admin_logs.md`를 권위 문서로 사용한다.
 
 | 항목 | 제안 기준선 |
 | --- | --- |
@@ -102,8 +104,9 @@
 | 현재 로그 정리 | 먼저 rotate하고 생성된 직전 archive를 같은 보호절차로 삭제 |
 | 감사 | 삭제 성공·실패를 operational log와 분리해 보존 |
 
-정확한 파일명, 보존 기간, 용량 상한, endpoint와 DTO는 Backend OpenAPI와
-Frontend TypeScript 소비 초안을 대조한 뒤 확정한다.
+파일명은 `app.log*`, rotation은 10MB·archive 최대 5개 기준이다. 실제
+PostgreSQL·Runtime log·Browser 종단 검증과 영속 감사 저장소는 AO5 완료 전에
+별도로 검증한다.
 
 ## Slice 계획
 

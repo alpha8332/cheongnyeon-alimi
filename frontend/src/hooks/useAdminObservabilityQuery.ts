@@ -1,8 +1,8 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getAdminLogEvents, getAdminLogFiles } from '@/api/adminLog';
 import { getAdminPolicies, getAdminPolicyById } from '@/api/adminPolicyData';
-import { resolveAdminLogEventListQuery, resolveAdminLogFileListQuery } from '@/types/adminLog';
-import type { AdminLogEventListQuery, AdminLogFileListQuery } from '@/types/adminLog';
+import { resolveAdminLogEventListQuery } from '@/types/adminLog';
+import type { AdminLogEventListQuery } from '@/types/adminLog';
 import type { AdminPolicyListQuery } from '@/types/adminPolicyData';
 import { resolveAdminPolicyListQuery } from '@/types/adminPolicyData';
 
@@ -31,14 +31,11 @@ export function useAdminPolicyDetailQuery(
 }
 
 export function useAdminLogFileListQuery(
-  query: AdminLogFileListQuery = {},
   accessToken?: string,
 ) {
-  const resolvedQuery = resolveAdminLogFileListQuery(query);
-
   return useQuery({
-    queryKey: ['adminLogFiles', resolvedQuery, accessToken ?? 'anonymous'],
-    queryFn: () => getAdminLogFiles(resolvedQuery, { accessToken }),
+    queryKey: ['adminLogFiles', accessToken ?? 'anonymous'],
+    queryFn: () => getAdminLogFiles({ accessToken }),
   });
 }
 

@@ -15,16 +15,15 @@ import type {
   AdminLogDeleteResultDto,
   AdminLogEventListQuery,
   AdminLogEventListResponse,
-  AdminLogFileListQuery,
   AdminLogFileListResponse,
   AdminLogRotateResultDto,
 } from '@/types/adminLog';
 import {
   ADMIN_LOG_FILES_PATH,
+  ADMIN_LOG_EVENTS_PATH,
   ADMIN_LOG_ROTATE_CURRENT_PATH,
   buildAdminLogArchiveDeletePath,
   resolveAdminLogEventListQuery,
-  resolveAdminLogFileListQuery,
 } from '@/types/adminLog';
 import { parseAdminApiErrorDetail } from '@/utils/adminApiErrors';
 
@@ -52,21 +51,17 @@ function toAdminApiError(error: unknown, fallback: string): AdminApiError {
 }
 
 export async function getAdminLogFiles(
-  query: AdminLogFileListQuery = {},
   options: AdminApiRequestOptions = {},
 ): Promise<AdminLogFileListResponse> {
-  const resolvedQuery = resolveAdminLogFileListQuery(query);
-
   if (USE_MOCK) {
     await delay(MOCK_DELAY_MS);
-    return handleAdminLogFileListMock(resolvedQuery);
+    return handleAdminLogFileListMock();
   }
 
   try {
     const response = await apiClient.get<AdminLogFileListResponse>(
       ADMIN_LOG_FILES_PATH,
       {
-        params: resolvedQuery,
         headers: buildAdminAuthorizationHeader(options.accessToken),
       },
     );
@@ -97,7 +92,7 @@ export async function getAdminLogEvents(
 
   try {
     const response = await apiClient.get<AdminLogEventListResponse>(
-      `${ADMIN_LOG_FILES_PATH}/events`,
+      ADMIN_LOG_EVENTS_PATH,
       {
         params: resolvedQuery,
         headers: buildAdminAuthorizationHeader(options.accessToken),

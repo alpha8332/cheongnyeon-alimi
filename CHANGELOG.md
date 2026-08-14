@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+### Changed
+
+- DTL4-5에서 관리자 Policy·로그 Backend OpenAPI와 Frontend TypeScript·Mock을
+  동일 DTO·pagination·오류 계약으로 정렬하고, 현재 로그 rotate 정리·감사와
+  request/run/source correlation을 연결했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- 관리자 기본 PIN `0000`을 local client의 development/local/test로 제한하고,
+  production token 서명은 전용 `ADMIN_TOKEN_SECRET` 없이는 fail-closed 처리했다
+  ([개발 기록](docs/development/development_notes/backend/admin_access_control.md))
+
 ### Fixed
 
 - Frontend `/` white screen after FE9-01: harden localStorage recovery notice reads,

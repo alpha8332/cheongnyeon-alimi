@@ -44,7 +44,7 @@
    - `AdminSessionResponse`: `access_token`, `token_type`("bearer"), `expires_in`(초 단위), `role`("admin")
 
 2. **환경별 PIN 인증 및 Fail-closed 로직 ([admin_access.py](../../../../backend/app/services/admin_access.py))**
-   - 로컬/개발 환경(`development`, `local`, `test`)에서 `ADMIN_PIN_HASH` 미설정 시 `0000` 해시(`9af15b33...`)를 기본 사용.
+   - 로컬/개발 환경(`development`, `local`, `test`)이고 요청 client가 loopback일 때만 `ADMIN_PIN_HASH` 미설정 시 `0000` 해시(`9af15b33...`)를 기본 사용.
    - 프로덕션 환경(`production`)에서 `ADMIN_PIN_HASH` 미설정 시 `None` 반환하여 fail-closed 처리.
 
 3. **엔드포인트 및 라우터 등록 ([admin_access.py](../../../../backend/app/api/v1/endpoints/admin_access.py))**
@@ -53,7 +53,7 @@
 ### Slice A1 - 관리자 인증 경계 구현
 
 1. **`pydantic-settings` 설정 확충 ([config.py](../../../../backend/app/core/config.py))**
-   - `ADMIN_TOKEN_SECRET` 추가 (미지정 시 `SECRET_KEY`를 서명 시크릿으로 보조 사용).
+   - `ADMIN_TOKEN_SECRET` 추가. `SECRET_KEY` 보조 사용은 local/test로 제한하고 production은 전용 secret 미설정 시 fail-closed 처리.
 
 2. **서명 토큰 생성 및 검증 서비스 ([admin_access.py](../../../../backend/app/services/admin_access.py))**
    - `create_admin_session_token()`: HMAC-SHA256 기반 `admin.<expires_at>.<signature>` 생성.
@@ -85,7 +85,7 @@
 - `backend/app/core/config.py`: ADMIN_TOKEN_SECRET 등 Pydantic Settings 추가
 - `backend/app/services/admin_access.py`: PIN 해시 비교, fail-closed, HMAC 세션 토큰 생성/검증, 점진적 rate limit (5->10->30->60->120->300s)
 - `backend/app/api/v1/endpoints/admin_access.py`: `POST /api/v1/admin/session` 및 `GET /api/v1/admin/me` 구현
-- `backend/tests/test_admin_access_control.py`: 20개 관리자 접근 제어 단위/통합 테스트 (OpenAPI 등록 검증 포함)
+- `backend/tests/test_admin_access_control.py`: 22개 관리자 접근 제어 단위/통합 테스트 (OpenAPI 등록 검증 포함)
 - `backend/.env.example`: 관리자 PIN 및 토큰 관련 샘플 설정 추가
 - `docs/api/admin_access.md`: 관리자 API 계약 전체 명세서 작성
 - `docs/development/develop_plan/backend/04_admin_access_control.md`: Forest completed 갱신
@@ -101,8 +101,16 @@
 
 ## 검증 결과
 
+### DTL4-5 보안 경계 재검토 (`2026-08-14`)
+
+- 기본 `0000`은 환경 이름뿐 아니라 실제 loopback client 경계를 함께 만족해야
+  동작하도록 보강했다. FastAPI `TestClient` 식별자는 test 환경에서만 허용한다.
+- production은 `ADMIN_TOKEN_SECRET`이 없을 때 `SECRET_KEY`나 기본 문자열로
+  fallback하지 않으며 로그인·token 검증 모두 닫힌다.
+- `backend/tests/test_admin_access_control.py`: **22 passed**.
+
 - **단위 및 통합 테스트**: `pytest backend/tests/test_admin_access_control.py` 실행
-  - 20개 테스트 케이스 전원 통과 (Pass)
+  - 기존 20개와 DTL4-5 경계 2개 테스트 전원 통과
   - `test_openapi_security_scheme_registered` (HTTPBearer 등록 검증)
   - `test_protected_route_valid_admin_token_200` (정상 토큰 200 OK 성공 검증)
   - `test_protected_route_non_admin_role_403` (비관리자 403 Forbidden 거부 검증)
