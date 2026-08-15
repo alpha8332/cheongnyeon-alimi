@@ -167,10 +167,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
 
     await page.getByRole('link', { name: '달력' }).click();
     await expect(page.getByRole('heading', { name: '마감 달력' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: '북마크' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    await expect(page.locator('.monthly-calendar__grid')).toBeVisible();
 
     await page.getByRole('link', { name: '알림' }).click();
     await expect(page.getByRole('heading', { name: '알림' })).toBeVisible();

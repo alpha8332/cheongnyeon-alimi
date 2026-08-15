@@ -222,11 +222,11 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     await expect(page.getByText('달력 데이터를 불러오는 중입니다.')).toHaveCount(0, {
       timeout: 15_000,
     });
-    const hasDeadline = (await page.locator('.calendar-deadline-list__day').count()) > 0;
+    const hasEvents = (await page.locator('.calendar-event-badge').count()) > 0;
     const hasEmptyCalendar = await page
-      .getByText('표시할 신청 마감일이 있는 정책이 없습니다.')
+      .getByText('표시할 신청 시작·마감일이 있는 정책이 없습니다.')
       .isVisible();
-    expect(hasDeadline || hasEmptyCalendar).toBe(true);
+    expect(hasEvents || hasEmptyCalendar).toBe(true);
 
     await page.goto('/notifications');
     await expect(page.getByText('알림 대상 정책을 불러오는 중입니다.')).toHaveCount(0, {

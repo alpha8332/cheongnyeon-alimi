@@ -150,7 +150,8 @@ Browser reload 검증은 FE5-07 범위.
 
 2026-08-11 구현: `policyDeadline.ts`(KST `Intl`), `CalendarPage` `/calendar`,
 `policyDisplay.getDDayLabel` 통합, `PolicyCard` 마감 임박 tag. unit
-`policyDeadline.test.ts`. Browser 검증은 FE5-07.
+`policyDeadline.test.ts`. Browser 검증은 FE5-07. **2026-07-28 UX slice**:
+list → monthly Sunday-start grid, start/end badges, day detail modal.
 
 ---
 

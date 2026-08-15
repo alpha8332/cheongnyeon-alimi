@@ -242,10 +242,33 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 | `npm run test:e2e` (user-service·week4·recommendation-ui) | 31 pass, 3 skip (Real API) |
 | `python3 scripts/validate_docs.py` | pass |
 
+### UX slice — 월간 그리드 마감 달력 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `/calendar` list view → ICS/Google Calendar 스타일 monthly grid
+
+### 구현
+
+- `calendarMonthGrid.ts`: Sunday-start 42-cell grid, month navigation, today/outside-month styling.
+- `calendarPolicyEvents.ts`: `application_start`·`application_end` 이벤트 수집 (closed·상시 제외, FE5-03 end 규칙 유지 + start 추가).
+- `MonthlyCalendarGrid`, `CalendarDayDetailDialog`: 월 헤더·뱃지·`+N개 더보기`·일정 상세 modal.
+- `CalendarPage`: scope toggle(북마크/전체) 유지, grid 항상 렌더.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 172 pass (+ calendar grid/events unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (calendar paths in user-service·week4) | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
 ### 설계·후속
 
-- 달력·알림은 folder 무관 전체 bookmark id union 유지 (`readFavoritePolicyIds`).
-- 폴더 삭제·이름 변경·drag reorder·Integration W4-G0 schema v2 formal 승인은 범위 밖.
+- `application_start` 표시는 slice 요청 반영; W4-G0 baseline은 end-only D-Day — Integration 후속 확인 권장.
+- 주간/일간 뷰·드래그 reorder·전용 Backend calendar API는 범위 밖.
+- Mock Seed open 정책에 `application_end`가 없어 E2E는 empty grid·badge absence 검증 위주.
 
 ## 남은 작업
 

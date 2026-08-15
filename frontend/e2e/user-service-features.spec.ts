@@ -153,11 +153,13 @@ test.describe('User Service browser flow (FE5-07)', () => {
       timeout: 15_000,
     });
 
-    const deadlineList = page.locator('.calendar-deadline-list__day');
-    const emptyMessage = page.getByText('표시할 신청 마감일이 있는 정책이 없습니다.');
-    const hasDeadlines = (await deadlineList.count()) > 0;
+    const monthlyGrid = page.locator('.monthly-calendar__grid');
+    await expect(monthlyGrid).toBeVisible();
+    const hasEvents = (await page.locator('.calendar-event-badge').count()) > 0;
+    const emptyMessage = page.getByText('표시할 신청 시작·마감일이 있는 정책이 없습니다.');
+    const hasEmpty = await emptyMessage.isVisible();
 
-    expect(hasDeadlines || (await emptyMessage.isVisible())).toBeTruthy();
+    expect(hasEvents || hasEmpty).toBeTruthy();
   });
 
   test('7. 알림 — empty shell (북마크 없음·마감 임박 없음)', async ({ page }) => {

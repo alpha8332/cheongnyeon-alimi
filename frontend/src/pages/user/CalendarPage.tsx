@@ -1,28 +1,44 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 import { useQueries } from '@tanstack/react-query';
 import { getPolicyById } from '@/api/policies';
+import CalendarDayDetailDialog from '@/components/calendar/CalendarDayDetailDialog';
+import MonthlyCalendarGrid from '@/components/calendar/MonthlyCalendarGrid';
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { PolicyDto } from '@/types/policy';
-import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
 import {
-  getDDayLabel,
-  getKstDateString,
-  groupPoliciesByApplicationEnd,
-} from '@/utils/policyDeadline';
+  collectCalendarPolicyEvents,
+  groupCalendarEventsByDate,
+  type CalendarPolicyEvent,
+} from '@/utils/calendarPolicyEvents';
+import { getKstDateString } from '@/utils/policyDeadline';
 
 type CalendarScope = 'favorites' | 'all';
 
-function sortDates(dates: Iterable<string>): string[] {
-  return [...dates].sort((left, right) => left.localeCompare(right));
+interface CalendarViewMonth {
+  year: number;
+  month: number;
+}
+
+function parseViewMonthFromToday(todayYmd: string): CalendarViewMonth {
+  const [year, month] = todayYmd.split('-').map(Number);
+  return { year, month };
 }
 
 export default function CalendarPage() {
+  const todayKst = getKstDateString();
   const [scope, setScope] = useState<CalendarScope>('favorites');
+  const [viewMonth, setViewMonth] = useState<CalendarViewMonth>(() =>
+    parseViewMonthFromToday(todayKst),
+  );
+  const [selectedDay, setSelectedDay] = useState<{
+    date: string;
+    events: readonly CalendarPolicyEvent[];
+  } | null>(null);
+
   const { favorites } = useFavorites();
 
   const favoriteQueries = useQueries({
@@ -53,13 +69,12 @@ export default function CalendarPage() {
     return allPoliciesQuery.data?.items ?? [];
   }, [scope, favoriteQueries, allPoliciesQuery.data?.items]);
 
-  const grouped = useMemo(
-    () => groupPoliciesByApplicationEnd(policies),
-    [policies],
-  );
+  const eventsByDate = useMemo(() => {
+    const events = collectCalendarPolicyEvents(policies);
+    return groupCalendarEventsByDate(events);
+  }, [policies]);
 
-  const dates = useMemo(() => sortDates(grouped.keys()), [grouped]);
-  const todayKst = getKstDateString();
+  const hasAnyCalendarEvents = eventsByDate.size > 0;
 
   const isLoading =
     scope === 'favorites'
@@ -77,8 +92,8 @@ export default function CalendarPage() {
       <header className="greeting">
         <h1 className="greeting__title">마감 달력</h1>
         <p className="greeting__subtitle">
-          신청 종료일이 있는 정책만 표시합니다. 상시·일정 미정 정책은 달력에
-          포함하지 않습니다. 날짜 기준은 Asia/Seoul(KST)입니다.
+          신청 시작·마감일이 있는 정책을 월간 달력으로 확인합니다. 상시·일정 미정
+          정책은 포함하지 않습니다. 날짜 기준은 Asia/Seoul(KST)입니다.
         </p>
       </header>
 
@@ -113,42 +128,27 @@ export default function CalendarPage() {
         <EmptyState message="북마크한 정책이 없습니다. 정책 카드에서 ☆ 버튼으로 추가해 보세요." />
       ) : null}
 
-      {!isLoading && !isError && policies.length > 0 && dates.length === 0 ? (
-        <EmptyState message="표시할 신청 마감일이 있는 정책이 없습니다." />
+      {!isLoading && !isError && policies.length > 0 && !hasAnyCalendarEvents ? (
+        <EmptyState message="표시할 신청 시작·마감일이 있는 정책이 없습니다." />
       ) : null}
 
-      {!isLoading && !isError && dates.length > 0 ? (
-        <div className="calendar-deadline-list">
-          {dates.map((date) => {
-            const items = grouped.get(date) ?? [];
-            return (
-              <section key={date} className="calendar-deadline-list__day">
-                <h2 className="calendar-deadline-list__date">
-                  {date}
-                  {date === todayKst ? (
-                    <span className="calendar-deadline-list__today-badge">오늘</span>
-                  ) : null}
-                </h2>
-                <ul className="calendar-deadline-list__items">
-                  {items.map((policy) => (
-                    <li key={policy.id} className="calendar-deadline-list__item">
-                      <Link
-                        to={buildProgramDetailRoutePath(policy.id, {
-                          includePartial: policy.data_quality_status === 'partial',
-                        })}
-                      >
-                        {policy.title}
-                      </Link>
-                      <span className="calendar-deadline-list__dday">
-                        {getDDayLabel(policy)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
+      {!isLoading && !isError ? (
+        <MonthlyCalendarGrid
+          year={viewMonth.year}
+          month={viewMonth.month}
+          todayYmd={todayKst}
+          eventsByDate={eventsByDate}
+          onMonthChange={(year, month) => setViewMonth({ year, month })}
+          onOpenDay={(date, events) => setSelectedDay({ date, events })}
+        />
+      ) : null}
+
+      {selectedDay ? (
+        <CalendarDayDetailDialog
+          date={selectedDay.date}
+          events={selectedDay.events}
+          onClose={() => setSelectedDay(null)}
+        />
       ) : null}
     </div>
   );
