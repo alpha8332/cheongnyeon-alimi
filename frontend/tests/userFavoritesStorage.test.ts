@@ -1,10 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { USER_LOCAL_STORAGE_KEY } from '../src/types/userLocalStorage.js';
 import {
+  DEFAULT_BOOKMARK_FOLDER_ID,
+  USER_LOCAL_STORAGE_KEY,
+} from '../src/types/userLocalStorage.js';
+import {
+  createBookmarkFolder,
+  getBookmarkFolderForPolicy,
   getFavoritePolicyIdsSnapshot,
+  getPolicyIdsForFolder,
   isFavoritePolicyId,
   readFavoritePolicyIds,
+  removeBookmarkPolicy,
+  setBookmarkPolicy,
   subscribeFavoritePolicyIds,
   toggleFavoritePolicyId,
 } from '../src/utils/userFavoritesStorage.js';
@@ -28,21 +36,29 @@ class PatchedWindowStorage {
   }
 }
 
-test('readFavoritePolicyIds는 storage favorites 배열을 반환한다', () => {
+function writeDefaultPayload(storage: Storage) {
+  writeUserLocalStorage(
+    {
+      schema_version: 2,
+      bookmark_folders: [{ id: DEFAULT_BOOKMARK_FOLDER_ID, name: '기본 폴더' }],
+      bookmarks: [
+        { policy_id: 2, folder_id: DEFAULT_BOOKMARK_FOLDER_ID },
+        { policy_id: 4, folder_id: DEFAULT_BOOKMARK_FOLDER_ID },
+      ],
+      conditions: null,
+      updated_at: '2026-08-11T10:00:00.000Z',
+    },
+    storage,
+  );
+}
+
+test('readFavoritePolicyIds는 storage bookmarks에서 policy id를 반환한다', () => {
   const storage = new MemoryStorage();
   const windowPatch = new PatchedWindowStorage();
   windowPatch.install(storage);
 
   try {
-    writeUserLocalStorage(
-      {
-        schema_version: 1,
-        favorites: [2, 4],
-        conditions: null,
-        updated_at: '2026-08-11T10:00:00.000Z',
-      },
-      storage,
-    );
+    writeDefaultPayload(storage);
 
     assert.deepEqual(readFavoritePolicyIds(), [2, 4]);
     assert.equal(isFavoritePolicyId(2), true);
@@ -52,7 +68,49 @@ test('readFavoritePolicyIds는 storage favorites 배열을 반환한다', () => 
   }
 });
 
-test('toggleFavoritePolicyId는 id를 추가하고 제거한다', () => {
+test('setBookmarkPolicy와 removeBookmarkPolicy는 folder bookmark를 추가·제거한다', () => {
+  const storage = new MemoryStorage();
+  const windowPatch = new PatchedWindowStorage();
+  windowPatch.install(storage);
+
+  try {
+    const added = setBookmarkPolicy(5, DEFAULT_BOOKMARK_FOLDER_ID);
+    assert.equal(added.changed, true);
+    assert.equal(added.isFavorite, true);
+    assert.deepEqual(added.favorites, [5]);
+
+    const removed = removeBookmarkPolicy(5);
+    assert.equal(removed.changed, true);
+    assert.equal(removed.isFavorite, false);
+    assert.deepEqual(removed.favorites, []);
+
+    const raw = storage.getItem(USER_LOCAL_STORAGE_KEY);
+    assert.ok(raw?.includes('"bookmarks":[]'));
+  } finally {
+    windowPatch.restore();
+  }
+});
+
+test('createBookmarkFolder는 folder를 추가하고 setBookmarkPolicy가 folder id를 사용한다', () => {
+  const storage = new MemoryStorage();
+  const windowPatch = new PatchedWindowStorage();
+  windowPatch.install(storage);
+
+  try {
+    const created = createBookmarkFolder('주거정책모음');
+    assert.equal(created.changed, true);
+    assert.ok(created.folder);
+
+    const saved = setBookmarkPolicy(7, created.folder!.id);
+    assert.equal(saved.changed, true);
+    assert.equal(getBookmarkFolderForPolicy(7), created.folder!.id);
+    assert.deepEqual(getPolicyIdsForFolder(created.folder!.id), [7]);
+  } finally {
+    windowPatch.restore();
+  }
+});
+
+test('toggleFavoritePolicyId는 default folder에 추가하고 제거한다', () => {
   const storage = new MemoryStorage();
   const windowPatch = new PatchedWindowStorage();
   windowPatch.install(storage);
@@ -67,9 +125,6 @@ test('toggleFavoritePolicyId는 id를 추가하고 제거한다', () => {
     assert.equal(removed.changed, true);
     assert.equal(removed.isFavorite, false);
     assert.deepEqual(removed.favorites, []);
-
-    const raw = storage.getItem(USER_LOCAL_STORAGE_KEY);
-    assert.ok(raw?.includes('"favorites":[]'));
   } finally {
     windowPatch.restore();
   }
@@ -81,29 +136,21 @@ test('getFavoritePolicyIdsSnapshot은 연속 호출에서 동일 참조를 유�
   windowPatch.install(storage);
 
   try {
-    writeUserLocalStorage(
-      {
-        schema_version: 1,
-        favorites: [2, 4],
-        conditions: null,
-        updated_at: '2026-08-11T10:00:00.000Z',
-      },
-      storage,
-    );
+    writeDefaultPayload(storage);
 
     const unsubscribe = subscribeFavoritePolicyIds(() => undefined);
     const first = getFavoritePolicyIdsSnapshot();
     const second = getFavoritePolicyIdsSnapshot();
 
     assert.equal(first, second);
-    assert.deepEqual(first, [2, 4]);
+    assert.deepEqual(first.favorites, [2, 4]);
     unsubscribe();
   } finally {
     windowPatch.restore();
   }
 });
 
-test('toggleFavoritePolicyId는 snapshot 참조를 내용 변경 시에만 갱신한다', () => {
+test('setBookmarkPolicy는 snapshot 참조를 내용 변경 시에만 갱신한다', () => {
   const storage = new MemoryStorage();
   const windowPatch = new PatchedWindowStorage();
   windowPatch.install(storage);
@@ -112,10 +159,10 @@ test('toggleFavoritePolicyId는 snapshot 참조를 내용 변경 시에만 갱�
     const unsubscribe = subscribeFavoritePolicyIds(() => undefined);
     const before = getFavoritePolicyIdsSnapshot();
 
-    toggleFavoritePolicyId(5);
+    setBookmarkPolicy(5, DEFAULT_BOOKMARK_FOLDER_ID);
 
     const after = getFavoritePolicyIdsSnapshot();
-    assert.notDeepEqual(before, after);
+    assert.notDeepEqual(before.favorites, after.favorites);
     assert.equal(after, getFavoritePolicyIdsSnapshot());
     unsubscribe();
   } finally {
@@ -123,15 +170,38 @@ test('toggleFavoritePolicyId는 snapshot 참조를 내용 변경 시에만 갱�
   }
 });
 
-test('toggleFavoritePolicyId는 invalid id를 무시한다', () => {
+test('setBookmarkPolicy는 invalid id를 무시한다', () => {
   const storage = new MemoryStorage();
   const windowPatch = new PatchedWindowStorage();
   windowPatch.install(storage);
 
   try {
-    const result = toggleFavoritePolicyId(-1);
+    const result = setBookmarkPolicy(-1, DEFAULT_BOOKMARK_FOLDER_ID);
     assert.equal(result.changed, false);
     assert.deepEqual(result.favorites, []);
+  } finally {
+    windowPatch.restore();
+  }
+});
+
+test('readUserLocalStorage v1 migrate 후 favorites API가 동작한다', () => {
+  const storage = new MemoryStorage();
+  const windowPatch = new PatchedWindowStorage();
+  windowPatch.install(storage);
+
+  try {
+    storage.setItem(
+      USER_LOCAL_STORAGE_KEY,
+      JSON.stringify({
+        schema_version: 1,
+        favorites: [12],
+        conditions: null,
+        updated_at: '2026-08-11T10:00:00.000Z',
+      }),
+    );
+
+    assert.deepEqual(readFavoritePolicyIds(), [12]);
+    assert.equal(getBookmarkFolderForPolicy(12), DEFAULT_BOOKMARK_FOLDER_ID);
   } finally {
     windowPatch.restore();
   }

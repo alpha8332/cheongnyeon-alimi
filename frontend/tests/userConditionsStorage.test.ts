@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { USER_LOCAL_STORAGE_KEY } from '../src/types/userLocalStorage.js';
+import { DEFAULT_BOOKMARK_FOLDER_ID, USER_LOCAL_STORAGE_KEY } from '../src/types/userLocalStorage.js';
 import {
   clearSavedConditions,
   getSavedConditionsSnapshot,
@@ -37,8 +37,9 @@ test('readSavedConditions는 storage conditions를 반환한다', () => {
   try {
     writeUserLocalStorage(
       {
-        schema_version: 1,
-        favorites: [1],
+        schema_version: 2,
+        bookmark_folders: [{ id: DEFAULT_BOOKMARK_FOLDER_ID, name: '기본 폴더' }],
+        bookmarks: [{ policy_id: 1, folder_id: DEFAULT_BOOKMARK_FOLDER_ID }],
         conditions: {
           region: '서울특별시',
           age: 24,
@@ -132,7 +133,7 @@ test('clearSavedConditions는 conditions만 null로 만들고 favorites는 유�
     assert.equal(readSavedConditions(), null);
 
     const raw = storage.getItem(USER_LOCAL_STORAGE_KEY);
-    assert.ok(raw?.includes('"favorites":[7]'));
+    assert.ok(raw?.includes('"policy_id":7'));
     assert.ok(raw?.includes('"conditions":null'));
     unsubscribe();
   } finally {
@@ -148,8 +149,9 @@ test('getSavedConditionsSnapshot은 연속 호출에서 동일 참조를 유지�
   try {
     writeUserLocalStorage(
       {
-        schema_version: 1,
-        favorites: [],
+        schema_version: 2,
+        bookmark_folders: [{ id: DEFAULT_BOOKMARK_FOLDER_ID, name: '기본 폴더' }],
+        bookmarks: [],
         conditions: {
           region: '대전광역시',
           age: 22,

@@ -55,6 +55,13 @@ async function waitForProgramDetailSettled(page: Page) {
   });
 }
 
+async function confirmBookmarkModal(page: Page) {
+  const dialog = page.getByRole('dialog', { name: '북마크 저장' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: '저장' }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
 async function waitForHomePolicies(page: Page) {
   await expect(page.getByText('주요 정책을 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
@@ -155,7 +162,8 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
       .locator('article.policy-card')
       .filter({ hasText: MOCK_HOUSING_POLICY_TITLE });
     await homeCard.getByRole('button', { name: '북마크 추가' }).click();
-    await expect(homeCard.getByRole('button', { name: '북마크 해제' })).toBeVisible();
+    await confirmBookmarkModal(page);
+    await expect(homeCard.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await page.getByRole('link', { name: '달력' }).click();
     await expect(page.getByRole('heading', { name: '마감 달력' })).toBeVisible();
@@ -219,8 +227,9 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     const card = page.locator('article.policy-card').first();
     const toggle = card.getByRole('button', { name: '북마크 추가' });
     await toggle.focus();
-    await page.keyboard.press('Space');
-    await expect(card.getByRole('button', { name: '북마크 해제' })).toBeVisible();
+    await toggle.press('Space');
+    await confirmBookmarkModal(page);
+    await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await page.goto('/search');
     await expect(page).toHaveURL(/\/search$/);

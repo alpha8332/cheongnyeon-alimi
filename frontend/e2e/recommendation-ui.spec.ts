@@ -44,6 +44,13 @@ async function submitRecommendation(page: Page) {
   await page.getByRole('button', { name: '추천 받기' }).click();
 }
 
+async function confirmBookmarkModal(page: Page) {
+  const dialog = page.getByRole('dialog', { name: '북마크 저장' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: '저장' }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
 test.describe('Recommendation UI browser flow (FE6-05)', () => {
   test.beforeEach(async ({ page }) => {
     await clearUserLocalStorage(page);
@@ -133,11 +140,12 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
     await expect(card).toBeVisible();
 
     await card.getByRole('button', { name: '북마크 추가' }).click();
-    await expect(card.getByRole('button', { name: '북마크 해제' })).toBeVisible();
+    await confirmBookmarkModal(page);
+    await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await card.getByRole('link', { name: MOCK_HOUSING_POLICY_TITLE }).click();
     await expect(page).toHaveURL(/\/programs\/\d+/);
-    await expect(page.getByRole('button', { name: '북마크 해제' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
   });
 
   test('7. localStorage — 조건 reload·프로필과 공유', async ({ page }) => {

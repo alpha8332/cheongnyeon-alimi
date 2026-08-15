@@ -86,12 +86,12 @@
 | **목표** | browser-only user payload key·schema_version·허용 필드·corrupt recovery |
 | **예상 변경 파일** | `types/userLocalStorage.ts`, `utils/userLocalStorage.ts` |
 | **선행** | Policy `id` numeric contract (Frontend 01) |
-| **인터페이스** | `favorites: number[]`, `conditions: {region,age,category}|null`, `updated_at` |
+| **인터페이스** | v2: `bookmark_folders[]`, `bookmarks[{policy_id,folder_id}]`, `conditions`, `updated_at` (v1 `favorites[]`는 read 시 migrate) |
 | **검증** | unit test (normalize·parse); SSR/no-storage graceful |
 | **완료 기준** | corrupt·wrong version → reset; 검색·상세 flow 차단 없음 |
 
 2026-08-11 구현: key `cheongnyeon-alimi.user-local.v1`, schema version `1`(W4-G0
-proposal). `readUserLocalStorage`는 corrupt·unsupported version·invalid shape 시
+proposal). **2026-07-28 UX slice** schema version `2` + v1→v2 migrate on read. `readUserLocalStorage`는 corrupt·unsupported version·invalid shape 시
 default payload로 reset persist. storage unavailable 시 in-memory default만
 반환. 후속 Slice(FE5-01~)는 `updateUserLocalStorage`·`clearUserLocalStorage`를
 사용한다.

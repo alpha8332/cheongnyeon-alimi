@@ -219,6 +219,34 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 - `localStorage` key·`UserSavedConditions` 계약·`useSavedConditions` hook 변경 없음.
 - `UserDataResetPanel`(북마크 페이지) 위치는 본 slice 범위 밖 — favorites footer 유지.
 
+## UX slice — 북마크 폴더·저장 모달 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: localStorage schema v2, 북마크 폴더 CRUD(브라우저), 폴더 탭 필터, 저장 모달
+
+### 구현
+
+- `userLocalStorage` schema v2: `bookmark_folders`, `bookmarks[{policy_id,folder_id}]`. v1 `favorites[]`는 read 시 `기본 폴더`로 migrate.
+- `userFavoritesStorage`: `createBookmarkFolder`, `setBookmarkPolicy`, `removeBookmarkPolicy`, `getPolicyIdsForFolder`.
+- `BookmarkFolderPickerModal`: 저장·폴더 변경·해제·모달 내 새 폴더 생성.
+- `FavoriteToggleButton`: 클릭 시 모달 오픈 (즉시 toggle 제거).
+- `FavoritesPage`: 폴더 탭·`+ 새 폴더 만들기`·폴더별 policy grid.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 167 pass |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (user-service·week4·recommendation-ui) | 31 pass, 3 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- 달력·알림은 folder 무관 전체 bookmark id union 유지 (`readFavoritePolicyIds`).
+- 폴더 삭제·이름 변경·drag reorder·Integration W4-G0 schema v2 formal 승인은 범위 밖.
+
 ## 남은 작업
 
 - W4-G0 승인 시 key·version·KST 규칙 동기화

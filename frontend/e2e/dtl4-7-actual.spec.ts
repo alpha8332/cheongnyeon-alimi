@@ -44,6 +44,13 @@ async function waitForHomePolicies(page: Page) {
   await expect(page.locator('article.policy-card').first()).toBeVisible();
 }
 
+async function confirmBookmarkModal(page: Page) {
+  const dialog = page.getByRole('dialog', { name: '북마크 저장' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: '저장' }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
 test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () => {
   test.beforeAll(async () => {
     if (process.env.DTL47_ACTUAL === 'true') {
@@ -204,6 +211,7 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     await page.locator('article.policy-card').first().getByRole('button', {
       name: '북마크 추가',
     }).click();
+    await confirmBookmarkModal(page);
     await page.getByRole('link', { name: '북마크' }).click();
     await expect(page.locator('article.policy-card').first()).toBeVisible();
     await page.reload();

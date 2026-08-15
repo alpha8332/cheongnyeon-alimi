@@ -1,12 +1,23 @@
 import {
+  DEFAULT_BOOKMARK_FOLDER_ID,
   USER_LOCAL_STORAGE_KEY,
+  USER_LOCAL_STORAGE_MAX_BOOKMARK_FOLDERS,
+  USER_LOCAL_STORAGE_MAX_BOOKMARK_FOLDER_NAME,
   USER_LOCAL_STORAGE_MAX_FAVORITES,
   USER_LOCAL_STORAGE_SCHEMA_VERSION,
+  type BookmarkEntry,
+  type BookmarkFolder,
   type UserLocalStoragePayload,
   type UserLocalStorageRecoveryReason,
   type UserLocalStorageSnapshot,
   type UserSavedConditions,
 } from '../types/userLocalStorage.js';
+import {
+  createDefaultBookmarkFolder,
+  deriveFavoritePolicyIds,
+  migrateUserLocalStorageV1ToV2,
+  normalizeV1UserLocalStoragePayload,
+} from './userLocalStorageMigration.js';
 import { recordUserLocalStorageRecoveryNotice } from './userLocalStorageRecoveryNotice.js';
 
 const MAX_CONDITION_TEXT_LENGTH = 200;
@@ -76,34 +87,6 @@ function normalizeConditions(value: unknown): UserSavedConditions | null {
   return { region, age, category };
 }
 
-function normalizeFavoriteIds(value: unknown): number[] | null {
-  if (!Array.isArray(value)) {
-    return null;
-  }
-
-  const seen = new Set<number>();
-  const favorites: number[] = [];
-
-  for (const item of value) {
-    if (typeof item !== 'number' || !Number.isInteger(item) || item <= 0) {
-      continue;
-    }
-
-    if (seen.has(item)) {
-      continue;
-    }
-
-    seen.add(item);
-    favorites.push(item);
-
-    if (favorites.length >= USER_LOCAL_STORAGE_MAX_FAVORITES) {
-      break;
-    }
-  }
-
-  return favorites;
-}
-
 function normalizeUpdatedAt(value: unknown): string | null {
   if (typeof value !== 'string' || value.trim().length === 0) {
     return null;
@@ -117,13 +100,109 @@ function normalizeUpdatedAt(value: unknown): string | null {
   return new Date(parsed).toISOString();
 }
 
+function normalizeBookmarkFolder(value: unknown): BookmarkFolder | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const id = normalizeOptionalString(value.id, 80);
+  const name = normalizeOptionalString(
+    value.name,
+    USER_LOCAL_STORAGE_MAX_BOOKMARK_FOLDER_NAME,
+  );
+
+  if (id === null || name === null) {
+    return null;
+  }
+
+  return { id, name };
+}
+
+function normalizeBookmarkFolders(value: unknown): BookmarkFolder[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const seenIds = new Set<string>();
+  const folders: BookmarkFolder[] = [];
+
+  for (const item of value) {
+    const folder = normalizeBookmarkFolder(item);
+    if (folder === null || seenIds.has(folder.id)) {
+      continue;
+    }
+
+    seenIds.add(folder.id);
+    folders.push(folder);
+
+    if (folders.length >= USER_LOCAL_STORAGE_MAX_BOOKMARK_FOLDERS) {
+      break;
+    }
+  }
+
+  if (!folders.some((folder) => folder.id === DEFAULT_BOOKMARK_FOLDER_ID)) {
+    folders.unshift(createDefaultBookmarkFolder());
+  }
+
+  return folders;
+}
+
+function normalizeBookmarks(
+  value: unknown,
+  folderIds: ReadonlySet<string>,
+): BookmarkEntry[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const seenPolicyIds = new Set<number>();
+  const bookmarks: BookmarkEntry[] = [];
+
+  for (const item of value) {
+    if (!isRecord(item)) {
+      continue;
+    }
+
+    const policyId = item.policy_id;
+    const folderId = normalizeOptionalString(item.folder_id, 80);
+
+    if (
+      typeof policyId !== 'number' ||
+      !Number.isInteger(policyId) ||
+      policyId <= 0 ||
+      folderId === null
+    ) {
+      continue;
+    }
+
+    if (seenPolicyIds.has(policyId)) {
+      continue;
+    }
+
+    seenPolicyIds.add(policyId);
+    bookmarks.push({
+      policy_id: policyId,
+      folder_id: folderIds.has(folderId)
+        ? folderId
+        : DEFAULT_BOOKMARK_FOLDER_ID,
+    });
+
+    if (bookmarks.length >= USER_LOCAL_STORAGE_MAX_FAVORITES) {
+      break;
+    }
+  }
+
+  return bookmarks;
+}
+
 /** Empty payload used when storage is missing, corrupt, or unavailable. */
 export function createDefaultUserLocalStoragePayload(
   updatedAt: string = new Date().toISOString(),
 ): UserLocalStoragePayload {
   return {
     schema_version: USER_LOCAL_STORAGE_SCHEMA_VERSION,
-    favorites: [],
+    bookmark_folders: [createDefaultBookmarkFolder()],
+    bookmarks: [],
     conditions: null,
     updated_at: updatedAt,
   };
@@ -144,8 +223,14 @@ export function normalizeUserLocalStoragePayload(
     return null;
   }
 
-  const favorites = normalizeFavoriteIds(value.favorites);
-  if (favorites === null) {
+  const bookmarkFolders = normalizeBookmarkFolders(value.bookmark_folders);
+  if (bookmarkFolders === null) {
+    return null;
+  }
+
+  const folderIds = new Set(bookmarkFolders.map((folder) => folder.id));
+  const bookmarks = normalizeBookmarks(value.bookmarks, folderIds);
+  if (bookmarks === null) {
     return null;
   }
 
@@ -164,7 +249,8 @@ export function normalizeUserLocalStoragePayload(
 
   return {
     schema_version: USER_LOCAL_STORAGE_SCHEMA_VERSION,
-    favorites,
+    bookmark_folders: bookmarkFolders,
+    bookmarks,
     conditions,
     updated_at: updatedAt,
   };
@@ -227,9 +313,35 @@ function recoverStoragePayload(
   };
 }
 
+function tryMigrateV1Payload(
+  parsed: Record<string, unknown>,
+  storage: Storage,
+): UserLocalStorageSnapshot | null {
+  if (parsed.schema_version !== 1) {
+    return null;
+  }
+
+  const v1 = normalizeV1UserLocalStoragePayload(
+    parsed,
+    normalizeConditions,
+    normalizeUpdatedAt,
+  );
+  if (v1 === null) {
+    return recoverStoragePayload(storage, 'invalid_shape');
+  }
+
+  const migrated = migrateUserLocalStorageV1ToV2(v1);
+  writeUserLocalStorage(migrated, storage);
+  return {
+    data: migrated,
+    source: 'storage',
+  };
+}
+
 /**
  * Read user payload from storage without throwing.
  * Corrupt or unsupported payloads are reset to the default empty contract.
+ * Legacy v1 payloads migrate to v2 in place.
  */
 export function readUserLocalStorage(
   storage: Storage | null = getBrowserLocalStorage(),
@@ -258,6 +370,11 @@ export function readUserLocalStorage(
 
   if (!isRecord(parsed)) {
     return recoverStoragePayload(storage, 'invalid_shape');
+  }
+
+  const migrated = tryMigrateV1Payload(parsed, storage);
+  if (migrated !== null) {
+    return migrated;
   }
 
   if (
@@ -321,14 +438,20 @@ export function clearUserLocalStorage(
 
 /** Merge partial updates, refresh updated_at, and persist when possible. */
 export function updateUserLocalStorage(
-  patch: Partial<Pick<UserLocalStoragePayload, 'favorites' | 'conditions'>>,
+  patch: Partial<
+    Pick<UserLocalStoragePayload, 'bookmark_folders' | 'bookmarks' | 'conditions'>
+  >,
   storage: Storage | null = getBrowserLocalStorage(),
 ): UserLocalStorageSnapshot {
   const current = readUserLocalStorage(storage);
   const merged: UserLocalStoragePayload = {
     schema_version: USER_LOCAL_STORAGE_SCHEMA_VERSION,
-    favorites:
-      patch.favorites !== undefined ? patch.favorites : current.data.favorites,
+    bookmark_folders:
+      patch.bookmark_folders !== undefined
+        ? patch.bookmark_folders
+        : current.data.bookmark_folders,
+    bookmarks:
+      patch.bookmarks !== undefined ? patch.bookmarks : current.data.bookmarks,
     conditions:
       patch.conditions !== undefined
         ? patch.conditions
@@ -350,3 +473,5 @@ export function updateUserLocalStorage(
     source: storage === null ? 'unavailable' : 'storage',
   };
 }
+
+export { deriveFavoritePolicyIds };

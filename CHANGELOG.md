@@ -10,6 +10,8 @@
 
 ### Changed
 
+- 북마크: localStorage schema v2(폴더·`bookmarks` entry), 기본 `기본 폴더`, 북마크 페이지 폴더 탭·`+ 새 폴더 만들기`, 저장 시 폴더 선택 모달. v1 flat `favorites[]`는 read 시 migrate.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 사용자 앱 sidebar: 메뉴 순서·라벨 정리(달력·관리자·사용자 프로필), sidebar 검색 링크 제거. `내 조건 저장`은 `/profile`에서만 편집 (홈 카드 제거). localStorage 조건은 맞춤 추천 등 기존과 동일 공유.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 
