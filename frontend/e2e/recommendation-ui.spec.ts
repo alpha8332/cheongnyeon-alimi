@@ -140,7 +140,7 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
     await expect(page.getByRole('button', { name: '북마크 해제' })).toBeVisible();
   });
 
-  test('7. localStorage — 조건 reload·홈과 공유', async ({ page }) => {
+  test('7. localStorage — 조건 reload·프로필과 공유', async ({ page }) => {
     await fillRecommendationForm(page, {
       region: '대전광역시',
       age: '27',
@@ -155,7 +155,7 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
     await expect(page.getByPlaceholder('예: 서울특별시')).toHaveValue('대전광역시');
     await expect(page.getByPlaceholder('예: 24')).toHaveValue('27');
 
-    await page.goto('/');
+    await page.goto('/profile');
     await expect(page.getByText(/저장됨:.*대전광역시/)).toBeVisible();
   });
 

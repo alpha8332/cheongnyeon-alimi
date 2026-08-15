@@ -8,10 +8,11 @@ import {
   USER_CROSS_ROUTE_PATHS,
 } from '../src/utils/userRouteIdentity.js';
 
-test('USER_CROSS_ROUTE_PATHS는 search·recommendations·calendar를 포함한다', () => {
+test('USER_CROSS_ROUTE_PATHS는 search·recommendations·calendar·profile을 포함한다', () => {
   assert.equal(USER_CROSS_ROUTE_PATHS.search, '/search');
   assert.equal(USER_CROSS_ROUTE_PATHS.recommendations, '/recommendations');
   assert.equal(USER_CROSS_ROUTE_PATHS.calendar, '/calendar');
+  assert.equal(USER_CROSS_ROUTE_PATHS.profile, '/profile');
 });
 
 test('buildUserPolicyDetailPath는 card·calendar와 동일한 detail route를 생성한다', () => {
@@ -32,5 +33,6 @@ test('isSamePolicyId와 normalizeFavoritePolicyId는 numeric identity를 정규�
 test('isUserCrossRoutePath는 user-facing route prefix를 인식한다', () => {
   assert.equal(isUserCrossRoutePath('/recommendations'), true);
   assert.equal(isUserCrossRoutePath('/programs/9'), true);
+  assert.equal(isUserCrossRoutePath('/profile'), true);
   assert.equal(isUserCrossRoutePath('/admin'), false);
 });

@@ -65,9 +65,9 @@ W4-G0 승인 전 key·version은 proposal로 문서화한다.
   - cross-tab `storage` event 구독
 - `frontend/src/hooks/useSavedConditions.ts`
 - `frontend/src/components/user/SavedConditionsPanel.tsx`
-  - 홈 `/` region·age·category 편집·저장·조건-only 초기화
+  - region·age·category 편집·저장·조건-only 초기화
   - 브라우저-only·서버/URL 미저장 copy
-- `HomePage`에 panel 연결
+- ~~`HomePage`에 panel 연결~~ → **2026-07-28 UX slice**: `/profile` `UserProfilePage`로 이전 (홈에서는 제거)
 - `clearSavedConditions`는 `conditions: null`만 기록, `favorites` 유지
 
 ### FE5-03 — KST D-Day·달력 보기
@@ -191,6 +191,33 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
   (`syncFavoritePolicyIdsSnapshotFromStorage`, `EMPTY_FAVORITES_SNAPSHOT`).
 - **라우트**: `App.tsx` index `/` → `HomePage`, `favorites` → `FavoritesPage`
   기존 등록 유지. Vite dev server SPA fallback 이상 없음(HTTP 200 확인).
+
+## UX slice — 사이드 네비게이션·프로필 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: sidebar 메뉴 순서·라벨 정리, `/profile` 사용자 프로필, `내 조건 저장` 홈→프로필 이전
+
+### 구현
+
+- `AppShellLayout`: 홈 → 맞춤 추천 → 정책 목록 → 북마크 → 달력 → 알림 → (spacer) → 관리자 → 사용자 프로필. sidebar `정책 검색` 링크 제거 (`/search` route·홈 hero 검색은 유지).
+- `UserProfilePage` (`/profile`): `SavedConditionsPanel` 단독 배치.
+- `HomePage`: `SavedConditionsPanel` 제거.
+- `userRouteIdentity`: `USER_CROSS_ROUTE_PATHS.profile` 추가.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 162 pass |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (user-service·week4·recommendation-ui) | 30 pass, 3 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계 유지
+
+- `localStorage` key·`UserSavedConditions` 계약·`useSavedConditions` hook 변경 없음.
+- `UserDataResetPanel`(북마크 페이지) 위치는 본 slice 범위 밖 — favorites footer 유지.
 
 ## 남은 작업
 

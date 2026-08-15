@@ -33,6 +33,11 @@ async function waitForHomePolicies(page: Page) {
   await expect(page.locator('article.policy-card').first()).toBeVisible();
 }
 
+async function gotoProfileConditions(page: Page) {
+  await page.goto('/profile');
+  await expect(page.getByRole('heading', { name: '사용자 프로필', level: 1 })).toBeVisible();
+}
+
 async function favoritePolicyOnHome(page: Page, title: string) {
   await waitForHomePolicies(page);
 
@@ -47,8 +52,8 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await clearUserLocalStorage(page);
   });
 
-  test('1. 홈 — 저장 조건 저장 및 reload 유지', async ({ page }) => {
-    await page.goto('/');
+  test('1. 프로필 — 저장 조건 저장 및 reload 유지', async ({ page }) => {
+    await gotoProfileConditions(page);
 
     const form = page.getByRole('form', { name: '저장 조건 편집' });
     await form.getByPlaceholder('예: 서울특별시').fill('서울특별시');
@@ -102,6 +107,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await page.goto('/');
     await favoritePolicyOnHome(page, MOCK_POLICY_WITH_DEADLINE_TITLE);
 
+    await gotoProfileConditions(page);
     const form = page.getByRole('form', { name: '저장 조건 편집' });
     await form.getByPlaceholder('예: 서울특별시').fill('대전광역시');
     await form.getByRole('button', { name: '조건 저장' }).click();
@@ -175,6 +181,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await page.goto('/');
     await favoritePolicyOnHome(page, MOCK_POLICY_WITH_DEADLINE_TITLE);
 
+    await gotoProfileConditions(page);
     const form = page.getByRole('form', { name: '저장 조건 편집' });
     await form.getByPlaceholder('예: 서울특별시').fill('부산광역시');
     await form.getByRole('button', { name: '조건 저장' }).click();
@@ -202,6 +209,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     ).toBeVisible();
 
     await page.goto('/');
+    await gotoProfileConditions(page);
     await expect(page.getByText('아직 저장된 조건이 없습니다.')).toBeVisible();
   });
 
@@ -224,7 +232,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await expect(page.getByRole('heading', { name: '맞춤 추천', level: 1 })).toBeVisible();
     await expect(page.getByRole('link', { name: '/search' })).toBeVisible();
 
-    await page.getByRole('link', { name: '마감 달력' }).click();
+    await page.getByRole('link', { name: '달력' }).click();
     await expect(page).toHaveURL(/\/calendar$/);
     await expect(page.getByRole('tab', { name: '북마크' })).toBeVisible();
   });
@@ -245,12 +253,15 @@ test.describe('User Service browser flow (FE5-07)', () => {
     );
   });
 
-  test('12. mobile viewport — 홈·북마크 페이지', async ({ page }) => {
+  test('12. mobile viewport — 홈·프로필·북마크 페이지', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
 
-    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toBeVisible();
     await expect(page.getByRole('heading', { name: /안녕하세요/, level: 1 })).toBeVisible();
+    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toHaveCount(0);
+
+    await gotoProfileConditions(page);
+    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toBeVisible();
 
     await page.goto('/favorites');
     await expect(page.getByRole('heading', { name: '북마크', level: 1 })).toBeVisible();

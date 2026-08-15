@@ -131,7 +131,7 @@ PolicyCard·ProgramDetailPage에 연결. `/favorites`는 id별 `getPolicyById(in
 | **완료 기준** | URL·서버·log에 조건 영구 저장 없음; favorites unchanged after conditions-only clear |
 
 2026-08-11 구현: `userConditionsStorage` + `useSavedConditions` +
-`SavedConditionsPanel`(홈 `/`). `saveSavedConditions`·`clearSavedConditions`는
+`SavedConditionsPanel`(~~홈 `/`~~ **2026-07-28** `/profile`). `saveSavedConditions`·`clearSavedConditions`는
 FE5-00 `UserSavedConditions` 계약만 사용. 조건 초기화 시 favorites 유지.
 Browser reload 검증은 FE5-07 범위.
 

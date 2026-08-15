@@ -12,6 +12,7 @@ import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import FavoritesPage from '@/pages/user/FavoritesPage';
 import NotificationsPage from '@/pages/user/NotificationsPage';
 import CalendarPage from '@/pages/user/CalendarPage';
+import UserProfilePage from '@/pages/user/UserProfilePage';
 
 // admin 페이지
 import DashboardPage from '@/pages/admin/DashboardPage';
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { path: 'favorites', element: <FavoritesPage /> },
       { path: 'notifications', element: <NotificationsPage /> },
       { path: 'calendar', element: <CalendarPage /> },
+      { path: 'profile', element: <UserProfilePage /> },
       { path: 'admin/login', element: <AdminLoginPage /> },
       {
         path: 'admin',

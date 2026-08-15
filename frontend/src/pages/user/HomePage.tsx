@@ -4,7 +4,6 @@ import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
-import SavedConditionsPanel from '@/components/user/SavedConditionsPanel';
 import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
 import {
   buildPolicySearchEntryPath,
@@ -42,8 +41,6 @@ export default function HomePage() {
           맞춤 지원금·정책을 한 문장으로 찾아보세요
         </p>
       </header>
-
-      <SavedConditionsPanel />
 
       <form onSubmit={handleSearch}>
         <div className="search-wrap">

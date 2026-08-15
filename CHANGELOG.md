@@ -10,6 +10,9 @@
 
 ### Changed
 
+- 사용자 앱 sidebar: 메뉴 순서·라벨 정리(달력·관리자·사용자 프로필), sidebar 검색 링크 제거. `내 조건 저장`은 `/profile`에서만 편집 (홈 카드 제거). localStorage 조건은 맞춤 추천 등 기존과 동일 공유.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+
 - 4주차 실제 로컬 DB를 Migration `20260810_0006`과 정책 3,269건으로 정렬하고,
   지역 청년정책 109건의 멱등 적재와 서울·대구·부산 검색·상세 노출을 검증했다
   ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))

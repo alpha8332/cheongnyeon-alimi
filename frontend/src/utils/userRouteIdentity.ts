@@ -16,6 +16,7 @@ export const USER_CROSS_ROUTE_PATHS = {
   calendar: '/calendar',
   notifications: '/notifications',
   programs: '/programs',
+  profile: '/profile',
 } as const;
 
 export type UserCrossRouteKey = keyof typeof USER_CROSS_ROUTE_PATHS;
@@ -66,6 +67,7 @@ export function isUserCrossRoutePath(pathname: string): boolean {
     pathname.startsWith(USER_CROSS_ROUTE_PATHS.favorites) ||
     pathname.startsWith(USER_CROSS_ROUTE_PATHS.calendar) ||
     pathname.startsWith(USER_CROSS_ROUTE_PATHS.notifications) ||
-    pathname.startsWith(USER_CROSS_ROUTE_PATHS.programs)
+    pathname.startsWith(USER_CROSS_ROUTE_PATHS.programs) ||
+    pathname.startsWith(USER_CROSS_ROUTE_PATHS.profile)
   );
 }
