@@ -57,21 +57,26 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 
 ### FE4-20 — Home → `/search` IA
 
-#### HomePage hero 검색
+#### HomePage hero 검색 (2026-07-28 UX slice)
 
-- submit/Enter → `buildPolicySearchEntryPath(q)` → `navigate('/search?q=…')`
-- 빈 q submit 시 이동하지 않음 (Policy Search 422 계약)
+- submit/Enter·추천 칩 → `buildPolicySearchEntryPath(q)` → `navigate('/?q=…')` (홈 URL state)
+- 검색 활성 시 동일 페이지에서 결과·필터·sidebar; clear 시 기본 추천/주요 정책 뷰 복귀
+- legacy `/search?q=…` → `PolicySearchRedirect` → `/?q=…`
+
+#### HomePage hero 검색 (FE4-20 baseline)
+
+- submit/Enter → `buildPolicySearchEntryPath(q)` → `navigate('/search?q=…')` (2026-08-06; 2026-07-28에 홈 통합으로 대체)
 
 #### 추천 검색어 칩
 
 - `HOME_RECOMMENDED_SEARCHES`: 천안시 24세 청년 지원금, 청년도약계좌, 서울 주거, 전국 청년
-- 칩 클릭 → 동일 `/search?q=` 진입
+- 칩 클릭 → 동일 `/?q=` 진입
 
-#### Route 경계
+#### Route 경계 (2026-07-28 UX slice 갱신)
 
-- `/search?q=` — NL Policy Search (FE4-14~)
+- `/?q=` — NL Policy Search (FE4-14~); 홈 hero·검색 결과·필터 칩·sidebar 통합
+- legacy `/search` — `PolicySearchRedirect` → `/?q=…` (query preserve)
 - `/programs?search=` — 목록 exact filter + client keyword (`SearchPage`, Forest 범위 밖 유지)
-- `/search` route는 `App.tsx`에 등록 (계획서 `routes/index.tsx` 대응)
 
 ### FE4-19 — Reason & Uninterpreted UX (우측 사이드바)
 

@@ -8,13 +8,13 @@ async function waitForSearchSettled(page: Page) {
 
 test.describe('Policy Search browser audit (FE4-14~21)', () => {
   test('1. 검색어 입력 & URL Sync & 지우기', async ({ page }) => {
-    await page.goto('/search');
+    await page.goto('/');
 
     const input = page.getByLabel('정책 검색어');
     await input.fill('서울 주거');
     await input.press('Enter');
 
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
     expect(page.url()).toContain('q=');
 
     await waitForSearchSettled(page);
@@ -26,7 +26,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     await expect(input).toHaveValue('');
     expect(page.url()).not.toMatch(/[?&]q=/);
-    await expect(page.getByText(/검색어를 입력하고 검색하기 버튼을 눌러 주세요/)).toBeVisible();
+    await expect(page.getByLabel('예시 검색어')).toBeVisible();
   });
 
   test('2. 필터 칩 삭제 시 URL 반영 및 page=1 리셋', async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(removeRegionChip).toBeVisible();
     await removeRegionChip.click();
 
-    await expect(page).toHaveURL(/\/search\?/);
+    await expect(page).toHaveURL(/\/?\?/);
     expect(page.url()).not.toContain('region=');
     expect(page.url()).not.toMatch(/page=2/);
   });
@@ -150,17 +150,17 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(sidebar.getByRole('heading', { name: /자격 조건/ })).toBeVisible();
   });
 
-  test('7a. 홈 검색·추천 칩 → /search?q= 이동', async ({ page }) => {
+  test('7a. 홈 검색·추천 칩 → /?q= 이동', async ({ page }) => {
     await page.goto('/');
 
     await page.getByLabel('정책 검색어').fill('서울 주거');
     await page.getByRole('button', { name: '검색하기' }).click();
 
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
 
     await page.goto('/');
     await page.getByRole('button', { name: '서울 주거' }).click();
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
   });
 
   test('7b. 검색 결과 카드 → /programs/{id} (+ include_partial)', async ({

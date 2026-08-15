@@ -156,7 +156,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await waitForRecommendationSettled(page);
     await expect(page.getByRole('region', { name: '추천 결과' })).toBeVisible();
 
-    await page.getByRole('link', { name: '홈' }).click();
+    await page.getByRole('link', { name: '홈', exact: true }).click();
     await waitForHomePolicies(page);
     const homeCard = page
       .locator('article.policy-card')
@@ -193,9 +193,9 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await expect(page.getByRole('heading', { name: /안녕하세요/ })).toBeVisible();
 
     await page.getByRole('button', { name: '서울 주거' }).click();
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
 
-    await page.goto('/search?q=%EB%B3%B5%EC%A7%80%EB%A1%9C+%EC%83%9D%ED%99%9C');
+    await page.goto('/?q=%EB%B3%B5%EC%A7%80%EB%A1%9C+%EC%83%9D%ED%99%9C');
     await waitForSearchSettled(page);
 
     const partialCard = page.locator('a.policy-card[href*="include_partial=true"]').first();
@@ -229,7 +229,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await page.goto('/search');
-    await expect(page).toHaveURL(/\/search$/);
+    await expect(page).toHaveURL(/\/$/);
     await page.getByLabel('정책 검색어').fill('복지로');
     await page.getByRole('button', { name: '검색하기' }).click();
     await waitForSearchSettled(page);

@@ -5,8 +5,8 @@ import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
 
 // user 페이지
 import HomePage from '@/pages/user/HomePage';
+import PolicySearchRedirect from '@/pages/user/PolicySearchRedirect';
 import SearchPage from '@/pages/user/SearchPage';
-import PolicySearchPage from '@/pages/user/PolicySearchPage';
 import RecommendationPage from '@/pages/user/RecommendationPage';
 import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import FavoritesPage from '@/pages/user/FavoritesPage';
@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
     errorElement: <RootErrorFallback />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'search', element: <PolicySearchPage /> },
+      { path: 'search', element: <PolicySearchRedirect /> },
       { path: 'recommendations', element: <RecommendationPage /> },
       { path: 'programs', element: <SearchPage /> },
       { path: 'programs/:id', element: <ProgramDetailPage /> },

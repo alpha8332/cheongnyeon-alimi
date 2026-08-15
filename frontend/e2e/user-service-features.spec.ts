@@ -240,7 +240,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await page.getByRole('link', { name: '맞춤 추천' }).click();
     await expect(page).toHaveURL(/\/recommendations$/);
     await expect(page.getByRole('heading', { name: '맞춤 추천', level: 1 })).toBeVisible();
-    await expect(page.getByRole('link', { name: '/search' })).toBeVisible();
+    await expect(page.getByRole('link', { name: '홈 검색' })).toBeVisible();
 
     await page.getByRole('link', { name: '달력' }).click();
     await expect(page).toHaveURL(/\/calendar$/);
@@ -285,7 +285,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await page.getByLabel('정책 검색어').fill('서울 주거');
     await page.getByRole('button', { name: '검색하기' }).click();
 
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
     await expect(page.getByLabel('검색 결과 로딩 중')).toHaveCount(0, {
       timeout: 15_000,
     });

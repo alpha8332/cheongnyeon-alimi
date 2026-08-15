@@ -10,6 +10,8 @@
 
 ### Changed
 
+- 홈 NL 검색: 결과·필터 칩·sidebar를 `/` URL state(`/?q=…`)에서 렌더; legacy `/search`는 query preserve redirect. 메인 컨텐츠 max-width 중앙 정렬. 프로필 저장 조건을 검색 API flat filter 기본값으로 merge.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 마감 달력(`/calendar`): list view → 월간 7열 그리드(이전/다음 달, 오늘 강조, 시작·마감 뱃지, 일정 상세 modal). KST `application_start`·`application_end` 매핑.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 북마크: localStorage schema v2(폴더·`bookmarks` entry), 기본 `기본 폴더`, 북마크 페이지 폴더 탭·`+ 새 폴더 만들기`, 저장 시 폴더 선택 모달. v1 flat `favorites[]`는 read 시 migrate.

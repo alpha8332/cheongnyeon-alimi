@@ -10,7 +10,9 @@ import { buildProgramDetailRoutePath } from './policyDetailNavigation.js';
 
 export const USER_CROSS_ROUTE_PATHS = {
   home: '/',
-  search: '/search',
+  /** NL search query state on home (`/?q=…`); legacy `/search` redirects here. */
+  search: '/',
+  legacySearch: '/search',
   recommendations: RECOMMENDATION_APP_ROUTE,
   favorites: '/favorites',
   calendar: '/calendar',
@@ -62,7 +64,7 @@ export function normalizeFavoritePolicyId(
 export function isUserCrossRoutePath(pathname: string): boolean {
   return (
     pathname === USER_CROSS_ROUTE_PATHS.home ||
-    pathname.startsWith(USER_CROSS_ROUTE_PATHS.search) ||
+    pathname.startsWith(USER_CROSS_ROUTE_PATHS.legacySearch) ||
     pathname.startsWith(USER_CROSS_ROUTE_PATHS.recommendations) ||
     pathname.startsWith(USER_CROSS_ROUTE_PATHS.favorites) ||
     pathname.startsWith(USER_CROSS_ROUTE_PATHS.calendar) ||

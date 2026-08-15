@@ -270,6 +270,35 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 - 주간/일간 뷰·드래그 reorder·전용 Backend calendar API는 범위 밖.
 - Mock Seed open 정책에 `application_end`가 없어 E2E는 empty grid·badge absence 검증 위주.
 
+## UX slice — 홈 검색 통합·레이아웃 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: 와이드스크린 메인 중앙 정렬, 홈 내 NL 검색 결과·필터 칩, `/search` → `/?q=` redirect, 프로필 저장 조건 API merge
+
+### 구현
+
+- `theme.css`: `.app-shell__main` `margin-inline: auto`·`justify-self: center` (max-width 1200px, 검색 활성 1440px).
+- `HomePage`: `PolicySearchPage` 검색 UI·결과·sidebar를 홈 URL state(`/?q=…`)로 통합; 기본 뷰(추천 칩·주요 정책) ↔ 검색 결과 전환.
+- `PolicySearchRedirect`: legacy `/search` query preserve → home.
+- `policySearchSavedConditions.ts`: URL에 없는 `region`·`age`·`category`를 `UserSavedConditions`에서 API 요청에 merge.
+- `PolicySearchPage.tsx` 제거; `buildPolicySearchEntryPath` → `/?q=…`.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 175 pass (+ saved conditions merge unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (policy-search-audit·week4·user-service·recommendation-ui) | 41 pass, 4 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- FE4-20 golden flow는 동일(홈 검색 → 결과 → 상세); URL만 `/search` → `/`.
+- `/programs?search=` exact list filter route는 유지.
+- `search_ux_preview.html`(루트 untracked)은 참고용이며 본 slice 산출물 아님.
+
 ## 남은 작업
 
 - W4-G0 승인 시 key·version·KST 규칙 동기화

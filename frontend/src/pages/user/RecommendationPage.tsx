@@ -16,7 +16,6 @@ import {
   mapRecommendationError,
 } from '@/utils/recommendationErrors';
 import { toRecommendationRequestFromConditions } from '@/utils/savedConditionsForm';
-import { USER_CROSS_ROUTE_PATHS } from '@/utils/userRouteIdentity';
 
 type FetchPhase = 'idle' | 'loading' | 'success' | 'error';
 
@@ -72,9 +71,8 @@ export default function RecommendationPage() {
 
       <p role="note" className="policy-eligibility-notice">
         추천 결과는 자격 충족이나 수혜 가능성을 확정하지 않습니다. 자연어 검색은{' '}
-        <Link to={USER_CROSS_ROUTE_PATHS.search}>/search</Link> route를
-        사용하세요. 이 route(<code>{RECOMMENDATION_APP_ROUTE}</code>)는 구조화
-        조건 추천 전용입니다.
+        <Link to="/">홈 검색</Link>을 사용하세요. 이 route(
+        <code>{RECOMMENDATION_APP_ROUTE}</code>)는 구조화 조건 추천 전용입니다.
       </p>
 
       <RecommendationConditionForm

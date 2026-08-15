@@ -1,6 +1,10 @@
 import { POLICY_SEARCH_QUERY_LIMITS } from '../types/policySearch.js';
 
-const POLICY_SEARCH_ROUTE = '/search';
+/** Home route — NL search state lives in `/?q=…` query params. */
+export const POLICY_SEARCH_ROUTE = '/';
+
+/** @deprecated Legacy path; `/search` redirects to home with the same query string. */
+export const LEGACY_POLICY_SEARCH_ROUTE = '/search';
 
 /** Golden-flow entry paths from Home hero or recommended chips (FE4-20). */
 export const HOME_RECOMMENDED_SEARCHES = [
@@ -11,7 +15,7 @@ export const HOME_RECOMMENDED_SEARCHES = [
 ] as const;
 
 /**
- * Build `/search?q=…` path for non-empty trimmed query.
+ * Build `/?q=…` path for non-empty trimmed query.
  * Returns null when q is empty or exceeds URL limit.
  */
 export function buildPolicySearchEntryPath(q: string): string | null {
@@ -23,5 +27,6 @@ export function buildPolicySearchEntryPath(q: string): string | null {
 
   const params = new URLSearchParams();
   params.set('q', trimmed);
-  return `${POLICY_SEARCH_ROUTE}?${params.toString()}`;
+  const query = params.toString();
+  return query ? `${POLICY_SEARCH_ROUTE}?${query}` : POLICY_SEARCH_ROUTE;
 }
