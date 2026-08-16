@@ -51,6 +51,14 @@ async function confirmBookmarkModal(page: Page) {
   await expect(dialog).toHaveCount(0);
 }
 
+async function openBookmarkFolder(page: Page, folderName: string) {
+  await page
+    .getByRole('button', {
+      name: new RegExp(`^${folderName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(\\d+\\)$`),
+    })
+    .click();
+}
+
 test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () => {
   test.beforeAll(async () => {
     if (process.env.DTL47_ACTUAL === 'true') {
@@ -213,8 +221,10 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     }).click();
     await confirmBookmarkModal(page);
     await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.locator('article.policy-card').first()).toBeVisible();
     await page.reload();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.locator('article.policy-card').first()).toBeVisible();
 
     await page.goto('/calendar');

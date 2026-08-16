@@ -10,6 +10,8 @@
 
 ### Changed
 
+- 북마크(`/favorites`): 탭 리스트 → 폴더 그리드 탐색기(브레드크럼, 정렬, 그리드/리스트 뷰, 폴더 진입). localStorage v2 schema 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 홈 NL 검색: 결과·필터 칩·sidebar를 `/` URL state(`/?q=…`)에서 렌더; legacy `/search`는 query preserve redirect. 메인 컨텐츠 max-width 중앙 정렬. 프로필 저장 조건을 검색 API flat filter 기본값으로 merge.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 마감 달력(`/calendar`): list view → 월간 7열 그리드(이전/다음 달, 오늘 강조, 시작·마감 뱃지, 일정 상세 modal). KST `application_start`·`application_end` 매핑.

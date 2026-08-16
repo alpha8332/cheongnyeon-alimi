@@ -44,6 +44,7 @@
     "src/utils/recommendationReasonHelpers.ts",
     "src/utils/savedConditionsForm.ts",
     "src/utils/userRouteIdentity.ts",
+    "src/utils/bookmarkExplorer.ts",
     "src/types/userLocalStorage.ts",
     "src/utils/userLocalStorage.ts",
     "src/utils/userLocalStorageRecoveryNotice.ts",

@@ -45,6 +45,14 @@ async function confirmBookmarkModal(page: Page) {
   await expect(dialog).toHaveCount(0);
 }
 
+async function openBookmarkFolder(page: Page, folderName: string) {
+  await page
+    .getByRole('button', {
+      name: new RegExp(`^${folderName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(\\d+\\)$`),
+    })
+    .click();
+}
+
 async function favoritePolicyOnHome(page: Page, title: string) {
   await waitForHomePolicies(page);
 
@@ -83,6 +91,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
 
     await page.getByRole('link', { name: '북마크' }).click();
     await expect(page).toHaveURL(/\/favorites$/);
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.getByText(MOCK_POLICY_WITH_DEADLINE_TITLE)).toBeVisible();
 
     await page
@@ -108,6 +117,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toBeVisible();
   });
 
@@ -129,6 +139,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await expect(page.getByText('아직 저장된 조건이 없습니다.')).toBeVisible();
 
     await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.getByText(MOCK_POLICY_WITH_DEADLINE_TITLE)).toBeVisible();
   });
 
@@ -136,8 +147,11 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await page.goto('/favorites');
     await expect(page.getByRole('heading', { name: '북마크' })).toBeVisible();
     await expect(
-      page.getByText('저장한 정책이 없습니다. 정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요.'),
+      page.getByText(/정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요/),
     ).toBeVisible();
+    await expect(page.getByRole('button', { name: /기본 폴더 \(0\)/ })).toBeVisible();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.getByText('저장된 정책이 없습니다.')).toBeVisible();
   });
 
   test('6. 마감 달력 — scope toggle·empty states', async ({ page }) => {
@@ -197,6 +211,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await form.getByRole('button', { name: '조건 저장' }).click();
 
     await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.getByText(MOCK_POLICY_WITH_DEADLINE_TITLE)).toBeVisible();
 
     page.on('dialog', (dialog) => {
@@ -210,12 +225,13 @@ test.describe('User Service browser flow (FE5-07)', () => {
       )
       .toBeNull();
     await expect(
-      page.getByText('저장한 정책이 없습니다. 정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요.'),
+      page.getByText(/정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요/),
     ).toBeVisible();
+    await expect(page.getByRole('button', { name: /기본 폴더 \(0\)/ })).toBeVisible();
 
     await page.reload();
     await expect(
-      page.getByText('저장한 정책이 없습니다. 정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요.'),
+      page.getByText(/정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요/),
     ).toBeVisible();
 
     await page.goto('/');
@@ -292,12 +308,17 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await expect(page.getByRole('region', { name: '검색 결과' })).toBeVisible();
   });
 
-  test('14. 북마크 폴더 — 생성·탭 필터·모달 저장', async ({ page }) => {
+  test('14. 북마크 폴더 — 생성·그리드 필터·모달 저장', async ({ page }) => {
     await page.goto('/favorites');
-    await page.getByRole('button', { name: '+ 새 폴더 만들기' }).click();
-    await page.getByLabel('새 폴더 이름').fill('주거정책모음');
-    await page.getByRole('button', { name: '만들기' }).click();
-    await expect(page.getByRole('tab', { name: /주거정책모음 \(0\)/ })).toBeVisible();
+    await page.getByRole('button', { name: '새 폴더 만들기' }).click();
+    const createDialog = page.getByRole('dialog', { name: '새 폴더 만들기' });
+    await expect(createDialog).toBeVisible();
+    await createDialog.getByLabel('새 폴더 이름').fill('주거정책모음');
+    await createDialog.getByRole('button', { name: '만들기' }).click();
+    await expect(page.getByText('저장된 정책이 없습니다.')).toBeVisible();
+
+    await page.getByRole('button', { name: '< 북마크' }).click();
+    await expect(page.getByRole('button', { name: /주거정책모음 \(0\)/ })).toBeVisible();
 
     await page.goto('/');
     await waitForHomePolicies(page);
@@ -310,9 +331,10 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await dialog.getByRole('button', { name: '저장' }).click();
 
     await page.getByRole('link', { name: '북마크' }).click();
-    await page.getByRole('tab', { name: /기본 폴더 \(0\)/ }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.getByText(MOCK_POLICY_WITH_DEADLINE_TITLE)).toHaveCount(0);
-    await page.getByRole('tab', { name: /주거정책모음 \(1\)/ }).click();
+    await page.getByRole('button', { name: '< 북마크' }).click();
+    await openBookmarkFolder(page, '주거정책모음');
     await expect(page.getByText(MOCK_POLICY_WITH_DEADLINE_TITLE)).toBeVisible();
   });
 
@@ -331,11 +353,13 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await confirmBookmarkModal(page);
 
     await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.locator('article.policy-card').first()).toBeVisible({
       timeout: 15_000,
     });
 
     await page.reload();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.locator('article.policy-card').first()).toBeVisible({
       timeout: 15_000,
     });

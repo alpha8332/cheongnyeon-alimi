@@ -270,6 +270,33 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 - 주간/일간 뷰·드래그 reorder·전용 Backend calendar API는 범위 밖.
 - Mock Seed open 정책에 `application_end`가 없어 E2E는 empty grid·badge absence 검증 위주.
 
+## UX slice — 북마크 폴더 그리드 탐색기 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `/favorites` 파일 매니저 스타일 폴더 그리드·브레드크럼·정렬·뷰 전환
+
+### 구현
+
+- `BookmarkExplorerToolbar`: `< 북마크 / 폴더명` 브레드크럼, 이름순·담긴 개수순 정렬, 그리드/리스트 뷰 토글.
+- `BookmarkFolderGrid`: dashed `+ 새 폴더` 카드, 파스텔 폴더 SVG 카드, `이름 (개수)` 라벨(날짜 미표시), ☆ pin(sessionStorage)·`···` 메뉴.
+- `BookmarkCreateFolderDialog`: 새 폴더 생성 modal.
+- `FavoritesPage`: root=폴더 그리드, folder 진입=정책 카드; localStorage v2 schema 변경 없음. pin·view mode는 sessionStorage.
+
+### 검증 (실행 후 기록)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 179 pass (+ bookmark explorer sort unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (user-service·week4 bookmark paths) | 19 pass, 2 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- 폴더 rename/delete·schema `pinned` 필드는 범위 밖; pin은 session-only.
+- `BookmarkFolderPickerModal`(저장 modal) 계약 유지.
+
 ## UX slice — 홈 검색 통합·레이아웃 (2026-07-28)
 
 - **브랜치**: `feature/frontend/style-and-ux-fixes`
