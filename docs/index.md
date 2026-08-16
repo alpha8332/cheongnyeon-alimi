@@ -73,6 +73,8 @@
   Data 03·04, 자격요건 evidence, 공동 계약과 W4-G0~G4 actual 통합·판정
 - [5주차 상세 실행 계획](development/weekly_plan/week_05_release_2.md):
   Data·Backend·Frontend 안정화, 사용성 리뷰·QA와 Release 2 `v0.5.0` 판정
+- [5주차 Data·Team Leader 실행 계획](development/weekly_plan/week_05_data_team_leader.md):
+  Data 06 SOP0~SOP5, W5-G0~G2 actual 인수·독립 검증과 Release 2 판정
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):

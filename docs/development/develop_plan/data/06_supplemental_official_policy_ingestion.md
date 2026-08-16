@@ -4,8 +4,10 @@
 
 - 번호: Data 06
 - 담당 영역: Data
-- 상태: draft
+- 상태: approved
+- 착수 조건: `W5-G0` 뒤 SOP0 시작
 - 계획일: `2026-08-11`
+- 승인일: `2026-08-16`
 - 실행 일정: `2026-08-14` 재승인으로 4주차에서 5주차로 이동
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 02 Release Dataset Bootstrap, Data 03 Recurrent Collection
@@ -15,6 +17,7 @@
 - 권장 브랜치: `feature/data/supplemental-official-policy-ingestion` 한 개.
   Data 05 공통 엔진과 Gate가 안정되기 전에는 만들지 않으며 Source별 브랜치를
   추가하지 않음
+- 현재 Slice: SOP0 pending (구현·actual Source 승인 미착수)
 
 ## 목적
 
@@ -265,7 +268,7 @@ Data 05 RYP2~RYP4 공통 엔진·중복 Gate
   → SOP5 Source 확대·전체 회귀
 ```
 
-Data-only 구현은 4주차 DTL4-5와 W4-G4가 끝난 뒤 5주차 W5-G0 기준선에서
+Data-only 구현은 4주차 병합 커밋 `f0d3dd3`을 W5-G0에서 재확인한 뒤
 시작한다. SOP0~SOP3는 Backend·Frontend 안정화와 병렬로 진행할 수 있지만,
 SOP4~SOP5 actual과 전체 통합 판정은 같은 W5-G1에서 대조한다.
 
@@ -332,6 +335,10 @@ git diff --check
 Data 06이 완료 기준을 충족하지 못하면 `v0.5.0` 보완 Source 기능이 미완료이므로
 W5-G1을 통과시키지 않는다. 이 일정 변경은 최소 4개 Source 목표나 품질 Gate를
 축소하지 않는다.
+
+구체적인 일차별 실행과 Team Leader Gate는
+[5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)을
+따른다. 이 계획의 `approved`는 Source 승인이나 구현 완료를 뜻하지 않는다.
 
 ## 위험과 미확정 사항
 

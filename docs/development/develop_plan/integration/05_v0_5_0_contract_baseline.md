@@ -4,7 +4,8 @@
 
 - 번호: Integration 05
 - 담당 영역: Team Leader - Integration
-- 상태: approved
+- 상태: completed
+- 완료 판정: `W4-G4_MIDPOINT_PASS`
 - 진행: `C0`~`C4` 완료, Team Leader가 `W4-G0_APPROVED` 판정
 - 계획일: `2026-08-07`
 - 대상 Release: `v0.5.0`
@@ -12,6 +13,8 @@
 - 권장 브랜치: `docs/docs/v0-5-contract-baseline`
 - 후속 Forest: Backend 04·05, Frontend 03·05, Data 03·04,
   Integration 06·07·08·09
+- 완료 근거: [Integration 05 개발 기록](../../development_notes/integration/v0_5_0_contract_baseline.md),
+  `develop` 병합 커밋 `f0d3dd3`
 
 ## 실행 기준
 

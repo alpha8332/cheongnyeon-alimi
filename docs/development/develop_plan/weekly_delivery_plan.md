@@ -265,13 +265,17 @@ Source 수집과 핵심 신청
 ## 5주차 - 추가 기능·오류 수정·UI/UX 최적화와 Release 2
 
 역할별 실행 순서와 Gate는
-[5주차 상세 계획](../weekly_plan/week_05_release_2.md)을 따른다.
+[5주차 상세 계획](../weekly_plan/week_05_release_2.md)과
+[5주차 Data·Team Leader 실행 계획](../weekly_plan/week_05_data_team_leader.md)을
+따른다.
 
 ### 기본 기능 기준선
 
-4주차 W4-G4에서 Data 06을 제외한 기본 기능과 DTL4-5가 완료된 기준선을
-사용한다. 5주차 초반에 Data 06 SOP0~SOP5를 구현·검증한 뒤 기능을 동결하고,
-오류 수정·UI/UX 최적화와 독립 검증을 진행한다.
+4주차 W4-G4에서 Data 06을 제외한 기본 기능과 DTL4-5가 완료되고 `develop`에
+병합된 `f0d3dd3`을 시작 후보로 사용한다. W5-G0에서 Migration
+`20260810_0006`·실제 DB 3,269건·지역정책 109건·actual API mode를 재확인한
+뒤 Data 06 SOP0~SOP5를 구현·검증하고 기능을 동결한다. 이후 오류 수정·UI/UX
+최적화와 독립 검증을 진행한다.
 
 ### 실행 순서
 
@@ -281,6 +285,10 @@ Source 수집과 핵심 신청
 4. W5-G1: Data 06 포함 전체 기능 동결과 실제 E2E
 5. 사용성 리뷰·QA → 결함 수정 → 동일 시나리오 재검증
 6. W5-G2: `v0.5.0` Release 2 판정
+
+W5-G0 이전 값은 4주차 인수 기준이지 5주차 재검증 결과가 아니다. Data 06
+적재 뒤 최종 정책 건수는 accepted·duplicate·review·closed·failed 판정에 따라
+결정하며 계획에서 미리 목표 row 수를 만들지 않는다.
 
 ### 안정화
 

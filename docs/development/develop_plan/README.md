@@ -13,8 +13,8 @@
 | Data 02 | Release Dataset Bootstrap | [개발 계획](data/02_release_dataset_bootstrap.md) | completed |
 | Data 03 | Recurrent Collection and Quality Operations | [개발 계획](data/03_recurrent_collection_quality_operations.md) | completed |
 | Data 04 | Public HTTPS Policy Ingestion | [개발 계획](data/04_public_https_policy_ingestion.md) | in-progress |
-| Data 05 | Regional Youth Policy Ingestion | [개발 계획](data/05_regional_youth_policy_ingestion.md) | in-progress |
-| Data 06 | Supplemental Official Policy Ingestion | [개발 계획](data/06_supplemental_official_policy_ingestion.md) | draft |
+| Data 05 | Regional Youth Policy Ingestion | [개발 계획](data/05_regional_youth_policy_ingestion.md) | completed |
+| Data 06 | Supplemental Official Policy Ingestion | [개발 계획](data/06_supplemental_official_policy_ingestion.md) | approved |
 | Frontend 01 | Policy Discovery | [개발 계획](frontend/01_policy_discovery.md) | completed |
 | Frontend 02 | React Router Advisory Review | [개발 계획](frontend/02_react_router_advisory.md) | completed |
 | Frontend 03 | CollectionRun Admin UI | [개발 계획](frontend/03_collection_run_admin_ui.md) | draft |
@@ -33,9 +33,9 @@
 | Integration 02 | Policy Data Database Integration | [개발 계획](integration/02_policy_data_database_integration.md) | completed |
 | Integration 03 | Policy Search Data Foundation | [개발 계획](integration/03_policy_search_data_foundation.md) | completed |
 | Integration 04 | Release 1 Acceptance | [개발 계획](integration/04_release_1_acceptance.md) | completed |
-| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | approved |
+| Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | completed |
 | Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
-| Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | draft |
+| Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | approved |
 | Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | completed |
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 
@@ -58,9 +58,9 @@
 
 ## 다음 Forest 실행 순서
 
-`v0.1.0`은 `main` 커밋 `2b33ed7`과 tag `v0.1.0`으로 발행됐다. 다음 작업은
-Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, 웹 Source·
-자격요건·추천·사용자·품질 Forest를 의존성에 맞게 실행한다.
+`v0.1.0`은 `main` 커밋 `2b33ed7`과 tag `v0.1.0`으로 발행됐다. 4주차 결과는
+`develop`의 `f0d3dd3`에 병합되고 `W4-G4_MIDPOINT_PASS`를 통과했다. 다음
+작업은 Data 06 구현·안정화와 Integration 07의 독립 검증·Release 2 Gate다.
 
 | 우선순위 | 작업 또는 조건부 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
@@ -69,7 +69,7 @@ Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, �
 | 완료 | `R1-SEARCH-DATA-FOUNDATION` | Source 중립 검색 필드·지역 계층·DB 관계·projection | `feature/database/policy-search-foundation` |
 | 완료 | `R1-POLICY-SEARCH` | Backend 서버 검색 → Frontend 자연어 조건 연결 | `feature/backend/policy-search`, `feature/frontend/policy-search` |
 | 완료 | `R1-REAL-DATA-ACCEPTANCE` | golden query와 실제 DB·API·Browser 인수, G4 통과 | `feature/data/release-dataset-bootstrap` |
-| 다음 | `R2-CONTRACT-BASELINE` | 저장·인증·웹 Source·자격요건·추천·수동 실행·품질 노출 W4-G0 승인 | `docs/docs/v0-5-contract-baseline` |
+| 완료 | `R2-CONTRACT-BASELINE` | 저장·인증·웹 Source·자격요건·추천·수동 실행·품질 노출 W4-G0~G4 통합 | `feature/integration/week-04-acceptance` |
 | W4-G0 뒤 | `BE-ADMIN-RUN-HISTORY` | Backend 04 → Backend 05 → Frontend 03 | `feature/backend/admin-run-management` |
 | W4-G0 뒤 필수 | `R2-ADMIN-DATA-LOG` | 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사 | Backend·Frontend observability 브랜치 |
 | W4-G0 뒤 필수 | `R2-PUBLIC-WEB-SOURCE` | 공식 HTTPS Source 1곳 목록·상세 → DB 적재 | `feature/data/public-web-policy-source` |
@@ -78,7 +78,8 @@ Integration 05의 W4-G0 계약 승인 뒤 관리자 실행·데이터·로그, �
 | W4-G0 뒤 | `R2-USER-SERVICE` | localStorage 조건·즐겨찾기·D-Day·알림·`.ics` | `feature/frontend/user-service-features` |
 | W4-G0 뒤 | `R2-DATA-QUALITY` | 반복 수집·수정·중복·실패 통계 | `feature/data/recurrent-quality-operations` |
 | W4-G1 병렬·`v0.5.0` 필수 | `REGIONAL-YOUTH-POLICY-INGESTION` | 지역 고유 정책 Source 탐색·중복 제외·실데이터 적재 | `feature/data/regional-youth-policy-ingestion` |
-| Data 05 공통 엔진 뒤·`v0.5.0` 필수 | `SUPPLEMENTAL-OFFICIAL-POLICY-INGESTION` | 온통청년·복지로 누락 중앙·공공기관 Source 중복 감사·실데이터 적재 | Data 06 승인 뒤 Forest 브랜치 한 개 |
+| 다음·`v0.5.0` 필수 | `SUPPLEMENTAL-OFFICIAL-POLICY-INGESTION` | 온통청년·복지로 누락 중앙·공공기관 Source 중복 감사·실데이터 적재 | `feature/data/supplemental-official-policy-ingestion` |
+| Data 06 뒤 | `R2-FEATURE-ACCEPTANCE` | actual E2E·독립 사용성·QA·수정본 재검증과 Release 2 판정 | 착수 전 integration domain 합의 |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text

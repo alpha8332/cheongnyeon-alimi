@@ -85,7 +85,7 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | approved | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0 | `v0.1.0` publication |
+| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | completed | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0~G4 | `v0.1.0` publication |
 | 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
 | 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
 | 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
@@ -96,8 +96,8 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 | 9 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
 | 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
 | 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 13개 승인 Source 전체 순회·지역별 실제 open 고유 정책 DB·API·Browser 검색 연결·RYP-G6 통과 | Data 03·04, Integration 08 |
-| 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | draft | 5주차 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 completed, Data 02·04 |
-| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | draft | 4주차 midpoint, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
+| 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | approved | 5주차 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 completed, Data 02·04 |
+| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | approved | 4주차 midpoint 완료, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
 다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
@@ -182,10 +182,11 @@ Data 02가 `develop`에 병합되기 전에는 stacked 의존 관계와 병합 �
 Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표나 독립 완료
 기준을 한 브랜치에 장기간 누적하지 않는다.
 
-Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함께 다루지만
-현재 브랜치 전략에는 `integration` domain이 없다. 착수 전 기존 domain 중
-하나로 귀속할지 `integration` domain을 추가할지 합의하고, 그 전에는 임의의
-브랜치를 만들지 않는다.
+Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함께 다룬다.
+4주차에는 `feature/integration/week-04-acceptance`를 실제 사용했지만 현재
+브랜치 전략의 domain 표에는 `integration`이 없다. A2 변경 착수 전 실제 관행을
+정책에 반영할지 기존 domain으로 귀속할지 합의하고, 그 전에는 통합 브랜치를
+임의로 만들지 않는다.
 
 ## 범위 변경 규칙
 

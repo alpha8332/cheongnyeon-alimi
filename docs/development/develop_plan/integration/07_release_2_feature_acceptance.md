@@ -4,13 +4,16 @@
 
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
-- 상태: draft
+- 상태: approved
+- 현재 단계: 4주차 A0·A1 근거 완료, 5주차 A2·A3 착수 준비
 - 계획일: `2026-08-07`
+- 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05·06,
   Integration 06·08·09
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
-- 작업 브랜치: 착수 전에 현재 브랜치 전략에 맞는 cross-area domain 합의 필요
+- 작업 브랜치: 4주차 `feature/integration/week-04-acceptance` 선례와 현재
+  브랜치 전략의 domain 목록이 달라, A2 변경 착수 전에 사용자 합의 필요
 
 ## 목적
 
@@ -62,6 +65,8 @@ Forest에서 관리한다.
 
 - 공통 시작 SHA, Migration, snapshot과 실제 API 모드를 고정한다.
 - 역할별 테스트 명령·지원 환경·증거 양식을 확정한다.
+- 4주차 A0 근거는 `develop@f0d3dd3`, Migration `20260810_0006`, 실제 DB
+  3,269건과 `W4-G4_MIDPOINT_PASS`다. 5주차 W5-G0에서 재검증한다.
 
 ### A1 - 4주차 승인 기본 기능 midpoint acceptance
 
@@ -74,6 +79,8 @@ Forest에서 관리한다.
   통과시키지 않는다.
 - 미완성·결함·계약 충돌을 blocker 또는 5주차 수정 대상으로 분류한다.
 - 기능 연결이 확인되면 `W4-G4_MIDPOINT_PASS`를 기록한다.
+- A1은 `2026-08-14` 완료됐으며 상세 실행 근거는 Integration 05 개발 기록에
+  있다. 이는 A2·A3 또는 Release 2 최종 통과를 뜻하지 않는다.
 
 ### A2 - 5주차 추가 기능·최적화와 리뷰어·QA hardening
 
@@ -112,8 +119,9 @@ Forest에서 관리한다.
 
 ## 위험과 미확정 사항
 
-- cross-area Forest에 맞는 branch domain이 현재 브랜치 전략에 정의되지 않아
-  착수 전 브랜치명 합의가 필요하다.
+- 4주차에는 `integration` domain 브랜치를 실제 사용했지만 현재 브랜치 전략의
+  domain 표에는 없다. A2 변경 브랜치를 만들기 전에 실제 관행과 거버넌스를
+  정렬해야 한다.
 - 한 주 안에 모든 기능을 확장형으로 구현하면 Backend가 병목이 되므로 W4-G0
   범위 밖 기능을 다시 끌어오지 않는다.
 - actual snapshot은 외부 데이터 변화의 영향을 받으므로 고정 contract 회귀와
@@ -123,6 +131,7 @@ Forest에서 관리한다.
 
 - [4주차 상세 실행 계획](../../weekly_plan/week_04_v0_5_0.md)
 - [5주차 상세 실행 계획](../../weekly_plan/week_05_release_2.md)
+- [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
 - [Release와 Milestone 계획](../release_roadmap.md)
 - [Recommendation Vertical Slice](06_recommendation_vertical_slice.md)
 - [User Service Features](../frontend/05_user_service_features.md)
