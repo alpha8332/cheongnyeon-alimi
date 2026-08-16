@@ -4,8 +4,9 @@ import type {
   PolicyDto,
   PolicyCategory,
 } from '../types/policy.js';
+import { getDDayLabel, normalizePolicyYmd } from './policyDeadline.js';
 
-export { getDDayLabel } from './policyDeadline.js';
+export { getDDayLabel, normalizePolicyYmd };
 
 const CATEGORY_LABELS: Record<PolicyCategory, string> = {
   housing: '주거',
@@ -102,24 +103,89 @@ export function formatApplicationStatus(
   return STATUS_LABELS[status];
 }
 
-export function formatApplicationPeriod(policy: PolicyDto): string {
+/** YYYY-MM-DD / ISO datetime → `YYYY.MM.DD` */
+export function formatPolicyDateDot(value: string | null | undefined): string | null {
+  const normalized = normalizePolicyYmd(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const [year, month, day] = normalized.split('-');
+  return `${year}.${month}.${day}`;
+}
+
+function normalizePeriodTextDates(text: string): string {
+  return text
+    .replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1.$2.$3')
+    .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, '$1.$2.$3')
+    .replace(
+      /\b(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?\b/g,
+      (_, year: string, month: string, day: string) =>
+        `${year}.${month.padStart(2, '0')}.${day.padStart(2, '0')}`,
+    )
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/** 상세·modal용 신청 기간 (`YYYY.MM.DD`) */
+export function formatApplicationPeriodDisplay(policy: PolicyDto): string {
   if (policy.application_period_text) {
-    return policy.application_period_text;
+    return normalizePeriodTextDates(policy.application_period_text);
   }
 
-  if (policy.application_start && policy.application_end) {
-    return `${policy.application_start} ~ ${policy.application_end}`;
+  const start = formatPolicyDateDot(policy.application_start);
+  const end = formatPolicyDateDot(policy.application_end);
+
+  if (start && end) {
+    return `${start} ~ ${end}`;
   }
 
-  if (policy.application_start) {
-    return `${policy.application_start} ~`;
+  if (start) {
+    return `${start} ~`;
   }
 
-  if (policy.application_end) {
-    return `~ ${policy.application_end}`;
+  if (end) {
+    return `~ ${end}`;
+  }
+
+  if (policy.application_schedule === 'always') {
+    return '상시';
   }
 
   return '신청 기간 미정';
+}
+
+/** 목록 카드용 compact 신청 기간 */
+export function formatApplicationPeriodCard(policy: PolicyDto): string {
+  const start = formatPolicyDateDot(policy.application_start);
+  const end = formatPolicyDateDot(policy.application_end);
+
+  if (start && end) {
+    return `${start} ~ ${end}`;
+  }
+
+  if (end) {
+    return `${end} 마감`;
+  }
+
+  if (start) {
+    return `${start} 시작`;
+  }
+
+  if (policy.application_schedule === 'always') {
+    return '상시';
+  }
+
+  if (policy.application_period_text) {
+    const normalized = normalizePeriodTextDates(policy.application_period_text);
+    return normalized.length > 48 ? `${normalized.slice(0, 48)}…` : normalized;
+  }
+
+  return '기간 미정';
+}
+
+export function formatApplicationPeriod(policy: PolicyDto): string {
+  return formatApplicationPeriodDisplay(policy);
 }
 
 export function formatCollectedAt(value: string): string {
@@ -138,4 +204,35 @@ export function formatNullableText(
   fallback: string,
 ): string {
   return value ?? fallback;
+}
+
+function stripHtmlTags(value: string): string {
+  return value.replace(/<[^>]*>/g, '').trim();
+}
+
+/** Calendar·카드 등 UI 표시용 정책명 (API 필드명·HTML 변형 폴백). */
+export function getPolicyDisplayTitle(
+  policy: Pick<PolicyDto, 'title' | 'category_text'>,
+): string {
+  const legacy = policy as Pick<PolicyDto, 'title' | 'category_text'> &
+    Record<string, unknown>;
+  const candidates = [
+    policy.title,
+    legacy['policy_name'],
+    legacy['name'],
+    legacy['polyBizSjnm'],
+    legacy['plcyNm'],
+    policy.category_text,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string') {
+      const normalized = stripHtmlTags(candidate);
+      if (normalized) {
+        return normalized;
+      }
+    }
+  }
+
+  return '정책';
 }

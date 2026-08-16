@@ -10,11 +10,23 @@
 
 ### Changed
 
+- 정책 상세 헤더: 제목 행 우측 북마크, 주관기관 아래 공식 신청·ICS 액션 바, ○ 요약 줄바꿈·`YYYYMMDD` 기간 정규화.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 홈 첫 화면 featured 정책: 마감·예정·지난 마감일 제외, 상태·분야 뱃지 semantic 컬러(상시 민트·모집중 블루·마감 레드).
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 목록·상세: 카드 신청기간 `YYYY.MM.DD` 정규화, 카테고리·상태 뱃지를 달력 테마와 일치, 상세 메타 줄바꿈·본문 ordered/bullet 리스트.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 상세(`/programs/:id`): Summary Header(상태·D-Day·4대 메타)·섹션 카드·하단 Sticky CTA(북마크·공식 신청·ICS). `EligibilitySummary`·API schema 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 북마크(`/favorites`): 탭 리스트 → 폴더 그리드 탐색기(브레드크럼, 정렬, 그리드/리스트 뷰, 폴더 진입). localStorage v2 schema 유지.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 홈 NL 검색: 결과·필터 칩·sidebar를 `/` URL state(`/?q=…`)에서 렌더; legacy `/search`는 query preserve redirect. 메인 컨텐츠 max-width 중앙 정렬. 프로필 저장 조건을 검색 API flat filter 기본값으로 merge.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
-- 마감 달력(`/calendar`): list view → 월간 7열 그리드(이전/다음 달, 오늘 강조, 시작·마감 뱃지, 일정 상세 modal). KST `application_start`·`application_end` 매핑.
+- 마감 달력(`/calendar`): ISO 날짜 정규화·정책명 폴백·칩 button 중첩 제거로 일정 칩 미노출 버그 수정.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): 일정 칩 텍스트를 정책명(`title`)으로 표시(날짜 칸·all-day·주/일 뷰). 카테고리 색상 유지·말줄임 compact 스타일.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): macOS/Apple Calendar 스타일 2패널 UI(분야 필터·미니 달력, Day/Week/Month/Year, all-day 카테고리 칩·일정 상세 modal). KST `application_start`·`application_end` 매핑·`.monthly-calendar__grid` E2E 호환 유지.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 북마크: localStorage schema v2(폴더·`bookmarks` entry), 기본 `기본 폴더`, 북마크 페이지 폴더 탭·`+ 새 폴더 만들기`, 저장 시 폴더 선택 모달. v1 flat `favorites[]`는 read 시 migrate.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))

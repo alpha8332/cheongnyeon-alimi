@@ -1,5 +1,7 @@
 import { Link } from 'react-router';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
+import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
+import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
 import RegionListCollapse from '@/components/recommendation/RegionListCollapse';
 import {
   PARTIAL_QUALITY_BADGE_HELP,
@@ -10,7 +12,7 @@ import type { RecommendationItemDto } from '@/types/recommendation';
 import { buildRecommendationItemDetailPath } from '@/utils/policyDetailNavigation';
 import { getPolicyDeadlineInfo } from '@/utils/policyDeadline';
 import {
-  formatApplicationStatus,
+  formatApplicationPeriodCard,
   getCategoryLabel,
 } from '@/utils/policyDisplay';
 import {
@@ -22,24 +24,46 @@ interface RecommendationResultCardProps {
   item: RecommendationItemDto;
 }
 
-function formatRecommendationDDay(item: RecommendationItemDto): string {
-  const deadlinePolicy = {
+function toPolicyDto(item: RecommendationItemDto): PolicyDto {
+  return {
+    schema_version: '1.2.0',
+    source_id: item.source_id,
+    source_name: item.source_id,
+    external_id: item.external_id,
+    title: item.title,
+    organization: null,
+    summary: null,
+    category_text: null,
+    categories: [item.category as PolicyCategory],
+    application_period_text: null,
+    application_start: item.application_start,
     application_end: item.application_end,
-    application_status: item.application_status as ApplicationStatus,
     application_schedule: 'fixed_period',
-  } as PolicyDto;
-
-  return getPolicyDeadlineInfo(deadlinePolicy).label;
+    application_status: item.application_status as ApplicationStatus,
+    region_text: null,
+    regions: item.regions,
+    age_min: item.min_age,
+    age_max: item.max_age,
+    age_condition_text: null,
+    eligibility_text: null,
+    support_content: null,
+    application_method: null,
+    education_statuses: [],
+    employment_statuses: [],
+    required_conditions: [],
+    preferred_conditions: [],
+    excluded_conditions: [],
+    source_url: '',
+    collected_at: new Date(0).toISOString(),
+    data_quality_status: item.data_quality_status as PolicyDto['data_quality_status'],
+    id: item.id,
+    created_at: new Date(0).toISOString(),
+    updated_at: new Date(0).toISOString(),
+  };
 }
 
-function getStatusLabel(item: RecommendationItemDto): string {
-  if (item.application_status) {
-    return formatApplicationStatus(
-      item.application_status as 'open' | 'closed' | 'scheduled',
-    );
-  }
-
-  return '정책';
+function formatRecommendationDDay(item: RecommendationItemDto): string {
+  return getPolicyDeadlineInfo(toPolicyDto(item)).label;
 }
 
 function formatCategoryLabel(category: string): string {
@@ -64,15 +88,20 @@ export default function RecommendationResultCard({
   item,
 }: RecommendationResultCardProps) {
   const detailPath = buildRecommendationItemDetailPath(item);
+  const policy = toPolicyDto(item);
   const showPartial = item.data_quality_status === 'partial';
   const showUnknown = hasRecommendationUnknownConditions(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
+  const category = item.category as PolicyCategory;
 
   return (
     <article className="policy-card recommendation-result-card">
       <div className="policy-card__visual">
-        <span className="policy-card__tag">{getStatusLabel(item)}</span>
+        <div className="policy-card__visual-badges">
+          <PolicyStatusBadge policy={policy} compact />
+          <PolicyCategoryBadge category={category} compact />
+        </div>
       </div>
       <div className="policy-card__body">
         <h3 className="policy-card__title">
@@ -102,6 +131,7 @@ export default function RecommendationResultCard({
           </div>
         ) : null}
 
+        <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
           <RegionListCollapse regions={item.regions} /> · {formatCategoryLabel(item.category)}
           {dDay ? ` · ${dDay}` : ''}

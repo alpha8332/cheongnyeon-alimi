@@ -8,11 +8,13 @@ import {
 interface PolicyIcsDownloadButtonProps {
   policy: PolicyDto;
   className?: string;
+  label?: string;
 }
 
 export default function PolicyIcsDownloadButton({
   policy,
   className,
+  label = '캘린더 (.ics) 다운로드',
 }: PolicyIcsDownloadButtonProps) {
   const enabled = canDownloadPolicyIcs(policy);
 
@@ -31,7 +33,7 @@ export default function PolicyIcsDownloadButton({
         downloadPolicyIcs(policy);
       }}
     >
-      캘린더 (.ics) 다운로드
+      {label}
     </Button>
   );
 }

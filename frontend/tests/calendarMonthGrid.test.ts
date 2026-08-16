@@ -119,3 +119,35 @@ test('calendar badge helper 상수', () => {
   assert.equal(getCalendarEventKindLabel('start'), '신청 시작');
   assert.equal(getCalendarEventKindLabel('end'), '신청 마감');
 });
+
+test('collectCalendarPolicyEvents는 ISO datetime application_end를 YYYY-MM-DD로 매칭한다', () => {
+  const events = collectCalendarPolicyEvents([
+    createPolicy({
+      id: 10,
+      title: 'ISO 마감 정책',
+      application_end: '2026-08-20T00:00:00+09:00',
+      application_status: 'open',
+    }),
+  ]);
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0]?.kind, 'end');
+  assert.equal(events[0]?.date, '2026-08-20');
+});
+
+test('collectCalendarPolicyEvents는 ISO datetime application_start를 수집한다', () => {
+  const events = collectCalendarPolicyEvents([
+    createPolicy({
+      id: 11,
+      title: 'ISO 시작 정책',
+      application_start: '2026-08-05T15:00:00Z',
+      application_end: '2026-08-25',
+      application_status: 'scheduled',
+    }),
+  ]);
+
+  assert.equal(
+    events.some((event) => event.kind === 'start' && event.date === '2026-08-05'),
+    true,
+  );
+});

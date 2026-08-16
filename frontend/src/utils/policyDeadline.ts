@@ -2,6 +2,27 @@ import type { PolicyDto } from '../types/policy.js';
 
 export const KST_TIME_ZONE = 'Asia/Seoul';
 
+/** Normalize API date strings to YYYY-MM-DD (KST calendar date). */
+export function normalizePolicyYmd(
+  value: string | null | undefined,
+): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  const datePrefix = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  return datePrefix?.[1] ?? null;
+}
+
 export type PolicyDeadlineKind =
   | 'closed'
   | 'always'
@@ -39,7 +60,7 @@ export function getPolicyDeadlineInfo(
   policy: PolicyDto,
   referenceDate: Date = new Date(),
 ): PolicyDeadlineInfo {
-  const applicationEnd = policy.application_end;
+  const applicationEnd = normalizePolicyYmd(policy.application_end);
 
   if (policy.application_status === 'closed') {
     return {
@@ -126,6 +147,33 @@ export function isImminentDeadline(
   }
 
   return info.daysRemaining >= 0 && info.daysRemaining <= withinDays;
+}
+
+/** 홈 첫 화면 featured 카드 — 마감·예정·지난 마감일 제외, open·상시 위주 */
+export function isHomeFeaturedPolicy(
+  policy: PolicyDto,
+  referenceDate: Date = new Date(),
+): boolean {
+  if (
+    policy.application_status === 'closed' ||
+    policy.application_status === 'scheduled'
+  ) {
+    return false;
+  }
+
+  const deadline = getPolicyDeadlineInfo(policy, referenceDate);
+  if (deadline.kind === 'closed' || deadline.kind === 'past') {
+    return false;
+  }
+
+  if (
+    policy.application_schedule === 'always' &&
+    policy.application_status === 'open'
+  ) {
+    return true;
+  }
+
+  return policy.application_status === 'open';
 }
 
 export function groupPoliciesByApplicationEnd(

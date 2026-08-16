@@ -1,5 +1,5 @@
 import type { PolicyDto } from '../types/policy.js';
-import { getPolicyDeadlineInfo } from './policyDeadline.js';
+import { getPolicyDeadlineInfo, normalizePolicyYmd } from './policyDeadline.js';
 
 export type CalendarEventKind = 'start' | 'end';
 
@@ -11,12 +11,11 @@ export interface CalendarPolicyEvent {
 
 export const CALENDAR_MAX_VISIBLE_BADGES_PER_DAY = 2;
 
-function isValidYmd(value: string | null | undefined): value is string {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-function canShowCalendarStartEvent(policy: PolicyDto): boolean {
-  if (!isValidYmd(policy.application_start)) {
+function canShowCalendarStartEvent(
+  policy: PolicyDto,
+  normalizedStart: string | null,
+): boolean {
+  if (!normalizedStart) {
     return false;
   }
 
@@ -27,7 +26,7 @@ function canShowCalendarStartEvent(policy: PolicyDto): boolean {
   if (
     policy.application_schedule === 'always' &&
     policy.application_status === 'open' &&
-    !policy.application_end
+    !normalizePolicyYmd(policy.application_end)
   ) {
     return false;
   }
@@ -43,26 +42,28 @@ export function collectCalendarPolicyEvents(
 
   for (const policy of policies) {
     const deadline = getPolicyDeadlineInfo(policy);
-    if (deadline.hasCalendarSlot && isValidYmd(deadline.applicationEnd)) {
-      const key = `${policy.id}:end:${deadline.applicationEnd}`;
+    const normalizedEnd = normalizePolicyYmd(deadline.applicationEnd);
+
+    if (deadline.hasCalendarSlot && normalizedEnd) {
+      const key = `${policy.id}:end:${normalizedEnd}`;
       if (!seen.has(key)) {
         seen.add(key);
         events.push({
           policy,
-          date: deadline.applicationEnd,
+          date: normalizedEnd,
           kind: 'end',
         });
       }
     }
 
-    if (canShowCalendarStartEvent(policy)) {
-      const startDate = policy.application_start!;
-      const key = `${policy.id}:start:${startDate}`;
+    const normalizedStart = normalizePolicyYmd(policy.application_start);
+    if (canShowCalendarStartEvent(policy, normalizedStart) && normalizedStart) {
+      const key = `${policy.id}:start:${normalizedStart}`;
       if (!seen.has(key)) {
         seen.add(key);
         events.push({
           policy,
-          date: startDate,
+          date: normalizedStart,
           kind: 'start',
         });
       }

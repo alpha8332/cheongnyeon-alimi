@@ -44,6 +44,7 @@ import {
   withPolicySearchPage,
 } from '@/utils/policySearchUrl';
 import { mergeSavedConditionsIntoSearchState } from '@/utils/policySearchSavedConditions';
+import { isHomeFeaturedPolicy } from '@/utils/policyDeadline';
 import {
   HOME_RECOMMENDED_SEARCHES,
   buildPolicySearchEntryPath,
@@ -76,10 +77,17 @@ export default function HomePage() {
     isLoading: isFeaturedLoading,
   } = usePoliciesQuery({
     page: 1,
-    limit: 3,
+    limit: 12,
+    status: 'open',
     include_partial: false,
   });
-  const featuredPolicies = policyList?.items ?? [];
+  const featuredPolicies = useMemo(
+    () =>
+      (policyList?.items ?? [])
+        .filter((policy) => isHomeFeaturedPolicy(policy))
+        .slice(0, 3),
+    [policyList],
+  );
 
   const {
     data,

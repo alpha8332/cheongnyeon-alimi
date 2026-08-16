@@ -8,6 +8,8 @@ import { expect, test, type Page } from '@playwright/test';
 const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
 
 const MOCK_HOUSING_POLICY_TITLE = '합성 청년 주거 지원';
+/** Seed id 2 — open·always; 홈 featured 카드 (closed id 1은 featured 제외). */
+const MOCK_HOME_FEATURED_POLICY_TITLE = '합성 상시 생활 지원';
 /** Seed id 1 — has `application_end` but `application_status: closed` (ICS disabled in Mock). */
 const MOCK_HOUSING_POLICY_ID = 1;
 
@@ -132,7 +134,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     const summary = eligibilitySummary(page);
     await expect(summary.getByRole('heading', { name: '핵심 신청 조건', level: 2 })).toBeVisible();
     await expect(summary.getByRole('link', { name: /근거 1 원문 열기/ }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: '원문 링크 열기' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /공식 신청 사이트 바로가기/ })).toBeVisible();
     await expect(summary.getByRole('note')).toContainText(
       '실제 자격 충족이나 선정을 확정하지 않습니다',
     );
@@ -160,7 +162,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await waitForHomePolicies(page);
     const homeCard = page
       .locator('article.policy-card')
-      .filter({ hasText: MOCK_HOUSING_POLICY_TITLE });
+      .filter({ hasText: MOCK_HOME_FEATURED_POLICY_TITLE });
     await homeCard.getByRole('button', { name: '북마크 추가' }).click();
     await confirmBookmarkModal(page);
     await expect(homeCard.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
@@ -180,7 +182,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await expect(
       page.getByRole('heading', { name: MOCK_HOUSING_POLICY_TITLE }),
     ).toBeVisible();
-    const icsButton = page.getByRole('button', { name: '캘린더 (.ics) 다운로드' });
+    const icsButton = page.getByRole('button', { name: /캘린더 \(\.ics\) 다운로드/ });
     await expect(icsButton).toBeVisible();
     // Mock seed policy 1 is closed — ICS UI is present but download stays disabled.
     await expect(icsButton).toBeDisabled();

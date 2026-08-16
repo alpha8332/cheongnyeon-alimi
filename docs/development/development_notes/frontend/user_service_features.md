@@ -251,7 +251,7 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 
 - `calendarMonthGrid.ts`: Sunday-start 42-cell grid, month navigation, today/outside-month styling.
 - `calendarPolicyEvents.ts`: `application_start`·`application_end` 이벤트 수집 (closed·상시 제외, FE5-03 end 규칙 유지 + start 추가).
-- `MonthlyCalendarGrid`, `CalendarDayDetailDialog`: 월 헤더·뱃지·`+N개 더보기`·일정 상세 modal.
+- `CalendarMonthView`, `CalendarDayDetailDialog`: 월 헤더·뱃지·`+N개 더보기`·일정 상세 modal. *(2026-07-28 Apple 2패널 slice에서 `CalendarMonthView`·툴바/사이드바로 확장)*
 - `CalendarPage`: scope toggle(북마크/전체) 유지, grid 항상 렌더.
 
 ### 검증 (실행 완료)
@@ -296,6 +296,200 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 
 - 폴더 rename/delete·schema `pinned` 필드는 범위 밖; pin은 session-only.
 - `BookmarkFolderPickerModal`(저장 modal) 계약 유지.
+
+## UX slice — macOS/Apple Calendar 2패널 마감 달력 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `/calendar` 단순 월간 격자 → macOS Calendar 스타일 2패널(사이드바 필터·미니 달력 + 메인 뷰)
+
+### 구현
+
+- `AppleCalendarLayout`: 좌측 분야 체크박스 필터(`calendarCategoryTheme.ts`)·미니 월간 picker, 좁은 화면 drawer 토글.
+- `CalendarToolbar`: `Month YYYY` 타이틀, Day/Week/Month/Year 세그먼트, `< Today >` 탐색(`calendarViewNavigation.ts`).
+- `CalendarMonthView`·`CalendarWeekView`·`CalendarDayView`·`CalendarYearView`: all-day 카테고리 칩 row, 오늘 빨간 원형 뱃지, `.monthly-calendar__grid`·`.calendar-event-badge` E2E selector 유지.
+- `CalendarEventChip`·`CalendarEventDetailDialog`: 칩 클릭 시 정책명·신청 기간·지원 대상·신청 링크 modal. 일별 modal(`CalendarDayDetailDialog`) 유지.
+- `CalendarPage`: scope toggle(북마크/전체) 유지, 카테고리 필터 후 `calendarPolicyEvents` 매핑.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 184 pass (+ calendar category/view navigation unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (user-service·week4 calendar paths) | 4 pass, 1 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- Backend `end_date`/`apply_period` 필드 없음 — 기존 `application_start`·`application_end`만 사용(FE5-03 계약).
+- Week/Day/Year는 타임라인 슬롯 없이 all-day 칩·목록 중심 MVP; 시간대별 스케줄·드래그 reorder·전용 calendar API는 범위 밖.
+- Mock Seed에 `application_end` open 정책이 없어 E2E는 empty grid·badge absence 위주.
+- `MonthlyCalendarGrid.tsx` 제거 — `CalendarMonthView`로 대체.
+
+## UX slice — 마감 달력 일정 칩 텍스트·스타일 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: 날짜 칸·all-day·주/일 뷰 일정 칩 텍스트를 정책명(`title`)으로 통일, 말줄임·compact 스타일 개선
+
+### 구현
+
+- `CalendarEventChip`: 달력 칸 칩 기본 라벨을 `policy.title`로 고정(`showKindLabel`은 modal 헤더 전용). `calendar-event-chip__text` ellipsis.
+- `CalendarMonthView`: `showTitle={false}`(신청 마감 고정 문구) 제거.
+- `theme.css`: compact 칩 padding·font-size·min-height, 카테고리 색상 유지, flex `min-width: 0` truncate.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 184 pass |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (calendar paths) | 4 pass |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- `CalendarDayDetailDialog` 일별 modal 내 kind 뱃지(신청 시작·마감)는 날짜 칸 칩 범위 밖 — 유지.
+- Mock Seed에 calendar 이벤트 없어 E2E는 badge count·grid visibility 위주.
+
+## UX slice — 마감 달력 이벤트 미노출 버그 수정 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: Apple Calendar UI 개편 후 날짜 셀 칩 미렌더링·데이터 매핑 정상화
+
+### 원인·수정
+
+- **button 중첩**: `CalendarEventChip`(button)이 `monthly-calendar__day-button`(button) 내부에 있어 브라우저가 칩을 렌더하지 않음 → 날짜 선택 button과 칩을 형제 노드로 분리(`CalendarMonthView`).
+- **ISO 날짜**: `application_end`/`application_start`가 `YYYY-MM-DDTHH:mm:ss` 형태일 때 `isValidYmd` 실패·그리드 `YYYY-MM-DD` 키 불일치 → `normalizePolicyYmd`(`policyDeadline.ts`) 도입, `calendarPolicyEvents`·D-Day 계산에 적용.
+- **정책명 폴백**: `getPolicyDisplayTitle` — `title` → `policy_name`/`name`/`polyBizSjnm`/`plcyNm` → `category_text` → `'정책'`, HTML strip.
+- **분야 필터**: API unknown category가 필터에서 전부 제외되던 문제 → unknown을 `other`로 매칭.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 189 pass (+ calendar event mapping unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (calendar paths) | 4 pass |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- FE5-03 계약: `application_status: closed` 정책은 calendar slot 미생성 유지 — Mock seed id 1(합성 청년 주거)은 closed라 E2E empty grid 가능.
+- closed 마감일도 달력에 표시하려면 FE5-03·Integration 합의 후 별도 slice.
+
+## UX slice — 정책 상세 가독성·구조화 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `/programs/:id` Summary Header·섹션 카드·Sticky Action Bar, 기존 `EligibilitySummary`·API schema 유지
+
+### 구현
+
+- `PolicyDetailSummaryHeader`: 상태/D-Day/카테고리 뱃지, 4대 메타 그리드(신청 기간·연령·지역·소득), 지원 혜택 하이라이트.
+- `PolicyDetailSection`·`policyDetailContent.ts`: HTML strip·bullet 렌더, `getPolicyDisplayTitle`·소득(`eligibility_summary.income`) 추출.
+- `PolicyDetailStickyActions`: 북마크(폴더 modal)·공식 신청·ICS 고정 하단 CTA. `FavoriteToggleButton` `labeled` prop.
+- `ProgramDetailPage`: 자격/지원/신청/기관 섹션 분리, `📄 정책 정보` 메타 Card·`EligibilitySummary` 하단 유지.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 193 pass (+ policy detail content unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (eligibility-summary-ui·week4 Path B·policy-search 7b·ICS) | 10 pass, 1 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- API에 `target_age`/`apply_period`/`policy_name` 단독 필드 없음 — `PolicyDto`·`eligibility_summary` 기존 계약 사용.
+- 소득은 `eligibility_summary.requirements(income)` 우선; 없으면 `eligibility_text` 키워드·`'소득 기준 미확인'`.
+- CTA 라벨 `원문 링크 열기` → `공식 신청 사이트 바로가기`(sticky); E2E selector 갱신.
+
+## UX slice — 정책 목록·상세 가독성/스타일 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: 목록 카드 신청기간 포맷, 상세 메타 줄바꿈, 카테고리·상태 뱃지 달력 테마 일원화, 본문 ordered/bullet 리스트
+
+### 구현
+
+- `policyDisplay.ts`: `formatPolicyDateDot`, `formatApplicationPeriodCard`·`formatApplicationPeriodDisplay` — ISO·비정형 날짜를 `YYYY.MM.DD`로 정규화.
+- `PolicyCategoryBadge`·`PolicyStatusBadge`: `calendarCategoryTheme`·`getPolicyStatusBadge` 재사용, 목록(`PolicyCard`·`PolicySearchResultCard`·`RecommendationResultCard`)·상세 header 공통.
+- `PolicyDetailSummaryHeader`: 메타 값 `value-stack`/`value-line` 분리(개행·` · ` 구분).
+- `policyDetailContent.splitPolicyTextToItems`: 번호·bullet·세미콜론 분리; `PolicyDetailTextContent` `preferOrdered`로 지원/신청 섹션 ordered list.
+- `theme.css`: `.policy-card__period`, badge·meta stack·ordered list 스타일.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 198 pass (+ date format·text split unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (eligibility-summary-ui·week4·policy-search-audit) | 20 pass, 3 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- API·schema 변경 없음 — 기존 `application_start`/`application_end`·본문 text 필드만 소비.
+- 원문이 단일 문단이면 bullet/ordered 분리 없이 paragraph 유지.
+- `RecommendationItemDto`에 `source_name`/`collected_at` 없음 — badge·기간 표시용 `toPolicyDto`는 최소 필드만 매핑.
+
+## UX slice — 홈 마감 정책 제외·뱃지 테마 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: 홈 첫 화면 featured 카드 마감 필터, 상태·분야 뱃지 컬러 정교화
+
+### 구현
+
+- `isHomeFeaturedPolicy`(`policyDeadline.ts`): `closed`·`scheduled`·KST 지난 마감일 제외; `open`·`always`만 홈 featured.
+- `HomePage`: `usePoliciesQuery({ status: 'open', limit: 12 })` + client filter → 최대 3건 `PolicyCard`.
+- `getPolicyStatusBadge` variant: `always`(민트)·`open`(블루)·`hot`/`closed`(레드)·`warn`·`muted`.
+- `PolicyStatusBadge`·`PolicyCategoryBadge`: status 전용 CSS + category는 `calendar-chip--*` CSS 변수 1:1 유지.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 199 pass (+ home featured filter unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (user-service-features·week4-regression) | 19 pass, 2 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- 현재 `HomePage` 첫 화면에는 **주요 정책 카드**만 존재 — 별도 「맞춤 추천」「최신 공지」 섹션은 `/recommendations` 등 별도 route. 해당 섹션 추가 시 동일 `isHomeFeaturedPolicy` 재사용 권장.
+- `/programs` 전체 목록·검색 결과는 마감 정책 포함 유지(본 slice는 홈 default view만).
+
+## UX slice — 정책 상세 헤더 레이아웃·액션 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `PolicyDetailSummaryHeader` 북마크·헤더 내 액션 바, ○ 요약 분리·compact 날짜 정규화
+
+### 구현
+
+- `PolicyDetailSummaryHeader`: 뱃지+제목 행 우측 `FavoriteToggleButton`(폴더 modal 연동), 주관기관 아래 `PolicyDetailHeaderActions`.
+- `PolicyDetailHeaderActions`: `공식 신청 사이트 바로가기 ↗`(gradient·`source_url` 새 탭), `캘린더 (.ics) 다운로드 📅`(기존 `policyIcs` util).
+- `splitCircleBulletLines`: `○` 구분 요약·메타 텍스트 줄바꿈; `normalizePeriodTextDates`에 `YYYYMMDD` → `YYYY.MM.DD`.
+- 하단 고정 `PolicyDetailStickyActions` 제거 — 액션을 헤더 카드 내부로 통합.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 200 pass (+ ○ split·compact date unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (eligibility-summary-ui·week4·policy-search·user-service detail paths) | 34 pass, 4 skip (Real API) |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- Slice의 `apply_url` 필드는 API에 없음 — 공식 링크는 기존 `PolicyDto.source_url` 사용.
+- ICS는 `application_end` 없으면 disabled 유지(FE5-05 계약).
 
 ## UX slice — 홈 검색 통합·레이아웃 (2026-07-28)
 

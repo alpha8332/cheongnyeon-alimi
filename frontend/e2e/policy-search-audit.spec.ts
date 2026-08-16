@@ -228,7 +228,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
         .filter({ hasText: '실제 자격 충족을 확정하지 않습니다' }),
     ).toBeVisible();
     await expect(
-      page.getByRole('button', { name: '원문 링크 열기' }),
+      page.getByRole('button', { name: /공식 신청 사이트 바로가기/ }),
     ).toBeVisible();
   });
 });

@@ -152,6 +152,8 @@ Browser reload 검증은 FE5-07 범위.
 `policyDisplay.getDDayLabel` 통합, `PolicyCard` 마감 임박 tag. unit
 `policyDeadline.test.ts`. Browser 검증은 FE5-07. **2026-07-28 UX slice**:
 list → monthly Sunday-start grid, start/end badges, day detail modal.
+**2026-07-28 UX slice (홈 featured)**: `isHomeFeaturedPolicy`로 홈 default
+view 마감·예정 제외; E2E 홈 북마크 시나리오는 open seed(id 2) 사용.
 
 ---
 
