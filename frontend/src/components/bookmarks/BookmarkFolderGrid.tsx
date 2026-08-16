@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { DEFAULT_BOOKMARK_FOLDER_ID } from '@/types/userLocalStorage';
+import { useDismissOnOutsidePress } from '@/hooks/useDismissOnOutsidePress';
 import type { BookmarkExplorerViewMode } from '@/utils/bookmarkExplorer';
 import {
   formatBookmarkFolderLabel,
   type BookmarkFolderWithCount,
 } from '@/utils/bookmarkExplorer';
+import { isDeletableBookmarkFolder } from '@/utils/userFavoritesStorage';
 
 interface BookmarkFolderGridProps {
   folders: BookmarkFolderWithCount[];
@@ -12,6 +15,7 @@ interface BookmarkFolderGridProps {
   onOpenFolder: (folderId: string) => void;
   onCreateFolder: () => void;
   onTogglePin: (folderId: string) => void;
+  onRequestDeleteFolder: (folder: BookmarkFolderWithCount) => void;
 }
 
 function FolderIconGraphic() {
@@ -35,6 +39,93 @@ function FolderIconGraphic() {
   );
 }
 
+interface FolderCardMenuProps {
+  folder: BookmarkFolderWithCount;
+  isPinned: boolean;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onOpenFolder: (folderId: string) => void;
+  onTogglePin: (folderId: string) => void;
+  onRequestDeleteFolder: (folder: BookmarkFolderWithCount) => void;
+}
+
+function FolderCardMenu({
+  folder,
+  isPinned,
+  isOpen,
+  onOpenChange,
+  onOpenFolder,
+  onTogglePin,
+  onRequestDeleteFolder,
+}: FolderCardMenuProps) {
+  const menuWrapRef = useRef<HTMLDivElement>(null);
+  const closeMenu = useCallback(() => onOpenChange(false), [onOpenChange]);
+
+  useDismissOnOutsidePress(menuWrapRef, isOpen, closeMenu);
+
+  const canDelete = isDeletableBookmarkFolder(folder.id);
+
+  return (
+    <div className="bookmark-folder-card__menu-wrap" ref={menuWrapRef}>
+      <button
+        type="button"
+        className="bookmark-folder-card__menu-btn"
+        aria-label={`${folder.name} 폴더 옵션`}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpenChange(!isOpen);
+        }}
+      >
+        ···
+      </button>
+      {isOpen ? (
+        <div className="bookmark-folder-card__menu" role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            className="bookmark-folder-card__menu-item"
+            onClick={() => {
+              closeMenu();
+              onOpenFolder(folder.id);
+            }}
+          >
+            폴더 열기
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="bookmark-folder-card__menu-item"
+            onClick={() => {
+              closeMenu();
+              onTogglePin(folder.id);
+            }}
+          >
+            {isPinned ? '즐겨찾기 해제' : '즐겨찾기'}
+          </button>
+          {canDelete ? (
+            <>
+              <div className="bookmark-folder-card__menu-divider" role="separator" />
+              <button
+                type="button"
+                role="menuitem"
+                className="bookmark-folder-card__menu-item bookmark-folder-card__menu-item--danger"
+                onClick={() => {
+                  closeMenu();
+                  onRequestDeleteFolder(folder);
+                }}
+              >
+                폴더 삭제
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function BookmarkFolderGrid({
   folders,
   viewMode,
@@ -42,6 +133,7 @@ export default function BookmarkFolderGrid({
   onOpenFolder,
   onCreateFolder,
   onTogglePin,
+  onRequestDeleteFolder,
 }: BookmarkFolderGridProps) {
   const [openMenuFolderId, setOpenMenuFolderId] = useState<string | null>(null);
   const gridClass =
@@ -67,11 +159,12 @@ export default function BookmarkFolderGrid({
         const label = formatBookmarkFolderLabel(folder.name, folder.count);
         const isPinned = pinnedFolderIds.includes(folder.id);
         const menuOpen = openMenuFolderId === folder.id;
+        const isDefaultFolder = folder.id === DEFAULT_BOOKMARK_FOLDER_ID;
 
         return (
           <article
             key={folder.id}
-            className={`bookmark-folder-card${viewMode === 'list' ? ' bookmark-folder-card--list' : ''}`}
+            className={`bookmark-folder-card${viewMode === 'list' ? ' bookmark-folder-card--list' : ''}${isDefaultFolder ? ' bookmark-folder-card--default' : ''}`}
           >
             <button
               type="button"
@@ -99,47 +192,15 @@ export default function BookmarkFolderGrid({
                 {isPinned ? '★' : '☆'}
               </button>
 
-              <div className="bookmark-folder-card__menu-wrap">
-                <button
-                  type="button"
-                  className="bookmark-folder-card__menu-btn"
-                  aria-label={`${folder.name} 폴더 옵션`}
-                  aria-expanded={menuOpen}
-                  aria-haspopup="menu"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setOpenMenuFolderId(menuOpen ? null : folder.id);
-                  }}
-                >
-                  ···
-                </button>
-                {menuOpen ? (
-                  <div className="bookmark-folder-card__menu" role="menu">
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="bookmark-folder-card__menu-item"
-                      onClick={() => {
-                        setOpenMenuFolderId(null);
-                        onOpenFolder(folder.id);
-                      }}
-                    >
-                      폴더 열기
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="bookmark-folder-card__menu-item"
-                      onClick={() => {
-                        setOpenMenuFolderId(null);
-                        onTogglePin(folder.id);
-                      }}
-                    >
-                      {isPinned ? '즐겨찾기 해제' : '즐겨찾기'}
-                    </button>
-                  </div>
-                ) : null}
-              </div>
+              <FolderCardMenu
+                folder={folder}
+                isPinned={isPinned}
+                isOpen={menuOpen}
+                onOpenChange={(open) => setOpenMenuFolderId(open ? folder.id : null)}
+                onOpenFolder={onOpenFolder}
+                onTogglePin={onTogglePin}
+                onRequestDeleteFolder={onRequestDeleteFolder}
+              />
             </div>
           </article>
         );

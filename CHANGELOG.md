@@ -10,6 +10,8 @@
 
 ### Changed
 
+- 북마크 폴더: `···` 메뉴 바깥 클릭·ESC 닫기, 사용자 폴더 삭제 확인 modal(기본 폴더 보호).
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 정책 상세 헤더: 제목 행 우측 북마크, 주관기관 아래 공식 신청·ICS 액션 바, ○ 요약 줄바꿈·`YYYYMMDD` 기간 정규화.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 홈 첫 화면 featured 정책: 마감·예정·지난 마감일 제외, 상태·분야 뱃지 semantic 컬러(상시 민트·모집중 블루·마감 레드).

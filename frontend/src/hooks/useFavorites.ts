@@ -1,6 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import {
   createBookmarkFolder,
+  deleteBookmarkFolder,
   getBookmarkFolderForPolicy,
   getFavoritePolicyIdsServerSnapshot,
   getFavoritePolicyIdsSnapshot,
@@ -51,6 +52,10 @@ export function useFavorites() {
     return createBookmarkFolder(name);
   }, []);
 
+  const removeFolder = useCallback((folderId: string) => {
+    return deleteBookmarkFolder(folderId);
+  }, []);
+
   return {
     favorites,
     folders,
@@ -62,5 +67,6 @@ export function useFavorites() {
     saveBookmark,
     removeBookmark,
     addFolder,
+    removeFolder,
   };
 }

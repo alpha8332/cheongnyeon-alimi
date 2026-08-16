@@ -7,6 +7,7 @@ import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
 import BookmarkCreateFolderDialog from '@/components/bookmarks/BookmarkCreateFolderDialog';
+import BookmarkDeleteFolderDialog from '@/components/bookmarks/BookmarkDeleteFolderDialog';
 import BookmarkExplorerToolbar from '@/components/bookmarks/BookmarkExplorerToolbar';
 import BookmarkFolderGrid from '@/components/bookmarks/BookmarkFolderGrid';
 import UserDataResetPanel from '@/components/user/UserDataResetPanel';
@@ -20,12 +21,14 @@ import {
   writeBookmarkViewMode,
   type BookmarkExplorerViewMode,
   type BookmarkFolderSort,
+  type BookmarkFolderWithCount,
 } from '@/utils/bookmarkExplorer';
 
 type ExplorerPath = 'root' | string;
 
 export default function FavoritesPage() {
-  const { favorites, folders, getFavoritesForFolder, addFolder } = useFavorites();
+  const { favorites, folders, getFavoritesForFolder, addFolder, removeFolder } =
+    useFavorites();
   const [explorerPath, setExplorerPath] = useState<ExplorerPath>('root');
   const [sortBy, setSortBy] = useState<BookmarkFolderSort>('name');
   const [viewMode, setViewMode] = useState<BookmarkExplorerViewMode>(() =>
@@ -35,6 +38,8 @@ export default function FavoritesPage() {
     readPinnedFolderIds(),
   );
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [folderPendingDelete, setFolderPendingDelete] =
+    useState<BookmarkFolderWithCount | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const activeFolderId =
@@ -128,6 +133,33 @@ export default function FavoritesPage() {
     setStatusMessage(null);
   }, []);
 
+  const handleRequestDeleteFolder = useCallback((folder: BookmarkFolderWithCount) => {
+    setFolderPendingDelete(folder);
+  }, []);
+
+  const handleConfirmDeleteFolder = useCallback(() => {
+    if (!folderPendingDelete) {
+      return;
+    }
+
+    const deleted = removeFolder(folderPendingDelete.id);
+    if (!deleted.changed) {
+      setFolderPendingDelete(null);
+      return;
+    }
+
+    if (explorerPath === folderPendingDelete.id) {
+      setExplorerPath('root');
+    }
+
+    if (pinnedFolderIds.includes(folderPendingDelete.id)) {
+      setPinnedFolderIds(togglePinnedFolderId(folderPendingDelete.id));
+    }
+
+    setStatusMessage(`"${folderPendingDelete.name}" 폴더를 삭제했습니다.`);
+    setFolderPendingDelete(null);
+  }, [explorerPath, folderPendingDelete, pinnedFolderIds, removeFolder]);
+
   const breadcrumbs =
     activeFolder === null
       ? [{ label: '북마크' }]
@@ -185,6 +217,7 @@ export default function FavoritesPage() {
           onOpenFolder={handleOpenFolder}
           onCreateFolder={() => setIsCreateFolderOpen(true)}
           onTogglePin={handleTogglePin}
+          onRequestDeleteFolder={handleRequestDeleteFolder}
         />
       ) : (
         <>
@@ -228,6 +261,13 @@ export default function FavoritesPage() {
         isOpen={isCreateFolderOpen}
         onClose={() => setIsCreateFolderOpen(false)}
         onCreate={handleCreateFolder}
+      />
+
+      <BookmarkDeleteFolderDialog
+        isOpen={folderPendingDelete !== null}
+        folderName={folderPendingDelete?.name ?? null}
+        onClose={() => setFolderPendingDelete(null)}
+        onConfirm={handleConfirmDeleteFolder}
       />
 
       <div className="favorites-page__footer">

@@ -136,6 +136,12 @@ export interface CreateBookmarkFolderResult {
   changed: boolean;
 }
 
+export interface DeleteBookmarkFolderResult {
+  folders: readonly BookmarkFolder[];
+  deletedBookmarkCount: number;
+  changed: boolean;
+}
+
 function normalizeFolderName(name: string): string | null {
   const trimmed = name.trim();
   if (trimmed.length === 0) {
@@ -157,6 +163,10 @@ function createBookmarkFolderId(name: string): string {
 
 function folderExists(folderId: string, folders: readonly BookmarkFolder[]): boolean {
   return folders.some((folder) => folder.id === folderId);
+}
+
+export function isDeletableBookmarkFolder(folderId: string): boolean {
+  return folderId !== DEFAULT_BOOKMARK_FOLDER_ID;
 }
 
 export function readBookmarkFolders(): readonly BookmarkFolder[] {
@@ -264,6 +274,47 @@ export function createBookmarkFolder(name: string): CreateBookmarkFolderResult {
   return {
     folder,
     folders: snapshot.data.bookmark_folders,
+    changed: true,
+  };
+}
+
+export function deleteBookmarkFolder(folderId: string): DeleteBookmarkFolderResult {
+  if (!isDeletableBookmarkFolder(folderId)) {
+    return {
+      folders: readBookmarkFolders(),
+      deletedBookmarkCount: 0,
+      changed: false,
+    };
+  }
+
+  const current = readUserLocalStorage().data;
+  if (!folderExists(folderId, current.bookmark_folders)) {
+    return {
+      folders: current.bookmark_folders,
+      deletedBookmarkCount: 0,
+      changed: false,
+    };
+  }
+
+  const removedBookmarks = current.bookmarks.filter(
+    (bookmark) => bookmark.folder_id === folderId,
+  );
+  const nextBookmarks = current.bookmarks.filter(
+    (bookmark) => bookmark.folder_id !== folderId,
+  );
+  const nextFolders = current.bookmark_folders.filter(
+    (folder) => folder.id !== folderId,
+  );
+
+  const snapshot = updateUserLocalStorage({
+    bookmark_folders: nextFolders,
+    bookmarks: nextBookmarks,
+  });
+  notifyFavoritePolicyIdsChanged();
+
+  return {
+    folders: snapshot.data.bookmark_folders,
+    deletedBookmarkCount: removedBookmarks.length,
     changed: true,
   };
 }

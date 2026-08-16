@@ -985,6 +985,32 @@ a.policy-card {
   color: var(--sky);
 }
 
+.bookmark-folder-card__menu-divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+
+.bookmark-folder-card__menu-item--danger {
+  color: #b91c1c;
+}
+
+.bookmark-folder-card__menu-item--danger:hover {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.bookmark-delete-folder-dialog__confirm {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.bookmark-delete-folder-dialog__confirm:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
 .bookmark-policy-grid {
   margin-top: 4px;
 }

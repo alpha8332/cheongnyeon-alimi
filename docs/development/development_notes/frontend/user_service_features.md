@@ -294,8 +294,35 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 
 ### 설계·후속
 
-- 폴더 rename/delete·schema `pinned` 필드는 범위 밖; pin은 session-only.
+- ~~폴더 rename/delete~~ → **2026-07-28 후속 slice**에서 delete 구현; rename·schema `pinned` 필드는 여전히 범위 밖. pin은 session-only.
 - `BookmarkFolderPickerModal`(저장 modal) 계약 유지.
+
+## UX slice — 북마크 폴더 더보기 메뉴·삭제 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `BookmarkFolderGrid` `···` 메뉴 UX, 사용자 폴더 삭제(기본 폴더 보호)
+
+### 구현
+
+- `useDismissOnOutsidePress`: 메뉴 `mousedown` 바깥 클릭·`Escape` 닫기.
+- `BookmarkFolderGrid`/`FolderCardMenu`: 구분선 + `폴더 삭제`(danger). `DEFAULT_BOOKMARK_FOLDER_ID`(`기본 폴더`)는 항목 미노출.
+- `deleteBookmarkFolder`·`isDeletableBookmarkFolder`: localStorage v2에서 folder·해당 bookmarks 제거.
+- `BookmarkDeleteFolderDialog`: "정말 이 폴더를 삭제하시겠습니까?" 확인 후 삭제; 취소 시 상태 유지.
+- `FavoritesPage`: 삭제 중인 폴더 열람 시 root 복귀, pin session 정리.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 203 pass (+ deleteBookmarkFolder unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- 폴더 rename·다른 폴더로 bookmark 일괄 이동은 범위 밖.
+- 삭제 시 folder 내 bookmark는 제거(다른 폴더로 merge하지 않음).
 
 ## UX slice — macOS/Apple Calendar 2패널 마감 달력 (2026-07-28)
 

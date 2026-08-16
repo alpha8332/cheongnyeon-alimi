@@ -6,10 +6,12 @@ import {
 } from '../src/types/userLocalStorage.js';
 import {
   createBookmarkFolder,
+  deleteBookmarkFolder,
   getBookmarkFolderForPolicy,
   getFavoritePolicyIdsSnapshot,
   getPolicyIdsForFolder,
   isFavoritePolicyId,
+  isDeletableBookmarkFolder,
   readFavoritePolicyIds,
   removeBookmarkPolicy,
   setBookmarkPolicy,
@@ -105,6 +107,52 @@ test('createBookmarkFolder는 folder를 추가하고 setBookmarkPolicy가 folder
     assert.equal(saved.changed, true);
     assert.equal(getBookmarkFolderForPolicy(7), created.folder!.id);
     assert.deepEqual(getPolicyIdsForFolder(created.folder!.id), [7]);
+  } finally {
+    windowPatch.restore();
+  }
+});
+
+test('isDeletableBookmarkFolder는 기본 폴더만 삭제 불가', () => {
+  assert.equal(isDeletableBookmarkFolder(DEFAULT_BOOKMARK_FOLDER_ID), false);
+  assert.equal(isDeletableBookmarkFolder('folder-custom-1'), true);
+});
+
+test('deleteBookmarkFolder는 사용자 폴더와 포함 북마크를 제거한다', () => {
+  const storage = new MemoryStorage();
+  const windowPatch = new PatchedWindowStorage();
+  windowPatch.install(storage);
+
+  try {
+    const created = createBookmarkFolder('삭제 대상');
+    assert.ok(created.folder);
+    setBookmarkPolicy(9, created.folder!.id);
+
+    const deleted = deleteBookmarkFolder(created.folder!.id);
+    assert.equal(deleted.changed, true);
+    assert.equal(deleted.deletedBookmarkCount, 1);
+    assert.equal(
+      deleted.folders.some((folder) => folder.id === created.folder!.id),
+      false,
+    );
+    assert.equal(getBookmarkFolderForPolicy(9), null);
+    assert.deepEqual(readFavoritePolicyIds(), []);
+  } finally {
+    windowPatch.restore();
+  }
+});
+
+test('deleteBookmarkFolder는 기본 폴더 삭제를 거부한다', () => {
+  const storage = new MemoryStorage();
+  const windowPatch = new PatchedWindowStorage();
+  windowPatch.install(storage);
+
+  try {
+    writeDefaultPayload(storage);
+
+    const deleted = deleteBookmarkFolder(DEFAULT_BOOKMARK_FOLDER_ID);
+    assert.equal(deleted.changed, false);
+    assert.equal(deleted.deletedBookmarkCount, 0);
+    assert.deepEqual(readFavoritePolicyIds(), [2, 4]);
   } finally {
     windowPatch.restore();
   }

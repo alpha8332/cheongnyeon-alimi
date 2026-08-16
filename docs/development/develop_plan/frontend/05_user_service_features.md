@@ -221,6 +221,11 @@ Browser cross-route 시나리오는 FE5-07.
 disabled·nav·keyboard·mobile·home→search golden) + Real API skip 1건.
 unit·lint·build·`validate_docs.py` 통과.
 
+**2026-07-28 UX slice (북마크 폴더 더보기·삭제)**: `BookmarkFolderGrid` `···` 메뉴
+바깥 클릭·`Escape` 닫기(`useDismissOnOutsidePress`), 사용자 폴더 `폴더 삭제` 확인 modal,
+`deleteBookmarkFolder` localStorage v2. 기본 폴더(`default`) 보호. rename·bookmark
+일괄 이동은 범위 밖. 상세: [개발 기록](../../development_notes/frontend/user_service_features.md).
+
 ### FE5-08 — 사용자 localStorage 전체 초기화 UX — completed
 
 | 항목 | 내용 |
