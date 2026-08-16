@@ -488,8 +488,37 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 
 ### 설계·후속
 
-- 현재 `HomePage` 첫 화면에는 **주요 정책 카드**만 존재 — 별도 「맞춤 추천」「최신 공지」 섹션은 `/recommendations` 등 별도 route. 해당 섹션 추가 시 동일 `isHomeFeaturedPolicy` 재사용 권장.
+- ~~홈 default view 맞춤 추천~~ → **2026-07-28 후속 slice**에서 저장 조건 연동 구현(아래).
 - `/programs` 전체 목록·검색 결과는 마감 정책 포함 유지(본 slice는 홈 default view만).
+
+## UX slice — 홈 저장 조건 맞춤 추천 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `HomePage` default view 추천 정책 — FE5 `UserSavedConditions`(region·age·category) + FE6 Recommendation API
+
+### 구현
+
+- `useHomeRecommendedPolicies`: 저장 조건 있음 → `postRecommendations(toRecommendationRequestFromConditions)`; 없음 → `usePoliciesQuery(status: open)` 폴백.
+- 저장 조건 있을 때만 `"저장된 조건으로 추천된 정책입니다."` 캡션 노출; 없으면 추천 안내 문구 미노출.
+- `isHomeRecommendablePolicy` / `isHomeFeaturedPolicy`: `closed`·`scheduled`·지난 마감 제외; `open`·`always`만.
+- `recommendationItemToPolicyDto` 공통 util 추출 — 홈 `PolicyCard`·`/recommendations` 카드 공유.
+- 추천 API 오류 시 캡션 없이 open 목록 폴백.
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 207 pass (+ homeRecommendedPolicies unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (user-service-features·week4-regression Path C) | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
+### 설계·후속
+
+- 홈 추천은 `/recommendations`와 동일 Recommendation API·공식 3필드만 사용; 임의 매칭 조건 추가 없음.
+- 저장 조건 있으나 결과 0건일 때 empty copy만 표시(랜덤 폴백으로 대체하지 않음).
+- Recommendation API는 `status` 미전달 시 closed 후보도 반환할 수 있음 — 홈은 `isHomeRecommendablePolicy`로 추가 제외(`/recommendations`와 목록 차이).
 
 ## UX slice — 정책 상세 헤더 레이아웃·액션 (2026-07-28)
 

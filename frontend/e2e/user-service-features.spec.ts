@@ -27,7 +27,7 @@ async function acceptAllDialogsDuring(page: Page, action: () => Promise<void>) {
 }
 
 async function waitForHomePolicies(page: Page) {
-  await expect(page.getByText('주요 정책을 불러오는 중입니다.')).toHaveCount(0, {
+  await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
   });
   await expect(page.locator('article.policy-card').first()).toBeVisible();

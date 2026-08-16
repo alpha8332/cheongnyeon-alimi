@@ -10,6 +10,8 @@
 
 ### Changed
 
+- 홈 추천 정책: 프로필 저장 조건(region·age·category) 있을 때 Recommendation API 연동·안내 캡션; 없을 때 open·상시 폴백(안내 문구 미노출).
+  ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
 - 북마크 폴더: `···` 메뉴 바깥 클릭·ESC 닫기, 사용자 폴더 삭제 확인 modal(기본 폴더 보호).
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 정책 상세 헤더: 제목 행 우측 북마크, 주관기관 아래 공식 신청·ICS 액션 바, ○ 요약 줄바꿈·`YYYYMMDD` 기간 정규화.

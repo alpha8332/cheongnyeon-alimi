@@ -125,6 +125,28 @@ python3 scripts/validate_docs.py — passed
 
 Browser·Playwright E2E는 FE6-05에서 실행 완료.
 
+## UX slice — 홈 저장 조건 맞춤 추천 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `HomePage` default view에서 FE5 저장 조건 → FE6 Recommendation API 연동
+
+### 구현
+
+- `frontend/src/utils/homeRecommendedPolicies.ts` — request builder·open/always filter·폴백 pick
+- `frontend/src/hooks/useHomeRecommendedPolicies.ts` — 조건 유/무 분기 query
+- `frontend/src/utils/recommendationPolicyMapping.ts` — `RecommendationItemDto` → `PolicyDto` (홈·결과 카드 공유)
+- `HomePage`: 조건 있을 때만 `"저장된 조건으로 추천된 정책입니다."` 캡션
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 207 pass (+ homeRecommendedPolicies unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (week4-regression Path C) | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
 ## 남은 작업
 
 - Real API E2E(`VITE_USE_MOCK=false`) 및 partial·long-region positive Browser case는

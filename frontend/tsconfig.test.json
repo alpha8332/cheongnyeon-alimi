@@ -37,6 +37,8 @@
     "src/utils/policyId.ts",
     "src/utils/policyDisplay.ts",
     "src/utils/policyDeadline.ts",
+    "src/utils/homeRecommendedPolicies.ts",
+    "src/utils/recommendationPolicyMapping.ts",
     "src/utils/favoriteDeadlineAlerts.ts",
     "src/utils/policyIcs.ts",
     "src/utils/userDataReset.ts",

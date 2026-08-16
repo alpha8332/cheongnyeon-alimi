@@ -168,6 +168,11 @@ mobile·search golden·503 retry annotation) + Real API skip 1건.
 422 API validation은 form client normalize로 Browser unreachable — unit contract test로 검증.
 Mock Seed 3+ regions 부재로 region collapse expand E2E는 단일 지역 표시만 검증.
 
+**2026-07-28 UX slice (홈 저장 조건 추천)**: `HomePage` default view에서 FE5
+`UserSavedConditions`(region·age·category) → `postRecommendations` 연동.
+조건 있을 때만 `"저장된 조건으로 추천된 정책입니다."` 캡션; 없으면 open·상시
+폴백 목록(안내 문구 없음). 상세: [개발 기록](../../development_notes/frontend/recommendation_ui.md).
+
 ---
 
 ## 검증 계획

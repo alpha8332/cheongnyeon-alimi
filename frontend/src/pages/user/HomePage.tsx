@@ -12,7 +12,7 @@ import PolicySearchErrorShell from '@/components/policySearch/PolicySearchErrorS
 import PolicySearchLoadingShell from '@/components/policySearch/PolicySearchLoadingShell';
 import InterpretedConditionChips from '@/components/policySearch/InterpretedConditionChips';
 import PolicySearchSidebar from '@/components/policySearch/PolicySearchSidebar';
-import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
+import { useHomeRecommendedPolicies } from '@/hooks/useHomeRecommendedPolicies';
 import { useSavedConditions } from '@/hooks/useSavedConditions';
 import { usePolicySearchQuery } from '@/hooks/usePolicySearchQuery';
 import {
@@ -44,7 +44,7 @@ import {
   withPolicySearchPage,
 } from '@/utils/policySearchUrl';
 import { mergeSavedConditionsIntoSearchState } from '@/utils/policySearchSavedConditions';
-import { isHomeFeaturedPolicy } from '@/utils/policyDeadline';
+import { HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION } from '@/utils/homeRecommendedPolicies';
 import {
   HOME_RECOMMENDED_SEARCHES,
   buildPolicySearchEntryPath,
@@ -73,21 +73,10 @@ export default function HomePage() {
   const shouldFetch = hasPolicySearchQuery(urlState);
 
   const {
-    data: policyList,
-    isLoading: isFeaturedLoading,
-  } = usePoliciesQuery({
-    page: 1,
-    limit: 12,
-    status: 'open',
-    include_partial: false,
-  });
-  const featuredPolicies = useMemo(
-    () =>
-      (policyList?.items ?? [])
-        .filter((policy) => isHomeFeaturedPolicy(policy))
-        .slice(0, 3),
-    [policyList],
-  );
+    policies: homeRecommendedPolicies,
+    isPersonalized: isHomeRecommendationPersonalized,
+    isLoading: isHomeRecommendationLoading,
+  } = useHomeRecommendedPolicies(savedConditions);
 
   const {
     data,
@@ -256,14 +245,34 @@ export default function HomePage() {
             </div>
           </section>
 
-          {isFeaturedLoading ? (
-            <LoadingState message="주요 정책을 불러오는 중입니다." />
+          {isHomeRecommendationLoading ? (
+            <LoadingState message="정책을 불러오는 중입니다." />
           ) : (
-            <div className="cards-grid">
-              {featuredPolicies.map((policy) => (
-                <PolicyCard key={policy.id} policy={policy} />
-              ))}
-            </div>
+            <section
+              className="home-recommended-policies"
+              aria-label={
+                isHomeRecommendationPersonalized
+                  ? '저장된 조건 추천 정책'
+                  : '추천 정책'
+              }
+            >
+              {isHomeRecommendationPersonalized ? (
+                <p className="home-recommended-policies__caption" role="note">
+                  {HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION}
+                </p>
+              ) : null}
+              {homeRecommendedPolicies.length > 0 ? (
+                <div className="cards-grid">
+                  {homeRecommendedPolicies.map((policy) => (
+                    <PolicyCard key={policy.id} policy={policy} />
+                  ))}
+                </div>
+              ) : isHomeRecommendationPersonalized ? (
+                <p className="home-recommended-policies__empty" role="status">
+                  저장된 조건에 맞는 추천 정책을 찾지 못했습니다.
+                </p>
+              ) : null}
+            </section>
           )}
 
           <Card title="📋 더 많은 정책 보기">

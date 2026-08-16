@@ -23,3 +23,19 @@
   outline: 2px solid var(--sky);
   outline-offset: 2px;
 }
+
+.home-recommended-policies {
+  margin-bottom: 28px;
+}
+
+.home-recommended-policies__caption {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  color: var(--text-muted, #64748b);
+}
+
+.home-recommended-policies__empty {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-muted, #64748b);
+}

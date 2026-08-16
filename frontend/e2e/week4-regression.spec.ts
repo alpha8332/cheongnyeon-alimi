@@ -8,8 +8,6 @@ import { expect, test, type Page } from '@playwright/test';
 const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
 
 const MOCK_HOUSING_POLICY_TITLE = '합성 청년 주거 지원';
-/** Seed id 2 — open·always; 홈 featured 카드 (closed id 1은 featured 제외). */
-const MOCK_HOME_FEATURED_POLICY_TITLE = '합성 상시 생활 지원';
 /** Seed id 1 — has `application_end` but `application_status: closed` (ICS disabled in Mock). */
 const MOCK_HOUSING_POLICY_ID = 1;
 
@@ -65,7 +63,7 @@ async function confirmBookmarkModal(page: Page) {
 }
 
 async function waitForHomePolicies(page: Page) {
-  await expect(page.getByText('주요 정책을 불러오는 중입니다.')).toHaveCount(0, {
+  await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
   });
 }
@@ -157,15 +155,22 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await page.getByRole('button', { name: '추천 받기' }).click();
     await waitForRecommendationSettled(page);
     await expect(page.getByRole('region', { name: '추천 결과' })).toBeVisible();
+    const recommendationCard = page
+      .locator('article.policy-card')
+      .filter({ hasText: MOCK_HOUSING_POLICY_TITLE });
+    await recommendationCard.getByRole('button', { name: '북마크 추가' }).click();
+    await confirmBookmarkModal(page);
+    await expect(
+      recommendationCard.getByRole('button', { name: '북마크 폴더 관리' }),
+    ).toBeVisible();
 
     await page.getByRole('link', { name: '홈', exact: true }).click();
-    await waitForHomePolicies(page);
-    const homeCard = page
-      .locator('article.policy-card')
-      .filter({ hasText: MOCK_HOME_FEATURED_POLICY_TITLE });
-    await homeCard.getByRole('button', { name: '북마크 추가' }).click();
-    await confirmBookmarkModal(page);
-    await expect(homeCard.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
+    await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByText('저장된 조건으로 추천된 정책입니다.'),
+    ).toBeVisible();
 
     await page.getByRole('link', { name: '달력' }).click();
     await expect(page.getByRole('heading', { name: '마감 달력' })).toBeVisible();
