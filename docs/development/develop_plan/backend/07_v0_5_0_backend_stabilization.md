@@ -4,8 +4,8 @@
 
 - 번호: Backend 07
 - 담당 영역: Backend
-- 상태: in-progress
-- 현재 단계: 5주차 Slice BE5-02 완결 (BE5-03 진행 대기)
+- 상태: completed
+- 현재 단계: Forest completed (`2026-08-17`)
 - 계획일: `2026-08-17`
 - 대상 Release: `v0.5.0`
 - 상위 통합 Forest: [Integration 07 Release 2 Feature Acceptance](../integration/07_release_2_feature_acceptance.md)

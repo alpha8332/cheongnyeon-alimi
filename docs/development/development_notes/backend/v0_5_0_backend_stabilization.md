@@ -4,12 +4,12 @@
 
 - 기간: `2026-08-17`
 - 담당 영역: Backend
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/backend/week-05-stabilization`
 - 상위 Forest 계획: [Backend 07 v0.5.0 Backend Stabilization Forest 개발 계획](../../develop_plan/backend/07_v0_5_0_backend_stabilization.md)
 - 주차 실행 계획: [5주차 상세 실행 계획](../../weekly_plan/week_05_release_2.md)
 - 공통 시작 SHA: `dabf1f326ca6bc9be1253129b01dc2bc93d6b676` (4주차 `f0d3dd3` 병합 후 커밋)
-- 현재 Slice: `BE5-02` 완결 (BE5-03 진행 대기)
+- 현재 Slice: Forest completed (`2026-08-17`)
 
 ## 목적
 
@@ -36,7 +36,7 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 | **BE5-00** | **통합 기준선 재검증 및 환경 고정** | **completed** | Git HEAD(`dabf1f3`), Migration head(`20260810_0006`), 백엔드 단위/API pytest 170건 통과(0 failed), 문서 검증 통과 |
 | **BE5-01** | **백엔드 핵심 기능 & 영속성/인증/로그 회귀 검증** | **completed** | PostgreSQL 18 연동 회귀 테스트 187건 전건 통과(0 failed), DB Transaction, Auth/Run/Policy/Log API 및 Exception 계약 검증 |
 | **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **completed** | Data 06 신규 수집 정책의 PostgreSQL ➔ API DTO 노출 대조, CollectionRun 수동 실행 202 Accepted 및 E2E 테스트(`test_postgresql_end_to_end.py`) 통과 |
-| **BE5-03** | **독립 리뷰/QA 결함 수정 및 Release 2 Hardening** | **pending** | 리뷰/QA 접수 Blocker/High 결함 수정 및 `W5-G2` Gate 통과 |
+| **BE5-03** | **독립 리뷰/QA 결함 수정 및 Release 2 Hardening** | **completed** | 접수 Blocker/High 백엔드 결함 0건(안정성 확보), 백엔드 전체 회귀 테스트 187건 100% 통과 및 `W5-G2_PASS` 릴리스 승인 기준 충족 |
 
 ## 구현 내용
 
@@ -79,10 +79,21 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 3. **실제 DB ➔ FastAPI ➔ UI E2E 검증 지원 (`W5-G1`)**
    - `test_postgresql_end_to_end.py` 실행 결과 `test_postgresql_seed_repository_api_end_to_end` 통과: 실제 PostgreSQL 연동 하에서 Repository ➔ Policy API 종단 연동 정상 동작 확인.
 
+### Slice BE5-03 - 독립 리뷰/QA 결함 수정 및 Release 2 Hardening (`W5-FIX` / `W5-I2`)
+
+1. **백엔드 결함 Triage 및 안정화 점검**
+   - 사용성 리뷰 및 QA 독립 검증 결과 백엔드 영역 Blocker/High 결함 0건 (안정화 완료).
+   - 보안 Fail-closed, DB Transaction rollback, 라우트 보호 dependency 및 API 상태코드 일치 보장.
+
+2. **최종 회귀 검증 및 Release 2 Gate 통과 (`W5-G2_PASS`)**
+   - PostgreSQL 18 연동 환경에서 백엔드 전체 테스트 187건 전건 재검증 통과 (`187 passed, 0 failed`).
+   - `v0.5.0` Release 2 Gate 통과 조건 충족 및 백엔드 측 `PASS` 판정 제출.
+
 ## 주요 변경 파일
 
 - `[NEW]` [`docs/development/development_notes/backend/v0_5_0_backend_stabilization.md`](v0_5_0_backend_stabilization.md)
 - `[MODIFY]` [`docs/development/develop_plan/backend/07_v0_5_0_backend_stabilization.md`](../../develop_plan/backend/07_v0_5_0_backend_stabilization.md)
+- `[MODIFY]` [`docs/development/develop_plan/README.md`](../../develop_plan/README.md)
 - `[MODIFY]` [`docs/development/development_notes/README.md`](../README.md)
 - `[MODIFY]` [`docs/index.md`](../../../index.md)
 
@@ -104,4 +115,5 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 
 ## 남은 작업
 
-1. `BE5-03`: 독립 사용성 리뷰어 및 QA 접수 결함 수정 및 `W5-G2` Release 2 통과.
+- 없음 (Backend 07 Forest 전 슬라이스 완결 및 Release 2 `v0.5.0` Gate 백엔드 인수 통과)
+
