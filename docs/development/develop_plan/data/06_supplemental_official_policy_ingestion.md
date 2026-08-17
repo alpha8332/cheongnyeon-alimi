@@ -5,7 +5,7 @@
 - 번호: Data 06
 - 담당 영역: Data
 - 상태: approved
-- 착수 조건: `W5-G0` 뒤 SOP0 시작
+- 착수 조건: `W5-G0_PASS` 완료, SOP0 시작 가능
 - 계획일: `2026-08-11`
 - 승인일: `2026-08-16`
 - 실행 일정: `2026-08-14` 재승인으로 4주차에서 5주차로 이동
@@ -268,8 +268,8 @@ Data 05 RYP2~RYP4 공통 엔진·중복 Gate
   → SOP5 Source 확대·전체 회귀
 ```
 
-Data-only 구현은 4주차 병합 커밋 `f0d3dd3`을 W5-G0에서 재확인한 뒤
-시작한다. SOP0~SOP3는 Backend·Frontend 안정화와 병렬로 진행할 수 있지만,
+Data-only 구현은 5주차 시작 커밋 `29b2dd5`의 W5-G0 통과 뒤 시작한다.
+SOP0~SOP3는 Backend·Frontend 안정화와 병렬로 진행할 수 있지만,
 SOP4~SOP5 actual과 전체 통합 판정은 같은 W5-G1에서 대조한다.
 
 ## 역할 분담

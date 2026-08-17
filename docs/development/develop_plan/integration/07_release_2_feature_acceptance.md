@@ -4,8 +4,8 @@
 
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
-- 상태: approved
-- 현재 단계: 4주차 A0·A1 근거 완료, 5주차 A2·A3 착수 준비
+- 상태: in-progress
+- 현재 단계: 5주차 A0·`W5-G0_PASS` 완료, A2·A3 대기
 - 계획일: `2026-08-07`
 - 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
@@ -14,6 +14,8 @@
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
 - 작업 브랜치: 4주차 `feature/integration/week-04-acceptance` 선례와 현재
   브랜치 전략의 domain 목록이 달라, A2 변경 착수 전에 사용자 합의 필요
+- 5주차 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
+- 개발 기록: [Integration 07 개발 기록](../../development_notes/integration/release_2_feature_acceptance.md)
 
 ## 목적
 
@@ -66,7 +68,8 @@ Forest에서 관리한다.
 - 공통 시작 SHA, Migration, snapshot과 실제 API 모드를 고정한다.
 - 역할별 테스트 명령·지원 환경·증거 양식을 확정한다.
 - 4주차 A0 근거는 `develop@f0d3dd3`, Migration `20260810_0006`, 실제 DB
-  3,269건과 `W4-G4_MIDPOINT_PASS`다. 5주차 W5-G0에서 재검증한다.
+  3,269건과 `W4-G4_MIDPOINT_PASS`다. 5주차에는 `develop@29b2dd5`에서 같은
+  Migration·DB 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했다.
 
 ### A1 - 4주차 승인 기본 기능 midpoint acceptance
 

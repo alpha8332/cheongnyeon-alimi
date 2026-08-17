@@ -38,6 +38,7 @@
 | Policy Search Data Foundation | [개발 기록](integration/policy_search_data_foundation.md) | PSF0~PSF8 | Source 중립 검색 데이터·지역 관계·projection 기반과 소비 검증 |
 | Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA3F | 실제 snapshot DB → API → UI 인수, 경량 팀 리뷰와 Release 1 G4 통과 |
 | v0.5.0 Contract Baseline | [개발 기록](integration/v0_5_0_contract_baseline.md) | DTL4-0~DTL4-8 | 4주차 계약·actual E2E·전체 회귀와 `W4-G4_MIDPOINT_PASS` 근거 |
+| Release 2 Feature Acceptance | [개발 기록](integration/release_2_feature_acceptance.md) | DTL5-0~DTL5-6 | 5주차 시작 기준, Data 06 포함 actual E2E·독립 검증과 Release 2 Gate |
 | Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | DTL4-4A~ | 조건·서류·시설 연락처 공통 계약과 Source evidence mapping |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를

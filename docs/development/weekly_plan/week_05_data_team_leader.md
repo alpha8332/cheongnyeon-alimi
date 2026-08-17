@@ -2,15 +2,15 @@
 
 ## 계획 정보
 
-- 상태: approved (`W5-G0` 실행 준비, 구현 미착수)
+- 상태: in-progress (`DTL5-0`·`W5-G0_PASS`, DTL5-1 대기)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
-- 시작 후보: `develop`·`origin/develop`
-  `f0d3dd3214827496af31a00d0b05a273f9371970`
+- 실제 시작 SHA: `develop`·`origin/develop`
+  `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-0` 대기
+- 현재 Slice: `DTL5-0` 완료, `DTL5-1` 대기
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -24,8 +24,8 @@
 - Data 05 `RYP0`~`RYP9`·`RYP-G6`는 completed다.
 - Data 06은 계획 승인 상태이며 SOP0 구현과 actual Source 승인은 시작하지 않았다.
 - 독립 사용성 리뷰·QA·보고서 근거 대조는 아직 수행하지 않았다.
-- 따라서 5주차는 시작 가능하지만 `DTL5-0` 재검증 전에는 W5-G0 통과나 기능
-  동결로 기록하지 않는다.
+- `DTL5-0`에서 같은 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했다.
+  Data 06 구현과 전체 기능 동결은 아직 수행하지 않았다.
 
 ## 담당 목표
 
@@ -71,6 +71,10 @@ DTL5-1과 Backend·Frontend 안정화는 W5-G0 뒤 병렬로 진행한다. 독�
 QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 ## Slice DTL5-0 - W5-G0 기준선 고정
+
+상태: completed (`2026-08-17`, `W5-G0_PASS`). 실제 수치와 첫 실패·보정은
+[Integration 07 개발 기록](../development_notes/integration/release_2_feature_acceptance.md)에
+둔다.
 
 ### 목적
 
@@ -266,7 +270,7 @@ git status --short
 
 ## 완료 체크리스트
 
-- [ ] DTL5-0·`W5-G0_PASS`
+- [x] DTL5-0·`W5-G0_PASS`
 - [ ] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
 - [ ] DTL5-2 Data 06 `SOP-G3`
 - [ ] DTL5-3 Data 06 `SOP-G4`~`SOP-G5`와 Forest 완료 판정

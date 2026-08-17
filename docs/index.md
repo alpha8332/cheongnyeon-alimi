@@ -199,6 +199,8 @@
   DT5 실제 snapshot 복구·PostgreSQL·HTTP·Browser 통합과 결함 수정 결과
 - [v0.5.0 Contract Baseline Forest 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md):
   DTL4-0 시작 SHA·환경·Forest 소유 경계와 W4-G0 진행 근거
+- [Release 2 Feature Acceptance 개발 기록](development/development_notes/integration/release_2_feature_acceptance.md):
+  DTL5-0 W5-G0 기준선, Data 06 포함 actual E2E·독립 검증과 Release 2 판정 근거
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약

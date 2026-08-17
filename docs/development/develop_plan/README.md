@@ -35,7 +35,7 @@
 | Integration 04 | Release 1 Acceptance | [개발 계획](integration/04_release_1_acceptance.md) | completed |
 | Integration 05 | v0.5.0 Contract Baseline | [개발 계획](integration/05_v0_5_0_contract_baseline.md) | completed |
 | Integration 06 | Recommendation Vertical Slice | [개발 계획](integration/06_recommendation_vertical_slice.md) | draft |
-| Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | approved |
+| Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | in-progress |
 | Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | completed |
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 

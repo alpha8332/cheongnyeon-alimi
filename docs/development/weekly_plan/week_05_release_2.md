@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: approved (`develop` 병합 완료, `W5-G0` 실행 준비)
+- 상태: in-progress (`W5-G0_PASS`, Data 06·영역별 안정화 대기)
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -12,7 +12,7 @@
 - Data·Team Leader 실행 계획:
   [5주차 Data·Team Leader 실행 계획](week_05_data_team_leader.md)
 - 공통 시작점: Data 06을 제외한 4주차 기본 기능과 Data 05가 `develop`에
-  병합되고 `W4-G4_MIDPOINT_PASS`로 판정된 `f0d3dd3`
+  병합되고 5주차 계획까지 동기화된 `29b2dd5`
 
 5주차는 Team Leader 단독 작업이 아니다. Data·Backend·Frontend가 각 담당
 영역의 결함 수정과 자체 회귀를 수행하고, Team Leader는 실제
@@ -54,16 +54,19 @@ blocker로 유지한다.
 
 ## 현재 기준선
 
-- `develop`·`origin/develop`은 `f0d3dd3214827496af31a00d0b05a273f9371970`
-  (`merge week 04 into develop`)에서 일치한다.
-- Data 05는 completed이며 Data 06 계획은 approved다. Data 06 구현과 기존 기능
-  안정화를 함께 수행하지만 `W5-G0` 재검증 전에는 실제 착수로 간주하지 않는다.
+- `develop`·`origin/develop`은 `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
+  (`docs(plan): detail week 5 release acceptance`)에서 일치한다.
+- Data 05는 completed이며 Data 06 계획은 approved다. `W5-G0_PASS`로 Data 06과
+  기존 기능 안정화의 병렬 실행이 열렸지만 Data 06 구현은 아직 시작하지 않았다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.
 - 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.
 - 4주차 기준은 실제 DB 3,269건·Migration `20260810_0006`·지역정책 109건과
   검색 Browser 인수를 통과했다. 이 수치는 W5-G0에서 재확인할 기준값이며,
   Data 06 적재 뒤의 기대 최종 건수를 미리 고정하지 않는다.
+- `2026-08-17` DTL5-0에서 같은 Migration·DB 기준, 전용 PostgreSQL 테스트,
+  local Backend·Frontend readiness와 Chromium 실행을 확인해 `W5-G0_PASS`로
+  판정했다. 상세 수치는 Integration 07 개발 기록에 둔다.
 
 ## 실행 작업 단위
 
@@ -274,7 +277,7 @@ development notes에 기록한다.
 
 ## 완료 체크리스트
 
-- [ ] `W5-G0` 통합 기준선 통과
+- [x] `W5-G0` 통합 기준선 통과
 - [ ] Data 06 SOP0~SOP5·SOP-G5와 Forest 완료 판정
 - [ ] Data 수집·품질·Data 05·06 actual 회귀 통과
 - [ ] Backend PostgreSQL·API·권한·transaction 회귀 통과

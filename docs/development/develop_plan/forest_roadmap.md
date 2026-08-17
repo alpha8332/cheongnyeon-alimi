@@ -97,7 +97,7 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 | 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
 | 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 13개 승인 Source 전체 순회·지역별 실제 open 고유 정책 DB·API·Browser 검색 연결·RYP-G6 통과 | Data 03·04, Integration 08 |
 | 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | approved | 5주차 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 completed, Data 02·04 |
-| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | approved | 4주차 midpoint 완료, 5주차 hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
+| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | in-progress | W5-G0 통과, Data 06·hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
 다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
