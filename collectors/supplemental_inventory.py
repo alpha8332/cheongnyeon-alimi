@@ -79,6 +79,7 @@ def supplemental_inventory_issues(
             if group["implementation_status"] not in {
                 "pending",
                 "adapter_ready",
+                "implemented_http",
             }:
                 issues.append(
                     _error(

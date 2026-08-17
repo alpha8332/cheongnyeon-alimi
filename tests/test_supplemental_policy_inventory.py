@@ -140,6 +140,7 @@ class SupplementalPolicyInventoryTests(unittest.TestCase):
         )
         for group_id in approved:
             group = groups[group_id]
+            self.assertEqual("implemented_http", group["implementation_status"])
             self.assertTrue(group["source_id"])
             self.assertTrue(group["approved_list_urls"])
             self.assertTrue(group["approved_detail_url_patterns"])

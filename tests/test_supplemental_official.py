@@ -3,11 +3,15 @@ from __future__ import annotations
 import unittest
 import urllib.parse
 import tempfile
+from typing import Any
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from collectors.extracted import ExtractionError
+from collectors import default_registry
+from collectors.base import CollectionOptions
+from collectors.errors import CollectorConfigurationError, ResponseParseError
 from collectors.cross_source_duplicate import (
     AggregatorBaseline,
     BaselineDescriptor,
@@ -31,12 +35,17 @@ from collectors.supplemental_official import (
     WORK24_LIST_URL,
     WORK24_SOURCE_ID,
     SupplementalOfficialExtractor,
+    SupplementalOfficialCollector,
     SupplementalOutcome,
     decide_supplemental_policy,
     discover_supplemental_list_items,
     map_supplemental_duplicate_evidence,
+    supplemental_http_config_from_environment,
 )
+from collectors.http import TransportResponse
 from collectors.runtime import replay_runtime_raw
+from collectors.normalized import Category
+from collectors.normalizer import Normalizer
 from collectors.storage import RawDocumentStore
 
 
@@ -172,6 +181,133 @@ def duplicate_baseline(canonical_url: str) -> AggregatorBaseline:
     return AggregatorBaseline(descriptors=descriptors, records=records)
 
 
+def response(body: bytes) -> TransportResponse:
+    return TransportResponse(
+        status=200,
+        headers={"Content-Type": "text/html; charset=utf-8"},
+        body=body,
+    )
+
+
+class StubHttpClient:
+    def __init__(self, outcomes: list[TransportResponse]) -> None:
+        self._outcomes = iter(outcomes)
+        self.calls: list[dict[str, Any]] = []
+
+    def get(self, **kwargs: Any) -> TransportResponse:
+        self.calls.append(kwargs)
+        return next(self._outcomes)
+
+
+class SupplementalCollectorTests(unittest.TestCase):
+    def test_registry_includes_all_approved_sources(self) -> None:
+        self.assertTrue(
+            {
+                WORK24_SOURCE_ID,
+                LH_SOURCE_ID,
+                KOSAF_SOURCE_ID,
+                KINFA_SOURCE_ID,
+            }.issubset(default_registry.source_ids())
+        )
+
+    def test_http_config_enforces_two_second_floor(self) -> None:
+        minimum = supplemental_http_config_from_environment(
+            environ={"HTTP_REQUEST_DELAY_SECONDS": "0.25"}
+        )
+        larger = supplemental_http_config_from_environment(
+            environ={"HTTP_REQUEST_DELAY_SECONDS": "3.5"}
+        )
+
+        self.assertEqual(2.0, minimum.request_interval_seconds)
+        self.assertEqual(3.5, larger.request_interval_seconds)
+
+    def test_collects_bounded_list_items_and_details(self) -> None:
+        client = StubHttpClient(
+            [
+                response(fixture(KINFA_SOURCE_ID, "list_normal.html")),
+                response(fixture(KINFA_SOURCE_ID, "detail_normal.html")),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            store = RawDocumentStore(temporary_directory)
+            result = SupplementalOfficialCollector(
+                KINFA_SOURCE_ID,
+                http_client=client,
+                store=store,
+                now=lambda: COLLECTED_AT,
+            ).collect(CollectionOptions(limit=2, detail_limit=1))
+            selected = tuple(store.load(path) for path in result.stored_paths)
+
+        self.assertEqual(2, result.request_count)
+        self.assertEqual(2, result.item_count)
+        self.assertEqual(1, result.detail_count)
+        self.assertEqual(4, result.raw_document_count)
+        self.assertEqual(1, len(tuple(
+            document for document in selected
+            if document.document_role is RawDocumentRole.DETAIL_RESPONSE
+        )))
+        self.assertTrue(all("?" not in document.source_url for document in selected))
+
+    def test_kosaf_uses_three_tabs_for_one_stable_identity(self) -> None:
+        client = StubHttpClient(
+            [
+                response(fixture(KOSAF_SOURCE_ID, "list_normal.html")),
+                response(fixture(KOSAF_SOURCE_ID, "detail_normal.html")),
+                response(fixture(KOSAF_SOURCE_ID, "detail_normal.html")),
+                response(fixture(KOSAF_SOURCE_ID, "detail_normal.html")),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            result = SupplementalOfficialCollector(
+                KOSAF_SOURCE_ID,
+                http_client=client,
+                store=RawDocumentStore(temporary_directory),
+                now=lambda: COLLECTED_AT,
+            ).collect(CollectionOptions(limit=10, detail_limit=3))
+
+        self.assertEqual(4, result.request_count)
+        self.assertEqual(3, result.detail_count)
+        self.assertEqual(3, len(set(result.detail_document_ids)))
+        self.assertEqual(
+            [None, None, "3", "4"],
+            [call["query"].get("ttab1") for call in client.calls],
+        )
+
+    def test_rejects_page_or_detail_expansion_before_request(self) -> None:
+        client = StubHttpClient([])
+        collector = SupplementalOfficialCollector(
+            WORK24_SOURCE_ID,
+            http_client=client,
+        )
+        with self.assertRaises(CollectorConfigurationError):
+            collector.collect(CollectionOptions(page=2))
+        with self.assertRaises(CollectorConfigurationError):
+            collector.collect(CollectionOptions(detail_limit=4))
+        self.assertEqual([], client.calls)
+
+    def test_selector_drift_stores_no_partial_raw(self) -> None:
+        client = StubHttpClient(
+            [
+                response(fixture(KINFA_SOURCE_ID, "list_normal.html")),
+                response(
+                    fixture(KINFA_SOURCE_ID, "detail_selector_drift.html")
+                ),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            with self.assertRaises(ResponseParseError):
+                SupplementalOfficialCollector(
+                    KINFA_SOURCE_ID,
+                    http_client=client,
+                    store=RawDocumentStore(temporary_directory),
+                    now=lambda: COLLECTED_AT,
+                ).collect(CollectionOptions(limit=2, detail_limit=1))
+            self.assertEqual(
+                [],
+                list(Path(temporary_directory).rglob("*.json")),
+            )
+
+
 class SupplementalListAdapterTests(unittest.TestCase):
     def test_discovers_each_approved_stable_identity(self) -> None:
         expected = {
@@ -210,6 +346,16 @@ class SupplementalListAdapterTests(unittest.TestCase):
 
 
 class SupplementalExtractorTests(unittest.TestCase):
+    def test_kosaf_scholarship_maps_to_education_category(self) -> None:
+        policy = SupplementalOfficialExtractor(KOSAF_SOURCE_ID).extract(
+            documents(KOSAF_SOURCE_ID)
+        )[0]
+        result = Normalizer().normalize(policy)
+
+        self.assertIsNotNone(result.program)
+        assert result.program is not None
+        self.assertEqual((Category.EDUCATION,), result.program.categories)
+
     def test_extracts_four_source_specific_details_without_leaking_fields(self) -> None:
         expected = {
             WORK24_SOURCE_ID: ("SI00000318", "고용노동부·한국고용정보원"),

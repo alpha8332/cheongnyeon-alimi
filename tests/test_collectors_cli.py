@@ -125,8 +125,12 @@ class CollectorCliTests(unittest.TestCase):
         self.assertEqual(
             "bokjiro-central-welfare-api\n"
             "cheonan-youthcenter-web\n"
+            "kinfa-financial-product-web\n"
+            "kosaf-scholarship-web\n"
+            "lh-housing-announcement-web\n"
             "regional-busan-youth-platform\n"
             "regional-gyeongbuk-youth-platform\n"
+            "work24-policy-web\n"
             "youthcenter-api\n",
             result.stdout,
         )

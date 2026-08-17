@@ -1,5 +1,7 @@
 """Shared collector infrastructure and registered official sources."""
 
+from functools import partial
+
 from collectors.base import (
     CollectionOptions,
     CollectionResult,
@@ -127,11 +129,14 @@ from collectors.supplemental_official import (
     WORK24_SOURCE_ID,
     SupplementalDecision,
     SupplementalListItem,
+    SupplementalOfficialCollector,
     SupplementalOfficialExtractor,
     SupplementalOutcome,
+    create_supplemental_official_collector,
     decide_supplemental_policy,
     discover_supplemental_list_items,
     map_supplemental_duplicate_evidence,
+    supplemental_http_config_from_environment,
 )
 from collectors.validation import (
     JsonSchemaValidator,
@@ -166,6 +171,14 @@ default_registry.register(
     BUSAN_SOURCE_ID,
     create_busan_youth_collector,
 )
+for _supplemental_source_id in sorted(SUPPLEMENTAL_SOURCE_IDS):
+    default_registry.register(
+        _supplemental_source_id,
+        partial(
+            create_supplemental_official_collector,
+            _supplemental_source_id,
+        ),
+    )
 
 __all__ = [
     "AGGREGATOR_SOURCE_IDS",
@@ -245,6 +258,7 @@ __all__ = [
     "SUPPLEMENTAL_SOURCE_IDS",
     "SupplementalDecision",
     "SupplementalListItem",
+    "SupplementalOfficialCollector",
     "SupplementalOfficialExtractor",
     "SupplementalOutcome",
     "ValidationIssue",
@@ -261,6 +275,7 @@ __all__ = [
     "regional_source_inventory_issues",
     "decide_gyeongbuk_regional_policy",
     "decide_supplemental_policy",
+    "create_supplemental_official_collector",
     "decide_expanded_regional_policy",
     "decide_representative_regional_policy",
     "evaluate_cross_source_duplicate",
@@ -272,6 +287,7 @@ __all__ = [
     "map_expanded_duplicate_evidence",
     "map_representative_duplicate_evidence",
     "map_supplemental_duplicate_evidence",
+    "supplemental_http_config_from_environment",
     "outcome_from_decisions",
     "replay_profile_actions",
 ]

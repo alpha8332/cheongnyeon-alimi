@@ -247,7 +247,7 @@
         },
         "implementation_status": {
           "type": "string",
-          "enum": ["pending", "adapter_ready", "blocked", "rejected"]
+          "enum": ["pending", "adapter_ready", "implemented_http", "blocked", "rejected"]
         },
         "source_id": {
           "type": ["string", "null"],

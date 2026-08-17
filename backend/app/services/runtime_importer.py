@@ -14,6 +14,7 @@ from collectors.cross_source_duplicate import (
 )
 from collectors.runtime import RuntimeReplayResult, replay_runtime_raw
 from collectors.regional_expansion import EXPANDED_CAPTURE_SOURCE_IDS
+from collectors.supplemental_official import SUPPLEMENTAL_SOURCE_IDS
 from collectors.regional_expansion import (
     RegionalBatchCheckpoint,
     RegionalCheckpointStore,
@@ -29,6 +30,9 @@ REGIONAL_DUPLICATE_SOURCE_IDS = frozenset(
         "regional-seoul-youth-platform",
         *EXPANDED_CAPTURE_SOURCE_IDS,
     }
+)
+DUPLICATE_GATE_SOURCE_IDS = frozenset(
+    {*REGIONAL_DUPLICATE_SOURCE_IDS, *SUPPLEMENTAL_SOURCE_IDS}
 )
 
 
@@ -60,7 +64,7 @@ def import_runtime_raw(
         snapshot_id=snapshot_id,
         checkpoint_root=checkpoint_root,
     )
-    if source_id in REGIONAL_DUPLICATE_SOURCE_IDS and replay.duplicate_decisions:
+    if source_id in DUPLICATE_GATE_SOURCE_IDS and replay.duplicate_decisions:
         baseline = load_aggregator_baseline(db, raw_root=raw_root)
         # SQLAlchemy autobegins a transaction for the read-only baseline query.
         # End it before seed_importer opens the isolated write transaction.

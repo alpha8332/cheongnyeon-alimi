@@ -5,7 +5,7 @@
 - 번호: Data 06
 - 담당 영역: Data
 - 상태: in-progress
-- 진행: `SOP-G0`~`SOP-G2` 통과
+- 진행: `SOP-G0`~`SOP-G3` 통과, `SOP-G4_BLOCKED`
 - 착수 조건: `W5-G0_PASS` 완료
 - 계획일: `2026-08-11`
 - 승인일: `2026-08-16`
@@ -18,7 +18,8 @@
 - 권장 브랜치: `feature/data/supplemental-official-policy-ingestion` 한 개.
   Data 05 공통 엔진과 Gate가 안정되기 전에는 만들지 않으며 Source별 브랜치를
   추가하지 않음
-- 현재 Slice: SOP4 pending (SOP0~SOP3·`SOP-G3` 완료)
+- 현재 Slice: SOP4 제한 actual 완료 후 blocked. 신규 DB 인수 Source 1개와
+  Browser 정책 차단으로 최소 2개 구조 기준 미달
 
 ## 목적
 

@@ -7,9 +7,9 @@
 - 상태: in-progress
 - 브랜치: `feature/data/supplemental-official-policy-ingestion`
 - 계획: [Data 06 Supplemental Official Policy Ingestion](../../develop_plan/data/06_supplemental_official_policy_ingestion.md)
-- 주차 Slice: `DTL5-2` / `W5-D2`
-- 현재 Gate: `SOP-G0_PASS`, `SOP-G1_PASS`, `SOP-G2_PASS`, `SOP-G3_PASS`
-- 다음 Slice: SOP4 제한 actual·PostgreSQL 적재 검증
+- 주차 Slice: `DTL5-3` / `W5-D3`
+- 현재 Gate: `SOP-G0_PASS`~`SOP-G3_PASS`, `SOP-G4_BLOCKED`
+- 다음 판단: 우선 Source 추가 승인 또는 최소 기준 계획 재승인 전 W5-G1 금지
 
 ## 목적
 
@@ -23,7 +23,8 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 - SOP0: XLSX URL 64행의 lineage, exact 반복, 같은 URL·다른 제목과 문구 오류 격리
 - SOP1: 승인 aggregator snapshot과 실제 DB의 ID·URL·제목 선행 감사
 - SOP2: 공식 Source군의 운영 주체·robots·조건·allowlist·요청 예산 판정
-- 미수행: actual Raw 수집, 신규 Policy 적재, API·Browser 인수
+- actual: 승인 4개 Source 제한 수집·offline replay, KOSAF 1건 PostgreSQL·API 인수
+- 미수행: Browser 인수와 최소 2개 서로 다른 신규 Source DB 인수
 
 ## Slice 진행 현황
 
@@ -33,8 +34,8 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 | SOP1 | completed | exact duplicate 26, review 11, potentially new 19, not assessed 4 |
 | SOP2 | completed | approved 4, blocked 1, rejected 9; 승인 Source별 allowlist·예산 고정 |
 | SOP3 | completed | 승인 4개 Source stable identity·상세 Adapter·offline replay·판정 Gate 구현 |
-| SOP4 | pending | 제한 actual·PostgreSQL 미수행 |
-| SOP5 | pending | Source 확대·Forest 완료 판정 미수행 |
+| SOP4 | blocked | 4개 제한 actual 완료, KOSAF만 신규 DB/API 인수; 최소 2개 구조·Browser 미달 |
+| SOP5 | blocked | 4개 Source는 `implemented_http`, 신규 정책 4개 Forest 기준 미달 |
 
 ## 구현 내용
 
@@ -157,6 +158,43 @@ closed, 근거 부족은 review, evidence 계약 손상은 failed로 분리한�
 판정 기준일은 실행 현재 시각이 아니라 Raw `collected_at` 날짜로 고정해 offline
 replay 결정성을 유지한다.
 
+### SOP4 제한 actual·PostgreSQL·API 판정
+
+`2026-08-17`에 승인된 네 Source를 목록 1회·상세 최대 3회·요청 시작 간격
+2초로 수집했다. Raw와 snapshot·decision manifest는 Git에서 제외된
+`runtime/`에만 두었고 첨부파일·로그인·상담 경로는 요청하지 않았다.
+
+| Source | 요청 | 목록 identity | 상세 identity | 최소 evidence | 중복·DB 결과 |
+| --- | ---: | ---: | ---: | --- | --- |
+| 고용24 | 2 | 1 | 1 | review 1 | 현재 신청 가능 근거 없음, DB 0 |
+| LH | 4 | 50 | 3 | review 3 | 공개 HTML에 신청 가능 근거 부족, 첨부 미수집, DB 0 |
+| 한국장학재단 | 4 | 6 | 1 | accepted 1 | 신규, DB insert 1 |
+| 서민금융진흥원 | 3 | 2 | 2 | accepted 1·review 1 | 햇살론유스 공식 URL이 온통청년 2건과 일치해 duplicate review, DB 0 |
+
+한국장학재단은 `scholarship05_04_01`의 기본·제출서류·지원금액 탭 세 응답을
+하나의 `pg` identity로 묶었다. 여러 신청 기간 중 Raw 수집일
+`2026-08-17`을 포함하는 `2026-08-12 ~ 2026-09-09` 구간을 선택했으며,
+문맥 속 `마감일 제외`를 마감 상태로 오판하지 않도록 날짜 구간을 먼저 판정한다.
+국가근로장학금은 aggregator 기준선과 겹치지 않아 정책 ID `15095`로 삽입됐다.
+`장학금`을 공통 `education` category로 보강한 뒤 동일 snapshot은
+`updated=1`, 다음 재실행은 `unchanged=1`이었다.
+
+실제 API는 `GET /api/v1/policies/search?q=국가근로장학금`에서 대상 1건을
+포함해 총 17건을 반환했고, `GET /api/v1/policies/15095?include_partial=true`는
+HTTP 200·`education`·`open`·`kosaf-scholarship-web`을 반환했다. 최초 검색에서
+누락된 원인은 검색 파서가 장학금을 education으로 해석하는 반면 Normalizer가
+other로 저장한 category 불일치였고, 공통 mapping과 회귀 테스트로 수정했다.
+
+Browser actual은 프론트 서버가 꺼진 상태를 확인한 뒤 임시 기동했으나 Codex
+in-app Browser의 로컬 URL 정책이 reload를 차단했다. 정책상 다른 브라우저나
+자동화로 우회하지 않았으므로 Browser 결과는 통과로 기록하지 않는다.
+
+SOP4 결과는 `SOP-G4_BLOCKED`다. 서로 다른 구조에서 evidence Gate를 통과한
+후보는 한국장학재단·서민금융진흥원 2개였지만, 서민금융진흥원 후보는 기존
+aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이다. 고용24·LH의
+근거 부족을 완화하거나 중복을 무시하지 않는다. 추가 공식 Source 승인 또는
+계획 최소 기준 재승인 전에는 `SOP-G5`와 `W5-G1`을 통과시키지 않는다.
+
 ## 주요 변경 파일
 
 - `scripts/build_supplemental_policy_inventory.py`
@@ -168,6 +206,10 @@ replay 결정성을 유지한다.
 - `data/reference/supplemental_official_policy_duplicate_audit.json`
 - `tests/test_supplemental_policy_inventory.py`
 - `collectors/supplemental_official.py`
+- `collectors/normalizer.py`
+- `collectors/__init__.py`
+- `backend/app/services/runtime_importer.py`
+- `scripts/collect_release_snapshot.py`
 - `tests/test_supplemental_official.py`
 - `data/fixtures/html/{work24,lh,kosaf,kinfa}-*/`
 
@@ -187,7 +229,7 @@ replay 결정성을 유지한다.
 | 검증 | 결과 |
 | --- | --- |
 | inventory·audit Schema와 semantic 단위 테스트 | `9 passed, 63 subtests passed` |
-| 같은 XLSX builder 재실행 | inventory SHA-256 동일(`ae8ddfbc…c0b542`), 결정성 확인 |
+| 같은 XLSX builder 재실행 | inventory SHA-256 `34aa5b0d…b4093f`, audit hash 재연결 |
 | 중복 Gate·지역 inventory·aggregator loader 관련 회귀 | `30 passed, 1 warning, 118 subtests passed` |
 | 실제 PostgreSQL aggregator baseline load | 복지로 461·온통청년 2,698 row 읽기 성공 |
 | 직접 URL ID 감사 | 11행·고유 ID 10개 모두 exact duplicate |
@@ -196,15 +238,23 @@ replay 결정성을 유지한다.
 | SOP3 Adapter·Gate·runtime 집중 | `15 passed, 11 subtests passed` |
 | SOP3 + 기존 runtime replay | `21 passed, 11 subtests passed` |
 | 승인 공개 목록 parser 제한 대조 | 4개 Source stable identity 재현, 본문 미저장 |
-| Data 전체 pytest | `316 passed, 8 skipped, 1 warning, 169 subtests passed` |
+| SOP4 실제 제한 수집 | 4개 Source·13 HTTP 요청, snapshot 4개 완료 |
+| 실제 PostgreSQL 신규·재실행 | KOSAF `inserted=1` → category `updated=1` → `unchanged=1` |
+| 실제 중복 Gate | 햇살론유스 canonical URL이 온통청년 2건과 일치, DB 0 |
+| 실제 Policy API | 검색 HTTP 200·대상 1건, 상세 HTTP 200·education·open |
+| Browser actual | 로컬 URL 정책 차단, 우회 없이 미통과 기록 |
+| Data 전체 pytest | `323 passed, 8 skipped, 1 warning, 169 subtests passed` |
+| Backend 전체 pytest | `170 passed, 17 skipped, 1 warning` |
 | 문서 링크·상태·필수 heading 검증 | `Documentation validation passed` |
 | whitespace 검증 | `git diff --check` 통과(CRLF 안내만 출력) |
 
-전체 저장소 Data 회귀 결과는 SOP3 관련 검증 완료 뒤 최신화한다.
+skip은 전용 `TEST_DATABASE_URL`이 없는 PostgreSQL actual test이며 통과로 세지
+않는다. 경고는 기존 Starlette/httpx deprecation이다.
 
 ## 남은 작업
 
-- SOP4: 승인 Source별 목록 1회·상세 3~5건 이내 actual과 Raw provenance
-- SOP4: 26 duplicate·11 review·19 잠정 신규를 원문·실제 기준선으로 재판정
-- SOP4~SOP5: accepted·duplicate·review·closed·failed 분리, PostgreSQL → API → Browser 인수
+- 서로 다른 구조의 신규 Source 1개 이상을 추가 승인·구현하거나 계획 최소
+  기준을 명시적으로 재승인
+- 승인 뒤 PostgreSQL → API → Browser actual을 다시 수행해 `SOP-G4` 재판정
+- 전용 PostgreSQL test DB를 제공해 현재 skip된 통합 테스트 실행
 - Data 05·온통청년·복지로·Release 1 golden 전체 회귀와 `SOP-G5` Forest 판정

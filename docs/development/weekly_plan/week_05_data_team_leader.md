@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`·`DTL5-1` 완료, `W5-G0_PASS`·`SOP-G2_PASS`)
+- 상태: in-progress (`DTL5-0`~`DTL5-2` 완료, `SOP-G4_BLOCKED`)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -10,7 +10,7 @@
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-2` 완료, `DTL5-3` 대기
+- 현재 Slice: `DTL5-3` actual 판정 완료, 최소 Source 기준 재승인 대기
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -283,7 +283,7 @@ git status --short
 - [x] DTL5-0·`W5-G0_PASS`
 - [x] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
 - [x] DTL5-2 Data 06 `SOP-G3`
-- [ ] DTL5-3 Data 06 `SOP-G4`~`SOP-G5`와 Forest 완료 판정
+- [x] DTL5-3 Data 06 actual과 `SOP-G4_BLOCKED`·Forest 미완료 판정
 - [ ] Backend·Frontend 담당자 전체 안정화 회귀
 - [ ] DTL5-4 Data 06 포함 actual E2E·`W5-G1_PASS`
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage

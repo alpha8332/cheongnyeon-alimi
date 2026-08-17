@@ -6,15 +6,23 @@ import html
 import json
 import re
 import urllib.parse
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from html.parser import HTMLParser
 from typing import Any, Iterable, Mapping
 
+from collectors.base import CollectionOptions, CollectionResult
+from collectors.config import http_config_from_environment
 from collectors.cross_source_duplicate import DuplicateEvidence
+from collectors.errors import CollectorConfigurationError
 from collectors.extracted import ExtractedPolicy, ExtractionError, SourceProvenance
+from collectors.http import HttpClient, HttpClientConfig, TransportResponse
 from collectors.raw import RawDocumentRole, RawFormat, RawPolicyDocument, SourceType
+from collectors.raw import utc_now
+from collectors.source_common import response_content_type, safe_parse_error
+from collectors.storage import RawDocumentStore
 
 
 WORK24_SOURCE_ID = "work24-policy-web"
@@ -274,45 +282,227 @@ class SupplementalOfficialExtractor:
         items = _role_by_identity(
             selected, RawDocumentRole.LIST_ITEM, self.source_id
         )
-        details = _role_by_identity(
-            selected, RawDocumentRole.DETAIL_RESPONSE, self.source_id
+        details = _roles_by_identity(
+            selected, RawDocumentRole.DETAIL_RESPONSE
         )
-        if not items or set(items) != set(details):
+        if not items or not details or not set(details).issubset(items):
             raise ExtractionError("supplemental list/detail Raw set is incomplete")
 
         policies: list[ExtractedPolicy] = []
-        for external_id in sorted(items):
+        for external_id in sorted(details):
             item_document = items[external_id]
-            detail_document = details[external_id]
+            detail_documents = details[external_id]
             if (
                 item_document.parent_document_id != list_document.document_id
                 or item_document.raw_format is not RawFormat.JSON
-                or detail_document.raw_format is not RawFormat.HTML
                 or item_document.source_type is not SourceType.WEB
-                or detail_document.source_type is not SourceType.WEB
+                or any(
+                    document.raw_format is not RawFormat.HTML
+                    or document.source_type is not SourceType.WEB
+                    for document in detail_documents
+                )
             ):
                 raise ExtractionError("supplemental Raw relationship drift")
             item = _load_item(item_document.raw_bytes)
             expected = discovered.get(external_id)
             if item != expected:
                 raise ExtractionError("supplemental list item evidence drift")
-            if detail_document.source_url != _queryless(item.canonical_url):
+            if any(
+                document.source_url != _queryless(item.canonical_url)
+                for document in detail_documents
+            ):
                 raise ExtractionError("supplemental detail canonical URL drift")
             policies.append(
-                _extract_detail(
+                _extract_detail_bundle(
                     item,
-                    detail_document.raw_bytes,
+                    tuple(
+                        document.raw_bytes
+                        for document in detail_documents
+                    ),
                     tuple(
                         SourceProvenance.from_raw(document)
                         for document in (
                             list_document,
                             item_document,
-                            detail_document,
+                            *detail_documents,
                         )
                     ),
                 )
             )
         return tuple(policies)
+
+
+class SupplementalOfficialCollector:
+    """Collect one approved landing page and at most three detail responses."""
+
+    source_id: str
+
+    def __init__(
+        self,
+        source_id: str,
+        *,
+        http_client: HttpClient | None = None,
+        store: RawDocumentStore | None = None,
+        now: Callable[[], datetime] = utc_now,
+    ) -> None:
+        if source_id not in SUPPLEMENTAL_SOURCE_IDS:
+            raise CollectorConfigurationError(
+                "unsupported supplemental Source"
+            )
+        self.source_id = source_id
+        self._http_client = http_client or HttpClient(
+            config=supplemental_http_config_from_environment()
+        )
+        self._store = store or RawDocumentStore()
+        self._now = now
+
+    def collect(
+        self,
+        options: CollectionOptions | None = None,
+    ) -> CollectionResult:
+        selected = options or CollectionOptions()
+        if selected.page != 1:
+            raise CollectorConfigurationError(
+                "supplemental Source permits one approved list page"
+            )
+        if selected.detail_limit > 3:
+            raise CollectorConfigurationError(
+                "supplemental Source permits at most three detail requests"
+            )
+
+        list_url = _list_url(self.source_id)
+        response = _get_url(
+            self._http_client,
+            source_id=self.source_id,
+            request_url=list_url,
+        )
+        try:
+            discovered = discover_supplemental_list_items(
+                self.source_id,
+                response.body,
+            )
+        except ExtractionError:
+            raise safe_parse_error(
+                source_id=self.source_id,
+                source_url=_queryless(list_url),
+                response=response,
+                reason="supplemental list selector drifted",
+            ) from None
+
+        items = discovered[: selected.limit]
+        list_collected_at = self._now()
+        list_document = _supplemental_raw(
+            source_id=self.source_id,
+            response=response,
+            role=RawDocumentRole.LIST_RESPONSE,
+            external_id=None,
+            parent_document_id=None,
+            source_url=list_url,
+            payload=response.body,
+            raw_format=RawFormat.HTML,
+            collected_at=list_collected_at,
+        )
+        item_documents = tuple(
+            _supplemental_raw(
+                source_id=self.source_id,
+                response=response,
+                role=RawDocumentRole.LIST_ITEM,
+                external_id=item.external_id,
+                parent_document_id=list_document.document_id,
+                source_url=list_url,
+                payload=item.to_payload(),
+                raw_format=RawFormat.JSON,
+                collected_at=list_collected_at,
+            )
+            for item in items
+        )
+
+        detail_documents: list[RawPolicyDocument] = []
+        last_detail_response: TransportResponse | None = None
+        for item, request_url in _detail_plan(
+            self.source_id,
+            items,
+            detail_limit=selected.detail_limit,
+            detail_offset=selected.detail_offset,
+        ):
+            last_detail_response = _get_url(
+                self._http_client,
+                source_id=self.source_id,
+                request_url=request_url,
+            )
+            detail_documents.append(
+                _supplemental_raw(
+                    source_id=self.source_id,
+                    response=last_detail_response,
+                    role=RawDocumentRole.DETAIL_RESPONSE,
+                    external_id=item.external_id,
+                    parent_document_id=None,
+                    source_url=item.canonical_url,
+                    payload=last_detail_response.body,
+                    raw_format=RawFormat.HTML,
+                    collected_at=self._now(),
+                )
+            )
+
+        documents = (
+            list_document,
+            *item_documents,
+            *tuple(detail_documents),
+        )
+        if detail_documents:
+            try:
+                SupplementalOfficialExtractor(self.source_id).extract(
+                    documents
+                )
+            except ExtractionError:
+                assert last_detail_response is not None
+                raise safe_parse_error(
+                    source_id=self.source_id,
+                    source_url=_queryless(list_url),
+                    response=last_detail_response,
+                    reason="supplemental detail selector drifted",
+                ) from None
+        stored_paths = tuple(
+            self._store.save(document) for document in documents
+        )
+        return CollectionResult(
+            source_id=self.source_id,
+            request_count=1 + len(detail_documents),
+            item_count=len(items),
+            detail_count=len(detail_documents),
+            stored_paths=stored_paths,
+            page=1,
+            page_size=selected.limit,
+            total_count=len(discovered),
+            external_ids=tuple(item.external_id for item in items),
+            list_response_document_id=list_document.document_id,
+            detail_document_ids=tuple(
+                document.document_id for document in detail_documents
+            ),
+        )
+
+
+def supplemental_http_config_from_environment(
+    *,
+    environ: Mapping[str, str] | None = None,
+) -> HttpClientConfig:
+    base = http_config_from_environment(environ=environ)
+    return HttpClientConfig(
+        timeout_seconds=base.timeout_seconds,
+        max_retries=base.max_retries,
+        backoff_seconds=base.backoff_seconds,
+        request_interval_seconds=max(
+            2.0,
+            base.request_interval_seconds,
+        ),
+        user_agent=base.user_agent,
+    )
+
+
+def create_supplemental_official_collector(
+    source_id: str,
+) -> SupplementalOfficialCollector:
+    return SupplementalOfficialCollector(source_id)
 
 
 def decide_supplemental_policy(
@@ -502,19 +692,27 @@ def _kinfa_items(root: _Node) -> tuple[SupplementalListItem, ...]:
     return tuple(items)
 
 
-def _extract_detail(
+def _extract_detail_bundle(
     item: SupplementalListItem,
-    payload: bytes,
+    payloads: tuple[bytes, ...],
     provenance: tuple[SourceProvenance, ...],
 ) -> ExtractedPolicy:
-    root = _parse_html(payload)
     parser = {
         WORK24_SOURCE_ID: _work24_detail,
         LH_SOURCE_ID: _lh_detail,
         KOSAF_SOURCE_ID: _kosaf_detail,
         KINFA_SOURCE_ID: _kinfa_detail,
     }[item.source_id]
-    values, locators = parser(root, item)
+    parsed = tuple(parser(_parse_html(payload), item) for payload in payloads)
+    values = _merge_detail_values(tuple(value for value, _ in parsed))
+    locators: dict[str, str] = {}
+    for index, (detail_values, fields) in enumerate(parsed):
+        for field_name, locator in fields.items():
+            if detail_values.get(field_name) not in (None, "", ()):
+                locators.setdefault(
+                    field_name,
+                    f"detail_response[{index}]:{locator}",
+                )
     title = values.get("title")
     if not title or _comparison_text(title) != _comparison_text(item.title):
         raise ExtractionError("supplemental detail title drift")
@@ -625,18 +823,33 @@ def _kosaf_detail(
     root: _Node, item: SupplementalListItem
 ) -> tuple[dict[str, Any], dict[str, str]]:
     title_node = _current_anchor(root, item.external_id) or _title_prefix(root)
-    period = _labeled_section(root, ("신청기간", "사업기간"))
-    eligibility = _labeled_section(root, ("신청대상", "지원자격"))
+    period_parts = _labeled_sections(
+        root,
+        ("신청기간", "사업기간"),
+        ancestor_class="page-group",
+    )
+    period = " | ".join(period_parts) or None
+    eligibility = _kosaf_tab_text(
+        root,
+        ("신청대상", "지원자격"),
+    )
+    method = _kosaf_application_method(root)
     values = {
         "title": _node_text(title_node),
         "organization": "한국장학재단",
         "category": "장학금",
         "application_period": period,
         "eligibility": eligibility,
-        "support_content": _labeled_section(root, ("장학금 지원금액", "지원금액")),
-        "required_documents": _labeled_section(root, ("제출서류",)),
-        "application_method": _labeled_section(root, ("신청방법",)),
-        "youth_target": _youth_evidence(title_node, eligibility),
+        "support_content": _kosaf_tab_text(
+            root,
+            ("장학금 지원금액", "지원금액"),
+        ),
+        "required_documents": _kosaf_tab_text(
+            root,
+            ("제출서류",),
+        ),
+        "application_method": method,
+        "youth_target": _kosaf_youth_evidence(title_node, eligibility),
         "application_availability": _availability(period),
         "target_groups": ("대학생",) if eligibility and "학생" in eligibility else (),
     }
@@ -652,17 +865,24 @@ def _kinfa_detail(
     root: _Node, item: SupplementalListItem
 ) -> tuple[dict[str, Any], dict[str, str]]:
     title_node = _title_prefix(root)
+    eligibility = _kinfa_eligibility(root)
+    documents = _labeled_card(root, ("제출 필요서류", "제출서류"))
+    method = _labeled_card(root, ("이용절차", "신청방법"))
     period = _labeled_section(root, ("신청기간", "접수기간"))
-    eligibility = _labeled_section(root, ("보증대상", "지원대상", "신청대상"))
+    if period is None and method and "신청 가능" in method:
+        period = method
     values = {
         "title": _node_text(title_node),
         "organization": "서민금융진흥원",
         "category": "금융·자산 형성 지원",
         "application_period": period,
         "eligibility": eligibility,
-        "support_content": _labeled_section(root, ("대출한도", "지원내용")),
-        "required_documents": _labeled_section(root, ("제출서류", "필요서류")),
-        "application_method": _labeled_section(root, ("이용절차", "신청방법")),
+        "support_content": _labeled_card(
+            root,
+            ("보증한도 및 보증기간", "대출한도", "지원내용"),
+        ),
+        "required_documents": documents,
+        "application_method": method,
         "youth_target": _youth_evidence(title_node, eligibility),
         "application_availability": _availability(period),
         "target_groups": ("청년",) if _youth_evidence(title_node, eligibility) else (),
@@ -699,6 +919,55 @@ def _role_by_identity(
             raise ExtractionError("supplemental Raw identity is missing or duplicated")
         values[external_id] = document
     return values
+
+
+def _roles_by_identity(
+    documents: tuple[RawPolicyDocument, ...],
+    role: RawDocumentRole,
+) -> dict[str, tuple[RawPolicyDocument, ...]]:
+    grouped: dict[str, list[RawPolicyDocument]] = {}
+    for document in documents:
+        if document.document_role is not role:
+            continue
+        external_id = document.external_id
+        if not external_id:
+            raise ExtractionError("supplemental Raw identity is missing")
+        grouped.setdefault(external_id, []).append(document)
+    return {
+        external_id: tuple(
+            sorted(
+                values,
+                key=lambda document: (
+                    document.collected_at,
+                    document.document_id,
+                ),
+            )
+        )
+        for external_id, values in grouped.items()
+    }
+
+
+def _merge_detail_values(
+    values: tuple[dict[str, Any], ...],
+) -> dict[str, Any]:
+    merged: dict[str, Any] = {}
+    for fields in values:
+        for field_name, value in fields.items():
+            if value in (None, "", ()):
+                continue
+            if field_name == "target_groups":
+                existing = tuple(merged.get(field_name, ()))
+                merged[field_name] = tuple(
+                    dict.fromkeys((*existing, *tuple(value)))
+                )
+                continue
+            if field_name == "application_availability":
+                existing = merged.get(field_name)
+                if existing in {None, "unknown"} or value == "open":
+                    merged[field_name] = value
+                continue
+            merged.setdefault(field_name, value)
+    return merged
 
 
 def _load_item(payload: bytes) -> SupplementalListItem:
@@ -743,6 +1012,101 @@ def _source_name(source_id: str) -> str:
         KOSAF_SOURCE_ID: "한국장학재단 장학금",
         KINFA_SOURCE_ID: "서민금융진흥원 금융상품",
     }[source_id]
+
+
+def _get_url(
+    http_client: HttpClient,
+    *,
+    source_id: str,
+    request_url: str,
+) -> TransportResponse:
+    parsed = urllib.parse.urlsplit(request_url)
+    query = dict(urllib.parse.parse_qsl(parsed.query, keep_blank_values=True))
+    return http_client.get(
+        source_id=source_id,
+        url=urllib.parse.urlunsplit(
+            (parsed.scheme, parsed.netloc, parsed.path, "", "")
+        ),
+        query=query,
+    )
+
+
+def _detail_plan(
+    source_id: str,
+    items: tuple[SupplementalListItem, ...],
+    *,
+    detail_limit: int,
+    detail_offset: int,
+) -> tuple[tuple[SupplementalListItem, str], ...]:
+    if detail_limit == 0:
+        return ()
+    if source_id == KOSAF_SOURCE_ID:
+        preferred = next(
+            (
+                item
+                for item in items
+                if item.external_id == "scholarship05_04_01"
+            ),
+            None,
+        )
+        if preferred is None or detail_offset:
+            return ()
+        return tuple(
+            (preferred, request_url)
+            for request_url in (
+                preferred.canonical_url,
+                f"{preferred.canonical_url}&ttab1=3",
+                f"{preferred.canonical_url}&ttab1=4",
+            )[:detail_limit]
+        )
+
+    youth_tokens = ("청년", "대학생", "유스", "신혼", "행복주택")
+    ordered = tuple(
+        sorted(
+            items,
+            key=lambda item: (
+                not any(token in item.title for token in youth_tokens),
+                item.external_id,
+            ),
+        )
+    )
+    selected = ordered[detail_offset : detail_offset + detail_limit]
+    return tuple((item, item.canonical_url) for item in selected)
+
+
+def _supplemental_raw(
+    *,
+    source_id: str,
+    response: TransportResponse,
+    role: RawDocumentRole,
+    external_id: str | None,
+    parent_document_id: str | None,
+    source_url: str,
+    payload: bytes,
+    raw_format: RawFormat,
+    collected_at: datetime,
+) -> RawPolicyDocument:
+    return RawPolicyDocument.from_bytes(
+        source_id=source_id,
+        source_type=SourceType.WEB,
+        document_role=role,
+        external_id=external_id,
+        parent_document_id=parent_document_id,
+        source_url=_queryless(source_url),
+        collected_at=collected_at,
+        content_type=(
+            "application/json; charset=utf-8"
+            if raw_format is RawFormat.JSON
+            else response_content_type(
+                response,
+                default="text/html; charset=utf-8",
+            )
+        ),
+        raw_format=raw_format,
+        raw_payload=payload,
+        http_status=response.status,
+        collector_version=ADAPTER_VERSION,
+    )
 
 
 def _queryless(value: str) -> str:
@@ -830,13 +1194,66 @@ def _title_prefix(root: _Node) -> _Node | None:
     return node
 
 
-def _labeled_section(root: _Node, labels: tuple[str, ...]) -> str | None:
-    heading_tags = {"h2", "h3", "h4", "h5", "h6", "dt", "strong", "p", "span"}
+def _labeled_section(
+    root: _Node,
+    labels: tuple[str, ...],
+    *,
+    ancestor_class: str | None = None,
+) -> str | None:
+    values = _labeled_sections(
+        root,
+        labels,
+        ancestor_class=ancestor_class,
+    )
+    return values[0] if values else None
+
+
+def _labeled_sections(
+    root: _Node,
+    labels: tuple[str, ...],
+    *,
+    ancestor_class: str | None = None,
+) -> tuple[str, ...]:
+    heading_tags = {
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "dt",
+        "strong",
+        "p",
+        "span",
+        "li",
+        "caption",
+    }
+    selected: list[str] = []
     for node in root.descendants():
-        text = node.text().rstrip(":")
-        if node.tag not in heading_tags or not any(
-            text == label or text.startswith(label) for label in labels
+        own_text = _clean_text(" ".join(node.chunks)).rstrip(":")
+        matched_label = next(
+            (label for label in labels if label in own_text),
+            None,
+        )
+        if (
+            node.tag not in heading_tags
+            or matched_label is None
+            or ancestor_class is not None
+            and not _has_ancestor_class(node, ancestor_class)
         ):
+            continue
+        remainder = _clean_text(
+            own_text.split(matched_label, 1)[1].lstrip(":() ")
+        )
+        semantic_remainder = remainder
+        for label in labels:
+            semantic_remainder = semantic_remainder.replace(label, "")
+        semantic_remainder = re.sub(r"[\s:()/·]+", "", semantic_remainder)
+        if semantic_remainder:
+            value = _clean_text(
+                node.text().split(matched_label, 1)[1].lstrip(":() ")
+            )
+            if value and value not in selected:
+                selected.append(value)
             continue
         parent = node.parent
         if parent is None:
@@ -844,7 +1261,9 @@ def _labeled_section(root: _Node, labels: tuple[str, ...]) -> str | None:
         parent_text = parent.text()
         value = _clean_text(parent_text.removeprefix(node.text()))
         if value and value != parent_text:
-            return value
+            if value not in selected:
+                selected.append(value)
+            continue
         siblings = parent.children
         try:
             index = siblings.index(node)
@@ -853,7 +1272,109 @@ def _labeled_section(root: _Node, labels: tuple[str, ...]) -> str | None:
         for sibling in siblings[index + 1 :]:
             value = sibling.text()
             if value:
+                if value not in selected:
+                    selected.append(value)
+                break
+    return tuple(selected)
+
+
+def _has_ancestor_class(node: _Node, class_name: str) -> bool:
+    current = node.parent
+    while current is not None:
+        if any(
+            token.casefold().rstrip("s")
+            == class_name.casefold().rstrip("s")
+            for token in current.attrs.get("class", "").split()
+        ):
+            return True
+        current = current.parent
+    return False
+
+
+def _nearest_ancestor_class(node: _Node, class_name: str) -> _Node | None:
+    current = node.parent
+    while current is not None:
+        if class_name in current.attrs.get("class", "").split():
+            return current
+        current = current.parent
+    return None
+
+
+def _labeled_card(root: _Node, labels: tuple[str, ...]) -> str | None:
+    for node in root.descendants():
+        if node.tag != "p" or "tit" not in node.attrs.get("class", "").split():
+            continue
+        title = node.text()
+        if not any(label in title for label in labels):
+            continue
+        card = _nearest_ancestor_class(node, "card-01")
+        if card is not None:
+            value = _clean_text(
+                card.text().removeprefix(title).replace("닫힘", "", 1)
+            )
+            if value:
                 return value
+    return _labeled_section(root, labels)
+
+
+def _kinfa_eligibility(root: _Node) -> str | None:
+    direct = _labeled_section(
+        root,
+        ("보증대상", "지원대상", "신청대상"),
+    )
+    if direct:
+        return direct
+    for node in root.descendants():
+        classes = set(node.attrs.get("class", "").split())
+        text = node.text()
+        if (
+            node.tag == "div"
+            and {"card", "card-01"}.issubset(classes)
+            and "청년" in text
+            and "대학생" in text
+        ):
+            return text
+    return None
+
+
+def _kosaf_application_method(root: _Node) -> str | None:
+    for node in root.descendants():
+        if node.tag != "a" or node.text() != "신청하기":
+            continue
+        action = node.attrs.get("href", "")
+        if "PTJH_SCRSAPLY" in action:
+            return "한국장학재단 장학금 신청 메뉴에서 신청"
+    return _labeled_section(root, ("신청방법",))
+
+
+def _kosaf_tab_text(root: _Node, labels: tuple[str, ...]) -> str | None:
+    for node in root.descendants():
+        if node.tag not in {"h5", "h6", "caption"}:
+            continue
+        title = node.text()
+        if not any(label in title for label in labels):
+            continue
+        tab = _nearest_ancestor_class(node, "con_tabitem")
+        if tab is not None:
+            value = _clean_text(tab.text().replace(title, "", 1))
+            if value:
+                return value
+    return _labeled_section(
+        root,
+        labels,
+        ancestor_class="page-group",
+    )
+
+
+def _kosaf_youth_evidence(
+    title_node: _Node | None,
+    eligibility: str | None,
+) -> str | None:
+    direct = _youth_evidence(title_node, eligibility)
+    if direct:
+        return direct
+    if eligibility and "학생" in eligibility and "대학" in eligibility:
+        return eligibility
     return None
 
 
@@ -870,13 +1391,12 @@ def _strong_value(root: _Node, label: str) -> str | None:
 def _availability(period: str | None) -> str:
     if not period:
         return "unknown"
+    if _date_ranges(period):
+        return "dated"
     if any(token in period for token in ("마감", "종료", "신청불가")):
         return "closed"
     if any(token in period for token in ("상시", "수시", "신청 가능", "접수중")):
         return "open"
-    dates = re.findall(r"(20\d{2})[.\-/]\s*(\d{1,2})[.\-/]\s*(\d{1,2})", period)
-    if len(dates) >= 2:
-        return "dated"
     return "unknown"
 
 
@@ -885,21 +1405,41 @@ def _resolved_availability(
 ) -> str:
     if status != "dated" or not period:
         return status
-    dates = re.findall(
-        r"(20\d{2})[.\-/]\s*(\d{1,2})[.\-/]\s*(\d{1,2})",
-        period,
-    )
-    if len(dates) < 2:
+    ranges = _date_ranges(period)
+    if not ranges:
         return "unknown"
-    try:
-        start, end = (
-            date(*(int(value) for value in item)) for item in dates[:2]
-        )
-    except ValueError:
-        return "unknown"
-    if start <= as_of <= end:
+    if any(start <= as_of <= end for start, end in ranges):
         return "open"
-    return "closed" if as_of > end else "unknown"
+    if all(as_of > end for _, end in ranges):
+        return "closed"
+    return "unknown"
+
+
+def _date_ranges(value: str) -> tuple[tuple[date, date], ...]:
+    pattern = re.compile(
+        r"(?P<sy>20\d{2})[.\-/]\s*(?P<sm>\d{1,2})[.\-/]\s*"
+        r"(?P<sd>\d{1,2})[^~|]{0,30}~\s*"
+        r"(?:(?P<ey>20\d{2})[.\-/]\s*)?"
+        r"(?P<em>\d{1,2})[.\-/]\s*(?P<ed>\d{1,2})"
+    )
+    selected: list[tuple[date, date]] = []
+    for match in pattern.finditer(value):
+        try:
+            start = date(
+                int(match.group("sy")),
+                int(match.group("sm")),
+                int(match.group("sd")),
+            )
+            end = date(
+                int(match.group("ey") or match.group("sy")),
+                int(match.group("em")),
+                int(match.group("ed")),
+            )
+        except ValueError:
+            continue
+        if start <= end:
+            selected.append((start, end))
+    return tuple(selected)
 
 
 def _youth_evidence(*values: _Node | str | None) -> str | None:

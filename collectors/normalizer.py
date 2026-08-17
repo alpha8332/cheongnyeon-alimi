@@ -81,6 +81,7 @@ _CATEGORY_MAP: dict[str, tuple[Category, ...]] = {
     "취업·일자리": (Category.EMPLOYMENT,),
     "창업": (Category.STARTUP,),
     "교육": (Category.EDUCATION,),
+    "장학금": (Category.EDUCATION,),
     "직업훈련": (Category.EDUCATION,),
     "교육·직업훈련": (Category.EDUCATION,),
     "금융·복지·문화": (Category.FINANCE, Category.WELFARE),
