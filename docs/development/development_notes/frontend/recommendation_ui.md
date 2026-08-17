@@ -174,9 +174,9 @@ Browser·Playwright E2E는 FE6-05에서 실행 완료.
 
 ## 남은 작업
 
-- Real API E2E(`VITE_USE_MOCK=false`) 및 partial·long-region positive Browser case는
-  Backend actual API·Seed 데이터 준비 후 FE9 또는 별도 회귀에서 실행
-- W4-G0 Gate 후 `docs/api/` recommendation 절 추가
+- Real API golden과 통합 actual acceptance는 `2026-08-18` W5-I1에서
+  통과했다. partial·long-region positive Browser case는 DTL5-5 독립 QA에서
+  재확인한다.
 
 ## 관련 문서
 

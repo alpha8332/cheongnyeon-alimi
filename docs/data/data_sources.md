@@ -4,7 +4,8 @@
 
 - 상태: 기준선
 - 현재 구현 상태: 온통청년·복지로 API, 천안청년센터와 13개 승인 지역 Source
-  Adapter 완료. Data 06은 공식 Source 4개 preflight 승인, Adapter 미구현
+  Adapter 완료. Data 06 공식 Source 5개 Adapter·제한 actual 완료,
+  한국장학재단 신규 정책 1건 DB·API·Browser 인수
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -21,10 +22,11 @@
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
 | 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 actual Raw → PostgreSQL·API 확인 |
 | 경북 청년정책 플랫폼 | `regional-gyeongbuk-youth-platform` | 공개 JSON·modal | 제한 preflight·offline Raw replay 확인 |
-| 고용24 정책 | `work24-policy-web` | 공개 웹 | Data 06 SOP3 Adapter·offline replay 확인, actual 적재 대기 |
-| LH 임대 공고 | `lh-housing-announcement-web` | 공개 웹 | Data 06 SOP3 Adapter·offline replay 확인, actual 적재 대기 |
-| 한국장학재단 장학 | `kosaf-scholarship-web` | 공개 웹 | Data 06 SOP3 Adapter·offline replay 확인, actual 적재 대기 |
-| 서민금융진흥원 상품 | `kinfa-financial-product-web` | 공개 웹 | Data 06 SOP3 Adapter·offline replay 확인, actual 적재 대기 |
+| 고용24 정책 | `work24-policy-web` | 공개 웹 | SOP4 제한 actual 완료, 신청 가능 근거 부족 review·DB 0 |
+| LH 임대 공고 | `lh-housing-announcement-web` | 공개 웹 | SOP4 제한 actual 완료, 공개 HTML 근거 부족 review·DB 0 |
+| 한국장학재단 장학 | `kosaf-scholarship-web` | 공개 웹 | SOP4 actual·신규 국가근로장학금 1건 DB·API·Browser 인수 |
+| 서민금융진흥원 상품 | `kinfa-financial-product-web` | 공개 웹 | SOP4 제한 actual 완료, aggregator 중복 review·DB 0 |
+| 모두의카드(K-패스) | `kpass-transit-refund-web` | 공개 웹 | SOP4 제한 actual 완료, 복지로 중복 review·DB 0 |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
@@ -58,9 +60,9 @@ SOP2는 고용24·LH 임대 공고·한국장학재단·서민금융진흥원·�
 목록 1회·상세 최대 3회·요청 간격 2초 경계로 승인했다. K-Startup은
 `robots.txt`가 XLSX 대상 상세 경로를 명시적으로 차단해 blocked다. 나머지
 9개 Source군은 기존 aggregator 비교 전용 또는 목록·상세·운영 주체가 불명확해
-rejected이며, Source별 재개 조건은 inventory에 둔다. SOP3 Adapter는 구현됐지만
-이 판정은 actual 수집·신규 Policy 적재 완료를 뜻하지 않는다. 모두의카드 actual은
-복지로 `WLF00005440`과 명칭 포함 일치로 duplicate review되어 DB row를 만들지 않았다.
+rejected이며, Source별 재개 조건은 inventory에 둔다. SOP4에서 다섯 Source의
+제한 actual을 완료했고 한국장학재단 국가근로장학금 1건만 신규 적재했다.
+나머지는 근거 부족 또는 aggregator 중복 review로 DB row를 만들지 않았다.
 
 ## 지역 청년정책 Source inventory
 

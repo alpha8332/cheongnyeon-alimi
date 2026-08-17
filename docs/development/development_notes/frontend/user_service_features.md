@@ -615,28 +615,30 @@ Team Leader 인수 보류 대응. Backend `127.0.0.1:8000`·`VITE_USE_MOCK=false
 Mock-first 시나리오 14건은 실패한다(의도된 env 분리). Mock 회귀는
 `VITE_USE_MOCK=true`(기본)로 별도 실행한다.
 
-## W5-F1 E2E actual API 정리 (`2026-08-17`)
+## W5-F1 E2E actual API 정리·통합 재검증 (`2026-08-18`)
 
 Mock 전용 시나리오를 `skipIfActualApi`로 분리하고 actual DB fixture
 (`e2e/helpers/e2eMode.ts`)를 도입했다.
 
 | Spec | Actual API 결과 (44 tests) |
 | --- | --- |
-| `policy-search-audit.spec.ts` | 11 pass (golden #8 포함) |
-| `recommendation-ui.spec.ts` | 10 pass, 4 mock skip |
-| `user-service-features.spec.ts` | 15 pass |
+| `policy-search-audit.spec.ts` | 10 pass, 1 mock pagination skip (golden #8 포함) |
+| `recommendation-ui.spec.ts` | 9 pass, 4 mock skip |
+| `user-service-features.spec.ts` | 14 pass |
 | `eligibility-summary-ui.spec.ts` | 3 pass, 3 mock skip |
 
-**합계:** `VITE_USE_MOCK=false` + Backend `:8000` — **37 passed, 7 skipped, 0 failed**
+**합계:** `VITE_USE_MOCK=false` + Backend `:8000` — **36 passed, 8 skipped, 0 failed**
 
-Fixture: 정책 id `160` 청년단기숙소 지원사업, ICS disabled id `3`, 추천
-조건 천안시·27·housing. (handoff 예시 id `15095`는 현재 snapshot에 없음)
+고정 숫자 ID `160`·`3`은 제거했다. eligibility와 ICS-disabled actual 표본은
+`kosaf-scholarship-web / scholarship05_04_01` stable identity로 조회하며 현재
+DB의 정책 `15095` 국가근로장학금, `application_end=null`, eligibility
+`coverage=unknown`을 검증한다. Release 1 검색·추천은 제목·조건 계약으로
+검증한다. 별도 DTL4-7 actual acceptance 3건도 Integration에서 통과했다.
 
 ## 남은 작업
 
-- W4-G0 승인 시 key·version·KST 규칙 동기화
-- Real API E2E(`VITE_USE_MOCK=false`) 및 D-7 알림 positive Browser case는
-  Backend actual Policy API·Seed 마감일 데이터 준비 후 FE9 또는 별도 회귀에서 실행
+- D-7 알림 positive Browser case는 실제 D-7 후보가 있는 현재 DB에서 DTL5-5
+  독립 사용성·QA 시나리오로 재확인한다.
 
 ## 관련 문서
 

@@ -4,8 +4,8 @@
 
 - 상태: 기준선
 - 마지막 공식 자료 확인: 2026-08-17
-- 마지막 실호출 확인: 2026-08-17 (Data 06 preflight, Raw 미저장)
-- 범위: 온통청년·복지로 API, 천안청년센터·지역 Source와 Data 06 승인 Source preflight
+- 마지막 실호출 확인: 2026-08-17 (Data 06 제한 actual, Raw Git 미저장)
+- 범위: 온통청년·복지로 API, 천안청년센터·지역 Source와 Data 06 승인 Source actual
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
 제약을 기록한다. 공식 자료의 명세, 실제 응답과 로컬 과거 샘플을 구분하며,
@@ -19,10 +19,11 @@
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 | `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
 | `regional-gyeongbuk-youth-platform` | 경북청년포털 청년e끌림 | RYP1 승인 | 목록 243건·상세 표본 1건 제한 확인 |
-| `work24-policy-web` | 고용24 정책 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
-| `lh-housing-announcement-web` | LH 임대 공고 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
-| `kosaf-scholarship-web` | 한국장학재단 장학 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
-| `kinfa-financial-product-web` | 서민금융진흥원 상품 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
+| `work24-policy-web` | 고용24 정책 | SOP-G5 통과 | 제한 actual 완료, 신청 가능 근거 부족 review·DB 0 |
+| `lh-housing-announcement-web` | LH 임대 공고 | SOP-G5 통과 | 제한 actual 완료, 공개 HTML 근거 부족 review·DB 0 |
+| `kosaf-scholarship-web` | 한국장학재단 장학 | SOP-G5 통과 | 국가근로장학금 actual·DB·API·Browser 인수 |
+| `kinfa-financial-product-web` | 서민금융진흥원 상품 | SOP-G5 통과 | 제한 actual 완료, aggregator 중복 review·DB 0 |
+| `kpass-transit-refund-web` | 모두의카드(K-패스) | SOP-G5 통과 | 제한 actual 완료, 복지로 중복 review·DB 0 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`, 천안 공지 번호와

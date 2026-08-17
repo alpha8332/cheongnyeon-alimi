@@ -35,7 +35,7 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 | --- | --- | --- | --- |
 | **BE5-00** | **통합 기준선 재검증 및 환경 고정** | **completed** | Git HEAD(`dabf1f3`), Migration head(`20260810_0006`), 백엔드 단위/API pytest 170건 통과(0 failed), 문서 검증 통과 |
 | **BE5-01** | **백엔드 핵심 기능 & 영속성/인증/로그 회귀 검증** | **completed** | PostgreSQL 18 연동 회귀 테스트 187건 전건 통과(0 failed), DB Transaction, Auth/Run/Policy/Log API 및 Exception 계약 검증 |
-| **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **pending** | 담당 브랜치에는 canonical Data 06 runtime·DB가 없었으므로 제출 증거를 폐기하고, Data·BE·FE 통합본 `W5-I1`에서 재검증 |
+| **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **completed** | Integration `1019fda` 기준 canonical KOSAF DB·API·Browser와 전체 Backend PostgreSQL 187건, actual acceptance 통과 |
 | **BE5-03** | **독립 리뷰/QA 결함 수정 및 Release 2 Hardening** | **pending** | 독립 사용성 리뷰 및 QA 검증 진행 대기 |
 
 ## 구현 내용
@@ -144,6 +144,6 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 
 ## 남은 작업
 
-1. `W5-I1`: 백엔드·프론트엔드 통합본 병합 지원 및 로컬 API 연동 확인.
-2. `W5-G1`: 실제 PostgreSQL ➔ FastAPI ➔ React 실제 데이터 E2E 검증 지원.
-3. `W5-FIX` / `BE5-03`: 팀 외 독립 사용성 리뷰어 및 QA에서 접수되는 결함 수정 대응 및 `W5-G2` Gate 승인 제출.
+1. `W5-FIX` / `BE5-03`: 팀 외 독립 사용성 리뷰어 및 QA에서 접수되는 결함 수정 대응.
+2. 노출된 실제 로컬 DB 자격증명을 교체하고 `W5-G2` 전에 완료 근거를 제출한다.
+3. 수정본 Backend 전체 PostgreSQL 회귀와 `W5-G2` Gate 승인 근거를 제출한다.

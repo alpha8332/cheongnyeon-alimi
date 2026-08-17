@@ -5,16 +5,16 @@
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
 - 상태: in-progress
-- 현재 단계: 5주차 A0·`W5-G0_PASS`, Data 06 DTL5-1~3 완료.
-  Backend `W5-B1`·Frontend `W5-F1` 인수 뒤 DTL5-4 통합 대기
+- 현재 단계: 5주차 A0·Data 06 DTL5-1~3·DTL5-4 완료,
+  `W5-G1_PASS`; DTL5-5 독립 사용성·QA 대기
 - 계획일: `2026-08-07`
 - 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05·06,
   Integration 06·08·09
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
-- DTL5-4 검증 브랜치: `feature/data/supplemental-official-policy-ingestion`
-  (`e4200fd`). Integration 전용 브랜치 생성·`develop` 병합은 사용자 결정 뒤 수행
+- DTL5-4 검증 브랜치: `feature/integration/week-05-acceptance`
+  (`1019fda` 코드 검증 기준)
 - 5주차 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - 개발 기록: [Integration 07 개발 기록](../../development_notes/integration/release_2_feature_acceptance.md)
 
@@ -95,10 +95,11 @@ Forest에서 관리한다.
 - 재현 가능한 결함을 수정 담당·심각도·재검증 조건과 연결한다.
 - 보고서 담당은 이 단계의 결정·화면·테스트와 미실행 검증을 대조한다.
 
-`2026-08-17` Data 06 브랜치에서 실행한 전체 회귀와 actual E2E는 통합 전
-사전 점검이다. Backend `W5-B1`과 Frontend `W5-F1` 담당 산출물을 인수·병합한
-통합본이 아니므로 `W5-G1` 근거로 승격하지 않는다. 두 담당 작업을 인수한 뒤
-DTL5-4를 다시 실행하고, 통합본에 대해서만 기능 동결을 판정한다.
+`2026-08-18` Integration 브랜치에서 Backend `W5-B1`, Frontend `W5-F1`과
+Data 06을 통합했다. Data·Backend PostgreSQL 전체 회귀, Frontend
+unit·lint·build, Mock 94건과 actual 핵심 44건, DTL4-7 actual acceptance를
+통과해 `W5-G1_PASS`로 기능 동결했다. 다음 단계는 팀 외 DTL5-5 사용성·QA이며,
+이 결과를 Release 2 최종 `W5-G2`로 해석하지 않는다.
 
 ### A3 - Release 2 Gate
 
@@ -128,9 +129,9 @@ DTL5-4를 다시 실행하고, 통합본에 대해서만 기능 동결을 판정
 
 ## 위험과 미확정 사항
 
-- 4주차에는 `integration` domain 브랜치를 실제 사용했지만 현재 브랜치 전략의
-  domain 표에는 없다. DTL5-4 검증은 Data 06 브랜치에서 완료했으며 Integration
-  변경 브랜치 생성이나 `develop` 병합 전에 실제 관행과 거버넌스를 정렬해야 한다.
+- 담당 Backend 브랜치의 과거 커밋에 노출된 로컬 DB 자격증명은 Integration
+  ancestry에서 제외했다. 실제 자격증명 교체 확인 전에는 `W5-G2` Release 후보로
+  승격하지 않는다.
 - 한 주 안에 모든 기능을 확장형으로 구현하면 Backend가 병목이 되므로 W4-G0
   범위 밖 기능을 다시 끌어오지 않는다.
 - actual snapshot은 외부 데이터 변화의 영향을 받으므로 고정 contract 회귀와

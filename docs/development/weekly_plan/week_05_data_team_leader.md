@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`~`DTL5-3` 완료, Backend·Frontend 인수 대기)
+- 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`; DTL5-5 대기)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -10,7 +10,7 @@
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: Backend `W5-B1`·Frontend `W5-F1` 완료 뒤 DTL5-4 통합 대기
+- 현재 Slice: DTL5-5 팀 외 독립 사용성·QA와 결함 triage
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -26,8 +26,8 @@
   정책 1건의 DB·API·Browser 인수를 통과했다.
 - 독립 사용성 리뷰·QA·보고서 근거 대조는 아직 수행하지 않았다.
 - `DTL5-0`에서 같은 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했다.
-  Data 브랜치 사전 회귀는 통과했지만 Backend·Frontend 담당 산출물이 아직
-  통합되지 않아 `W5-G1`은 판정하지 않았다.
+  `2026-08-18` Backend·Frontend 담당 산출물과 Data 06을 Integration 브랜치에
+  통합하고 전체 PostgreSQL·Browser 회귀를 통과해 `W5-G1_PASS`로 판정했다.
 
 ## 담당 목표
 
@@ -194,10 +194,14 @@ Data·Backend 회귀와 문서 대조를 통과해 DTL5-4로 인계한다.
 - 실제 PostgreSQL·FastAPI·React 핵심 흐름 통과
 - 알려진 제약·환경·독립 시나리오 인계가 완전하면 `W5-G1_PASS`
 
-상태: pending. Data 브랜치에서 Data `334`, Backend `187`, Frontend unit `162`,
-Mock Browser `79`, actual 조건부 Browser `14`건을 사전 점검으로 통과했다.
-그러나 Backend `W5-B1`과 Frontend `W5-F1` 담당 산출물을 포함한 통합본이
-아니므로 DTL5-4 완료나 `W5-G1_PASS`로 기록하지 않는다.
+상태: completed (`2026-08-18`, `W5-G1_PASS`). Backend `da20d9c`의 최종
+tree는 비밀 포함 과거 이력을 제외한 `babb432` squash로, Frontend `d19fd02`는
+`792320c` merge로 통합했다. actual fixture·stale assertion 보정 `1019fda` 뒤
+Data `334`·172 subtests, Backend PostgreSQL `187`, Frontend unit `216`·lint·
+build, Mock Browser `80 passed / 14 skipped`, actual 4-spec `36 passed / 8 skipped`,
+종단 actual acceptance `3 passed`를 확인했다. 실제 정책은 3,270건·지역 109건·
+KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선행 조치로
+유지한다.
 
 ## Slice DTL5-5 - 독립 사용성·QA와 결함 triage
 
@@ -300,8 +304,8 @@ git status --short
 - [x] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
 - [x] DTL5-2 Data 06 `SOP-G3`
 - [x] DTL5-3 Data 06 actual과 `SOP-G4_PASS`·`SOP-G5_PASS`
-- [ ] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
-- [ ] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
+- [x] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
+- [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage
 - [ ] 승인 결함 수정·자체 및 독립 재검증
 - [ ] 보고서 근거·미실행 검증 대조

@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`W5-G0_PASS`, `W5-B1`·`W5-F1` 인수와 `W5-I1` 대기)
+- 상태: in-progress (`W5-G1_PASS`, `W5-Q1`·DTL5-5 독립 사용성·QA 대기)
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -208,11 +208,13 @@ Migration·DB 기준·actual API mode와 명령을 다시 확인한 뒤에만
 - Data 05·06 정책의 lineage와 검색 노출이 대조됨
 - 리뷰어·QA에 넘길 알려진 제약과 테스트 환경이 기록됨
 
-`2026-08-17` Data 06 브랜치에서 Migration `20260810_0006`, 실제 정책
-3,270건·지역 109건·KOSAF 1건과 전 영역 사전 회귀를 확인했다. 다만 Backend
-`W5-B1`과 Frontend `W5-F1` 담당 산출물을 통합하지 않은 결과이므로
-`W5-G1_PENDING`을 유지한다. 두 담당 결과를 인수·병합한 뒤 `W5-I1`을 다시
-실행하며, `W5-G1_PASS` 전에는 `W5-Q1`을 시작하지 않는다.
+`2026-08-18` Integration 브랜치에서 Backend `W5-B1`, Frontend `W5-F1`과
+Data 06을 통합했다. 실제 정책 3,270건·지역 109건·KOSAF 1건, Data `334`,
+Backend PostgreSQL `187`, Frontend unit `216`, Mock Browser `80`, actual
+4-spec `36`과 종단 acceptance `3`건이 실패 없이 통과했다. 알려진 환경·
+독립 시나리오·비밀 이력 경계를 기록해 `W5-G1_PASS`로 판정하며 `W5-Q1`을
+시작할 수 있다. 실제 노출 자격증명 교체 확인과 독립 검증 없이는 `W5-G2`를
+판정하지 않는다.
 
 ### W5-G2 - Release 2 Gate
 
@@ -288,11 +290,11 @@ development notes에 기록한다.
 ## 완료 체크리스트
 
 - [x] `W5-G0` 통합 기준선 통과
-- [ ] Data 06 SOP0~SOP5·SOP-G5와 Forest 완료 판정
-- [ ] Data 수집·품질·Data 05·06 actual 회귀 통과
-- [ ] Backend PostgreSQL·API·권한·transaction 회귀 통과
-- [ ] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
-- [ ] `W5-G1` 실제 DB → API → Browser E2E 통과
+- [x] Data 06 SOP0~SOP5·SOP-G5와 Forest 완료 판정
+- [x] Data 수집·품질·Data 05·06 actual 회귀 통과
+- [x] Backend PostgreSQL·API·권한·transaction 회귀 통과
+- [x] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
+- [x] `W5-G1` 실제 DB → API → Browser E2E 통과
 - [ ] 팀 외 사용성 리뷰 수행 및 승인 피드백 반영
 - [ ] QA 전체 검증과 릴리스 차단 결함 수정본 재검증
 - [ ] Release 2 문서·CHANGELOG·알려진 제약 대조
