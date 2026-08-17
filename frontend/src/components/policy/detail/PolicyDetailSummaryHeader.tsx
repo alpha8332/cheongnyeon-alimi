@@ -1,7 +1,7 @@
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PartialBadge from '@/components/policy/PartialBadge';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
-import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
+import PolicyDetailStatusBadges from '@/components/policy/PolicyDetailStatusBadges';
 import PolicyDetailHeaderActions from '@/components/policy/detail/PolicyDetailHeaderActions';
 import type { PolicyDetailDto } from '@/types/policy';
 import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
@@ -83,7 +83,7 @@ export default function PolicyDetailSummaryHeader({
       <div className="policy-detail-summary__head">
         <div className="policy-detail-summary__head-main">
           <div className="policy-detail-summary__badges">
-            <PolicyStatusBadge policy={policy} />
+            <PolicyDetailStatusBadges policy={policy} />
             {dDayLabel !== '상시' && dDayLabel !== '일정 미정' && dDayLabel !== '마감' ? (
               <span className="policy-status-badge policy-status-badge--dday">{dDayLabel}</span>
             ) : null}

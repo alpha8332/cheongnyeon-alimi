@@ -147,6 +147,31 @@ Browser·Playwright E2E는 FE6-05에서 실행 완료.
 | `npm run test:e2e` (week4-regression Path C) | pass |
 | `python3 scripts/validate_docs.py` | pass |
 
+## W5-F1 인수 보완 — unknown_conditions 아코디언 복구 (`2026-08-17`)
+
+### 문제
+
+2026-07-28 UX 단순화 slice에서 `RecommendationResultCard`의
+`unknown_conditions` 노출 UI가 제거되어 승인 계약 데이터가 은폐됐다.
+
+### 조치
+
+- `RecommendationUnknownConditionsAccordion` — 「추가 확인 필요 N건」
+  toggle·`aria-expanded`·목록 펼침; `unknown_conditions` 없으면 미렌더
+- `RecommendationResultCard`에 연결
+- `theme.css` — accordion 스타일·모바일 `overflow-wrap`
+
+페이지 상단 `RecommendationUnconfirmedBanner`는 UX slice에서 제거된 상태
+유지(본 slice 범위: 카드 단위 unknown만 복구).
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 216 pass |
+| `VITE_USE_MOCK=false` E2E golden #13 | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
 ## 남은 작업
 
 - Real API E2E(`VITE_USE_MOCK=false`) 및 partial·long-region positive Browser case는

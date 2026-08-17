@@ -165,6 +165,31 @@ cd frontend && npm test           — passed (43/43)
   URL의 승인된 `include_partial=true` 전달을 누락해 1건 실패했고 기대 계약을
   바로잡은 뒤 통과했다.
 
+## W5-F1 인수 보완 — 상세 접수 상태 뱃지 복구 (`2026-08-17`)
+
+### 문제
+
+`getPolicyStatusBadge`가 `application_schedule=always`와
+`application_status=open`을 「상시」 단일 뱃지로 병합해 상세 화면에서
+「접수 중」이 누락됐고, actual E2E golden(`policy-search-audit` #8)이
+실패했다.
+
+### 조치
+
+- `getPolicyDetailStatusBadges` — 상세 전용: 일정(`상시` 등)과 접수
+  상태(`접수 중` 등)를 독립 뱃지로 반환
+- `PolicyDetailStatusBadges` — `PolicyDetailSummaryHeader`에 적용
+- 목록·카드 compact `PolicyStatusBadge`는 기존 단일 뱃지 유지
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 216 pass (+ detail badge unit) |
+| `npm run lint` / `build` | pass |
+| `VITE_USE_MOCK=false` E2E golden #8 | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
 ## 남은 작업
 
 - Frontend Forest 구현 Slice는 완료했다. QA·사용성 리뷰·보고서 독립 검증은

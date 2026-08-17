@@ -139,6 +139,45 @@ export function getPolicyStatusBadge(policy: PolicyDto): PolicyStatusBadge {
   return { label: '정책', variant: 'muted' };
 }
 
+/** 상세 헤더: 신청 일정(`application_schedule`)과 접수 상태(`application_status`)를 분리 표시 */
+export function getPolicyDetailStatusBadges(policy: PolicyDto): PolicyStatusBadge[] {
+  const badges: PolicyStatusBadge[] = [];
+
+  if (policy.application_schedule) {
+    badges.push({
+      label: formatApplicationSchedule(policy.application_schedule),
+      variant: policy.application_schedule === 'always' ? 'always' : 'muted',
+    });
+  }
+
+  if (policy.data_quality_status === 'partial') {
+    badges.push({ label: '정보 미확인', variant: 'warn' });
+  }
+
+  if (isImminentDeadline(policy)) {
+    badges.push({ label: '마감임박', variant: 'hot' });
+  }
+
+  if (policy.application_status === 'open') {
+    badges.push({ label: formatApplicationStatus('open'), variant: 'open' });
+  } else if (policy.application_status === 'scheduled') {
+    badges.push({ label: formatApplicationStatus('scheduled'), variant: 'muted' });
+  } else if (policy.application_status === 'closed') {
+    badges.push({ label: formatApplicationStatus('closed'), variant: 'closed' });
+  } else if (policy.application_status) {
+    badges.push({
+      label: formatApplicationStatus(policy.application_status),
+      variant: 'muted',
+    });
+  }
+
+  if (badges.length === 0) {
+    return [getPolicyStatusBadge(policy)];
+  }
+
+  return badges;
+}
+
 export function formatPolicyIncomeSummary(policy: PolicyDetailDto): string {
   const incomeTexts =
     policy.eligibility_summary?.requirements

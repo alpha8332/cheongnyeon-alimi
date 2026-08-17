@@ -6,6 +6,7 @@ import { getKstDateString } from '../src/utils/policyDeadline.js';
 import {
   formatPolicyIncomeSummary,
   getPolicyStatusBadge,
+  getPolicyDetailStatusBadges,
   sanitizePolicyText,
   splitPolicyTextToBullets,
   splitPolicyTextToItems,
@@ -122,6 +123,22 @@ test('getPolicyStatusBadge는 모집중·마감임박·상시를 구분한다', 
   assert.deepEqual(
     getPolicyStatusBadge(createPolicy({ application_status: 'closed' })),
     { label: '마감', variant: 'closed' },
+  );
+});
+
+test('getPolicyDetailStatusBadges는 상시 일정과 접수 중 상태를 분리한다', () => {
+  assert.deepEqual(
+    getPolicyDetailStatusBadges(
+      createPolicy({
+        application_schedule: 'always',
+        application_end: null,
+        application_status: 'open',
+      }),
+    ),
+    [
+      { label: '상시', variant: 'always' },
+      { label: '접수 중', variant: 'open' },
+    ],
   );
 });
 

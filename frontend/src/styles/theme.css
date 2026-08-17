@@ -3855,6 +3855,60 @@ a.policy-card__arrow {
   line-height: 1.45;
 }
 
+.recommendation-unknown-accordion {
+  margin: 0 0 10px;
+  border-radius: var(--r-lg);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  overflow: hidden;
+}
+
+.recommendation-unknown-accordion__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: #92400e;
+}
+
+.recommendation-unknown-accordion__toggle:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: -2px;
+}
+
+.recommendation-unknown-accordion__label {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.recommendation-unknown-accordion__icon {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.recommendation-unknown-accordion__list {
+  margin: 0;
+  padding: 0 12px 10px 28px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #92400e;
+  overflow-wrap: anywhere;
+}
+
+.recommendation-unknown-accordion__item + .recommendation-unknown-accordion__item {
+  margin-top: 4px;
+}
+
 .recommendation-unconfirmed-banner {
   margin: 8px 0 16px;
   padding: 12px 14px;

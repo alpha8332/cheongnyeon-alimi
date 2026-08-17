@@ -599,6 +599,22 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 | `npm run test:e2e` (recommendation·policy-search·user-service) | 35 passed, 3 skipped |
 | `python3 scripts/validate_docs.py` | pass |
 
+## W5-F1 인수 보완 — actual API E2E 재검증 (`2026-08-17`)
+
+Team Leader 인수 보류 대응. Backend `127.0.0.1:8000`·`VITE_USE_MOCK=false`
+환경에서 Real API golden E2E 4건을 실행했다.
+
+| Spec | Real API golden | 결과 |
+| --- | --- | --- |
+| `policy-search-audit.spec.ts` | #8 상세·상시·접수 중 | pass |
+| `recommendation-ui.spec.ts` | #13 | pass |
+| `eligibility-summary-ui.spec.ts` | #110 DTL4-7 conditional | pass |
+| `user-service-features.spec.ts` | #15 favorites | pass |
+
+동일 env로 4 spec 전체(44 tests) 실행 시 Mock Seed 제목·id에 의존하는
+Mock-first 시나리오 14건은 실패한다(의도된 env 분리). Mock 회귀는
+`VITE_USE_MOCK=true`(기본)로 별도 실행한다.
+
 ## 남은 작업
 
 - W4-G0 승인 시 key·version·KST 규칙 동기화

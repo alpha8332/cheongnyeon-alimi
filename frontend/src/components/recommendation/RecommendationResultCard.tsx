@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
+import RecommendationUnknownConditionsAccordion from '@/components/recommendation/RecommendationUnknownConditionsAccordion';
 import RegionListCollapse from '@/components/recommendation/RegionListCollapse';
 import {
   PARTIAL_QUALITY_BADGE_HELP,
@@ -17,6 +18,7 @@ import {
 } from '@/utils/policyDisplay';
 import {
   formatRecommendationReasonSummary,
+  hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
 import { recommendationItemToPolicyDto } from '@/utils/recommendationPolicyMapping';
 
@@ -52,6 +54,7 @@ export default function RecommendationResultCard({
   const detailPath = buildRecommendationItemDetailPath(item);
   const policy = recommendationItemToPolicyDto(item);
   const showPartial = item.data_quality_status === 'partial';
+  const showUnknown = hasRecommendationUnknownConditions(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
   const category = item.category as PolicyCategory;
@@ -74,6 +77,10 @@ export default function RecommendationResultCard({
           ) : null}
           <FavoriteToggleButton policyId={item.id} />
         </h3>
+
+        {showUnknown ? (
+          <RecommendationUnknownConditionsAccordion conditions={item.unknown_conditions} />
+        ) : null}
 
         <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
