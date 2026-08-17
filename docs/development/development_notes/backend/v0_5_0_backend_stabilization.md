@@ -4,12 +4,12 @@
 
 - 기간: `2026-08-17`
 - 담당 영역: Backend
-- 상태: completed
+- 상태: in-progress
 - 브랜치: `feature/backend/week-05-stabilization`
 - 상위 Forest 계획: [Backend 07 v0.5.0 Backend Stabilization Forest 개발 계획](../../develop_plan/backend/07_v0_5_0_backend_stabilization.md)
 - 주차 실행 계획: [5주차 상세 실행 계획](../../weekly_plan/week_05_release_2.md)
 - 공통 시작 SHA: `dabf1f326ca6bc9be1253129b01dc2bc93d6b676` (4주차 `f0d3dd3` 병합 후 커밋)
-- 현재 Slice: Forest completed (`2026-08-17`)
+- 현재 Slice: `BE5-01` 완결 (`W5-B1` 승인 검토 중, `BE5-02` 조건부 검증 완결)
 
 ## 목적
 
@@ -35,8 +35,8 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 | --- | --- | --- | --- |
 | **BE5-00** | **통합 기준선 재검증 및 환경 고정** | **completed** | Git HEAD(`dabf1f3`), Migration head(`20260810_0006`), 백엔드 단위/API pytest 170건 통과(0 failed), 문서 검증 통과 |
 | **BE5-01** | **백엔드 핵심 기능 & 영속성/인증/로그 회귀 검증** | **completed** | PostgreSQL 18 연동 회귀 테스트 187건 전건 통과(0 failed), DB Transaction, Auth/Run/Policy/Log API 및 Exception 계약 검증 |
-| **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **completed** | Data 06 신규 수집 정책의 PostgreSQL ➔ API DTO 노출 대조, CollectionRun 수동 실행 202 Accepted 및 E2E 테스트(`test_postgresql_end_to_end.py`) 통과 |
-| **BE5-03** | **독립 리뷰/QA 결함 수정 및 Release 2 Hardening** | **completed** | 접수 Blocker/High 백엔드 결함 0건(안정성 확보), 백엔드 전체 회귀 테스트 187건 100% 통과 및 `W5-G2_PASS` 릴리스 승인 기준 충족 |
+| **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **conditional** | Data 06 대표 정책(ID 15095)의 PostgreSQL ➔ API DTO 노출 대조 완결, non-accepted 차단 확인, W5-I1 통합 대기 |
+| **BE5-03** | **독립 리뷰/QA 결함 수정 및 Release 2 Hardening** | **pending** | 독립 사용성 리뷰 및 QA 검증 진행 대기 |
 
 ## 구현 내용
 
@@ -56,7 +56,13 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 ### Slice BE5-01 - 백엔드 핵심 기능 & 영속성/인증/로그 회귀 검증 (`W5-B1`)
 
 1. **PostgreSQL 18 연동 회귀 테스트 실행**
-   - **실행 명령**: `$env:TEST_DATABASE_URL = "postgresql+psycopg2://postgres:0523@127.0.0.1:5432/cheongnyeon_alimi_test"; python -m pytest backend/tests -v`
+   - **실행 방법**:
+     ```powershell
+     if (-not $env:TEST_DATABASE_URL) {
+         throw "TEST_DATABASE_URL을 로컬 환경에서 설정해 주세요."
+     }
+     python -m pytest backend/tests -v
+     ```
    - **실행 결과**: **187 passed, 0 failed, 1 warning (18.65s)** (스킵 없이 187개 백엔드 회귀 테스트 전건 통과)
 
 2. **백엔드 세부 검증 항목 결과**:
@@ -69,25 +75,34 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 
 ### Slice BE5-02 - Data 06 신규 정책 적재 연동 & actual E2E 지원 (`W5-D3` / `W5-I1`)
 
-1. **Data 06 신규 정책 적재 ➔ 백엔드 API DTO 연동 대조**
-   - Data 06 보완 공식 Source 수집 신규 정책(PostgreSQL `policies` 테이블)이 `GET /api/v1/policies` 목록/검색 및 `GET /api/v1/policies/{id}` 상세 API에 소스 중립적(Source-agnostic)으로 수용되어 DTO 변환 및 노출됨을 검증.
-   - 신규 정책 상세 조회 시 `EligibilitySummary` 자격요건 및 Source evidence 출처 메타데이터가 정상 반환됨을 확인.
+1. **Data 06 대표 정책 (ID 15095) DB ➔ API DTO 대조 검증**
+   - **실행 환경**: PostgreSQL 전용 `_test` DB
+   - **대조 대상**: 정책 ID `15095` (`source_id`: `regional-seoul-youth-platform`, `source_name`: `청년몽땅정보통`, `title`: `청년 주거비 지원 사업`)
+   - **PostgreSQL Row 존재 확인**: `data_quality_status = 'valid'`, `source_url = 'https://youth.seoul.go.kr/policy/15095'`, `eligibility_summary` 존재 확인 완료.
+   - **공개 목록 API (`GET /api/v1/policies`)**: `200 OK`, `found_15095 = True` (노출 확인).
+   - **상세 API (`GET /api/v1/policies/15095?include_partial=true`)**: `200 OK`, `source_id`, `source_name`, `source_url`, `data_quality_status` (`approved`), `eligibility_summary` 내 `coverage=complete` 및 `requirements.evidence` 출처 정보 정상 노출 확인.
+   - **비accepted 데이터 노출 금지 확인**: ID `99999` (`invalid`) 비승인 정책 추가 시 공개 목록 미노출 (`found_99999 = False`), 상세 API 조회 시 `404 Not Found` 차단 확인 완료.
 
 2. **CollectionRun 수동 수집 트리거 & 라이프사이클 대조**
    - Admin 수동 수집 실행 API (`POST /api/v1/admin/collection-runs/trigger`) 호출 시 `202 Accepted` 응답 및 수집 이력 상태 전이(active ➔ finished/failed) 검증 완료 (`test_collection_run_admin_api.py`).
 
-3. **실제 DB ➔ FastAPI ➔ UI E2E 검증 지원 (`W5-G1`)**
-   - `test_postgresql_end_to_end.py` 실행 결과 `test_postgresql_seed_repository_api_end_to_end` 통과: 실제 PostgreSQL 연동 하에서 Repository ➔ Policy API 종단 연동 정상 동작 확인.
+### 성능 회귀 검증 (Search Performance Benchmark)
 
-### Slice BE5-03 - 독립 리뷰/QA 결함 수정 및 Release 2 Hardening (`W5-FIX` / `W5-I2`)
-
-1. **백엔드 결함 Triage 및 안정화 점검**
-   - 사용성 리뷰 및 QA 독립 검증 결과 백엔드 영역 Blocker/High 결함 0건 (안정화 완료).
-   - 보안 Fail-closed, DB Transaction rollback, 라우트 보호 dependency 및 API 상태코드 일치 보장.
-
-2. **최종 회귀 검증 및 Release 2 Gate 통과 (`W5-G2_PASS`)**
-   - PostgreSQL 18 연동 환경에서 백엔드 전체 테스트 187건 전건 재검증 통과 (`187 passed, 0 failed`).
-   - `v0.5.0` Release 2 Gate 통과 조건 충족 및 백엔드 측 `PASS` 판정 제출.
+- **실행 방법**:
+  ```powershell
+  if (-not $env:TEST_DATABASE_URL) {
+      throw "TEST_DATABASE_URL을 로컬 환경에서 설정해 주세요."
+  }
+  python -m pytest tests/test_postgresql_policy_search_performance.py -q -s
+  ```
+- **검증 수치 및 측정 결과**:
+  - **합성 정책 수**: 20,000건 (`SYNTHETIC_POLICY_COUNT = 20,000`)
+  - **검색 일치 건수**: 200건 (`matches = 200.0`)
+  - **기본 검색 (Default Seq Scan)**: planning 2.294 ms / execution 15.449 ms (`nodes: Seq Scan`)
+  - **LIKE 검색 (LIKE Seq Scan)**: planning 0.099 ms / execution 2.192 ms (`nodes: Seq Scan`)
+  - **Index 강제 검색 (Index Search)**: planning 0.135 ms / execution 1.738 ms (`nodes: Bitmap Heap Scan, Bitmap Index Scan`)
+  - **Trgm 인덱스 사용 확인**: `ix_policy_search_documents_search_text_trgm` 정상 인덱스 사용 확인.
+  - **결과**: **1 passed (1.68s)**, 실패 0건, 이전 기준 대비 성능 퇴행 없음 확인.
 
 ## 주요 변경 파일
 
@@ -104,16 +119,19 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 
 ## 검증 결과
 
-1. **백엔드 단위 및 API 테스트 (`pytest backend/tests -q`)**:
-   - 170 passed, 17 skipped, 0 failed (통과).
-2. **PostgreSQL 연동 백엔드 회귀 테스트 (`TEST_DATABASE_URL` + `pytest backend/tests -v`)**:
+1. **백엔드 단위 및 API 테스트 (`python -m pytest backend/tests -q`)**:
+   - **170 passed, 17 skipped, 0 failed** (통과).
+2. **PostgreSQL 연동 백엔드 회귀 테스트 (`TEST_DATABASE_URL` + `python -m pytest backend/tests -v`)**:
    - **187 passed, 0 failed** (통과).
-3. **Data 06 및 E2E 종단 연동 테스트 (`test_postgresql_end_to_end.py`, `test_collection_run_admin_api.py`)**:
-   - **13 passed, 0 failed** (통과).
-4. **문서 품질 검증 (`python scripts/validate_docs.py`)**:
-   - `Documentation validation passed.` (Exit code: 0).
+3. **성능 회귀 테스트 (`python -m pytest tests/test_postgresql_policy_search_performance.py -q -s`)**:
+   - **1 passed, 0 failed** (통과, 20,000건 기준 1.738 ms 인덱스 검색 시간 기록).
+4. **Data 06 대표 정책 (ID 15095) DB ➔ API 대조**:
+   - DB 존재 ➔ API `200 OK` DTO 변환 ➔ non-accepted 99999 `404` 차단 통과.
+5. **문서 품질 검증 (`python scripts/validate_docs.py`)**:
+   - **`Documentation validation passed.`** (Exit code: 0).
 
 ## 남은 작업
 
-- 없음 (Backend 07 Forest 전 슬라이스 완결 및 Release 2 `v0.5.0` Gate 백엔드 인수 통과)
-
+1. `W5-I1`: 백엔드·프론트엔드 통합본 병합 지원 및 로컬 API 연동 확인.
+2. `W5-G1`: 실제 PostgreSQL ➔ FastAPI ➔ React 실제 데이터 E2E 검증 지원.
+3. `W5-FIX` / `BE5-03`: 팀 외 독립 사용성 리뷰어 및 QA에서 접수되는 결함 수정 대응 및 `W5-G2` Gate 승인 제출.
