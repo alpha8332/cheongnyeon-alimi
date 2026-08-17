@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
-  ACTUAL_API_FIXTURES,
+  DATA06_KOSAF_IDENTITY,
   isActualApiMode,
   MOCK_ONLY,
-  skipIfActualApi,
+  resolveActualPolicyByIdentity,
   skipUnlessActualApi,
 } from './helpers/e2eMode';
 import {
@@ -189,11 +189,13 @@ test.describe('User Service browser flow (FE5-07)', () => {
     ).toBeVisible();
   });
 
-  test('9. 상세 — 종료일 없으면 ICS 버튼 disabled', async ({ page }) => {
+  test('9. 상세 — 종료일 없으면 ICS 버튼 disabled', async ({ page, request }) => {
     if (isActualApiMode()) {
-      await page.goto(`/programs/${ACTUAL_API_FIXTURES.ICS_DISABLED_POLICY_ID}`);
+      const policy = await resolveActualPolicyByIdentity(request);
+      expect(policy.application_end).toBeNull();
+      await page.goto(`/programs/${policy.id}?include_partial=true`);
       await expect(
-        page.getByRole('heading', { name: ACTUAL_API_FIXTURES.ICS_DISABLED_POLICY_TITLE }),
+        page.getByRole('heading', { name: DATA06_KOSAF_IDENTITY.title }),
       ).toBeVisible({ timeout: 15_000 });
     } else {
       await page.goto('/programs/2');

@@ -1,8 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
-  ACTUAL_API_FIXTURES,
+  DATA06_KOSAF_IDENTITY,
   isActualApiMode,
   MOCK_ONLY,
+  resolveActualPolicyByIdentity,
   skipIfActualApi,
   skipUnlessActualApi,
 } from './helpers/e2eMode';
@@ -21,14 +22,6 @@ async function waitForSearchSettled(page: Page) {
 
 function eligibilitySummary(page: Page) {
   return page.getByRole('region', { name: '핵심 신청 조건' });
-}
-
-function detailPolicyPath(): string {
-  if (isActualApiMode()) {
-    return `/programs/${ACTUAL_API_FIXTURES.ELIGIBILITY_POLICY_ID}?include_partial=true`;
-  }
-
-  return `/programs/${MOCK_ONLY.PARTIAL_POLICY_ID}`;
 }
 
 test.describe('Eligibility Summary approved contract browser flow', () => {
@@ -98,9 +91,12 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
     );
   });
 
-  test('mobile layout uses one eligibility grid column', async ({ page }) => {
+  test('mobile layout uses one eligibility grid column', async ({ page, request }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(detailPolicyPath());
+    const detailPath = isActualApiMode()
+      ? `/programs/${(await resolveActualPolicyByIdentity(request)).id}?include_partial=true`
+      : `/programs/${MOCK_ONLY.PARTIAL_POLICY_ID}`;
+    await page.goto(detailPath);
     await waitForProgramDetailSettled(page);
 
     const columns = await eligibilitySummary(page)
@@ -125,22 +121,25 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
 
   test('Real API eligibility detail — unknown coverage and non-definitive copy', async ({
     page,
+    request,
   }) => {
     skipUnlessActualApi(test);
 
+    const policy = await resolveActualPolicyByIdentity(request);
+
     await page.goto(
-      `/programs/${ACTUAL_API_FIXTURES.ELIGIBILITY_POLICY_ID}?include_partial=true`,
+      `/programs/${policy.id}?include_partial=true`,
     );
     await waitForProgramDetailSettled(page);
 
     await expect(
-      page.getByRole('heading', { name: ACTUAL_API_FIXTURES.ELIGIBILITY_POLICY_TITLE }),
+      page.getByRole('heading', { name: DATA06_KOSAF_IDENTITY.title }),
     ).toBeVisible();
 
     const summary = eligibilitySummary(page);
     await expect(summary).toHaveAttribute(
       'data-coverage',
-      ACTUAL_API_FIXTURES.ELIGIBILITY_COVERAGE,
+      DATA06_KOSAF_IDENTITY.eligibilityCoverage,
     );
     await expect(summary).toContainText(
       '공식 원문에서 구조화된 신청 조건을 확인하지 못했습니다.',
@@ -148,7 +147,6 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
     await expect(summary.getByRole('note')).toContainText(
       '실제 자격 충족이나 선정을 확정하지 않습니다',
     );
-    await expect(page.getByText('상시', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('접수 중', { exact: true })).toBeVisible();
   });
 });

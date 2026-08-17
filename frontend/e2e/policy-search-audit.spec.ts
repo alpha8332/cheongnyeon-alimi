@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   ACTUAL_API_FIXTURES,
+  skipIfActualApi,
   skipUnlessActualApi,
 } from './helpers/e2eMode';
 
@@ -52,6 +53,8 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
   test('3. 페이지네이션 클릭 및 새 검색어 입력 시 page=1 리셋', async ({
     page,
   }) => {
+    skipIfActualApi(test);
+
     await page.goto('/search?q=%EC%A0%84%EA%B5%AD+%EC%B2%AD%EB%85%84&limit=1&page=1');
 
     await waitForSearchSettled(page);

@@ -176,14 +176,15 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
 
     await page.goto(`/programs/${eligibilityPolicyId}?include_partial=true`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByText('핵심 신청 조건')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '핵심 신청 조건' }),
+    ).toBeVisible();
     await expect(
       page.getByText(/실제 자격 충족이나 선정을 확정하지 않습니다/),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: /원문 열기/ }).first()).toHaveAttribute(
-      'href',
-      /^https:\/\//,
-    );
+    await expect(
+      page.getByRole('link', { name: /^https:\/\// }).first(),
+    ).toHaveAttribute('href', /^https:\/\//);
 
     await page.goto(`/programs/${regionalPolicyId}?include_partial=true`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -255,6 +256,14 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /안녕하세요/, level: 1 })).toBeVisible();
-    await expect(page.getByText('아직 저장된 조건이 없습니다.')).toBeVisible();
+    await expect(
+      page.getByRole('status', { name: '저장 데이터 복구 안내' }),
+    ).toBeVisible();
+    const recoveredPayload = await page.evaluate(() =>
+      JSON.parse(
+        window.localStorage.getItem('cheongnyeon-alimi.user-local.v1') ?? 'null',
+      ),
+    );
+    expect(recoveredPayload).toMatchObject({ schema_version: 2, conditions: null });
   });
 });
