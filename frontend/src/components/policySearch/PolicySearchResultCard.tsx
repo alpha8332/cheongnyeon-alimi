@@ -2,14 +2,7 @@ import { Link } from 'react-router';
 import PartialBadge from '@/components/policy/PartialBadge';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
-import UnconfirmedConditionsBadge, {
-  UnknownVerdictBadge,
-} from '@/components/policySearch/PolicySearchBadges';
 import type { PolicySearchHit } from '@/types/policySearch';
-import {
-  hasUnknownVerdicts,
-  hasUnconfirmedConditions,
-} from '@/constants/policySearchDisplay';
 import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
 import { buildPolicySearchHitDetailPath } from '@/utils/policyDetailNavigation';
 import {
@@ -19,7 +12,6 @@ import {
   formatRegion,
   getDDayLabel,
 } from '@/utils/policyDisplay';
-import './PolicySearchBadges.css';
 
 function formatCardMeta(hit: PolicySearchHit): string {
   return [
@@ -29,14 +21,6 @@ function formatCardMeta(hit: PolicySearchHit): string {
   ]
     .filter(Boolean)
     .join(' · ');
-}
-
-function formatCardEligibility(hit: PolicySearchHit): string {
-  if (hasUnconfirmedConditions(hit) || hasUnknownVerdicts(hit)) {
-    return '일부 조건 정보 없음 · 원문 확인 필요';
-  }
-
-  return `${formatAge(hit.policy)} · ${formatRegion(hit.policy)}`;
 }
 
 interface PolicySearchResultCardProps {
@@ -53,12 +37,9 @@ export default function PolicySearchResultCard({
   onSelect,
 }: PolicySearchResultCardProps) {
   const detailPath = buildPolicySearchHitDetailPath(hit, searchIncludePartial);
-  const showUnknownVerdict =
-    hasUnknownVerdicts(hit) && hit.policy.data_quality_status !== 'partial';
-  const showPartialBadge = hit.policy.data_quality_status === 'partial';
-  const showUnconfirmed = hasUnconfirmedConditions(hit);
   const isHoverSelectable = Boolean(onSelect);
   const primaryCategory = getPrimaryPolicyCategory(hit.policy);
+  const showPartialBadge = hit.policy.data_quality_status === 'partial';
 
   return (
     <Link
@@ -75,33 +56,18 @@ export default function PolicySearchResultCard({
         </div>
       </div>
       <div className="policy-card__body">
-        <h3 className="policy-card__title">{hit.policy.title}</h3>
-
-        {showPartialBadge || showUnknownVerdict || showUnconfirmed ? (
-          <div className="policy-search-card__badges">
-            {showPartialBadge ? <PartialBadge policy={hit.policy} /> : null}
-            {showUnknownVerdict ? <UnknownVerdictBadge /> : null}
-            {showUnconfirmed ? (
-              <UnconfirmedConditionsBadge
-                conditions={hit.unconfirmed_conditions}
-              />
-            ) : null}
-          </div>
-        ) : null}
+        <h3 className="policy-card__title">
+          {hit.policy.title}
+          {showPartialBadge ? <PartialBadge policy={hit.policy} /> : null}
+        </h3>
 
         <p className="policy-card__period">
           {formatApplicationPeriodCard(hit.policy)}
         </p>
         <p className="policy-card__meta">{formatCardMeta(hit)}</p>
         <div className="policy-card__footer">
-          <span
-            className={
-              hasUnknownVerdicts(hit) || hasUnconfirmedConditions(hit)
-                ? 'policy-card__eligibility policy-search-card__eligibility--unknown'
-                : 'policy-card__eligibility'
-            }
-          >
-            {formatCardEligibility(hit)}
+          <span className="policy-card__eligibility">
+            {`${formatAge(hit.policy)} · ${formatRegion(hit.policy)}`}
           </span>
           <span className="policy-card__arrow" aria-hidden="true">
             →

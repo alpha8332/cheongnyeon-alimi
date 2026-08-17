@@ -128,8 +128,8 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     await expect(page.getByText('정보 일부 누락').first()).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /자격요건 직접 확인 필요/ }).first(),
-    ).toBeVisible();
+      page.getByRole('button', { name: /자격요건 직접 확인 필요/ }),
+    ).toHaveCount(0);
   });
 
   test('6. 우측 사이드바 Reason·미해석 키워드 노출', async ({ page }) => {

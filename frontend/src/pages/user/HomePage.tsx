@@ -277,8 +277,8 @@ export default function HomePage() {
 
           <Card title="📋 더 많은 정책 보기">
             <p className="hint-text">
-              자연어 검색은 상단 검색창을, 전체 목록·exact 필터는 정책 목록
-              페이지에서 확인할 수 있습니다.
+              자연어 검색은 상단 검색창을, 전체목록은 정책 목록페이지에서 확인할
+              수 있습니다.
             </p>
             <div style={{ marginTop: '16px' }}>
               <Button variant="secondary" onClick={() => navigate('/programs')}>

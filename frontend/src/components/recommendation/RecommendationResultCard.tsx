@@ -17,7 +17,6 @@ import {
 } from '@/utils/policyDisplay';
 import {
   formatRecommendationReasonSummary,
-  hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
 import { recommendationItemToPolicyDto } from '@/utils/recommendationPolicyMapping';
 
@@ -53,7 +52,6 @@ export default function RecommendationResultCard({
   const detailPath = buildRecommendationItemDetailPath(item);
   const policy = recommendationItemToPolicyDto(item);
   const showPartial = item.data_quality_status === 'partial';
-  const showUnknown = hasRecommendationUnknownConditions(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
   const category = item.category as PolicyCategory;
@@ -76,23 +74,6 @@ export default function RecommendationResultCard({
           ) : null}
           <FavoriteToggleButton policyId={item.id} />
         </h3>
-
-        {showUnknown ? (
-          <div
-            className="recommendation-result-card__unknown"
-            role="note"
-            aria-label="미확정 조건"
-          >
-            <span className="recommendation-result-card__unknown-badge">
-              추가 확인 필요
-            </span>
-            <ul className="recommendation-result-card__unknown-list">
-              {item.unknown_conditions.map((condition) => (
-                <li key={condition}>{condition}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
 
         <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">

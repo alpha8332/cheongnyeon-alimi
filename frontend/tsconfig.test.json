@@ -62,6 +62,7 @@
     "src/utils/adminLogEventFilters.ts",
     "src/utils/collectionRunDisplay.ts",
     "src/utils/collectionRunFilters.ts",
+    "src/utils/adminDashboard.ts",
     "src/types/adminSession.ts",
     "src/types/apiErrorToast.ts",
     "src/types/collectionRun.ts",

@@ -10,6 +10,10 @@
 
 ### Changed
 
+- 홈·맞춤 추천·검색·북마크 UX: 홈 안내 문구 갱신, `/recommendations` 상단·결과 카드 `추가 확인 필요` 박스 제거, 검색 결과 자격 확인 뱃지 제거, 정책 카드 D-Day(`D-nn`) 표시, 북마크 페이지 전체 데이터 삭제 버튼 제거.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 관리자 대시보드(`/admin`): 최신 CollectionRun 집계 요약·수집 시각·품질 metric card. 데이터 품질(`/admin/quality`): 최근 회차별 failed·invalid·duplicate 집계 비교·drill-down.
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
 - 홈 추천 정책: 프로필 저장 조건(region·age·category) 있을 때 Recommendation API 연동·안내 캡션; 없을 때 open·상시 폴백(안내 문구 미노출).
   ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
 - 북마크 폴더: `···` 메뉴 바깥 클릭·ESC 닫기, 사용자 폴더 삭제 확인 modal(기본 폴더 보호).

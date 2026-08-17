@@ -286,6 +286,13 @@ dedupe·full matrix는 Integration Regression(FE9-02) 범위.
 - 자동 검증과 실제 API 브라우저 검증 통과
 - 개발 기록·인계 보드 동기화
 
+### Phase 2 후속 (Week 5 — 집계 대시보드)
+
+2026-07-28: placeholder였던 `/admin`(DashboardPage)·`/admin/quality`(DataQualityPage)를
+Backend list·detail 집계 API 범위에서 구현. 건별 failure·duplicate candidate
+목록 API는 Backend 미제공으로 UI 제외. 상세는
+[development_notes/frontend/collection_run_admin_ui.md](../../development_notes/frontend/collection_run_admin_ui.md).
+
 ## 위험과 미확정 사항
 
 - 관리자 인증 UX와 credential 보관 방식은 Backend Access Control 결정에

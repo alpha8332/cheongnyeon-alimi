@@ -59,8 +59,7 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
 
   test('1. route boundary — /recommendations vs /search', async ({ page }) => {
     await expect(page.getByRole('heading', { name: '맞춤 추천', level: 1 })).toBeVisible();
-    await expect(page.getByRole('link', { name: '홈 검색' })).toBeVisible();
-    await expect(page.getByText(/자격 충족이나 수혜 가능성을 확정하지 않습니다/)).toBeVisible();
+    await expect(page.getByText(/자격 충족이나 수혜 가능성을 확정하지 않습니다/)).toHaveCount(0);
     await expect(page.getByRole('form', { name: '맞춤 추천 조건 편집' })).toBeVisible();
   });
 

@@ -6,12 +6,12 @@ import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
 import type { PolicyDto } from '@/types/policy';
 import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
 import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
+import { getPolicyCardDDayBadgeLabel } from '@/utils/policyDeadline';
 import {
   formatAge,
   formatApplicationPeriodCard,
   formatOrganization,
   formatRegion,
-  getDDayLabel,
 } from '@/utils/policyDisplay';
 
 interface PolicyCardProps {
@@ -23,6 +23,7 @@ export default function PolicyCard({ policy }: PolicyCardProps) {
     includePartial: policy.data_quality_status === 'partial',
   });
   const primaryCategory = getPrimaryPolicyCategory(policy);
+  const dDayBadgeLabel = getPolicyCardDDayBadgeLabel(policy);
 
   return (
     <article className="policy-card">
@@ -36,13 +37,18 @@ export default function PolicyCard({ policy }: PolicyCardProps) {
         <h3 className="policy-card__title">
           <Link to={detailPath}>{policy.title}</Link>
           <PartialBadge policy={policy} />
-          <FavoriteToggleButton policyId={policy.id} />
+          <span className="policy-card__title-actions">
+            {dDayBadgeLabel ? (
+              <span className="policy-card__dday" aria-label={`마감 ${dDayBadgeLabel}`}>
+                {dDayBadgeLabel}
+              </span>
+            ) : null}
+            <FavoriteToggleButton policyId={policy.id} />
+          </span>
         </h3>
         <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
-          {[formatRegion(policy), formatOrganization(policy), getDDayLabel(policy)]
-            .filter(Boolean)
-            .join(' · ')}
+          {[formatRegion(policy), formatOrganization(policy)].filter(Boolean).join(' · ')}
         </p>
         <div className="policy-card__footer">
           <span className="policy-card__eligibility">

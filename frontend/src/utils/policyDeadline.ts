@@ -128,6 +128,19 @@ export function getPolicyDeadlineInfo(
   };
 }
 
+export function getPolicyCardDDayBadgeLabel(
+  policy: PolicyDto,
+  referenceDate: Date = new Date(),
+): string | null {
+  const info = getPolicyDeadlineInfo(policy, referenceDate);
+
+  if (info.kind === 'upcoming' || info.kind === 'today') {
+    return info.label;
+  }
+
+  return null;
+}
+
 export function getDDayLabel(
   policy: PolicyDto,
   referenceDate: Date = new Date(),

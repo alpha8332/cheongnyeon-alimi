@@ -201,44 +201,6 @@ test.describe('User Service browser flow (FE5-07)', () => {
     ).toBeVisible();
   });
 
-  test('8. 사용자 데이터 전체 삭제 — reset→reload', async ({ page }) => {
-    await page.goto('/');
-    await favoritePolicyOnHome(page, MOCK_POLICY_ALWAYS_OPEN_TITLE);
-
-    await gotoProfileConditions(page);
-    const form = page.getByRole('form', { name: '저장 조건 편집' });
-    await form.getByPlaceholder('예: 서울특별시').fill('부산광역시');
-    await form.getByRole('button', { name: '조건 저장' }).click();
-
-    await page.getByRole('link', { name: '북마크' }).click();
-    await openBookmarkFolder(page, '기본 폴더');
-    await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toBeVisible();
-
-    page.on('dialog', (dialog) => {
-      void dialog.accept();
-    });
-    await page.getByRole('button', { name: '모든 사용자 데이터 삭제' }).click();
-
-    await expect
-      .poll(async () =>
-        page.evaluate((key) => window.localStorage.getItem(key), USER_LOCAL_STORAGE_KEY),
-      )
-      .toBeNull();
-    await expect(
-      page.getByText(/정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요/),
-    ).toBeVisible();
-    await expect(page.getByRole('button', { name: /기본 폴더 \(0\)/ })).toBeVisible();
-
-    await page.reload();
-    await expect(
-      page.getByText(/정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요/),
-    ).toBeVisible();
-
-    await page.goto('/');
-    await gotoProfileConditions(page);
-    await expect(page.getByText('아직 저장된 조건이 없습니다.')).toBeVisible();
-  });
-
   test('9. 상세 — 종료일 없으면 ICS 버튼 disabled', async ({ page }) => {
     await page.goto('/programs/2');
 
@@ -256,7 +218,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await page.getByRole('link', { name: '맞춤 추천' }).click();
     await expect(page).toHaveURL(/\/recommendations$/);
     await expect(page.getByRole('heading', { name: '맞춤 추천', level: 1 })).toBeVisible();
-    await expect(page.getByRole('link', { name: '홈 검색' })).toBeVisible();
+    await expect(page.getByRole('form', { name: '맞춤 추천 조건 편집' })).toBeVisible();
 
     await page.getByRole('link', { name: '달력' }).click();
     await expect(page).toHaveURL(/\/calendar$/);

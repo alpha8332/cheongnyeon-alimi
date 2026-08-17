@@ -576,6 +576,29 @@ Browser cross-route·Playwright E2E는 FE5-07에서 실행 완료.
 - `/programs?search=` exact list filter route는 유지.
 - `search_ux_preview.html`(루트 untracked)은 참고용이며 본 slice 산출물 아님.
 
+## UX slice — 홈·카드·북마크 문구·D-Day (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+
+| 항목 | 변경 |
+| --- | --- |
+| 홈 hint | `더 많은 정책 보기` 하단 문구를 검색창·정책 목록 안내로 갱신 |
+| `/recommendations` | 상단 `policy-eligibility-notice`·`RecommendationUnconfirmedBanner` 제거 |
+| `RecommendationResultCard` | `unknown_conditions` 노란색 `추가 확인 필요` 박스 제거 |
+| 검색 결과 카드 | `자격요건 직접 확인 필요`·unknown verdict 뱃지 제거 (partial 뱃지 유지) |
+| `PolicyCard` | 마감일 있는 open 정책에 별 위 `D-nn`/`D-Day` (`getPolicyCardDDayBadgeLabel`) |
+| `/favorites` | `UserDataResetPanel` 제거 |
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 215 passed |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (recommendation·policy-search·user-service) | 35 passed, 3 skipped |
+| `python3 scripts/validate_docs.py` | pass |
+
 ## 남은 작업
 
 - W4-G0 승인 시 key·version·KST 규칙 동기화

@@ -10,7 +10,6 @@ import BookmarkCreateFolderDialog from '@/components/bookmarks/BookmarkCreateFol
 import BookmarkDeleteFolderDialog from '@/components/bookmarks/BookmarkDeleteFolderDialog';
 import BookmarkExplorerToolbar from '@/components/bookmarks/BookmarkExplorerToolbar';
 import BookmarkFolderGrid from '@/components/bookmarks/BookmarkFolderGrid';
-import UserDataResetPanel from '@/components/user/UserDataResetPanel';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { PolicyDto } from '@/types/policy';
 import {
@@ -269,10 +268,6 @@ export default function FavoritesPage() {
         onClose={() => setFolderPendingDelete(null)}
         onConfirm={handleConfirmDeleteFolder}
       />
-
-      <div className="favorites-page__footer">
-        <UserDataResetPanel onReset={() => setExplorerPath('root')} />
-      </div>
     </div>
   );
 }
