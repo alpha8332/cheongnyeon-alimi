@@ -616,7 +616,7 @@ evidence로 제공한다. Source 원문에 온통청년 `plcyNo`, 복지로 `ser
 
 ## Data 06 보완 공식 Source SOP2 profile
 
-Data 06 inventory와 2026-08-17 제한 preflight는 다음 4개 Source의 SOP3 구현
+Data 06 inventory와 2026-08-17 제한 preflight는 다음 5개 Source의 SOP3 구현
 경계를 승인했다. 모든 Source는 목록 1회·상세 최대 3회·요청 시작 간격 최소
 2초이며, HTML·첨부 원문을 Git에 저장하지 않고 최소 정책 사실과 provenance만
 처리한다.
@@ -627,6 +627,7 @@ Data 06 inventory와 2026-08-17 제한 preflight는 다음 4개 Source의 SOP3 �
 | `lh-housing-announcement-web` | `/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026` | `panId` | 로그인·`lhFile.do` 제외, 공개 HTML만 |
 | `kosaf-scholarship-web` | `/ko/scholar.do?pg=scholarship_submain01` | 승인 `pg` key | robots 허용, 원문 복제 금지 |
 | `kinfa-financial-product-web` | `/financialProduct/peopleFinancial.do` | detail page key | 인증·상담·검색 경로 제외 |
+| `kpass-transit-refund-web` | `/`의 사업소개 link | static `intro` + 가입조건 | 공개 HTML만, 로그인·가입 요청 제외 |
 
 고용24의 회원 인증 Open API는 정책 HTML Source와 별도다. 승인 Source ID는
 공개 고용정책 목록·상세만 의미하며 인증키 신청이나 로그인 자동화를 포함하지

@@ -54,12 +54,13 @@ Data 06은 사용자 제공 `청년정책_데이터수집_완료.xlsx`의 URL 64
 제목만 같은 11개는 review, 19개는 잠정 신규, 오류·범용 홈 4개는 비교 제외다.
 직접 aggregator 링크 11행의 고유 ID 10개는 모두 기존 DB에 존재한다.
 
-SOP2는 고용24·LH 임대 공고·한국장학재단·서민금융진흥원 4개 Source를
+SOP2는 고용24·LH 임대 공고·한국장학재단·서민금융진흥원·모두의카드 5개 Source를
 목록 1회·상세 최대 3회·요청 간격 2초 경계로 승인했다. K-Startup은
 `robots.txt`가 XLSX 대상 상세 경로를 명시적으로 차단해 blocked다. 나머지
 9개 Source군은 기존 aggregator 비교 전용 또는 목록·상세·운영 주체가 불명확해
 rejected이며, Source별 재개 조건은 inventory에 둔다. SOP3 Adapter는 구현됐지만
-이 판정은 actual 수집·신규 Policy 적재 완료를 뜻하지 않는다.
+이 판정은 actual 수집·신규 Policy 적재 완료를 뜻하지 않는다. 모두의카드 actual은
+복지로 `WLF00005440`과 명칭 포함 일치로 duplicate review되어 DB row를 만들지 않았다.
 
 ## 지역 청년정책 Source inventory
 

@@ -68,7 +68,7 @@ HOST_GROUPS = {
     "www.ncas.or.kr": "culture-and-benefit-sites",
     "youthculturepass.or.kr": "culture-and-benefit-sites",
     "www.foodvoucher.go.kr": "culture-and-benefit-sites",
-    "korea-pass.kr": "culture-and-benefit-sites",
+    "korea-pass.kr": "kpass-transit-refund",
 }
 
 
@@ -219,6 +219,32 @@ SOURCE_GROUPS = {
         "external_identity": "detail-page-key",
         "request_budget": _budget(),
         "resume_condition": None,
+    },
+    "kpass-transit-refund": {
+        "operator": (
+            "국토교통부 대도시권광역위원회·한국교통안전공단·전국 지자체"
+        ),
+        "status": "approved",
+        "implementation_status": "implemented_http",
+        "source_id": "kpass-transit-refund-web",
+        "decision_reason": (
+            "공개 홈의 모두의카드소개 링크와 intro 상세, 가입조건 상세가 stable path로 "
+            "재현된다. robots는 공개 경로를 허용하며 로그인·가입 요청 없이 최소 정책 "
+            "사실만 수집한다. 후보는 실제 aggregator 중복 Gate에서 별도 판정한다."
+        ),
+        "robots": ("allowed", "https://korea-pass.kr/robots.txt"),
+        "terms": ("restricted", "https://korea-pass.kr/term/term01.do"),
+        "license": ("restricted", "https://korea-pass.kr/"),
+        "technical_access": "available",
+        "list_urls": ["https://korea-pass.kr/"],
+        "detail_patterns": [
+            "https://korea-pass.kr/info/intro.do",
+            "https://korea-pass.kr/info/use_join.do",
+        ],
+        "external_identity": "static-program-page:intro",
+        "request_budget": _budget(),
+        "resume_condition": None,
+        "checked_at": "2026-08-17T15:05:06+09:00",
     },
 }
 
@@ -455,7 +481,9 @@ def _source_group(
         "source_id": config["source_id"],
         "decision_reason": config["decision_reason"],
         "preflight": {
-            "checked_at": "2026-08-17T11:29:04+09:00",
+            "checked_at": config.get(
+                "checked_at", "2026-08-17T11:29:04+09:00"
+            ),
             "robots": {
                 "status": config["robots"][0],
                 "url": config["robots"][1],

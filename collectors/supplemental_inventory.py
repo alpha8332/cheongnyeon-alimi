@@ -149,7 +149,7 @@ def supplemental_inventory_issues(
 
     if set(grouped_rows) != set(covered_rows):
         issues.append(_error("$.source_groups", "source_lineage_not_exact"))
-    if len(approved_source_ids) != 4:
+    if len(approved_source_ids) != 5:
         issues.append(_error("$.source_groups", "approved_source_count"))
 
     conflict_ids = {

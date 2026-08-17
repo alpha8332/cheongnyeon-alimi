@@ -10,7 +10,7 @@
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-3` actual 판정 완료, 최소 Source 기준 재승인 대기
+- 현재 Slice: `DTL5-3` K-패스 보완 actual 완료, 신규 정책 최소 기준 재승인 대기
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -100,7 +100,8 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 상태: completed (`2026-08-17`, `SOP-G0_PASS`~`SOP-G2_PASS`). 후보 60개 중
 exact duplicate 26·review 11·잠정 신규 19·비교 제외 4로 판정했고, 공식
-Source 4개를 승인·1개를 robots 차단·9개를 제외했다. 상세 근거는
+Source 5개를 승인·1개를 robots 차단·9개를 제외했다. 다섯 번째 모두의카드는
+보완 preflight에서 승인했지만 actual 중복 review로 DB 적재하지 않았다. 상세 근거는
 [Data 06 개발 기록](../development_notes/data/supplemental_official_policy_ingestion.md)에
 둔다.
 
@@ -124,7 +125,7 @@ Source 4개를 승인·1개를 robots 차단·9개를 제외했다. 상세 근�
 
 ## Slice DTL5-2 - Data 06 SOP3 Adapter·판정 fixture
 
-상태: 완료 (`SOP-G3_PASS`, 2026-08-17). 승인 4개 Source의 stable identity·
+상태: 완료 (`SOP-G3_PASS`, 2026-08-17). 승인 5개 Source의 stable identity·
 Source별 locator·offline Raw replay를 구현했고, accepted 이후에도 기존 aggregator
 중복 기준선이 없으면 Policy row를 만들지 않는 경계를 확인했다.
 
@@ -147,6 +148,11 @@ Source별 locator·offline Raw replay를 구현했고, accepted 이후에도 기
 - 단위·계약 회귀와 `SOP-G3` 통과
 
 ## Slice DTL5-3 - Data 06 SOP4~SOP5 actual
+
+상태: blocked (`SOP-G4_BLOCKED`, 2026-08-17). 모두의카드까지 다섯 Source의
+제한 actual을 완료했으나 서민금융진흥원·모두의카드는 기존 aggregator 중복이고,
+실제 신규 DB Source는 한국장학재단 하나다. 신규 정책 최소 기준 재승인 또는
+별도 공식 Source discovery 승인 전에는 DTL5-4로 진행하지 않는다.
 
 ### 목적
 

@@ -9,7 +9,7 @@
 - 계획: [Data 06 Supplemental Official Policy Ingestion](../../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - 주차 Slice: `DTL5-3` / `W5-D3`
 - 현재 Gate: `SOP-G0_PASS`~`SOP-G3_PASS`, `SOP-G4_BLOCKED`
-- 다음 판단: 우선 Source 추가 승인 또는 최소 기준 계획 재승인 전 W5-G1 금지
+- 다음 판단: K-패스 중복 차단 뒤 신규 정책 최소 기준 계획 재승인 전 W5-G1 금지
 
 ## 목적
 
@@ -23,7 +23,7 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 - SOP0: XLSX URL 64행의 lineage, exact 반복, 같은 URL·다른 제목과 문구 오류 격리
 - SOP1: 승인 aggregator snapshot과 실제 DB의 ID·URL·제목 선행 감사
 - SOP2: 공식 Source군의 운영 주체·robots·조건·allowlist·요청 예산 판정
-- actual: 승인 4개 Source 제한 수집·offline replay, KOSAF 1건 PostgreSQL·API 인수
+- actual: 승인 5개 Source 제한 수집·offline replay, KOSAF 1건 PostgreSQL·API 인수
 - 미수행: Browser 인수와 최소 2개 서로 다른 신규 Source DB 인수
 
 ## Slice 진행 현황
@@ -32,10 +32,10 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 | --- | --- | --- |
 | SOP0 | completed | URL 64행 → 후보 identity 60개, exact 반복 4행 축약, URL 충돌 3개 격리 |
 | SOP1 | completed | exact duplicate 26, review 11, potentially new 19, not assessed 4 |
-| SOP2 | completed | approved 4, blocked 1, rejected 9; 승인 Source별 allowlist·예산 고정 |
-| SOP3 | completed | 승인 4개 Source stable identity·상세 Adapter·offline replay·판정 Gate 구현 |
-| SOP4 | blocked | 4개 제한 actual 완료, KOSAF만 신규 DB/API 인수; 최소 2개 구조·Browser 미달 |
-| SOP5 | blocked | 4개 Source는 `implemented_http`, 신규 정책 4개 Forest 기준 미달 |
+| SOP2 | completed | approved 5, blocked 1, rejected 9; 승인 Source별 allowlist·예산 고정 |
+| SOP3 | completed | 승인 5개 Source stable identity·상세 Adapter·offline replay·판정 Gate 구현 |
+| SOP4 | blocked | 5개 제한 actual 완료, KOSAF만 신규 DB/API 인수; 최소 2개 신규 DB Source·Browser 미달 |
+| SOP5 | blocked | 5개 Source는 `implemented_http`, 신규 정책 4개 Forest 기준 미달 |
 
 ## 구현 내용
 
@@ -91,7 +91,7 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 
 ### SOP2 Source preflight와 승인 경계
 
-`2026-08-17T11:29:04+09:00`까지 공식 페이지와 `robots.txt`를 제한 확인했다.
+`2026-08-17T15:05:06+09:00`까지 공식 페이지와 `robots.txt`를 제한 확인했다.
 승인은 원문 재배포 허가가 아니라, 출처를 보존한 최소 정책 사실을 정해진
 목록 1회·상세 최대 3회·요청 시작 간격 2초로 읽을 수 있다는 의미다.
 
@@ -101,6 +101,7 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 | LH 임대 공고 | approved | `panId` | 공개 임대 목록·상세, 로그인·파일 경로 제외 |
 | 한국장학재단 장학 | approved | `pg` | 공개 장학 landing·상세와 신청 기간 재현 |
 | 서민금융진흥원 상품 | approved | detail page key | 공개 전체보기·상품 상세, 인증·상담 경로 제외 |
+| 모두의카드(K-패스) | approved | static `intro` | 공개 홈→사업소개·가입조건, 로그인·가입 요청 제외 |
 | K-Startup 공고 | blocked | — | robots가 대상 `webCMRCZN`·`bizpbanc-*` 경로를 명시 차단 |
 | 기존 aggregator 비교 | rejected | — | 신규 Source가 아니라 SOP1 fixture |
 | 나머지 8 Source군 | rejected | — | 범용 홈·단일 상세·혼합 운영자라 목록·상세 계약 미확정 |
@@ -120,11 +121,14 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 - 서민금융진흥원: [robots](https://www.kinfa.or.kr/robots.txt),
   [상품 전체보기](https://www.kinfa.or.kr/financialProduct/peopleFinancial.do),
   [청년 미래이음 대출](https://www.kinfa.or.kr/financialProduct/youngFutureLinkLoan.do)
+- 모두의카드: [robots](https://korea-pass.kr/robots.txt),
+  [사업소개](https://korea-pass.kr/info/intro.do),
+  [가입조건](https://korea-pass.kr/info/use_join.do)
 - K-Startup: [robots 차단 근거](https://www.k-startup.go.kr/robots.txt)
 
 ### SOP3 Source Adapter·offline replay
 
-`collectors/supplemental_official.py`는 승인된 네 Source를 기존 공통 계약에
+`collectors/supplemental_official.py`는 승인된 다섯 Source를 기존 공통 계약에
 연결한다. 실제 원문 selector는 Source 모듈 안에서만 해석하고 공통
 `ExtractedPolicy`에는 정책 사실과 locator provenance만 넘긴다.
 
@@ -134,10 +138,11 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 | LH | `panId` | `.wrtancInfoBtn[data-id1..4]` | `.bbs_ViewA`, `#sta_acpDt` |
 | 한국장학재단 | `pg` | 승인된 장학 page key 링크 | 현재 page 링크와 신청·자격·서류 heading |
 | 서민금융진흥원 | detail path key | 승인 상품 상세 링크 | 문서 title과 대상·한도·서류·절차 heading |
+| 모두의카드 | static `intro` | 홈의 `/info/intro.do` anchor | 소개의 청년 환급률·운영자와 가입조건 |
 
 실제 공개 목록에 같은 parser를 대입한 제한 확인에서는 고용24 1건, LH 50건,
 한국장학재단 승인 key 6건, 서민금융진흥원 승인 상품 2건의 identity를 재현했다.
-본문은 저장하지 않았고 요청 간 2초 간격을 지켰다. 실제 상세 표본도 네 Source
+본문은 저장하지 않았고 요청 간 2초 간격을 지켰다. 실제 상세 표본도 다섯 Source
 모두 selector drift 없이 `ExtractedPolicy`까지 재생됐지만, 원문에서 신청 가능·
 자격·서류를 모두 확인하지 못한 표본은 자동 accepted하지 않는다.
 
@@ -160,7 +165,7 @@ replay 결정성을 유지한다.
 
 ### SOP4 제한 actual·PostgreSQL·API 판정
 
-`2026-08-17`에 승인된 네 Source를 목록 1회·상세 최대 3회·요청 시작 간격
+`2026-08-17`에 승인된 다섯 Source를 목록 1회·상세 최대 3회·요청 시작 간격
 2초로 수집했다. Raw와 snapshot·decision manifest는 Git에서 제외된
 `runtime/`에만 두었고 첨부파일·로그인·상담 경로는 요청하지 않았다.
 
@@ -170,6 +175,7 @@ replay 결정성을 유지한다.
 | LH | 4 | 50 | 3 | review 3 | 공개 HTML에 신청 가능 근거 부족, 첨부 미수집, DB 0 |
 | 한국장학재단 | 4 | 6 | 1 | accepted 1 | 신규, DB insert 1 |
 | 서민금융진흥원 | 3 | 2 | 2 | accepted 1·review 1 | 햇살론유스 공식 URL이 온통청년 2건과 일치해 duplicate review, DB 0 |
+| 모두의카드(K-패스) | 3 | 1 | 1 | accepted 1 | 복지로 `WLF00005440` 명칭 포함 일치로 duplicate review, DB 0 |
 
 한국장학재단은 `scholarship05_04_01`의 기본·제출서류·지원금액 탭 세 응답을
 하나의 `pg` identity로 묶었다. 여러 신청 기간 중 Raw 수집일
@@ -190,10 +196,12 @@ in-app Browser의 로컬 URL 정책이 reload를 차단했다. 정책상 다른 
 자동화로 우회하지 않았으므로 Browser 결과는 통과로 기록하지 않는다.
 
 SOP4 결과는 `SOP-G4_BLOCKED`다. 서로 다른 구조에서 evidence Gate를 통과한
-후보는 한국장학재단·서민금융진흥원 2개였지만, 서민금융진흥원 후보는 기존
+후보는 한국장학재단·서민금융진흥원·모두의카드 3개였지만, 뒤의 두 후보는 기존
 aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이다. 고용24·LH의
-근거 부족을 완화하거나 중복을 무시하지 않는다. 추가 공식 Source 승인 또는
-계획 최소 기준 재승인 전에는 `SOP-G5`와 `W5-G1`을 통과시키지 않는다.
+근거 부족을 완화하거나 중복을 무시하지 않는다. XLSX의 나머지 잠정 신규 후보는
+현재 모집 종료·청년 전용 근거 부재·robots 차단·기존 Source 중 하나여서,
+계획 최소 기준 재승인 또는 별도 공식 Source discovery 승인 전에는 `SOP-G5`와
+`W5-G1`을 통과시키지 않는다.
 
 ## 주요 변경 파일
 
@@ -206,6 +214,7 @@ aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이
 - `data/reference/supplemental_official_policy_duplicate_audit.json`
 - `tests/test_supplemental_policy_inventory.py`
 - `collectors/supplemental_official.py`
+- `collectors/cross_source_duplicate.py`
 - `collectors/normalizer.py`
 - `collectors/__init__.py`
 - `backend/app/services/runtime_importer.py`
@@ -219,6 +228,7 @@ aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이
 - exact 반복은 identity 하나로 축약하되 모든 원래 행 번호를 보존한다.
 - URL 충돌·범용 홈·검증되지 않은 서류 문구는 accepted 후보로 승격하지 않는다.
 - direct ID와 canonical URL만 확정 중복으로 제외하고 제목 일치는 review에 둔다.
+- 공식 제목이 aggregator 제목에 5자 이상 포함되면 자동 적재하지 않고 review에 둔다.
 - 승인 Source의 실행 경계는 목록·상세 allowlist, stable identity와 요청 예산이
   모두 있을 때만 열린다.
 - K-Startup의 robots 차단은 Browser나 다른 endpoint로 우회하지 않는다.
@@ -229,21 +239,22 @@ aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이
 | 검증 | 결과 |
 | --- | --- |
 | inventory·audit Schema와 semantic 단위 테스트 | `9 passed, 63 subtests passed` |
-| 같은 XLSX builder 재실행 | inventory SHA-256 `34aa5b0d…b4093f`, audit hash 재연결 |
+| 같은 XLSX builder 재실행 | inventory SHA-256 `9750ee53…c3d1c29`, audit hash 재연결 |
 | 중복 Gate·지역 inventory·aggregator loader 관련 회귀 | `30 passed, 1 warning, 118 subtests passed` |
 | 실제 PostgreSQL aggregator baseline load | 복지로 461·온통청년 2,698 row 읽기 성공 |
 | 직접 URL ID 감사 | 11행·고유 ID 10개 모두 exact duplicate |
 | 공식 robots 제한 GET | 고용24·LH·한국장학재단·서금원 허용, K-Startup 대상 경로 차단 확인 |
-| 승인 Source 목록·상세 preflight GET | 4개 Source·8개 URL 모두 HTTP 200·식별 문구 확인, 본문 미저장 |
-| SOP3 Adapter·Gate·runtime 집중 | `15 passed, 11 subtests passed` |
-| SOP3 + 기존 runtime replay | `21 passed, 11 subtests passed` |
-| 승인 공개 목록 parser 제한 대조 | 4개 Source stable identity 재현, 본문 미저장 |
-| SOP4 실제 제한 수집 | 4개 Source·13 HTTP 요청, snapshot 4개 완료 |
+| 승인 Source 목록·상세 preflight GET | 5개 Source·11개 URL 모두 HTTP 200·식별 문구 확인, 본문 미저장 |
+| Adapter·Gate·중복 runtime 집중 | `30 passed, 21 subtests passed` |
+| 승인 공개 목록 parser 제한 대조 | 5개 Source stable identity 재현, 본문 미저장 |
+| SOP4 실제 제한 수집 | 5개 Source·16 HTTP 요청, snapshot 5개 완료 |
 | 실제 PostgreSQL 신규·재실행 | KOSAF `inserted=1` → category `updated=1` → `unchanged=1` |
 | 실제 중복 Gate | 햇살론유스 canonical URL이 온통청년 2건과 일치, DB 0 |
+| K-패스 보완 중복 Gate | snapshot `f8ca4c40…`, 복지로 `WLF00005440` title containment review, DB 0 |
+| K-패스 실제 Policy API | `q=모두의카드&include_partial=true` HTTP 200·기존 복지로 1건(`id=6212`) |
 | 실제 Policy API | 검색 HTTP 200·대상 1건, 상세 HTTP 200·education·open |
 | Browser actual | 로컬 URL 정책 차단, 우회 없이 미통과 기록 |
-| Data 전체 pytest | `323 passed, 8 skipped, 1 warning, 169 subtests passed` |
+| Data 전체 pytest | `326 passed, 8 skipped, 1 warning, 172 subtests passed` |
 | Backend 전체 pytest | `170 passed, 17 skipped, 1 warning` |
 | 문서 링크·상태·필수 heading 검증 | `Documentation validation passed` |
 | whitespace 검증 | `git diff --check` 통과(CRLF 안내만 출력) |
@@ -253,8 +264,8 @@ skip은 전용 `TEST_DATABASE_URL`이 없는 PostgreSQL actual test이며 통과
 
 ## 남은 작업
 
-- 서로 다른 구조의 신규 Source 1개 이상을 추가 승인·구현하거나 계획 최소
-  기준을 명시적으로 재승인
+- 신규 Source 추가 승인은 완료했으나 중복으로 차단됐다. 별도 공식 Source discovery
+  범위를 승인하거나 신규 정책 최소 기준을 명시적으로 재승인
 - 승인 뒤 PostgreSQL → API → Browser actual을 다시 수행해 `SOP-G4` 재판정
 - 전용 PostgreSQL test DB를 제공해 현재 skip된 통합 테스트 실행
 - Data 05·온통청년·복지로·Release 1 golden 전체 회귀와 `SOP-G5` Forest 판정

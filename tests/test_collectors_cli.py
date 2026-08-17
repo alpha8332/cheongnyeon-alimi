@@ -127,6 +127,7 @@ class CollectorCliTests(unittest.TestCase):
             "cheonan-youthcenter-web\n"
             "kinfa-financial-product-web\n"
             "kosaf-scholarship-web\n"
+            "kpass-transit-refund-web\n"
             "lh-housing-announcement-web\n"
             "regional-busan-youth-platform\n"
             "regional-gyeongbuk-youth-platform\n"

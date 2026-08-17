@@ -47,7 +47,7 @@
 - [Supplemental Duplicate Audit JSON Schema](../data/schema/supplemental_official_policy_duplicate_audit.schema.json):
   온통청년·복지로 snapshot·PostgreSQL 선행 중복 감사 계약
 - [Data 06 후보·Source inventory](../data/reference/supplemental_official_policy_inventory.json):
-  URL 64행 정제 결과와 approved 4·blocked 1·rejected 9 Source 판정
+  URL 64행 정제 결과와 approved 5·blocked 1·rejected 9 Source 판정
 - [Data 06 선행 중복 감사](../data/reference/supplemental_official_policy_duplicate_audit.json):
   exact duplicate 26·review 11·잠정 신규 19·비교 제외 4 판정
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과

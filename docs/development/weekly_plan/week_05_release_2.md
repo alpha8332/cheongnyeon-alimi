@@ -57,7 +57,7 @@ blocker로 유지한다.
 - `develop`·`origin/develop`은 `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
   (`docs(plan): detail week 5 release acceptance`)에서 일치한다.
 - Data 05는 completed다. Data 06은 `W5-D1`에서 SOP0~SOP2를 완료해 후보
-  60개를 중복·검토·잠정 신규로 분리하고 공식 Source 4개를 승인했다.
+  60개를 중복·검토·잠정 신규로 분리하고 공식 Source 5개를 승인했다.
   다음 단계는 Source Adapter·offline replay인 `W5-D2`다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.

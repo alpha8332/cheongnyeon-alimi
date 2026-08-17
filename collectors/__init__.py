@@ -123,6 +123,7 @@ from collectors.registry import CollectorRegistry, default_registry
 from collectors.storage import RawDocumentStore
 from collectors.supplemental_official import (
     KINFA_SOURCE_ID,
+    KPASS_SOURCE_ID,
     KOSAF_SOURCE_ID,
     LH_SOURCE_ID,
     SUPPLEMENTAL_SOURCE_IDS,
@@ -221,6 +222,7 @@ __all__ = [
     "InstitutionalContact",
     "InstitutionalContactKind",
     "KINFA_SOURCE_ID",
+    "KPASS_SOURCE_ID",
     "KOSAF_SOURCE_ID",
     "JsonSchemaValidator",
     "LH_SOURCE_ID",

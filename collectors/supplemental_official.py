@@ -29,8 +29,15 @@ WORK24_SOURCE_ID = "work24-policy-web"
 LH_SOURCE_ID = "lh-housing-announcement-web"
 KOSAF_SOURCE_ID = "kosaf-scholarship-web"
 KINFA_SOURCE_ID = "kinfa-financial-product-web"
+KPASS_SOURCE_ID = "kpass-transit-refund-web"
 SUPPLEMENTAL_SOURCE_IDS = frozenset(
-    {WORK24_SOURCE_ID, LH_SOURCE_ID, KOSAF_SOURCE_ID, KINFA_SOURCE_ID}
+    {
+        WORK24_SOURCE_ID,
+        LH_SOURCE_ID,
+        KOSAF_SOURCE_ID,
+        KINFA_SOURCE_ID,
+        KPASS_SOURCE_ID,
+    }
 )
 
 WORK24_LIST_URL = "https://www.work24.go.kr/cm/c/f/1100/selecPolicyInfo.do"
@@ -51,6 +58,9 @@ KINFA_LIST_URL = (
     "https://www.kinfa.or.kr/financialProduct/peopleFinancial.do"
 )
 KINFA_ORIGIN = "https://www.kinfa.or.kr"
+KPASS_LIST_URL = "https://korea-pass.kr/"
+KPASS_DETAIL_URL = "https://korea-pass.kr/info/intro.do"
+KPASS_JOIN_CONDITION_URL = "https://korea-pass.kr/info/use_join.do"
 
 ADAPTER_VERSION = "supplemental-official-adapter/1.0"
 _WORK24_ID = re.compile(r"^SI\d+$")
@@ -225,6 +235,7 @@ def discover_supplemental_list_items(
         LH_SOURCE_ID: _lh_items,
         KOSAF_SOURCE_ID: _kosaf_items,
         KINFA_SOURCE_ID: _kinfa_items,
+        KPASS_SOURCE_ID: _kpass_items,
     }
     try:
         items = parsers[source_id](root)
@@ -307,8 +318,11 @@ class SupplementalOfficialExtractor:
             expected = discovered.get(external_id)
             if item != expected:
                 raise ExtractionError("supplemental list item evidence drift")
+            approved_detail_urls = {
+                _queryless(value) for value in _approved_detail_urls(item)
+            }
             if any(
-                document.source_url != _queryless(item.canonical_url)
+                document.source_url not in approved_detail_urls
                 for document in detail_documents
             ):
                 raise ExtractionError("supplemental detail canonical URL drift")
@@ -437,7 +451,7 @@ class SupplementalOfficialCollector:
                     role=RawDocumentRole.DETAIL_RESPONSE,
                     external_id=item.external_id,
                     parent_document_id=None,
-                    source_url=item.canonical_url,
+                    source_url=request_url,
                     payload=last_detail_response.body,
                     raw_format=RawFormat.HTML,
                     collected_at=self._now(),
@@ -692,6 +706,29 @@ def _kinfa_items(root: _Node) -> tuple[SupplementalListItem, ...]:
     return tuple(items)
 
 
+def _kpass_items(root: _Node) -> tuple[SupplementalListItem, ...]:
+    items: list[SupplementalListItem] = []
+    for node in root.descendants():
+        if node.tag != "a":
+            continue
+        parsed = urllib.parse.urlsplit(
+            urllib.parse.urljoin(KPASS_LIST_URL, node.attrs.get("href", ""))
+        )
+        title = node.text().removesuffix("소개").strip()
+        if parsed.path != "/info/intro.do" or title != "모두의카드":
+            continue
+        items.append(
+            SupplementalListItem(
+                KPASS_SOURCE_ID,
+                "intro",
+                title,
+                KPASS_DETAIL_URL,
+                (("join_condition_url", KPASS_JOIN_CONDITION_URL),),
+            )
+        )
+    return tuple(items)
+
+
 def _extract_detail_bundle(
     item: SupplementalListItem,
     payloads: tuple[bytes, ...],
@@ -702,6 +739,7 @@ def _extract_detail_bundle(
         LH_SOURCE_ID: _lh_detail,
         KOSAF_SOURCE_ID: _kosaf_detail,
         KINFA_SOURCE_ID: _kinfa_detail,
+        KPASS_SOURCE_ID: _kpass_detail,
     }[item.source_id]
     parsed = tuple(parser(_parse_html(payload), item) for payload in payloads)
     values = _merge_detail_values(tuple(value for value, _ in parsed))
@@ -894,6 +932,99 @@ def _kinfa_detail(
     }
 
 
+def _kpass_detail(
+    root: _Node, item: SupplementalListItem
+) -> tuple[dict[str, Any], dict[str, str]]:
+    title_node = _title_prefix(root)
+    if _node_text(title_node) != item.title:
+        raise ExtractionError("K-pass detail title drift")
+
+    way = _one(root, "div", attr=("id", "introContentsWay"))
+    earn = _one(root, "div", attr=("id", "introContentsEarnway"))
+    local = _one(root, "div", attr=("id", "introContentsLocalGuide"))
+    join_conditions = _one(root, "main", attr=("id", "content"))
+    if way is None and earn is None and local is None and join_conditions is None:
+        raise ExtractionError("K-pass detail selector drift")
+
+    values: dict[str, Any] = {"title": item.title}
+    locators: dict[str, str] = {"title": "head > title:first-segment"}
+    if way is not None and earn is not None and local is not None:
+        way_text = way.text()
+        earn_text = earn.text()
+        local_text = local.text()
+        eligibility = _kpass_youth_eligibility(earn_text)
+        organization = (
+            "국토교통부 대도시권광역위원회·한국교통안전공단·전국 지자체"
+            if all(
+                token in way_text
+                for token in (
+                    "국토교통부 대도시권광역위원회",
+                    "한국교통안전공단",
+                    "전국 모든 지자체",
+                )
+            )
+            else None
+        )
+        join_available = _sentence_containing(
+            way_text, "회원가입이 가능합니다"
+        )
+        values.update(
+            {
+                "organization": organization,
+                "summary": _sentence_containing(way_text, "환급 사업"),
+                "category": "생활지원",
+                "application_period": join_available,
+                "region": "전국" if "대한민국 국민이라면 누구나" in local_text else None,
+                "age": "만 19 ~ 34세" if eligibility else None,
+                "eligibility": eligibility,
+                "support_content": _kpass_youth_support(earn_text, eligibility),
+                "application_method": way_text,
+                "youth_target": eligibility,
+                "application_availability": (
+                    "open" if join_available else "unknown"
+                ),
+                "target_groups": ("청년",) if eligibility else (),
+            }
+        )
+        locators.update(
+            {
+                "organization": "#introContentsWay:operators",
+                "summary": "#introContentsWay:program-summary",
+                "application_period": "#introContentsWay:membership-availability",
+                "region": "#introContentsLocalGuide:eligibility-scope",
+                "age": "#introContentsEarnway:youth-definition",
+                "eligibility": "#introContentsEarnway:youth-definition",
+                "support_content": "#introContentsEarnway:youth-refund-rate",
+                "application_method": "#introContentsWay:usage-steps",
+            }
+        )
+    elif join_conditions is not None:
+        condition_text = join_conditions.text()
+        prerequisites = _kpass_join_prerequisites(condition_text)
+        values.update(
+            {
+                "eligibility": condition_text,
+                # The common gate stores document evidence and service-style
+                # enrollment prerequisites in the same evidence slot.  Keep
+                # the value explicit so it cannot be mistaken for a paper form.
+                "required_documents": prerequisites,
+                "application_method": prerequisites,
+                "application_availability": (
+                    "open" if prerequisites else "unknown"
+                ),
+                "youth_target": condition_text if "만 19세 이상" in condition_text else None,
+            }
+        )
+        locators.update(
+            {
+                "eligibility": "main#content:join-conditions",
+                "required_documents": "main#content:card-and-membership-prerequisites",
+                "application_method": "main#content:card-and-membership-prerequisites",
+            }
+        )
+    return values, locators
+
+
 def _parse_html(payload: bytes) -> _Node:
     try:
         value = payload.decode("utf-8")
@@ -1002,6 +1133,7 @@ def _list_url(source_id: str) -> str:
         LH_SOURCE_ID: LH_LIST_URL,
         KOSAF_SOURCE_ID: KOSAF_LIST_URL,
         KINFA_SOURCE_ID: KINFA_LIST_URL,
+        KPASS_SOURCE_ID: KPASS_LIST_URL,
     }[source_id]
 
 
@@ -1011,7 +1143,14 @@ def _source_name(source_id: str) -> str:
         LH_SOURCE_ID: "LH청약플러스 임대주택 공고",
         KOSAF_SOURCE_ID: "한국장학재단 장학금",
         KINFA_SOURCE_ID: "서민금융진흥원 금융상품",
+        KPASS_SOURCE_ID: "모두의카드 교통비 환급",
     }[source_id]
+
+
+def _approved_detail_urls(item: SupplementalListItem) -> tuple[str, ...]:
+    if item.source_id == KPASS_SOURCE_ID:
+        return item.canonical_url, KPASS_JOIN_CONDITION_URL
+    return (item.canonical_url,)
 
 
 def _get_url(
@@ -1040,6 +1179,14 @@ def _detail_plan(
 ) -> tuple[tuple[SupplementalListItem, str], ...]:
     if detail_limit == 0:
         return ()
+    if source_id == KPASS_SOURCE_ID:
+        if len(items) != 1 or items[0].external_id != "intro":
+            return ()
+        item = items[0]
+        requests = tuple(
+            (item, url) for url in _approved_detail_urls(item)
+        )
+        return requests[detail_offset : detail_offset + detail_limit]
     if source_id == KOSAF_SOURCE_ID:
         preferred = next(
             (
@@ -1376,6 +1523,45 @@ def _kosaf_youth_evidence(
     if eligibility and "학생" in eligibility and "대학" in eligibility:
         return eligibility
     return None
+
+
+def _sentence_containing(value: str, token: str) -> str | None:
+    for sentence in re.split(r"(?<=[.!?다요])\s+", value):
+        selected = _clean_text(sentence)
+        if token in selected:
+            return selected
+    return None
+
+
+def _kpass_youth_eligibility(value: str) -> str | None:
+    match = re.search(
+        r"청년\s*:\s*\[청년기본법\]에\s*의거하여\s*"
+        r"만\s*19\s*~\s*34세",
+        value,
+    )
+    return _clean_text(match.group(0)) if match else None
+
+
+def _kpass_youth_support(
+    value: str, eligibility: str | None
+) -> str | None:
+    if not eligibility:
+        return None
+    start = value.find(eligibility)
+    nearby = value[start : start + 400] if start >= 0 else ""
+    if "기본형 30%" not in nearby:
+        return None
+    return "청년 기본형 환급률 30%"
+
+
+def _kpass_join_prerequisites(value: str) -> str | None:
+    required = (
+        "모두의카드 카드 발급",
+        "회원가입이 꼭 필요합니다",
+    )
+    if not all(token in value for token in required):
+        return None
+    return "가입 선행조건: 모두의카드 카드 발급 및 홈페이지·앱 회원가입"
 
 
 def _strong_value(root: _Node, label: str) -> str | None:

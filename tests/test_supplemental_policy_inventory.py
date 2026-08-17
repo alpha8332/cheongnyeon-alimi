@@ -119,7 +119,7 @@ class SupplementalPolicyInventoryTests(unittest.TestCase):
                 untrusted["note_sha256"] is not None,
             )
 
-    def test_sop2_has_four_approved_sources_and_one_robots_block(self) -> None:
+    def test_sop2_has_five_approved_sources_and_one_robots_block(self) -> None:
         groups = {
             group["source_group_id"]: group
             for group in self.inventory["source_groups"]
@@ -135,6 +135,7 @@ class SupplementalPolicyInventoryTests(unittest.TestCase):
                 "lh-housing-announcements",
                 "kosaf-scholarships",
                 "kinfa-financial-products",
+                "kpass-transit-refund",
             },
             approved,
         )

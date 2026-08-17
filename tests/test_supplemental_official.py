@@ -28,6 +28,8 @@ from collectors.supplemental_official import (
     ADAPTER_VERSION,
     KINFA_LIST_URL,
     KINFA_SOURCE_ID,
+    KPASS_LIST_URL,
+    KPASS_SOURCE_ID,
     KOSAF_LIST_URL,
     KOSAF_SOURCE_ID,
     LH_LIST_URL,
@@ -44,6 +46,7 @@ from collectors.supplemental_official import (
 )
 from collectors.http import TransportResponse
 from collectors.runtime import replay_runtime_raw
+from collectors.snapshot import SnapshotManifest, SnapshotManifestStore
 from collectors.normalized import Category
 from collectors.normalizer import Normalizer
 from collectors.storage import RawDocumentStore
@@ -57,6 +60,7 @@ LIST_URLS = {
     LH_SOURCE_ID: LH_LIST_URL,
     KOSAF_SOURCE_ID: KOSAF_LIST_URL,
     KINFA_SOURCE_ID: KINFA_LIST_URL,
+    KPASS_SOURCE_ID: KPASS_LIST_URL,
 }
 
 
@@ -141,6 +145,45 @@ def documents(
     return response, list_item, detail
 
 
+def kpass_documents() -> tuple[RawPolicyDocument, ...]:
+    source_id = KPASS_SOURCE_ID
+    list_payload = fixture(source_id, "list_normal.html")
+    item = discover_supplemental_list_items(source_id, list_payload)[0]
+    list_response = raw(
+        source_id,
+        1,
+        RawDocumentRole.LIST_RESPONSE,
+        list_payload,
+        KPASS_LIST_URL,
+    )
+    list_item = raw(
+        source_id,
+        2,
+        RawDocumentRole.LIST_ITEM,
+        item.to_payload(),
+        KPASS_LIST_URL,
+        external_id=item.external_id,
+        parent_document_id=list_response.document_id,
+    )
+    intro = raw(
+        source_id,
+        3,
+        RawDocumentRole.DETAIL_RESPONSE,
+        fixture(source_id, "detail_intro.html"),
+        item.canonical_url,
+        external_id=item.external_id,
+    )
+    join = raw(
+        source_id,
+        4,
+        RawDocumentRole.DETAIL_RESPONSE,
+        fixture(source_id, "detail_join.html"),
+        "https://korea-pass.kr/info/use_join.do",
+        external_id=item.external_id,
+    )
+    return list_response, list_item, intro, join
+
+
 def duplicate_baseline(canonical_url: str) -> AggregatorBaseline:
     descriptors = tuple(
         BaselineDescriptor(
@@ -207,6 +250,7 @@ class SupplementalCollectorTests(unittest.TestCase):
                 LH_SOURCE_ID,
                 KOSAF_SOURCE_ID,
                 KINFA_SOURCE_ID,
+                KPASS_SOURCE_ID,
             }.issubset(default_registry.source_ids())
         )
 
@@ -273,6 +317,39 @@ class SupplementalCollectorTests(unittest.TestCase):
             [call["query"].get("ttab1") for call in client.calls],
         )
 
+    def test_kpass_uses_intro_and_join_conditions_for_one_identity(self) -> None:
+        client = StubHttpClient(
+            [
+                response(fixture(KPASS_SOURCE_ID, "list_normal.html")),
+                response(fixture(KPASS_SOURCE_ID, "detail_intro.html")),
+                response(fixture(KPASS_SOURCE_ID, "detail_join.html")),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            store = RawDocumentStore(temporary_directory)
+            result = SupplementalOfficialCollector(
+                KPASS_SOURCE_ID,
+                http_client=client,
+                store=store,
+                now=lambda: COLLECTED_AT,
+            ).collect(CollectionOptions(limit=1, detail_limit=2))
+            selected = tuple(store.load(path) for path in result.stored_paths)
+
+        self.assertEqual(3, result.request_count)
+        self.assertEqual(1, result.item_count)
+        self.assertEqual(2, result.detail_count)
+        self.assertEqual(
+            {
+                "https://korea-pass.kr/info/intro.do",
+                "https://korea-pass.kr/info/use_join.do",
+            },
+            {
+                document.source_url
+                for document in selected
+                if document.document_role is RawDocumentRole.DETAIL_RESPONSE
+            },
+        )
+
     def test_rejects_page_or_detail_expansion_before_request(self) -> None:
         client = StubHttpClient([])
         collector = SupplementalOfficialCollector(
@@ -315,6 +392,7 @@ class SupplementalListAdapterTests(unittest.TestCase):
             LH_SOURCE_ID: ("2015122300020572",),
             KOSAF_SOURCE_ID: ("scholarship05_04_01",),
             KINFA_SOURCE_ID: ("hessalLoanYoos", "youngFutureLinkLoan"),
+            KPASS_SOURCE_ID: ("intro",),
         }
         for source_id, identities in expected.items():
             with self.subTest(source_id=source_id):
@@ -356,12 +434,16 @@ class SupplementalExtractorTests(unittest.TestCase):
         assert result.program is not None
         self.assertEqual((Category.EDUCATION,), result.program.categories)
 
-    def test_extracts_four_source_specific_details_without_leaking_fields(self) -> None:
+    def test_extracts_five_source_specific_details_without_leaking_fields(self) -> None:
         expected = {
             WORK24_SOURCE_ID: ("SI00000318", "고용노동부·한국고용정보원"),
             LH_SOURCE_ID: ("2015122300020572", "한국토지주택공사"),
             KOSAF_SOURCE_ID: ("scholarship05_04_01", "한국장학재단"),
             KINFA_SOURCE_ID: ("hessalLoanYoos", "서민금융진흥원"),
+            KPASS_SOURCE_ID: (
+                "intro",
+                "국토교통부 대도시권광역위원회·한국교통안전공단·전국 지자체",
+            ),
         }
         for source_id, (external_id, organization) in expected.items():
             detail_name = (
@@ -370,12 +452,20 @@ class SupplementalExtractorTests(unittest.TestCase):
                 else "detail_normal.html"
             )
             with self.subTest(source_id=source_id):
+                selected = (
+                    kpass_documents()
+                    if source_id == KPASS_SOURCE_ID
+                    else documents(source_id, detail_name=detail_name)
+                )
                 policy = SupplementalOfficialExtractor(source_id).extract(
-                    documents(source_id, detail_name=detail_name)
+                    selected
                 )[0]
                 self.assertEqual(external_id, policy.external_id)
                 self.assertEqual(organization, policy.organization)
-                self.assertEqual(3, len(policy.provenance))
+                self.assertEqual(
+                    4 if source_id == KPASS_SOURCE_ID else 3,
+                    len(policy.provenance),
+                )
                 self.assertIn("field_locators", policy.extra)
                 self.assertNotIn("panId", policy.to_dict())
                 self.assertNotIn("systId", policy.to_dict())
@@ -412,10 +502,20 @@ class SupplementalExtractorTests(unittest.TestCase):
 
 class SupplementalGateTests(unittest.TestCase):
     def test_accepts_only_complete_open_official_evidence(self) -> None:
-        for source_id in (WORK24_SOURCE_ID, KOSAF_SOURCE_ID, KINFA_SOURCE_ID):
+        for source_id in (
+            WORK24_SOURCE_ID,
+            KOSAF_SOURCE_ID,
+            KINFA_SOURCE_ID,
+            KPASS_SOURCE_ID,
+        ):
             with self.subTest(source_id=source_id):
+                selected = (
+                    kpass_documents()
+                    if source_id == KPASS_SOURCE_ID
+                    else documents(source_id)
+                )
                 policy = SupplementalOfficialExtractor(source_id).extract(
-                    documents(source_id)
+                    selected
                 )[0]
                 decision = decide_supplemental_policy(
                     policy, as_of=date(2026, 8, 17)
@@ -508,6 +608,61 @@ class SupplementalGateTests(unittest.TestCase):
         self.assertEqual(
             ["canonical_url"],
             result.duplicate_decisions[0]["match_fields"],
+        )
+        self.assertEqual(0, result.accepted_count)
+
+    def test_runtime_reviews_kpass_material_title_containment(self) -> None:
+        selected = kpass_documents()
+        baseline = duplicate_baseline("https://example.org/unrelated-kpass")
+        baseline = replace(
+            baseline,
+            records=(
+                replace(
+                    baseline.records[0],
+                    title="대중교통비 환급 지원(모두의카드)",
+                    canonical_urls=("https://www.bokjiro.go.kr/program",),
+                ),
+                baseline.records[1],
+            ),
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            store = RawDocumentStore(temporary_directory)
+            for document in selected:
+                store.save(document)
+            SnapshotManifestStore(temporary_directory).save(
+                SnapshotManifest(
+                    snapshot_id="f" * 32,
+                    source_id=KPASS_SOURCE_ID,
+                    started_at=COLLECTED_AT,
+                    completed_at=COLLECTED_AT + timedelta(minutes=4),
+                    page_size=1,
+                    detail_limit=2,
+                    request_budget=3,
+                    request_count=3,
+                    total_count=1,
+                    item_count=1,
+                    list_response_document_ids=(selected[0].document_id,),
+                    detail_document_ids=(
+                        selected[2].document_id,
+                        selected[3].document_id,
+                    ),
+                )
+            )
+            result = replay_runtime_raw(
+                raw_root=temporary_directory,
+                source_id=KPASS_SOURCE_ID,
+                limit=10,
+                duplicate_baseline=baseline,
+            )
+
+        self.assertEqual("accepted", result.supplemental_decisions[0]["outcome"])
+        self.assertEqual(
+            "duplicate_review_required",
+            result.duplicate_decisions[0]["outcome"],
+        )
+        self.assertEqual(
+            ["material_title_containment_requires_review"],
+            result.duplicate_decisions[0]["reason_codes"],
         )
         self.assertEqual(0, result.accepted_count)
 
