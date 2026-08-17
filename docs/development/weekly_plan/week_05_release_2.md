@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`W5-G0_PASS`, Data 06 `W5-D1` 완료·`W5-D2` 대기)
+- 상태: in-progress (`W5-G0_PASS`, Data 06 `W5-D1`~`W5-D3` 완료·`W5-I1` 대기)
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -24,8 +24,9 @@ PostgreSQL → FastAPI → React 통합, 독립 리뷰·QA와 Release 2 Gate를 
   구현을 4주차에서 5주차로 이동한다.
 - 4주차는 Data 05 완료 결과와 Backend·Frontend 변경을 병합한 뒤 DTL4-5,
   담당자 회귀와 W4-G4 midpoint를 먼저 닫는다.
-- Data 06은 범위 삭제가 아니라 실행 시점 변경이다. `v0.5.0` 필수 범위와 최소
-  4개 승인 Source 완료 기준은 유지하며 W5-G1 전까지 완료한다.
+- Data 06은 범위 삭제가 아니라 실행 시점 변경이다. `2026-08-17` 재승인 기준인
+  승인 Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Browser를
+  W5-G1 전까지 완료한다.
 - Data 06이 지연되면 독립 사용성 리뷰·QA를 먼저 시작하지 않는다. Backend·
   Frontend는 기다리는 동안 자기 영역 회귀와 결함 수정을 병렬로 수행한다.
 
@@ -56,9 +57,10 @@ blocker로 유지한다.
 
 - `develop`·`origin/develop`은 `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
   (`docs(plan): detail week 5 release acceptance`)에서 일치한다.
-- Data 05는 completed다. Data 06은 `W5-D1`에서 SOP0~SOP2를 완료해 후보
-  60개를 중복·검토·잠정 신규로 분리하고 공식 Source 5개를 승인했다.
-  다음 단계는 Source Adapter·offline replay인 `W5-D2`다.
+- Data 05는 completed다. Data 06은 `W5-D1`~`W5-D3`에서 후보 정제, 승인
+  Source 5개 Adapter·actual·offline replay와 KOSAF 신규 정책의
+  PostgreSQL·API·Browser 인수를 완료해 `SOP-G5_PASS`다. 다음 단계는
+  Data 06을 포함한 전체 actual E2E `W5-I1`이다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.
 - 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.
@@ -80,7 +82,7 @@ blocker로 유지한다.
 | `W5-B1` | Backend | 안정화 회귀 | PostgreSQL·Migration·transaction·권한·API 결함 목록 | `W5-I1` 또는 수정 |
 | `W5-F1` | Frontend | 안정화 회귀 | actual API·Browser·오류·접근성·반응형 결함 목록 | `W5-I1` 또는 수정 |
 | `W5-D2` | Data | Data 06 SOP3 | Source Adapter·판정 fixture·offline replay와 `SOP-G3` 판정 | `W5-D3` |
-| `W5-D3` | Data | Data 06 SOP4~SOP5 | 최소 4개 승인 Source actual·재실행·DB/API/Browser·`SOP-G5` | `W5-I1` |
+| `W5-D3` | Data | Data 06 SOP4~SOP5 | 승인 5개 Source actual·신규 1개 이상·비accepted 무적재·DB/API/Browser·`SOP-G5` | `W5-I1` |
 | `W5-I1` | Team Leader | Integration 07 A2 | Data 06 포함 전체 actual E2E와 `W5-G1` 판정 | 독립 검증 |
 | `W5-Q1` | 사용성·QA | Integration 07 A2 | 독립 시나리오 결과·결함 심각도·재현 조건 | 영역별 수정 |
 | `W5-FIX` | Data·Backend·Frontend | 담당 Forest | 승인 결함 수정과 담당자 자체 재검증 | 독립 재검증 |
@@ -239,7 +241,8 @@ Migration·DB 기준·actual API mode와 명령을 다시 확인한 뒤에만
 - 결함은 `ID`, 발견 역할, 시나리오, 심각도, 재현 조건, 기대·실제 결과,
   수정 담당, 수정 SHA, 자체 재검증, 독립 재검증 상태를 가진다.
 - 인증 우회·비밀 노출·데이터 손실·Migration 실패·핵심 actual E2E 실패와
-  Data 06 최소 4개 Source 미달은 Release blocker다.
+  Data 06 재승인 기준(승인 5개 actual·신규 1개 이상·비accepted 무적재·Browser)
+  미달은 Release blocker다.
 - 낮은 위험의 문구·비차단 UX 문제만 알려진 제약 후보가 될 수 있으며,
   Team Leader가 근거 없이 `conditional`로 낮추지 않는다.
 

@@ -4,12 +4,12 @@
 
 - 작업일: 2026-08-17
 - 영역: Data·Team Leader
-- 상태: in-progress
+- 상태: completed
 - 브랜치: `feature/data/supplemental-official-policy-ingestion`
 - 계획: [Data 06 Supplemental Official Policy Ingestion](../../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - 주차 Slice: `DTL5-3` / `W5-D3`
-- 현재 Gate: `SOP-G0_PASS`~`SOP-G3_PASS`, `SOP-G4_BLOCKED`
-- 다음 판단: K-패스 중복 차단 뒤 신규 정책 최소 기준 계획 재승인 전 W5-G1 금지
+- 현재 Gate: `SOP-G0_PASS`~`SOP-G5_PASS`
+- 다음 판단: Integration 07 `DTL5-4`에서 Data 06 포함 전체 actual E2E와 `W5-G1` 판정
 
 ## 목적
 
@@ -23,8 +23,8 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 - SOP0: XLSX URL 64행의 lineage, exact 반복, 같은 URL·다른 제목과 문구 오류 격리
 - SOP1: 승인 aggregator snapshot과 실제 DB의 ID·URL·제목 선행 감사
 - SOP2: 공식 Source군의 운영 주체·robots·조건·allowlist·요청 예산 판정
-- actual: 승인 5개 Source 제한 수집·offline replay, KOSAF 1건 PostgreSQL·API 인수
-- 미수행: Browser 인수와 최소 2개 서로 다른 신규 Source DB 인수
+- actual: 승인 5개 Source 제한 수집·offline replay, KOSAF 1건 PostgreSQL·API·Browser 인수
+- 후속: Integration 07 전체 actual E2E와 독립 사용성·QA
 
 ## Slice 진행 현황
 
@@ -34,8 +34,8 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 | SOP1 | completed | exact duplicate 26, review 11, potentially new 19, not assessed 4 |
 | SOP2 | completed | approved 5, blocked 1, rejected 9; 승인 Source별 allowlist·예산 고정 |
 | SOP3 | completed | 승인 5개 Source stable identity·상세 Adapter·offline replay·판정 Gate 구현 |
-| SOP4 | blocked | 5개 제한 actual 완료, KOSAF만 신규 DB/API 인수; 최소 2개 신규 DB Source·Browser 미달 |
-| SOP5 | blocked | 5개 Source는 `implemented_http`, 신규 정책 4개 Forest 기준 미달 |
+| SOP4 | completed | 5개 actual·신규 DB/API 1개·비accepted 무적재·Browser 인수 완료, `SOP-G4_PASS` |
+| SOP5 | completed | 5개 Source `implemented_http`, 전체 회귀·문서 대조 완료, `SOP-G5_PASS` |
 
 ## 구현 내용
 
@@ -192,16 +192,23 @@ HTTP 200·`education`·`open`·`kosaf-scholarship-web`을 반환했다. 최초 �
 other로 저장한 category 불일치였고, 공통 mapping과 회귀 테스트로 수정했다.
 
 Browser actual은 프론트 서버가 꺼진 상태를 확인한 뒤 임시 기동했으나 Codex
-in-app Browser의 로컬 URL 정책이 reload를 차단했다. 정책상 다른 브라우저나
-자동화로 우회하지 않았으므로 Browser 결과는 통과로 기록하지 않는다.
+in-app Browser의 로컬 URL 정책이 reload를 차단했다. 권장 기준 재승인 뒤에도
+같은 공식 Browser 제어 경로로 한 번 재시도했지만 동일 정책 차단을 확인했다.
+정책상 다른 브라우저나 자동화로 우회하지 않았으므로 Browser 결과는 통과로
+기록하지 않으며 사용자 수동 결과를 기다린다.
 
-SOP4 결과는 `SOP-G4_BLOCKED`다. 서로 다른 구조에서 evidence Gate를 통과한
+SOP4의 Data·API 결과에서 서로 다른 구조의 evidence Gate를 통과한
 후보는 한국장학재단·서민금융진흥원·모두의카드 3개였지만, 뒤의 두 후보는 기존
 aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이다. 고용24·LH의
 근거 부족을 완화하거나 중복을 무시하지 않는다. XLSX의 나머지 잠정 신규 후보는
-현재 모집 종료·청년 전용 근거 부재·robots 차단·기존 Source 중 하나여서,
-계획 최소 기준 재승인 또는 별도 공식 Source discovery 승인 전에는 `SOP-G5`와
-`W5-G1`을 통과시키지 않는다.
+현재 모집 종료·청년 전용 근거 부재·robots 차단·기존 Source 중 하나다.
+
+사용자는 `2026-08-17`에 권장안을 승인했다. 재승인 완료 기준은 승인 Source 5개
+제한 actual·offline replay, 중복 제외 신규 정책 1개 이상 DB·API 인수,
+duplicate·review·closed·failed 무적재, actual Browser 검색·상세 확인이다.
+사용자가 연 로컬 인앱 Browser에서 검색과 상세·원문 연결까지 확인해 네 기준을
+모두 충족했으므로 `SOP-G4_PASS`로 판정했다. 전체 Source 상태, 회귀와 문서
+증거도 대조해 `SOP-G5_PASS`로 Data 06 Forest를 완료한다.
 
 ## 주요 변경 파일
 
@@ -253,7 +260,7 @@ aggregator 중복이라 실제 신규 DB 인수는 한국장학재단 1개뿐이
 | K-패스 보완 중복 Gate | snapshot `f8ca4c40…`, 복지로 `WLF00005440` title containment review, DB 0 |
 | K-패스 실제 Policy API | `q=모두의카드&include_partial=true` HTTP 200·기존 복지로 1건(`id=6212`) |
 | 실제 Policy API | 검색 HTTP 200·대상 1건, 상세 HTTP 200·education·open |
-| Browser actual | 로컬 URL 정책 차단, 우회 없이 미통과 기록 |
+| Browser actual | `/search?q=국가근로장학금`에서 정책 `15095` 확인, 상세의 한국장학재단·교육·접수 중과 KOSAF 원문 연결 통과 |
 | Data 전체 pytest | `326 passed, 8 skipped, 1 warning, 172 subtests passed` |
 | Backend 전체 pytest | `170 passed, 17 skipped, 1 warning` |
 | 문서 링크·상태·필수 heading 검증 | `Documentation validation passed` |
@@ -264,8 +271,7 @@ skip은 전용 `TEST_DATABASE_URL`이 없는 PostgreSQL actual test이며 통과
 
 ## 남은 작업
 
-- 신규 Source 추가 승인은 완료했으나 중복으로 차단됐다. 별도 공식 Source discovery
-  범위를 승인하거나 신규 정책 최소 기준을 명시적으로 재승인
-- 승인 뒤 PostgreSQL → API → Browser actual을 다시 수행해 `SOP-G4` 재판정
-- 전용 PostgreSQL test DB를 제공해 현재 skip된 통합 테스트 실행
-- Data 05·온통청년·복지로·Release 1 golden 전체 회귀와 `SOP-G5` Forest 판정
+- Integration 07 `DTL5-4`에서 Data 05·06과 기존 사용자·관리자 기능의 전체
+  actual E2E를 실행하고 `W5-G1`을 판정
+- 전용 PostgreSQL test DB를 제공해 현재 skip된 통합 테스트를 Release 2
+  전체 회귀에서 실행

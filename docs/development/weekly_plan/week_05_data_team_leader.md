@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`~`DTL5-2` 완료, `SOP-G4_BLOCKED`)
+- 상태: in-progress (`DTL5-0`~`DTL5-3` 완료, Data 06 `SOP-G5_PASS`)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -10,7 +10,7 @@
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-3` K-패스 보완 actual 완료, 신규 정책 최소 기준 재승인 대기
+- 현재 Slice: `DTL5-4` Data 06 포함 전체 actual E2E·`W5-G1` 판정
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -29,8 +29,8 @@
 
 ## 담당 목표
 
-1. Data 06 후보를 원문·중복·이용 조건 기준으로 정제하고 최소 4개 공식
-   Source의 신규 정책을 DB → API → Browser로 인수한다.
+1. Data 06 후보를 원문·중복·이용 조건 기준으로 정제하고 승인 Source 5개를
+   제한 actual한다. 중복 제외 신규 정책 1개 이상을 DB → API → Browser로 인수한다.
 2. Backend·Frontend 안정화 결과와 Data 06을 실제 PostgreSQL 기반 하나의
    Release 2 후보로 묶는다.
 3. 구현자 자체 테스트와 독립 사용성·QA를 분리하고, 차단 결함을 같은
@@ -149,14 +149,15 @@ Source별 locator·offline Raw replay를 구현했고, accepted 이후에도 기
 
 ## Slice DTL5-3 - Data 06 SOP4~SOP5 actual
 
-상태: blocked (`SOP-G4_BLOCKED`, 2026-08-17). 모두의카드까지 다섯 Source의
-제한 actual을 완료했으나 서민금융진흥원·모두의카드는 기존 aggregator 중복이고,
-실제 신규 DB Source는 한국장학재단 하나다. 신규 정책 최소 기준 재승인 또는
-별도 공식 Source discovery 승인 전에는 DTL5-4로 진행하지 않는다.
+상태: completed (`SOP-G4_PASS`·`SOP-G5_PASS`, 2026-08-17). 모두의카드까지
+다섯 Source의 제한 actual을 완료했고, 재승인 기준에 따라 한국장학재단 신규
+정책 1개를 DB·API·Browser에 연결했다. 비accepted 결과는 무적재이며 전체
+Data·Backend 회귀와 문서 대조를 통과해 DTL5-4로 인계한다.
 
 ### 목적
 
-최소 4개 승인 공식 Source의 실제 신규 정책을 안전하게 적재하고 재실행한다.
+승인 Source 5개를 실제 제한 수집하고, 중복 제외 신규 정책 1개 이상을 안전하게
+적재·재실행한다.
 
 ### 수행 작업
 
@@ -168,7 +169,9 @@ Source별 locator·offline Raw replay를 구현했고, accepted 이후에도 기
 
 ### 완료 기준
 
-- 최소 4개 공식 Source의 신규 정책이 DB·API·Browser에 연결됨
+- 승인 Source 5개 제한 actual·offline replay 완료
+- 중복 제외 신규 정책 1개 이상이 DB·API·actual Browser에 연결됨
+- duplicate·review·closed·failed Policy row 0건
 - 모든 승인 Source의 제한 actual·replay·`SOP-G5` 통과
 - 최소 기준 미달이면 범위를 조용히 줄이지 않고 `W5-G1_BLOCKED` 또는 계획
   재승인 요청
@@ -289,7 +292,7 @@ git status --short
 - [x] DTL5-0·`W5-G0_PASS`
 - [x] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
 - [x] DTL5-2 Data 06 `SOP-G3`
-- [x] DTL5-3 Data 06 actual과 `SOP-G4_BLOCKED`·Forest 미완료 판정
+- [x] DTL5-3 Data 06 actual과 `SOP-G4_PASS`·`SOP-G5_PASS`
 - [ ] Backend·Frontend 담당자 전체 안정화 회귀
 - [ ] DTL5-4 Data 06 포함 actual E2E·`W5-G1_PASS`
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage

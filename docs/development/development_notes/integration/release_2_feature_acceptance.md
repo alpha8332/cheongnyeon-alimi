@@ -31,7 +31,7 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | A0 / DTL5-0 | completed | `develop@29b2dd5`, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건, Runtime·API·Browser·테스트 환경 확인과 `W5-G0_PASS` |
-| A2 / DTL5-1~3 | pending | Data 06 SOP0~SOP5 |
+| A2 / DTL5-1~3 | completed | Data 06 승인 Source 5개 actual·KOSAF DB/API/Browser 인수·`SOP-G5_PASS` |
 | A2 / DTL5-4 | pending | Data 06 포함 전체 actual E2E와 W5-G1 |
 | A2 / DTL5-5 | pending | 독립 사용성·QA, 결함 triage·수정·재검증 |
 | A3 / DTL5-6 | pending | 문서·전체 회귀와 W5-G2 Release 2 판정 |
@@ -126,9 +126,8 @@ W5-I1 범위이며 DTL5-0 결과로 소급하지 않는다.
 
 ## 남은 작업
 
-1. Data 06 development note를 만들고 DTL5-1 / SOP0 후보 정제를 시작한다.
-2. Backend W5-B1과 Frontend W5-F1 안정화 회귀를 병렬로 인수한다.
-3. Data 06 SOP-G5 뒤 실제 DB → API → Browser 전체 W5-G1을 판정한다.
-4. 독립 사용성 리뷰·QA·보고서 담당과 실행 환경을 W5-G1 인계 전에 확정한다.
-5. Integration 07 변경 브랜치의 `integration` domain과 거버넌스 문서 불일치를
+1. Backend W5-B1과 Frontend W5-F1 안정화 회귀를 인수한다.
+2. 완료된 Data 06을 포함해 실제 DB → API → Browser 전체 W5-G1을 판정한다.
+3. 독립 사용성 리뷰·QA·보고서 담당과 실행 환경을 W5-G1 인계 전에 확정한다.
+4. Integration 07 변경 브랜치의 `integration` domain과 거버넌스 문서 불일치를
    사용자 결정에 따라 정리한다.

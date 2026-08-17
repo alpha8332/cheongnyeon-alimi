@@ -4,11 +4,12 @@
 
 - 번호: Data 06
 - 담당 영역: Data
-- 상태: in-progress
-- 진행: `SOP-G0`~`SOP-G3` 통과, `SOP-G4_BLOCKED`
+- 상태: completed
+- 진행: `SOP-G0_PASS`~`SOP-G5_PASS`
 - 착수 조건: `W5-G0_PASS` 완료
 - 계획일: `2026-08-11`
 - 승인일: `2026-08-16`
+- 완료 기준 재승인일: `2026-08-17`
 - 실행 일정: `2026-08-14` 재승인으로 4주차에서 5주차로 이동
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Data 02 Release Dataset Bootstrap, Data 03 Recurrent Collection
@@ -18,8 +19,8 @@
 - 권장 브랜치: `feature/data/supplemental-official-policy-ingestion` 한 개.
   Data 05 공통 엔진과 Gate가 안정되기 전에는 만들지 않으며 Source별 브랜치를
   추가하지 않음
-- 현재 Slice: SOP4 제한 actual 완료 후 blocked. 신규 DB 인수 Source 1개와
-  Browser 정책 차단으로 최소 2개 구조 기준 미달
+- 현재 Slice: SOP4~SOP5 제한 actual·DB·API·Browser·전체 회귀 완료.
+  Integration 07 `DTL5-4` / `W5-G1` 인계
 
 ## 목적
 
@@ -219,7 +220,7 @@ XLSX를 검증 가능한 Source·Policy 후보 inventory로 변환한다.
 
 #### 작업
 
-- 우선순위 1 Source군 중 최대 4개 승인 Source 선정
+- 우선순위 Source군에서 재승인 범위인 승인 Source 5개 선정
 - Source마다 목록 1페이지와 상세 3~5건 제한 호출
 - 원문·중복·신청 가능·정규화·품질 수동 대조
 - accepted 정책의 PostgreSQL·Policy API·Browser 확인
@@ -227,7 +228,10 @@ XLSX를 검증 가능한 Source·Policy 후보 inventory로 변환한다.
 
 #### 완료 기준
 
-- 최소 2개 서로 다른 구조의 승인 Source actual 인수 통과
+- 승인 Source 5개의 제한 actual과 offline replay 통과
+- 중복 제외를 거친 신규 정책을 1개 이상 PostgreSQL·Policy API에서 인수
+- duplicate·review·closed·failed가 Policy row를 만들지 않음
+- accepted 정책의 Browser 검색·상세 actual 확인
 - 최소 기준을 충족하지 못하면 W5-G1을 통과시키지 않고 원인 기록
 - 신규·중복·검토·실패 수치와 lineage가 개발 기록에 있음
 
@@ -247,8 +251,8 @@ XLSX를 검증 가능한 Source·Policy 후보 inventory로 변환한다.
 #### 완료 기준
 
 - 계획의 모든 Source군이 근거 있는 최종 상태를 가짐
-- 모든 approved Source가 제한 actual·재실행·DB 인수를 통과함
-- 최소 4개 공식 Source가 implemented이거나, 부족 시 W5-G1이 blocked로 기록됨
+- 모든 approved Source가 제한 actual·재실행을 통과하고 비accepted 결과는 DB에서 격리됨
+- 승인 Source 5개가 `implemented_http`이며 신규 정책 1개 이상이 DB·API에 연결됨
 - 기존 Policy identity와 검색 golden이 회귀하지 않음
 
 ## Gate와 실행 순서
@@ -319,8 +323,9 @@ git diff --check
 ## Forest 완료 기준
 
 - 모든 계획 Source군이 implemented·blocked·rejected 중 하나의 근거를 가짐
-- 최소 4개 공식 Source의 실제 신규 청년정책이 중복 제외를 거쳐 DB·API·
-  Browser에 연결됨
+- 승인 Source 5개의 제한 actual·offline replay가 완료됨
+- 실제 신규 청년정책 1개 이상이 중복 제외를 거쳐 DB·API에 연결되고 actual
+  Browser 검색·상세가 확인됨
 - 온통청년·복지로 중복·마감·근거 부족·XLSX 오류가 새 Policy row를 만들지 않음
 - accepted 정책의 기관·기간·조건·신청 채널과 provenance가 원문과 일치함
 - 동일·수정·중복·drift·HTTP 실패가 정상 정책과 격리됨
@@ -337,8 +342,9 @@ git diff --check
   Forest 완료 판정
 
 Data 06이 완료 기준을 충족하지 못하면 `v0.5.0` 보완 Source 기능이 미완료이므로
-W5-G1을 통과시키지 않는다. 이 일정 변경은 최소 4개 Source 목표나 품질 Gate를
-축소하지 않는다.
+W5-G1을 통과시키지 않는다. `2026-08-17` 재승인은 신규 정책 수를 근거 있는 1개
+이상으로 조정하되, 승인 Source 5개 actual과 중복·review 무적재, Browser actual
+인수 품질 Gate는 유지한다.
 
 구체적인 일차별 실행과 Team Leader Gate는
 [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)을
@@ -352,8 +358,8 @@ W5-G1을 통과시키지 않는다. 이 일정 변경은 최소 4개 Source 목�
 - 상품 소개 홈과 현재 모집 공고를 구분하지 않으면 마감·비신청 데이터를 노출한다.
 - 일부 Source는 로그인·첨부파일 또는 JavaScript 요청에 핵심 조건이 있을 수 있다.
 - Source군 확대는 요청 예산·실행 시간·drift 유지 비용을 크게 늘린다.
-- 최소 4개 actual 목표가 이용 조건·기술 접근 때문에 불가능하면 Release 범위를
-  조용히 축소하지 않고 W5-G1 blocked 또는 명시적 계획 재승인을 선택한다.
+- 재승인된 actual 목표가 이용 조건·기술 접근 때문에 불가능하면 Release 범위를
+  조용히 축소하지 않고 W5-G1 blocked 또는 추가 계획 재승인을 선택한다.
 
 ## 관련 문서
 
