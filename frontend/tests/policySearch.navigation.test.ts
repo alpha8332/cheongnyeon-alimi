@@ -5,10 +5,10 @@ import {
   buildPolicySearchEntryPath,
 } from '../src/utils/policySearchNavigation.js';
 
-test('buildPolicySearchEntryPath는 trim된 q로 /search 진입 URL을 만든다', () => {
+test('buildPolicySearchEntryPath는 trim된 q로 홈 검색 URL을 만든다', () => {
   assert.equal(
     buildPolicySearchEntryPath('  천안시 24세 청년 지원금  '),
-    '/search?q=%EC%B2%9C%EC%95%88%EC%8B%9C+24%EC%84%B8+%EC%B2%AD%EB%85%84+%EC%A7%80%EC%9B%90%EA%B8%88',
+    '/?q=%EC%B2%9C%EC%95%88%EC%8B%9C+24%EC%84%B8+%EC%B2%AD%EB%85%84+%EC%A7%80%EC%9B%90%EA%B8%88',
   );
 });
 

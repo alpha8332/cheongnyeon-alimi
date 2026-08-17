@@ -153,6 +153,8 @@
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
+- [프론트엔드 개발 히스토리 (1~5주차)](development/frontend_development_history_w1_w5.md):
+  1~5주차 Frontend UI/기능·UX·구현 설계 종합 (백엔드·데이터 제외)
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):

@@ -55,8 +55,15 @@ async function waitForProgramDetailSettled(page: Page) {
   });
 }
 
+async function confirmBookmarkModal(page: Page) {
+  const dialog = page.getByRole('dialog', { name: '북마크 저장' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: '저장' }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
 async function waitForHomePolicies(page: Page) {
-  await expect(page.getByText('주요 정책을 불러오는 중입니다.')).toHaveCount(0, {
+  await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
   });
 }
@@ -125,7 +132,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     const summary = eligibilitySummary(page);
     await expect(summary.getByRole('heading', { name: '핵심 신청 조건', level: 2 })).toBeVisible();
     await expect(summary.getByRole('link', { name: /근거 1 원문 열기/ }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: '원문 링크 열기' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /공식 신청 사이트 바로가기/ })).toBeVisible();
     await expect(summary.getByRole('note')).toContainText(
       '실제 자격 충족이나 선정을 확정하지 않습니다',
     );
@@ -136,7 +143,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
   }) => {
     await clearUserLocalStorage(page);
 
-    await page.goto('/');
+    await page.goto('/profile');
     const conditionsForm = page.getByRole('form', { name: '저장 조건 편집' });
     await conditionsForm.getByPlaceholder('예: 서울특별시').fill('서울특별시');
     await conditionsForm.getByPlaceholder('예: 24').fill('24');
@@ -148,21 +155,26 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await page.getByRole('button', { name: '추천 받기' }).click();
     await waitForRecommendationSettled(page);
     await expect(page.getByRole('region', { name: '추천 결과' })).toBeVisible();
-
-    await page.getByRole('link', { name: '홈' }).click();
-    await waitForHomePolicies(page);
-    const homeCard = page
+    const recommendationCard = page
       .locator('article.policy-card')
       .filter({ hasText: MOCK_HOUSING_POLICY_TITLE });
-    await homeCard.getByRole('button', { name: '북마크 추가' }).click();
-    await expect(homeCard.getByRole('button', { name: '북마크 해제' })).toBeVisible();
+    await recommendationCard.getByRole('button', { name: '북마크 추가' }).click();
+    await confirmBookmarkModal(page);
+    await expect(
+      recommendationCard.getByRole('button', { name: '북마크 폴더 관리' }),
+    ).toBeVisible();
 
-    await page.getByRole('link', { name: '마감 달력' }).click();
+    await page.getByRole('link', { name: '홈', exact: true }).click();
+    await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByText('저장된 조건으로 추천된 정책입니다.'),
+    ).toBeVisible();
+
+    await page.getByRole('link', { name: '달력' }).click();
     await expect(page.getByRole('heading', { name: '마감 달력' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: '북마크' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    await expect(page.locator('.monthly-calendar__grid')).toBeVisible();
 
     await page.getByRole('link', { name: '알림' }).click();
     await expect(page.getByRole('heading', { name: '알림' })).toBeVisible();
@@ -175,7 +187,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await expect(
       page.getByRole('heading', { name: MOCK_HOUSING_POLICY_TITLE }),
     ).toBeVisible();
-    const icsButton = page.getByRole('button', { name: '캘린더 (.ics) 다운로드' });
+    const icsButton = page.getByRole('button', { name: /캘린더 \(\.ics\) 다운로드/ });
     await expect(icsButton).toBeVisible();
     // Mock seed policy 1 is closed — ICS UI is present but download stays disabled.
     await expect(icsButton).toBeDisabled();
@@ -188,9 +200,9 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     await expect(page.getByRole('heading', { name: /안녕하세요/ })).toBeVisible();
 
     await page.getByRole('button', { name: '서울 주거' }).click();
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
 
-    await page.goto('/search?q=%EB%B3%B5%EC%A7%80%EB%A1%9C+%EC%83%9D%ED%99%9C');
+    await page.goto('/?q=%EB%B3%B5%EC%A7%80%EB%A1%9C+%EC%83%9D%ED%99%9C');
     await waitForSearchSettled(page);
 
     const partialCard = page.locator('a.policy-card[href*="include_partial=true"]').first();
@@ -213,17 +225,18 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
 
     await page.goto('/');
     await waitForHomePolicies(page);
-    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toBeVisible();
+    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: /안녕하세요/, level: 1 })).toBeVisible();
 
     const card = page.locator('article.policy-card').first();
     const toggle = card.getByRole('button', { name: '북마크 추가' });
     await toggle.focus();
-    await page.keyboard.press('Space');
-    await expect(card.getByRole('button', { name: '북마크 해제' })).toBeVisible();
+    await toggle.press('Space');
+    await confirmBookmarkModal(page);
+    await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await page.goto('/search');
-    await expect(page).toHaveURL(/\/search$/);
+    await expect(page).toHaveURL(/\/$/);
     await page.getByLabel('정책 검색어').fill('복지로');
     await page.getByRole('button', { name: '검색하기' }).click();
     await waitForSearchSettled(page);

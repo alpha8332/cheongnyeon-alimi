@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MemoryStorage } from './helpers/memoryStorage.js';
 import {
+  DEFAULT_BOOKMARK_FOLDER_ID,
   USER_LOCAL_STORAGE_KEY,
   USER_LOCAL_STORAGE_SCHEMA_VERSION,
 } from '../src/types/userLocalStorage.js';
@@ -22,7 +23,11 @@ test('resetAllUserLocalStorage는 key를 삭제하고 subscribers snapshot을 �
     USER_LOCAL_STORAGE_KEY,
     JSON.stringify({
       schema_version: USER_LOCAL_STORAGE_SCHEMA_VERSION,
-      favorites: [1, 2],
+      bookmark_folders: [{ id: DEFAULT_BOOKMARK_FOLDER_ID, name: '기본 폴더' }],
+      bookmarks: [
+        { policy_id: 1, folder_id: DEFAULT_BOOKMARK_FOLDER_ID },
+        { policy_id: 2, folder_id: DEFAULT_BOOKMARK_FOLDER_ID },
+      ],
       conditions: { region: '서울', age: 24, category: 'housing' },
       updated_at: '2026-08-11T00:00:00.000Z',
     }),
@@ -33,10 +38,10 @@ test('resetAllUserLocalStorage는 key를 삭제하고 subscribers snapshot을 �
   assert.equal(storage.getItem(USER_LOCAL_STORAGE_KEY), null);
 
   const snapshot = readUserLocalStorage(storage);
-  assert.deepEqual(snapshot.data.favorites, []);
+  assert.deepEqual(snapshot.data.bookmarks, []);
   assert.equal(snapshot.data.conditions, null);
   assert.deepEqual(readFavoritePolicyIds(), []);
   assert.equal(readSavedConditions(), null);
-  assert.deepEqual(getFavoritePolicyIdsSnapshot(), []);
+  assert.deepEqual(getFavoritePolicyIdsSnapshot().favorites, []);
   assert.equal(getSavedConditionsSnapshot(), null);
 });

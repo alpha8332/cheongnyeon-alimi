@@ -1,45 +1,33 @@
 import { Link } from 'react-router';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
+import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
+import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
+import RecommendationUnknownConditionsAccordion from '@/components/recommendation/RecommendationUnknownConditionsAccordion';
 import RegionListCollapse from '@/components/recommendation/RegionListCollapse';
 import {
   PARTIAL_QUALITY_BADGE_HELP,
   PARTIAL_QUALITY_BADGE_LABEL,
 } from '@/constants/policySearchDisplay';
-import type { ApplicationStatus, PolicyCategory, PolicyDto } from '@/types/policy';
+import type { PolicyCategory } from '@/types/policy';
 import type { RecommendationItemDto } from '@/types/recommendation';
 import { buildRecommendationItemDetailPath } from '@/utils/policyDetailNavigation';
 import { getPolicyDeadlineInfo } from '@/utils/policyDeadline';
 import {
-  formatApplicationStatus,
+  formatApplicationPeriodCard,
   getCategoryLabel,
 } from '@/utils/policyDisplay';
 import {
   formatRecommendationReasonSummary,
   hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
+import { recommendationItemToPolicyDto } from '@/utils/recommendationPolicyMapping';
 
 interface RecommendationResultCardProps {
   item: RecommendationItemDto;
 }
 
 function formatRecommendationDDay(item: RecommendationItemDto): string {
-  const deadlinePolicy = {
-    application_end: item.application_end,
-    application_status: item.application_status as ApplicationStatus,
-    application_schedule: 'fixed_period',
-  } as PolicyDto;
-
-  return getPolicyDeadlineInfo(deadlinePolicy).label;
-}
-
-function getStatusLabel(item: RecommendationItemDto): string {
-  if (item.application_status) {
-    return formatApplicationStatus(
-      item.application_status as 'open' | 'closed' | 'scheduled',
-    );
-  }
-
-  return '정책';
+  return getPolicyDeadlineInfo(recommendationItemToPolicyDto(item)).label;
 }
 
 function formatCategoryLabel(category: string): string {
@@ -64,15 +52,20 @@ export default function RecommendationResultCard({
   item,
 }: RecommendationResultCardProps) {
   const detailPath = buildRecommendationItemDetailPath(item);
+  const policy = recommendationItemToPolicyDto(item);
   const showPartial = item.data_quality_status === 'partial';
   const showUnknown = hasRecommendationUnknownConditions(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
+  const category = item.category as PolicyCategory;
 
   return (
     <article className="policy-card recommendation-result-card">
       <div className="policy-card__visual">
-        <span className="policy-card__tag">{getStatusLabel(item)}</span>
+        <div className="policy-card__visual-badges">
+          <PolicyStatusBadge policy={policy} compact />
+          <PolicyCategoryBadge category={category} compact />
+        </div>
       </div>
       <div className="policy-card__body">
         <h3 className="policy-card__title">
@@ -86,22 +79,10 @@ export default function RecommendationResultCard({
         </h3>
 
         {showUnknown ? (
-          <div
-            className="recommendation-result-card__unknown"
-            role="note"
-            aria-label="미확정 조건"
-          >
-            <span className="recommendation-result-card__unknown-badge">
-              추가 확인 필요
-            </span>
-            <ul className="recommendation-result-card__unknown-list">
-              {item.unknown_conditions.map((condition) => (
-                <li key={condition}>{condition}</li>
-              ))}
-            </ul>
-          </div>
+          <RecommendationUnknownConditionsAccordion conditions={item.unknown_conditions} />
         ) : null}
 
+        <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
           <RegionListCollapse regions={item.regions} /> · {formatCategoryLabel(item.category)}
           {dDay ? ` · ${dDay}` : ''}
