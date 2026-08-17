@@ -1,9 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+  ACTUAL_API_FIXTURES,
+  isActualApiMode,
+  MOCK_ONLY,
+  skipIfActualApi,
+  skipUnlessActualApi,
+} from './helpers/e2eMode';
+import {
+  confirmBookmarkModal,
+  favoritePolicyOnHome,
+  getFirstHomePolicyTitle,
+  waitForHomePolicies,
+} from './helpers/homePolicy';
 
 const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
-
-/** Seed id 2 — open·always; 홈 featured에 노출됨 (closed id 1은 featured 제외). */
-const MOCK_POLICY_ALWAYS_OPEN_TITLE = '합성 상시 생활 지원';
 
 async function clearUserLocalStorage(page: Page) {
   await page.goto('/');
@@ -26,23 +36,9 @@ async function acceptAllDialogsDuring(page: Page, action: () => Promise<void>) {
   }
 }
 
-async function waitForHomePolicies(page: Page) {
-  await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
-    timeout: 15_000,
-  });
-  await expect(page.locator('article.policy-card').first()).toBeVisible();
-}
-
 async function gotoProfileConditions(page: Page) {
   await page.goto('/profile');
   await expect(page.getByRole('heading', { name: '사용자 프로필', level: 1 })).toBeVisible();
-}
-
-async function confirmBookmarkModal(page: Page) {
-  const dialog = page.getByRole('dialog', { name: '북마크 저장' });
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: '저장' }).click();
-  await expect(dialog).toHaveCount(0);
 }
 
 async function openBookmarkFolder(page: Page, folderName: string) {
@@ -53,14 +49,8 @@ async function openBookmarkFolder(page: Page, folderName: string) {
     .click();
 }
 
-async function favoritePolicyOnHome(page: Page, title: string) {
-  await waitForHomePolicies(page);
-
-  const card = page.locator('article.policy-card').filter({ hasText: title });
-  await expect(card).toBeVisible();
-  await card.getByRole('button', { name: '북마크 추가' }).click();
-  await confirmBookmarkModal(page);
-  await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
+function homeBookmarkTargetTitle(): string | undefined {
+  return isActualApiMode() ? undefined : MOCK_ONLY.ALWAYS_OPEN_POLICY_TITLE;
 }
 
 test.describe('User Service browser flow (FE5-07)', () => {
@@ -87,17 +77,17 @@ test.describe('User Service browser flow (FE5-07)', () => {
 
   test('2. 북마크 toggle — 홈→북마크→상세 cross-route', async ({ page }) => {
     await page.goto('/');
-    await favoritePolicyOnHome(page, MOCK_POLICY_ALWAYS_OPEN_TITLE);
+    const title = await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
 
     await page.getByRole('link', { name: '북마크' }).click();
     await expect(page).toHaveURL(/\/favorites$/);
     await openBookmarkFolder(page, '기본 폴더');
-    await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toBeVisible();
+    await expect(page.getByText(title)).toBeVisible();
 
     await page
       .locator('article.policy-card')
-      .filter({ hasText: MOCK_POLICY_ALWAYS_OPEN_TITLE })
-      .getByRole('link', { name: MOCK_POLICY_ALWAYS_OPEN_TITLE })
+      .filter({ hasText: title })
+      .getByRole('link', { name: title })
       .click();
 
     await expect(page).toHaveURL(/\/programs\/\d+/);
@@ -106,24 +96,22 @@ test.describe('User Service browser flow (FE5-07)', () => {
 
   test('3. 북마크 reload 후 유지', async ({ page }) => {
     await page.goto('/');
-    await favoritePolicyOnHome(page, MOCK_POLICY_ALWAYS_OPEN_TITLE);
+    const title = await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
 
     await page.reload();
     await waitForHomePolicies(page);
 
-    const card = page.locator('article.policy-card').filter({
-      hasText: MOCK_POLICY_ALWAYS_OPEN_TITLE,
-    });
+    const card = page.locator('article.policy-card').filter({ hasText: title });
     await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
     await page.getByRole('link', { name: '북마크' }).click();
     await openBookmarkFolder(page, '기본 폴더');
-    await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toBeVisible();
+    await expect(page.getByText(title)).toBeVisible();
   });
 
   test('4. 조건-only 초기화 — 북마크 유지', async ({ page }) => {
     await page.goto('/');
-    await favoritePolicyOnHome(page, MOCK_POLICY_ALWAYS_OPEN_TITLE);
+    const title = await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
 
     await gotoProfileConditions(page);
     const form = page.getByRole('form', { name: '저장 조건 편집' });
@@ -140,7 +128,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
 
     await page.getByRole('link', { name: '북마크' }).click();
     await openBookmarkFolder(page, '기본 폴더');
-    await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toBeVisible();
+    await expect(page.getByText(title)).toBeVisible();
   });
 
   test('5. 북마크 empty·loading shell', async ({ page }) => {
@@ -188,7 +176,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     ).toBeVisible();
 
     await page.goto('/');
-    await favoritePolicyOnHome(page, MOCK_POLICY_ALWAYS_OPEN_TITLE);
+    await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
 
     await page.getByRole('link', { name: '알림' }).click();
     await expect(page.getByText('알림 대상 정책을 불러오는 중입니다.')).toHaveCount(0, {
@@ -202,11 +190,17 @@ test.describe('User Service browser flow (FE5-07)', () => {
   });
 
   test('9. 상세 — 종료일 없으면 ICS 버튼 disabled', async ({ page }) => {
-    await page.goto('/programs/2');
-
-    await expect(page.getByRole('heading', { name: MOCK_POLICY_ALWAYS_OPEN_TITLE })).toBeVisible({
-      timeout: 15_000,
-    });
+    if (isActualApiMode()) {
+      await page.goto(`/programs/${ACTUAL_API_FIXTURES.ICS_DISABLED_POLICY_ID}`);
+      await expect(
+        page.getByRole('heading', { name: ACTUAL_API_FIXTURES.ICS_DISABLED_POLICY_TITLE }),
+      ).toBeVisible({ timeout: 15_000 });
+    } else {
+      await page.goto('/programs/2');
+      await expect(
+        page.getByRole('heading', { name: MOCK_ONLY.ALWAYS_OPEN_POLICY_TITLE }),
+      ).toBeVisible({ timeout: 15_000 });
+    }
 
     const icsButton = page.getByRole('button', { name: /캘린더 \(\.ics\) 다운로드/ });
     await expect(icsButton).toBeDisabled();
@@ -284,9 +278,11 @@ test.describe('User Service browser flow (FE5-07)', () => {
 
     await page.goto('/');
     await waitForHomePolicies(page);
-    const card = page.locator('article.policy-card').filter({
-      hasText: MOCK_POLICY_ALWAYS_OPEN_TITLE,
-    });
+    const title = homeBookmarkTargetTitle()
+      ? homeBookmarkTargetTitle()!
+      : await getFirstHomePolicyTitle(page);
+
+    const card = page.locator('article.policy-card').filter({ hasText: title }).first();
     await card.getByRole('button', { name: '북마크 추가' }).click();
     const dialog = page.getByRole('dialog', { name: '북마크 저장' });
     await dialog.getByRole('radio', { name: '주거정책모음' }).check();
@@ -294,17 +290,14 @@ test.describe('User Service browser flow (FE5-07)', () => {
 
     await page.getByRole('link', { name: '북마크' }).click();
     await openBookmarkFolder(page, '기본 폴더');
-    await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toHaveCount(0);
+    await expect(page.getByText(title)).toHaveCount(0);
     await page.getByRole('button', { name: '< 북마크' }).click();
     await openBookmarkFolder(page, '주거정책모음');
-    await expect(page.getByText(MOCK_POLICY_ALWAYS_OPEN_TITLE)).toBeVisible();
+    await expect(page.getByText(title)).toBeVisible();
   });
 
   test('15. Real API favorites persistence golden', async ({ page }) => {
-    test.skip(
-      process.env.VITE_USE_MOCK !== 'false',
-      'VITE_USE_MOCK=false + Policy API가 준비된 환경에서만 실행합니다.',
-    );
+    skipUnlessActualApi(test);
 
     await page.goto('/');
     await waitForHomePolicies(page);

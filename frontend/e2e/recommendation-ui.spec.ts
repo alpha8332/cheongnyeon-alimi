@@ -1,8 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+  ACTUAL_API_FIXTURES,
+  isActualApiMode,
+  MOCK_ONLY,
+  skipIfActualApi,
+  skipUnlessActualApi,
+} from './helpers/e2eMode';
 
 const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
-const MOCK_RECOMMENDATION_EMPTY_REGION = 'MOCK_EMPTY';
-const MOCK_HOUSING_POLICY_TITLE = '합성 청년 주거 지원';
 
 async function clearUserLocalStorage(page: Page) {
   await page.goto('/');
@@ -51,6 +56,23 @@ async function confirmBookmarkModal(page: Page) {
   await expect(dialog).toHaveCount(0);
 }
 
+function recommendationFormValues() {
+  if (isActualApiMode()) {
+    return ACTUAL_API_FIXTURES.RECOMMENDATION;
+  }
+
+  return {
+    region: '서울특별시',
+    age: '24',
+    category: 'housing',
+    expectedTitle: MOCK_ONLY.HOUSING_POLICY_TITLE,
+  };
+}
+
+function expectedRecommendationTitle(): string {
+  return recommendationFormValues().expectedTitle;
+}
+
 test.describe('Recommendation UI browser flow (FE6-05)', () => {
   test.beforeEach(async ({ page }) => {
     await clearUserLocalStorage(page);
@@ -64,11 +86,8 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   });
 
   test('2. loading shell — submit 후 skeleton', async ({ page }) => {
-    await fillRecommendationForm(page, {
-      region: '서울특별시',
-      age: '24',
-      category: 'housing',
-    });
+    const values = recommendationFormValues();
+    await fillRecommendationForm(page, values);
     await submitRecommendation(page);
 
     await expect(page.getByLabel('추천 결과 로딩 중')).toBeVisible({ timeout: 2_000 });
@@ -76,6 +95,8 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   });
 
   test('3. Mock results — 조건 submit·disclaimer·score 미노출', async ({ page }) => {
+    skipIfActualApi(test);
+
     await fillRecommendationForm(page, {
       region: '서울특별시',
       age: '24',
@@ -87,14 +108,16 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
     const results = page.getByRole('region', { name: '추천 결과' });
     await expect(results).toBeVisible();
     await expect(results.getByRole('heading', { name: /추천 정책 \d+건/ })).toBeVisible();
-    await expect(results.getByText(MOCK_HOUSING_POLICY_TITLE)).toBeVisible();
+    await expect(results.getByText(MOCK_ONLY.HOUSING_POLICY_TITLE)).toBeVisible();
     await expect(results.getByText(/자격을 확정하지 않으며/)).toBeVisible();
     await expect(results.locator('.recommendation-result-card')).not.toContainText(/score/i);
   });
 
   test('4. empty shell — MOCK_EMPTY region', async ({ page }) => {
+    skipIfActualApi(test);
+
     await fillRecommendationForm(page, {
-      region: MOCK_RECOMMENDATION_EMPTY_REGION,
+      region: MOCK_ONLY.RECOMMENDATION_EMPTY_REGION,
     });
     await submitRecommendation(page);
     await waitForRecommendationSettled(page);
@@ -109,7 +132,9 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   });
 
   test('5. empty → results — 조건 변경 후 재추천', async ({ page }) => {
-    await fillRecommendationForm(page, { region: MOCK_RECOMMENDATION_EMPTY_REGION });
+    skipIfActualApi(test);
+
+    await fillRecommendationForm(page, { region: MOCK_ONLY.RECOMMENDATION_EMPTY_REGION });
     await submitRecommendation(page);
     await waitForRecommendationSettled(page);
     await expect(page.getByLabel('추천 결과 없음')).toBeVisible();
@@ -125,24 +150,22 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   });
 
   test('6. result card — detail navigation·favorite toggle', async ({ page }) => {
-    await fillRecommendationForm(page, {
-      region: '서울특별시',
-      age: '24',
-      category: 'housing',
-    });
+    const values = recommendationFormValues();
+    await fillRecommendationForm(page, values);
     await submitRecommendation(page);
     await waitForRecommendationSettled(page);
 
+    const title = expectedRecommendationTitle();
     const card = page
       .locator('article.recommendation-result-card')
-      .filter({ hasText: MOCK_HOUSING_POLICY_TITLE });
+      .filter({ hasText: title });
     await expect(card).toBeVisible();
 
     await card.getByRole('button', { name: '북마크 추가' }).click();
     await confirmBookmarkModal(page);
     await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
 
-    await card.getByRole('link', { name: MOCK_HOUSING_POLICY_TITLE }).click();
+    await card.getByRole('link', { name: title }).click();
     await expect(page).toHaveURL(/\/programs\/\d+/);
     await expect(page.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
   });
@@ -167,6 +190,8 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   });
 
   test('8. region list — 단일 지역 표시(더 보기 없음)', async ({ page }) => {
+    skipIfActualApi(test);
+
     await fillRecommendationForm(page, {
       region: '서울특별시',
       age: '24',
@@ -177,17 +202,14 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
 
     const card = page
       .locator('article.recommendation-result-card')
-      .filter({ hasText: MOCK_HOUSING_POLICY_TITLE });
+      .filter({ hasText: MOCK_ONLY.HOUSING_POLICY_TITLE });
     await expect(card.getByText('서울특별시')).toBeVisible();
     await expect(card.getByRole('button', { name: '더 보기' })).toHaveCount(0);
   });
 
   test('9. keyboard — 추천 받기 focus·submit', async ({ page }) => {
-    await fillRecommendationForm(page, {
-      region: '서울특별시',
-      age: '24',
-      category: 'housing',
-    });
+    const values = recommendationFormValues();
+    await fillRecommendationForm(page, values);
 
     const submitButton = page.getByRole('button', { name: '추천 받기' });
     await submitButton.focus();
@@ -200,11 +222,8 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   test('10. mobile viewport — form·결과', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
 
-    await fillRecommendationForm(page, {
-      region: '서울특별시',
-      age: '24',
-      category: 'housing',
-    });
+    const values = recommendationFormValues();
+    await fillRecommendationForm(page, values);
     await submitRecommendation(page);
     await waitForRecommendationSettled(page);
 
@@ -231,10 +250,8 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
       });
     });
 
-    await fillRecommendationForm(page, {
-      region: '서울특별시',
-      age: '24',
-    });
+    const values = recommendationFormValues();
+    await fillRecommendationForm(page, values);
     await submitRecommendation(page);
 
     await page.waitForTimeout(2_000);
@@ -259,22 +276,21 @@ test.describe('Recommendation UI browser flow (FE6-05)', () => {
   });
 
   test('13. Real API recommendation golden', async ({ page }) => {
-    test.skip(
-      process.env.VITE_USE_MOCK !== 'false',
-      'VITE_USE_MOCK=false + Backend recommendation API가 준비된 환경에서만 실행합니다.',
-    );
+    skipUnlessActualApi(test);
 
-    await fillRecommendationForm(page, {
-      region: '천안시',
-      age: '27',
-      category: 'housing',
-    });
+    const { region, age, category, expectedTitle } = ACTUAL_API_FIXTURES.RECOMMENDATION;
+    await fillRecommendationForm(page, { region, age, category });
     await submitRecommendation(page);
     await waitForRecommendationSettled(page);
 
     const results = page.getByRole('region', { name: '추천 결과' });
     await expect(results).toBeVisible();
-    await expect(results.locator('article.recommendation-result-card').first()).toBeVisible();
+    const card = results.locator('article.recommendation-result-card').first();
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(expectedTitle);
     await expect(results.getByText(/자격을 확정하지 않으며/)).toBeVisible();
+    await expect(
+      card.getByRole('button', { name: /추가 확인 필요 \d+건/ }),
+    ).toBeVisible();
   });
 });

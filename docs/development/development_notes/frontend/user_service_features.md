@@ -615,6 +615,23 @@ Team Leader 인수 보류 대응. Backend `127.0.0.1:8000`·`VITE_USE_MOCK=false
 Mock-first 시나리오 14건은 실패한다(의도된 env 분리). Mock 회귀는
 `VITE_USE_MOCK=true`(기본)로 별도 실행한다.
 
+## W5-F1 E2E actual API 정리 (`2026-08-17`)
+
+Mock 전용 시나리오를 `skipIfActualApi`로 분리하고 actual DB fixture
+(`e2e/helpers/e2eMode.ts`)를 도입했다.
+
+| Spec | Actual API 결과 (44 tests) |
+| --- | --- |
+| `policy-search-audit.spec.ts` | 11 pass (golden #8 포함) |
+| `recommendation-ui.spec.ts` | 10 pass, 4 mock skip |
+| `user-service-features.spec.ts` | 15 pass |
+| `eligibility-summary-ui.spec.ts` | 3 pass, 3 mock skip |
+
+**합계:** `VITE_USE_MOCK=false` + Backend `:8000` — **37 passed, 7 skipped, 0 failed**
+
+Fixture: 정책 id `160` 청년단기숙소 지원사업, ICS disabled id `3`, 추천
+조건 천안시·27·housing. (handoff 예시 id `15095`는 현재 snapshot에 없음)
+
 ## 남은 작업
 
 - W4-G0 승인 시 key·version·KST 규칙 동기화

@@ -1,9 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
-
-const PARTIAL_POLICY_ID = 1;
-const PARTIAL_POLICY_TITLE = '합성 청년 주거 지원';
-const UNKNOWN_POLICY_ID = 4;
-const UNKNOWN_POLICY_TITLE = '합성 목록 전용 지원';
+import {
+  ACTUAL_API_FIXTURES,
+  isActualApiMode,
+  MOCK_ONLY,
+  skipIfActualApi,
+  skipUnlessActualApi,
+} from './helpers/e2eMode';
 
 async function waitForProgramDetailSettled(page: Page) {
   await expect(page.getByText('정책 상세를 불러오는 중입니다.')).toHaveCount(0, {
@@ -21,15 +23,25 @@ function eligibilitySummary(page: Page) {
   return page.getByRole('region', { name: '핵심 신청 조건' });
 }
 
+function detailPolicyPath(): string {
+  if (isActualApiMode()) {
+    return `/programs/${ACTUAL_API_FIXTURES.ELIGIBILITY_POLICY_ID}?include_partial=true`;
+  }
+
+  return `/programs/${MOCK_ONLY.PARTIAL_POLICY_ID}`;
+}
+
 test.describe('Eligibility Summary approved contract browser flow', () => {
   test('partial seed detail renders approved sections, evidence, and non-definitive copy', async ({
     page,
   }) => {
-    await page.goto(`/programs/${PARTIAL_POLICY_ID}`);
+    skipIfActualApi(test);
+
+    await page.goto(`/programs/${MOCK_ONLY.PARTIAL_POLICY_ID}`);
     await waitForProgramDetailSettled(page);
 
     await expect(
-      page.getByRole('heading', { name: PARTIAL_POLICY_TITLE }),
+      page.getByRole('heading', { name: MOCK_ONLY.PARTIAL_POLICY_TITLE }),
     ).toBeVisible();
 
     const summary = eligibilitySummary(page);
@@ -50,7 +62,9 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
   test('evidence link is keyboard focusable and protected for a new tab', async ({
     page,
   }) => {
-    await page.goto(`/programs/${PARTIAL_POLICY_ID}`);
+    skipIfActualApi(test);
+
+    await page.goto(`/programs/${MOCK_ONLY.PARTIAL_POLICY_ID}`);
     await waitForProgramDetailSettled(page);
 
     const evidenceLink = eligibilitySummary(page)
@@ -63,11 +77,13 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
   });
 
   test('unknown partial detail keeps empty sections explicit', async ({ page }) => {
-    await page.goto(`/programs/${UNKNOWN_POLICY_ID}?include_partial=true`);
+    skipIfActualApi(test);
+
+    await page.goto(`/programs/${MOCK_ONLY.UNKNOWN_POLICY_ID}?include_partial=true`);
     await waitForProgramDetailSettled(page);
 
     await expect(
-      page.getByRole('heading', { name: UNKNOWN_POLICY_TITLE }),
+      page.getByRole('heading', { name: MOCK_ONLY.UNKNOWN_POLICY_TITLE }),
     ).toBeVisible();
     const summary = eligibilitySummary(page);
     await expect(summary).toHaveAttribute('data-coverage', 'unknown');
@@ -84,7 +100,7 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
 
   test('mobile layout uses one eligibility grid column', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`/programs/${PARTIAL_POLICY_ID}`);
+    await page.goto(detailPolicyPath());
     await waitForProgramDetailSettled(page);
 
     const columns = await eligibilitySummary(page)
@@ -107,16 +123,32 @@ test.describe('Eligibility Summary approved contract browser flow', () => {
     await expect(page.getByText('📄 정책 정보')).toBeVisible();
   });
 
-  test('Real API eligibility detail remains a DTL4-7 conditional scenario', async ({
+  test('Real API eligibility detail — unknown coverage and non-definitive copy', async ({
     page,
   }) => {
-    test.skip(
-      process.env.VITE_USE_MOCK !== 'false',
-      'VITE_USE_MOCK=false + Backend eligibility API 환경에서만 실행합니다.',
-    );
+    skipUnlessActualApi(test);
 
-    await page.goto('/programs/1');
+    await page.goto(
+      `/programs/${ACTUAL_API_FIXTURES.ELIGIBILITY_POLICY_ID}?include_partial=true`,
+    );
     await waitForProgramDetailSettled(page);
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    await expect(
+      page.getByRole('heading', { name: ACTUAL_API_FIXTURES.ELIGIBILITY_POLICY_TITLE }),
+    ).toBeVisible();
+
+    const summary = eligibilitySummary(page);
+    await expect(summary).toHaveAttribute(
+      'data-coverage',
+      ACTUAL_API_FIXTURES.ELIGIBILITY_COVERAGE,
+    );
+    await expect(summary).toContainText(
+      '공식 원문에서 구조화된 신청 조건을 확인하지 못했습니다.',
+    );
+    await expect(summary.getByRole('note')).toContainText(
+      '실제 자격 충족이나 선정을 확정하지 않습니다',
+    );
+    await expect(page.getByText('상시', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('접수 중', { exact: true })).toBeVisible();
   });
 });

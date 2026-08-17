@@ -1,4 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+  ACTUAL_API_FIXTURES,
+  skipUnlessActualApi,
+} from './helpers/e2eMode';
 
 async function waitForSearchSettled(page: Page) {
   await expect(page.getByLabel('검색 결과 로딩 중')).toHaveCount(0, {
@@ -184,14 +188,9 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
   test('8. 실제 API golden 첫 페이지·근거·상세·자격 비확정 안내', async ({
     page,
   }) => {
-    test.skip(
-      process.env.VITE_USE_MOCK !== 'false',
-      'VITE_USE_MOCK=false인 실제 API 감사에서만 실행합니다.',
-    );
+    skipUnlessActualApi(test);
 
-    await page.goto(
-      '/search?q=%EC%B2%9C%EC%95%88+%EC%82%AC%EB%8A%94+27%EC%82%B4+%EC%B2%AD%EB%85%84+%EB%8B%A8%EA%B8%B0%EC%88%99%EC%86%8C+%EC%A7%80%EC%9B%90+%EB%B0%9B%EC%9D%84+%EC%88%98+%EC%9E%88%EB%82%98%3F',
-    );
+    await page.goto(ACTUAL_API_FIXTURES.SEARCH_GOLDEN_QUERY);
 
     await waitForSearchSettled(page);
 
@@ -199,7 +198,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(resultRegion).toBeVisible();
     await expect(
       resultRegion.locator('a.policy-card').first(),
-    ).toContainText('청년단기숙소 지원사업');
+    ).toContainText(ACTUAL_API_FIXTURES.SEARCH_GOLDEN_POLICY_TITLE);
     await expect(
       resultRegion.getByRole('note'),
     ).toContainText('실제 자격 충족을 확정하지 않습니다');
