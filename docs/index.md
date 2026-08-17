@@ -187,6 +187,8 @@
   관리자 4자리 PIN 세션 인증, fail-closed 및 401/403/429/422 상태코드 검증 결과
 - [Backend CollectionRun Admin API Forest 개발 기록](development/development_notes/backend/collection_run_admin_api.md):
   CollectionRun 실행 이력 목록·상세, 수동 실행 202 및 Stale 판정 계약 결과
+- [v0.5.0 Backend Stabilization Forest 개발 기록](development/development_notes/backend/v0_5_0_backend_stabilization.md):
+  5주차 Release 2 (v0.5.0) 백엔드 회귀 검증, Data 06 연동 대조 및 QA 결함 수정 개발 기록
 - [Recommendation Vertical Slice Forest 개발 기록](development/development_notes/integration/recommendation_vertical_slice.md):
   사용자 조건 기반 결정적 맞춤 추천 API, 부합도 점수, 사유 Code 및 비단정 계약 결과
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
