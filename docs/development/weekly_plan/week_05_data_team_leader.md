@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`~`DTL5-4` 완료, `W5-G1_PASS`)
+- 상태: in-progress (`DTL5-0`~`DTL5-3` 완료, Backend·Frontend 인수 대기)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -10,7 +10,7 @@
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-5` 독립 사용성·QA와 결함 triage
+- 현재 Slice: Backend `W5-B1`·Frontend `W5-F1` 완료 뒤 DTL5-4 통합 대기
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -25,8 +25,9 @@
 - Data 06은 `SOP-G5_PASS`로 완료됐으며 승인 Source 5개 actual과 KOSAF 신규
   정책 1건의 DB·API·Browser 인수를 통과했다.
 - 독립 사용성 리뷰·QA·보고서 근거 대조는 아직 수행하지 않았다.
-- `DTL5-0`에서 같은 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했고,
-  `DTL5-4` 전체 회귀·actual E2E 뒤 `W5-G1_PASS`로 기능을 동결했다.
+- `DTL5-0`에서 같은 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했다.
+  Data 브랜치 사전 회귀는 통과했지만 Backend·Frontend 담당 산출물이 아직
+  통합되지 않아 `W5-G1`은 판정하지 않았다.
 
 ## 담당 목표
 
@@ -193,10 +194,10 @@ Data·Backend 회귀와 문서 대조를 통과해 DTL5-4로 인계한다.
 - 실제 PostgreSQL·FastAPI·React 핵심 흐름 통과
 - 알려진 제약·환경·독립 시나리오 인계가 완전하면 `W5-G1_PASS`
 
-상태: completed (`W5-G1_PASS`, 2026-08-17). Data `334`, Backend `187`,
-Frontend unit `162`, Mock Browser `79`, actual 조건부 Browser `14`건이
-통과했다. 실제 DB는 Migration `20260810_0006`, 정책 3,270건·지역 109건·
-KOSAF 1건이며 사용자·관리자·Data 05·06 Critical Path와 비추적 경계를 대조했다.
+상태: pending. Data 브랜치에서 Data `334`, Backend `187`, Frontend unit `162`,
+Mock Browser `79`, actual 조건부 Browser `14`건을 사전 점검으로 통과했다.
+그러나 Backend `W5-B1`과 Frontend `W5-F1` 담당 산출물을 포함한 통합본이
+아니므로 DTL5-4 완료나 `W5-G1_PASS`로 기록하지 않는다.
 
 ## Slice DTL5-5 - 독립 사용성·QA와 결함 triage
 
@@ -299,8 +300,8 @@ git status --short
 - [x] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
 - [x] DTL5-2 Data 06 `SOP-G3`
 - [x] DTL5-3 Data 06 actual과 `SOP-G4_PASS`·`SOP-G5_PASS`
-- [x] Backend·Frontend 담당자 전체 안정화 회귀
-- [x] DTL5-4 Data 06 포함 actual E2E·`W5-G1_PASS`
+- [ ] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
+- [ ] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage
 - [ ] 승인 결함 수정·자체 및 독립 재검증
 - [ ] 보고서 근거·미실행 검증 대조

@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`W5-G0_PASS`·`W5-G1_PASS`, `W5-Q1` 독립 검증 대기)
+- 상태: in-progress (`W5-G0_PASS`, `W5-B1`·`W5-F1` 인수와 `W5-I1` 대기)
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -208,11 +208,11 @@ Migration·DB 기준·actual API mode와 명령을 다시 확인한 뒤에만
 - Data 05·06 정책의 lineage와 검색 노출이 대조됨
 - 리뷰어·QA에 넘길 알려진 제약과 테스트 환경이 기록됨
 
-`2026-08-17` DTL5-4에서 위 조건을 모두 충족해 `W5-G1_PASS`로 판정했다.
-Migration `20260810_0006`, 실제 정책 3,270건·지역 109건·KOSAF 1건,
-Data `334`·Backend `187`·Frontend unit `162`, Mock Browser `79`와 actual
-조건부 Browser `14`건을 근거로 한다. 이는 독립 검증이나 Release 2 최종
-통과가 아니며 다음 작업은 `W5-Q1`이다.
+`2026-08-17` Data 06 브랜치에서 Migration `20260810_0006`, 실제 정책
+3,270건·지역 109건·KOSAF 1건과 전 영역 사전 회귀를 확인했다. 다만 Backend
+`W5-B1`과 Frontend `W5-F1` 담당 산출물을 통합하지 않은 결과이므로
+`W5-G1_PENDING`을 유지한다. 두 담당 결과를 인수·병합한 뒤 `W5-I1`을 다시
+실행하며, `W5-G1_PASS` 전에는 `W5-Q1`을 시작하지 않는다.
 
 ### W5-G2 - Release 2 Gate
 

@@ -10,7 +10,7 @@
 - DTL5-4 검증 SHA: `e4200fd76793e09042b1d2f2bfcfd3143f4c3e40`
 - 계획: [Integration 07 Release 2 Feature Acceptance](../../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 주차 계획: [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
-- 현재 판정: `W5-G1_PASS`
+- 현재 판정: `W5-G1_PENDING` (Backend `W5-B1`·Frontend `W5-F1` 인수 대기)
 
 ## 목적
 
@@ -24,8 +24,9 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 - A2 / DTL5-1~5 Data 06, 전체 actual E2E, 독립 사용성·QA와 결함 수정
 - A3 / DTL5-6 수정본 독립 재검증과 Release 2 Gate
 
-이 기록은 A0 기준선과 Data 06 DTL5-1~3, 전체 actual E2E DTL5-4까지 다룬다.
-독립 사용성·QA와 Release 2 최종 판정은 아직 수행하지 않았다.
+이 기록은 A0 기준선과 Data 06 DTL5-1~3, Data 브랜치의 통합 전 사전 회귀까지
+다룬다. Backend·Frontend 담당 산출물 통합, DTL5-4, 독립 사용성·QA와 Release 2
+최종 판정은 아직 수행하지 않았다.
 
 ## Slice 진행 현황
 
@@ -33,7 +34,7 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 | --- | --- | --- |
 | A0 / DTL5-0 | completed | `develop@29b2dd5`, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건, Runtime·API·Browser·테스트 환경 확인과 `W5-G0_PASS` |
 | A2 / DTL5-1~3 | completed | Data 06 승인 Source 5개 actual·KOSAF DB/API/Browser 인수·`SOP-G5_PASS` |
-| A2 / DTL5-4 | completed | 전체 회귀·actual 사용자/관리자/Data 05·06 E2E·비추적 대조, `W5-G1_PASS` |
+| A2 / DTL5-4 | pending | Backend `W5-B1`·Frontend `W5-F1`·Data 06 통합 뒤 전체 actual E2E와 `W5-G1` 판정 |
 | A2 / DTL5-5 | pending | 독립 사용성·QA, 결함 triage·수정·재검증 |
 | A3 / DTL5-6 | pending | 문서·전체 회귀와 W5-G2 Release 2 판정 |
 
@@ -72,7 +73,7 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
   listener가 남지 않았다.
 - 저장소의 `@playwright/test`로 Chromium headless launch·close를 확인했다.
 
-### DTL5-4 전체 actual E2E와 W5-G1
+### DTL5-4 통합 전 사전 회귀
 
 - 실제 DB는 Migration `20260810_0006`, 정책 3,270건, 지역 Source 109건,
   `kosaf-scholarship-web` 1건이다. Data 06 전 기준 3,269건에서 accepted KOSAF
@@ -86,8 +87,9 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 - 실제 DB에서 eligibility `14984`, 부산 지역 `14985`, open deadline `15003`을
   조건으로 다시 선정했다. 정책 ID는 적재·prune에 따라 변할 수 있으므로 독립
   QA도 역사 ID가 아니라 Source·상태·필수 필드로 표본을 선정한다.
-- 독립 사용성 리뷰어·QA·보고서 담당에게 넘길 역할, 시나리오, 결함 심각도와
-  증거 형식은 5주차 계획에 고정했다. 실제 독립 수행은 DTL5-5 범위다.
+- 이 결과는 Data 06 브랜치에서 현재 `develop` 기능과 Data 변경을 함께 검사한
+  사전 회귀다. 원격 Frontend `style-and-ux-fixes` 8개 커밋과 Backend W5-B1
+  담당 결과를 포함하지 않으므로 DTL5-4 완료나 `W5-G1_PASS`로 판정하지 않는다.
 
 ### 첫 실패와 보정
 
@@ -155,14 +157,14 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 | 실제 DB·API | Migration `20260810_0006`, 정책 3,270·지역 109·KOSAF 1, health 200 |
 | Data 06 인앱 Browser | 정책 `15095`, 한국장학재단·교육·접수 중·공식 원문 연결 통과 |
 
-DTL5-4 결과는 W5-G1 기능 동결 근거이며 독립 사용성·QA 또는 Release 2 최종
-통과로 소급하지 않는다. Starlette/httpx deprecation과 Vite native config·
-500 kB chunk 경고는 기존 비차단 경고다.
+사전 회귀 결과는 향후 통합본의 비교 기준이며 W5-G1 기능 동결 근거로 단독
+사용하지 않는다. Starlette/httpx deprecation과 Vite native config·500 kB
+chunk 경고는 기존 비차단 경고다.
 
 ## 남은 작업
 
-1. DTL5-5 독립 사용성 리뷰·QA를 수행하고 결함을 심각도·담당·재검증 조건에 연결한다.
-2. 보고서 담당이 화면·테스트·DB 통계와 미실행 항목을 독립 결과와 대조한다.
-3. Integration 07 변경 브랜치의 `integration` domain과 거버넌스 문서 불일치를
-   사용자 결정에 따라 정리한다.
-4. 승인 결함 수정·독립 재검증 뒤 DTL5-6 `W5-G2`를 판정한다.
+1. Backend 담당자의 `W5-B1` 변경 또는 변경 불필요 판정과 담당자 회귀 결과를 인수한다.
+2. Frontend 담당자의 `W5-F1`, 특히 `style-and-ux-fixes` 8개 커밋과 담당자 회귀 결과를 인수한다.
+3. 사용자 결정에 따른 Integration 브랜치에서 Backend·Frontend·Data 06을 병합하고 충돌을 해결한다.
+4. 통합본 전체 PostgreSQL·API·Browser 회귀 뒤 DTL5-4 `W5-G1`을 판정한다.
+5. `W5-G1_PASS` 뒤에만 DTL5-5 독립 사용성·QA를 시작한다.

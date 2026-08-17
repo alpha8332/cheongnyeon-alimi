@@ -5,8 +5,8 @@
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
 - 상태: in-progress
-- 현재 단계: 5주차 A0·`W5-G0_PASS`, A2 DTL5-1~4·`W5-G1_PASS` 완료.
-  DTL5-5 독립 사용성·QA 대기
+- 현재 단계: 5주차 A0·`W5-G0_PASS`, Data 06 DTL5-1~3 완료.
+  Backend `W5-B1`·Frontend `W5-F1` 인수 뒤 DTL5-4 통합 대기
 - 계획일: `2026-08-07`
 - 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
@@ -95,10 +95,10 @@ Forest에서 관리한다.
 - 재현 가능한 결함을 수정 담당·심각도·재검증 조건과 연결한다.
 - 보고서 담당은 이 단계의 결정·화면·테스트와 미실행 검증을 대조한다.
 
-DTL5-4는 `2026-08-17` Data·Backend·Frontend 전체 회귀, 실제 PostgreSQL →
-FastAPI → React 사용자·관리자 Critical Path, Data 05·06 검색 노출과 비추적
-경계를 통과해 `W5-G1_PASS`로 판정했다. DTL5-5 독립 사용성·QA와 결함
-triage는 이 판정 뒤 별도로 수행하며 아직 Release 2 최종 통과가 아니다.
+`2026-08-17` Data 06 브랜치에서 실행한 전체 회귀와 actual E2E는 통합 전
+사전 점검이다. Backend `W5-B1`과 Frontend `W5-F1` 담당 산출물을 인수·병합한
+통합본이 아니므로 `W5-G1` 근거로 승격하지 않는다. 두 담당 작업을 인수한 뒤
+DTL5-4를 다시 실행하고, 통합본에 대해서만 기능 동결을 판정한다.
 
 ### A3 - Release 2 Gate
 
