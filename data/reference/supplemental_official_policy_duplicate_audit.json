@@ -2,16 +2,16 @@
   "schema_version": "1.0.0",
   "audit_id": "supplemental-policy-duplicate-audit-20260817",
   "inventory_id": "supplemental-official-policy-inventory-20260817",
-  "inventory_sha256": "8be3b4371213786a900f15e9b29fd5c41186ffb39bfad719e029010e88bcb23d",
+  "inventory_sha256": "ae8ddfbcbf1c1c8078f2a679e997b576efb560ff8d1d22b57fb6364612c0b542",
   "baseline": {
-    "baseline_id": "719c18c5274ba51936c161fa2e75d4ef",
+    "baseline_id": "e7de900d5a826f0da757f214723114d8",
     "descriptors": [
       {
         "source_id": "bokjiro-central-welfare-api",
         "snapshot_id": "ffa74ef47e6048109f11bf40d1ac5e15",
         "snapshot_collected_at": "2026-08-06T00:19:03.630716+00:00",
         "snapshot_policy_count": 461,
-        "database_checked_at": "2026-08-17T02:29:19.985062+00:00",
+        "database_checked_at": "2026-08-17T04:26:30.358201+00:00",
         "database_policy_count": 461
       },
       {
@@ -19,7 +19,7 @@
         "snapshot_id": "6add34f7aad9456ab0abb19175b7621c",
         "snapshot_collected_at": "2026-08-06T00:18:54.586978+00:00",
         "snapshot_policy_count": 2695,
-        "database_checked_at": "2026-08-17T02:29:19.985062+00:00",
+        "database_checked_at": "2026-08-17T04:26:30.358201+00:00",
         "database_policy_count": 2698
       }
     ]

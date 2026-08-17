@@ -19,10 +19,10 @@
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 | `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
 | `regional-gyeongbuk-youth-platform` | 경북청년포털 청년e끌림 | RYP1 승인 | 목록 243건·상세 표본 1건 제한 확인 |
-| `work24-policy-web` | 고용24 정책 | SOP2 승인 | Adapter·actual pending |
-| `lh-housing-announcement-web` | LH 임대 공고 | SOP2 승인 | Adapter·actual pending |
-| `kosaf-scholarship-web` | 한국장학재단 장학 | SOP2 승인 | Adapter·actual pending |
-| `kinfa-financial-product-web` | 서민금융진흥원 상품 | SOP2 승인 | Adapter·actual pending |
+| `work24-policy-web` | 고용24 정책 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
+| `lh-housing-announcement-web` | LH 임대 공고 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
+| `kosaf-scholarship-web` | 한국장학재단 장학 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
+| `kinfa-financial-product-web` | 서민금융진흥원 상품 | SOP3 통과 | Adapter·offline replay 완료, actual pending |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`, 천안 공지 번호와
@@ -643,8 +643,9 @@ K-Startup은 robots가 `webCMRCZN.do`, `bizpbanc-ongoing.do`,
 [`supplemental_official_policy_inventory.json`](../../data/reference/supplemental_official_policy_inventory.json),
 온통청년·복지로 비교 기준과 판정은
 [`supplemental_official_policy_duplicate_audit.json`](../../data/reference/supplemental_official_policy_duplicate_audit.json)을
-따른다. 현재 profile은 preflight 승인 상태이며 실제 응답 구조·field locator는
-SOP3 offline fixture와 SOP4 제한 actual 뒤 추가한다.
+따른다. SOP3는 실제 목록 구조로 stable identity selector를 대조하고, 합성 최소
+fixture에 Source별 field locator와 Raw replay 계약을 고정했다. 전체 실제 상세
+필드 대조·accepted 판정과 적재는 SOP4 제한 actual에서 수행한다.
 
 ## 공통 비밀정보 경계
 

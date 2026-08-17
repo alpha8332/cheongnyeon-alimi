@@ -7,9 +7,9 @@
 - 상태: in-progress
 - 브랜치: `feature/data/supplemental-official-policy-ingestion`
 - 계획: [Data 06 Supplemental Official Policy Ingestion](../../develop_plan/data/06_supplemental_official_policy_ingestion.md)
-- 주차 Slice: `DTL5-1` / `W5-D1`
-- 현재 Gate: `SOP-G0_PASS`, `SOP-G1_PASS`, `SOP-G2_PASS`
-- 다음 Slice: SOP3 Source Adapter·판정 fixture
+- 주차 Slice: `DTL5-2` / `W5-D2`
+- 현재 Gate: `SOP-G0_PASS`, `SOP-G1_PASS`, `SOP-G2_PASS`, `SOP-G3_PASS`
+- 다음 Slice: SOP4 제한 actual·PostgreSQL 적재 검증
 
 ## 목적
 
@@ -23,7 +23,7 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 - SOP0: XLSX URL 64행의 lineage, exact 반복, 같은 URL·다른 제목과 문구 오류 격리
 - SOP1: 승인 aggregator snapshot과 실제 DB의 ID·URL·제목 선행 감사
 - SOP2: 공식 Source군의 운영 주체·robots·조건·allowlist·요청 예산 판정
-- 미수행: Source Adapter, Raw 수집, 정규화, 신규 Policy 적재, API·Browser 인수
+- 미수행: actual Raw 수집, 신규 Policy 적재, API·Browser 인수
 
 ## Slice 진행 현황
 
@@ -32,7 +32,7 @@ identity·요청 예산을 확인한 공식 Source만 Adapter 구현 대상으�
 | SOP0 | completed | URL 64행 → 후보 identity 60개, exact 반복 4행 축약, URL 충돌 3개 격리 |
 | SOP1 | completed | exact duplicate 26, review 11, potentially new 19, not assessed 4 |
 | SOP2 | completed | approved 4, blocked 1, rejected 9; 승인 Source별 allowlist·예산 고정 |
-| SOP3 | pending | Adapter·offline fixture 미구현 |
+| SOP3 | completed | 승인 4개 Source stable identity·상세 Adapter·offline replay·판정 Gate 구현 |
 | SOP4 | pending | 제한 actual·PostgreSQL 미수행 |
 | SOP5 | pending | Source 확대·Forest 완료 판정 미수행 |
 
@@ -68,8 +68,8 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 
 | Source | snapshot ID | snapshot 완료 | snapshot 수 | DB 확인 | DB 수 |
 | --- | --- | --- | ---: | --- | ---: |
-| 복지로 | `ffa74ef47e6048109f11bf40d1ac5e15` | `2026-08-06T09:19:03.630716+09:00` | 461 | `2026-08-17T11:29:19.985062+09:00` | 461 |
-| 온통청년 | `6add34f7aad9456ab0abb19175b7621c` | `2026-08-06T09:18:54.586978+09:00` | 2,695 | `2026-08-17T11:29:19.985062+09:00` | 2,698 |
+| 복지로 | `ffa74ef47e6048109f11bf40d1ac5e15` | `2026-08-06T09:19:03.630716+09:00` | 461 | `2026-08-17T13:26:30.358201+09:00` | 461 |
+| 온통청년 | `6add34f7aad9456ab0abb19175b7621c` | `2026-08-06T09:18:54.586978+09:00` | 2,695 | `2026-08-17T13:26:30.358201+09:00` | 2,698 |
 
 판정 순서는 승인 aggregator `(source_id, external_id)` → canonical public URL →
 정규화 제목이다. ID·URL은 `exact_duplicate`, 제목만 같으면 자동 병합하지 않고
@@ -121,6 +121,42 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
   [청년 미래이음 대출](https://www.kinfa.or.kr/financialProduct/youngFutureLinkLoan.do)
 - K-Startup: [robots 차단 근거](https://www.k-startup.go.kr/robots.txt)
 
+### SOP3 Source Adapter·offline replay
+
+`collectors/supplemental_official.py`는 승인된 네 Source를 기존 공통 계약에
+연결한다. 실제 원문 selector는 Source 모듈 안에서만 해석하고 공통
+`ExtractedPolicy`에는 정책 사실과 locator provenance만 넘긴다.
+
+| Source | stable identity | 목록 selector | 상세 최소 selector |
+| --- | --- | --- | --- |
+| 고용24 | `systId` | `fn_goPolicyIntro(..., SI...)` | `#systId`, `h2.h2_sb`, `#iemVal0~2` |
+| LH | `panId` | `.wrtancInfoBtn[data-id1..4]` | `.bbs_ViewA`, `#sta_acpDt` |
+| 한국장학재단 | `pg` | 승인된 장학 page key 링크 | 현재 page 링크와 신청·자격·서류 heading |
+| 서민금융진흥원 | detail path key | 승인 상품 상세 링크 | 문서 title과 대상·한도·서류·절차 heading |
+
+실제 공개 목록에 같은 parser를 대입한 제한 확인에서는 고용24 1건, LH 50건,
+한국장학재단 승인 key 6건, 서민금융진흥원 승인 상품 2건의 identity를 재현했다.
+본문은 저장하지 않았고 요청 간 2초 간격을 지켰다. 실제 상세 표본도 네 Source
+모두 selector drift 없이 `ExtractedPolicy`까지 재생됐지만, 원문에서 신청 가능·
+자격·서류를 모두 확인하지 못한 표본은 자동 accepted하지 않는다.
+
+fixture는 목록·상세 정상, 목록 selector drift, 상세 누락, 상세 title drift,
+마감, 필요서류 누락을 포함한다. 같은 Raw byte·hash·`collected_at`을 두 번
+재생했을 때 같은 결과를 내며, 목록과 상세의 identity·parent·canonical URL이
+어긋나면 전체 replay를 실패시킨다.
+
+pagination 종료는 SOP2 요청 예산과 동일하게 Source별 승인 landing 한 페이지,
+정확히 한 `list_response`로 고정했다. HTML의 임의 다음 링크를 따라가지 않으며
+추가 페이지가 필요한 Source는 SOP4 actual에서 별도 종료 근거를 승인받아야 한다.
+
+`decide_supplemental_policy()`는 청년 대상·현재 신청 가능·담당기관·신청조건·
+필요서류·신청방법이 모두 공식 상세에서 확인된 경우만 accepted한다. 마감은
+closed, 근거 부족은 review, evidence 계약 손상은 failed로 분리한다. accepted
+후보도 기존 aggregator 기준선이 없거나 fingerprint 판정이 필요하면 교차 Source
+중복 Gate에서 duplicate review가 되어 Policy row를 만들지 않는다. 신청 기간
+판정 기준일은 실행 현재 시각이 아니라 Raw `collected_at` 날짜로 고정해 offline
+replay 결정성을 유지한다.
+
 ## 주요 변경 파일
 
 - `scripts/build_supplemental_policy_inventory.py`
@@ -131,6 +167,9 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 - `data/reference/supplemental_official_policy_inventory.json`
 - `data/reference/supplemental_official_policy_duplicate_audit.json`
 - `tests/test_supplemental_policy_inventory.py`
+- `collectors/supplemental_official.py`
+- `tests/test_supplemental_official.py`
+- `data/fixtures/html/{work24,lh,kosaf,kinfa}-*/`
 
 ## 설계 결정
 
@@ -148,22 +187,24 @@ Source군별 행·domain 일치와 상태별 실행 경계를 검사한다.
 | 검증 | 결과 |
 | --- | --- |
 | inventory·audit Schema와 semantic 단위 테스트 | `9 passed, 63 subtests passed` |
-| 같은 XLSX builder 재실행 | inventory SHA-256 동일(`8be3b437…8bcb23d`), 결정성 확인 |
+| 같은 XLSX builder 재실행 | inventory SHA-256 동일(`ae8ddfbc…c0b542`), 결정성 확인 |
 | 중복 Gate·지역 inventory·aggregator loader 관련 회귀 | `30 passed, 1 warning, 118 subtests passed` |
 | 실제 PostgreSQL aggregator baseline load | 복지로 461·온통청년 2,698 row 읽기 성공 |
 | 직접 URL ID 감사 | 11행·고유 ID 10개 모두 exact duplicate |
 | 공식 robots 제한 GET | 고용24·LH·한국장학재단·서금원 허용, K-Startup 대상 경로 차단 확인 |
 | 승인 Source 목록·상세 preflight GET | 4개 Source·8개 URL 모두 HTTP 200·식별 문구 확인, 본문 미저장 |
+| SOP3 Adapter·Gate·runtime 집중 | `15 passed, 11 subtests passed` |
+| SOP3 + 기존 runtime replay | `21 passed, 11 subtests passed` |
+| 승인 공개 목록 parser 제한 대조 | 4개 Source stable identity 재현, 본문 미저장 |
+| Data 전체 pytest | `316 passed, 8 skipped, 1 warning, 169 subtests passed` |
 | 문서 링크·상태·필수 heading 검증 | `Documentation validation passed` |
 | whitespace 검증 | `git diff --check` 통과(CRLF 안내만 출력) |
 
-전체 저장소 Data 회귀는 SOP3 Adapter 구현 뒤 실행하며 이번 Slice에서는 변경한
-inventory·중복 기준선과 기존 교차 Source 경계의 관련 회귀만 수행했다.
+전체 저장소 Data 회귀 결과는 SOP3 관련 검증 완료 뒤 최신화한다.
 
 ## 남은 작업
 
-- SOP3: 승인 4개 Source Adapter, 목록·상세·누락·drift·실패 fixture와 offline replay
-- SOP3: 26 duplicate·11 review·19 잠정 신규를 원문 기준으로 재판정
 - SOP4: 승인 Source별 목록 1회·상세 3~5건 이내 actual과 Raw provenance
+- SOP4: 26 duplicate·11 review·19 잠정 신규를 원문·실제 기준선으로 재판정
 - SOP4~SOP5: accepted·duplicate·review·closed·failed 분리, PostgreSQL → API → Browser 인수
 - Data 05·온통청년·복지로·Release 1 golden 전체 회귀와 `SOP-G5` Forest 판정

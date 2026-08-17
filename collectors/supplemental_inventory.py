@@ -76,11 +76,14 @@ def supplemental_inventory_issues(
         grouped_rows.extend(group["input_rows"])
         status = group["status"]
         if status == "approved":
-            if group["implementation_status"] != "pending":
+            if group["implementation_status"] not in {
+                "pending",
+                "adapter_ready",
+            }:
                 issues.append(
                     _error(
                         f"{path}.implementation_status",
-                        "approved_not_pending",
+                        "approved_implementation_status",
                     )
                 )
             source_id = group["source_id"]

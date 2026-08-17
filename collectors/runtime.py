@@ -46,6 +46,12 @@ from collectors.snapshot import (
     SnapshotManifest,
     SnapshotManifestStore,
 )
+from collectors.supplemental_official import (
+    SUPPLEMENTAL_SOURCE_IDS,
+    SupplementalOfficialExtractor,
+    decide_supplemental_policy,
+    map_supplemental_duplicate_evidence,
+)
 from collectors.storage import RawDocumentStore, RawStorageError
 from collectors.validation import ValidationResult
 from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
@@ -59,6 +65,7 @@ SUPPORTED_SOURCE_IDS = (
     SEOUL_SOURCE_ID,
     YOUTHCENTER_SOURCE_ID,
     *tuple(sorted(EXPANDED_CAPTURE_SOURCE_IDS)),
+    *tuple(sorted(SUPPLEMENTAL_SOURCE_IDS)),
 )
 
 REGIONAL_RUNTIME_SOURCE_IDS = frozenset(
@@ -80,6 +87,10 @@ _EXTRACTOR_TYPES = {
     **{
         source_id: (lambda value=source_id: RegionalBrowserExtractor(value))
         for source_id in EXPANDED_CAPTURE_SOURCE_IDS
+    },
+    **{
+        source_id: (lambda value=source_id: SupplementalOfficialExtractor(value))
+        for source_id in SUPPLEMENTAL_SOURCE_IDS
     },
 }
 
@@ -113,6 +124,7 @@ class RuntimeReplayResult:
     duplicate_decisions: tuple[dict[str, Any], ...] = ()
     duplicate_baseline: dict[str, Any] | None = None
     duplicate_manifest: CrossSourceDecisionManifest | None = None
+    supplemental_decisions: tuple[dict[str, Any], ...] = ()
 
     @property
     def accepted_count(self) -> int:
@@ -192,6 +204,7 @@ def replay_runtime_raw(
         ) from None
 
     regional_decisions = ()
+    supplemental_decisions = ()
     policies = extracted
     regional_deciders = {
         GYEONGBUK_YOUTH_SOURCE_ID: decide_gyeongbuk_regional_policy,
@@ -213,6 +226,18 @@ def replay_runtime_raw(
             for policy in extracted
         )
         regional_decisions = tuple(
+            decision.to_dict() for decision in decisions
+        )
+        policies = tuple(
+            decision.accepted_policy
+            for decision in decisions
+            if decision.accepted_policy is not None
+        )
+    if source_id in SUPPLEMENTAL_SOURCE_IDS:
+        decisions = tuple(
+            decide_supplemental_policy(policy) for policy in extracted
+        )
+        supplemental_decisions = tuple(
             decision.to_dict() for decision in decisions
         )
         policies = tuple(
@@ -244,6 +269,10 @@ def replay_runtime_raw(
         **{
             source_id: map_expanded_duplicate_evidence
             for source_id in EXPANDED_CAPTURE_SOURCE_IDS
+        },
+        **{
+            source_id: map_supplemental_duplicate_evidence
+            for source_id in SUPPLEMENTAL_SOURCE_IDS
         },
     }
     selected_duplicate_mapper = (
@@ -316,6 +345,7 @@ def replay_runtime_raw(
             else None
         ),
         duplicate_manifest=duplicate_manifest,
+        supplemental_decisions=supplemental_decisions,
     )
 
 

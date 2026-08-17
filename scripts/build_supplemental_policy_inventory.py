@@ -103,7 +103,7 @@ SOURCE_GROUPS = {
     "work24-policy": {
         "operator": "고용노동부·한국고용정보원",
         "status": "approved",
-        "implementation_status": "pending",
+        "implementation_status": "adapter_ready",
         "source_id": "work24-policy-web",
         "decision_reason": (
             "공개 고용정책 목록과 systId 상세가 재현되고 대상 경로가 robots에서 "
@@ -133,7 +133,7 @@ SOURCE_GROUPS = {
     "lh-housing-announcements": {
         "operator": "한국토지주택공사",
         "status": "approved",
-        "implementation_status": "pending",
+        "implementation_status": "adapter_ready",
         "source_id": "lh-housing-announcement-web",
         "decision_reason": (
             "공개 임대주택 공고 목록과 panId 상세가 재현되고 robots는 로그인·파일 "
@@ -177,7 +177,7 @@ SOURCE_GROUPS = {
     "kosaf-scholarships": {
         "operator": "한국장학재단",
         "status": "approved",
-        "implementation_status": "pending",
+        "implementation_status": "adapter_ready",
         "source_id": "kosaf-scholarship-web",
         "decision_reason": (
             "robots가 공개 경로를 허용하고 장학금 landing/detail의 pg identity와 "
@@ -200,7 +200,7 @@ SOURCE_GROUPS = {
     "kinfa-financial-products": {
         "operator": "서민금융진흥원",
         "status": "approved",
-        "implementation_status": "pending",
+        "implementation_status": "adapter_ready",
         "source_id": "kinfa-financial-product-web",
         "decision_reason": (
             "robots가 공개 금융상품 경로를 허용하고 공식 전체보기와 개별 상품 "

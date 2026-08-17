@@ -10,7 +10,7 @@
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-1` 완료, `DTL5-2` 대기
+- 현재 Slice: `DTL5-2` 완료, `DTL5-3` 대기
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -123,6 +123,10 @@ Source 4개를 승인·1개를 robots 차단·9개를 제외했다. 상세 근�
 - `SOP-G0`~`SOP-G2` 통과 뒤에만 DTL5-2 해제
 
 ## Slice DTL5-2 - Data 06 SOP3 Adapter·판정 fixture
+
+상태: 완료 (`SOP-G3_PASS`, 2026-08-17). 승인 4개 Source의 stable identity·
+Source별 locator·offline Raw replay를 구현했고, accepted 이후에도 기존 aggregator
+중복 기준선이 없으면 Policy row를 만들지 않는 경계를 확인했다.
 
 ### 목적
 
@@ -278,7 +282,7 @@ git status --short
 
 - [x] DTL5-0·`W5-G0_PASS`
 - [x] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
-- [ ] DTL5-2 Data 06 `SOP-G3`
+- [x] DTL5-2 Data 06 `SOP-G3`
 - [ ] DTL5-3 Data 06 `SOP-G4`~`SOP-G5`와 Forest 완료 판정
 - [ ] Backend·Frontend 담당자 전체 안정화 회귀
 - [ ] DTL5-4 Data 06 포함 actual E2E·`W5-G1_PASS`

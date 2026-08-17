@@ -18,7 +18,7 @@
 - 권장 브랜치: `feature/data/supplemental-official-policy-ingestion` 한 개.
   Data 05 공통 엔진과 Gate가 안정되기 전에는 만들지 않으며 Source별 브랜치를
   추가하지 않음
-- 현재 Slice: SOP3 pending (SOP0 후보 정제·SOP1 중복 감사·SOP2 Source 승인 완료)
+- 현재 Slice: SOP4 pending (SOP0~SOP3·`SOP-G3` 완료)
 
 ## 목적
 
@@ -189,6 +189,8 @@ XLSX를 검증 가능한 Source·Policy 후보 inventory로 변환한다.
 - 이용 조건이 불명확한 Source를 구현 대상으로 승인하지 않음
 
 ### SOP3 - Source Adapter와 판정 fixture
+
+상태: completed (`SOP-G3_PASS`, 2026-08-17)
 
 #### 목적
 
