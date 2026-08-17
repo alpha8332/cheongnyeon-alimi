@@ -5,15 +5,16 @@
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
 - 상태: in-progress
-- 현재 단계: 5주차 A0·`W5-G0_PASS` 완료, A2·A3 대기
+- 현재 단계: 5주차 A0·`W5-G0_PASS`, A2 DTL5-1~4·`W5-G1_PASS` 완료.
+  DTL5-5 독립 사용성·QA 대기
 - 계획일: `2026-08-07`
 - 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05·06,
   Integration 06·08·09
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
-- 작업 브랜치: 4주차 `feature/integration/week-04-acceptance` 선례와 현재
-  브랜치 전략의 domain 목록이 달라, A2 변경 착수 전에 사용자 합의 필요
+- DTL5-4 검증 브랜치: `feature/data/supplemental-official-policy-ingestion`
+  (`e4200fd`). Integration 전용 브랜치 생성·`develop` 병합은 사용자 결정 뒤 수행
 - 5주차 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - 개발 기록: [Integration 07 개발 기록](../../development_notes/integration/release_2_feature_acceptance.md)
 
@@ -94,6 +95,11 @@ Forest에서 관리한다.
 - 재현 가능한 결함을 수정 담당·심각도·재검증 조건과 연결한다.
 - 보고서 담당은 이 단계의 결정·화면·테스트와 미실행 검증을 대조한다.
 
+DTL5-4는 `2026-08-17` Data·Backend·Frontend 전체 회귀, 실제 PostgreSQL →
+FastAPI → React 사용자·관리자 Critical Path, Data 05·06 검색 노출과 비추적
+경계를 통과해 `W5-G1_PASS`로 판정했다. DTL5-5 독립 사용성·QA와 결함
+triage는 이 판정 뒤 별도로 수행하며 아직 Release 2 최종 통과가 아니다.
+
 ### A3 - Release 2 Gate
 
 - 수정본 재검증, 보고서 근거와 릴리스 체크리스트를 대조한다.
@@ -123,8 +129,8 @@ Forest에서 관리한다.
 ## 위험과 미확정 사항
 
 - 4주차에는 `integration` domain 브랜치를 실제 사용했지만 현재 브랜치 전략의
-  domain 표에는 없다. A2 변경 브랜치를 만들기 전에 실제 관행과 거버넌스를
-  정렬해야 한다.
+  domain 표에는 없다. DTL5-4 검증은 Data 06 브랜치에서 완료했으며 Integration
+  변경 브랜치 생성이나 `develop` 병합 전에 실제 관행과 거버넌스를 정렬해야 한다.
 - 한 주 안에 모든 기능을 확장형으로 구현하면 Backend가 병목이 되므로 W4-G0
   범위 밖 기능을 다시 끌어오지 않는다.
 - actual snapshot은 외부 데이터 변화의 영향을 받으므로 고정 contract 회귀와

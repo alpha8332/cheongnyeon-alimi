@@ -290,6 +290,8 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 | `W4-G2-FE-READINESS` | completed (`2026-08-14`) | DTL4-7 actual E2E | unit·lint·build 통과, Mock Browser 79건 통과·Real API 조건부 11건 실행 조건 명시 |
 | `W4-G3-ACTUAL-E2E` | completed (`2026-08-14`) | DTL4-8 전체 회귀 | 실제 PostgreSQL·Runtime·FastAPI·React 관리자·웹 Source·사용자 E2E와 Release 1 검색·상세 회귀 통과 |
 | `W4-G4-MIDPOINT` | completed (`2026-08-14`) | 5주차 승인 작업·독립 검증 | 전체 회귀·계약·문서·비추적 대조, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건 검색 인수 통과; Release 2 최종 Gate는 아님 |
+| `W5-G0` | completed (`2026-08-17`) | Data 06·영역별 안정화 | 5주차 시작 SHA·Migration·DB·Runtime·actual API mode와 검증 환경 고정 |
+| `W5-G1` | completed (`2026-08-17`) | 독립 사용성·QA | Data 06 `SOP-G5`, 실제 DB 3,270건·지역 109건·KOSAF 1건, 전 영역 회귀와 사용자·관리자 actual Browser 통과; Release 2 최종 Gate는 아님 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
 `W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 구현 적합성

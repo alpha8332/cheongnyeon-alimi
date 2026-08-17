@@ -5,11 +5,12 @@
 - 상태: in-progress
 - 작업일: `2026-08-17`
 - 담당 영역: Data, Team Leader - Integration
-- 현재 브랜치: `develop`
+- 현재 브랜치: `feature/data/supplemental-official-policy-ingestion`
 - 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
+- DTL5-4 검증 SHA: `e4200fd76793e09042b1d2f2bfcfd3143f4c3e40`
 - 계획: [Integration 07 Release 2 Feature Acceptance](../../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 주차 계획: [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
-- 현재 판정: `W5-G0_PASS`
+- 현재 판정: `W5-G1_PASS`
 
 ## 목적
 
@@ -23,8 +24,8 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 - A2 / DTL5-1~5 Data 06, 전체 actual E2E, 독립 사용성·QA와 결함 수정
 - A3 / DTL5-6 수정본 독립 재검증과 Release 2 Gate
 
-이번 기록은 A0 결과만 다룬다. Data 06 수집·적재, 전체 W5-G1 E2E와 독립
-검증은 아직 수행하지 않았다.
+이 기록은 A0 기준선과 Data 06 DTL5-1~3, 전체 actual E2E DTL5-4까지 다룬다.
+독립 사용성·QA와 Release 2 최종 판정은 아직 수행하지 않았다.
 
 ## Slice 진행 현황
 
@@ -32,7 +33,7 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 | --- | --- | --- |
 | A0 / DTL5-0 | completed | `develop@29b2dd5`, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건, Runtime·API·Browser·테스트 환경 확인과 `W5-G0_PASS` |
 | A2 / DTL5-1~3 | completed | Data 06 승인 Source 5개 actual·KOSAF DB/API/Browser 인수·`SOP-G5_PASS` |
-| A2 / DTL5-4 | pending | Data 06 포함 전체 actual E2E와 W5-G1 |
+| A2 / DTL5-4 | completed | 전체 회귀·actual 사용자/관리자/Data 05·06 E2E·비추적 대조, `W5-G1_PASS` |
 | A2 / DTL5-5 | pending | 독립 사용성·QA, 결함 triage·수정·재검증 |
 | A3 / DTL5-6 | pending | 문서·전체 회귀와 W5-G2 Release 2 판정 |
 
@@ -71,6 +72,23 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
   listener가 남지 않았다.
 - 저장소의 `@playwright/test`로 Chromium headless launch·close를 확인했다.
 
+### DTL5-4 전체 actual E2E와 W5-G1
+
+- 실제 DB는 Migration `20260810_0006`, 정책 3,270건, 지역 Source 109건,
+  `kosaf-scholarship-web` 1건이다. Data 06 전 기준 3,269건에서 accepted KOSAF
+  1건만 증가했다.
+- `국가근로장학금` 검색과 상세 `15095`는 `education`·`open`·한국장학재단
+  원문을 반환했고, 인앱 Browser도 한국장학재단·교육·접수 중과 KOSAF 원문
+  연결을 다시 확인했다.
+- 관리자 actual은 PIN session, Policy·CollectionRun, 구조화 log, rotate·archive
+  감사와 인증 경계를 통과했다. 사용자 actual은 검색·자격 근거·추천·북마크·
+  달력·알림·`.ics`와 손상 localStorage 복구를 통과했다.
+- 실제 DB에서 eligibility `14984`, 부산 지역 `14985`, open deadline `15003`을
+  조건으로 다시 선정했다. 정책 ID는 적재·prune에 따라 변할 수 있으므로 독립
+  QA도 역사 ID가 아니라 Source·상태·필수 필드로 표본을 선정한다.
+- 독립 사용성 리뷰어·QA·보고서 담당에게 넘길 역할, 시나리오, 결함 심각도와
+  증거 형식은 5주차 계획에 고정했다. 실제 독립 수행은 DTL5-5 범위다.
+
 ### 첫 실패와 보정
 
 - 첫 DB 건수 조회는 repository root에서 Backend `app` 모듈을 import해
@@ -81,6 +99,15 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
   재실행해 통과했다.
 - app 실행용 번들 Node에는 `npm.cmd`가 없었다. 새 패키지를 설치하지 않고
   설치된 Codex CUA Node/npm `v24.19.0`을 명시해 Frontend 검증을 실행했다.
+- DTL5-4 Frontend 첫 test·lint·build는 하위 명령이 `node.exe`를 PATH에서 찾지
+  못해 실패했다. 번들 Node `bin`을 PATH에 명시한 동일 명령은 모두 통과했다.
+- actual Vite에 전체 Browser suite를 바로 실행하면 Mock 전용 시나리오가 실제
+  API를 소비해 연쇄 실패했다. 실행을 중단하고 actual 서버는 유지한 채 별도
+  `3001` Mock Vite에서 79건을 실행하고, 실제 API 조건부 14건은 actual
+  `3000`에서 분리 실행했다.
+- 첫 Real API 실행은 역사 정책 ID `167`·`1566`이 현재 DB에서 404라 3건이
+  실패했다. 현재 조건을 만족하는 `14984`·`14985`·`15003`으로 재선정해
+  11건 전체를 통과했고, 나머지 ES3 조건부 3건도 별도 통과했다.
 
 ## 주요 변경 파일
 
@@ -96,14 +123,14 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 
 - 5주차 공통 시작 SHA는 4주차 병합 커밋 `f0d3dd3`이 아니라 5주차 계획까지
   `develop`·`origin/develop`에 동기화된 `29b2dd5`로 고정한다.
-- 정책 3,269건과 지역정책 109건은 Data 06 적재 전 회귀 기준이다. Data 06의
-  목표 row 수를 만들지 않고 accepted·duplicate·review·closed·failed 실제
-  판정으로 후속 수치를 결정한다.
+- 정책 3,269건과 지역정책 109건은 Data 06 적재 전 회귀 기준이다. DTL5-4의
+  실제 3,270건은 accepted KOSAF 1건 증가와 일치하며, 나머지
+  duplicate·review·closed·failed는 새 Policy row를 만들지 않았다.
 - Node/npm PATH 부재는 app·테스트 실행에 사용할 검증된 명시 경로가 있고 새
   설치 없이 재현됐으므로 W5-G0 blocker로 보지 않는다. 일반 개발자 환경의
   Node 설치 기준은 기존 README 계약을 유지한다.
-- 사용성 리뷰어·QA·보고서의 책임과 증거 양식은 5주차 계획에 고정했다. 실제
-  독립 수행과 담당 확정은 W5-G1 인계 전 필수이며 아직 완료로 기록하지 않는다.
+- 사용성 리뷰어·QA·보고서의 책임, 독립 시나리오와 증거 양식은 5주차 계획에
+  고정해 W5-G1 인계를 완료했다. 실제 독립 수행 결과는 DTL5-5에서만 기록한다.
 
 ## 검증 결과
 
@@ -120,14 +147,22 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 | Frontend lint | 통과 |
 | Frontend build | 통과, Vite native config·500 kB chunk 비차단 warning |
 | Git 비추적 | `.env`·Runtime·로그·DB·pgpass 추적 0건 |
+| Data 전체 pytest | 전용 PostgreSQL 포함 `334 passed`, 1 warning, 172 subtests |
+| Backend 전체 pytest | 전용 PostgreSQL 포함 `187 passed`, 1 warning |
+| Frontend W5 unit·lint·build | `162 passed`, lint·production build 통과 |
+| Frontend Mock Browser | `79 passed`, actual 조건부 14건은 의도대로 skip |
+| Frontend actual Browser | Real API·Critical Path 11건과 ES3 주입 경계 3건, 합계 14건 통과 |
+| 실제 DB·API | Migration `20260810_0006`, 정책 3,270·지역 109·KOSAF 1, health 200 |
+| Data 06 인앱 Browser | 정책 `15095`, 한국장학재단·교육·접수 중·공식 원문 연결 통과 |
 
-정확한 전체 Backend·Data 회귀와 actual Browser E2E는 각각 W5-B1·W5-D1~3·
-W5-I1 범위이며 DTL5-0 결과로 소급하지 않는다.
+DTL5-4 결과는 W5-G1 기능 동결 근거이며 독립 사용성·QA 또는 Release 2 최종
+통과로 소급하지 않는다. Starlette/httpx deprecation과 Vite native config·
+500 kB chunk 경고는 기존 비차단 경고다.
 
 ## 남은 작업
 
-1. Backend W5-B1과 Frontend W5-F1 안정화 회귀를 인수한다.
-2. 완료된 Data 06을 포함해 실제 DB → API → Browser 전체 W5-G1을 판정한다.
-3. 독립 사용성 리뷰·QA·보고서 담당과 실행 환경을 W5-G1 인계 전에 확정한다.
-4. Integration 07 변경 브랜치의 `integration` domain과 거버넌스 문서 불일치를
+1. DTL5-5 독립 사용성 리뷰·QA를 수행하고 결함을 심각도·담당·재검증 조건에 연결한다.
+2. 보고서 담당이 화면·테스트·DB 통계와 미실행 항목을 독립 결과와 대조한다.
+3. Integration 07 변경 브랜치의 `integration` domain과 거버넌스 문서 불일치를
    사용자 결정에 따라 정리한다.
+4. 승인 결함 수정·독립 재검증 뒤 DTL5-6 `W5-G2`를 판정한다.
