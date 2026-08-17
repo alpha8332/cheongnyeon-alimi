@@ -9,7 +9,7 @@
 - 상위 Forest 계획: [Backend 07 v0.5.0 Backend Stabilization Forest 개발 계획](../../develop_plan/backend/07_v0_5_0_backend_stabilization.md)
 - 주차 실행 계획: [5주차 상세 실행 계획](../../weekly_plan/week_05_release_2.md)
 - 공통 시작 SHA: `dabf1f326ca6bc9be1253129b01dc2bc93d6b676` (4주차 `f0d3dd3` 병합 후 커밋)
-- 현재 Slice: `BE5-01` 완결 (BE5-02 진행 대기)
+- 현재 Slice: `BE5-02` 완결 (BE5-03 진행 대기)
 
 ## 목적
 
@@ -35,7 +35,7 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
 | --- | --- | --- | --- |
 | **BE5-00** | **통합 기준선 재검증 및 환경 고정** | **completed** | Git HEAD(`dabf1f3`), Migration head(`20260810_0006`), 백엔드 단위/API pytest 170건 통과(0 failed), 문서 검증 통과 |
 | **BE5-01** | **백엔드 핵심 기능 & 영속성/인증/로그 회귀 검증** | **completed** | PostgreSQL 18 연동 회귀 테스트 187건 전건 통과(0 failed), DB Transaction, Auth/Run/Policy/Log API 및 Exception 계약 검증 |
-| **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **pending** | Data 06 신규 정책 노출 DTO 대조 및 actual E2E (`W5-G1`) 통과 지원 |
+| **BE5-02** | **Data 06 신규 정책 적재 연동 & actual E2E 지원** | **completed** | Data 06 신규 수집 정책의 PostgreSQL ➔ API DTO 노출 대조, CollectionRun 수동 실행 202 Accepted 및 E2E 테스트(`test_postgresql_end_to_end.py`) 통과 |
 | **BE5-03** | **독립 리뷰/QA 결함 수정 및 Release 2 Hardening** | **pending** | 리뷰/QA 접수 Blocker/High 결함 수정 및 `W5-G2` Gate 통과 |
 
 ## 구현 내용
@@ -67,6 +67,18 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
    - **Admin Policy & Log Console API**: 정책 데이터 표 읽기 전용 페이징/Allowlist 정렬, 구조화 파일 로그 조회, Correlation ID 추적, 회전 archive 삭제 경로 보안(Path Traversal 차단 Fail-closed) 및 Audit 기록 검증 완료 (`test_admin_policy_api.py`, `test_admin_log_api.py`, `test_file_logging.py`).
    - **Exception & Status Codes**: `401`, `403`, `404`, `409`, `422`, `500` HTTP 상태 코드 및 공통 Error DTO 규격 일치 확인 완료.
 
+### Slice BE5-02 - Data 06 신규 정책 적재 연동 & actual E2E 지원 (`W5-D3` / `W5-I1`)
+
+1. **Data 06 신규 정책 적재 ➔ 백엔드 API DTO 연동 대조**
+   - Data 06 보완 공식 Source 수집 신규 정책(PostgreSQL `policies` 테이블)이 `GET /api/v1/policies` 목록/검색 및 `GET /api/v1/policies/{id}` 상세 API에 소스 중립적(Source-agnostic)으로 수용되어 DTO 변환 및 노출됨을 검증.
+   - 신규 정책 상세 조회 시 `EligibilitySummary` 자격요건 및 Source evidence 출처 메타데이터가 정상 반환됨을 확인.
+
+2. **CollectionRun 수동 수집 트리거 & 라이프사이클 대조**
+   - Admin 수동 수집 실행 API (`POST /api/v1/admin/collection-runs/trigger`) 호출 시 `202 Accepted` 응답 및 수집 이력 상태 전이(active ➔ finished/failed) 검증 완료 (`test_collection_run_admin_api.py`).
+
+3. **실제 DB ➔ FastAPI ➔ UI E2E 검증 지원 (`W5-G1`)**
+   - `test_postgresql_end_to_end.py` 실행 결과 `test_postgresql_seed_repository_api_end_to_end` 통과: 실제 PostgreSQL 연동 하에서 Repository ➔ Policy API 종단 연동 정상 동작 확인.
+
 ## 주요 변경 파일
 
 - `[NEW]` [`docs/development/development_notes/backend/v0_5_0_backend_stabilization.md`](v0_5_0_backend_stabilization.md)
@@ -85,10 +97,11 @@ Release 2 (`v0.5.0`) 릴리스 통과를 위해 백엔드 API 계층, PostgreSQL
    - 170 passed, 17 skipped, 0 failed (통과).
 2. **PostgreSQL 연동 백엔드 회귀 테스트 (`TEST_DATABASE_URL` + `pytest backend/tests -v`)**:
    - **187 passed, 0 failed** (통과).
-3. **문서 품질 검증 (`python scripts/validate_docs.py`)**:
+3. **Data 06 및 E2E 종단 연동 테스트 (`test_postgresql_end_to_end.py`, `test_collection_run_admin_api.py`)**:
+   - **13 passed, 0 failed** (통과).
+4. **문서 품질 검증 (`python scripts/validate_docs.py`)**:
    - `Documentation validation passed.` (Exit code: 0).
 
 ## 남은 작업
 
-1. `BE5-02`: Data 06 적재 신규 정책 API DTO 노출 및 `W5-G1` actual E2E 지원.
-2. `BE5-03`: 독립 사용성 리뷰어 및 QA 접수 결함 수정 및 `W5-G2` Release 2 통과.
+1. `BE5-03`: 독립 사용성 리뷰어 및 QA 접수 결함 수정 및 `W5-G2` Release 2 통과.
