@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:supplemental-official-policy-inventory:1.0.0",
+  "title": "SupplementalOfficialPolicyInventory",
+  "description": "Data 06 XLSX candidate, input-quality and official Source preflight contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inventory_id",
+    "inventory_date",
+    "input_evidence",
+    "quality_summary",
+    "same_url_title_conflicts",
+    "policy_candidates",
+    "source_groups"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "inventory_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "inventory_date": { "type": "string", "format": "date" },
+    "input_evidence": { "$ref": "#/$defs/inputEvidence" },
+    "quality_summary": { "$ref": "#/$defs/qualitySummary" },
+    "same_url_title_conflicts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/urlConflict" }
+    },
+    "policy_candidates": {
+      "type": "array",
+      "minItems": 60,
+      "maxItems": 60,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/policyCandidate" }
+    },
+    "source_groups": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/sourceGroup" }
+    }
+  },
+  "$defs": {
+    "httpsUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "nullableHttpsUrl": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "inputEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_name",
+        "sha256",
+        "sheet_name",
+        "range",
+        "url_row_count",
+        "excluded_fields",
+        "exclusion_reason"
+      ],
+      "properties": {
+        "file_name": { "const": "청년정책_데이터수집_완료.xlsx" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "sheet_name": { "const": "청년정책 세부 수집방안" },
+        "range": { "const": "A1:F71" },
+        "url_row_count": { "const": 64 },
+        "excluded_fields": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "exclusion_reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "qualitySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url_row_count",
+        "candidate_identity_count",
+        "collapsed_exact_duplicate_rows",
+        "same_url_title_conflict_count",
+        "direct_aggregator_row_count",
+        "inventory_status_counts"
+      ],
+      "properties": {
+        "url_row_count": { "const": 64 },
+        "candidate_identity_count": { "const": 60 },
+        "collapsed_exact_duplicate_rows": { "const": 4 },
+        "same_url_title_conflict_count": { "const": 3 },
+        "direct_aggregator_row_count": { "const": 11 },
+        "inventory_status_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["candidate", "data_error", "discovery_reference"],
+          "properties": {
+            "candidate": { "const": 55 },
+            "data_error": { "const": 4 },
+            "discovery_reference": { "const": 1 }
+          }
+        }
+      }
+    },
+    "urlConflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_url", "candidate_ids", "input_rows"],
+      "properties": {
+        "canonical_url": { "$ref": "#/$defs/httpsUrl" },
+        "candidate_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^xlsx-row-[0-9]{3}-[0-9a-f]{12}$" }
+        },
+        "input_rows": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 2, "maximum": 71 }
+        }
+      }
+    },
+    "policyCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "input_rows",
+        "category",
+        "title",
+        "agency",
+        "url",
+        "canonical_url",
+        "hostname",
+        "source_group",
+        "external_identity",
+        "inventory_status",
+        "decision_reason",
+        "untrusted_input"
+      ],
+      "properties": {
+        "candidate_id": { "type": "string", "pattern": "^xlsx-row-[0-9]{3}-[0-9a-f]{12}$" },
+        "input_rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 2, "maximum": 71 }
+        },
+        "category": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "agency": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "url": { "$ref": "#/$defs/httpsUrl" },
+        "canonical_url": { "$ref": "#/$defs/httpsUrl" },
+        "hostname": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "source_group": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "external_identity": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "type": "string", "minLength": 1, "maxLength": 50 },
+            "value": { "type": "string", "minLength": 1, "maxLength": 500 }
+          }
+        },
+        "inventory_status": {
+          "type": "string",
+          "enum": ["candidate", "data_error", "discovery_reference"]
+        },
+        "decision_reason": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "untrusted_input": { "$ref": "#/$defs/untrustedInput" }
+      }
+    },
+    "untrustedInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["collection_method_sha256", "note_sha256", "note_present"],
+      "properties": {
+        "collection_method_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "note_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "note_present": { "type": "boolean" }
+      }
+    },
+    "sourceGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_group_id",
+        "input_rows",
+        "input_domains",
+        "operator",
+        "status",
+        "implementation_status",
+        "source_id",
+        "decision_reason",
+        "preflight",
+        "approved_list_urls",
+        "approved_detail_url_patterns",
+        "external_identity",
+        "request_budget",
+        "resume_condition"
+      ],
+      "properties": {
+        "source_group_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "input_rows": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 2, "maximum": 71 }
+        },
+        "input_domains": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9.-]+$" }
+        },
+        "operator": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "status": {
+          "type": "string",
+          "enum": ["approved", "blocked", "rejected"]
+        },
+        "implementation_status": {
+          "type": "string",
+          "enum": ["pending", "blocked", "rejected"]
+        },
+        "source_id": {
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "decision_reason": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "preflight": { "$ref": "#/$defs/preflight" },
+        "approved_list_urls": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/httpsUrl" }
+        },
+        "approved_detail_url_patterns": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        },
+        "external_identity": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "request_budget": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["max_list_requests", "max_detail_requests", "minimum_interval_seconds"],
+          "properties": {
+            "max_list_requests": { "type": "integer", "minimum": 1, "maximum": 1 },
+            "max_detail_requests": { "type": "integer", "minimum": 1, "maximum": 3 },
+            "minimum_interval_seconds": { "type": "number", "minimum": 2 }
+          }
+        },
+        "resume_condition": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checked_at", "robots", "terms", "license", "technical_access"],
+      "properties": {
+        "checked_at": { "type": "string", "format": "date-time" },
+        "robots": { "$ref": "#/$defs/preflightCheck" },
+        "terms": { "$ref": "#/$defs/preflightCheck" },
+        "license": { "$ref": "#/$defs/preflightCheck" },
+        "technical_access": {
+          "type": "string",
+          "enum": ["available", "blocked", "unchecked"]
+        }
+      }
+    },
+    "preflightCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "url"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "allowed",
+            "allowed_with_attribution",
+            "disallowed",
+            "restricted",
+            "not_found",
+            "unchecked_not_required"
+          ]
+        },
+        "url": { "$ref": "#/$defs/nullableHttpsUrl" }
+      }
+    }
+  }
+}

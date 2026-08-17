@@ -42,6 +42,14 @@
   지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태의 실행 계약
 - [지역 청년정책 Source inventory](../data/reference/regional_youth_policy_sources.json):
   17개 지역 포털의 RYP1 action profile과 13개 승인·3개 차단·1개 제외 판정
+- [Supplemental Official Policy Inventory JSON Schema](../data/schema/supplemental_official_policy_inventory.schema.json):
+  Data 06 XLSX 후보 lineage·오류 격리와 공식 Source preflight 실행 계약
+- [Supplemental Duplicate Audit JSON Schema](../data/schema/supplemental_official_policy_duplicate_audit.schema.json):
+  온통청년·복지로 snapshot·PostgreSQL 선행 중복 감사 계약
+- [Data 06 후보·Source inventory](../data/reference/supplemental_official_policy_inventory.json):
+  URL 64행 정제 결과와 approved 4·blocked 1·rejected 9 Source 판정
+- [Data 06 선행 중복 감사](../data/reference/supplemental_official_policy_duplicate_audit.json):
+  exact duplicate 26·review 11·잠정 신규 19·비교 제외 4 판정
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
@@ -154,6 +162,8 @@
 - [Regional Youth Policy Ingestion Forest 개발 기록](development/development_notes/data/regional_youth_policy_ingestion.md):
   RYP0 inventory부터 RYP2 경북 Adapter, RYP3 지역·신청 상태와 RYP4 교차 Source
   제외 Gate 검증 결과
+- [Supplemental Official Policy Ingestion Forest 개발 기록](development/development_notes/data/supplemental_official_policy_ingestion.md):
+  SOP0 후보 정제·SOP1 실제 DB 중복 감사·SOP2 공식 Source allowlist 판정
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
   DTL4-4 조건·서류·시설 연락처 계약부터 실제 PostgreSQL·API·Browser 인수까지
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)

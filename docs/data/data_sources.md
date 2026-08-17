@@ -4,7 +4,7 @@
 
 - 상태: 기준선
 - 현재 구현 상태: 온통청년·복지로 API, 천안청년센터와 13개 승인 지역 Source
-  Adapter, Runtime replay와 지역별 제한 actual 검증 완료
+  Adapter 완료. Data 06은 공식 Source 4개 preflight 승인, Adapter 미구현
 
 이 문서는 프로젝트에서 사용할 데이터 소스의 등록 기준과 현재 확인 상태를
 정의한다. 특정 Forest의 수집 건수와 구현 범위는
@@ -21,6 +21,10 @@
 | 복지로 중앙부처 복지서비스 API | `bokjiro-central-welfare-api` | 공식 API | XML 목록 10건·상세 3건 Raw 수집 확인 |
 | 천안청년센터 이음 공지 | `cheonan-youthcenter-web` | 공개 웹 | 공지 674번 actual Raw → PostgreSQL·API 확인 |
 | 경북 청년정책 플랫폼 | `regional-gyeongbuk-youth-platform` | 공개 JSON·modal | 제한 preflight·offline Raw replay 확인 |
+| 고용24 정책 | `work24-policy-web` | 공개 웹 | Data 06 SOP2 승인·Adapter pending |
+| LH 임대 공고 | `lh-housing-announcement-web` | 공개 웹 | Data 06 SOP2 승인·Adapter pending |
+| 한국장학재단 장학 | `kosaf-scholarship-web` | 공개 웹 | Data 06 SOP2 승인·Adapter pending |
+| 서민금융진흥원 상품 | `kinfa-financial-product-web` | 공개 웹 | Data 06 SOP2 승인·Adapter pending |
 
 두 API 인증키는 확보된 상태지만 키 값은 문서나 Git에 기록하지 않는다.
 현재 로컬 작업 트리의 인증키 파일과 인증키가 포함된 참고 문서는 비밀 포함
@@ -35,6 +39,27 @@ replay·정규화·PostgreSQL 적재를 포함한다. 웹 Source의 Source 전�
 따른다.
 요청 파라미터, 실제 응답 필드와 호출 결과는
 [API Source Profile](source_profiles.md)에서 관리한다.
+
+## 보완 공식 정책 Source inventory
+
+Data 06은 사용자 제공 `청년정책_데이터수집_완료.xlsx`의 URL 64행을
+[`supplemental_official_policy_inventory.json`](../../data/reference/supplemental_official_policy_inventory.json)으로
+정제한다. 원본 exact 반복 4행을 축약한 후보 identity는 60개이며, 같은 URL의
+서로 다른 제목 3군데와 범용 포털 홈을 격리한다. XLSX의 수집 방법·필요서류는
+공식 evidence가 아니므로 원문을 적재하지 않고 해시만 보존한다.
+
+[`supplemental_official_policy_duplicate_audit.json`](../../data/reference/supplemental_official_policy_duplicate_audit.json)은
+2026-08-17 승인 온통청년·복지로 snapshot과 실제 PostgreSQL row를 읽기 전용으로
+대조한다. 60개 후보 중 exact ID·canonical URL 중복 26개는 신규 적재에서 제외,
+제목만 같은 11개는 review, 19개는 잠정 신규, 오류·범용 홈 4개는 비교 제외다.
+직접 aggregator 링크 11행의 고유 ID 10개는 모두 기존 DB에 존재한다.
+
+SOP2는 고용24·LH 임대 공고·한국장학재단·서민금융진흥원 4개 Source를
+목록 1회·상세 최대 3회·요청 간격 2초 경계로 승인했다. K-Startup은
+`robots.txt`가 XLSX 대상 상세 경로를 명시적으로 차단해 blocked다. 나머지
+9개 Source군은 기존 aggregator 비교 전용 또는 목록·상세·운영 주체가 불명확해
+rejected이며, Source별 재개 조건은 inventory에 둔다. 이 판정은 SOP3 Adapter
+구현 승인일 뿐 actual 수집·신규 Policy 적재 완료를 뜻하지 않는다.
 
 ## 지역 청년정책 Source inventory
 

@@ -4,8 +4,9 @@
 
 - 번호: Data 06
 - 담당 영역: Data
-- 상태: approved
-- 착수 조건: `W5-G0_PASS` 완료, SOP0 시작 가능
+- 상태: in-progress
+- 진행: `SOP-G0`~`SOP-G2` 통과
+- 착수 조건: `W5-G0_PASS` 완료
 - 계획일: `2026-08-11`
 - 승인일: `2026-08-16`
 - 실행 일정: `2026-08-14` 재승인으로 4주차에서 5주차로 이동
@@ -17,7 +18,7 @@
 - 권장 브랜치: `feature/data/supplemental-official-policy-ingestion` 한 개.
   Data 05 공통 엔진과 Gate가 안정되기 전에는 만들지 않으며 Source별 브랜치를
   추가하지 않음
-- 현재 Slice: SOP0 pending (구현·actual Source 승인 미착수)
+- 현재 Slice: SOP3 pending (SOP0 후보 정제·SOP1 중복 감사·SOP2 Source 승인 완료)
 
 ## 목적
 

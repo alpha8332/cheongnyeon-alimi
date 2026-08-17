@@ -3,9 +3,9 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 마지막 공식 자료 확인: 2026-08-10
-- 마지막 실호출 확인: 2026-08-11
-- 범위: 온통청년·복지로 API, 천안청년센터와 경북 승인 공개 웹 Source
+- 마지막 공식 자료 확인: 2026-08-17
+- 마지막 실호출 확인: 2026-08-17 (Data 06 preflight, Raw 미저장)
+- 범위: 온통청년·복지로 API, 천안청년센터·지역 Source와 Data 06 승인 Source preflight
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
 제약을 기록한다. 공식 자료의 명세, 실제 응답과 로컬 과거 샘플을 구분하며,
@@ -19,6 +19,10 @@
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 | `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
 | `regional-gyeongbuk-youth-platform` | 경북청년포털 청년e끌림 | RYP1 승인 | 목록 243건·상세 표본 1건 제한 확인 |
+| `work24-policy-web` | 고용24 정책 | SOP2 승인 | Adapter·actual pending |
+| `lh-housing-announcement-web` | LH 임대 공고 | SOP2 승인 | Adapter·actual pending |
+| `kosaf-scholarship-web` | 한국장학재단 장학 | SOP2 승인 | Adapter·actual pending |
+| `kinfa-financial-product-web` | 서민금융진흥원 상품 | SOP2 승인 | Adapter·actual pending |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
 Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`, 천안 공지 번호와
@@ -609,6 +613,38 @@ evidence로 제공한다. Source 원문에 온통청년 `plcyNo`, 복지로 `ser
 공식 공고 ID가 추가로 확인되는 Adapter는 해당 field locator와 Raw provenance를
 함께 제공해야 한다. 기준선이 없거나 두 aggregator 중 하나가 불완전하면 open
 후보를 사용자 정책으로 적재하지 않는다.
+
+## Data 06 보완 공식 Source SOP2 profile
+
+Data 06 inventory와 2026-08-17 제한 preflight는 다음 4개 Source의 SOP3 구현
+경계를 승인했다. 모든 Source는 목록 1회·상세 최대 3회·요청 시작 간격 최소
+2초이며, HTML·첨부 원문을 Git에 저장하지 않고 최소 정책 사실과 provenance만
+처리한다.
+
+| Source ID | 목록 allowlist | 상세 identity | 조건 |
+| --- | --- | --- | --- |
+| `work24-policy-web` | `/cm/c/f/1100/selecPolicyInfo.do` | `systId` | robots 허용, 저작권정책에 따른 출처 표시 |
+| `lh-housing-announcement-web` | `/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026` | `panId` | 로그인·`lhFile.do` 제외, 공개 HTML만 |
+| `kosaf-scholarship-web` | `/ko/scholar.do?pg=scholarship_submain01` | 승인 `pg` key | robots 허용, 원문 복제 금지 |
+| `kinfa-financial-product-web` | `/financialProduct/peopleFinancial.do` | detail page key | 인증·상담·검색 경로 제외 |
+
+고용24의 회원 인증 Open API는 정책 HTML Source와 별도다. 승인 Source ID는
+공개 고용정책 목록·상세만 의미하며 인증키 신청이나 로그인 자동화를 포함하지
+않는다. LH는 robots가 로그인과 파일 경로를 제한하므로 공고 첨부를 내려받지
+않는다. 서민금융진흥원은 `fill4young` 인증 화면 대신 공개 `www.kinfa.or.kr`
+상품 목록·상세만 사용한다.
+
+K-Startup은 robots가 `webCMRCZN.do`, `bizpbanc-ongoing.do`,
+`bizpbanc-deadline.do`를 차단하므로 Source ID·allowlist·요청 예산을 부여하지
+않았다. 운영 주체의 공식 API 승인 또는 robots 변경 전에는 Browser·다른 경로로
+우회하지 않는다.
+
+구체적인 input 행·공식 URL·approved/blocked/rejected·재개 조건은
+[`supplemental_official_policy_inventory.json`](../../data/reference/supplemental_official_policy_inventory.json),
+온통청년·복지로 비교 기준과 판정은
+[`supplemental_official_policy_duplicate_audit.json`](../../data/reference/supplemental_official_policy_duplicate_audit.json)을
+따른다. 현재 profile은 preflight 승인 상태이며 실제 응답 구조·field locator는
+SOP3 offline fixture와 SOP4 제한 actual 뒤 추가한다.
 
 ## 공통 비밀정보 경계
 

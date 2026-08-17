@@ -1,0 +1,1070 @@
+{
+  "schema_version": "1.0.0",
+  "audit_id": "supplemental-policy-duplicate-audit-20260817",
+  "inventory_id": "supplemental-official-policy-inventory-20260817",
+  "inventory_sha256": "8be3b4371213786a900f15e9b29fd5c41186ffb39bfad719e029010e88bcb23d",
+  "baseline": {
+    "baseline_id": "719c18c5274ba51936c161fa2e75d4ef",
+    "descriptors": [
+      {
+        "source_id": "bokjiro-central-welfare-api",
+        "snapshot_id": "ffa74ef47e6048109f11bf40d1ac5e15",
+        "snapshot_collected_at": "2026-08-06T00:19:03.630716+00:00",
+        "snapshot_policy_count": 461,
+        "database_checked_at": "2026-08-17T02:29:19.985062+00:00",
+        "database_policy_count": 461
+      },
+      {
+        "source_id": "youthcenter-api",
+        "snapshot_id": "6add34f7aad9456ab0abb19175b7621c",
+        "snapshot_collected_at": "2026-08-06T00:18:54.586978+00:00",
+        "snapshot_policy_count": 2695,
+        "database_checked_at": "2026-08-17T02:29:19.985062+00:00",
+        "database_policy_count": 2698
+      }
+    ]
+  },
+  "comparison_contract": {
+    "exact": [
+      "approved aggregator source_id + external_id",
+      "canonical public URL"
+    ],
+    "review_only": [
+      "normalized title"
+    ],
+    "not_compared": [
+      "XLSX collection-method text",
+      "XLSX document-note text",
+      "missing period/support evidence"
+    ]
+  },
+  "summary": {
+    "candidate_identity_count": 60,
+    "exact_duplicate": 26,
+    "review_required": 11,
+    "potentially_new": 19,
+    "not_assessed": 4
+  },
+  "decisions": [
+    {
+      "candidate_id": "xlsx-row-002-96ef237a57a4",
+      "input_rows": [
+        2
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match",
+        "title_conflict"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00004661",
+          "title": "청년월세 지원사업"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-003-71fc53f4606b",
+      "input_rows": [
+        3
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match",
+        "title_conflict"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00003201",
+          "title": "주거급여(맞춤형 급여)"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-004-07290460a74e",
+      "input_rows": [
+        4
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-005-704ca3f1f595",
+      "input_rows": [
+        5
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-006-3dc9ad4b8195",
+      "input_rows": [
+        6
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250903005400211618",
+          "title": "전세보증금반환보증 보증료 지원"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260527005400113223",
+          "title": "전세보증금반환보증 보증료 지원"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-007-55ad8dbfb893",
+      "input_rows": [
+        7
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00000060",
+          "title": "청년내일저축계좌"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-008-1acdfe8c2f9d",
+      "input_rows": [
+        8
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00000838",
+          "title": "고용보험 미적용자 출산급여 지원"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250123005400110386",
+          "title": "고용보험 미적용자 출산급여 지원"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-009-7db115678713",
+      "input_rows": [
+        9
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00001175",
+          "title": "자립준비청년 자립수당 지급"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-010-3462d33e6184",
+      "input_rows": [
+        10
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250617005400110946",
+          "title": "빈곤 청년에 대한 근로인센티브 확대"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-011-18be170621df",
+      "input_rows": [
+        11
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match",
+        "title_conflict"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00001068",
+          "title": "한부모가족 아동양육비 지원"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-012-1c61630eb082",
+      "input_rows": [
+        12
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00005567",
+          "title": "정신건강 심리상담 바우처사업"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-013-481148a890e3",
+      "input_rows": [
+        13
+      ],
+      "input_disposition": "data_error",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match",
+        "title_conflict"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00005567",
+          "title": "정신건강 심리상담 바우처사업"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-014-6ef8a04a0463",
+      "input_rows": [
+        14
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-015-64777b1ebd8c",
+      "input_rows": [
+        15
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260716005400113260",
+          "title": "청년일자리도약장려금"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-016-0c73f44ac3f4",
+      "input_rows": [
+        16
+      ],
+      "input_disposition": "data_error",
+      "duplicate_outcome": "not_assessed",
+      "reason_codes": [
+        "data_error"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-017-d3c5388fbf6b",
+      "input_rows": [
+        17
+      ],
+      "input_disposition": "discovery_reference",
+      "duplicate_outcome": "not_assessed",
+      "reason_codes": [
+        "discovery_reference"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-018-c20d589eac7a",
+      "input_rows": [
+        18
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260714005400113258",
+          "title": "k-뉴딜 아카데미"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-019-ea29840eb663",
+      "input_rows": [
+        19
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260625005400113245",
+          "title": "사회연대경제 청년일경험"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-020-a6d483776f0a",
+      "input_rows": [
+        20
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-021-ed64c31f3be3",
+      "input_rows": [
+        21
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-022-6e9df5abbd76",
+      "input_rows": [
+        22
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-023-6c985103e35f",
+      "input_rows": [
+        23
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250623005400111121",
+          "title": "기업인력애로센터"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-024-58bbc8444f44",
+      "input_rows": [
+        24
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260310005400112102",
+          "title": "중남미 지역기구 인턴 파견"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-025-be0d32925a0e",
+      "input_rows": [
+        25
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-026-283fef9f3d20",
+      "input_rows": [
+        26
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-027-86976516c7ad",
+      "input_rows": [
+        27
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260416005400112763",
+          "title": "재도전성공패키지"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-028-8b50eda6d17f",
+      "input_rows": [
+        28
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-029-1826c89c8979",
+      "input_rows": [
+        29
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260323005400112245",
+          "title": "지식재산 기반 창업촉진(IP 디딤돌 프로그램)"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-030-df006ad04895",
+      "input_rows": [
+        30
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-031-8cd16f60d8e4",
+      "input_rows": [
+        31
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-032-23802cb4edcf",
+      "input_rows": [
+        32
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-033-30348f2587cb",
+      "input_rows": [
+        33
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260714005400113259",
+          "title": "청년도약 인재양성 부트캠프"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-034-4e145bcfb3ab",
+      "input_rows": [
+        34
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260320005400112238",
+          "title": "산업맞춤 단기직무능력인증과정 Match業"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-035-049d97a21693",
+      "input_rows": [
+        35
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250610005400110905",
+          "title": "한국형 온라인 공개강좌(K-MOOC) 운영 및 산업맞춤 직무능력 향상 지원"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260320005400112239",
+          "title": "한국형 온라인 공개강좌(K-MOOC)"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-036-ad86bcaa33ea",
+      "input_rows": [
+        36
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-037-9e2c0363451b",
+      "input_rows": [
+        37
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250702005400111144",
+          "title": "디지털정부 Young Frontier 교육"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-038-3523fe9d4f38",
+      "input_rows": [
+        38
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-039-9832413c1924",
+      "input_rows": [
+        39
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-040-ea5d7210c177",
+      "input_rows": [
+        40
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-041-b7b612a1eb60",
+      "input_rows": [
+        41
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00006242",
+          "title": "현장실습 지원금"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250612005400110918",
+          "title": "현장실습 지원금"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-042-605a9b6b6a63",
+      "input_rows": [
+        42
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00006236",
+          "title": "고교 취업연계 장려금"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250612005400110914",
+          "title": "고교 취업연계 장려금"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-043-1e000add36a4",
+      "input_rows": [
+        43
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "bokjiro-central-welfare-api",
+          "external_id": "WLF00000052",
+          "title": "인문100년장학금"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-044-602675a7058e",
+      "input_rows": [
+        44
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-048-17edfb719e0b",
+      "input_rows": [
+        48
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260527005400113224",
+          "title": "청년 국가기술자격 응시료 지원 사업"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-049-96e8fb2096c1",
+      "input_rows": [
+        49
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250618005400111002",
+          "title": "차세대 보안 리더"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-050-ca053c5e02a9",
+      "input_rows": [
+        50
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "aggregator_external_id_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250612005400110919",
+          "title": "청년법조인 국제법무 전문인력 양성"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-054-5da7b658c0e3",
+      "input_rows": [
+        54,
+        58
+      ],
+      "input_disposition": "data_error",
+      "duplicate_outcome": "not_assessed",
+      "reason_codes": [
+        "data_error"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-055-62e5218528a7",
+      "input_rows": [
+        55,
+        65
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250623005400111106",
+          "title": "청년 채무조정 제공"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-056-744b4ab2c476",
+      "input_rows": [
+        56,
+        66
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250626005400111138",
+          "title": "이주배경청년(청소년)지원"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-057-317b04fe82d5",
+      "input_rows": [
+        57,
+        69
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-059-6b5af352821e",
+      "input_rows": [
+        59
+      ],
+      "input_disposition": "data_error",
+      "duplicate_outcome": "not_assessed",
+      "reason_codes": [
+        "data_error"
+      ],
+      "matched_policies": []
+    },
+    {
+      "candidate_id": "xlsx-row-060-f0757e5827b1",
+      "input_rows": [
+        60
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250226005400110565",
+          "title": "청년주택드림청약통장"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260616005400113238",
+          "title": "청년주택드림청약통장"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-061-88b9e91d2c78",
+      "input_rows": [
+        61
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260605005400113228",
+          "title": "청년미래적금"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-062-dde102eb83ee",
+      "input_rows": [
+        62
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250619005400111064",
+          "title": "청년·대학생 햇살론(햇살론유스)"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260724005400113307",
+          "title": "청년 자금지원을 위한 햇살론유스 운영"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-063-f512564c122c",
+      "input_rows": [
+        63
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260421005400112773",
+          "title": "미소금융 청년 미래이음 대출"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-064-fc4e580d797f",
+      "input_rows": [
+        64
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250617005400110997",
+          "title": "1인 광고콘텐츠 창작자 지원"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-067-b7a6bfa254a3",
+      "input_rows": [
+        67
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250119005400210339",
+          "title": "청년 예술가 및 청년 창작자 지원"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250904005400211642",
+          "title": "청년예술가 육성 지원(신진예술지원)"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260304005400112099",
+          "title": "케이-아트(K-Art) 청년 창작자 지원"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-068-277105898c43",
+      "input_rows": [
+        68
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "review_required",
+      "reason_codes": [
+        "normalized_title_match_only"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250218005400210456",
+          "title": "청년문화예술패스"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250228005400110573",
+          "title": "청년문화예술패스"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20250716005400111300",
+          "title": "청년문화예술패스"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260305005400112100",
+          "title": "청년문화예술패스"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260410005400212683",
+          "title": "청년문화예술패스"
+        },
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260504005400113122",
+          "title": "청년문화예술패스"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-070-88b3385576db",
+      "input_rows": [
+        70
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "exact_duplicate",
+      "reason_codes": [
+        "canonical_url_match"
+      ],
+      "matched_policies": [
+        {
+          "source_id": "youthcenter-api",
+          "external_id": "20260528005400113227",
+          "title": "(농식품부) 농식품 바우처"
+        }
+      ]
+    },
+    {
+      "candidate_id": "xlsx-row-071-5f1c25f7b30c",
+      "input_rows": [
+        71
+      ],
+      "input_disposition": "candidate",
+      "duplicate_outcome": "potentially_new",
+      "reason_codes": [
+        "no_exact_id_url_or_title_match"
+      ],
+      "matched_policies": []
+    }
+  ]
+}

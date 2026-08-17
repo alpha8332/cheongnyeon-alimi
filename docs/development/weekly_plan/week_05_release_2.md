@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`W5-G0_PASS`, Data 06·영역별 안정화 대기)
+- 상태: in-progress (`W5-G0_PASS`, Data 06 `W5-D1` 완료·`W5-D2` 대기)
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -56,8 +56,9 @@ blocker로 유지한다.
 
 - `develop`·`origin/develop`은 `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
   (`docs(plan): detail week 5 release acceptance`)에서 일치한다.
-- Data 05는 completed이며 Data 06 계획은 approved다. `W5-G0_PASS`로 Data 06과
-  기존 기능 안정화의 병렬 실행이 열렸지만 Data 06 구현은 아직 시작하지 않았다.
+- Data 05는 completed다. Data 06은 `W5-D1`에서 SOP0~SOP2를 완료해 후보
+  60개를 중복·검토·잠정 신규로 분리하고 공식 Source 4개를 승인했다.
+  다음 단계는 Source Adapter·offline replay인 `W5-D2`다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.
 - 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.

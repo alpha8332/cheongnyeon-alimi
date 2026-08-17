@@ -33,6 +33,10 @@
   조건·서류·공개 시설 연락처와 항목별 Source evidence 계약
 - [Regional Youth Policy Source Inventory JSON Schema](../../data/schema/regional_youth_policy_source_inventory.schema.json):
   17개 지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태 계약
+- [Supplemental Official Policy Inventory JSON Schema](../../data/schema/supplemental_official_policy_inventory.schema.json):
+  Data 06 XLSX 후보 lineage·오류 격리와 공식 Source preflight 계약
+- [Supplemental Duplicate Audit JSON Schema](../../data/schema/supplemental_official_policy_duplicate_audit.schema.json):
+  승인 aggregator snapshot·PostgreSQL 선행 중복 판정 계약
 
 ## 실행 가능한 개발 데이터
 
@@ -42,6 +46,8 @@
 - [행정구역 Seed](../../data/seeds/administrative_regions.json)
 - [행정구역 별칭 Seed](../../data/seeds/administrative_region_aliases.json)
 - [지역 청년정책 Source inventory](../../data/reference/regional_youth_policy_sources.json)
+- [Data 06 후보·Source inventory](../../data/reference/supplemental_official_policy_inventory.json)
+- [Data 06 선행 중복 감사](../../data/reference/supplemental_official_policy_duplicate_audit.json)
 
 Normalized Fixture와 canonical 개발 Seed는 결정적으로 재생성되는 같은 JSON
 계약이며 실제 API 원문이 아닌 합성 데이터다. 행정구역 두 Seed는 잠긴 공식

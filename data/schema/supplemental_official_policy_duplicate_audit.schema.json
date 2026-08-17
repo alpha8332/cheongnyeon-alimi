@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:supplemental-official-policy-duplicate-audit:1.0.0",
+  "title": "SupplementalOfficialPolicyDuplicateAudit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "audit_id",
+    "inventory_id",
+    "inventory_sha256",
+    "baseline",
+    "comparison_contract",
+    "summary",
+    "decisions"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "audit_id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "inventory_id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "inventory_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "baseline": { "$ref": "#/$defs/baseline" },
+    "comparison_contract": { "$ref": "#/$defs/comparisonContract" },
+    "summary": { "$ref": "#/$defs/summary" },
+    "decisions": {
+      "type": "array",
+      "minItems": 60,
+      "maxItems": 60,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/decision" }
+    }
+  },
+  "$defs": {
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_id", "descriptors"],
+      "properties": {
+        "baseline_id": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+        "descriptors": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/descriptor" }
+        }
+      }
+    },
+    "descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "snapshot_id",
+        "snapshot_collected_at",
+        "snapshot_policy_count",
+        "database_checked_at",
+        "database_policy_count"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "enum": ["youthcenter-api", "bokjiro-central-welfare-api"]
+        },
+        "snapshot_id": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+        "snapshot_collected_at": { "type": "string", "format": "date-time" },
+        "snapshot_policy_count": { "type": "integer", "minimum": 1 },
+        "database_checked_at": { "type": "string", "format": "date-time" },
+        "database_policy_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "comparisonContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact", "review_only", "not_compared"],
+      "properties": {
+        "exact": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "review_only": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "not_compared": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_identity_count",
+        "exact_duplicate",
+        "review_required",
+        "potentially_new",
+        "not_assessed"
+      ],
+      "properties": {
+        "candidate_identity_count": { "const": 60 },
+        "exact_duplicate": { "const": 26 },
+        "review_required": { "const": 11 },
+        "potentially_new": { "const": 19 },
+        "not_assessed": { "const": 4 }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "input_rows",
+        "input_disposition",
+        "duplicate_outcome",
+        "reason_codes",
+        "matched_policies"
+      ],
+      "properties": {
+        "candidate_id": { "type": "string", "pattern": "^xlsx-row-[0-9]{3}-[0-9a-f]{12}$" },
+        "input_rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 2, "maximum": 71 }
+        },
+        "input_disposition": {
+          "type": "string",
+          "enum": ["candidate", "data_error", "discovery_reference"]
+        },
+        "duplicate_outcome": {
+          "type": "string",
+          "enum": ["exact_duplicate", "review_required", "potentially_new", "not_assessed"]
+        },
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$" }
+        },
+        "matched_policies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/matchedPolicy" }
+        }
+      }
+    },
+    "matchedPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "external_id", "title"],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "enum": ["youthcenter-api", "bokjiro-central-welfare-api"]
+        },
+        "external_id": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 1000 }
+      }
+    }
+  }
+}
