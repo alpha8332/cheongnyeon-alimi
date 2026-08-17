@@ -110,6 +110,8 @@
   실행 이력 조회·수동 실행의 관리자 API 계획
 - [Backend Policy Search Forest 계획](development/develop_plan/backend/06_policy_search.md):
   Gate G1 승인 PostgreSQL 기반 정책 검색 API·파서 및 W3-B0 계약
+- [v0.5.0 Backend Stabilization Forest 계획](development/develop_plan/backend/07_v0_5_0_backend_stabilization.md):
+  5주차 Release 2 (v0.5.0) 백엔드 전체 회귀 검증, Data 06 적재 연동 대조, QA/리뷰 결함 수정 및 인수 게이트 계획
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
