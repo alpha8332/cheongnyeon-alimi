@@ -32,6 +32,7 @@
 | Backend Policy Search | [개발 기록](backend/policy_search.md) | W3-B0~B4 | PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 |
 | Backend Admin Access Control | [개발 기록](backend/admin_access_control.md) | A0~A3 | 관리자 인증·권한 세션 API 및 Fail-closed 기준선 |
 | Backend CollectionRun Admin API | [개발 기록](backend/collection_run_admin_api.md) | C0~C3 | CollectionRun 실행 이력 목록·상세 및 수동 실행 기준선 |
+| v0.5.0 Backend Stabilization | [개발 기록](backend/v0_5_0_backend_stabilization.md) | BE5-00~ | Release 2 (v0.5.0) 백엔드 회귀 검증, Data 06 연동 대조 및 QA 결함 수정 |
 | Recommendation Vertical Slice | [개발 기록](integration/recommendation_vertical_slice.md) | R0~R3 | 사용자 조건 기반 결정적 맞춤 추천 API 및 비단정 계약 |
 | Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | ES0~ES4 | 정책 상세 자격요건 구조화 응답 DTO 및 Evidence 출처 보증 |
 | Admin Data and Log Console | [개발 기록](integration/admin_data_log_console.md) | AO0~AO5 | 관리자 읽기 전용 정책 데이터 표 API 및 파일 로그 콘솔 |
