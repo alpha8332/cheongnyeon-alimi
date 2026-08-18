@@ -67,8 +67,9 @@
 - 맞춤 추천이 사용자 지역·연령·분야의 확정 불일치와 마감 정책을 점수만 낮춰
   계속 반환하고 첫 200개 Policy만 평가하던 문제를 수정했다. 검색과 같은 3값
   판정으로 명시적 지역을 fail-closed 처리하고, 전체 승인 snapshot의 지역 rule을
-  bulk 평가해 실제 3,273건 응답 성능을 유지했다
-  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
+  bulk 평가해 실제 3,273건 응답을 약 14.8초에서 약 1.4초로 개선했다
+  ([문제 해결 기록](docs/troubleshooting/backend/recommendation_full_inventory_performance.md),
+  [개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
 - review admission이 checkpoint의 과거 `open`을 재사용하고 canonical region
   rule을 만들지 않던 문제를 수정해, 실행 기준일 재판정과 region/search
   projection을 fail-closed 검증하도록 했다

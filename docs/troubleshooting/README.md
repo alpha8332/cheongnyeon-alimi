@@ -46,3 +46,6 @@ integration/seed_api_contract_mismatch.md
 - [Windows PostgreSQL 테스트 환경 복구](backend/windows_postgresql_test_environment.md):
   다른 PC의 Unix 가상환경, PostgreSQL 역할 인증과 전용 테스트 DB를 Windows
   환경에서 복구한 실제 절차
+- [추천 전체 정책 판정의 N+1과 오추천 해결](backend/recommendation_full_inventory_performance.md):
+  첫 200건 제한과 가산점 방식의 오추천을 바로잡고, 전체 3,273건 평가에서
+  드러난 지역 판정 N+1을 bulk 조회로 개선한 실제 과정

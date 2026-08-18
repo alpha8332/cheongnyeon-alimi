@@ -248,6 +248,9 @@
   환경변수, Runtime Raw 경계와 저장 Raw의 PostgreSQL 재처리
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
+- [추천 전체 정책 판정의 N+1과 오추천 해결](troubleshooting/backend/recommendation_full_inventory_performance.md):
+  추천 정확성 보완 중 드러난 N+1을 제거해 실제 3,273건 응답을 약 14.8초에서
+  약 1.4초로 개선한 문제 해결 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 - [Release 1 검증 증거 안내](contest/release_1_evidence_guide.md):
   DT7E actual snapshot·contract hash 기반 경량 QA·사용성 검증 절차

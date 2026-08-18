@@ -448,7 +448,9 @@ Policy만 평가한 데 있었다.
 bulk 판정 후 약 `1,386 ms`로 줄었고, 34건 모두 지역 match, closed 0건,
 신규 ID 15102 포함이었다. valid-only 경상남도·25세 actual Browser는 7건,
 타 시도 혼입 0, closed 0, 신규 ID 15104 노출, 비단정 문구와 7개 확인 필요
-표시를 확인했다.
+표시를 확인했다. 증상·원인·단계별 해결과 예방 기준은
+[추천 전체 정책 판정의 N+1과 오추천 해결](../../../troubleshooting/backend/recommendation_full_inventory_performance.md)에
+별도로 기록했다.
 
 ### RA4 회귀 결과
 
