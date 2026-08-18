@@ -2,8 +2,8 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`; Integration 10
-  review admission → Deploy 01 Docker Acceptance 뒤 DTL5-5)
+- 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`, Integration 10
+  `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`; Deploy 01 뒤 DTL5-5)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -13,10 +13,11 @@
 - 선행 데이터 Forest: [Integration 10 Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 배포 Forest: [Deploy 01 Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: Integration 10 `RA0_PASS`·`RA1_PASS`·`RA2_PASS`·`RA3_PASS`.
+- 현재 Slice: Integration 10 `RA0_PASS`·`RA1_PASS`·`RA2_PASS`·`RA3_PASS`·
+  `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`.
   taxonomy v2 사전 후보 6건을 실행일 현재성·canonical region으로 재검증해
-  3건만 실제 적재·멱등 재실행 완료; 이어서 RA4 `W5-G1_REVALIDATED`, Deploy 01 동일 snapshot
-  `DOCKER_ACCEPTANCE_PASS`, 그 뒤 DTL5-5
+  3건만 실제 적재·멱등 재실행하고 새 DB 기준선을 확정했다. 다음은 Deploy 01
+  동일 snapshot `DOCKER_ACCEPTANCE_PASS`, 그 뒤 DTL5-5다.
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -316,7 +317,7 @@ git status --short
 - [x] DTL5-3 Data 06 actual과 `SOP-G4_PASS`·`SOP-G5_PASS`
 - [x] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
 - [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
-- [ ] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
+- [x] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
 - [ ] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage
 - [ ] 승인 결함 수정·자체 및 독립 재검증

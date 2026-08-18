@@ -39,7 +39,7 @@
 | Integration 07 | Release 2 Feature Acceptance | [개발 계획](integration/07_release_2_feature_acceptance.md) | in-progress |
 | Integration 08 | Eligibility Evidence and Summary | [개발 계획](integration/08_eligibility_evidence_summary.md) | completed |
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
-| Integration 10 | Review Admission and Deploy Handoff | [개발 계획](integration/10_review_admission_docker_acceptance.md) | in-progress |
+| Integration 10 | Review Admission and Deploy Handoff | [개발 계획](integration/10_review_admission_docker_acceptance.md) | completed |
 | Deploy 01 | Docker Acceptance Environment | [개발 계획](deploy/01_docker_acceptance_environment.md) | approved |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
@@ -63,8 +63,9 @@
 
 `v0.1.0`은 `main` 커밋 `2b33ed7`과 tag `v0.1.0`으로 발행됐다. 4주차 결과는
 `develop`의 `f0d3dd3`에 병합되고 `W4-G4_MIDPOINT_PASS`를 통과했다. 다음
-작업은 통과한 W5-G1 뒤 Integration 10 review admission, Deploy 01 동일
-snapshot Acceptance 환경, DTL5-5 독립 검증과 Release 2 Gate 순서다.
+Integration 10 review admission은 `REVIEW_ADMISSION_PASS`와
+`W5-G1_REVALIDATED`로 완료됐다. 다음 작업은 Deploy 01 동일 snapshot
+Acceptance 환경, DTL5-5 독립 검증과 Release 2 Gate 순서다.
 
 | 우선순위 | 작업 또는 조건부 위험 | 결정 | 권장 브랜치 |
 | ---: | --- | --- | --- |
@@ -84,7 +85,7 @@ snapshot Acceptance 환경, DTL5-5 독립 검증과 Release 2 Gate 순서다.
 | W4-G1 병렬·`v0.5.0` 필수 | `REGIONAL-YOUTH-POLICY-INGESTION` | 지역 고유 정책 Source 탐색·중복 제외·실데이터 적재 | `feature/data/regional-youth-policy-ingestion` |
 | 다음·`v0.5.0` 필수 | `SUPPLEMENTAL-OFFICIAL-POLICY-INGESTION` | 온통청년·복지로 누락 중앙·공공기관 Source 중복 감사·실데이터 적재 | `feature/data/supplemental-official-policy-ingestion` |
 | Data 06 뒤 | `R2-FEATURE-ACCEPTANCE` | actual E2E·독립 사용성·QA·수정본 재검증과 Release 2 판정 | 착수 전 integration domain 합의 |
-| W5-G1 뒤·DTL5-5 전 | `R2-REVIEW-ADMISSION` | 최신 review 재판정·partial 적재·새 기준선·`W5-G1_REVALIDATED` | `feature/integration/week-05-acceptance` |
+| 완료 | `R2-REVIEW-ADMISSION` | 최신 review 재판정·partial 적재·새 기준선·`W5-G1_REVALIDATED` | `feature/integration/week-05-acceptance` |
 | Review admission 뒤·DTL5-5 전 | `R2-DOCKER-ACCEPTANCE` | 동일 Git SHA·snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인계 | `feature/deploy/docker-acceptance-environment` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 

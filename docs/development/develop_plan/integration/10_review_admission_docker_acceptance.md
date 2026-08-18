@@ -4,7 +4,7 @@
 
 - 번호: Integration 10
 - 담당 영역: Data, Backend, Frontend, Team Leader - Integration·Deploy
-- 상태: in-progress
+- 상태: completed
 - 계획일: `2026-08-18`
 - 작업 브랜치: `feature/integration/week-05-acceptance`
 - 대상 Release: `v0.5.0` Acceptance 기준선과 `v1.0.0` 배포 기반
@@ -438,15 +438,14 @@ manifest 실행은 `unchanged 3`이며 Policy는 3,270건에서 3,273건이 됐�
 
 ## RA4 - 새 데이터 기준선 인수
 
-상태: verification-complete, post-admission baseline 계약 보정 후 최종 commit
-SHA·manifest 재고정 대기
-(`2026-08-19`). 전체 회귀와 실제 API·Browser에서 추천의 지역·마감 혼입을
-발견해 3값 판정 재사용과 bulk 평가로 수정했다. 검증 상세와 Deploy 입력 초안은
+상태: completed (`2026-08-19`, `REVIEW_ADMISSION_PASS`,
+`W5-G1_REVALIDATED`). 전체 회귀와 실제 API·Browser에서 추천의 지역·마감 혼입을
+발견해 3값 판정 재사용과 bulk 평가로 수정했다. 검증 상세와 Deploy 확정 입력은
 [개발 기록](../../development_notes/integration/review_admission_docker_acceptance.md)에
 있다. 추천 수정 commit 뒤 post-admission DB에서 manifest를 재생성하며 audit의
 baseline 수와 apply의 기준이 달랐던 계약 결함도 발견해 보정했다. 수정 전 HEAD와
-미커밋 검증 manifest는 Deploy 입력으로 사용하지 않으며, 사용자 commit 뒤 새
-SHA에서 동일 판정과 `unchanged 3`을 확인해야 Gate를 통과한다.
+미커밋 검증 manifest는 폐기했다. 확정 구현 SHA `f3f67aac242b29e0494dd1a3f667fcaa7d9ca9d0`에서
+manifest를 재생성하고 동일 판정과 `unchanged 3`을 확인해 Gate를 통과했다.
 
 다음 검증을 새 DB 수치와 stable `(source_id, external_id)` 표본으로 다시 실행한다.
 
@@ -464,6 +463,8 @@ SHA에서 동일 판정과 `unchanged 3`을 확인해야 Gate를 통과한다.
 새 표본은 조건과 stable Source identity로 선택한다.
 
 ### RA4 Gate
+
+판정: `REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED` (`2026-08-19`).
 
 - 새 실제 수치, rule version, manifest hash와 테스트 결과가 개발 기록에 있음
 - 승격된 partial을 확정 자격·확정 신청기간으로 오표시한 사례 0건

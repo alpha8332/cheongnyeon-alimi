@@ -2,16 +2,15 @@
 
 ## 작업 정보
 
-- 상태: in-progress
+- 상태: completed
 - 기록 시작일: `2026-08-19`
 - 담당 영역: Data·Backend·Frontend·Team Leader - Integration
 - 브랜치: `feature/integration/week-05-acceptance`
 - RA4 시작 Git SHA: `424514165b1e2c92f477d04005521d9d5e5d4bb2`
 - 계획: [Integration 10 개발 계획](../../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 상태: Integration 07 `W5-G1_PASS`
-- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, `RA3_PASS`;
-  RA4 회귀·추천·manifest baseline 계약 수정 완료, 최종 commit SHA·manifest
-  재고정 대기
+- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, `RA3_PASS`,
+  `REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED`
 
 ## 목적
 
@@ -36,7 +35,7 @@ RA1~RA4의 review admission 결과가 과거 문서 수치나 다른 PC의 DB에
 | RA1 | completed | review producer·사유·표본·taxonomy v2와 RA2 후보 6건, `RA1_PASS` |
 | RA2 | completed | admission v1·taxonomy v2·RA3 현재성 보정 후 `RA2_PASS` |
 | RA3 | completed | 실제 DB 3건 적재·동일 manifest 전건 unchanged, `RA3_PASS` |
-| RA4 | in-progress | 전체 회귀·actual API·Mock/actual Browser, 추천과 post-admission baseline 계약 수정 통과; 최종 commit SHA·manifest 재고정 대기 |
+| RA4 | completed | 확정 구현 SHA manifest·전체 회귀·actual API·Mock/actual Browser·추천·post-admission baseline 계약 통과, `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED` |
 
 ## 구현 내용
 
@@ -392,6 +391,17 @@ baseline 수정이 아직 미커밋인 상태에서 생성돼 내장 `git_sha`�
 가리킨다. 따라서 결함 수정 검증에만 사용하고 Deploy 01 인계본으로 사용하지
 않는다.
 
+baseline 계약 수정을 커밋한 확정 구현 SHA
+`f3f67aac242b29e0494dd1a3f667fcaa7d9ca9d0`에서 최종 manifest를 다시 만들었다.
+계약 SHA-256은
+`789f8e3b61c144843e93bc762d60f114179c6bfb8e5effd260138c73484e1203`,
+file SHA-256은
+`03b6d91952e53148e709d2a66838faaf26f63432a49050d48f7b2ab40186ebda`다.
+baseline 3,270, review 1,140, promote 3, hold 1,071, closed 66,
+external duplicate hold 2, hard exclusion 0으로 판정이 유지됐다. 서비스 DB
+최종 재적용은 `inserted 0`, `updated 0`, `unchanged 3`, Policy 3,273건
+유지였고 세 Source run은 모두 `succeeded`였다.
+
 ### 실제 DB·API 기준선
 
 | 항목 | RA4 값 |
@@ -400,7 +410,7 @@ baseline 수정이 아직 미커밋인 상태에서 생성돼 내장 `git_sha`�
 | Policy | 3,273 |
 | `valid` / `partial` | 1,469 / 1,804 |
 | `open` | 821 |
-| CollectionRun | 58 |
+| CollectionRun | 61 |
 | orphan `running` | 1, 변경하지 않음 |
 
 신규 stable identity는 다음 실제 Policy ID로 조회됐다. 숫자 ID는 이 snapshot의
@@ -458,9 +468,12 @@ skip은 PostgreSQL 전용 또는 actual 전용 조건을 충족하지 않은 실
 Starlette/httpx deprecation, Vite native config와 500 kB chunk 경고는 기존
 비차단 경고로 남는다.
 
-### Deploy 01 입력 초안
+### Deploy 01 확정 입력
 
 - rule / taxonomy: `review-admission-v1` / `2.0.0`
+- 검증 구현 Git SHA: `f3f67aac242b29e0494dd1a3f667fcaa7d9ca9d0`
+- admission manifest SHA-256:
+  `789f8e3b61c144843e93bc762d60f114179c6bfb8e5effd260138c73484e1203`
 - DB: PostgreSQL `18.4`, Alembic `20260810_0006`, 위 Policy·CollectionRun 집계
 - stable identity: 위 3건
 - 예비 table allowlist: `alembic_version`, `policies`,
@@ -473,8 +486,8 @@ Starlette/httpx deprecation, Vite native config와 500 kB chunk 경고는 기존
   SHA-256 `A440EFE30144678C2EF07BAE0CC824E92DCF168C3AFF9C032DA46A468AF0C358`
 
 table allowlist·금지 field scan과 실제 post-admission dump/hash는 Deploy 01 DEP1
-책임이다. 현재 초안에는 최종 commit SHA·그 SHA로 재생성한 manifest hash가
-없으므로 `REVIEW_ADMISSION_PASS`와 `W5-G1_REVALIDATED`를 아직 선언하지 않는다.
+책임이다. Integration 10 입력은 위 SHA와 hash로 고정했고
+`REVIEW_ADMISSION_PASS`와 `W5-G1_REVALIDATED`를 선언한다.
 
 ## 주요 변경 파일
 
@@ -556,20 +569,18 @@ Raw·checkpoint는 변경하지 않았고 manifest와 backup은 Git 밖에 유�
 | RA4 post-admission audit baseline | 통과, 전체 3,273에서 기존 승격 3건 제외·기준선 3,270 |
 | RA4 baseline 계약 단위 회귀 | 6개 통과·subtest 69개 통과 |
 | RA4 검증 manifest 재적용 | 통과, inserted 0·updated 0·unchanged 3·CollectionRun 58 |
+| RA4 확정 SHA manifest | 통과, Git `f3f67aa`·SHA-256 `789f8e3b…`·기준선 3,270 |
+| RA4 최종 서비스 재적용 | 통과, inserted 0·updated 0·unchanged 3·Policy 3,273·CollectionRun 61 |
 
 따라서 RA0 Gate는 `RA0_PASS`, RA1 Gate는 `RA1_PASS`, 보정된 RA2 Gate는
-`RA2_PASS`, 실제 적재 Gate는 `RA3_PASS`다. evidence gap은 확인 불가 근거로
-분리됐고 RYP9 blocker와 stale run은 계속 미해결이다. 이 항목들은 해결되거나
-승격 승인된 것으로 보지 않는다.
+`RA2_PASS`, 실제 적재 Gate는 `RA3_PASS`, RA4 Gate는
+`REVIEW_ADMISSION_PASS`와 `W5-G1_REVALIDATED`다. evidence gap은 확인 불가
+근거로 분리됐고 RYP9 blocker와 stale run은 계속 미해결이다. 이 항목들은
+해결되거나 승격 승인된 것으로 보지 않는다.
 
 ## 남은 작업
 
-1. RA4 post-admission baseline 계약 수정·테스트·문서를 사용자가 커밋한다.
-2. 새 commit SHA로 manifest를 재생성하고 최종 판정 동일·`unchanged 3`을
-   확인한 뒤 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`를 선언한다.
-3. 최종 SHA·manifest hash를 Deploy 01 DEP0~DEP1에 인계한다.
-4. RYP9 `accepted→duplicate` 29건은 기존 accepted를 계속 보존한다.
-5. orphan `youthcenter` CollectionRun을 승인된 stale 처리 경로로 정리하되,
+1. 위 확정 SHA·manifest hash를 Deploy 01 DEP0~DEP1에 인계한다.
+2. RYP9 `accepted→duplicate` 29건은 기존 accepted를 계속 보존한다.
+3. orphan `youthcenter` CollectionRun을 승인된 stale 처리 경로로 정리하되,
    RA0 DB dump와 변경 전 수치는 그대로 보존한다.
-6. 최종 manifest 재고정 전에는 현재 RA4 검증 결과를 Deploy dump 근거로
-   사용하지 않는다.
