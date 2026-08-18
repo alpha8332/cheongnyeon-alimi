@@ -347,7 +347,10 @@ checkpoint가 미완료이거나 replay identity가 다르면 실패한다. acce
 closed outcome이 현재 regional Gate와 충돌해 DB projection에 영향을 줄 수
 있어도 실패한다. 이미 미적재인 duplicate가 새 Gate에서 review로 바뀐 경우는
 숨기지 않고 `checkpoint_decision_drift`로 집계한다. 보고서는 Git 제외 Runtime
-경계에 원자적으로 작성되며 Raw payload를 포함하지 않는다.
+경계에 원자적으로 작성되며 Raw payload를 포함하지 않는다. schema `1.1.0`부터
+`review_reason_samples`에 Source별 각 reason code의 정렬된 `external_id`를 최대
+20개만 기록해 같은 표본을 재검토할 수 있게 한다. 제목·자격 원문·Raw 본문은
+표본에 복사하지 않는다.
 
 RYP8 부산 replay는 목록 HTML의 `meta[name=author]`, `<title>`,
 `select[name=endstat] option[selected]`을 Source scope locator로 보존하고 상세

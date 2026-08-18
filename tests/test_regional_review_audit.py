@@ -95,6 +95,14 @@ class RegionalReviewAuditTests(unittest.TestCase):
         self.assertEqual(1, source["review_routes"]["application_state"])
         self.assertEqual(1, source["review_routes"]["youth_target"])
         self.assertEqual(
+            ["1", "2"],
+            source["review_reason_samples"]["insufficient_regional_evidence"],
+        )
+        self.assertEqual(
+            ["2"],
+            source["review_reason_samples"]["youth_target_unconfirmed"],
+        )
+        self.assertEqual(
             {
                 "present": 1,
                 "source_value_absent": 0,
@@ -188,6 +196,34 @@ class RegionalReviewAuditTests(unittest.TestCase):
                 "duplicate_now_unaccepted"
             ],
         )
+
+    def test_reason_samples_are_sorted_and_limited_without_raw_text(self) -> None:
+        checkpoint_outcomes = tuple(
+            (f"{value:02d}", "review") for value in range(25, -1, -1)
+        )
+        decisions = tuple(
+            decision(external_id, "youth_target_unconfirmed")
+            for external_id, _ in checkpoint_outcomes
+        )
+
+        report = build_regional_review_audit(
+            (
+                RegionalReviewAuditInput(
+                    source_id="regional-a",
+                    checkpoint_complete=True,
+                    discovered_count=26,
+                    captured_count=26,
+                    checkpoint_outcomes=checkpoint_outcomes,
+                    regional_decisions=decisions,
+                ),
+            ),
+            audit_date=date(2026, 8, 19),
+        )
+
+        samples = report["sources"][0]["review_reason_samples"][
+            "youth_target_unconfirmed"
+        ]
+        self.assertEqual([f"{value:02d}" for value in range(20)], samples)
 
 
 if __name__ == "__main__":

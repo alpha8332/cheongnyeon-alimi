@@ -139,6 +139,25 @@ RA 단계 중 하나라도 실패하면 Deploy 01에 snapshot을 인계하지 �
 있으면 `application_status=open`과 근거 code를 저장할 수 있지만 시작·종료일은
 원문에 없으면 `null`로 둔다. 접수중 근거도 없으면 `hold_review`다.
 
+### 청년 대상 taxonomy v1
+
+정책 단위 제목·대상·자격 원문에 다음 값이 명시되면 청년 대상 조건을 충족한
+것으로 본다.
+
+- 기존 직접 표지: `청년`, `청소년`, `대학생`
+- 가족·생애단계 표지: `신혼부부`, `예비신혼부부`
+- 청년 부모 표지: `미혼모`, `미혼부`, `청소년부모`
+
+이 taxonomy는 청년 대상 조건 한 가지만 충족한다. 공식 Source·identity,
+현재성, 지역 근거와 duplicate 조건은 별도로 통과해야 한다. `신혼`, `미혼모`
+등이 있어도 나이·소득·세부 자격을 생성하지 않고 원문에 없으면 `partial`의
+미확정 조건으로 남긴다.
+
+`가구`, `부모`, 일반 `한부모`처럼 연령 범위가 넓은 표현만 있는 경우에는
+청년·청소년·대학생, 위의 명시적 청년 부모 표지 또는 구체적인 청년 연령
+근거가 추가로 있어야 한다. 포털 이름이나 Source scope만으로 정책 단위 청년
+대상을 대신하지 않는다.
+
 ### 지역 조건
 
 지역 Source 후보는 다음 중 하나를 충족해야 한다.
@@ -256,10 +275,12 @@ Browser profile, 로그와 임시 캡처는 archive에서 제외한다.
   --output runtime/decisions/regional-ryp9-audit.json
 ```
 
-현재 두 CLI가 제공하지 않는 전체 review producer, 사유 교집합과 안전한 표본
-목록은 RA2에서 추가할 `audit_review_admission.py`의 첫 read-only 기능으로 만든다.
-보고서에는 Raw 본문 대신 identity, Source, reason code, field observation,
-provenance ID와 현재 checkpoint outcome만 넣는다.
+regional audit schema `1.1.0`은 Source×reason code별 최대 20개의 정렬된
+`external_id` 표본을 제공한다. cross-source duplicate producer는 최신 manifest의
+`duplicate_review_required`를 별도로 합쳐 전체 review inventory를 만든다. RA2의
+`audit_review_admission.py`는 이 두 입력과 admission v1 dry-run을 하나의
+결정적 manifest로 통합한다. 보고서에는 Raw 본문 대신 identity, Source,
+reason code, field observation, provenance ID와 현재 checkpoint outcome만 넣는다.
 
 ### 표본 선정
 
