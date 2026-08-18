@@ -9,7 +9,7 @@
 - 기준 Git SHA: `9583f3e4a5c2ac68309d4312c703b8c0785f681e`
 - 계획: [Integration 10 개발 계획](../../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 상태: Integration 07 `W5-G1_PASS`
-- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, RA3 대기
+- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, `RA3_PASS`, RA4 대기
 
 ## 목적
 
@@ -32,8 +32,8 @@ RA1~RA4의 review admission 결과가 과거 문서 수치나 다른 PC의 DB에
 | --- | --- | --- |
 | RA0 | completed | 실제 DB·Migration·Runtime 기준선과 암호화 변경 전 backup, `RA0_PASS` |
 | RA1 | completed | review producer·사유·표본·taxonomy v2와 RA2 후보 6건, `RA1_PASS` |
-| RA2 | completed | admission v1·taxonomy v2·scratch DB rollback, `RA2_PASS` |
-| RA3 | pending | 실제 DB transaction 적재·멱등 재실행 대기 |
+| RA2 | completed | admission v1·taxonomy v2·RA3 현재성 보정 후 `RA2_PASS` |
+| RA3 | completed | 실제 DB 3건 적재·동일 manifest 전건 unchanged, `RA3_PASS` |
 | RA4 | pending | DB·API·Browser 회귀와 Deploy 인계 대기 |
 
 ## 구현 내용
@@ -261,7 +261,7 @@ RYP9 재판정 감사의 29건은 모두 `accepted→duplicate` 제안이라
 accepted를 조용히 제거하는 전환이므로 admission v1 입력에서 제외하고 원래
 accepted 상태를 유지한다.
 
-### RA2 versioned admission과 scratch DB dry-run
+### RA2 최초 admission과 RA3 사전 검증에서 발견한 결함
 
 기존 regional producer와 완료 checkpoint를 바꾸지 않는
 `review-admission-v1`, taxonomy `2.0.0`을 구현했다. audit는 실제 PostgreSQL의
@@ -269,7 +269,7 @@ aggregator baseline과 저장된 Raw·checkpoint를 읽기 전용으로 다시 �
 apply는 같은 입력으로 manifest를 재생성해 hash가 일치할 때만 기존
 Normalizer·Importer에 승격 후보를 전달한다.
 
-actual manifest 결과는 다음과 같다.
+RA2 최초 manifest 결과는 다음과 같았으나 RA3에서 폐기했다.
 
 | 항목 | 실제 값 |
 | --- | ---: |
@@ -281,7 +281,7 @@ actual manifest 결과는 다음과 같다.
 | manifest SHA-256 | `803e64cf5a774eb01323412491ea4b0b9a7e9b57995df89969ac69ea42e1ef74` |
 | aggregator baseline ID | `2194e49e05089e56d27984a52f3f9fd6` |
 
-최종 `promote_partial` identity는 다음 5건이다.
+최초 `promote_partial` identity는 다음 5건이었다.
 
 - `regional-daegu-youth-platform/8187`
 - `regional-daegu-youth-platform/8357`
@@ -298,11 +298,68 @@ RA1 사전 후보였던 `regional-gyeongbuk-youth-platform/1009`는 실제 aggre
 로컬 역할에는 `CREATEDB`가 없어 서비스 DB 권한을 확대하지 않았다. 대신
 로컬 `127.0.0.1:55432`에만 bind한 PostgreSQL 18 Docker scratch DB
 `cheongnyeon_alimi_admission_test`에 RA0 dump를 복원했다. Migration
-`20260810_0006`, Policy 3,270건에서 5건의 Policy·region rule·search projection
-write가 모두 `inserted`로 계산됐고 transaction rollback 후 다시 3,270건이었다.
+`20260810_0006`, Policy 3,270건에서 5건의 Policy·search projection write가
+`inserted`로 계산됐고 transaction rollback 후 다시 3,270건이었다. 하지만
+canonical region rule이 0건이었고, 통합 테스트가 Policy 수와 importer 멱등성만
+검사해 이 결함을 놓쳤다.
 별도 멱등성 검증에서는 첫 적용이 `inserted 5`, 동일 manifest 재적용이
 `unchanged 5`였고 검증 identity를 정리한 뒤 다시 3,270건임을 확인했다. 서비스
 DB와 checkpoint는 변경하지 않았다.
+
+### RA3 현재성·지역 보정과 실제 적재
+
+RA3 시작 시 RA2 커밋 `603a0bcd4c7e2b6ef6c0926f768adebfcdd5e51a`를
+확인하고 manifest를 다시 만들었다. 최초 서비스 적용 5건 직후 region rule 0건을
+발견해 Gate를 중단했다. 해당 시도로 생성된 Policy 5건과 정확히 연결된
+CollectionRun 3건만 보상 rollback해 Policy 3,270·CollectionRun 40 기준선으로
+되돌렸다. 다른 기존 row는 변경하지 않았고 RA0 dump로도 복구 가능하다.
+
+원인은 두 가지였다.
+
+1. review의 원본 `ExtractedPolicy`를 바로 정규화해 regional Gate가 확인한
+   canonical region을 Policy·region rule로 물질화하지 않았다.
+2. checkpoint의 과거 `open`을 실행 기준일에도 그대로 사용했다.
+
+admission은 실행 기준일 `2026-08-19`로 기존 regional Gate를 다시 평가하고,
+청년 대상 조건만 taxonomy v2로 대체하도록 수정했다. 대구 `8375`는 8월 14일,
+`8187`은 8월 18일 마감이므로 `exclude_closed`로 바뀌었다. `valid`와 `partial`을
+모두 허용한다는 공통 계약도 classifier에 반영했다.
+
+최종 manifest 결과는 다음과 같다.
+
+| 항목 | 최종 값 |
+| --- | ---: |
+| regional review | 1,140 |
+| `promote_partial` | 3 |
+| `hold_review` | 1,071 |
+| `exclude_closed` | 66 |
+| hard exclusion 오승격 | 0 |
+| 외부 duplicate `hold_review` | 2 |
+| manifest SHA-256 | `d6d781aaefa41e12a73d6f868fd5f291e83dc41e7930382441467795e9f4fdad` |
+
+최종 적재 identity와 품질은 다음과 같다.
+
+| Source / external_id | 품질 | canonical region |
+| --- | --- | --- |
+| `regional-daegu-youth-platform/8357` | `partial` | 대구광역시 `2700000000` |
+| `regional-gangwon-youth-platform/A2026010600300200900600001` | `partial` | 강원특별자치도 `5100000000` |
+| `regional-gyeongnam-youth-platform/2091` | `valid` | 경상남도 `4800000000` |
+
+scratch CLI의 첫 실행 `inserted 3`, 두 번째 `unchanged 3`, canonical region
+rule·search projection 각 3건과 cleanup 후 Policy 3,270건을 확인했다. 서비스
+DB에는 corrected payload를 `inserted 3`으로 적용했다. 이후 checkpoint 원래
+reason과 실행일 reason을 내부적으로 분리해 최종 manifest SHA가 바뀌었지만 정책
+payload는 같았고, 최종 SHA를 두 번 실행해 모두 `unchanged 3`을 확인했다. 각
+실행은 Source별 transaction과 `runtime_import` CollectionRun을 남겼다.
+
+최종 서비스 DB는 Policy 3,273건, `valid 1,469`, `partial 1,804`, `open 821`,
+CollectionRun 52건이다. 승인 3건의 matched region rule과 search projection은
+각 3건이다. 기존 orphan `running` 1건은 이번 Slice에서 변경하지 않았다.
+
+RA3 실행 시 Git HEAD는 RA2 커밋 `603a0bcd4c7e2b6ef6c0926f768adebfcdd5e51a`이고
+RA3 수정분은 아직 미커밋이므로 manifest의 `git_sha`도 이 기준 SHA를 가리킨다.
+RA3 커밋 뒤 RA4 시작 시 새 HEAD로 manifest를 다시 생성하고, 정책 payload와
+판정 수가 같으며 서비스 적용이 `unchanged 3`인지 확인해야 한다.
 
 ## 주요 변경 파일
 
@@ -313,6 +370,9 @@ DB와 checkpoint는 변경하지 않았다.
 - `docs/development/develop_plan/forest_roadmap.md`
 - `docs/index.md`
 - `collectors/regional_review_audit.py`
+- `collectors/regional_expansion.py`
+- `collectors/regional_pilot.py`
+- `collectors/gyeongbuk_youth.py`
 - `collectors/review_admission.py`
 - `scripts/audit_review_admission.py`
 - `scripts/apply_review_admission.py`
@@ -323,8 +383,8 @@ DB와 checkpoint는 변경하지 않았다.
 - `docs/data/review_admission_rules.md`
 - `tests/test_regional_review_audit.py`
 
-DB·Runtime 원본은 변경하지 않았다. backup과 read-only audit 결과는 Git 밖의
-암호화 디렉터리에만 생성했다.
+RA3에서 서비스 DB Policy 3건과 Source별 CollectionRun 6건을 추가했다. Runtime
+Raw·checkpoint는 변경하지 않았고 manifest와 backup은 Git 밖에 유지했다.
 
 ## 설계 결정
 
@@ -340,6 +400,10 @@ DB·Runtime 원본은 변경하지 않았다. backup과 read-only audit 결과�
    않는다. 기존 producer·checkpoint는 소급 변경하지 않고 RA2 admission에서
    버전을 고정한다.
 7. audit 표본에는 identity·reason만 기록하고 Raw 본문을 복제하지 않는다.
+8. checkpoint의 과거 `open`은 admission 실행일의 현재성을 대신하지 않는다.
+   regional Gate를 다시 적용해 현재성과 canonical region을 함께 물질화한다.
+9. RA3 최초 실패 시도분은 정확한 identity·run ID를 확인한 뒤에만 보상
+   rollback하고, 삭제 전후 수치와 복구 가능한 RA0 dump를 유지한다.
 
 ## 검증 결과
 
@@ -353,28 +417,33 @@ DB·Runtime 원본은 변경하지 않았다. backup과 read-only audit 결과�
 | 변경 전 DB dump | 통과, EFS·SHA-256·TOC 93행 |
 | Runtime archive | 통과, EFS·SHA-256·entry 19,551·허용 밖 0 |
 | Docker 사전 확인 | 통과, Engine `29.6.2`·Compose `5.3.1` |
-| 원본 DB·Runtime 변경 금지 | 통과, read-only SQL·rollback audit만 수행 |
+| RA0~RA2 원본 DB·Runtime 변경 금지 | 통과, read-only SQL·scratch rollback만 수행 |
 | RA1 regional audit | 통과, schema `1.1.0`·Source 13·review 1,140·drift 0 |
 | 사유별 결정적 표본 | 통과, Source×reason 최대 20 identity·Raw 본문 0 |
 | RA1 taxonomy 대조 | 통과, review 430건 중 v2 일치 44·RA2 후보 6·hold 1,134 |
 | regional audit 단위 테스트 | 5개 통과 |
 | RA2 admission fixture | 통과, 14 cases·taxonomy 전체 표지·2030 연도 오탐 방지 |
-| RA2 actual audit | 통과, review 1,140·promote 5·hold 1,135·hard exclusion 0 |
-| RA2 manifest Schema·hash | 통과, schema issue 0·SHA-256 일치 |
-| PostgreSQL scratch dry-run | 통과, inserted 5·전후 Policy 3,270·rollback |
-| PostgreSQL admission 통합 테스트 | 2개 통과, rollback·멱등 재실행·정리 후 3,270건 |
+| 최종 admission audit | 통과, review 1,140·promote 3·hold 1,071·closed 66 |
+| 최종 manifest Schema·hash | 통과, schema issue 0·SHA-256 `d6d781aa…` |
+| PostgreSQL scratch CLI | 통과, inserted 3·unchanged 3·region/search 각 3·cleanup 3,270 |
+| PostgreSQL admission 통합 테스트 | 2개 통과, rollback·CLI 멱등·Source별 run·지역 rule |
+| 전체 Data·Integration 회귀 | 333개 통과·10개 환경 조건 skip·subtest 241개 통과 |
+| RA3 서비스 1차 적용 | 통과, inserted 3·Policy 3,270→3,273 |
+| RA3 서비스 재실행 | 통과, inserted 0·updated 0·unchanged 3 |
+| RA3 최종 DB | 통과, Policy 3,273·valid 1,469·partial 1,804·open 821 |
 
-따라서 RA0 Gate는 `RA0_PASS`, RA1 Gate는 `RA1_PASS`, RA2 Gate는
-`RA2_PASS`다. evidence gap은 확인 불가 근거로 분리됐고 RYP9 blocker와 stale
-run은 RA3의 명시적 입력이다. 이 항목들은 해결되거나 승격 승인된 것으로 보지
-않는다.
+따라서 RA0 Gate는 `RA0_PASS`, RA1 Gate는 `RA1_PASS`, 보정된 RA2 Gate는
+`RA2_PASS`, 실제 적재 Gate는 `RA3_PASS`다. evidence gap은 확인 불가 근거로
+분리됐고 RYP9 blocker와 stale run은 계속 미해결이다. 이 항목들은 해결되거나
+승격 승인된 것으로 보지 않는다.
 
 ## 남은 작업
 
-1. RA2 코드·문서 변경을 커밋해 RA3의 clean Git 기준선을 만든다.
-2. 승인된 동일 manifest SHA로 5건만 RA3 transaction 적재한다.
-3. 같은 manifest를 재실행해 5건 전부 `unchanged`인지 확인한다.
+1. RA3 코드·문서 변경을 커밋해 RA4의 Git 기준선을 만든다.
+2. 새 HEAD로 manifest를 재생성하고 최종 판정 동일·`unchanged 3`을 확인한다.
+3. RA4에서 새 Policy 3,273건 기준 DB·API·Browser actual 회귀를 수행한다.
 4. RYP9 `accepted→duplicate` 29건은 기존 accepted를 계속 보존한다.
 5. orphan `youthcenter` CollectionRun을 승인된 stale 처리 경로로 정리하되,
    RA0 DB dump와 변경 전 수치는 그대로 보존한다.
-6. RA3 승인 전에는 후보 5건도 실제 서비스 DB에 적재하지 않는다.
+6. RA4 통과 전에는 `REVIEW_ADMISSION_PASS`나 `W5-G1_REVALIDATED`를 선언하지
+   않는다.

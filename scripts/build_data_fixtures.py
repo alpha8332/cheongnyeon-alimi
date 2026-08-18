@@ -198,6 +198,15 @@ def _review_admission_cases() -> dict[str, Any]:
                 ],
             ),
             case(
+                "fully-structured-valid",
+                "1인가구 생활 지원",
+                "open",
+                regional_open,
+                "promote_partial",
+                normalization_status="valid",
+                unknown_codes=[],
+            ),
+            case(
                 "youth-target-unconfirmed",
                 "주거비 지원사업",
                 "open",

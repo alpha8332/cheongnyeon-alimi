@@ -140,6 +140,7 @@ class ReviewAdmissionCandidate:
     application: str
     original_reason_codes: tuple[str, ...]
     item_texts: tuple[str, ...]
+    current_reason_codes: tuple[str, ...] = ()
     normalization_status: str | None = None
     residual_unknown_codes: tuple[str, ...] = ()
     policy_fingerprint: str | None = None
@@ -207,6 +208,9 @@ def classify_review_candidate(
     markers = tuple(sorted({marker for _, marker in matches}))
     groups = tuple(sorted({group for group, _ in matches}))
     original = frozenset(candidate.original_reason_codes)
+    current = frozenset(
+        candidate.current_reason_codes or candidate.original_reason_codes
+    )
 
     outcome: AdmissionOutcome
     reasons: tuple[str, ...]
@@ -226,22 +230,23 @@ def classify_review_candidate(
         outcome = AdmissionOutcome.HOLD_REVIEW
         reasons = ("checkpoint_not_review",)
     elif not markers and not any(
-        reason.startswith("youth_target_confirmed") for reason in original
+        reason.startswith("youth_target_confirmed")
+        for reason in original | current
     ):
         outcome = AdmissionOutcome.HOLD_REVIEW
         reasons = ("youth_target_unconfirmed",)
-    elif original & _REGION_BLOCKERS or not original & _ITEM_REGION_REASONS:
+    elif current & _REGION_BLOCKERS or not current & _ITEM_REGION_REASONS:
         outcome = AdmissionOutcome.HOLD_REVIEW
         reasons = ("regional_evidence_not_admissible",)
-    elif candidate.application != "open" or not original & _OPEN_REASONS:
+    elif candidate.application != "open" or not current & _OPEN_REASONS:
         outcome = AdmissionOutcome.HOLD_REVIEW
         reasons = ("current_application_unconfirmed",)
     elif candidate.normalization_status == "invalid":
         outcome = AdmissionOutcome.EXCLUDE_INVALID
         reasons = ("normalized_program_invalid",)
-    elif candidate.normalization_status != "partial":
+    elif candidate.normalization_status not in {"valid", "partial"}:
         outcome = AdmissionOutcome.HOLD_REVIEW
-        reasons = ("partial_contract_not_satisfied",)
+        reasons = ("normalization_contract_not_satisfied",)
     elif candidate.policy_fingerprint is None:
         outcome = AdmissionOutcome.EXCLUDE_INVALID
         reasons = ("policy_fingerprint_missing",)

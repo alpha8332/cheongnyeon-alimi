@@ -10,6 +10,10 @@
 
 ### Changed
 
+- review admission v1으로 실행일 현재성·청년 taxonomy·canonical region을 모두
+  통과한 지역 정책 3건을 실제 DB에 적재하고 동일 manifest 재실행의 전건
+  `unchanged`와 Source별 CollectionRun을 검증했다
+  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
 - 홈·맞춤 추천·검색·북마크 UX: 홈 안내 문구 갱신, `/recommendations` 상단·결과 카드 `추가 확인 필요` 박스 제거, 검색 결과 자격 확인 뱃지 제거, 정책 카드 D-Day(`D-nn`) 표시, 북마크 페이지 전체 데이터 삭제 버튼 제거.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
 - 관리자 대시보드(`/admin`): 최신 CollectionRun 집계 요약·수집 시각·품질 metric card. 데이터 품질(`/admin/quality`): 최근 회차별 failed·invalid·duplicate 집계 비교·drill-down.
@@ -58,6 +62,10 @@
 
 ### Fixed
 
+- review admission이 checkpoint의 과거 `open`을 재사용하고 canonical region
+  rule을 만들지 않던 문제를 수정해, 실행 기준일 재판정과 region/search
+  projection을 fail-closed 검증하도록 했다
+  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
 - `run.bat`가 Node.js를 시스템 PATH에서만 찾아 Codex 데스크톱 환경에서 시작하지
   못하던 문제를 수정하고, 번들 Node.js 자동 탐색과 명시적 실행 파일 인자를 추가
 - Windows actual 실행기가 DB 이름을 `cheongnyeon_alimi`로 고정해 격리 검증 DB를

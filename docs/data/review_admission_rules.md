@@ -13,8 +13,10 @@ producer와 분리해 다시 판정한다. producer의 과거 outcome과 Raw는 
 1. `(source_id, external_id)`, 공식 HTTP(S) URL과 Raw provenance 확인
 2. checkpoint의 failed·closed·duplicate hard exclusion 확인
 3. item 제목·대상·연령·category에서 taxonomy v2 표지 확인
-4. item-level 지역 근거와 현재 신청 가능 근거 확인
-5. Normalizer 결과가 `partial`이고 residual unknown이 보존되는지 확인
+4. checkpoint의 과거 상태를 신뢰하지 않고 실행 기준일의 regional Gate로
+   item-level 지역 근거와 현재 신청 가능 근거 재평가
+5. Normalizer 결과가 `valid` 또는 `partial`이고 residual unknown이 보존되는지
+   확인
 6. 현재 PostgreSQL aggregator 기준선에서 exact·URL·fingerprint 중복 판정
 7. 모든 조건을 통과한 후보만 `promote_partial`
 
@@ -49,15 +51,21 @@ manifest에는 rule·taxonomy·Git·Migration·checkpoint hash, identity, 원래
 실행 가능한 계약이다. apply 명령은 Schema와 manifest hash를 검증하고 같은
 Raw·checkpoint·DB 기준선으로 manifest를 다시 만들 수 없으면 실패한다.
 
-## RA2 실제 기준선
+## RA2·RA3 실제 기준선
 
-`2026-08-19` 감사에서 지역 review 1,140건 중 `promote_partial` 5건,
-`hold_review` 1,135건으로 판정됐다. 외부 duplicate producer의 보류 2건도 별도
-기록했다. 사전 후보였던 경북 `1009`는
-`same_title_with_incomplete_comparison_evidence`로 보류했다.
+`2026-08-19` 최종 감사에서 지역 review 1,140건은 `promote_partial` 3건,
+`hold_review` 1,071건, `exclude_closed` 66건으로 판정됐다. 외부 duplicate
+producer의 보류 2건도 별도 기록했다. 사전 후보였던 경북 `1009`는
+`same_title_with_incomplete_comparison_evidence`로 보류했다. 대구 `8187`과
+`8375`는 각각 8월 18일과 8월 14일에 종료돼 최종 승격에서 제외했다.
 
-변경 전 dump를 PostgreSQL 18 scratch DB에 복원한 뒤 5건의 Policy·region·search
-projection write를 수행했고 transaction 전체 rollback 후 정책 수는 3,270건으로
-유지됐다. 별도 멱등성 검증에서는 첫 적용 `inserted 5`, 같은 manifest 재적용
-`unchanged 5`, 검증 identity 정리 후 3,270건을 확인했다. 이 결과는 실제 서비스
-DB 적재 승인이 아니며 RA3 전에는 적용하지 않는다.
+최종 manifest SHA-256은
+`d6d781aaefa41e12a73d6f868fd5f291e83dc41e7930382441467795e9f4fdad`다. 변경 전
+dump를 복원한 PostgreSQL 18 scratch DB에서 첫 적용 `inserted 3`, 동일 manifest
+재적용 `unchanged 3`, canonical region rule·search projection 3건과 cleanup 후
+3,270건을 확인했다.
+
+RA3 서비스 DB 첫 적용은 `inserted 3`, 두 번째는 `unchanged 3`이었으며 최종
+Policy는 3,273건이다. 대구 `8357`과 강원
+`A2026010600300200900600001`은 `partial`, 경남 `2091`은 `valid`다. 세 정책 모두
+`open`, `regional`, matched canonical region rule과 search projection을 가진다.

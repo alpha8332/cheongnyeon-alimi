@@ -34,6 +34,7 @@ from collectors.cross_source_duplicate import (  # noqa: E402
 )
 from collectors.gyeongbuk_youth import (  # noqa: E402
     SOURCE_ID as GYEONGBUK_SOURCE_ID,
+    decide_gyeongbuk_regional_policy,
     map_gyeongbuk_duplicate_evidence,
 )
 from collectors.normalizer import Normalizer  # noqa: E402
@@ -41,11 +42,13 @@ from collectors.regional_expansion import (  # noqa: E402
     EXPANDED_CAPTURE_SOURCE_IDS,
     RegionalBrowserExtractor,
     RegionalCheckpointStore,
+    decide_expanded_regional_policy,
     map_expanded_duplicate_evidence,
 )
 from collectors.regional_pilot import (  # noqa: E402
     BUSAN_SOURCE_ID,
     SEOUL_SOURCE_ID,
+    decide_representative_regional_policy,
     map_representative_duplicate_evidence,
 )
 from collectors.review_admission import (  # noqa: E402
@@ -139,6 +142,10 @@ def build_manifest(
                 raise ValueError(
                     f"review evidence missing: {checkpoint.source_id}/{external_id}"
                 )
+            current_regional = _evaluate_admission_region(
+                policy,
+                as_of=as_of,
+            )
             candidate = ReviewAdmissionCandidate(
                 source_id=policy.source_id,
                 external_id=policy.external_id,
@@ -147,9 +154,10 @@ def build_manifest(
                     item.raw_document_id for item in policy.provenance
                 ),
                 checkpoint_outcome=checkpoint_outcome,
-                regionality=str(regional["regionality"]),
-                application=str(regional["application"]),
+                regionality=current_regional.regionality.value,
+                application=current_regional.application.value,
                 original_reason_codes=tuple(regional["reason_codes"]),
+                current_reason_codes=current_regional.reason_codes,
                 item_texts=tuple(
                     value
                     for value in (
@@ -167,9 +175,10 @@ def build_manifest(
             )
             decision = classify_review_candidate(candidate)
             program = None
+            admitted_policy = current_regional.accepted_policy or policy
             if decision.outcome is AdmissionOutcome.PROMOTE_PARTIAL:
                 try:
-                    normalized = Normalizer().normalize(policy)
+                    normalized = Normalizer().normalize(admitted_policy)
                 except Exception as exc:  # normalization is an audited boundary
                     candidate = replace(
                         candidate,
@@ -217,7 +226,11 @@ def build_manifest(
                 decision.outcome is AdmissionOutcome.PROMOTE_PARTIAL
                 and program is not None
             ):
-                duplicate = _duplicate_decision(policy, normalized.program, baseline)
+                duplicate = _duplicate_decision(
+                    admitted_policy,
+                    normalized.program,
+                    baseline,
+                )
                 candidate = replace(
                     candidate,
                     duplicate_outcome=duplicate.outcome.value,
@@ -303,6 +316,28 @@ def _checkpoint_extracted_policies(*, raw_root: Path, checkpoint):
         else _EXTRACTOR_TYPES[checkpoint.source_id]()
     )
     return extractor.extract(selected)
+
+
+def _evaluate_admission_region(policy, *, as_of: date):
+    if policy.source_id == GYEONGBUK_SOURCE_ID:
+        return decide_gyeongbuk_regional_policy(
+            policy,
+            as_of=as_of,
+            require_youth_target=False,
+        )
+    if policy.source_id in {BUSAN_SOURCE_ID, SEOUL_SOURCE_ID}:
+        return decide_representative_regional_policy(
+            policy,
+            as_of=as_of,
+            require_youth_target=False,
+        )
+    if policy.source_id in EXPANDED_CAPTURE_SOURCE_IDS:
+        return decide_expanded_regional_policy(
+            policy,
+            as_of=as_of,
+            require_youth_target=False,
+        )
+    raise ValueError(f"no regional materializer for {policy.source_id}")
 
 
 def _duplicate_decision(policy, program, baseline):

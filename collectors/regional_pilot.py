@@ -547,7 +547,10 @@ def create_busan_youth_collector() -> BusanYouthCollector:
 
 
 def decide_representative_regional_policy(
-    policy: ExtractedPolicy, *, as_of: date | None = None
+    policy: ExtractedPolicy,
+    *,
+    as_of: date | None = None,
+    require_youth_target: bool = True,
 ) -> RegionalPolicyDecision:
     expected = {
         BUSAN_SOURCE_ID: "부산광역시",
@@ -591,15 +594,15 @@ def decide_representative_regional_policy(
         provenance=policy.provenance,
         field_observations=field_observations,
     )
-    return enforce_youth_target(
+    decision = evaluate_regional_policy(
         policy,
-        evaluate_regional_policy(
-            policy,
-            evidence,
-            expected_region_text=expected,
-            as_of=as_of,
-        ),
+        evidence,
+        expected_region_text=expected,
+        as_of=as_of,
     )
+    if require_youth_target:
+        return enforce_youth_target(policy, decision)
+    return decision
 
 
 def map_representative_duplicate_evidence(

@@ -320,11 +320,13 @@ dry-run 결과를 RA2에서 따로 계산한다.
 
 ## RA2 - 결정적 admission 구현과 dry-run
 
-상태: completed (`RA2_PASS`, 2026-08-19). `review-admission-v1`과 taxonomy
-`2.0.0`을 기존 producer와 분리해 구현했고, 실제 review 1,140건에서
-`promote_partial` 5·`hold_review` 1,135를 판정했다. 변경 전 dump를 복원한
-PostgreSQL 18 scratch DB에서 5건을 write한 뒤 전체 rollback해 3,270건 불변을
-확인했다.
+상태: completed·RA3 재검증 (`RA2_PASS`, 2026-08-19). `review-admission-v1`과
+taxonomy `2.0.0`을 기존 producer와 분리해 구현했다. RA3 사전 검증에서
+checkpoint의 과거 `open`을 그대로 사용하고 canonical region을 물질화하지 않은
+결함을 찾아 실행 기준일의 regional Gate를 다시 적용했다. 최종 review 1,140건은
+`promote_partial` 3·`hold_review` 1,071·`exclude_closed` 66건이며, 변경 전 dump를
+복원한 PostgreSQL 18 scratch DB에서 3건의 insert·재실행 unchanged·rollback을
+검증했다.
 
 ### 계획된 변경 파일
 
@@ -399,6 +401,11 @@ audit hash와 apply 입력 hash가 다르면 실패한다.
 
 ## RA3 - 실제 적재와 재실행
 
+상태: completed (`RA3_PASS`, 2026-08-19). 최종 manifest
+`d6d781aaefa41e12a73d6f868fd5f291e83dc41e7930382441467795e9f4fdad`의 3건만
+Source별 transaction으로 적재했다. 첫 실행은 `inserted 3`, 두 번째 동일
+manifest 실행은 `unchanged 3`이며 Policy는 3,270건에서 3,273건이 됐다.
+
 ### 적용 원칙
 
 - 확정한 동일 manifest를 사용하고 중간에 최신 데이터를 다시 섞지 않음
@@ -409,10 +416,12 @@ audit hash와 apply 입력 hash가 다르면 실패한다.
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\apply_review_admission.py `
-  --manifest runtime/decisions/review-admission-v1.json
+  --manifest runtime/decisions/review-admission-v1.json `
+  --apply
 
 .\.venv\Scripts\python.exe scripts\apply_review_admission.py `
-  --manifest runtime/decisions/review-admission-v1.json
+  --manifest runtime/decisions/review-admission-v1.json `
+  --apply
 ```
 
 첫 실행은 manifest 예상 `inserted`, `updated`, `unchanged`와 일치해야 한다.
@@ -423,7 +432,7 @@ audit hash와 apply 입력 hash가 다르면 실패한다.
 
 - DB 증감이 manifest 승격·update와 정확히 일치
 - closed·duplicate·invalid·failed Policy 신규 row 0건
-- 승격 partial의 미확정 필드가 null·unknown으로 보존됨
+- 승격 `valid`·`partial`의 확정·미확정 필드가 각각 계약대로 보존됨
 - DB와 checkpoint/decision identity 불일치 0건
 - 실패 시 원본 DB를 파괴하지 않고 pre-admission dump를 새 DB에 restore해 비교 가능
 

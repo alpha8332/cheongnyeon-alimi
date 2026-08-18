@@ -13,9 +13,9 @@
 - 선행 데이터 Forest: [Integration 10 Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 배포 Forest: [Deploy 01 Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: Integration 10 `RA0_PASS`·`RA1_PASS`·`RA2_PASS`, taxonomy v2
-  사전 후보 6건 중 duplicate 보류 1건을 제외한 5건을 scratch DB rollback으로
-  검증 완료; 이어서 RA3~RA4 `W5-G1_REVALIDATED`, Deploy 01 동일 snapshot
+- 현재 Slice: Integration 10 `RA0_PASS`·`RA1_PASS`·`RA2_PASS`·`RA3_PASS`.
+  taxonomy v2 사전 후보 6건을 실행일 현재성·canonical region으로 재검증해
+  3건만 실제 적재·멱등 재실행 완료; 이어서 RA4 `W5-G1_REVALIDATED`, Deploy 01 동일 snapshot
   `DOCKER_ACCEPTANCE_PASS`, 그 뒤 DTL5-5
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·

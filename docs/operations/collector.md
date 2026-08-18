@@ -606,10 +606,16 @@ RA2 dry-run은 변경 전 dump를 복원한 PostgreSQL scratch DB에서만 실�
 ```
 
 apply 명령은 scratch DB의 Migration·정책 수·aggregator baseline까지 이용해
-manifest를 다시 계산한다. 하나라도 달라지면 쓰기 전에 실패한다. 일치하면 기존
-Importer로 Policy·region rule·search projection을 실제로 쓴 뒤 transaction을
-rollback하고 전후 Policy 수가 같은지 확인한다. RA3 실제 적용은 별도 승인된
-동일 manifest에서만 `--apply`를 사용한다.
+manifest를 다시 계산한다. checkpoint의 과거 `open`을 그대로 사용하지 않고
+실행 기준일의 regional Gate로 현재성과 canonical region을 다시 물질화한다.
+하나라도 달라지면 쓰기 전에 실패한다. 일치하면 기존 Importer로
+Policy·region rule·search projection을 실제로 쓴 뒤 transaction을 rollback하고
+전후 Policy 수가 같은지 확인한다.
+
+RA3 실제 적용은 별도 승인된 동일 manifest에서만 `--apply`를 사용한다. Source별
+transaction과 `runtime_import` CollectionRun을 남기며, 동일 manifest 재실행은
+이미 적재된 승인 identity만 pre-admission baseline에서 제외해 검증한 뒤 전건
+`unchanged`여야 한다.
 
 [Review Admission 규칙](../data/review_admission_rules.md)에 taxonomy와 판정 순서가
 정의돼 있다.

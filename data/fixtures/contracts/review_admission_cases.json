@@ -45,6 +45,21 @@
     },
     {
       "application": "open",
+      "expected_outcome": "promote_partial",
+      "id": "fully-structured-valid",
+      "item_texts": [
+        "1인가구 생활 지원"
+      ],
+      "normalization_status": "valid",
+      "reason_codes": [
+        "target_region_confirmed",
+        "application_period_open",
+        "youth_target_unconfirmed"
+      ],
+      "unknown_codes": []
+    },
+    {
+      "application": "open",
       "expected_outcome": "hold_review",
       "id": "youth-target-unconfirmed",
       "item_texts": [
