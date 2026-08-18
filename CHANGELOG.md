@@ -12,7 +12,9 @@
 
 - review admission v1으로 실행일 현재성·청년 taxonomy·canonical region을 모두
   통과한 지역 정책 3건을 실제 DB에 적재하고 동일 manifest 재실행의 전건
-  `unchanged`와 Source별 CollectionRun을 검증했다
+  `unchanged`와 Source별 CollectionRun을 검증했다. post-admission DB에서
+  manifest를 다시 만들 때 이미 승격된 identity를 baseline에서 제외해 같은
+  manifest를 결정적으로 재적용할 수 있도록 audit/apply 계약을 보강했다
   ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
 - 홈·맞춤 추천·검색·북마크 UX: 홈 안내 문구 갱신, `/recommendations` 상단·결과 카드 `추가 확인 필요` 박스 제거, 검색 결과 자격 확인 뱃지 제거, 정책 카드 D-Day(`D-nn`) 표시, 북마크 페이지 전체 데이터 삭제 버튼 제거.
   ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))

@@ -15,7 +15,7 @@ from datetime import date, datetime, time, timezone
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import func, select, text
+from sqlalchemy import and_, func, or_, select, text
 from sqlalchemy.orm import Session
 
 
@@ -91,7 +91,9 @@ def build_manifest(
     migration_revision = db.execute(
         text("SELECT version_num FROM alembic_version")
     ).scalar_one()
-    policy_count = db.scalar(select(func.count()).select_from(Policy))
+    total_policy_count = int(
+        db.scalar(select(func.count()).select_from(Policy)) or 0
+    )
     db.rollback()
 
     checkpoint_store = RegionalCheckpointStore(checkpoint_root)
@@ -255,6 +257,11 @@ def build_manifest(
         for value in decisions
         if value["outcome"] == AdmissionOutcome.PROMOTE_PARTIAL.value
     ]
+    existing_promoted_count = _existing_promoted_policy_count(db, promoted)
+    policy_count = total_policy_count - existing_promoted_count
+    if policy_count < 0:
+        raise ValueError("promoted policy count exceeds database policy count")
+    db.rollback()
     source_summary = [
         {
             "source_id": source_id,
@@ -419,6 +426,28 @@ def _tree_hash(root: Path) -> str:
         digest.update(path.name.encode("utf-8"))
         digest.update(path.read_bytes())
     return digest.hexdigest()
+
+
+def _existing_promoted_policy_count(
+    db: Session,
+    promoted: list[dict[str, Any]],
+) -> int:
+    identities = {
+        (str(value["source_id"]), str(value["external_id"]))
+        for value in promoted
+    }
+    if not identities:
+        return 0
+    conditions = [
+        and_(Policy.source_id == source_id, Policy.external_id == external_id)
+        for source_id, external_id in sorted(identities)
+    ]
+    return int(
+        db.scalar(
+            select(func.count()).select_from(Policy).where(or_(*conditions))
+        )
+        or 0
+    )
 
 
 def _git_sha() -> str:

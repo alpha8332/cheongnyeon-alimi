@@ -51,6 +51,12 @@ manifest에는 rule·taxonomy·Git·Migration·checkpoint hash, identity, 원래
 실행 가능한 계약이다. apply 명령은 Schema와 manifest hash를 검증하고 같은
 Raw·checkpoint·DB 기준선으로 manifest를 다시 만들 수 없으면 실패한다.
 
+`database.policy_count`는 승격 전 기준선 수다. 이미 같은 manifest의
+`promote_partial` identity가 존재하는 post-admission DB에서 audit를 다시 실행하면
+그 identity 수를 현재 Policy 수에서 제외한다. 따라서 최초 적용 전과 멱등 재적용
+후에 생성한 manifest가 같은 기준선 의미를 유지하며, apply는 전체 Policy 수에서
+이미 존재하는 승격 identity를 뺀 값과 이를 대조한다.
+
 ## RA2·RA3 실제 기준선
 
 `2026-08-19` 최종 감사에서 지역 review 1,140건은 `promote_partial` 3건,

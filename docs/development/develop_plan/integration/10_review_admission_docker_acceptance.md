@@ -438,12 +438,15 @@ manifest 실행은 `unchanged 3`이며 Policy는 3,270건에서 3,273건이 됐�
 
 ## RA4 - 새 데이터 기준선 인수
 
-상태: verification-complete, 최종 commit SHA·manifest 재고정 대기
+상태: verification-complete, post-admission baseline 계약 보정 후 최종 commit
+SHA·manifest 재고정 대기
 (`2026-08-19`). 전체 회귀와 실제 API·Browser에서 추천의 지역·마감 혼입을
 발견해 3값 판정 재사용과 bulk 평가로 수정했다. 검증 상세와 Deploy 입력 초안은
 [개발 기록](../../development_notes/integration/review_admission_docker_acceptance.md)에
-있다. 수정 전 HEAD manifest는 Deploy 입력으로 사용하지 않으며, 사용자 commit
-뒤 새 SHA에서 동일 판정과 `unchanged 3`을 확인해야 Gate를 통과한다.
+있다. 추천 수정 commit 뒤 post-admission DB에서 manifest를 재생성하며 audit의
+baseline 수와 apply의 기준이 달랐던 계약 결함도 발견해 보정했다. 수정 전 HEAD와
+미커밋 검증 manifest는 Deploy 입력으로 사용하지 않으며, 사용자 commit 뒤 새
+SHA에서 동일 판정과 `unchanged 3`을 확인해야 Gate를 통과한다.
 
 다음 검증을 새 DB 수치와 stable `(source_id, external_id)` 표본으로 다시 실행한다.
 

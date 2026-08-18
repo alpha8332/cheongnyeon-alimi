@@ -10,7 +10,8 @@
 - 계획: [Integration 10 개발 계획](../../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 상태: Integration 07 `W5-G1_PASS`
 - 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, `RA3_PASS`;
-  RA4 회귀·결함 수정 완료, 최종 commit SHA·manifest 재고정 대기
+  RA4 회귀·추천·manifest baseline 계약 수정 완료, 최종 commit SHA·manifest
+  재고정 대기
 
 ## 목적
 
@@ -35,7 +36,7 @@ RA1~RA4의 review admission 결과가 과거 문서 수치나 다른 PC의 DB에
 | RA1 | completed | review producer·사유·표본·taxonomy v2와 RA2 후보 6건, `RA1_PASS` |
 | RA2 | completed | admission v1·taxonomy v2·RA3 현재성 보정 후 `RA2_PASS` |
 | RA3 | completed | 실제 DB 3건 적재·동일 manifest 전건 unchanged, `RA3_PASS` |
-| RA4 | in-progress | 전체 회귀·actual API·Mock/actual Browser와 추천 결함 수정 통과; 최종 commit SHA·manifest 재고정 대기 |
+| RA4 | in-progress | 전체 회귀·actual API·Mock/actual Browser, 추천과 post-admission baseline 계약 수정 통과; 최종 commit SHA·manifest 재고정 대기 |
 
 ## 구현 내용
 
@@ -376,6 +377,21 @@ manifest를 다시 만들었다. 판정은 `review 1,140`, `promote_partial 3`,
 않는다. 아래 코드·문서 변경을 사용자가 커밋한 뒤 그 commit SHA로 다시 생성해
 동일 판정·`unchanged 3`을 확인해야 한다.
 
+추천 수정 commit `874c0f808c4a3cd9ef73135b7dbd3a11cedb27aa`에서 다시
+audit했을 때 post-admission 전체 Policy 3,273건을 manifest baseline으로 기록해,
+apply가 요구하는 승격 전 baseline 3,270건과 충돌하는 계약 결함을 발견했다.
+audit가 이미 존재하는 `promote_partial` identity 3건을 현재 Policy 수에서 제외해
+승격 전 기준선 3,270건을 기록하도록 수정하고 단위 회귀를 추가했다. 수정 후
+검증 manifest는 판정 수가 같고 서비스 재적용도 `inserted 0`, `updated 0`,
+`unchanged 3`이었다. 이 실행 뒤 CollectionRun은 58건이며 기존 orphan
+`running` 1건은 그대로다.
+
+이 검증 manifest의 SHA-256은
+`65f375e542e221512bdee144bddb3ca30123ebbdf64bd6440ae61b48f5025769`지만,
+baseline 수정이 아직 미커밋인 상태에서 생성돼 내장 `git_sha`가 `874c0f8`을
+가리킨다. 따라서 결함 수정 검증에만 사용하고 Deploy 01 인계본으로 사용하지
+않는다.
+
 ### 실제 DB·API 기준선
 
 | 항목 | RA4 값 |
@@ -384,7 +400,7 @@ manifest를 다시 만들었다. 판정은 `review 1,140`, `promote_partial 3`,
 | Policy | 3,273 |
 | `valid` / `partial` | 1,469 / 1,804 |
 | `open` | 821 |
-| CollectionRun | 55 |
+| CollectionRun | 58 |
 | orphan `running` | 1, 변경하지 않음 |
 
 신규 stable identity는 다음 실제 Policy ID로 조회됐다. 숫자 ID는 이 snapshot의
@@ -428,7 +444,7 @@ bulk 판정 후 약 `1,386 ms`로 줄었고, 34건 모두 지역 match, closed 0
 
 | 검증 | 최종 결과 |
 | --- | --- |
-| Data·Backend 포함 전체 pytest | 507 passed, 27 skipped, subtest 241 passed |
+| Data·Backend 포함 전체 pytest | 508 passed, 27 skipped, subtest 241 passed |
 | Backend 전용 PostgreSQL | 191 passed |
 | 별도 PostgreSQL integration | 8 passed |
 | Frontend unit | 216 passed |
@@ -478,6 +494,7 @@ table allowlist·금지 field scan과 실제 post-admission dump/hash는 Deploy 
 - `data/schema/review_admission_audit.schema.json`
 - `data/fixtures/contracts/review_admission_cases.json`
 - `tests/test_review_admission.py`
+- `tests/test_review_admission_audit.py`
 - `tests/integration/test_review_admission_to_database.py`
 - `docs/data/review_admission_rules.md`
 - `tests/test_regional_review_audit.py`
@@ -536,6 +553,9 @@ Raw·checkpoint는 변경하지 않았고 manifest와 backup은 Git 밖에 유�
 | RA3 서비스 1차 적용 | 통과, inserted 3·Policy 3,270→3,273 |
 | RA3 서비스 재실행 | 통과, inserted 0·updated 0·unchanged 3 |
 | RA3 최종 DB | 통과, Policy 3,273·valid 1,469·partial 1,804·open 821 |
+| RA4 post-admission audit baseline | 통과, 전체 3,273에서 기존 승격 3건 제외·기준선 3,270 |
+| RA4 baseline 계약 단위 회귀 | 6개 통과·subtest 69개 통과 |
+| RA4 검증 manifest 재적용 | 통과, inserted 0·updated 0·unchanged 3·CollectionRun 58 |
 
 따라서 RA0 Gate는 `RA0_PASS`, RA1 Gate는 `RA1_PASS`, 보정된 RA2 Gate는
 `RA2_PASS`, 실제 적재 Gate는 `RA3_PASS`다. evidence gap은 확인 불가 근거로
@@ -544,7 +564,7 @@ Raw·checkpoint는 변경하지 않았고 manifest와 backup은 Git 밖에 유�
 
 ## 남은 작업
 
-1. RA4 추천 수정·문서를 사용자가 커밋한다.
+1. RA4 post-admission baseline 계약 수정·테스트·문서를 사용자가 커밋한다.
 2. 새 commit SHA로 manifest를 재생성하고 최종 판정 동일·`unchanged 3`을
    확인한 뒤 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`를 선언한다.
 3. 최종 SHA·manifest hash를 Deploy 01 DEP0~DEP1에 인계한다.
