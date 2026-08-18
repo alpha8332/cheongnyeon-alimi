@@ -6,10 +6,11 @@
 - 기록 시작일: `2026-08-19`
 - 담당 영역: Data·Backend·Frontend·Team Leader - Integration
 - 브랜치: `feature/integration/week-05-acceptance`
-- 기준 Git SHA: `9583f3e4a5c2ac68309d4312c703b8c0785f681e`
+- RA4 시작 Git SHA: `424514165b1e2c92f477d04005521d9d5e5d4bb2`
 - 계획: [Integration 10 개발 계획](../../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 상태: Integration 07 `W5-G1_PASS`
-- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, `RA3_PASS`, RA4 대기
+- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, `RA3_PASS`;
+  RA4 회귀·결함 수정 완료, 최종 commit SHA·manifest 재고정 대기
 
 ## 목적
 
@@ -34,7 +35,7 @@ RA1~RA4의 review admission 결과가 과거 문서 수치나 다른 PC의 DB에
 | RA1 | completed | review producer·사유·표본·taxonomy v2와 RA2 후보 6건, `RA1_PASS` |
 | RA2 | completed | admission v1·taxonomy v2·RA3 현재성 보정 후 `RA2_PASS` |
 | RA3 | completed | 실제 DB 3건 적재·동일 manifest 전건 unchanged, `RA3_PASS` |
-| RA4 | pending | DB·API·Browser 회귀와 Deploy 인계 대기 |
+| RA4 | in-progress | 전체 회귀·actual API·Mock/actual Browser와 추천 결함 수정 통과; 최종 commit SHA·manifest 재고정 대기 |
 
 ## 구현 내용
 
@@ -361,6 +362,104 @@ RA3 수정분은 아직 미커밋이므로 manifest의 `git_sha`도 이 기준 S
 RA3 커밋 뒤 RA4 시작 시 새 HEAD로 manifest를 다시 생성하고, 정책 payload와
 판정 수가 같으며 서비스 적용이 `unchanged 3`인지 확인해야 한다.
 
+## RA4 실제 결과
+
+RA3 변경을 커밋한 `424514165b1e2c92f477d04005521d9d5e5d4bb2`에서
+manifest를 다시 만들었다. 판정은 `review 1,140`, `promote_partial 3`,
+`hold_review 1,071`, `exclude_closed 66`, hard exclusion 오승격 0,
+외부 duplicate hold 2로 RA3와 같았다. 새 manifest SHA-256은
+`e466ed4e751077fa363974aaa795492f011e3ea33d2f1ccc174efef8a85d936f`이고
+서비스 DB 재적용은 `inserted 0`, `updated 0`, `unchanged 3`이었다.
+
+이 manifest는 RA4에서 추천 결함을 수정하기 전 HEAD를 가리킨다. 따라서 정확한
+판정·멱등성 증거로는 유효하지만 Deploy 01 최종 handoff manifest로 사용하지
+않는다. 아래 코드·문서 변경을 사용자가 커밋한 뒤 그 commit SHA로 다시 생성해
+동일 판정·`unchanged 3`을 확인해야 한다.
+
+### 실제 DB·API 기준선
+
+| 항목 | RA4 값 |
+| --- | ---: |
+| PostgreSQL / Alembic | `18.4` / `20260810_0006` |
+| Policy | 3,273 |
+| `valid` / `partial` | 1,469 / 1,804 |
+| `open` | 821 |
+| CollectionRun | 55 |
+| orphan `running` | 1, 변경하지 않음 |
+
+신규 stable identity는 다음 실제 Policy ID로 조회됐다. 숫자 ID는 이 snapshot의
+관측값이며 Deploy·후속 검증 assertion은 stable identity를 사용한다.
+
+| stable identity | actual ID | 품질 | 지역 |
+| --- | ---: | --- | --- |
+| `regional-daegu-youth-platform/8357` | 15102 | `partial` | 대구광역시 |
+| `regional-gangwon-youth-platform/A2026010600300200900600001` | 15103 | `partial` | 강원특별자치도 |
+| `regional-gyeongnam-youth-platform/2091` | 15104 | `valid` | 경상남도 |
+
+세 표본은 공개 상세 opt-in, 공식 HTTP(S) 원문과 eligibility `partial` coverage를
+유지했다. partial ID 15102는 기본 상세에서 404, `include_partial=true`에서
+200이었고 valid ID 15104는 기본 상세에서도 200이었다. 명시적 올바른 지역
+검색은 각 표본 1건과 `region=match`만 반환했고 서울특별시로 바꾼 동일 keyword
+검색에는 세 표본이 모두 0건이었다.
+
+### RA4에서 발견하고 수정한 추천 결함
+
+actual Browser에서 대구광역시·25세를 입력했을 때 마감 정책과 제주·인천 등
+확정 불일치 지역 정책이 추천되는 high 결함을 발견했다. 원인은 추천 서비스가
+검색의 3값 판정을 재사용하지 않고 일치 조건에 점수만 더했으며, 첫 200개
+Policy만 평가한 데 있었다.
+
+- 지역·연령·분야·상태 확정 mismatch를 후보에서 제외
+- 명시적 지역의 `unknown`도 검색 API와 동일하게 fail-closed 제외
+- status 미지정 기본 추천에서 `closed` 제외
+- 계약의 `upcoming`을 DB `scheduled`로 매핑하고 명시 상태 `unknown`은 제외,
+  invalid status는 422
+- 연령 bounds 누락을 match로 추정하지 않고 확인 필요로 유지
+- 고정 200건 제한을 제거해 전체 승인 snapshot 평가
+- Policy region rule과 지역 catalog를 bulk query해 N+1 제거
+
+실제 3,273건에서 대구·25세·partial 포함 응답은 수정 전 약 `14,845 ms`에서
+bulk 판정 후 약 `1,386 ms`로 줄었고, 34건 모두 지역 match, closed 0건,
+신규 ID 15102 포함이었다. valid-only 경상남도·25세 actual Browser는 7건,
+타 시도 혼입 0, closed 0, 신규 ID 15104 노출, 비단정 문구와 7개 확인 필요
+표시를 확인했다.
+
+### RA4 회귀 결과
+
+| 검증 | 최종 결과 |
+| --- | --- |
+| Data·Backend 포함 전체 pytest | 507 passed, 27 skipped, subtest 241 passed |
+| Backend 전용 PostgreSQL | 191 passed |
+| 별도 PostgreSQL integration | 8 passed |
+| Frontend unit | 216 passed |
+| Frontend lint / build | 통과 / 통과 |
+| Playwright Mock Browser | 80 passed, actual-only 14 skipped |
+| actual API·in-app Browser | 검색·상세·추천·관리자 Policy·CollectionRun 통과 |
+| 추천 결정성·지역·마감·미확정 | 동일 순서, match-only, closed 0, 비단정·확인 필요 유지 |
+
+skip은 PostgreSQL 전용 또는 actual 전용 조건을 충족하지 않은 실행에서만
+발생했고, PostgreSQL·actual Browser는 별도 실행했다. pytest의
+Starlette/httpx deprecation, Vite native config와 500 kB chunk 경고는 기존
+비차단 경고로 남는다.
+
+### Deploy 01 입력 초안
+
+- rule / taxonomy: `review-admission-v1` / `2.0.0`
+- DB: PostgreSQL `18.4`, Alembic `20260810_0006`, 위 Policy·CollectionRun 집계
+- stable identity: 위 3건
+- 예비 table allowlist: `alembic_version`, `policies`,
+  `administrative_regions`, `administrative_region_aliases`,
+  `policy_region_rules`, `policy_search_documents`, `collection_runs`
+- 제외: test DB, 관리자 token·PIN·pgpass, `backend/logs`, Runtime Raw·checkpoint·
+  decision 원문, 임시 manifest, 개인 연락처·credential·운영 감사 원문
+- 별도 보관 Runtime archive:
+  `%LOCALAPPDATA%\cheongnyeon-alimi\backups\2026-08-19-ra0-9583f3e\pre-review-admission-runtime.zip`,
+  SHA-256 `A440EFE30144678C2EF07BAE0CC824E92DCF168C3AFF9C032DA46A468AF0C358`
+
+table allowlist·금지 field scan과 실제 post-admission dump/hash는 Deploy 01 DEP1
+책임이다. 현재 초안에는 최종 commit SHA·그 SHA로 재생성한 manifest hash가
+없으므로 `REVIEW_ADMISSION_PASS`와 `W5-G1_REVALIDATED`를 아직 선언하지 않는다.
+
 ## 주요 변경 파일
 
 - `docs/development/develop_plan/integration/10_review_admission_docker_acceptance.md`
@@ -382,6 +481,12 @@ RA3 커밋 뒤 RA4 시작 시 새 HEAD로 manifest를 다시 생성하고, 정�
 - `tests/integration/test_review_admission_to_database.py`
 - `docs/data/review_admission_rules.md`
 - `tests/test_regional_review_audit.py`
+- `backend/app/repositories/policy_search.py`
+- `backend/app/api/v1/endpoints/recommendation.py`
+- `backend/app/schemas/recommendation.py`
+- `backend/app/services/policy_search_evaluation.py`
+- `backend/app/services/recommendation.py`
+- `backend/tests/test_recommendation_api.py`
 
 RA3에서 서비스 DB Policy 3건과 Source별 CollectionRun 6건을 추가했다. Runtime
 Raw·checkpoint는 변경하지 않았고 manifest와 backup은 Git 밖에 유지했다.
@@ -439,11 +544,12 @@ Raw·checkpoint는 변경하지 않았고 manifest와 backup은 Git 밖에 유�
 
 ## 남은 작업
 
-1. RA3 코드·문서 변경을 커밋해 RA4의 Git 기준선을 만든다.
-2. 새 HEAD로 manifest를 재생성하고 최종 판정 동일·`unchanged 3`을 확인한다.
-3. RA4에서 새 Policy 3,273건 기준 DB·API·Browser actual 회귀를 수행한다.
+1. RA4 추천 수정·문서를 사용자가 커밋한다.
+2. 새 commit SHA로 manifest를 재생성하고 최종 판정 동일·`unchanged 3`을
+   확인한 뒤 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`를 선언한다.
+3. 최종 SHA·manifest hash를 Deploy 01 DEP0~DEP1에 인계한다.
 4. RYP9 `accepted→duplicate` 29건은 기존 accepted를 계속 보존한다.
 5. orphan `youthcenter` CollectionRun을 승인된 stale 처리 경로로 정리하되,
    RA0 DB dump와 변경 전 수치는 그대로 보존한다.
-6. RA4 통과 전에는 `REVIEW_ADMISSION_PASS`나 `W5-G1_REVALIDATED`를 선언하지
-   않는다.
+6. 최종 manifest 재고정 전에는 현재 RA4 검증 결과를 Deploy dump 근거로
+   사용하지 않는다.

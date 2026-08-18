@@ -60,6 +60,11 @@ def test_get_recommendations_success():
     assert response.status_code == 200
     data = response.json()
     assert len(data["items"]) <= 3
+    assert all(item["application_status"] != "closed" for item in data["items"])
+    assert all(
+        any(reason["code"] == "MATCHED_REGION" for reason in item["reasons"])
+        for item in data["items"]
+    )
 
 
 def test_recommendation_deterministic_sorting():
@@ -81,3 +86,57 @@ def test_recommendation_invalid_age_422():
         json={"age": 121},
     )
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize("method", ["get", "post"])
+def test_recommendation_invalid_status_422(method):
+    if method == "get":
+        response = client.get(
+            "/api/v1/policies/recommendations?status=invalid"
+        )
+    else:
+        response = client.post(
+            "/api/v1/recommendations",
+            json={"status": "invalid"},
+        )
+
+    assert response.status_code == 422
+
+
+def test_recommendation_upcoming_maps_to_scheduled():
+    response = client.post(
+        "/api/v1/recommendations",
+        json={"status": "upcoming", "include_partial": True, "limit": 50},
+    )
+
+    assert response.status_code == 200
+    assert all(
+        item["application_status"] == "scheduled"
+        for item in response.json()["items"]
+    )
+
+
+def test_recommendation_excludes_confirmed_mismatches_and_closed_default():
+    response = client.post(
+        "/api/v1/recommendations",
+        json={
+            "age": 25,
+            "region": "서울특별시",
+            "category": "finance",
+            "limit": 50,
+        },
+    )
+
+    assert response.status_code == 200
+    items = response.json()["items"]
+    assert items
+    assert all(item["application_status"] != "closed" for item in items)
+    assert all("finance" == item["category"] for item in items)
+    assert all(
+        item["min_age"] is None or item["min_age"] <= 25
+        for item in items
+    )
+    assert all(
+        item["max_age"] is None or item["max_age"] >= 25
+        for item in items
+    )

@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.schemas.recommendation import (
     RecommendationRequest,
     RecommendationResponse,
+    RecommendationStatus,
 )
 from app.services.recommendation import recommend_policies_service
 
@@ -48,7 +49,11 @@ def get_recommendations(
     age: Optional[int] = Query(default=None, ge=0, le=120, description="사용자 만 연령"),
     region: Optional[str] = Query(default=None, description="거주지"),
     category: Optional[str] = Query(default=None, description="관심 분야"),
-    status_param: Optional[str] = Query(default=None, alias="status", description="신청 상태 필터"),
+    status_param: Optional[RecommendationStatus] = Query(
+        default=None,
+        alias="status",
+        description="신청 상태 필터 (open, upcoming, closed)",
+    ),
     include_partial: bool = Query(default=False, description="partial 포함 여부"),
     limit: int = Query(default=10, ge=1, le=50, description="최대 반환 추천 수"),
     db: Session = Depends(get_db),

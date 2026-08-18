@@ -10,67 +10,76 @@ from app.schemas.recommendation import (
     RecommendationItem,
     RecommendationReason,
 )
+from app.services.policy_search_evaluation import (
+    evaluate_age_condition,
+    evaluate_application_status,
+    MatchState,
+    PolicySearchEvaluationService,
+    RegionDecision,
+)
 
 
 def evaluate_policy_recommendation(
     policy: Policy,
     request: RecommendationRequest,
+    *,
+    region_decision: RegionDecision | None,
 ) -> Optional[RecommendationItem]:
-    """단일 정책에 대해 추천 관련도 점수(score), 추천 사유(reasons) 및 미확정 조건 계산."""
+    """검색의 3값 판정을 재사용해 추천·제외·미확정을 결정한다."""
     score = 0
     reasons: List[RecommendationReason] = []
     unknown_conditions: List[str] = [
         "소득 및 자산 세부 자격 요건은 공식 원문 확인이 필요합니다."
     ]
 
-    # 1. 관심 분야 (Category) 매핑 (+30점)
+    # 1. 관심 분야 (Category) 판정 (+30점)
     if request.category:
-        matched_cat = False
-        if policy.categories and any(request.category.lower() in str(c).lower() or str(c).lower() in request.category.lower() for c in policy.categories):
-            matched_cat = True
-        elif policy.category_text and (request.category.lower() in policy.category_text.lower() or policy.category_text.lower() in request.category.lower()):
-            matched_cat = True
-
-        if matched_cat:
+        if policy.categories and request.category in policy.categories:
             score += 30
-            cat_label = policy.categories[0] if policy.categories else (policy.category_text or request.category)
             reasons.append(
                 RecommendationReason(
                     code="MATCHED_CATEGORY",
-                    label=f"관심 분야 부합 ({cat_label})",
+                    label=f"관심 분야 부합 ({request.category})",
                 )
             )
+        elif policy.categories:
+            return None
+        else:
+            unknown_conditions.append(
+                "관심 분야 분류가 없어 공식 원문 확인이 필요합니다."
+            )
 
-    # 2. 거주지 (Region) 매핑 (+30점)
-    if request.region:
-        matched_region = False
-        matched_region_str = request.region
-
-        if not policy.regions or "전국" in policy.regions or (policy.region_text and "전국" in policy.region_text):
-            matched_region = True
-            matched_region_str = "전국"
-        elif policy.regions:
-            for r in policy.regions:
-                r_str = str(r)
-                if request.region in r_str or r_str in request.region:
-                    matched_region = True
-                    matched_region_str = r_str
-                    break
-
-        if matched_region:
+    # 2. 거주지 (Region) 판정 (+30점). 확정 불일치는 추천에서 제외한다.
+    if request.region and region_decision is not None:
+        if region_decision.state is MatchState.MATCH:
             score += 30
+            matched_region = (
+                "전국"
+                if region_decision.reason.value == "nationwide"
+                else request.region
+            )
             reasons.append(
                 RecommendationReason(
                     code="MATCHED_REGION",
-                    label=f"거주지 조건 부합 ({matched_region_str})",
+                    label=f"거주지 조건 부합 ({matched_region})",
                 )
             )
+        elif region_decision.state is MatchState.MISMATCH:
+            return None
+        else:
+            # 사용자가 명시한 지역은 검색 API와 같은 fail-closed 경계를 쓴다.
+            # 근거가 unknown인 다른 지역 정책을 추천 후보에 섞지 않는다.
+            return None
 
-    # 3. 연령 (Age) 매핑 (+30점)
+    # 3. 연령 (Age) 판정 (+30점). 누락은 일치로 추정하지 않는다.
     if request.age is not None:
-        min_age = policy.age_min if policy.age_min is not None else 0
-        max_age = policy.age_max if policy.age_max is not None else 120
-        if min_age <= request.age <= max_age:
+        age_decision = evaluate_age_condition(
+            requested_age=request.age,
+            age_min=policy.age_min,
+            age_max=policy.age_max,
+            age_condition_text=policy.age_condition_text,
+        )
+        if age_decision.state is MatchState.MATCH:
             score += 30
             reasons.append(
                 RecommendationReason(
@@ -78,10 +87,31 @@ def evaluate_policy_recommendation(
                     label=f"연령 조건 부합 (만 {request.age}세)",
                 )
             )
+        elif age_decision.state is MatchState.MISMATCH:
+            return None
+        else:
+            unknown_conditions.append(
+                "연령 제한 근거가 없어 공식 원문 확인이 필요합니다."
+            )
 
-    # 4. 신청 상태 (Status) 매핑 (+10점)
+    # 4. 신청 상태 (Status) 판정 (+10점). 기본 추천에서도 마감은 제외한다.
     app_status = str(policy.application_status) if policy.application_status else "unknown"
-    if app_status == "open":
+    requested_status = (
+        "scheduled" if request.status == "upcoming" else request.status
+    )
+    if requested_status:
+        status_decision = evaluate_application_status(
+            requested_status=requested_status,
+            policy_status=policy.application_status,
+        )
+        if status_decision.state is MatchState.MISMATCH:
+            return None
+        if status_decision.state is MatchState.UNKNOWN:
+            return None
+    elif app_status == "closed":
+        return None
+
+    if app_status == "open" and (requested_status in (None, "open")):
         score += 10
         reasons.append(
             RecommendationReason(
@@ -89,10 +119,6 @@ def evaluate_policy_recommendation(
                 label="현재 신청 가능 상태 (open)",
             )
         )
-
-    # 특정 status 필터가 지정된 경우 필터 조건 체크
-    if request.status and app_status != request.status:
-        return None
 
     # 추천 아이템 DTO 생성
     return RecommendationItem(
@@ -125,18 +151,39 @@ def recommend_policies_service(
     정렬 규칙: score DESC, id ASC (결정성 보장)
     """
     repository = PolicyRepository(db)
+    evaluator = PolicySearchEvaluationService(db)
     quality_statuses = ("valid", "partial") if request.include_partial else ("valid",)
+    region_query = (
+        evaluator.resolve_region_alias(request.region)
+        if request.region
+        else None
+    )
 
-    # DB에서 대상 정책 조회
+    # 고정 200건 slice는 신규·지역 정책을 영구 제외하므로 전체 승인 snapshot을
+    # 평가한다. 최종 응답 개수만 request.limit으로 제한한다.
+    inventory = repository.list(
+        quality_statuses=quality_statuses,
+        page=1,
+        limit=1,
+    )
     page_result = repository.list(
         quality_statuses=quality_statuses,
         page=1,
-        limit=200,  # 충분한 후보군 수집
+        limit=max(inventory.total, 1),
+    )
+    region_decisions = (
+        evaluator.evaluate_policy_regions(page_result.items, region_query)
+        if region_query is not None
+        else {}
     )
 
     evaluated_items: List[RecommendationItem] = []
     for policy in page_result.items:
-        item = evaluate_policy_recommendation(policy, request)
+        item = evaluate_policy_recommendation(
+            policy,
+            request,
+            region_decision=region_decisions.get(policy.id),
+        )
         if item is not None:
             evaluated_items.append(item)
 

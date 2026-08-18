@@ -118,6 +118,28 @@ class PolicySearchRepository:
             ).all()
         )
 
+    def policy_region_rules_for_policies(
+        self,
+        policy_ids: Sequence[int],
+    ) -> dict[int, tuple[PolicyRegionRule, ...]]:
+        selected_ids = tuple(sorted(set(policy_ids)))
+        if not selected_ids:
+            return {}
+        grouped: dict[int, list[PolicyRegionRule]] = {
+            policy_id: [] for policy_id in selected_ids
+        }
+        rules = self.db.scalars(
+            select(PolicyRegionRule)
+            .where(PolicyRegionRule.policy_id.in_(selected_ids))
+            .order_by(PolicyRegionRule.policy_id, PolicyRegionRule.id)
+        ).all()
+        for rule in rules:
+            grouped[rule.policy_id].append(rule)
+        return {
+            policy_id: tuple(policy_rules)
+            for policy_id, policy_rules in grouped.items()
+        }
+
     def alias_candidates(
         self,
         *,

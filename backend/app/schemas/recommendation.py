@@ -1,6 +1,9 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
+
+
+RecommendationStatus = Literal["open", "upcoming", "closed"]
 
 
 class RecommendationRequest(BaseModel):
@@ -8,7 +11,10 @@ class RecommendationRequest(BaseModel):
     age: Optional[int] = Field(default=None, ge=0, le=120, description="사용자 만 연령")
     region: Optional[str] = Field(default=None, description="거주지 (예: 서울특별시, 경기도)")
     category: Optional[str] = Field(default=None, description="관심 정책 분야 (예: finance, housing, employment, education)")
-    status: Optional[str] = Field(default=None, description="신청 상태 필터 (open, upcoming, closed)")
+    status: Optional[RecommendationStatus] = Field(
+        default=None,
+        description="신청 상태 필터 (open, upcoming, closed)",
+    )
     include_partial: bool = Field(default=False, description="품질 상태가 partial인 정책 포함 여부")
     limit: int = Field(default=10, ge=1, le=50, description="최대 추천 반환 수")
 

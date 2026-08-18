@@ -461,6 +461,59 @@ class PolicySearchEvaluationService:
             rules=rules,
         )
 
+    def evaluate_policy_regions(
+        self,
+        policies: Sequence[Policy],
+        query: RegionQueryResolution,
+    ) -> dict[int, RegionDecision]:
+        """여러 정책의 지역 판정을 rule·region bulk query 두 번으로 계산한다."""
+        selected = tuple(policies)
+        grouped_rules = self.repository.policy_region_rules_for_policies(
+            [policy.id for policy in selected]
+        )
+        schemes = {
+            rule.region_scheme
+            for rules in grouped_rules.values()
+            for rule in rules
+            if rule.region_scheme is not None
+        }
+        schemes.update(candidate.scheme for candidate in query.candidates)
+        catalog = {
+            (region.scheme, region.code): region
+            for region in self.repository.regions_for_schemes(tuple(schemes))
+        }
+        query_path = self._query_path(query, catalog)
+
+        decisions: dict[int, RegionDecision] = {}
+        for policy in selected:
+            evidence = tuple(
+                RegionRuleEvidence(
+                    relation=rule.relation,
+                    resolution_status=rule.resolution_status,
+                    region_scheme=rule.region_scheme,
+                    region_code=rule.region_code,
+                    region_status=(
+                        catalog[(rule.region_scheme, rule.region_code)].status
+                        if (
+                            rule.region_scheme is not None
+                            and rule.region_code is not None
+                            and (rule.region_scheme, rule.region_code) in catalog
+                        )
+                        else None
+                    ),
+                    source_code=rule.source_code,
+                    source_text=rule.source_text,
+                )
+                for rule in grouped_rules.get(policy.id, ())
+            )
+            decisions[policy.id] = evaluate_region_condition(
+                coverage_scope=policy.coverage_scope,
+                query=query,
+                query_path=query_path,
+                rules=evidence,
+            )
+        return decisions
+
     def evaluate_policy_age(
         self,
         policy_id: int,
