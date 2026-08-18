@@ -43,6 +43,9 @@ integration/seed_api_contract_mismatch.md
 
 ## 현재 문서
 
+- [실측 기반 문제 해결·개선율 보고서](integration/measured_improvement_report.md):
+  실제 전후 수치로 확인한 응답시간·데이터 오류·지역정책 판정 개선을 퍼센트와
+  해석 경계로 종합한 보고서
 - [Windows PostgreSQL 테스트 환경 복구](backend/windows_postgresql_test_environment.md):
   다른 PC의 Unix 가상환경, PostgreSQL 역할 인증과 전용 테스트 DB를 Windows
   환경에서 복구한 실제 절차

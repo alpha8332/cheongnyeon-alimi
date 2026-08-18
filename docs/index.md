@@ -246,6 +246,9 @@
   Windows `.venv`, PostgreSQL 테스트 DB와 Backend 전체 테스트 절차
 - [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
   환경변수, Runtime Raw 경계와 저장 Raw의 PostgreSQL 재처리
+- [실측 기반 문제 해결·개선율 보고서](troubleshooting/integration/measured_improvement_report.md):
+  응답시간 90.7% 감소, 식별 오류 100% 제거와 지역정책 판정 개선을 실제 전후
+  수치로 종합한 보고서
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
 - [추천 전체 정책 판정의 N+1과 오추천 해결](troubleshooting/backend/recommendation_full_inventory_performance.md):
