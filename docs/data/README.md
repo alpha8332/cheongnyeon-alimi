@@ -37,6 +37,10 @@
   Data 06 XLSX 후보 lineage·오류 격리와 공식 Source preflight 계약
 - [Supplemental Duplicate Audit JSON Schema](../../data/schema/supplemental_official_policy_duplicate_audit.schema.json):
   승인 aggregator snapshot·PostgreSQL 선행 중복 판정 계약
+- [Review Admission 규칙](review_admission_rules.md):
+  taxonomy v2, hard exclusion과 versioned review 승격 계약
+- [Review Admission Audit JSON Schema](../../data/schema/review_admission_audit.schema.json):
+  identity-only 판정 manifest와 hash 검증 계약
 
 ## 실행 가능한 개발 데이터
 
@@ -48,6 +52,7 @@
 - [지역 청년정책 Source inventory](../../data/reference/regional_youth_policy_sources.json)
 - [Data 06 후보·Source inventory](../../data/reference/supplemental_official_policy_inventory.json)
 - [Data 06 선행 중복 감사](../../data/reference/supplemental_official_policy_duplicate_audit.json)
+- [Review Admission 계약 Fixture](../../data/fixtures/contracts/review_admission_cases.json)
 
 Normalized Fixture와 canonical 개발 Seed는 결정적으로 재생성되는 같은 JSON
 계약이며 실제 API 원문이 아닌 합성 데이터다. 행정구역 두 Seed는 잠긴 공식

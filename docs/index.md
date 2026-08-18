@@ -50,6 +50,10 @@
   URL 64행 정제 결과와 approved 5·blocked 1·rejected 9 Source 판정
 - [Data 06 선행 중복 감사](../data/reference/supplemental_official_policy_duplicate_audit.json):
   exact duplicate 26·review 11·잠정 신규 19·비교 제외 4 판정
+- [Review Admission 규칙](data/review_admission_rules.md):
+  taxonomy v2와 versioned `promote_partial`·보류·hard exclusion 계약
+- [Review Admission Audit JSON Schema](../data/schema/review_admission_audit.schema.json):
+  identity·근거 code·provenance·fingerprint 기반 감사 manifest 계약
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스

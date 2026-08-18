@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cheongnyeon-alimi.local/schema/review-admission-audit-1.0.0.json",
+  "title": "Review admission audit manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "rule_version",
+    "taxonomy_version",
+    "as_of",
+    "git_sha",
+    "database",
+    "inputs",
+    "checkpoint_counts",
+    "summary",
+    "sources",
+    "decisions",
+    "external_duplicate_holds",
+    "blockers",
+    "manifest_sha256"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "rule_version": {"type": "string", "const": "review-admission-v1"},
+    "taxonomy_version": {"type": "string", "const": "2.0.0"},
+    "as_of": {"type": "string", "format": "date"},
+    "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "database": {
+      "type": "object",
+      "required": ["migration_revision", "policy_count", "aggregator_baseline_id"],
+      "properties": {
+        "migration_revision": {"type": "string"},
+        "policy_count": {"type": "integer", "minimum": 0},
+        "aggregator_baseline_id": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "object",
+      "required": ["checkpoint_sha256", "external_decision_sha256"],
+      "properties": {
+        "checkpoint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "external_decision_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "checkpoint_counts": {"type": "object"},
+    "summary": {"type": "object"},
+    "sources": {"type": "array", "items": {"type": "object"}},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "external_id",
+          "checkpoint_outcome",
+          "outcome",
+          "admission_reason_codes",
+          "original_reason_codes",
+          "taxonomy_version",
+          "taxonomy_markers",
+          "taxonomy_groups",
+          "residual_unknown_codes",
+          "provenance_ids",
+          "policy_fingerprint",
+          "duplicate_outcome",
+          "duplicate_reason_codes"
+        ],
+        "properties": {
+          "source_id": {"type": "string"},
+          "external_id": {"type": "string"},
+          "checkpoint_outcome": {"type": "string"},
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "promote_partial",
+              "hold_review",
+              "exclude_closed",
+              "exclude_duplicate",
+              "exclude_invalid",
+              "exclude_failed"
+            ]
+          },
+          "admission_reason_codes": {"type": "array", "items": {"type": "string"}},
+          "original_reason_codes": {"type": "array", "items": {"type": "string"}},
+          "taxonomy_version": {"type": "string"},
+          "taxonomy_markers": {"type": "array", "items": {"type": "string"}},
+          "taxonomy_groups": {"type": "array", "items": {"type": "string"}},
+          "residual_unknown_codes": {"type": "array", "items": {"type": "string"}},
+          "provenance_ids": {"type": "array", "items": {"type": "string"}},
+          "policy_fingerprint": {"type": ["string", "null"]},
+          "duplicate_outcome": {"type": ["string", "null"]},
+          "duplicate_reason_codes": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "external_duplicate_holds": {"type": "array", "items": {"type": "object"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

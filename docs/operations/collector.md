@@ -572,6 +572,48 @@ document ID만 출력하며 Raw payload, source URL query와 인증키를 출력
 명확한 오류와 종료 코드 1을 반환한다. `--dry-run`도 실제 DB upsert 결과를
 계산하므로 연결 가능한 Migration 적용 DB가 필요하다.
 
+## Review admission 감사와 dry-run
+
+완료 checkpoint의 `review`는 기존 regional producer를 다시 실행해 덮어쓰지
+않고 versioned admission 명령으로 판정한다. 먼저 실제 서비스 DB를 읽기 전용
+기준선으로 사용해 identity-only manifest를 만든다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\audit_review_admission.py `
+  --as-of 2026-08-19 `
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints `
+  --decision-root runtime/decisions `
+  --output runtime/decisions/review-admission-v1.json
+```
+
+출력은 Git 제외 대상이다. Raw 본문이나 credential을 포함하지 않으며 Schema,
+입력 hash와 `manifest_sha256`이 일치해야 apply 입력으로 사용할 수 있다.
+
+RA2 dry-run은 변경 전 dump를 복원한 PostgreSQL scratch DB에서만 실행한다.
+데이터베이스 이름은 `_test`로 끝나야 하며 서비스 DB URL을 넘기면 fail-closed한다.
+아래 URL은 로컬 전용 예시이고 비밀번호는 pgpass 또는 격리 컨테이너의 비밀
+주입으로 제공한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\apply_review_admission.py `
+  --manifest runtime/decisions/review-admission-v1.json `
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints `
+  --decision-root runtime/decisions `
+  --database-url postgresql://review_admission@127.0.0.1:55432/cheongnyeon_alimi_admission_test `
+  --dry-run
+```
+
+apply 명령은 scratch DB의 Migration·정책 수·aggregator baseline까지 이용해
+manifest를 다시 계산한다. 하나라도 달라지면 쓰기 전에 실패한다. 일치하면 기존
+Importer로 Policy·region rule·search projection을 실제로 쓴 뒤 transaction을
+rollback하고 전후 Policy 수가 같은지 확인한다. RA3 실제 적용은 별도 승인된
+동일 manifest에서만 `--apply`를 사용한다.
+
+[Review Admission 규칙](../data/review_admission_rules.md)에 taxonomy와 판정 순서가
+정의돼 있다.
+
 ## 테스트와 실제 호출 분리
 
 ```powershell

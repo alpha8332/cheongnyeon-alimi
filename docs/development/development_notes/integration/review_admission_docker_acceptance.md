@@ -9,7 +9,7 @@
 - 기준 Git SHA: `9583f3e4a5c2ac68309d4312c703b8c0785f681e`
 - 계획: [Integration 10 개발 계획](../../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - 선행 상태: Integration 07 `W5-G1_PASS`
-- 현재 판정: `RA0_PASS`, `RA1_PASS`, RA2 대기
+- 현재 판정: `RA0_PASS`, `RA1_PASS`, `RA2_PASS`, RA3 대기
 
 ## 목적
 
@@ -31,8 +31,8 @@ RA1~RA4의 review admission 결과가 과거 문서 수치나 다른 PC의 DB에
 | Slice | 상태 | 실제 결과 |
 | --- | --- | --- |
 | RA0 | completed | 실제 DB·Migration·Runtime 기준선과 암호화 변경 전 backup, `RA0_PASS` |
-| RA1 | completed | review producer·사유·표본·taxonomy와 RA2 후보 1건, `RA1_PASS` |
-| RA2 | pending | admission v1 구현·fixture·scratch DB dry-run 대기 |
+| RA1 | completed | review producer·사유·표본·taxonomy v2와 RA2 후보 6건, `RA1_PASS` |
+| RA2 | completed | admission v1·taxonomy v2·scratch DB rollback, `RA2_PASS` |
 | RA3 | pending | 실제 DB transaction 적재·멱등 재실행 대기 |
 | RA4 | pending | DB·API·Browser 회귀와 Deploy 인계 대기 |
 
@@ -179,36 +179,130 @@ review 1,140, decision drift 0이며 SHA-256은
 
 ### RA1 청년 대상 taxonomy와 표본 판정
 
-청년 대상 taxonomy v1에 기존 `청년`, `청소년`, `대학생`과 함께 다음 명시적
-가족·생애단계를 추가하기로 했다.
+사용자 범위 결정에 따라 청년 대상 taxonomy를 v2로 확장했다. 기존 `청년`,
+`청소년`, `대학생`과 신혼부부·청년 부모뿐 아니라 다음 원문 표지를 청년 대상
+조건으로 인정한다.
 
-- `신혼부부`, `예비신혼부부`
-- `미혼모`, `미혼부`, `청소년부모`
+- 가족·부모: `신혼부부`, `예비신혼부부`, `미혼모`, `미혼부`, `청소년부모`
+- 돌봄·자립: `가족돌봄청년`, `가족돌봄청소년`, `영케어러`, `자립준비청년`,
+  `보호종료아동`
+- 취약·전환: 고립·은둔, 학교밖·가정밖·쉼터퇴소, 경계선지능, 장애·저소득·
+  주거취약·다문화·탈북, 니트·구직단념·장기미취업, 전입·지역정착 청년 표지
+- 취업·교육: `취업준비생`, `구직자`, `미취업자`, `졸업생`, `졸업예정자`,
+  `대학원생`, `학자금`, `장학생`, `사회초년생`, `신입사원`
+- 가구·사업: `1인가구`, `예비창업자`, `초기창업`, `스타트업`, `귀농`,
+  `후계농`, 청년농업인·청년창업자
+- 세대·병역: 정확한 `2030세대`, `ROTC`, `학군사관후보생`, `사관후보생`,
+  `군복무`, `전역자`, `전역청년`
 
-일반 `한부모`, `부모`, `가구`만으로는 청년 대상을 확정하지 않는다. 새 표지는
-청년 대상 조건만 충족하며 공식성·identity·현재성·지역·duplicate 조건을
-우회하지 않는다. 원문에 없는 나이·소득·세부 자격도 만들지 않는다.
+공백·가운뎃점·괄호는 비교 시 정규화하지만 단순 연도 `2030년`은 세대 표지로
+인정하지 않는다. 일반 `한부모`, `부모`, `가구`, `학생`, `기업`, `농업인`처럼
+목록에 없는 상위 표현만으로는 확정하지 않는다. 새 표지는 청년 대상 조건만
+충족하며 공식성·identity·현재성·지역·duplicate 조건을 우회하지 않는다.
+원문에 없는 나이·소득·세부 자격도 만들지 않는다.
 
-현재 `youth_target_unconfirmed` 430건을 최신 detail Raw와 대조한 결과
-`신혼부부` 명시 후보는 6건이고 다른 새 표지의 현재 일치 후보는 0건이다.
-6건 중 5건은 여전히 `insufficient_regional_evidence`라 `hold_review`다.
-경북 `regional-gyeongbuk-youth-platform/1009`만 Source·대상·시행 지역 근거와
-`application_period_open`이 함께 있어 RA2 `promote_partial` dry-run 후보가
-됐다. 이는 실제 승격 결과가 아니며 fixture·duplicate·scratch DB 검증 전에는
-Policy DB에 반영하지 않는다.
+checkpoint outcome이 실제 `review`이고 현재 판정에
+`youth_target_unconfirmed`가 있는 430건만 최신 detail Raw와 다시 대조했다.
+taxonomy v2 일치 고유 후보는 44건이다. 그룹별 일치는 기존 직접 표지 1,
+가족·부모 2, 돌봄·자립 1, 취업·교육 23, 가구·사업 17, 세대·병역 2건이며
+후보 하나가 여러 그룹에 속할 수 있다. 이 대조는 closed 등 다른 checkpoint
+outcome 1,514건을 review 수치에 섞지 않는다.
+
+이미 Policy DB에 있는 `partial` 1,802건도 같은 방향으로 읽기 전용 대조했다.
+아래는 제목·대상·자격·지원 내용의 taxonomy 표지 일치 수이며 서로 겹칠 수
+있다. 이미 적재된 row이므로 신규 admission 수가 아니라 검색·추천의 청년 분류와
+미확정 자격 표시를 보강할 후보군이다.
+
+| partial 후보군 | 일치 |
+| --- | ---: |
+| 대학원생·대학생·학자금·장학생 | 160 |
+| 니트·구직단념·장기미취업 | 77 |
+| 취업준비생·구직자·미취업자·졸업생 | 56 |
+| 자립준비청년·보호종료아동 | 50 |
+| 예비창업자·초기창업·스타트업 | 28 |
+| 귀농·후계농·청년농업인 | 24 |
+| 고립·은둔 | 24 |
+| ROTC·군복무·전역 | 24 |
+| 가족돌봄청년·가족돌봄청소년·영케어러 | 12 |
+| 학교밖·가정밖·쉼터퇴소 청소년 | 12 |
+| 1인가구 | 9 |
+| 사회초년생·신입사원 | 8 |
+| 저소득·주거취약 등 취약청년 | 7 |
+| 전입·지역정착청년 | 7 |
+| 경계선지능·느린학습 | 4 |
+| 정확한 `2030세대` 계열 | 1 |
+
+44건 중 지역·현재성 공통 조건을 사전 충족한 후보는 6건이다.
+
+| Source / external_id | 원문 제목 | taxonomy 근거 |
+| --- | --- | --- |
+| `regional-daegu-youth-platform/8375` | 1인가구 커뮤니티 프로그램 | `1인가구` |
+| `regional-daegu-youth-platform/8187` | 달성 창업 성공패키지 | `초기창업` 계열 |
+| `regional-daegu-youth-platform/8357` | 여성1인가구지원사업 | `1인가구` |
+| `regional-gangwon-youth-platform/A2026010600300200900600001` | 속초시 취업자격증 응시료 지원 | 취업·구직 계열 |
+| `regional-gyeongbuk-youth-platform/1009` | 신혼부부 주택자금 대출이자 지원 | `신혼부부` |
+| `regional-gyeongnam-youth-platform/2091` | 양산시 1인가구 프로그램 | `1인가구` |
+
+이는 실제 승격 결과가 아니다. taxonomy v2를 기존 producer 상수에 즉시 넣으면
+완료 checkpoint의 과거 판정과 replay가 달라지므로, RA2의 versioned admission
+규칙·fixture에서 적용한다. duplicate와 scratch DB 검증 전에는 Policy DB에
+반영하지 않는다.
 
 전체 지역 review의 결정적 사전 분류는 다음과 같다.
 
 | 분류 | 건수 | 의미 |
 | --- | ---: | --- |
-| RA2 `promote_partial` 후보 | 1 | 새 taxonomy 포함 모든 공통 조건 사전 충족 |
-| `hold_review` | 1,139 | 청년·지역·현재성·provenance 중 하나 이상 부족 |
+| RA2 `promote_partial` 후보 | 6 | taxonomy v2 포함 모든 공통 조건 사전 충족 |
+| `hold_review` | 1,134 | 청년·지역·현재성·provenance 중 하나 이상 부족 |
 | duplicate `hold_review` | 3 | 중복 충돌 또는 비교 근거 부족 |
 
 RYP9 재판정 감사의 29건은 모두 `accepted→duplicate` 제안이라
 `existing_accepted_preserved=false`, `transition_scope_valid=false`다. 기존
 accepted를 조용히 제거하는 전환이므로 admission v1 입력에서 제외하고 원래
 accepted 상태를 유지한다.
+
+### RA2 versioned admission과 scratch DB dry-run
+
+기존 regional producer와 완료 checkpoint를 바꾸지 않는
+`review-admission-v1`, taxonomy `2.0.0`을 구현했다. audit는 실제 PostgreSQL의
+aggregator baseline과 저장된 Raw·checkpoint를 읽기 전용으로 다시 대조하고,
+apply는 같은 입력으로 manifest를 재생성해 hash가 일치할 때만 기존
+Normalizer·Importer에 승격 후보를 전달한다.
+
+actual manifest 결과는 다음과 같다.
+
+| 항목 | 실제 값 |
+| --- | ---: |
+| regional review | 1,140 |
+| `promote_partial` | 5 |
+| `hold_review` | 1,135 |
+| 승격 후보 hard exclusion | 0 |
+| 외부 duplicate producer `hold_review` | 2 |
+| manifest SHA-256 | `803e64cf5a774eb01323412491ea4b0b9a7e9b57995df89969ac69ea42e1ef74` |
+| aggregator baseline ID | `2194e49e05089e56d27984a52f3f9fd6` |
+
+최종 `promote_partial` identity는 다음 5건이다.
+
+- `regional-daegu-youth-platform/8187`
+- `regional-daegu-youth-platform/8357`
+- `regional-daegu-youth-platform/8375`
+- `regional-gangwon-youth-platform/A2026010600300200900600001`
+- `regional-gyeongnam-youth-platform/2091`
+
+RA1 사전 후보였던 `regional-gyeongbuk-youth-platform/1009`는 실제 aggregator
+비교에서 `same_title_with_incomplete_comparison_evidence`가 확인돼
+`duplicate_review_required`로 보류했다. 외부 producer의
+`kinfa-financial-product-web/hessalLoanYoos`,
+`kpass-transit-refund-web/intro`도 기존 duplicate review를 유지한다.
+
+로컬 역할에는 `CREATEDB`가 없어 서비스 DB 권한을 확대하지 않았다. 대신
+로컬 `127.0.0.1:55432`에만 bind한 PostgreSQL 18 Docker scratch DB
+`cheongnyeon_alimi_admission_test`에 RA0 dump를 복원했다. Migration
+`20260810_0006`, Policy 3,270건에서 5건의 Policy·region rule·search projection
+write가 모두 `inserted`로 계산됐고 transaction rollback 후 다시 3,270건이었다.
+별도 멱등성 검증에서는 첫 적용이 `inserted 5`, 동일 manifest 재적용이
+`unchanged 5`였고 검증 identity를 정리한 뒤 다시 3,270건임을 확인했다. 서비스
+DB와 checkpoint는 변경하지 않았다.
 
 ## 주요 변경 파일
 
@@ -219,6 +313,14 @@ accepted 상태를 유지한다.
 - `docs/development/develop_plan/forest_roadmap.md`
 - `docs/index.md`
 - `collectors/regional_review_audit.py`
+- `collectors/review_admission.py`
+- `scripts/audit_review_admission.py`
+- `scripts/apply_review_admission.py`
+- `data/schema/review_admission_audit.schema.json`
+- `data/fixtures/contracts/review_admission_cases.json`
+- `tests/test_review_admission.py`
+- `tests/integration/test_review_admission_to_database.py`
+- `docs/data/review_admission_rules.md`
 - `tests/test_regional_review_audit.py`
 
 DB·Runtime 원본은 변경하지 않았다. backup과 read-only audit 결과는 Git 밖의
@@ -234,8 +336,9 @@ DB·Runtime 원본은 변경하지 않았다. backup과 read-only audit 결과�
    맞는 stale 처리 경로를 확인한 뒤 별도 증거와 함께 정리한다.
 5. capture evidence gap과 RYP9 blocker는 RA1 입력으로 유지한다. 목표 row 수를
    맞추기 위해 partial 승격 규칙을 완화하지 않는다.
-6. 명시적 신혼부부·청년 부모 taxonomy는 청년 대상 조건에만 사용하고 다른
-   Gate를 우회하지 않는다.
+6. taxonomy v2 표지는 청년 대상 조건에만 사용하고 다른 Gate를 우회하지
+   않는다. 기존 producer·checkpoint는 소급 변경하지 않고 RA2 admission에서
+   버전을 고정한다.
 7. audit 표본에는 identity·reason만 기록하고 Raw 본문을 복제하지 않는다.
 
 ## 검증 결과
@@ -253,20 +356,25 @@ DB·Runtime 원본은 변경하지 않았다. backup과 read-only audit 결과�
 | 원본 DB·Runtime 변경 금지 | 통과, read-only SQL·rollback audit만 수행 |
 | RA1 regional audit | 통과, schema `1.1.0`·Source 13·review 1,140·drift 0 |
 | 사유별 결정적 표본 | 통과, Source×reason 최대 20 identity·Raw 본문 0 |
-| RA1 taxonomy 대조 | 통과, 신혼부부 6건 중 RA2 후보 1·hold 5 |
+| RA1 taxonomy 대조 | 통과, review 430건 중 v2 일치 44·RA2 후보 6·hold 1,134 |
 | regional audit 단위 테스트 | 5개 통과 |
+| RA2 admission fixture | 통과, 14 cases·taxonomy 전체 표지·2030 연도 오탐 방지 |
+| RA2 actual audit | 통과, review 1,140·promote 5·hold 1,135·hard exclusion 0 |
+| RA2 manifest Schema·hash | 통과, schema issue 0·SHA-256 일치 |
+| PostgreSQL scratch dry-run | 통과, inserted 5·전후 Policy 3,270·rollback |
+| PostgreSQL admission 통합 테스트 | 2개 통과, rollback·멱등 재실행·정리 후 3,270건 |
 
-따라서 RA0 Gate는 `RA0_PASS`, RA1 Gate는 `RA1_PASS`다. evidence gap은
-확인 불가 근거로 분리됐고 RYP9 blocker와 stale run은 RA2~RA3의 명시적
-입력이다. 이 항목들은 해결되거나 승격 승인된 것으로 보지 않는다.
+따라서 RA0 Gate는 `RA0_PASS`, RA1 Gate는 `RA1_PASS`, RA2 Gate는
+`RA2_PASS`다. evidence gap은 확인 불가 근거로 분리됐고 RYP9 blocker와 stale
+run은 RA3의 명시적 입력이다. 이 항목들은 해결되거나 승격 승인된 것으로 보지
+않는다.
 
 ## 남은 작업
 
-1. 현재 문서·audit 변경을 커밋해 RA2 코드 작업의 clean Git 기준선을 만든다.
-2. RA2 admission v1 rule·fixture에 새 taxonomy와 hard exclusion을 구현한다.
-3. 전용 `cheongnyeon_alimi_admission_test` scratch DB에서 dry-run하고 실제
-   서비스 DB·Runtime 불변을 검증한다.
-4. RYP9 `accepted→duplicate` 29건을 기존 accepted 보존 fixture로 고정한다.
+1. RA2 코드·문서 변경을 커밋해 RA3의 clean Git 기준선을 만든다.
+2. 승인된 동일 manifest SHA로 5건만 RA3 transaction 적재한다.
+3. 같은 manifest를 재실행해 5건 전부 `unchanged`인지 확인한다.
+4. RYP9 `accepted→duplicate` 29건은 기존 accepted를 계속 보존한다.
 5. orphan `youthcenter` CollectionRun을 승인된 stale 처리 경로로 정리하되,
    RA0 DB dump와 변경 전 수치는 그대로 보존한다.
-6. RA2 Gate 전에는 후보 1건도 실제 DB에 적재하지 않는다.
+6. RA3 승인 전에는 후보 5건도 실제 서비스 DB에 적재하지 않는다.

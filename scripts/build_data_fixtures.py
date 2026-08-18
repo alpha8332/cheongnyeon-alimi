@@ -102,6 +102,7 @@ def build_outputs() -> dict[Path, bytes]:
         extracted,
         accepted,
     )
+    review_admission_cases = _review_admission_cases()
 
     return {
         **raw_outputs,
@@ -126,10 +127,177 @@ def build_outputs() -> dict[Path, bytes]:
         Path(
             "data/fixtures/contracts/eligibility_evidence_cases.json"
         ): _json_bytes(eligibility_contract_cases, pretty=True),
+        Path(
+            "data/fixtures/contracts/review_admission_cases.json"
+        ): _json_bytes(review_admission_cases, pretty=True),
         Path("data/seeds/initial_programs.json"): _json_bytes(
             accepted,
             pretty=True,
         ),
+    }
+
+
+def _review_admission_cases() -> dict[str, Any]:
+    def case(
+        case_id: str,
+        item_text: str,
+        application: str,
+        reason_codes: list[str],
+        expected_outcome: str,
+        **extra: Any,
+    ) -> dict[str, Any]:
+        return {
+            "id": case_id,
+            "item_texts": [item_text],
+            "application": application,
+            "reason_codes": reason_codes,
+            "expected_outcome": expected_outcome,
+            **extra,
+        }
+
+    regional_open = [
+        "target_region_confirmed",
+        "application_period_open",
+        "youth_target_unconfirmed",
+    ]
+    return {
+        "schema_version": "1.0.0",
+        "rule_version": "review-admission-v1",
+        "cases": [
+            case(
+                "scope-open-without-period",
+                "취업준비생 자격증 지원",
+                "open",
+                [
+                    "target_region_confirmed",
+                    "source_scope_application_open",
+                    "youth_target_unconfirmed",
+                ],
+                "promote_partial",
+            ),
+            case(
+                "no-currentness-evidence",
+                "구직자 역량 강화",
+                "review_required",
+                [
+                    "target_region_confirmed",
+                    "application_period_missing",
+                    "youth_target_unconfirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "unknown-eligibility-preserved",
+                "사회초년생 주거 지원",
+                "open",
+                regional_open,
+                "promote_partial",
+                unknown_codes=[
+                    "missing_age_condition",
+                    "missing_income_condition",
+                ],
+            ),
+            case(
+                "youth-target-unconfirmed",
+                "주거비 지원사업",
+                "open",
+                regional_open,
+                "hold_review",
+            ),
+            case(
+                "ambiguous-parent-region",
+                "1인가구 지원",
+                "open",
+                [
+                    "ambiguous_parent_region",
+                    "application_period_open",
+                    "youth_target_unconfirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "explicitly-closed",
+                "대학원생 장학금",
+                "closed",
+                [
+                    "target_region_confirmed",
+                    "application_period_ended",
+                    "youth_target_unconfirmed",
+                ],
+                "exclude_closed",
+            ),
+            case(
+                "budget-exhaustion-unknown",
+                "예비창업자 지원",
+                "review_required",
+                [
+                    "target_region_confirmed",
+                    "budget_exhaustion_state_unknown",
+                    "youth_target_unconfirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "confirmed-duplicate",
+                "학자금 지원",
+                "open",
+                regional_open,
+                "exclude_duplicate",
+                duplicate_outcome="excluded_aggregator_duplicate",
+            ),
+            case(
+                "source-scope-only",
+                "청년 문화 지원",
+                "open",
+                [
+                    "source_scope_region_confirmed",
+                    "source_scope_application_open",
+                    "youth_target_confirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "missing-provenance",
+                "신혼부부 주거 지원",
+                "open",
+                regional_open,
+                "exclude_invalid",
+                provenance_ids=[],
+            ),
+            case(
+                "year-2030-is-not-cohort",
+                "2030년 지역 발전 계획",
+                "open",
+                regional_open,
+                "hold_review",
+            ),
+            case(
+                "explicit-2030-cohort",
+                "2030 세대 자문단",
+                "open",
+                regional_open,
+                "promote_partial",
+            ),
+            case(
+                "normalized-one-person-household",
+                "여성 1인 가구 지원",
+                "open",
+                [
+                    "implementing_region_confirmed",
+                    "source_scope_application_open",
+                    "youth_target_unconfirmed",
+                ],
+                "promote_partial",
+            ),
+            case(
+                "fingerprint-duplicate-review",
+                "귀농 정착 지원",
+                "open",
+                regional_open,
+                "hold_review",
+                duplicate_outcome="duplicate_review_required",
+            ),
+        ],
     }
 
 

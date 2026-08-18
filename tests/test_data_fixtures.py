@@ -53,7 +53,7 @@ class DataFixtureContractTests(unittest.TestCase):
         ) as connection:
             outputs = build_outputs()
 
-            self.assertEqual(15, len(outputs))
+            self.assertEqual(16, len(outputs))
         connection.assert_not_called()
 
     def test_raw_fixtures_are_synthetic_and_contract_valid(self) -> None:
