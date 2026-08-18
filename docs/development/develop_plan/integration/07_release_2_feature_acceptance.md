@@ -17,6 +17,7 @@
   (`1019fda` 코드 검증 기준)
 - 5주차 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - 개발 기록: [Integration 07 개발 기록](../../development_notes/integration/release_2_feature_acceptance.md)
+- DTL5-5 선행 보강: [Integration 10 Review Admission and Docker Acceptance](10_review_admission_docker_acceptance.md)
 
 ## 목적
 
@@ -98,8 +99,11 @@ Forest에서 관리한다.
 `2026-08-18` Integration 브랜치에서 Backend `W5-B1`, Frontend `W5-F1`과
 Data 06을 통합했다. Data·Backend PostgreSQL 전체 회귀, Frontend
 unit·lint·build, Mock 94건과 actual 핵심 44건, DTL4-7 actual acceptance를
-통과해 `W5-G1_PASS`로 기능 동결했다. 다음 단계는 팀 외 DTL5-5 사용성·QA이며,
-이 결과를 Release 2 최종 `W5-G2`로 해석하지 않는다.
+통과해 `W5-G1_PASS`로 기능 동결했다. 이후 최신 review 후보의 admission과
+동일 실제 DB 공유 문제가 확인돼 Integration 10을 DTL5-5 선행 보강으로 둔다.
+기존 `W5-G1_PASS`는 당시 인수 기록으로 보존하되, Integration 10의 새 데이터
+기준선·Docker Acceptance Gate를 통과한 뒤에만 팀 외 DTL5-5 사용성·QA를
+시작한다. 이 결과를 Release 2 최종 `W5-G2`로 해석하지 않는다.
 
 ### A3 - Release 2 Gate
 

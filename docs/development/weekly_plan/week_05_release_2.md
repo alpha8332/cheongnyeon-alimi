@@ -2,13 +2,15 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`W5-G1_PASS`, `W5-Q1`·DTL5-5 독립 사용성·QA 대기)
+- 상태: in-progress (`W5-G1_PASS`, Integration 10 review admission·Docker
+  Acceptance 선행 계획, 이후 `W5-Q1`·DTL5-5 독립 사용성·QA)
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
 - 독립 검증 역할: 사용성 리뷰어, QA
 - 근거 정리 역할: 보고서 담당
 - 상위 Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
+- 선행 보강 Forest: [Integration 10 Review Admission and Docker Acceptance](../develop_plan/integration/10_review_admission_docker_acceptance.md)
 - Data·Team Leader 실행 계획:
   [5주차 Data·Team Leader 실행 계획](week_05_data_team_leader.md)
 - 공통 시작점: Data 06을 제외한 4주차 기본 기능과 Data 05가 `develop`에
@@ -84,6 +86,7 @@ blocker로 유지한다.
 | `W5-D2` | Data | Data 06 SOP3 | Source Adapter·판정 fixture·offline replay와 `SOP-G3` 판정 | `W5-D3` |
 | `W5-D3` | Data | Data 06 SOP4~SOP5 | 승인 5개 Source actual·신규 1개 이상·비accepted 무적재·DB/API/Browser·`SOP-G5` | `W5-I1` |
 | `W5-I1` | Team Leader | Integration 07 A2 | Data 06 포함 전체 actual E2E와 `W5-G1` 판정 | 독립 검증 |
+| `W5-RA` | Data·Backend·Frontend·Integration | Integration 10 RA0~DA2 | 최신 review 재판정·partial 적재·새 snapshot·Docker Acceptance | 독립 검증 |
 | `W5-Q1` | 사용성·QA | Integration 07 A2 | 독립 시나리오 결과·결함 심각도·재현 조건 | 영역별 수정 |
 | `W5-FIX` | Data·Backend·Frontend | 담당 Forest | 승인 결함 수정과 담당자 자체 재검증 | 독립 재검증 |
 | `W5-I2` | Team Leader | Integration 07 A3 | 수정본 독립 재검증·문서 대조·`W5-G2` 판정 | Release 후보 |

@@ -83,6 +83,9 @@
   Data·Backend·Frontend 안정화, 사용성 리뷰·QA와 Release 2 `v0.5.0` 판정
 - [5주차 Data·Team Leader 실행 계획](development/weekly_plan/week_05_data_team_leader.md):
   Data 06 SOP0~SOP5, W5-G0~G2 actual 인수·독립 검증과 Release 2 판정
+- [Review Admission and Docker Acceptance Forest 계획](development/develop_plan/integration/10_review_admission_docker_acceptance.md):
+  DB 보유 PC 최신 review 재판정·partial 적재, Acceptance snapshot과 Docker
+  clean-room 실행 계획
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
@@ -149,6 +152,8 @@
 - [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
   관리자 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사
   (Frontend UI Slice: [FE8-xx](development/develop_plan/frontend/08_admin_observability_ui.md))
+- [Review Admission and Docker Acceptance Forest 계획](development/develop_plan/integration/10_review_admission_docker_acceptance.md):
+  최신 DB·Runtime 기반 review admission, partial 적재와 Docker Acceptance 환경
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
