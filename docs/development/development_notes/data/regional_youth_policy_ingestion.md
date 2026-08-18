@@ -1498,3 +1498,7 @@ $expectedOutcomes = '{\"accepted\":18,\"duplicate\":1,\"review\":1905,\"closed\"
 - 전체 Browser Runtime: `52 passed`
 - Frontend test·build·lint: `50 passed`, build·lint 통과
 - 문서 검증: `python scripts/validate_docs.py` 통과
+
+RYP8의 page-context·timeout·total·identity drift 조사와 안전한 복구 원칙은
+[지역 Browser 수집 실패·drift 안전 복구](../../../troubleshooting/data/regional_browser_capture_recovery.md)에
+별도로 기록했다.

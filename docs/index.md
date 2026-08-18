@@ -251,6 +251,14 @@
 - [추천 전체 정책 판정의 N+1과 오추천 해결](troubleshooting/backend/recommendation_full_inventory_performance.md):
   추천 정확성 보완 중 드러난 N+1을 제거해 실제 3,273건 응답을 약 14.8초에서
   약 1.4초로 개선한 문제 해결 기록
+- [연령 `0세~0세` placeholder 오판 보정](troubleshooting/data/release_age_placeholder_normalization.md):
+  실제 631건의 근거 없는 연령 bound를 미확정으로 복구하고 멱등 재적재한 기록
+- [지역 Browser 수집 실패·drift 안전 복구](troubleshooting/data/regional_browser_capture_recovery.md):
+  page-context·timeout·identity drift를 제한 복구하고 미해결 실패를 격리한 기록
+- [Review admission 현재성·지역 projection 오적재 복구](troubleshooting/data/review_admission_currentness_recovery.md):
+  잘못된 5건 승격을 rollback하고 현재성·region rule·manifest baseline을 보정한 기록
+- [Windows actual Runtime·DB 연결 환경 복구](troubleshooting/integration/windows_actual_runtime_acceptance.md):
+  DB 권한·Migration·Node·Runtime log를 정렬해 실제 종단 실행을 복구한 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 - [Release 1 검증 증거 안내](contest/release_1_evidence_guide.md):
   DT7E actual snapshot·contract hash 기반 경량 QA·사용성 검증 절차

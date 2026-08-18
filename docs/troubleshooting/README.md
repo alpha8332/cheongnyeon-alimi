@@ -49,3 +49,15 @@ integration/seed_api_contract_mismatch.md
 - [추천 전체 정책 판정의 N+1과 오추천 해결](backend/recommendation_full_inventory_performance.md):
   첫 200건 제한과 가산점 방식의 오추천을 바로잡고, 전체 3,273건 평가에서
   드러난 지역 판정 N+1을 bulk 조회로 개선한 실제 과정
+- [연령 `0세~0세` placeholder 오판 보정](data/release_age_placeholder_normalization.md):
+  실제 631건의 근거 없는 0세 bound를 해제하고 미확정 3값 판정과 멱등
+  재적재로 복구한 과정
+- [지역 Browser 수집 실패·drift 안전 복구](data/regional_browser_capture_recovery.md):
+  page-context·timeout·total·identity drift를 checkpoint·canary·제한 재시도로
+  격리하고 field evidence를 완전 분류한 과정
+- [Review admission 현재성·지역 projection 오적재 복구](data/review_admission_currentness_recovery.md):
+  종료 정책과 region rule 없는 승격을 중단·보상 rollback하고 실행일 재판정과
+  post-admission manifest 멱등성을 복구한 과정
+- [Windows actual Runtime·DB 연결 환경 복구](integration/windows_actual_runtime_acceptance.md):
+  DB 권한·Migration·실행기 DB 선택·Node 탐색·Runtime log 경계를 정렬해 실제
+  PostgreSQL→FastAPI→React 인수를 완료한 과정

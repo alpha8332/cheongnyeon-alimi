@@ -402,6 +402,11 @@ external duplicate hold 2, hard exclusion 0으로 판정이 유지됐다. 서비
 최종 재적용은 `inserted 0`, `updated 0`, `unchanged 3`, Policy 3,273건
 유지였고 세 Source run은 모두 `succeeded`였다.
 
+최초 5건 오적재 중단·보상 rollback, 실행일 현재성·region projection 보정과
+post-admission baseline 복구 과정은
+[Review admission 현재성·지역 projection 오적재 복구](../../../troubleshooting/data/review_admission_currentness_recovery.md)에
+별도로 기록했다.
+
 ### 실제 DB·API 기준선
 
 | 항목 | RA4 값 |

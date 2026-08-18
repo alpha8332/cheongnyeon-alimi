@@ -560,6 +560,10 @@ CollectionRun ID는 각각 다음과 같다.
 `age_min=0 AND age_max=0` 행은 0건이다. 두 import 모두 skipped·rejected·
 failed 0이었고 credential과 Raw payload는 출력하거나 기록하지 않았다.
 
+이 오판의 증상·원인·보정·재발 방지 기준은
+[연령 `0세~0세` placeholder 오판 보정](../../../troubleshooting/data/release_age_placeholder_normalization.md)에
+별도로 기록했다.
+
 ## 주요 변경 파일
 
 - `collectors/snapshot.py`
