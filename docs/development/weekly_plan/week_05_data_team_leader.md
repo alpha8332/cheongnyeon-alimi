@@ -2,18 +2,19 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`; review admission·
-  Docker Acceptance 선행 계획 뒤 DTL5-5 대기)
+- 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`; Integration 10
+  review admission → Deploy 01 Docker Acceptance 뒤 DTL5-5)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
   `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
-- 선행 보강 Forest: [Integration 10 Review Admission and Docker Acceptance](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- 선행 데이터 Forest: [Integration 10 Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- 선행 배포 Forest: [Deploy 01 Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: Integration 10 최신 review 재판정·새 Acceptance snapshot 계획;
-  완료 뒤 DTL5-5 팀 외 독립 사용성·QA
+- 현재 Slice: Integration 10 최신 review 재판정·`W5-G1_REVALIDATED`;
+  이어서 Deploy 01 동일 snapshot `DOCKER_ACCEPTANCE_PASS`, 그 뒤 DTL5-5
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -67,16 +68,17 @@ DTL5-0 W5-G0 기준선·환경·증거 계약
   → DTL5-2 Data 06 SOP3 Adapter·offline replay
   → DTL5-3 Data 06 SOP4~SOP5 actual·SOP-G5
   → DTL5-4 Data 06 포함 전체 actual E2E·W5-G1
-  → Integration 10 review admission·DB 재인수·Docker Acceptance
+  → Integration 10 review admission·DB 재인수·W5-G1_REVALIDATED
+  → Deploy 01 동일 snapshot·Docker Acceptance
   → DTL5-5 독립 사용성·QA와 결함 triage
   → 영역별 수정·자체 재검증
   → DTL5-6 독립 재검증·문서 대조·W5-G2
 ```
 
 DTL5-1과 Backend·Frontend 안정화는 W5-G0 뒤 병렬로 진행한다. 독립 리뷰와
-QA는 DTL5-4에서 W5-G1을 통과하고 Integration 10의 새 데이터·Docker
-Acceptance Gate를 통과하기 전에는 시작하지 않는다. 기존 `W5-G1_PASS`는 당시
-인수 기록으로 유지하며 새 DB 수치를 의미하지 않는다.
+QA는 DTL5-4에서 W5-G1을 통과하고 Integration 10 `W5-G1_REVALIDATED`와
+Deploy 01 `DOCKER_ACCEPTANCE_PASS`를 통과하기 전에는 시작하지 않는다. 기존
+`W5-G1_PASS`는 당시 인수 기록으로 유지하며 새 DB 수치를 의미하지 않는다.
 
 ## Slice DTL5-0 - W5-G0 기준선 고정
 
@@ -312,7 +314,8 @@ git status --short
 - [x] DTL5-3 Data 06 actual과 `SOP-G4_PASS`·`SOP-G5_PASS`
 - [x] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
 - [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
-- [ ] Integration 10 `REVIEW_ADMISSION_PASS`·Docker Acceptance Gate
+- [ ] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
+- [ ] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage
 - [ ] 승인 결함 수정·자체 및 독립 재검증
 - [ ] 보고서 근거·미실행 검증 대조
@@ -324,7 +327,8 @@ git status --short
 - [5주차 Release 2 실행 계획](week_05_release_2.md)
 - [4주차 Data·Team Leader 실행 결과](week_04_data_team_leader.md)
 - [Data 06 계획](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
-- [Review Admission and Docker Acceptance](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- [Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - [Integration 07 계획](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
 - [역할과 책임](../../governance/role_assignment.md)

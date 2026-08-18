@@ -70,6 +70,7 @@ ALLOWED_OWNER_AREAS = {
     "backend",
     "frontend",
     "integration",
+    "deploy",
 }
 
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*]\(([^)]+)\)")

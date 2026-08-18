@@ -2,12 +2,19 @@
 
 ## 문서 상태
 
-- 상태: 초기 목표 기준선
-- 현재 구현 상태: Docker 구성 미구현
+- 상태: 초기 목표 기준선, Acceptance 구현 계획 승인
+- 현재 구현 상태: Docker 구성 미구현 (`Deploy 01` 실행 전)
 
 이 문서는 초기 개발과 Release 1에서 목표로 하는 실행 단위를 정의한다.
 아래 서비스 이름과 연결은 구현 시 검증해야 하며, 현재 실행 가능하다는
 의미가 아니다.
+
+구현은 두 단계로 나눈다. 5주차
+[Deploy 01 Docker Acceptance Environment](../development/develop_plan/deploy/01_docker_acceptance_environment.md)은
+BE·FE 담당자, 리뷰어와 QA가 동일 Git SHA·실제 DB snapshot으로 검증하기 위한
+내부 Acceptance 환경을 만든다. 6주차 `v1.0.0` 배포 Forest는 이를 Nginx,
+Production image, CI, 초기 bootstrap과 운영 복구까지 확장한다. Deploy 01
+통과만으로 Production 배포가 완료된 것은 아니다.
 
 ## 초기 구성
 

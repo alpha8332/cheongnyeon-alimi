@@ -30,7 +30,7 @@ Documentation validation passed.
 - 문서에 실제 비밀값으로 보이는 할당이 있는지 여부
 - `docs/` 내부의 빈 파일과 빈 디렉터리
 - 담당 영역별 번호가 있는 Forest 계획과 구현 단계 개발 기록의 대응
-- Forest 문서가 `data`, `backend`, `frontend`, `integration` 중 정확히 한
+- Forest 문서가 `data`, `backend`, `frontend`, `integration`, `deploy` 중 정확히 한
   단계의 담당 영역에 있는지 여부
 - 모든 Forest 계획·기록이 각 안내 README와 `docs/index.md`에 등록됐는지 여부
 - Forest 계획과 개발 기록의 필수 섹션
@@ -68,7 +68,7 @@ docs/development/develop_plan/<owner>/NN_forest_name.md
 docs/development/development_notes/<owner>/forest_name.md
 ```
 
-`<owner>`에는 `data`, `backend`, `frontend`, `integration`만 사용할 수 있다.
+`<owner>`에는 `data`, `backend`, `frontend`, `integration`, `deploy`만 사용할 수 있다.
 담당 영역을 생략하거나 영역 아래에 임의의 추가 계층을 만들면 검증에
 실패한다.
 

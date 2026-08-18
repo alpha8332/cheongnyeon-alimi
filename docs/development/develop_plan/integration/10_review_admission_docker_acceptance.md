@@ -1,14 +1,15 @@
-# Integration 10 Review Admission and Docker Acceptance Forest 개발 계획
+# Integration 10 Review Admission and Deploy Handoff Forest 개발 계획
 
 ## 계획 정보
 
 - 번호: Integration 10
 - 담당 영역: Data, Backend, Frontend, Team Leader - Integration·Deploy
-- 상태: approved
+- 상태: in-progress
 - 계획일: `2026-08-18`
 - 작업 브랜치: `feature/integration/week-05-acceptance`
 - 대상 Release: `v0.5.0` Acceptance 기준선과 `v1.0.0` 배포 기반
 - 선행 상태: Integration 07 `W5-G1_PASS`
+- 후속 Gate: [Deploy 01 `DOCKER_ACCEPTANCE_PASS`](../deploy/01_docker_acceptance_environment.md)
 - 후속 단계: 독립 사용성 리뷰·QA, Integration 07 `W5-G2`
 
 ## 계획 작성 환경과 사실 경계
@@ -50,10 +51,9 @@ review 결정과 Raw에 남지만 사용자 Policy DB에는 적재되지 않는�
    실제 PostgreSQL에 반영한다.
 4. 동일 입력 재실행이 `unchanged`이며 closed·duplicate·invalid·failed 후보가
    승격되지 않음을 검증한다.
-5. 재판정이 끝난 DB를 Acceptance snapshot으로 동결하고 PostgreSQL, FastAPI,
-   React를 Docker Compose로 동일하게 실행한다.
-6. BE·FE 담당자, 리뷰어와 QA가 개인 PC의 원격 DB에 의존하지 않고 같은
-   snapshot version을 각자의 격리된 Volume에서 재현하게 한다.
+5. 재판정이 끝난 DB와 manifest를 Deploy 01 입력으로 동결한다.
+6. Deploy 01이 같은 snapshot version을 각자의 격리된 Volume에서 재현할 수
+   있게 인계 계약과 Gate 순서를 고정한다.
 
 ## 범위
 
@@ -61,9 +61,8 @@ review 결정과 Raw에 남지만 사용자 Policy DB에는 적재되지 않는�
 - review 사유 감사, 표본 대조와 versioned admission 규칙
 - 승인 partial의 기존 Importer 기반 PostgreSQL 적재와 재실행
 - 새 데이터 기준 DB·API·Frontend actual 회귀
-- post-admission dump·manifest와 안전한 팀 전달
-- PostgreSQL·FastAPI·React Docker Compose 개발·Acceptance 환경
-- clean-room, Volume 유지·복구, test DB 격리와 CI smoke
+- post-admission snapshot manifest와 Deploy 01 입력 인계
+- Deploy 01 `DOCKER_ACCEPTANCE_PASS` 뒤 DTL5-5 시작 여부 판정
 
 ## 범위 밖
 
@@ -99,14 +98,14 @@ DB 보유 PC의 최신 Git·DB·Runtime
   → RA2 versioned admission 구현·fixture·dry-run
   → RA3 승인된 partial만 transaction 적재·재실행
   → RA4 DB/API/Browser 회귀와 새 Acceptance 기준선
-  → DA0 post-admission dump·manifest
-  → DA1 Docker Compose 개발·Acceptance 환경
-  → DA2 clean-room·Volume·복구·CI smoke
+  → Deploy 01 DEP0~DEP5 snapshot·Docker·clean-room Acceptance
+  → DOCKER_ACCEPTANCE_PASS
   → 독립 사용성 리뷰·QA
 ```
 
-RA 단계 중 하나라도 실패하면 DA snapshot을 만들지 않는다. DA 단계 통과 전에는
-새 데이터 기준으로 독립 사용성 리뷰·QA를 시작하지 않는다.
+RA 단계 중 하나라도 실패하면 Deploy 01에 snapshot을 인계하지 않는다.
+`DOCKER_ACCEPTANCE_PASS` 전에는 새 데이터 기준으로 독립 사용성 리뷰·QA를
+시작하지 않는다.
 
 ## 공통 설계 원칙
 
@@ -326,9 +325,11 @@ Runtime importer를 확장할 수 있다. 다만 audit와 apply는 별도 명령
   --dry-run
 ```
 
-`--dry-run`도 실제 DB constraint, region rule과 search projection write를 수행한
-뒤 transaction 전체를 rollback해야 한다. audit hash와 apply 입력 hash가 다르면
-실패한다.
+`--dry-run`은 서비스 DB가 아니라 변경 전 dump에서 만든 전용
+`cheongnyeon_alimi_admission_test` 또는 동등한 scratch DB에서 실행한다. 실제 DB
+constraint, region rule과 search projection write를 수행한 뒤 transaction 전체를
+rollback해야 한다. scratch DB 이름·연결 대상이 허용값이 아니면 fail-closed하고,
+audit hash와 apply 입력 hash가 다르면 실패한다.
 
 ### 필수 fixture
 
@@ -349,7 +350,7 @@ Runtime importer를 확장할 수 있다. 다만 audit와 apply는 별도 명령
 - fixture와 전체 단위 테스트 통과
 - dry-run 승격 후보의 hard exclusion 0건
 - 승격 후보 전건에 identity·URL·provenance·현재성·청년 근거 존재
-- dry-run이 Policy·CollectionRun·checkpoint를 변경하지 않음
+- dry-run이 서비스 DB·Runtime decision·checkpoint를 변경하지 않음
 - actual 수치와 표본 근거를 사람이 대조한 뒤에만 apply 승인
 
 ## RA3 - 실제 적재와 재실행
@@ -403,116 +404,31 @@ Runtime importer를 확장할 수 있다. 다만 audit와 apply는 별도 명령
 
 - 새 실제 수치, rule version, manifest hash와 테스트 결과가 개발 기록에 있음
 - 승격된 partial을 확정 자격·확정 신청기간으로 오표시한 사례 0건
-- 담당자 회귀가 통과해야 `REVIEW_ADMISSION_PASS`
-- 실패하면 DA0 snapshot 생성과 독립 QA를 중단
+- 담당자 전체 회귀가 통과해야 `REVIEW_ADMISSION_PASS`와
+  `W5-G1_REVALIDATED`를 함께 기록
+- 기존 `W5-G1_PASS`는 변경 전 snapshot의 역사 근거로만 유지하고 새 row 수나
+  새 Acceptance 환경의 통과 근거로 재사용하지 않음
+- 실패하면 Deploy 01 snapshot 생성·인계와 독립 QA를 중단
 
-## DA0 - post-admission Acceptance snapshot
+## Deploy 01 인계 계약
 
-RA4를 통과한 뒤에만 새 dump를 생성한다.
+RA4에서 `REVIEW_ADMISSION_PASS`와 `W5-G1_REVALIDATED`를 기록한 뒤에만
+[Deploy 01 Docker Acceptance Environment](../deploy/01_docker_acceptance_environment.md)로
+다음 입력을 인계한다.
 
-```powershell
-pg_dump --format=custom --no-owner --no-acl `
-  --file <absolute-snapshot-dir>\acceptance-post-admission.dump `
-  --dbname <credential-free-database-url>
-Get-FileHash -Algorithm SHA256 `
-  <absolute-snapshot-dir>\acceptance-post-admission.dump
-```
-
-snapshot manifest에는 다음만 기록한다.
-
-- snapshot version과 생성 시각
-- Git SHA, admission rule version과 decision manifest hash
-- PostgreSQL major version, Alembic revision
-- dump 파일명·size·SHA-256
-- Policy 전체·Source별·quality·application status 집계
-- 대표 stable identity
+- 검증된 Git SHA와 admission rule version
+- decision manifest hash와 새 DB 집계
+- PostgreSQL major version·Alembic revision
+- 대표 stable `(source_id, external_id)`
+- snapshot에 포함할 table allowlist와 제외해야 할 운영·민감 데이터 범주
 - Raw/checkpoint archive의 별도 hash와 보관 위치 식별자
 
-dump와 Runtime archive는 Git, Docker build context와 CI artifact에 올리지 않는다.
-승인된 암호화 사내 전달 수단으로만 공유한다.
+실제 dump 생성, 민감정보 scan, Dockerfile·Compose, restore·Migration, Volume,
+clean-room, CI와 BE·FE·리뷰어 package는 Deploy 01에서 구현·검증한다. Integration
+10은 dump나 컨테이너 구현 결과를 미리 통과로 기록하지 않는다.
 
-## DA1 - Docker 개발·Acceptance 환경
-
-### 계획된 파일
-
-```text
-compose.yaml
-compose.dev.yaml
-.env.compose.example
-backend/Dockerfile
-backend/.dockerignore
-frontend/Dockerfile
-frontend/.dockerignore
-deployment/postgres/restore.ps1
-deployment/postgres/verify_snapshot.py
-docs/development/docker_acceptance_setup.md
-```
-
-### 서비스와 시작 순서
-
-```text
-database health
-  → restore(명시적 one-shot, 빈 Volume만)
-  → migrate(Alembic one-shot)
-  → backend /health
-  → frontend readiness
-```
-
-| 서비스 | 책임 |
-| --- | --- |
-| `database` | PostgreSQL, named Volume, `pg_isready` |
-| `database-test` | `_test` 전용 DB와 별도 Volume·profile |
-| `restore` | hash 검증 뒤 빈 Acceptance Volume에만 `pg_restore` |
-| `migrate` | repository Alembic head 적용 후 종료 |
-| `backend` | FastAPI, Compose 내부 host `database` 사용 |
-| `frontend` | actual API mode; Browser에서 접근 가능한 Backend URL 사용 |
-
-기존 Volume을 자동 삭제하거나 restore로 덮어쓰지 않는다. reset은 대상 Compose
-project와 Volume 절대 이름을 확인한 뒤 별도의 명시적 운영 절차로만 수행한다.
-
-`compose.dev.yaml`은 BE·FE 소스 bind mount와 hot reload를 제공한다. 공통
-`compose.yaml`은 reviewer·QA가 소스 도구 설치 없이 실행할 Acceptance 기준을
-제공한다. 실제 비밀번호와 관리자 secret은 로컬 `.env` 또는 승인된 secret
-주입으로 전달하고 example에는 placeholder만 둔다.
-
-### 이미지 경계
-
-- DB dump와 Runtime Raw를 이미지 layer에 `COPY`하지 않음
-- Frontend bundle에 DB·관리자·API secret을 포함하지 않음
-- Backend는 container `DATABASE_URL`만 사용하고 localhost DB를 가정하지 않음
-- Frontend lockfile을 사용하고 Backend 의존성 재현성을 위한 고정 constraints
-  또는 합의한 lock 방식을 같은 Slice에서 확정
-- health check가 준비되기 전에 Backend를 성공 상태로 보지 않음
-
-## DA2 - clean-room, Volume과 CI smoke
-
-### clean-room 완료 기준
-
-새 PC 또는 새 Docker Compose project에서 다음을 확인한다.
-
-1. clone 후 example을 복사해 로컬 secret 설정
-2. snapshot hash 검증과 빈 Volume restore
-3. Migration head 적용
-4. `docker compose up --build`로 DB·Backend·Frontend 준비
-5. DB/API/Browser 대표 stable identity와 partial UI 확인
-6. 컨테이너 재시작 뒤 row count와 stable identity 유지
-7. test profile이 서비스 DB와 다른 DB·Volume을 사용
-8. Backend·Frontend 로그에 credential·Raw payload가 없음
-9. 잘못된 hash, 비어 있지 않은 restore 대상과 DB health 실패가 fail-closed
-
-### CI 경계
-
-CI에는 실제 dump를 넣지 않는다. CI는 빈 PostgreSQL과 repository Seed/fixture로
-다음만 자동화한다.
-
-- Backend/Data test와 `_test` 이름 안전 경계
-- Frontend unit·lint·build
-- Alembic fresh upgrade
-- Backend·Frontend image build
-- 최소 Seed → DB → API smoke
-- Compose config와 health dependency 검사
-
-실제 Acceptance snapshot 회귀는 승인된 로컬 환경의 별도 Gate로 유지한다.
+Deploy 01의 `DOCKER_ACCEPTANCE_PASS` 뒤에만 같은 snapshot version을 전제로
+DTL5-5 독립 사용성 리뷰·QA를 시작한다.
 
 ## 역할별 구현 인계
 
@@ -521,8 +437,9 @@ CI에는 실제 dump를 넣지 않는다. CI는 빈 PostgreSQL과 repository See
 | Data | review inventory, admission rule·fixture, Raw replay·manifest | RA1~RA2 audit와 표본 근거 |
 | Backend | Importer transaction, partial DB·search·추천 계약 | RA3 DB 집계와 PostgreSQL 회귀 |
 | Frontend | partial·unknown·공식 원문 표시, 오단정 방지 | RA4 unit·actual Browser |
-| Integration·Deploy | Gate, snapshot, Compose, clean-room·CI | DA0~DA2 manifest와 실행 결과 |
-| 리뷰어·QA | 새 snapshot에서 독립 시나리오 | 결함·재검증 근거; 구현 승인 대체 금지 |
+| Integration | RA Gate, 새 기준선과 Deploy 입력 인계 | `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`·handoff manifest |
+| Deploy | snapshot·Compose·clean-room·동일 환경 인계 | Deploy 01 `DOCKER_ACCEPTANCE_PASS` |
+| 리뷰어·QA | Deploy가 고정한 snapshot에서 독립 시나리오 | 결함·재검증 근거; 구현 승인 대체 금지 |
 
 ## 검증 계획
 
@@ -531,19 +448,18 @@ CI에는 실제 dump를 넣지 않는다. CI는 빈 PostgreSQL과 repository See
 - RA2는 fixture, read-only audit와 transaction rollback dry-run을 검증한다.
 - RA3은 실제 반영 수치와 두 번째 실행의 완전한 idempotency를 검증한다.
 - RA4는 Data·Backend·Frontend actual 회귀와 partial 비단정 표현을 검증한다.
-- DA0~DA2는 snapshot hash, clean-room restore, health, Volume 유지와 test DB
-  격리를 검증한다.
-- 각 Slice의 실행 명령과 실제 결과는 구현 착수 뒤 새 Integration 10 개발
-  기록에만 남긴다.
+- Deploy 검증은 Deploy 01 계획과 개발 기록에서 snapshot hash, clean-room
+  restore, health, Volume 유지와 test DB 격리를 확인한다.
+- RA Slice의 실행 명령과 실제 결과는 구현 착수 뒤 새 Integration 10 개발
+  기록에 남기고, Deploy 결과를 복제하지 않고 링크한다.
 
 ## 위험과 미확정 사항
 
-현재 PC에서는 최신 review producer, reason 분포, 승격 예상 수와 Docker 사용
-가능 여부를 확인하지 않았다. RA0·RA1 결과에서 새 reason이나 Source 계약이
+현재 PC에서는 최신 review producer, reason 분포와 승격 예상 수를 확인하지
+않았다. RA0·RA1 결과에서 새 reason이나 Source 계약이
 발견되면 코드를 먼저 작성하지 말고 Admission v1 fixture와 규칙을 보완한다.
-Backend 고정 의존성 방식도 현재 범위 지정 `requirements.txt`를 그대로 둘지
-constraints 또는 lock으로 전환할지 DA1 구현 때 실제 이미지 재현성 검증과 함께
-확정한다. 실제 dump의 사내 전달 수단과 보관 기간은 조직 정책을 따른다.
+실제 dump의 allowlist, 사내 전달 수단과 보관 기간은 Deploy 01에서 조직 정책과
+함께 확정한다.
 
 ### 전체 중단 조건
 
@@ -554,26 +470,22 @@ constraints 또는 lock으로 전환할지 DA1 구현 때 실제 이미지 재�
 - duplicate baseline 또는 checkpoint identity drift가 해소되지 않음
 - dry-run이 DB나 decision을 변경함
 - 실제 적용 두 번째 실행이 unchanged가 아님
-- snapshot hash·manifest·DB 집계가 일치하지 않음
-- Docker restore가 기존 Volume을 덮어쓸 수 있음
-- 서비스 DB와 test DB가 격리되지 않음
+- Deploy 입력 manifest와 새 DB 집계가 일치하지 않음
 
 ## Forest 완료 기준
 
-- `REVIEW_ADMISSION_PASS`와 새 실제 데이터 기준선이 기록됨
+- `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`와 새 실제 데이터 기준선이 기록됨
 - versioned audit/apply와 fixture·통합 테스트가 존재함
 - 승인 partial만 DB에 반영되고 재실행이 unchanged임
-- 새 snapshot과 manifest가 Git 밖에서 안전하게 복원됨
-- Docker Compose로 DB → Migration → Backend → Frontend가 clean-room에서 실행됨
-- 재시작 후 Volume 유지, test DB 격리와 실패 복구가 검증됨
 - 새 snapshot으로 담당자 actual 회귀가 통과함
-- 이후 독립 사용성 리뷰·QA가 같은 snapshot version을 사용함
+- Deploy 01이 필요한 allowlist·manifest·stable identity 입력을 인수함
 - 구현 결과는 Integration 10 development note에 기록되고 관련 기준 문서와
   `CHANGELOG.md`는 실제 변경이 완료된 뒤 갱신됨
 
 ## 관련 문서
 
 - [Integration 07 Release 2 Feature Acceptance](07_release_2_feature_acceptance.md)
+- [Deploy 01 Docker Acceptance Environment](../deploy/01_docker_acceptance_environment.md)
 - [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
 - [5주차 Release 2 실행 계획](../../weekly_plan/week_05_release_2.md)
 - [Regional Youth Policy Ingestion](../data/05_regional_youth_policy_ingestion.md)

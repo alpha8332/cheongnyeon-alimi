@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-07
+- 기준일: 2026-08-19
 - 범위: `v0.1.0`, `v0.5.0`, `v1.0.0`
 - 역할: 여러 Forest의 릴리스 목표와 통합 완료 조건을 정하는 기준선
 
@@ -50,7 +50,7 @@ PR #15의 `main` 커밋 `2b33ed7`에 `v0.1.0` tag를 생성해 publication을
 | Data | 실제 정책 bootstrap·품질 기준 | 반복 수집·중복·품질 운영 | 초기 적재·복구·Source 라이선스 |
 | Backend | 자연어 해석·서버 검색 API | 추천·사용자·관리자 API 안정화 | Production image·migration·health·로그 |
 | Frontend | 자연어 전달·해석 결과·실데이터 UI | 전체 사용자·관리자 UI·접근성 | Production build·배포 UI 회귀 |
-| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·결함 triage와 Release 2 결정 | 배포 파이프라인·clean-room과 Final 결정 |
+| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·review admission·동일 snapshot Acceptance 환경·결함 triage와 Release 2 결정 | Production 배포 파이프라인·clean-room과 Final 결정 |
 | 보고서 | 데이터·검색·검증 근거 | 기능·리뷰·QA·수정 결과 | 최종보고서·README·LICENSE·SBOM·제출 |
 | 사용성 리뷰어 | golden query 이해도 사전 확인 | 독립 사용자 시나리오와 수정본 확인 | 새 환경 실행 안내·최종 사용성 확인 |
 | QA | 핵심 검색 smoke | 전체 기능·통합·회귀·탐색 테스트 | 설치·배포·재시작·데이터 유지·복구 테스트 |
@@ -188,6 +188,11 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)를
 따른다.
 
+독립 리뷰·QA 진입 전에는
+[Integration 10 Review Admission](integration/10_review_admission_docker_acceptance.md)과
+[Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)을
+순서대로 통과한다.
+
 ### 필수 범위
 
 - 사용자 조건 기반 추천과 이해 가능한 추천 이유
@@ -208,6 +213,8 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 - 실데이터 갱신 절차, 실패 복구와 데이터 유지 검증
 - 검색·추천 정확도, DB migration, transaction과 주요 API 안정화
 - 접근성, 반응형, 빈 화면·오류 화면과 핵심 사용자 흐름 개선
+- 최신 review 재판정 뒤 재고정한 실제 DB snapshot을 동일 Git SHA의 Docker
+  Acceptance 환경으로 BE·FE 담당자, 리뷰어와 QA에게 인계
 
 Data 04의 웹 수집은 임의 사이트 범용 크롤러가 아니라 승인된 공식 Source 한
 곳을 세로 기준선으로 한다. Data 05는 이 기준선을 재사용해 승인된 지역 Source를
@@ -228,7 +235,9 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
 
 ### 리뷰어 검증
 
-팀원이 아닌 리뷰어가 최소한 다음 흐름을 수행한다.
+팀원이 아닌 리뷰어는 `REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED`와
+`DOCKER_ACCEPTANCE_PASS`가 기록된 동일 Git SHA·snapshot 환경에서 최소한
+다음 흐름을 수행한다.
 
 1. 조건 또는 자연어로 정책 검색
 2. 상세의 핵심 신청 조건·제외·서류·확인 필요와 공식 근거 확인
@@ -257,6 +266,8 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
   DB·API·Browser에 연결됐다.
 - 관리자 정책 데이터 표와 파일 로그·조회·보호된 삭제가 실제 환경에서
   검증됐다.
+- Integration 10의 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`와 Deploy 01의
+  `DOCKER_ACCEPTANCE_PASS`가 같은 Git SHA·snapshot version으로 연결됐다.
 - 주요 데이터 오류, migration과 transaction 문제가 해결됐다.
 - 리뷰어 시나리오를 통과하고 승인된 피드백이 반영됐다.
 - QA가 전체 기능·통합·회귀 테스트를 수행하고 릴리스 차단 결함의 수정본을
@@ -305,6 +316,7 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
 | `v0.1.0`에서 실제 또는 sample 데이터 허용 | 실제 진행 중 정책 snapshot 필수 | 합성 Seed만으로는 실제 검색 MVP를 증명할 수 없음 |
 | 검색이 keyword·기본 필터 중심 | Backend 자연어 해석과 서버 검색을 `v0.1.0` 필수로 포함 | 해석 기준을 한곳에 두고 현재 사용자 기대 시나리오를 client-only 문자열 검색 없이 만족해야 함 |
 | `v0.1.0`에 Docker Compose 포함 | Production 배포 파이프라인은 `v1.0.0`으로 이동 | 사용자가 정한 Final Release 목표와 현재 컨테이너 아키텍처 시점을 반영 |
+| 5주차 리뷰를 각 PC의 로컬 DB로 수행 | review admission 뒤 동일 snapshot Docker Acceptance 환경에서 수행 | BE·FE·리뷰어·QA의 데이터·실행환경 차이로 인한 재현 불일치를 제거하되 Production 배포 범위는 6주차에 유지 |
 | 3주차와 병행해 관리자 기능 진행 | `v0.1.0` 실데이터·검색 차단 조건을 먼저 처리 | 관리자 기능보다 Release 1의 검색 결과 신뢰성이 선행함 |
 | LLM·벡터 검색을 후속 실험으로 검토 | 그대로 유지 | 기본 SQL·조건 검색을 먼저 완성하고 복잡도를 검증 후 추가 |
 
@@ -314,6 +326,8 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)
 - [시스템 흐름](../../architecture/system_flow.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)

@@ -98,6 +98,8 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 | 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 13개 승인 Source 전체 순회·지역별 실제 open 고유 정책 DB·API·Browser 검색 연결·RYP-G6 통과 | Data 03·04, Integration 08 |
 | 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | approved | 5주차 중앙·공공기관 공식 Source 후보 정제, 온통청년·복지로 중복 감사와 실제 DB 적재 | Data 05 completed, Data 02·04 |
 | 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | in-progress | W5-G0 통과, Data 06·hardening과 Release 2 Gate | 모든 v0.5.0 기능과 Data 05·06 |
+| 14 | [Integration 10 Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md) | Team Leader - Integration | Data review 판정, Backend·Frontend 영향 확인 | in-progress | RA0 기준선·변경 전 보호 완료, 최신 review 재판정·partial 적재·새 실제 DB 기준선·`W5-G1_REVALIDATED`·Deploy 입력 인계 | Integration 07 W5-G1 |
+| 15 | [Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md) | Team Leader - Deploy | Data snapshot 확인, Backend·Frontend image 지원, 리뷰어·QA clean-room 검증 | approved | 동일 Git SHA·snapshot의 Compose 복원·health·actual smoke·환경 인계와 `DOCKER_ACCEPTANCE_PASS` | Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED` |
 
 Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
 다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
@@ -116,6 +118,11 @@ Integration 09는 관리자 인증 위에서 DB projection·파일 보존·API·
 빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와 기준 문서를
 같은 Forest에서 갱신한다.
 
+Integration 10은 독립 리뷰 전에 최신 review queue를 다시 판정하고 실제 DB
+기준선을 재고정한다. Deploy 01은 그 기준선을 BE·FE 담당자, 리뷰어와 QA가
+각자 격리된 환경에서 동일하게 재현하도록 하는 Acceptance 전용 Forest다.
+Nginx·CI·공개 운영 image 등 Final 배포 산출물은 `v1.0.0` Forest에 남긴다.
+
 ### `v0.5.0` 의존 흐름
 
 ```text
@@ -127,7 +134,10 @@ v0.1.0 → W4-G0
   ├→ 데이터 품질 운영 ────────────────────┤
   ├→ 지역 Source 탐색·중복 제외·actual ───┤
   └→ 보완 공식 Source 중복 감사·actual ───┘
-                  → midpoint → 리뷰·수정 → v0.5.0
+                  → midpoint → W5-G1
+                  → review admission·W5-G1_REVALIDATED
+                  → Docker Acceptance·DOCKER_ACCEPTANCE_PASS
+                  → 동일 환경 리뷰·QA·수정 → v0.5.0
 ```
 
 ## `v1.0.0` Forest
@@ -138,8 +148,10 @@ v0.1.0 → W4-G0
 | 2 | Clean-room Distribution Verification | Team Leader - Integration·Deploy | QA 주 검증, 리뷰어 사용성 확인 | 계획 필요 | 새 환경 clone-to-run, migration·bootstrap·전체 시나리오 | 배포 파이프라인 |
 | 3 | Final Documentation and Submission | 보고서 담당 | Team Leader 최종 확인, 전 담당 근거 제공 | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | clean-room 검증 |
 
-Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockfile과 실행
-방법이 준비된 뒤 통합 담당이 구성한다. Kubernetes는 현재 완료 조건이 아니다.
+5주차 Deploy 01의 Docker·Compose는 영역별 구현이 `develop`에 병합되고
+manifest·lockfile과 실행 방법이 준비된 뒤 통합 담당이 Acceptance 범위로
+구성한다. `v1.0.0` Forest는 이를 Production image·Nginx·CI·배포 및 복구
+문서로 확장해 다시 clean-room 검증한다. Kubernetes는 현재 완료 조건이 아니다.
 
 ## 브랜치 계획
 
@@ -212,6 +224,8 @@ Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함�
 - [Data Quality Operations](data/03_recurrent_collection_quality_operations.md)
 - [Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md)
 - [Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)
+- [Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
 - [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)

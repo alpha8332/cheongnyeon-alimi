@@ -215,7 +215,8 @@ Collector가 늦어지더라도 합의된 Seed로 백엔드와 프론트엔드 �
 | Data | `develop_plan/data/`, `development_notes/data/` | `docs/data/`, 영향받는 `docs/api/` |
 | Backend | `develop_plan/backend/`, `development_notes/backend/` | `docs/api/`, DB·아키텍처·운영 문서 |
 | Frontend | `develop_plan/frontend/`, `development_notes/frontend/` | API 사용 계약, 화면 흐름·접근성 문서 |
-| Team Leader·공동 통합·Deploy | `develop_plan/integration/`, `development_notes/integration/` | 영향받는 모든 공통 계약과 배포·운영 문서 |
+| Team Leader·공동 통합 | `develop_plan/integration/`, `development_notes/integration/` | 영향받는 모든 공통 계약과 운영 문서 |
+| Team Leader·Deploy | `develop_plan/deploy/`, `development_notes/deploy/` | 컨테이너·배포·환경·운영·복구 문서와 각 영역 실행 계약 |
 | 보고서 | `docs/contest/` | 개발 기록, 테스트 결과, README·LICENSE·SBOM |
 | 사용성 리뷰 | 관련 Integration 개발 기록 또는 확정된 리뷰 증빙 | 사용자 시나리오와 릴리스 계획 |
 | QA | 관련 Integration 개발 기록 또는 확정된 QA 증빙 | 테스트 결과, 결함·재검증과 릴리스 체크리스트 |

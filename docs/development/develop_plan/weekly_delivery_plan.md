@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-07
+- 기준일: 2026-08-19
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -31,7 +31,7 @@
 | 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
 | 3주차 | 실데이터 근거·Source 검색 필드·지역 정규화·DB bootstrap·품질 보고 | 지역 관계·search projection 공동 기반, 자연어 해석·서버 검색·성능 | 데이터·API 소비 검토, 자연어 조건·검색 이유·미확인 조건 UI | 검색 데이터 기반 Gate, 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
 | 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 4주차 수행 없음 | 4주차 수행 없음 | 4주차 수행 없음 |
-| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 구현·통합 종료, 결함 triage와 `v0.5.0` 결정 | 기능 연결 종료 뒤 리뷰·QA·수정 근거 정리 | 기능 연결 종료 뒤 실제 사용자 시나리오 수행·재확인 | 기능 연결 종료 뒤 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
+| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정, Acceptance image 지원 | UX·접근성·반응형·오류 화면 수정, Acceptance build 지원 | 기능 통합 종료, review admission·동일 snapshot Acceptance 환경·결함 triage와 `v0.5.0` 결정 | 기능 연결 종료 뒤 리뷰·QA·수정 근거 정리 | 동일 Git SHA·snapshot 환경에서 실제 사용자 시나리오 수행·재확인 | 동일 Git SHA·snapshot 환경에서 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
 | 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
 
 ## 전체 흐름
@@ -42,7 +42,7 @@
   → 3주차 검색 데이터 기반·실데이터 검색 MVP
   → v0.1.0
   → 4주차 사용자·관리자 기능
-  → 5주차 전체 기능 통합·리뷰어 안정화
+  → 5주차 전체 기능 통합·동일 snapshot Acceptance 환경·리뷰어 안정화
   → v0.5.0
   → 6주차 배포·clean-room·최종 정리
   → v1.0.0
@@ -266,7 +266,9 @@ Source 수집과 핵심 신청
 
 역할별 실행 순서와 Gate는
 [5주차 상세 계획](../weekly_plan/week_05_release_2.md)과
-[5주차 Data·Team Leader 실행 계획](../weekly_plan/week_05_data_team_leader.md)을
+[5주차 Data·Team Leader 실행 계획](../weekly_plan/week_05_data_team_leader.md),
+[Integration 10 Review Admission](integration/10_review_admission_docker_acceptance.md),
+[Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)을
 따른다.
 
 ### 기본 기능 기준선
@@ -283,12 +285,22 @@ SOP0~SOP5를 구현·검증하고 기능을 동결한 뒤 오류 수정·UI/UX �
 2. Data 06 SOP0~SOP3: 후보 정제·중복 감사·Source 승인·Adapter fixture
 3. Data 06 SOP4~SOP5: 최소 4개 Source actual·DB·API·Browser·재실행
 4. W5-G1: Data 06 포함 전체 기능 동결과 실제 E2E
-5. 사용성 리뷰·QA → 결함 수정 → 동일 시나리오 재검증
-6. W5-G2: `v0.5.0` Release 2 판정
+5. Integration 10 RA0~RA4: 최신 review 재판정·partial 적재·새 기준선과
+   `W5-G1_REVALIDATED`
+6. Deploy 01 DEP0~DEP5: 동일 Git SHA·snapshot을 Docker로 복원하고
+   `DOCKER_ACCEPTANCE_PASS`
+7. 동일 Acceptance 환경에서 사용성 리뷰·QA → 결함 수정 → 같은 snapshot과
+   시나리오 재검증
+8. W5-G2: `v0.5.0` Release 2 판정
 
 W5-G0 이전 값은 4주차 인수 기준이지 5주차 재검증 결과가 아니다. Data 06
 적재 뒤 최종 정책 건수는 accepted·duplicate·review·closed·failed 판정에 따라
 결정하며 계획에서 미리 목표 row 수를 만들지 않는다.
+
+Deploy 01은 BE·FE 담당자, 리뷰어와 QA가 서로 다른 PC에서도 같은 Git SHA와
+실제 데이터 snapshot을 사용하기 위한 5주차 검증 환경이다. Nginx, 공개 운영
+이미지, CI image build·배포와 최종 bootstrap은 포함하지 않으며 6주차
+Production 배포 범위를 대체하지 않는다.
 
 ### 안정화
 
@@ -301,9 +313,10 @@ W5-G0 이전 값은 4주차 인수 기준이지 5주차 재검증 결과가 아�
 
 ### 리뷰어 테스트
 
-팀 외 리뷰어가 검색, 상세, 추천 이유, 즐겨찾기, 알림, 캘린더와 관리자
-시나리오를 수행한다. 관찰 결과를 재현 조건·심각도·기대 결과와 함께 기록하고,
-승인한 문제를 수정한 뒤 재검증한다.
+팀 외 리뷰어가 `DOCKER_ACCEPTANCE_PASS`를 받은 동일 Git SHA·snapshot
+환경에서 검색, 상세, 추천 이유, 즐겨찾기, 알림, 캘린더와 관리자 시나리오를
+수행한다. 관찰 결과를 재현 조건·심각도·기대 결과와 함께 기록하고, 승인한
+문제를 수정한 뒤 같은 입력으로 재검증한다.
 
 ### QA 테스트
 
@@ -324,12 +337,19 @@ W5-G0 이전 값은 4주차 인수 기준이지 5주차 재검증 결과가 아�
 [Release 2 완료 조건](release_roadmap.md#릴리스-완료-조건-1)을 모두 충족한
 `develop`만 `v0.5.0` 후보로 삼는다.
 
+`REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED`와 `DOCKER_ACCEPTANCE_PASS`가
+없으면 독립 리뷰·QA 근거를 Release 2 완료 근거로 사용하지 않는다.
+
 ## 6주차 - 배포 파이프라인과 Final Release
 
 ### 기능 원칙
 
 새 사용자 기능은 원칙적으로 동결하고 배포, 재현성, 테스트와 최종 문서에
 집중한다. 릴리스 차단 버그와 보안 문제만 수정한다.
+
+5주차 Deploy 01의 Acceptance 구성을 입력으로 삼되, 6주차에는 Production
+image·Nginx·CI·초기 bootstrap·운영 복구까지 확장하고 다시 clean-room으로
+검증한다. 5주차 Gate 통과만으로 Final 배포 완료를 선언하지 않는다.
 
 ### 배포
 
