@@ -13,6 +13,7 @@
 - DEP3 완료일: `2026-08-20`
 - DEP4 시작일: `2026-08-20`
 - DEP4 완료일: `2026-08-20`
+- DEP5 시작일: `2026-08-20`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
@@ -45,7 +46,7 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | DEP2 | completed | 고정 image·Compose·fail-closed restore 도구·개발 override 구현, `DEP2_PASS` |
 | DEP3 | completed | 실제 3,273건 restore·Migration·health·API·Browser·관리자 PIN·Volume 보존 통과, `DEP3_PASS` |
 | DEP4 | completed | 별도 project clean-room·실패 복구·재시작·test DB/Volume 격리 통과, `DEP4_PASS` |
-| DEP5 | pending | 동일 snapshot BE·FE 인수와 reviewer package 미작성 |
+| DEP5 | in-progress | 이식 가능한 암호화 package 도구·receipt·역할별 결과·결함 양식 준비, 최종 commit package와 독립 인수 4건 대기 (`DEP5_PACKAGE_READY`) |
 
 현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`,
 `DOCKER_ACCEPTANCE_PENDING`이다.
@@ -58,6 +59,9 @@ override, snapshot 검증·복원 도구를 구현하고 image build·구성·fa
 경계를 검증했다. DEP3에서는 실제 DB 복원과 Browser smoke를 수행했으며, 아래에는
 실제로 관찰한 실패와 수정·재검증 결과만 기록한다. DEP4에서는 기존 환경을
 유지한 채 별도 project·Volume으로 clean-room과 복구·test 격리를 검증했다.
+DEP5에서는 EFS 원본을 다른 PC로 전달할 수 없는 경계를 확인하고 이식 가능한
+암호화 package와 동일 환경 인수 계약을 구현했다. 실제 수신자 결과는 아직
+수집하지 않았으므로 전체 Gate는 pending으로 유지한다.
 
 ### DEP0 기준선
 
@@ -406,6 +410,39 @@ host publish는 없었다. 검증을 마친 뒤 clean-room container는 전부 s
 Volume 삭제는 수행하지 않았다. 기존 `cheongnyeon-alimi-acceptance`의 DB·Backend·
 Frontend는 계속 healthy다. 이로써 `DEP4_PASS`다.
 
+### DEP5 이식 가능한 package·인수 계약
+
+DEP1 snapshot은 현재 PC의 Windows EFS로 보호되어 있으므로 파일을 그대로 복사해
+다른 PC에서 사용하는 전달물이 될 수 없다. DEP5에서는 다음 경계를 갖는
+`create_acceptance_transfer_package.ps1`을 추가했다.
+
+- 이 문서와 인수 계약이 포함된 clean Git commit에서만 생성
+- workspace 밖 출력과 기존 archive·receipt 비덮어쓰기
+- 승인 snapshot을 기존 verifier로 다시 검증한 뒤 dump·manifest만 package에 포함
+- 7-Zip AES-256·header encryption과 대화형 passphrase 사용
+- 생성 archive를 같은 passphrase로 다시 test한 뒤에만 최종 파일명으로 이동
+- archive hash, 실행 Git SHA, snapshot·dump·manifest, Migration·집계,
+  Compose·설정 문서 hash를 비밀정보 없는 receipt로 기록
+
+Backend·Frontend·사용성 리뷰어·QA는 각자 격리된 Compose project·Volume에서
+restore하고 [역할별 실행 결과 양식](../../handoff/docker_acceptance/acceptance_result_template.md)과
+[결함·재검증 양식](../../handoff/docker_acceptance/defect_report_template.md)으로
+회신한다. 네 결과의 Git SHA·snapshot version·dump hash와 archive receipt가
+일치하기 전에는 `DEP5_PASS`가 아니다.
+
+현재 상태는 생성기·인수 문서·양식의 구현과 정적 계약 검증을 마친
+`DEP5_PACKAGE_READY`다. 현재 변경을 commit하기 전에는 최종 실행 Git SHA가
+확정되지 않으므로 실제 archive·receipt를 의도적으로 생성하지 않았다.
+
+시스템 MSI 설치는 Windows 관리자 승인 단계에서 완료되지 않아 공식 7-Zip
+26.02 `7zr.exe` portable console을 workspace 밖에 준비했다. 다운로드 파일
+SHA-256 `56b8cc9f4971cef253644fafe54063ed7fdca551d4dee0f8c6baa81b855acd72`는
+공식 GitHub release asset digest와 일치했다. 실제 대화형 probe에서 AES-256·
+encrypted header archive 생성과 두 번째 암호 입력을 통한 archive test가
+통과했다. 이때 기존 archive의 test·extract 명령에 값 없는 `-p`를 붙이면 빈
+암호로 처리되어 실패함을 확인하고, test·수신자 extract 명령에서는 `-p`를
+제거해 암호 prompt가 열리도록 보정했다.
+
 후속 Slice에서도 다음 값을 실제 실행 결과로 계속 기록한다.
 
 - Git SHA와 worktree 상태
@@ -421,7 +458,7 @@ Frontend는 계속 healthy다. 이로써 `DEP4_PASS`다.
 
 ## 주요 변경 파일
 
-DEP0~DEP4에서 변경하거나 생성한 주요 파일은 다음과 같다.
+DEP0~DEP5 package 준비에서 변경하거나 생성한 주요 파일은 다음과 같다.
 
 - `docs/development/develop_plan/deploy/01_docker_acceptance_environment.md`
 - `docs/development/development_notes/deploy/docker_acceptance_environment.md`
@@ -452,6 +489,11 @@ DEP0~DEP4에서 변경하거나 생성한 주요 파일은 다음과 같다.
 - `tests/test_docker_acceptance_contract.py`
 - `tests/test_verify_acceptance_snapshot.py`
 - `docs/development/docker_acceptance_setup.md`
+- `deployment/postgres/create_acceptance_transfer_package.ps1`
+- `docs/development/handoff/docker_acceptance/README.md`
+- `docs/development/handoff/docker_acceptance/acceptance_result_template.md`
+- `docs/development/handoff/docker_acceptance/defect_report_template.md`
+- `tests/test_docker_acceptance_handoff_contract.py`
 
 DEP2~DEP4 실제 구현·검증 파일은 위 목록과 개발 계획의 해당 절에 반영했다.
 
@@ -516,6 +558,10 @@ DEP2~DEP4 실제 구현·검증 파일은 위 목록과 개발 계획의 해당 
 | clean-room 재시작·Volume 보존 | 통과, Policy/Run 3,273/61 불변·stable identity 3/3·orphan 0·Volume 4개 유지 |
 | test DB·Volume·network 격리 | 통과, `_test` DB·별도 Volume/network·probe 미전파·잘못된 이름 exit 64 |
 | DEP4 secret·Raw log·DB port | 통과, secret/raw marker 0·PostgreSQL host publish 없음 |
+| DEP5 PowerShell package 생성기 구문 | 통과, parser error 0 |
+| DEP5 package·인수 계약 단위 테스트 | 3개 통과 |
+| DEP5 package dirty worktree guard | 예상 차단 통과, `DEP5_BLOCKED`·archive/receipt 미생성 |
+| DEP5 portable 7-Zip·암호화 probe | 통과, 26.02 official digest 일치·7zAES·encrypted header test |
 | 문서 검증 | `Documentation validation passed.` |
 | 문서 검증기 단위 테스트 | 11개 통과 |
 
@@ -523,8 +569,13 @@ DEP2~DEP4 실제 구현·검증 파일은 위 목록과 개발 계획의 해당 
 
 ## 남은 작업
 
-1. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
-2. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+1. 현재 DEP5 변경을 commit하여 최종 실행 Git SHA를 고정한다.
+2. clean checkout에서 이식 가능한 암호화 package·receipt를 생성하고 archive
+   hash를 재확인한다.
+3. package를 BE·FE 담당자와 사용성 리뷰어·QA에게 인계하되 passphrase는 별도
+   승인 채널로 전달한다.
+4. 네 역할의 독립 결과를 대조하고 모든 근거가 일치할 때만
+   `DOCKER_ACCEPTANCE_PASS`를 기록하여 DTL5-5를 연다.
 
 `run_docker.bat`은 `DOCKER_ACCEPTANCE_PASS` 이후 별도 backlog에서 구현한다.
 Deploy 01 완료와 DTL5-5 시작을 막는 항목은 아니다.
@@ -535,3 +586,4 @@ Deploy 01 완료와 DTL5-5 시작을 막는 항목은 아니다.
 - [Integration 07 Release 2 개발 기록](../integration/release_2_feature_acceptance.md)
 - [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
 - [컨테이너 구조](../../../architecture/container_structure.md)
+- [Docker Acceptance 동일 환경 인계 패키지](../../handoff/docker_acceptance/README.md)

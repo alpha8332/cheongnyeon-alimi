@@ -167,6 +167,8 @@
   DEP0~DEP5 실제 구현·검증과 `DOCKER_ACCEPTANCE_PASS` 근거
 - [Docker Acceptance 웹 UI 실행 방법](development/docker_acceptance_setup.md):
   Docker Desktop 최초 복원·Compose 실행·웹 UI 접속·재시작·종료 방법과 현재 검증 상태
+- [Docker Acceptance 동일 환경 인계 패키지](development/handoff/docker_acceptance/README.md):
+  AES-256 snapshot 전달, receipt 대조와 BE·FE·사용성 리뷰어·QA 독립 결과 계약
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별

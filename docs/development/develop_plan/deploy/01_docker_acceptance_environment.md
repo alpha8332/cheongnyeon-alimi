@@ -295,6 +295,23 @@ Backend·Frontend 담당자와 리뷰어·QA에게 다음을 한 묶음으로 �
 Docker·Compose version과 test command를 남겨 서로 다른 입력을 같은 결과로
 합치지 않는다.
 
+### DEP5 패키지 준비 결과 (2026-08-20)
+
+- Windows EFS 원본은 다른 PC로 이식할 수 없으므로 7-Zip AES-256과 header
+  encryption을 사용하는 외부 전달 package 생성기를 추가했다.
+- 생성기는 clean handoff commit, workspace 밖 출력 경로, 기존 산출물 비덮어쓰기,
+  snapshot 재검증과 archive 재검증을 fail-closed 조건으로 둔다.
+- passphrase는 PowerShell이 읽거나 저장하지 않고 7-Zip 대화형 prompt에서만
+  입력한다. archive와 passphrase는 서로 다른 승인 채널로 전달한다.
+- Git SHA·snapshot·dump·archive·Compose·설정 문서 hash를 담는 비밀정보
+  없는 receipt와 역할별 결과·결함 양식을 추가했다.
+- 상세 절차는 [Docker Acceptance 동일 환경 인계 패키지](../../handoff/docker_acceptance/README.md)를
+  따른다.
+
+이 결과는 `DEP5_PACKAGE_READY`다. 최종 handoff commit에서 package·receipt를
+생성하고 Backend·Frontend·사용성 리뷰어·QA의 독립 실행 결과를 대조하기
+전까지 `DEP5_PASS` 또는 `DOCKER_ACCEPTANCE_PASS`로 판정하지 않는다.
+
 ## 비차단 후속 - Docker one-click BAT
 
 `run_docker.bat`은 DEP3~DEP5에서 검증된 명령을 단순화하는 배포 편의 기능이다.
@@ -393,6 +410,7 @@ Seed·fixture로 다음만 검증한다.
 
 - [Integration 10 Review Admission](../integration/10_review_admission_docker_acceptance.md)
 - [Integration 07 Release 2 Acceptance](../integration/07_release_2_feature_acceptance.md)
+- [Docker Acceptance 동일 환경 인계 패키지](../../handoff/docker_acceptance/README.md)
 - [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
 - [컨테이너 구조](../../../architecture/container_structure.md)
 - [브랜치 전략](../../../governance/branch_strategy.md)

@@ -45,4 +45,6 @@ Migration → Backend → Frontend를 함께 시작한다.
 `DOCKER_ACCEPTANCE_PASS` 전까지는 대회 심사자용 최종 실행 패키지로 안내하지
 않는다. 최초 실행, Docker Desktop 재실행과 웹 UI 접속 방법은
 [Docker Acceptance 환경 설정](docs/development/docker_acceptance_setup.md)을
-따른다.
+따른다. 다른 PC 인계용 암호화 package·receipt와 역할별 결과 양식은
+[Docker Acceptance 동일 환경 인계 패키지](docs/development/handoff/docker_acceptance/README.md)에
+정의되어 있다.

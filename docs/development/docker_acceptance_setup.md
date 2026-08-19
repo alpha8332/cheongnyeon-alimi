@@ -9,8 +9,9 @@ dump·manifest·비밀번호는 Git, Docker image, CI artifact에 포함하지 �
 현재 절차는 로컬 Docker Acceptance용이다. Nginx·TLS·도메인·운영 배포는
 6주차 범위이며 이 문서의 결과를 운영 배포 완료로 해석하지 않는다.
 
-> 현재 상태는 `DEP4_PASS`이며 실제 snapshot restore·API·Browser·관리자 PIN·
-> clean-room·복구·test 격리까지 검증했다. 담당자·리뷰어 인계인 DEP5는 남아 있다.
+> 현재 상태는 `DEP4_PASS`·`DEP5_PACKAGE_READY`이며 실제 snapshot
+> restore·API·Browser·관리자 PIN·clean-room·복구·test 격리와 이식 가능한
+> package 계약까지 검증했다. 담당자·리뷰어의 독립 실행 결과 수집은 남아 있다.
 > `DOCKER_ACCEPTANCE_PASS` 전에는 이 문서를 대회 심사자용 최종 실행 보증으로
 > 사용하지 않는다.
 
@@ -63,7 +64,8 @@ Start-Process http://127.0.0.1:3000
 
 실제 `.env.compose`, DB password, 관리자 PIN, dump는 Git에 포함하지 않는다.
 현재 로컬 snapshot은 Windows EFS로 암호화되어 다른 PC에서 그대로 복호화할 수
-없으므로 DEP5에서 이식 가능한 암호화 전달 package를 별도로 확정한다.
+없다. DEP5의 [동일 환경 인계 패키지](handoff/docker_acceptance/README.md)에 따라
+AES-256 archive와 receipt를 생성·검증하고 passphrase를 별도 채널로 전달한다.
 
 ## Docker Desktop 기준 사용자 흐름
 
