@@ -3,12 +3,14 @@
 ## 작업 정보
 
 - 상태: in-progress
-- 실행 판정: `DEP0_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
+- 실행 판정: `DEP0_PASS`·`DEP1_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
 - 기록 시작일: `2026-08-19`
 - DEP1 preflight일: `2026-08-20`
+- DEP1 완료일: `2026-08-20`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
+- DEP1 snapshot Git SHA: `75510a92d5f566e34c1ff92e7d97b65d88e8b178`
 - 선행 Gate: Integration 10 `REVIEW_ADMISSION_PASS`
 - 계획: [Deploy 01 Docker Acceptance Environment](../../develop_plan/deploy/01_docker_acceptance_environment.md)
 - 후속 단계: Integration 07 DTL5-5 독립 사용성 리뷰·QA
@@ -33,18 +35,19 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | Slice | 상태 | 실제 결과 |
 | --- | --- | --- |
 | DEP0 | completed | Git·Docker·dependency·Migration·secret·보관 경로·port 기준선 확인, `DEP0_PASS` |
-| DEP1 | in-progress | allowlist·민감정보 scan·생성기 완료, clean Git SHA 뒤 최종 dump·manifest 생성 대기 |
+| DEP1 | completed | allowlist·민감정보 scan·EFS custom dump·manifest·hash·TOC 검증 완료, `DEP1_PASS` |
 | DEP2 | pending | Dockerfile·Compose 미구현 |
 | DEP3 | pending | restore·Migration·actual smoke 미실행 |
 | DEP4 | pending | clean-room·재시작·복구·test 격리 미실행 |
 | DEP5 | pending | 동일 snapshot BE·FE 인수와 reviewer package 미작성 |
 
-현재 판정은 `DEP0_PASS`, `DOCKER_ACCEPTANCE_PENDING`이다.
+현재 판정은 `DEP0_PASS`·`DEP1_PASS`, `DOCKER_ACCEPTANCE_PENDING`이다.
 
 ## 구현 내용
 
-DEP0에서 실제 저장소와 실행 환경을 확인했다. Dockerfile, Compose, snapshot과
-restore 도구는 아직 구현하지 않았으며 DEP1 이후 결과로 미리 기록하지 않는다.
+DEP0에서 실제 저장소와 실행 환경을 확인하고 DEP1에서 snapshot 생성기와 실제
+Acceptance dump를 완성했다. Dockerfile, Compose와 restore 도구는 아직 구현하지
+않았으며 DEP2 이후 결과로 미리 기록하지 않는다.
 
 ### DEP0 기준선
 
@@ -153,10 +156,46 @@ credential과 합치지 않고 별도 비차단 집계로 남겼다. 구조화 c
 - 기존 dump·manifest overwrite 금지
 - `pg_dump --no-owner --no-acl`과 dump TOC·schema owner/ACL 재검사
 
-생성기 단위 테스트 11개가 통과했다. 현재 작업 트리는 DEP0·DEP1 구현이 아직
-미커밋이므로 실제 명령은 `DEP1_BLOCKED: repository worktree must be clean`으로
-종료했고 외부 snapshot 디렉터리에 dump·manifest를 만들지 않았다. 구현을 먼저
-커밋해 재현 가능한 SHA를 만든 뒤 같은 명령으로 최종 산출물을 생성한다.
+생성기 단위 테스트 11개가 통과했다. 미커밋 상태에서 실행한 첫 검증은
+`DEP1_BLOCKED: repository worktree must be clean`으로 종료했고 외부 snapshot
+산출물을 만들지 않아 fail-closed 경계를 확인했다.
+
+### DEP1 실제 snapshot 생성
+
+생성기를 커밋한 clean SHA `4ae19b3`에서 첫 실제 생성을 실행했다. custom archive
+자체는 만들어졌지만 PostgreSQL 18 `pg_restore --schema-only`가 SQL 출력 대상
+`--file` 또는 restore 대상 `--dbname`을 요구해 검증 단계에서 중단됐다. 생성기는
+`.partial`을 제거했고 최종 dump·manifest는 남기지 않았다.
+
+원인은 archive나 DB가 아니라 schema-only 출력 명령의 누락이었다.
+`--file=-`를 추가한 수정 커밋 `75510a9`에서 다시 실행해 다음 snapshot을
+확정했다. `snapshot_version` 날짜는 manifest 생성 시각의 UTC 기준이다.
+
+| 항목 | 실제 결과 |
+| --- | --- |
+| snapshot version | `acceptance-20260819-75510a9` |
+| repository Git SHA | `75510a92d5f566e34c1ff92e7d97b65d88e8b178` |
+| PostgreSQL / Alembic | `18.4` / `20260810_0006` |
+| dump filename | `acceptance-post-admission.dump` |
+| dump size | 3,020,687 byte |
+| dump SHA-256 | `46810a6ac6082680d2fae17ab98721597ec4b5e23ec667b3d086b5a4e9739a8b` |
+| manifest 계약 SHA-256 | `551136bab08bf8db45935a07a7fb8a2056acf6b1b6bc01ba117eea6331513122` |
+| manifest file SHA-256 | `42394556feba9b4d0058bde495f28a808fbcb302660abc30838ec11dde455299` |
+| TOC | 75행·ACL 0 |
+| schema owner·ACL statement | 0 |
+| table / blocker scan | 7 / 0 |
+| Policy / CollectionRun | 3,273 / 61 |
+| 대표 stable identity | 3/3 |
+
+dump와 실제 manifest는 Git·workspace 밖
+`%LOCALAPPDATA%\cheongnyeon-alimi\acceptance\acceptance-20260820-75510a9`에
+있다. 두 파일 모두 현재 사용자만 복호화할 수 있는 Windows EFS AES-256으로
+암호화했다. EFS recovery certificate는 없으므로 이 디렉터리를 유일한 복구본으로
+간주하지 않고, DEP5 전달 때 별도 승인된 암호화 전달 package를 만들어야 한다.
+
+파일 암호화 뒤 dump size·SHA-256, manifest 계약·file SHA-256을 독립 재계산해
+내장값과 일치함을 확인했다. 원본 서비스 DB는 전체 과정에서 read-only inventory와
+`pg_dump`만 사용해 변경하지 않았다. 이 결과로 DEP1 Gate는 `DEP1_PASS`다.
 
 구현을 시작하면 Slice별로 다음을 실제 값으로 기록한다.
 
@@ -205,7 +244,7 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 
 | 검증 | 결과 |
 | --- | --- |
-| Git·branch·worktree | 통과, 권장 branch·`9d6475d`·clean 기준선 |
+| Git·branch·worktree | 통과, DEP0 `9d6475d`·DEP1 snapshot `75510a9` clean SHA |
 | Docker Engine·Compose·Buildx | 통과, `29.6.2`·`5.3.1`·`0.35.0-desktop.2` |
 | Backend dependency hash lock | 통과, 38 package·Linux dry-run hash 설치 가능 |
 | Frontend lockfile | 통과, npm lockfile v3 |
@@ -216,7 +255,9 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 | DEP1 Python 정적 검사 | Ruff 통과 |
 | allowlist·민감정보 preflight | 통과, table 7·금지 scan blocker 0 |
 | dirty worktree fail-closed | 통과, exit 1·외부 산출물 0 |
-| snapshot 생성·dump hash | clean Git SHA 대기, 미실행 |
+| 첫 snapshot 생성 | 예상 차단, `pg_restore --schema-only` 출력 대상 누락·최종 산출물 0 |
+| 최종 snapshot 생성·dump hash | 통과, 3,020,687 byte·SHA-256 일치·EFS AES-256 |
+| manifest·TOC·owner·ACL | 통과, 계약/file hash 일치·TOC 75·ACL/owner statement 0 |
 | image build | 미실행 |
 | restore·Migration·health | 미실행 |
 | actual DB·API·Browser | 미실행 |
@@ -229,12 +270,10 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 
 ## 남은 작업
 
-1. DEP0·DEP1 생성기 변경을 커밋해 clean Git SHA를 확정한다.
-2. 같은 SHA에서 실제 dump·manifest를 생성하고 hash·TOC를 검증해 DEP1을 닫는다.
-3. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
-4. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
-5. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
-6. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+1. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
+2. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
+3. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
+4. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
 
 ## 관련 문서
 
