@@ -4,7 +4,8 @@
 
 - 번호: Deploy 01
 - 담당 영역: Team Leader - Integration·Deploy
-- 상태: approved
+- 상태: in-progress
+- 실행 시작일: `2026-08-19` (`DEP0_PASS`)
 - 계획일: `2026-08-19`
 - 권장 구현 브랜치: `feature/deploy/docker-acceptance-environment`
 - 대상 Release: `v0.5.0` 독립 리뷰 환경과 `v1.0.0` 배포 기반

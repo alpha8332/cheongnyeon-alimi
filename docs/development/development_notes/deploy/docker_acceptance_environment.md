@@ -2,12 +2,12 @@
 
 ## 작업 정보
 
-- 상태: draft
-- 실행 판정: not-started (계획 승인, 구현·실환경 검증 미수행)
+- 상태: in-progress
+- 실행 판정: `DEP0_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
 - 기록 시작일: `2026-08-19`
 - 담당 영역: Team Leader - Integration·Deploy
-- 현재 브랜치: `feature/integration/week-05-acceptance` (계획 문서화만 수행)
-- 권장 구현 브랜치: `feature/deploy/docker-acceptance-environment`
+- 현재 브랜치: `feature/deploy/docker-acceptance-environment`
+- DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
 - 선행 Gate: Integration 10 `REVIEW_ADMISSION_PASS`
 - 계획: [Deploy 01 Docker Acceptance Environment](../../develop_plan/deploy/01_docker_acceptance_environment.md)
 - 후속 단계: Integration 07 DTL5-5 독립 사용성 리뷰·QA
@@ -31,19 +31,77 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 
 | Slice | 상태 | 실제 결과 |
 | --- | --- | --- |
-| DEP0 | pending | Integration 10 `REVIEW_ADMISSION_PASS`와 실제 Docker 환경 확인 대기 |
+| DEP0 | completed | Git·Docker·dependency·Migration·secret·보관 경로·port 기준선 확인, `DEP0_PASS` |
 | DEP1 | pending | post-admission snapshot·allowlist·manifest 생성 전 |
 | DEP2 | pending | Dockerfile·Compose 미구현 |
 | DEP3 | pending | restore·Migration·actual smoke 미실행 |
 | DEP4 | pending | clean-room·재시작·복구·test 격리 미실행 |
 | DEP5 | pending | 동일 snapshot BE·FE 인수와 reviewer package 미작성 |
 
-현재 판정은 `DOCKER_ACCEPTANCE_PENDING`이다.
+현재 판정은 `DEP0_PASS`, `DOCKER_ACCEPTANCE_PENDING`이다.
 
 ## 구현 내용
 
-아직 제품 코드, Dockerfile, Compose, snapshot 또는 restore 도구를 구현하지
-않았다. `2026-08-19`에는 Forest 계획과 문서 경계만 작성했다.
+DEP0에서 실제 저장소와 실행 환경을 확인했다. Dockerfile, Compose, snapshot과
+restore 도구는 아직 구현하지 않았으며 DEP1 이후 결과로 미리 기록하지 않는다.
+
+### DEP0 기준선
+
+- 작업 트리가 깨끗한 `9d6475d49275a06704ec82651bb9d1fcdcbfd478`에서 권장
+  브랜치 `feature/deploy/docker-acceptance-environment`를 생성했다.
+- Integration 10 확정 구현 `f3f67aa`는 현재 SHA의 ancestor다.
+- Docker Client·Server는 `29.6.2`, Compose는 `5.3.1`, Buildx는
+  `0.35.0-desktop.2`다.
+- host port `3000`·`8000`은 DEP0 확인 시 listen process가 없었다.
+- C drive 여유 공간은 585.45 GB였다.
+- snapshot 보관 위치는 workspace 밖
+  `%LOCALAPPDATA%\cheongnyeon-alimi\acceptance\acceptance-20260819-9d6475d`로
+  확정하고 디렉터리 존재를 확인했다.
+- Runtime archive는 기존 workspace 밖 백업을 사용하며 34,043,724 byte,
+  SHA-256
+  `A440EFE30144678C2EF07BAE0CC824E92DCF168C3AFF9C032DA46A468AF0C358`로
+  Integration 10 인계값과 일치했다.
+
+실제 DB는 PostgreSQL `18.4`, repository와 actual Alembic은 모두
+`20260810_0006`이다. Policy 3,273건, CollectionRun 61건과 대표 stable
+identity 3/3을 읽기 전용 SQL로 확인했다.
+
+admission manifest의 내장 계약 hash는
+`789f8e3b61c144843e93bc762d60f114179c6bfb8e5effd260138c73484e1203`,
+실제 file hash는
+`03b6d91952e53148e709d2a66838faaf26f63432a49050d48f7b2ab40186ebda`로
+Integration 10 기록과 각각 일치했다. 두 값은 `manifest_sha256` field를
+제외한 canonical 계약 hash와 field를 포함한 파일 전체 hash여서 서로 다른 것이
+정상이다.
+
+pgpass는 workspace 밖 `%LOCALAPPDATA%\Temp`에 있고 현재 사용자 R/W ACL만
+있다. 비밀번호를 출력하지 않은 연결로 기본 `postgres`가 아닌 login role이며
+superuser가 아님을 확인했다. 실제 credential 값과 role 이름은 문서에 기록하지
+않았다.
+
+### Backend dependency 재현성 보정
+
+기존 `backend/requirements.txt`의 12개 직접 의존성은 모두 최소 버전 범위여서
+서로 다른 시점의 image build가 같은 transitive version을 보장하지 않았다.
+또한 현재 Windows `.venv`에는 manifest가 요구하는 `httpx2`가 빠져 Backend
+회귀에서 Starlette deprecation warning이 발생했다. PyPI에서 `httpx2` 2.0.0
+이상 배포를 확인하고 현재 최신 검증 버전 `2.12.0`을 `.venv`와 Acceptance
+constraints에 반영한 뒤, 전체 package를 Linux Python 3.14용 hash lock으로
+고정했다.
+
+- Backend 요구사항 SHA-256:
+  `9889EB22FF3E449645F23DD9E2E2FEBABA93A06FC6B8B91053203028B53823EA`
+- Backend Acceptance constraints SHA-256:
+  `C6866B4343972A60AF3A1E430BFD30FB0E89F9D3C3EAA5ECF6D74D79A8A90E0C`
+- Backend hash lock SHA-256:
+  `AF60066EDECA601210ECFC2B8C59C609ACF6FA13E508FDCC7DBCBAA8F01C162D`
+- Frontend npm lockfile v3 SHA-256:
+  `2C651CBE11B4ADC2BDCD65D97CE31598A637776BD9C48B36688ED5B7F51F667E`
+
+`python:3.14.5-slim-bookworm` 일회성 Linux container에서
+`pip install --dry-run --require-hashes -r requirements.lock`를 실행해 전체
+package가 hash 검증을 통과하고 설치 가능한 것을 확인했다. Base image digest는
+`sha256:a9bee15510a364124aa24692899d269835683b883de42f7ebec8c293cf679ccb`다.
 
 구현을 시작하면 Slice별로 다음을 실제 값으로 기록한다.
 
@@ -60,10 +118,12 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 
 ## 주요 변경 파일
 
-현재 추가된 파일은 문서뿐이다.
+DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 
 - `docs/development/develop_plan/deploy/01_docker_acceptance_environment.md`
 - `docs/development/development_notes/deploy/docker_acceptance_environment.md`
+- `backend/requirements.acceptance.constraints.txt`
+- `backend/requirements.lock`
 
 계획된 구현 파일은 개발 계획의 DEP2 절을 따르며, 실제로 생성된 뒤에만 이
 목록에 추가한다.
@@ -87,7 +147,13 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 
 | 검증 | 결과 |
 | --- | --- |
-| Docker Engine·Compose | 미실행 |
+| Git·branch·worktree | 통과, 권장 branch·`9d6475d`·clean 기준선 |
+| Docker Engine·Compose·Buildx | 통과, `29.6.2`·`5.3.1`·`0.35.0-desktop.2` |
+| Backend dependency hash lock | 통과, 38 package·Linux dry-run hash 설치 가능 |
+| Frontend lockfile | 통과, npm lockfile v3 |
+| repository·actual Migration | 통과, 모두 `20260810_0006` |
+| RA4 DB·manifest 입력 | 통과, Policy 3,273·Run 61·stable identity 3/3·계약/file hash 일치 |
+| secret·외부 보관·port | 통과, 비추적 pgpass ACL·외부 snapshot 경로·3000/8000 free |
 | snapshot 생성·민감정보 scan | 미실행 |
 | image build | 미실행 |
 | restore·Migration·health | 미실행 |
@@ -101,13 +167,11 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 
 ## 남은 작업
 
-1. Integration 10 RA0~RA4와 `REVIEW_ADMISSION_PASS`를 완료한다.
-2. 실제 자격증명 교체를 확인하고 DEP0 기준선을 기록한다.
-3. DEP1 snapshot allowlist·dump·manifest와 hash를 생성한다.
-4. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
-5. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
-6. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
-7. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+1. DEP1 snapshot allowlist·금지 field scan·dump·manifest와 hash를 생성한다.
+2. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
+3. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
+4. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
+5. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
 
 ## 관련 문서
 
