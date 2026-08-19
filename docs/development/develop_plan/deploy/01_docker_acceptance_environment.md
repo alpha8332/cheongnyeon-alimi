@@ -163,12 +163,16 @@ allowlist로 확정한다. 운영 로그·감사 원문·임시 상태가 필요
 compose.yaml
 compose.dev.yaml
 .env.compose.example
+.dockerignore
 backend/Dockerfile
-backend/.dockerignore
+backend/Dockerfile.dockerignore
 frontend/Dockerfile
-frontend/.dockerignore
+frontend/Dockerfile.dockerignore
+frontend/docker-server.mjs
 deployment/postgres/restore.ps1
+deployment/postgres/restore.sh
 deployment/postgres/verify_snapshot.py
+deployment/postgres/verify_restored_database.py
 docs/development/docker_acceptance_setup.md
 ```
 
@@ -183,10 +187,11 @@ docs/development/docker_acceptance_setup.md
 | `frontend` | React build·Browser에서 접근 가능한 Backend URL |
 | `database-test` | `_test` 전용 DB·별도 Volume·명시적 test profile |
 
-시작 순서는 `database health → restore → migrate → backend health → frontend
-readiness`로 고정한다. Backend는 Compose 내부 `database` host를 사용하고,
-Frontend는 Browser가 접근할 수 없는 Compose service hostname을 bundle에 넣지
-않는다.
+최초 시작은 `restore.ps1`이 `database health → snapshot verify → empty restore →
+restore baseline verify → migrate → backend health → frontend readiness`로
+고정한다. 재시작은 복원 baseline을 다시 확인한 뒤 Migration을 통과한다.
+Backend는 Compose 내부 `database` host를 사용하고, Frontend는 Browser가 접근할
+수 없는 Compose service hostname을 bundle에 넣지 않는다.
 
 `compose.dev.yaml`만 source bind mount·hot reload를 사용한다. reviewer용 공통
 `compose.yaml`은 검증된 image와 snapshot version을 사용하며 host source 변경이
@@ -197,7 +202,8 @@ Frontend는 Browser가 접근할 수 없는 Compose service hostname을 bundle�
 - image layer와 build context에 dump·Runtime·`.env`·로그가 없음
 - root가 아닌 실행 user와 최소 write 경로를 사용
 - health dependency가 준비 전 성공을 허용하지 않음
-- `docker compose config`가 placeholder 누락과 잘못된 profile을 탐지
+- `docker compose config`가 placeholder 누락을 탐지하고 정의 profile이
+  `restore`·`test`로만 확인됨
 - Backend·Frontend image build 통과
 
 ## Slice DEP3 - Restore·Migration·actual smoke

@@ -3,10 +3,11 @@
 ## 작업 정보
 
 - 상태: in-progress
-- 실행 판정: `DEP0_PASS`·`DEP1_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
+- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
 - 기록 시작일: `2026-08-19`
 - DEP1 preflight일: `2026-08-20`
 - DEP1 완료일: `2026-08-20`
+- DEP2 완료일: `2026-08-20`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
@@ -36,18 +37,21 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | --- | --- | --- |
 | DEP0 | completed | Git·Docker·dependency·Migration·secret·보관 경로·port 기준선 확인, `DEP0_PASS` |
 | DEP1 | completed | allowlist·민감정보 scan·EFS custom dump·manifest·hash·TOC 검증 완료, `DEP1_PASS` |
-| DEP2 | pending | Dockerfile·Compose 미구현 |
+| DEP2 | completed | 고정 image·Compose·fail-closed restore 도구·개발 override 구현, `DEP2_PASS` |
 | DEP3 | pending | restore·Migration·actual smoke 미실행 |
 | DEP4 | pending | clean-room·재시작·복구·test 격리 미실행 |
 | DEP5 | pending | 동일 snapshot BE·FE 인수와 reviewer package 미작성 |
 
-현재 판정은 `DEP0_PASS`·`DEP1_PASS`, `DOCKER_ACCEPTANCE_PENDING`이다.
+현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`,
+`DOCKER_ACCEPTANCE_PENDING`이다.
 
 ## 구현 내용
 
 DEP0에서 실제 저장소와 실행 환경을 확인하고 DEP1에서 snapshot 생성기와 실제
-Acceptance dump를 완성했다. Dockerfile, Compose와 restore 도구는 아직 구현하지
-않았으며 DEP2 이후 결과로 미리 기록하지 않는다.
+Acceptance dump를 완성했다. DEP2에서는 reviewer 고정 image·Compose와 개발
+override, snapshot 검증·복원 도구를 구현하고 image build·구성·fail-closed
+경계를 검증했다. 실제 DB 복원과 Browser smoke는 DEP3 결과로 미리 기록하지
+않는다.
 
 ### DEP0 기준선
 
@@ -197,7 +201,72 @@ dump와 실제 manifest는 Git·workspace 밖
 내장값과 일치함을 확인했다. 원본 서비스 DB는 전체 과정에서 read-only inventory와
 `pg_dump`만 사용해 변경하지 않았다. 이 결과로 DEP1 Gate는 `DEP1_PASS`다.
 
-구현을 시작하면 Slice별로 다음을 실제 값으로 기록한다.
+### DEP2 image·Compose 구현
+
+Backend는 실행 시 저장소 루트의 `collectors`와 `data/reference`·`data/schema`·
+`data/seeds`를 사용하고 Frontend build도 `data/seeds` alias를 사용한다. 따라서
+두 image의 build context는 저장소 루트로 두고 Dockerfile별 ignore allowlist로
+필요한 경로만 전송했다. root fallback `.dockerignore`도 `.env`, dump, Runtime,
+로그, 가상환경과 `node_modules`를 제외한다.
+
+Base image는 mutable tag만 사용하지 않고 다음 digest로 고정했다.
+
+| image | base·실행 user | 실제 build 결과 |
+| --- | --- | --- |
+| Backend | Python 3.14.5 slim digest `a9bee155...`, UID/GID `10001:10001` | 80,337,475 byte, image ID `b42d5a09...` |
+| Frontend | Node 22.22.0 slim digest `dd9d2197...`, `node` UID 1000 | 79,630,173 byte, image ID `20a48a1b...` |
+| PostgreSQL | 18.4 bookworm digest `882236b8...` | official entrypoint·DB process 사용 |
+
+Frontend는 build stage의 Node package를 runtime image에 복사하지 않고 정적
+`dist`와 Node 표준 라이브러리 server만 포함한다. `npm ci`의 전체 build tree는
+dev dependency advisory 4건을 표시했지만 runtime 대상
+`npm audit --omit=dev --audit-level=high`는 취약점 0건으로 통과했다. Vite build는
+통과했고 600.70 kB JS chunk 경고는 기능 실패가 아니며 후속 성능 개선 후보로
+남겼다.
+
+Compose는 다음 경계를 구현했다.
+
+- `database`는 host port가 없고 internal `database` network·전용 named Volume만
+  사용한다.
+- `restore`는 외부 snapshot을 read-only mount하고 dump SHA-256을 container
+  안에서 다시 계산한 뒤 public table·sequence가 모두 0일 때만 single
+  transaction restore를 수행한다.
+- `migrate`는 restore된 7개 table, Policy 3,273건, CollectionRun 61건,
+  Alembic `20260810_0006`, stable identity 3건을 먼저 확인한다. 빈 DB에서
+  Migration만 선행하는 흐름은 차단한다.
+- Backend·Frontend는 read-only root filesystem, 최소 tmpfs·named write Volume,
+  `no-new-privileges`와 health check를 사용한다.
+- Browser bundle에는 내부 `database:5432`, `CHANGE_ME`, dump·`.env`·로그가
+  없음을 container 내부 scan으로 확인했다.
+- `database-test`는 `test` profile, `_test` suffix, 별도 password·Volume·internal
+  network 계약을 사용한다.
+- `compose.dev.yaml`에만 source bind mount·hot reload와
+  `127.0.0.1:55432` DB port를 둔다.
+
+`docker compose config`는 example을 사용한 reviewer·restore·test·dev 구성이
+모두 통과했고 환경변수를 제공하지 않으면 exit 1로 실패했다. 정의 profile은
+`restore`, `test` 두 개로 확인했다. Compose CLI 자체는 존재하지 않는 profile
+이름도 오류 없이 빈 선택으로 처리하므로, 인계 문서에는 정의 profile 확인
+명령과 허용 이름만 기록했다.
+
+실제 외부 snapshot에 `verify_snapshot.py`를 실행해 snapshot version
+`acceptance-20260819-75510a9`, dump SHA-256, manifest 계약·file hash,
+Policy·CollectionRun·stable identity와 현재 checkout의 Git ancestor 관계가 모두
+일치했다. 이 단계는 dump를 읽고 hash를 계산했을 뿐 DB restore는 실행하지
+않았다.
+
+별도 임시 Compose project의 빈 Volume에서 `migrate`를 직접 실행한 결과
+`DEP2_BLOCKED: public table allowlist mismatch`, exit 1로 차단됐다. 잘못된 test
+DB명은 `DEP2_BLOCKED: test database name must end with _test`, exit 64로
+차단됐다. 두 검증에서 만든 container·network·Volume은 project 이름을 확인한 뒤
+제거했으며 서비스 Volume에는 접근하지 않았다.
+
+이 결과로 image build, build context, non-root, network·Volume, dependency,
+placeholder와 fail-closed 경계에 대한 DEP2 Gate는 `DEP2_PASS`다. 실제 빈
+Acceptance Volume restore·Migration·Backend·Frontend·Browser 결과는 DEP3에서
+검증한다.
+
+후속 Slice에서도 다음 값을 실제 실행 결과로 계속 기록한다.
 
 - Git SHA와 worktree 상태
 - Docker Engine·Compose·BuildKit version
@@ -212,7 +281,7 @@ dump와 실제 manifest는 Git·workspace 밖
 
 ## 주요 변경 파일
 
-DEP0에서 변경하거나 생성한 파일은 다음과 같다.
+DEP0~DEP2에서 변경하거나 생성한 파일은 다음과 같다.
 
 - `docs/development/develop_plan/deploy/01_docker_acceptance_environment.md`
 - `docs/development/development_notes/deploy/docker_acceptance_environment.md`
@@ -221,9 +290,25 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 - `deployment/postgres/create_snapshot.py`
 - `deployment/postgres/acceptance-snapshot.manifest.example.json`
 - `tests/test_create_acceptance_snapshot.py`
+- `.gitattributes`
+- `.dockerignore`
+- `.env.compose.example`
+- `compose.yaml`
+- `compose.dev.yaml`
+- `backend/Dockerfile`
+- `backend/Dockerfile.dockerignore`
+- `frontend/Dockerfile`
+- `frontend/Dockerfile.dockerignore`
+- `frontend/docker-server.mjs`
+- `deployment/postgres/restore.ps1`
+- `deployment/postgres/restore.sh`
+- `deployment/postgres/verify_snapshot.py`
+- `deployment/postgres/verify_restored_database.py`
+- `tests/test_docker_acceptance_contract.py`
+- `tests/test_verify_acceptance_snapshot.py`
+- `docs/development/docker_acceptance_setup.md`
 
-계획된 구현 파일은 개발 계획의 DEP2 절을 따르며, 실제로 생성된 뒤에만 이
-목록에 추가한다.
+DEP2 실제 구현 파일은 위 목록과 개발 계획의 DEP2 절에 반영했다.
 
 ## 설계 결정
 
@@ -258,7 +343,14 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 | 첫 snapshot 생성 | 예상 차단, `pg_restore --schema-only` 출력 대상 누락·최종 산출물 0 |
 | 최종 snapshot 생성·dump hash | 통과, 3,020,687 byte·SHA-256 일치·EFS AES-256 |
 | manifest·TOC·owner·ACL | 통과, 계약/file hash 일치·TOC 75·ACL/owner statement 0 |
-| image build | 미실행 |
+| Compose reviewer·profile·dev config | 통과, placeholder 미제공 exit 1·profile `restore`/`test` |
+| Backend·Frontend image build | 통과, non-root·digest 고정·80,337,475/79,630,173 byte |
+| image 금지 artifact scan | 통과, dump·backup·`.env`·로그·내부 DB URL·placeholder 0 |
+| Frontend production dependency audit | 통과, `--omit=dev` 취약점 0 |
+| DEP2 snapshot verifier actual | 통과, DEP1 snapshot hash·집계·Git ancestor 일치 |
+| 빈 DB Migration guard | 통과, 예상 차단 exit 1·임시 Volume 제거 |
+| 잘못된 test DB명 guard | 통과, 예상 차단 exit 64·임시 Volume 제거 |
+| DEP1·DEP2 도구/계약 단위 테스트 | 22개 통과 |
 | restore·Migration·health | 미실행 |
 | actual DB·API·Browser | 미실행 |
 | clean-room·재시작·복구 | 미실행 |
@@ -270,8 +362,9 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 
 ## 남은 작업
 
-1. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
-2. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
+1. DEP3에서 실제 빈 Acceptance Volume restore·Migration·health·actual smoke를
+   수행한다.
+2. DEP4 clean-room·재시작·복구·test 격리를 검증한다.
 3. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
 4. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
 
