@@ -9,9 +9,8 @@ dump·manifest·비밀번호는 Git, Docker image, CI artifact에 포함하지 �
 현재 절차는 로컬 Docker Acceptance용이다. Nginx·TLS·도메인·운영 배포는
 6주차 범위이며 이 문서의 결과를 운영 배포 완료로 해석하지 않는다.
 
-> 현재 상태는 `DEP3_PASS`이며 실제 snapshot restore·API·Browser·관리자 PIN·
-> Volume 보존까지 검증했다. 다른 환경의 clean-room·복구·인계인 DEP4~DEP5는
-> 남아 있다.
+> 현재 상태는 `DEP4_PASS`이며 실제 snapshot restore·API·Browser·관리자 PIN·
+> clean-room·복구·test 격리까지 검증했다. 담당자·리뷰어 인계인 DEP5는 남아 있다.
 > `DOCKER_ACCEPTANCE_PASS` 전에는 이 문서를 대회 심사자용 최종 실행 보증으로
 > 사용하지 않는다.
 
@@ -260,6 +259,58 @@ docker compose --env-file .env.compose -f compose.yaml `
 `TEST_POSTGRES_DB`가 `_test`로 끝나지 않으면 container가 fail-closed한다. DEP4
 test 종료 전후에는 서비스 DB Policy 수와 서비스 Volume이 바뀌지 않았는지 다시
 확인한다.
+
+## 7. 별도 project clean-room·복구 확인
+
+같은 PC에서 기존 reviewer 환경을 유지한 채 clean-room을 재현할 때는 project,
+image tag, Backend·Frontend host port를 모두 분리한다. Frontend build에는 새
+Backend host port가 들어가므로 image tag를 공유하면 안 된다.
+
+```powershell
+$env:COMPOSE_PROJECT_NAME = 'cheongnyeon-alimi-cleanroom'
+$env:ACCEPTANCE_IMAGE_TAG = "cleanroom-$(git rev-parse --short HEAD)"
+$env:BACKEND_HOST_PORT = '18000'
+$env:FRONTEND_HOST_PORT = '13000'
+$env:VITE_API_BASE_URL = 'http://127.0.0.1:18000'
+$env:CORS_ORIGINS = '["http://127.0.0.1:13000","http://localhost:13000"]'
+
+.\deployment\postgres\restore.ps1 `
+  -SnapshotDir 'C:\approved\acceptance-snapshot' `
+  -StartServices
+```
+
+복원 뒤 `http://127.0.0.1:18000/health`와
+`http://127.0.0.1:13000`을 확인한다. 전체 재시작 전후에는 Policy·CollectionRun
+count와 stable identity를 대조한다.
+
+DB 중단 복구는 clean-room project에서만 연습한다. 정상 reviewer project나
+서비스 Volume에는 실패를 주입하지 않는다.
+
+```powershell
+docker compose --env-file .env.compose -f compose.yaml stop database
+curl.exe --max-time 15 http://127.0.0.1:18000/health
+docker compose --env-file .env.compose -f compose.yaml `
+  up -d --wait database backend frontend
+```
+
+중단 중 health는 성공하면 안 되며, 복구 뒤 `status=ok`와 기존 count가 돌아와야
+한다. hash 실패 restore도 기존 Volume을 자동 삭제하거나 재복원하지 않고 count
+불변을 먼저 확인한다.
+
+test profile을 검증한 뒤에는 container만 stop하고 두 DB Volume 이름이 다른지
+기록한다.
+
+```powershell
+docker compose --env-file .env.compose -f compose.yaml `
+  --profile test up -d --wait database-test
+docker compose --env-file .env.compose -f compose.yaml `
+  --profile test stop database-test
+docker volume ls --format '{{.Name}}'
+```
+
+clean-room 종료도 Volume을 보존하는 `stop`을 사용한다. Volume 삭제가 필요한
+경우 project와 `acceptance-db`·`acceptance-test-db`의 정확한 이름을 먼저 출력하고
+별도 확인을 받은 뒤 수행한다. 이 문서에서는 자동 삭제 명령을 제공하지 않는다.
 
 ## 문제 해결
 

@@ -264,6 +264,21 @@ reset·복구 명령은 Compose project와 Volume의 실제 절대 이름을 먼
 사용자 확인 없이는 실행하지 않는다. 문서에 `docker compose down -v`를 일반
 종료 명령으로 안내하지 않는다.
 
+### 2026-08-20 actual 결과
+
+- Git `32bc4a3`에서 별도 project `cheongnyeon-alimi-dep4-cleanroom`, 별도 image
+  tag와 host port 13000·18000을 사용해 기존 DEP3 환경과 격리했다.
+- 승인 snapshot을 새 Volume에 복원해 Policy 3,273건, CollectionRun 61건,
+  Alembic `20260810_0006`, API·Browser actual을 확인했다.
+- 잘못된 dump hash는 exit 1로 차단됐고 전후 Policy 수는 3,273건으로 유지됐다.
+  DB 중지 시 Backend health 503, DB 없이 Backend 재시작 시 health 시작 실패를
+  확인한 뒤 정상 기동으로 복구했다.
+- service·test DB는 서로 다른 `_test` 이름, named Volume과 internal network를
+  사용했다. test DB probe는 서비스 DB에 나타나지 않았고 test 종료 뒤 서비스
+  Policy 수는 3,273건이었다.
+- 전체 stop·restart 뒤 count·stable identity·orphan 검증을 다시 통과했다.
+  clean-room 컨테이너는 stop하고 Volume은 삭제하지 않았으며 `DEP4_PASS`다.
+
 ## Slice DEP5 - 동일 환경 인계
 
 Backend·Frontend 담당자와 리뷰어·QA에게 다음을 한 묶음으로 전달한다.

@@ -3,7 +3,7 @@
 ## 작업 정보
 
 - 상태: in-progress
-- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`
+- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`
   (`DOCKER_ACCEPTANCE_PENDING`)
 - 기록 시작일: `2026-08-19`
 - DEP1 preflight일: `2026-08-20`
@@ -11,6 +11,8 @@
 - DEP2 완료일: `2026-08-20`
 - DEP3 시작일: `2026-08-20`
 - DEP3 완료일: `2026-08-20`
+- DEP4 시작일: `2026-08-20`
+- DEP4 완료일: `2026-08-20`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
@@ -42,10 +44,10 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | DEP1 | completed | allowlist·민감정보 scan·EFS custom dump·manifest·hash·TOC 검증 완료, `DEP1_PASS` |
 | DEP2 | completed | 고정 image·Compose·fail-closed restore 도구·개발 override 구현, `DEP2_PASS` |
 | DEP3 | completed | 실제 3,273건 restore·Migration·health·API·Browser·관리자 PIN·Volume 보존 통과, `DEP3_PASS` |
-| DEP4 | pending | clean-room·재시작·복구·test 격리 미실행 |
+| DEP4 | completed | 별도 project clean-room·실패 복구·재시작·test DB/Volume 격리 통과, `DEP4_PASS` |
 | DEP5 | pending | 동일 snapshot BE·FE 인수와 reviewer package 미작성 |
 
-현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`,
+현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`,
 `DOCKER_ACCEPTANCE_PENDING`이다.
 
 ## 구현 내용
@@ -54,7 +56,8 @@ DEP0에서 실제 저장소와 실행 환경을 확인하고 DEP1에서 snapshot
 Acceptance dump를 완성했다. DEP2에서는 reviewer 고정 image·Compose와 개발
 override, snapshot 검증·복원 도구를 구현하고 image build·구성·fail-closed
 경계를 검증했다. DEP3에서는 실제 DB 복원과 Browser smoke를 수행했으며, 아래에는
-실제로 관찰한 실패와 수정·재검증 결과만 기록한다.
+실제로 관찰한 실패와 수정·재검증 결과만 기록한다. DEP4에서는 기존 환경을
+유지한 채 별도 project·Volume으로 clean-room과 복구·test 격리를 검증했다.
 
 ### DEP0 기준선
 
@@ -354,6 +357,55 @@ Raw payload marker를 검사해 노출 0건을 확인했다.
 PIN·access token 값은 읽거나 문서·로그에 기록하지 않았다. 이로써 DEP3의 마지막
 수동 인증 경계까지 통과해 `DEP3_PASS`다.
 
+### DEP4 clean-room·복구·test 격리
+
+DEP4는 clean Git `32bc4a344316c5f9f5d1f53700fbbf51dcb4add5`에서 시작했다.
+기존 project를 건드리지 않기 위해 `cheongnyeon-alimi-dep4-cleanroom`, image tag
+`dep4-32bc4a3`, Backend host port 18000, Frontend host port 13000을 사용했다.
+실행 전 같은 label의 container, 예정 named Volume과 두 port 사용은 모두 0이었다.
+같은 PC의 별도 project 검증이므로 기존 비추적 env 계약을 사용했지만 image tag와
+Volume·network·port는 모두 분리했다. 다른 PC 인계에서는 각 담당자가 초기화기로
+자기 secret을 새로 생성한다.
+
+승인 snapshot `acceptance-20260819-75510a9`를 새 Volume에 복원한 결과
+`DEP3_RESTORE_PASS`, Policy 3,273, CollectionRun 61, Alembic
+`20260810_0006`을 확인했다. clean-room API health는 `ok`, `경상남도 청년 취업`
+검색은 24건이었다. 포트 13000 actual Browser에서 id 15005 `밀양 청년 취업 역량
+강화 교육 과정`의 신청 기간·연령·지역·원문·D-Day·`.ics`를 확인했고 Browser
+warning·error는 0건이었다. 기존 DEP3 서비스 DB도 Policy 3,273건을 유지했다.
+
+실패·복구 검증은 clean-room Volume에만 수행했다.
+
+- dump hash를 64자리 불일치 값으로 주입한 restore는 exit 1과
+  `mounted dump SHA-256 does not match`로 차단됐고 Policy 수는
+  3,273 → 3,273이었다.
+- database container를 중지하자 실행 중 Backend `/health`는 503을 반환했다.
+  DB가 없는 상태에서 Backend를 재시작하면 container health는 `starting`, HTTP는
+  empty response로 실패했다. DB를 다시 기동하고 Compose dependency를 적용하자
+  세 서비스가 healthy로 복구됐고 Policy는 3,273건이었다.
+- 전체 project를 `stop`한 동안 service·test DB와 Backend write Volume 4개가
+  유지됐다. 다시 `up --wait`한 뒤 Policy·Run은 3,273·61로 동일했고 복원
+  verifier가 stable identity 3/3·orphan 0을 다시 확인했다.
+
+test profile은 `cheongnyeon_alimi_acceptance_test` DB와 별도
+`acceptance-test-db` Volume, 별도 internal `database-test` network에서 기동했다.
+test DB에 `dep4_isolation_probe` 1건을 생성했지만 서비스 DB의 같은 table 수는
+0이었고 Policy는 3,273건이었다. `_test` suffix가 없는 one-shot 실행은 exit 64로
+차단됐다. test container를 stop한 뒤에도 서비스 DB 3,273건과 service Volume은
+변하지 않았다.
+
+clean-room log에서 5개 secret 값과 Raw payload marker 노출은 각각 0건이고 DB
+host publish는 없었다. 검증을 마친 뒤 clean-room container는 전부 stop했으며
+다음 named Volume을 명시적으로 보존했다.
+
+- `cheongnyeon-alimi-dep4-cleanroom_acceptance-db`
+- `cheongnyeon-alimi-dep4-cleanroom_acceptance-test-db`
+- `cheongnyeon-alimi-dep4-cleanroom_backend-logs`
+- `cheongnyeon-alimi-dep4-cleanroom_backend-runtime`
+
+Volume 삭제는 수행하지 않았다. 기존 `cheongnyeon-alimi-acceptance`의 DB·Backend·
+Frontend는 계속 healthy다. 이로써 `DEP4_PASS`다.
+
 후속 Slice에서도 다음 값을 실제 실행 결과로 계속 기록한다.
 
 - Git SHA와 worktree 상태
@@ -369,7 +421,7 @@ PIN·access token 값은 읽거나 문서·로그에 기록하지 않았다. 이
 
 ## 주요 변경 파일
 
-DEP0~DEP3에서 변경하거나 생성한 주요 파일은 다음과 같다.
+DEP0~DEP4에서 변경하거나 생성한 주요 파일은 다음과 같다.
 
 - `docs/development/develop_plan/deploy/01_docker_acceptance_environment.md`
 - `docs/development/development_notes/deploy/docker_acceptance_environment.md`
@@ -401,7 +453,7 @@ DEP0~DEP3에서 변경하거나 생성한 주요 파일은 다음과 같다.
 - `tests/test_verify_acceptance_snapshot.py`
 - `docs/development/docker_acceptance_setup.md`
 
-DEP2·DEP3 실제 구현 파일은 위 목록과 개발 계획의 해당 절에 반영했다.
+DEP2~DEP4 실제 구현·검증 파일은 위 목록과 개발 계획의 해당 절에 반영했다.
 
 ## 설계 결정
 
@@ -458,8 +510,12 @@ DEP2·DEP3 실제 구현 파일은 위 목록과 개발 계획의 해당 절에 
 | DEP1~DEP3 도구/계약 단위 테스트 | 25개 통과 |
 | credential·Raw payload log scan | 통과, secret value 0·raw marker 0 |
 | 서비스 재시작·Volume 보존 | 통과, Policy 3,273 → 3,273·세 서비스 healthy |
-| clean-room·재시작·복구 | 미실행 |
-| test DB·Volume 격리 | 미실행 |
+| DEP4 clean-room restore·actual | 통과, 별도 project/image/port·Policy 3,273·Run 61·검색 24·Browser actual |
+| 잘못된 hash 복구 안전성 | 통과, exit 1·Policy 3,273 → 3,273 |
+| DB health·Backend startup 복구 | 통과, DB down health 503·Backend starting 실패·재기동 후 세 서비스 healthy |
+| clean-room 재시작·Volume 보존 | 통과, Policy/Run 3,273/61 불변·stable identity 3/3·orphan 0·Volume 4개 유지 |
+| test DB·Volume·network 격리 | 통과, `_test` DB·별도 Volume/network·probe 미전파·잘못된 이름 exit 64 |
+| DEP4 secret·Raw log·DB port | 통과, secret/raw marker 0·PostgreSQL host publish 없음 |
 | 문서 검증 | `Documentation validation passed.` |
 | 문서 검증기 단위 테스트 | 11개 통과 |
 
@@ -467,9 +523,8 @@ DEP2·DEP3 실제 구현 파일은 위 목록과 개발 계획의 해당 절에 
 
 ## 남은 작업
 
-1. DEP4 clean-room·복구·test 격리를 검증한다.
-2. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
-3. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+1. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
+2. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
 
 `run_docker.bat`은 `DOCKER_ACCEPTANCE_PASS` 이후 별도 backlog에서 구현한다.
 Deploy 01 완료와 DTL5-5 시작을 막는 항목은 아니다.
