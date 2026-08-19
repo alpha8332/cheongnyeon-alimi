@@ -1,0 +1,75 @@
+{
+  "admission": {
+    "contract_sha256": "<review-admission-contract-sha256>",
+    "file_sha256": "<review-admission-file-sha256>",
+    "git_sha": "<review-admission-git-sha>",
+    "rule_version": "review-admission-v1",
+    "taxonomy_version": "2.0.0"
+  },
+  "created_at": "<UTC ISO-8601 timestamp>",
+  "database": {
+    "alembic_revision": "20260810_0006",
+    "application_status_counts": {
+      "closed": 0,
+      "null": 0,
+      "open": 0,
+      "scheduled": 0
+    },
+    "columns": {
+      "<allowlist-table>": [
+        "<column>"
+      ]
+    },
+    "postgresql_version": "18.x",
+    "postgresql_version_num": "18xxxx",
+    "quality_counts": {
+      "partial": 0,
+      "valid": 0
+    },
+    "row_counts": {
+      "<allowlist-table>": 0
+    },
+    "sensitive_data_scan": {
+      "collection_error_sensitive_count": 0,
+      "disallowed_contact_kind_count": 0,
+      "email_contact_count": 0,
+      "forbidden_column_count": 0,
+      "institutional_contact_count": 0,
+      "known_secret_candidate_count": 0,
+      "known_secret_match_count": 0,
+      "local_path_provenance_count": 0,
+      "source_url_high_risk_query_count": 0,
+      "source_url_public_navigation_token_count": 0,
+      "source_url_unsafe_token_count": 0
+    },
+    "source_counts": {
+      "<source-id>": 0
+    },
+    "stable_identity_counts": {
+      "<source-id>/<external-id>": 1
+    },
+    "tables": [
+      "<allowlist-table>"
+    ]
+  },
+  "dump": {
+    "bytes": 0,
+    "filename": "acceptance-post-admission.dump",
+    "format": "custom",
+    "pg_dump_version": "pg_dump (PostgreSQL) 18.x",
+    "schema_owner_acl_statement_count": 0,
+    "sha256": "<dump-sha256>",
+    "toc_acl_entry_count": 0
+  },
+  "manifest_sha256": "<canonical-manifest-sha256>",
+  "repository": {
+    "git_sha": "<acceptance-git-sha>"
+  },
+  "runtime_archive": {
+    "bytes": 0,
+    "identifier": "<approved-storage-identifier>/<archive-name>",
+    "sha256": "<runtime-archive-sha256>"
+  },
+  "schema_version": "1.0.0",
+  "snapshot_version": "acceptance-YYYYMMDD-<git-sha>"
+}

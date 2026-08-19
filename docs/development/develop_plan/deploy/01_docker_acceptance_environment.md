@@ -123,8 +123,11 @@ Integration 10 RA4 / REVIEW_ADMISSION_PASS
 
 ### 산출물
 
+- Git에 포함되는 fail-closed 생성기
+  `deployment/postgres/create_snapshot.py`
 - Git 밖의 custom-format `acceptance-post-admission.dump`
-- Git에 넣을 수 있는 비밀 없는 `acceptance-snapshot.manifest.example.json`
+- Git에 넣을 수 있는 비밀 없는
+  `deployment/postgres/acceptance-snapshot.manifest.example.json`
 - 실제 manifest는 Git 밖에 저장
 - snapshot allowlist·금지 table·금지 field 검증 결과
 

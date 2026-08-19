@@ -5,6 +5,7 @@
 - 상태: in-progress
 - 실행 판정: `DEP0_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
 - 기록 시작일: `2026-08-19`
+- DEP1 preflight일: `2026-08-20`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
@@ -32,7 +33,7 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | Slice | 상태 | 실제 결과 |
 | --- | --- | --- |
 | DEP0 | completed | Git·Docker·dependency·Migration·secret·보관 경로·port 기준선 확인, `DEP0_PASS` |
-| DEP1 | pending | post-admission snapshot·allowlist·manifest 생성 전 |
+| DEP1 | in-progress | allowlist·민감정보 scan·생성기 완료, clean Git SHA 뒤 최종 dump·manifest 생성 대기 |
 | DEP2 | pending | Dockerfile·Compose 미구현 |
 | DEP3 | pending | restore·Migration·actual smoke 미실행 |
 | DEP4 | pending | clean-room·재시작·복구·test 격리 미실행 |
@@ -103,6 +104,60 @@ constraints에 반영한 뒤, 전체 package를 Linux Python 3.14용 hash lock�
 package가 hash 검증을 통과하고 설치 가능한 것을 확인했다. Base image digest는
 `sha256:a9bee15510a364124aa24692899d269835683b883de42f7ebec8c293cf679ccb`다.
 
+### DEP1 allowlist·민감정보 preflight
+
+실제 PostgreSQL을 read-only session으로 inventory한 결과 public table은 다음
+7개뿐이며 Integration 10 예비 allowlist와 정확히 일치했다.
+
+| table | row |
+| --- | ---: |
+| `administrative_region_aliases` | 1,080 |
+| `administrative_regions` | 538 |
+| `alembic_version` | 1 |
+| `collection_runs` | 61 |
+| `policies` | 3,273 |
+| `policy_region_rules` | 123,884 |
+| `policy_search_documents` | 3,273 |
+
+허용 table의 전체 column inventory를 확인하고 다음 값 수준 scan을 수행했다.
+
+| scan | 결과 |
+| --- | ---: |
+| 금지 column | 0 |
+| 제공된 API key 후보 | 2 |
+| DB 안의 API key 일치 | 0 |
+| 고위험 credential query | 0 |
+| 불안전 `token` query | 0 |
+| 공개 `.go.kr` 숫자 navigation token | 2 |
+| provenance 로컬 절대 경로 | 0 |
+| CollectionRun error 민감 문자열 | 0 |
+| 비허용 contact kind | 0 |
+| email contact | 0 |
+| 공개 기관 연락처 | 101 |
+
+최초 보수 regex는 양산·안성 공식 `.go.kr` 게시판 URL의 13자리 숫자 `token`
+2건도 credential 후보로 잡았다. 두 값은 서로 다르고 제공된 API key와 일치하지
+않으며, 공개 게시판 navigation parameter 조건을 충족했다. 이 값은 실제
+credential과 합치지 않고 별도 비차단 집계로 남겼다. 구조화 contact 101건은
+데이터 계약이 허용한 `phone`·`official_channel`뿐이고 email·비허용 kind는
+0건이다.
+
+`deployment/postgres/create_snapshot.py`는 다음 조건을 fail-closed로 검사한다.
+
+- clean worktree와 현재 Git SHA
+- workspace 밖 pgpass·snapshot·Runtime archive 경로
+- 7개 table allowlist와 금지 column
+- 알려진 secret 후보, credential query, 로컬 경로와 contact kind
+- RA4 Policy 3,273·CollectionRun 61·Migration·stable identity
+- admission 계약/file hash
+- 기존 dump·manifest overwrite 금지
+- `pg_dump --no-owner --no-acl`과 dump TOC·schema owner/ACL 재검사
+
+생성기 단위 테스트 11개가 통과했다. 현재 작업 트리는 DEP0·DEP1 구현이 아직
+미커밋이므로 실제 명령은 `DEP1_BLOCKED: repository worktree must be clean`으로
+종료했고 외부 snapshot 디렉터리에 dump·manifest를 만들지 않았다. 구현을 먼저
+커밋해 재현 가능한 SHA를 만든 뒤 같은 명령으로 최종 산출물을 생성한다.
+
 구현을 시작하면 Slice별로 다음을 실제 값으로 기록한다.
 
 - Git SHA와 worktree 상태
@@ -124,6 +179,9 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 - `docs/development/development_notes/deploy/docker_acceptance_environment.md`
 - `backend/requirements.acceptance.constraints.txt`
 - `backend/requirements.lock`
+- `deployment/postgres/create_snapshot.py`
+- `deployment/postgres/acceptance-snapshot.manifest.example.json`
+- `tests/test_create_acceptance_snapshot.py`
 
 계획된 구현 파일은 개발 계획의 DEP2 절을 따르며, 실제로 생성된 뒤에만 이
 목록에 추가한다.
@@ -154,7 +212,11 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 | repository·actual Migration | 통과, 모두 `20260810_0006` |
 | RA4 DB·manifest 입력 | 통과, Policy 3,273·Run 61·stable identity 3/3·계약/file hash 일치 |
 | secret·외부 보관·port | 통과, 비추적 pgpass ACL·외부 snapshot 경로·3000/8000 free |
-| snapshot 생성·민감정보 scan | 미실행 |
+| DEP1 snapshot 생성기 단위 테스트 | 11개 통과 |
+| DEP1 Python 정적 검사 | Ruff 통과 |
+| allowlist·민감정보 preflight | 통과, table 7·금지 scan blocker 0 |
+| dirty worktree fail-closed | 통과, exit 1·외부 산출물 0 |
+| snapshot 생성·dump hash | clean Git SHA 대기, 미실행 |
 | image build | 미실행 |
 | restore·Migration·health | 미실행 |
 | actual DB·API·Browser | 미실행 |
@@ -167,11 +229,12 @@ DEP0에서 변경하거나 생성한 파일은 다음과 같다.
 
 ## 남은 작업
 
-1. DEP1 snapshot allowlist·금지 field scan·dump·manifest와 hash를 생성한다.
-2. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
-3. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
-4. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
-5. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+1. DEP0·DEP1 생성기 변경을 커밋해 clean Git SHA를 확정한다.
+2. 같은 SHA에서 실제 dump·manifest를 생성하고 hash·TOC를 검증해 DEP1을 닫는다.
+3. DEP2 Dockerfile·Compose·restore 도구를 구현한다.
+4. DEP3~DEP4 actual·clean-room·복구·격리 검증을 수행한다.
+5. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
+6. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
 
 ## 관련 문서
 
