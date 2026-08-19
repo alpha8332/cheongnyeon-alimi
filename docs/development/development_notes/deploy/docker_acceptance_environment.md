@@ -266,6 +266,13 @@ placeholder와 fail-closed 경계에 대한 DEP2 Gate는 `DEP2_PASS`다. 실제 
 Acceptance Volume restore·Migration·Backend·Frontend·Browser 결과는 DEP3에서
 검증한다.
 
+BE·FE 담당자와 대회 심사자가 image 하나를 개별 실행하는 것으로 오해하지 않도록
+웹 UI 실행 방법을 보강했다. README와 문서 index에서 Docker 실행 문서로 바로
+이동할 수 있고, 문서에는 최초 restore, 이후 Docker Desktop project 재시작,
+Browser 접속, Volume 보존 종료와 전달 package 구성을 구분했다. DEP3~DEP5가
+남았다는 상태도 함께 표시해 아직 실행하지 않은 clean-room 결과를 보증하지
+않는다.
+
 후속 Slice에서도 다음 값을 실제 실행 결과로 계속 기록한다.
 
 - Git SHA와 worktree 상태
@@ -290,6 +297,8 @@ DEP0~DEP2에서 변경하거나 생성한 파일은 다음과 같다.
 - `deployment/postgres/create_snapshot.py`
 - `deployment/postgres/acceptance-snapshot.manifest.example.json`
 - `tests/test_create_acceptance_snapshot.py`
+- `README.md`
+- `docs/index.md`
 - `.gitattributes`
 - `.dockerignore`
 - `.env.compose.example`

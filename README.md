@@ -32,3 +32,17 @@ pgpass 경로가 필요하면 첫 번째 인자로 전달할 수 있다. Release
 한다. Node.js는 PATH를 우선 사용하고 Codex 데스크톱의 번들 Node.js가 있으면
 자동으로 대체 사용한다. 다른 Node.js 실행 파일을 지정하려면
 `-NodeExecutable <path>`를 함께 전달한다.
+
+## Docker로 웹 UI 실행
+
+다른 PC에서 같은 PostgreSQL snapshot·Backend·Frontend를 실행하는 Docker
+Acceptance 경로를 구축하고 있다. 전체 웹 UI는 Frontend image 하나를 Docker
+Desktop에서 개별 실행하는 방식이 아니라, `compose.yaml`로 PostgreSQL →
+Migration → Backend → Frontend를 함께 시작한다.
+
+현재 `DEP2_PASS`까지 완료했으며 image·Compose build와 안전 경계는 검증됐다.
+실제 snapshot 복원·Browser 검증과 다른 PC 인계가 끝나는
+`DOCKER_ACCEPTANCE_PASS` 전까지는 대회 심사자용 최종 실행 패키지로 안내하지
+않는다. 최초 실행, Docker Desktop 재실행과 웹 UI 접속 방법은
+[Docker Acceptance 환경 설정](docs/development/docker_acceptance_setup.md)을
+따른다.

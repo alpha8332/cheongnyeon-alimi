@@ -9,6 +9,78 @@ dump·manifest·비밀번호는 Git, Docker image, CI artifact에 포함하지 �
 현재 절차는 로컬 Docker Acceptance용이다. Nginx·TLS·도메인·운영 배포는
 6주차 범위이며 이 문서의 결과를 운영 배포 완료로 해석하지 않는다.
 
+> 현재 상태는 `DEP2_PASS`다. image·Compose 구현은 검증됐지만 실제 snapshot
+> restore·Browser smoke와 다른 PC 인계는 아직 DEP3~DEP5에 남아 있다.
+> `DOCKER_ACCEPTANCE_PASS` 전에는 이 문서를 대회 심사자용 최종 실행 보증으로
+> 사용하지 않는다.
+
+## 웹 UI 실행 방식 한눈에 보기
+
+Docker image 하나를 Docker Desktop의 **Run** 버튼으로 개별 실행하는 구조가
+아니다. 웹 UI는 다음 네 실행 단위를 Compose project 한 개로 함께 관리한다.
+
+```text
+Acceptance snapshot → PostgreSQL → FastAPI Backend → React Frontend
+                                               ↓
+                                  http://127.0.0.1:3000
+```
+
+처음 받은 PC에서는 한 번만 환경 파일과 snapshot을 준비하고 다음 명령을
+실행한다.
+
+```powershell
+Copy-Item .env.compose.example .env.compose
+# .env.compose의 CHANGE_ME 값을 모두 교체한 뒤 실행
+.\deployment\postgres\restore.ps1 `
+  -SnapshotDir 'C:\approved\acceptance-snapshot' `
+  -StartServices
+```
+
+명령이 `DEP2_RESTORE_PASS`로 끝나고 두 health endpoint가 정상이라면 Browser에서
+`http://127.0.0.1:3000`을 연다. 두 번째 실행부터는 DB를 다시 복원하지 않는다.
+
+```powershell
+docker compose --env-file .env.compose -f compose.yaml up -d --wait backend frontend
+Start-Process http://127.0.0.1:3000
+```
+
+즉, BE·FE 담당자나 심사자는 최초 복원 뒤 Docker Desktop의 **Containers**에서
+`cheongnyeon-alimi-acceptance` project 전체를 시작해도 된다. `database`,
+`migrate`, `backend`, `frontend`를 서로 무관한 image처럼 따로 Run하지 않는다.
+
+## 필요한 전달 패키지
+
+다른 PC에서 같은 화면과 데이터를 재현하려면 다음 항목이 모두 같은 조합이어야
+한다.
+
+| 전달 항목 | 이유 |
+| --- | --- |
+| Git SHA 또는 해당 Release source | Dockerfile·Migration·API·UI 버전 고정 |
+| `compose.yaml`과 Dockerfile | 전체 서비스 연결과 image 재현 |
+| 외부 Acceptance dump·manifest | 동일한 3,273건 정책 데이터 복원 |
+| snapshot version·SHA-256 | 전달 중 변경·잘못된 조합 차단 |
+| `.env.compose.example` | 개인별 비추적 secret 작성 기준 |
+| 시작·health·종료 명령 | 실행 결과와 Volume 보존 방식 통일 |
+
+실제 `.env.compose`, DB password, 관리자 PIN, dump는 Git에 포함하지 않는다.
+현재 로컬 snapshot은 Windows EFS로 암호화되어 다른 PC에서 그대로 복호화할 수
+없으므로 DEP5에서 이식 가능한 암호화 전달 package를 별도로 확정한다.
+
+## Docker Desktop 기준 사용자 흐름
+
+1. Docker Desktop을 실행하고 Engine이 **Running**인지 확인한다.
+2. 저장소와 승인된 snapshot package를 같은 Git SHA 조합으로 준비한다.
+3. 저장소 루트 PowerShell에서 최초 restore 명령을 한 번 실행한다.
+4. Docker Desktop의 **Containers**에서 project 안의 DB·Backend·Frontend가
+   healthy인지 확인한다.
+5. Browser에서 `http://127.0.0.1:3000`을 열어 검색·상세·추천 화면을 확인한다.
+6. 사용을 마치면 project의 **Stop** 또는 문서의 `docker compose stop`을 사용한다.
+7. 다음 실행에서는 project 전체를 **Start**한다. Volume에 복원된 DB가 유지된다.
+
+Docker Desktop의 delete, reset 또는 **Delete volumes**는 정상 종료 방법이
+아니다. 심사·QA 중 Volume을 새로 만들 필요가 있으면 DEP4 복구 절차에 따라
+project와 Volume 이름을 먼저 확인한다.
+
 ## 구성
 
 | 파일·서비스 | 역할 |
