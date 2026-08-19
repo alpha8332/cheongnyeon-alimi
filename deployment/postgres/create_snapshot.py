@@ -544,6 +544,7 @@ def create_dump(
                 "--schema-only",
                 "--no-owner",
                 "--no-acl",
+                "--file=-",
                 str(partial),
             ],
             check=True,
