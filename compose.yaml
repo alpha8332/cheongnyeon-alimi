@@ -39,6 +39,7 @@ services:
       PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}
       ACCEPTANCE_DUMP_FILENAME: ${ACCEPTANCE_DUMP_FILENAME:?Run restore.ps1 to inject the verified dump filename}
       ACCEPTANCE_DUMP_SHA256: ${ACCEPTANCE_DUMP_SHA256:?Run restore.ps1 to inject the verified dump hash}
+      ACCEPTANCE_ALEMBIC_REVISION: ${ACCEPTANCE_ALEMBIC_REVISION:-20260810_0006}
     volumes:
       - type: bind
         source: ${ACCEPTANCE_SNAPSHOT_DIR:?Set an absolute snapshot directory outside the workspace}
@@ -54,6 +55,36 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  schema-bootstrap:
+    image: *backend-image
+    profiles: ["restore"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+      ACCEPTANCE_ALEMBIC_REVISION: ${ACCEPTANCE_ALEMBIC_REVISION:-20260810_0006}
+    command:
+      - sh
+      - -ec
+      - >-
+        python /opt/acceptance/prepare_acceptance_schema.py &&
+        alembic upgrade "$${ACCEPTANCE_ALEMBIC_REVISION}" &&
+        python /opt/acceptance/prepare_acceptance_schema.py
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
     security_opt:
       - no-new-privileges:true
     restart: "no"
@@ -130,6 +161,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:?Set the browser-visible Backend URL in .env.compose}
+        VITE_USE_MOCK: ${VITE_USE_MOCK:-false}
     restart: unless-stopped
     depends_on:
       backend:

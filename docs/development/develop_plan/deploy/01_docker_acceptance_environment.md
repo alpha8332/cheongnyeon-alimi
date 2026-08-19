@@ -40,6 +40,9 @@ Backend·Frontend 담당자와 리뷰어·QA가 서로 다른 PC에서도 같은
 - Nginx·TLS·도메인·registry·운영 배포 완료
 - Kubernetes와 다중 노드 운영
 - Docker 환경에서만 동작하도록 기존 `run.bat` 로컬 경로를 제거하는 작업
+- 최초 secret 생성·snapshot restore·Compose 시작·Browser 열기를 한 번에 감싸는
+  `run_docker.bat` one-click launcher. 이 항목은 Deploy 01 실제 절차가 확정된
+  뒤 별도 후속 작업으로 구현한다.
 
 ## 선행 조건
 
@@ -211,12 +214,13 @@ Backend는 Compose 내부 `database` host를 사용하고, Frontend는 Browser�
 ### 수행 작업
 
 1. 새 Compose project와 빈 named Volume 생성
-2. manifest·dump hash 검증
-3. one-shot restore와 Alembic head 적용
-4. Backend `/health`, Frontend readiness 확인
-5. manifest 집계와 대표 stable identity 조회
-6. 검색·상세·추천·관리자 인증 경계 actual smoke
-7. partial·unknown·공식 원문·`.ics` 표시 확인
+2. 비추적 Compose secret 생성과 현재 사용자 전용 ACL 확인
+3. manifest·dump hash 검증
+4. one-shot restore와 Alembic head 적용
+5. Backend `/health`, Frontend readiness 확인
+6. manifest 집계와 대표 stable identity 조회
+7. 검색·상세·추천·관리자 인증 경계 actual smoke
+8. partial·unknown·공식 원문·`.ics` 표시 확인
 
 ### Gate
 
@@ -225,6 +229,23 @@ Backend는 Compose 내부 `database` host를 사용하고, Frontend는 Browser�
 - DB·API·Browser 집계와 stable identity 일치
 - credential·Raw payload가 container log에 없음
 - 서비스 종료 후에도 Volume이 명시적 삭제 없이는 유지됨
+
+### 2026-08-20 actual 진행 결과
+
+- 승인 snapshot hash와 Alembic revision을 확인한 뒤 빈 Volume에 Policy 3,273건,
+  CollectionRun 61건을 복원했다.
+- table-filtered dump에 빠진 의존 type은 snapshot revision까지 Migration으로
+  정확한 schema를 먼저 만들고, 검증한 data-only TOC를 FK 순서로 복원하는 방식으로
+  해결했다.
+- data-only restore 중 constraint trigger가 빈 `search_path`에서 helper function을
+  찾지 못한 문제는 단일 transaction 안에서 trigger를 일시 비활성화하고 복원 뒤
+  count·stable identity·orphan·Migration revision을 전부 재검증하는 방식으로
+  해결했다.
+- Docker Frontend가 기본 Mock 모드로 빌드되던 통합 결함을 발견해 Acceptance
+  image의 `VITE_USE_MOCK=false`를 build-time 필수 계약으로 고정했다.
+- DB·health·검색·상세·추천·비인증 관리자 경계·actual Browser·재시작 후 Volume
+  보존을 통과했다. 사용자가 생성한 PIN으로 로그인한 뒤 보호된 관리자 대시보드와
+  actual 정책 데이터 328페이지를 확인해 `DEP3_PASS`를 기록했다.
 
 ## Slice DEP4 - clean-room·복구·test 격리
 
@@ -258,6 +279,30 @@ Backend·Frontend 담당자와 리뷰어·QA에게 다음을 한 묶음으로 �
 각 참여자는 자기 격리 Volume을 사용한다. 결과에는 Git SHA, snapshot version,
 Docker·Compose version과 test command를 남겨 서로 다른 입력을 같은 결과로
 합치지 않는다.
+
+## 비차단 후속 - Docker one-click BAT
+
+`run_docker.bat`은 DEP3~DEP5에서 검증된 명령을 단순화하는 배포 편의 기능이다.
+검증되지 않은 restore·secret·Volume 동작을 launcher 안에 먼저 숨기지 않기 위해
+Deploy 01 범위에서는 구현하지 않는다. `DOCKER_ACCEPTANCE_PASS` 뒤 별도 작업으로
+계획하며 Deploy 01 Forest 완료나 DTL5-5 시작의 필수 Gate로 사용하지 않는다.
+
+후속 구현의 권장 계약은 다음과 같다.
+
+- 최초 실행: Docker Engine·Compose 확인 → `.env.compose` 안전 생성 → 관리자
+  PIN hash 입력 → 외부 snapshot 검증 → build·restore·Migration·health → Browser
+  열기
+- 재실행: 기존 Acceptance Volume을 보존하고 Compose project 전체 시작 → health
+  확인 → Browser 열기
+- 종료: container만 중지하고 Volume은 유지하며 `down -v`를 호출하지 않음
+- 입력: 최초 실행에만 승인된 snapshot 절대 경로와 4자리 관리자 PIN 요구
+- 금지: dump·PIN·실제 secret의 BAT·Git 포함, 비어 있지 않은 DB 자동 restore,
+  기존 Volume 자동 삭제, Docker image 단독 실행
+
+예상 진입점은 저장소 루트 `run_docker.bat`과 실제 로직을 담당하는 PowerShell
+script다. 구현 전 DEP3~DEP5 명령과 오류 메시지를 그대로 재사용할 수 있는지 먼저
+확인한다. 구현 뒤에는 새 PC 최초 실행, 공백·한글 경로, Docker 미실행, port 충돌,
+두 번째 실행의 멱등성, stop 후 데이터 유지까지 별도 acceptance로 검증한다.
 
 ## CI 경계
 

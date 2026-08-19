@@ -11,7 +11,9 @@ RUN chown -R node:node /workspace
 
 USER node
 ARG VITE_API_BASE_URL
+ARG VITE_USE_MOCK=false
 RUN test -n "$VITE_API_BASE_URL" \
+    && test "$VITE_USE_MOCK" = "false" \
     && npm run build
 
 FROM node:22.22.0-bookworm-slim@sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94 AS runtime

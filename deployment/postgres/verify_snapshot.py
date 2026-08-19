@@ -201,6 +201,7 @@ def verify_snapshot(
         "dump_sha256": actual_dump_hash,
         "policy_count": row_counts["policies"],
         "collection_run_count": row_counts["collection_runs"],
+        "alembic_revision": database["alembic_revision"],
     }
 
 
@@ -234,4 +235,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

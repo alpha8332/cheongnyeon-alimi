@@ -15,6 +15,7 @@
 !data/seeds/**
 !deployment/
 !deployment/postgres/
+!deployment/postgres/prepare_acceptance_schema.py
 !deployment/postgres/verify_restored_database.py
 **/__pycache__
 **/*.py[cod]

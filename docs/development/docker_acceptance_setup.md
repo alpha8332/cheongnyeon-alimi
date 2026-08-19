@@ -9,8 +9,9 @@ dump·manifest·비밀번호는 Git, Docker image, CI artifact에 포함하지 �
 현재 절차는 로컬 Docker Acceptance용이다. Nginx·TLS·도메인·운영 배포는
 6주차 범위이며 이 문서의 결과를 운영 배포 완료로 해석하지 않는다.
 
-> 현재 상태는 `DEP2_PASS`다. image·Compose 구현은 검증됐지만 실제 snapshot
-> restore·Browser smoke와 다른 PC 인계는 아직 DEP3~DEP5에 남아 있다.
+> 현재 상태는 `DEP3_PASS`이며 실제 snapshot restore·API·Browser·관리자 PIN·
+> Volume 보존까지 검증했다. 다른 환경의 clean-room·복구·인계인 DEP4~DEP5는
+> 남아 있다.
 > `DOCKER_ACCEPTANCE_PASS` 전에는 이 문서를 대회 심사자용 최종 실행 보증으로
 > 사용하지 않는다.
 
@@ -29,14 +30,13 @@ Acceptance snapshot → PostgreSQL → FastAPI Backend → React Frontend
 실행한다.
 
 ```powershell
-Copy-Item .env.compose.example .env.compose
-# .env.compose의 CHANGE_ME 값을 모두 교체한 뒤 실행
+.\deployment\postgres\initialize_compose_env.ps1
 .\deployment\postgres\restore.ps1 `
   -SnapshotDir 'C:\approved\acceptance-snapshot' `
   -StartServices
 ```
 
-명령이 `DEP2_RESTORE_PASS`로 끝나고 두 health endpoint가 정상이라면 Browser에서
+명령이 `DEP3_RESTORE_PASS`로 끝나고 두 health endpoint가 정상이라면 Browser에서
 `http://127.0.0.1:3000`을 연다. 두 번째 실행부터는 DB를 다시 복원하지 않는다.
 
 ```powershell
@@ -81,6 +81,10 @@ Docker Desktop의 delete, reset 또는 **Delete volumes**는 정상 종료 방�
 아니다. 심사·QA 중 Volume을 새로 만들 필요가 있으면 DEP4 복구 절차에 따라
 project와 Volume 이름을 먼저 확인한다.
 
+최초 설정부터 Browser 실행까지 감싸는 `run_docker.bat`은 DEP3~DEP5 실제 절차가
+확정된 뒤 구현할 비차단 후속 항목이다. 현재는 이 문서의 명시적 명령을 사용하며,
+BAT가 아직 없다는 이유로 Deploy 01 Gate를 통과 처리하거나 실패 처리하지 않는다.
+
 ## 구성
 
 | 파일·서비스 | 역할 |
@@ -98,9 +102,25 @@ project와 Volume 이름을 먼저 확인한다.
 network와 DB network를 잇는다. Frontend와 Backend의 host 공개 port는
 기본값도 `127.0.0.1`에만 bind한다.
 
+Acceptance Frontend는 반드시 `VITE_USE_MOCK=false`로 build한다. 이 값이 빠지면
+API에 실제 정책이 있어도 UI가 bundled Mock 데이터만 조회할 수 있으므로
+`compose.yaml`이 기본값을 false로 전달하고 Dockerfile이 다른 값을 거부한다.
+
 ## 1. 환경 파일 준비
 
-저장소 루트의 PowerShell에서 example을 복사한다.
+Windows에서는 저장소 루트의 PowerShell에서 다음 초기화기를 실행하는 방법을
+권장한다. 관리자 PIN은 보안 프롬프트로만 입력하며 나머지 secret은 서로 다른
+64자리 난수로 생성한다. 기존 파일은 덮어쓰지 않는다.
+
+```powershell
+.\deployment\postgres\initialize_compose_env.ps1
+```
+
+초기화기는 PIN 평문을 저장하지 않고 `.env.compose`에 SHA-256 hash만 기록한다.
+생성 파일의 ACL은 현재 Windows 사용자만 접근하도록 상속을 제거하고 Git ignore
+여부까지 확인한다.
+
+직접 설정해야 할 때만 example을 복사한다.
 
 ```powershell
 Copy-Item .env.compose.example .env.compose

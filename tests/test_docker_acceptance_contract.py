@@ -18,6 +18,9 @@ def test_service_database_is_internal_and_not_published():
 def test_health_dependency_chain_is_fail_closed():
     services = COMPOSE["services"]
 
+    assert services["schema-bootstrap"]["depends_on"]["database"]["condition"] == (
+        "service_healthy"
+    )
     assert services["restore"]["depends_on"]["database"]["condition"] == (
         "service_healthy"
     )
@@ -35,6 +38,7 @@ def test_health_dependency_chain_is_fail_closed():
 def test_profiles_and_test_volume_are_isolated():
     services = COMPOSE["services"]
 
+    assert services["schema-bootstrap"]["profiles"] == ["restore"]
     assert services["restore"]["profiles"] == ["restore"]
     assert services["database-test"]["profiles"] == ["test"]
     assert services["database-test"]["volumes"] != services["database"]["volumes"]
@@ -58,6 +62,41 @@ def test_images_are_pinned_and_application_users_are_non_root():
     assert "postgres:18.4-bookworm@sha256:" in compose_text
 
 
+def test_frontend_acceptance_image_is_forced_to_actual_api_mode():
+    frontend_dockerfile = (ROOT / "frontend" / "Dockerfile").read_text(
+        encoding="utf-8"
+    )
+    frontend_build_args = COMPOSE["services"]["frontend"]["build"]["args"]
+
+    assert frontend_build_args["VITE_USE_MOCK"] == "${VITE_USE_MOCK:-false}"
+    assert "ARG VITE_USE_MOCK=false" in frontend_dockerfile
+    assert 'test "$VITE_USE_MOCK" = "false"' in frontend_dockerfile
+
+
+def test_restore_bootstraps_snapshot_schema_before_transactional_data_load():
+    restore_runner = (ROOT / "deployment" / "postgres" / "restore.ps1").read_text(
+        encoding="utf-8"
+    )
+    restore_script = (ROOT / "deployment" / "postgres" / "restore.sh").read_text(
+        encoding="utf-8"
+    )
+    schema_guard = (
+        ROOT / "deployment" / "postgres" / "prepare_acceptance_schema.py"
+    ).read_text(encoding="utf-8")
+
+    assert restore_runner.index("run --rm schema-bootstrap") < restore_runner.index(
+        "run --rm restore"
+    )
+    assert "--data-only" in restore_script
+    assert "--disable-triggers" in restore_script
+    assert "--single-transaction" in restore_script
+    assert "alembic_version" not in restore_script.split("data_tables=", 1)[1].split(
+        "\n", 1
+    )[0]
+    assert "connection.set_session(readonly=True, autocommit=True)" in schema_guard
+    assert 'print(f"DEP3_SCHEMA_STATE={state}")' in schema_guard
+
+
 def test_docker_context_rules_exclude_local_artifacts():
     for relative_path in (
         ".dockerignore",
@@ -69,3 +108,17 @@ def test_docker_context_rules_exclude_local_artifacts():
         assert "*.log" in content
         assert ".env" in content
 
+
+def test_compose_env_initializer_keeps_pin_plaintext_out_of_file():
+    initializer = (
+        ROOT / "deployment" / "postgres" / "initialize_compose_env.ps1"
+    ).read_text(encoding="utf-8")
+
+    assert 'Read-Host "Acceptance admin PIN (4 digits)" -AsSecureString' in initializer
+    assert "SHA256" in initializer
+    assert '"ADMIN_PIN_HASH=$PinHash"' in initializer
+    assert "ADMIN_PIN=$Pin" not in initializer
+    assert "refusing overwrite" in initializer
+    assert "RandomNumberGenerator" in initializer
+    assert "Set-Acl" in initializer
+    assert "check-ignore --quiet -- .env.compose" in initializer

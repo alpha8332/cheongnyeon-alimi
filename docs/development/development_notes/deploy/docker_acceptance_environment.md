@@ -3,11 +3,14 @@
 ## 작업 정보
 
 - 상태: in-progress
-- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS` (`DOCKER_ACCEPTANCE_PENDING`)
+- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`
+  (`DOCKER_ACCEPTANCE_PENDING`)
 - 기록 시작일: `2026-08-19`
 - DEP1 preflight일: `2026-08-20`
 - DEP1 완료일: `2026-08-20`
 - DEP2 완료일: `2026-08-20`
+- DEP3 시작일: `2026-08-20`
+- DEP3 완료일: `2026-08-20`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
@@ -38,11 +41,11 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | DEP0 | completed | Git·Docker·dependency·Migration·secret·보관 경로·port 기준선 확인, `DEP0_PASS` |
 | DEP1 | completed | allowlist·민감정보 scan·EFS custom dump·manifest·hash·TOC 검증 완료, `DEP1_PASS` |
 | DEP2 | completed | 고정 image·Compose·fail-closed restore 도구·개발 override 구현, `DEP2_PASS` |
-| DEP3 | pending | restore·Migration·actual smoke 미실행 |
+| DEP3 | completed | 실제 3,273건 restore·Migration·health·API·Browser·관리자 PIN·Volume 보존 통과, `DEP3_PASS` |
 | DEP4 | pending | clean-room·재시작·복구·test 격리 미실행 |
 | DEP5 | pending | 동일 snapshot BE·FE 인수와 reviewer package 미작성 |
 
-현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`,
+현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`,
 `DOCKER_ACCEPTANCE_PENDING`이다.
 
 ## 구현 내용
@@ -50,8 +53,8 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 DEP0에서 실제 저장소와 실행 환경을 확인하고 DEP1에서 snapshot 생성기와 실제
 Acceptance dump를 완성했다. DEP2에서는 reviewer 고정 image·Compose와 개발
 override, snapshot 검증·복원 도구를 구현하고 image build·구성·fail-closed
-경계를 검증했다. 실제 DB 복원과 Browser smoke는 DEP3 결과로 미리 기록하지
-않는다.
+경계를 검증했다. DEP3에서는 실제 DB 복원과 Browser smoke를 수행했으며, 아래에는
+실제로 관찰한 실패와 수정·재검증 결과만 기록한다.
 
 ### DEP0 기준선
 
@@ -273,6 +276,84 @@ Browser 접속, Volume 보존 종료와 전달 package 구성을 구분했다. D
 남았다는 상태도 함께 표시해 아직 실행하지 않은 clean-room 결과를 보증하지
 않는다.
 
+### DEP3 actual preflight
+
+DEP3는 Git `eff9491`에서 시작했다. Docker Engine·Compose는 각각 `29.6.2`·
+`5.3.1`이고 host port `3000`·`8000`의 listen process는 없었다. 기존 Compose
+project와 `cheongnyeon-alimi` 이름의 Docker Volume도 0개여서 기존 Docker
+데이터와 충돌하지 않는 새 Acceptance project를 만들 수 있는 상태다.
+
+외부 snapshot을 다시 검증해 dump 3,020,687 byte와 SHA-256
+`46810a6ac6082680d2fae17ab98721597ec4b5e23ec667b3d086b5a4e9739a8b`, manifest
+계약·file hash, Policy 3,273건, CollectionRun 61건과 Git ancestor 관계가 모두
+일치했다. reviewer·restore·test Compose config와 Backend·Frontend image build도
+다시 통과했다.
+
+실제 secret 파일 `.env.compose`는 존재하지 않았고 Backend `.env`나 root `.env`도
+없어 기존 credential을 재사용하지 않았다. PIN을 터미널·채팅에 평문으로 남기지
+않기 위해 `initialize_compose_env.ps1`을 추가했다. 이 도구는 로컬 보안
+프롬프트에서 4자리 PIN을 받고 평문을 저장하지 않으며, 나머지 secret을 각각
+32-byte 난수로 생성하고 현재 Windows 사용자 전용 ACL·Git ignore를 확인한다.
+사용자가 초기화기를 실행해 `DEP3_COMPOSE_ENV_CREATED`를 확인했다. 생성 파일은
+Git에서 제외되고 현재 Windows 사용자 전용 ACL 1개만 유지됐으며 PIN 평문은
+저장되지 않았다.
+
+### DEP3 restore 실패와 해결
+
+첫 restore는 `administrative_region_alias_kind` enum type 부재로 실패했다. DEP1
+dump가 허용 table만 선택해 만든 data snapshot이어서 table data와 sequence는
+있지만 Alembic이 생성한 의존 enum type은 포함하지 않았기 때문이다. 복원은 단일
+transaction에서 rollback되어 public table·type 0개 상태를 확인했고 일부 데이터가
+남지 않았다.
+
+해결은 dump에 임의 DDL을 덧붙이는 대신 manifest의 Alembic revision
+`20260810_0006`까지 빈 DB schema를 Migration으로 먼저 만든 뒤, 검증된 dump의
+table data·sequence만 FK parent 순서로 복원하는 방식이다. `alembic_version` data는
+제외하고 schema inventory와 모든 대상 table이 비어 있는지 다시 확인한다.
+
+두 번째 restore는 commit 시 constraint trigger가 빈 session `search_path`에서
+`enforce_administrative_region_acyclic` helper를 찾지 못해 rollback됐다. PostgreSQL
+data-only restore의 공식 옵션인 `--disable-triggers`를 단일 transaction 안에서만
+사용하고, 복원 직후 count·stable identity·4개 orphan query·Alembic revision을
+전부 검증하도록 수정했다. 세 번째 실행은 `DEP3_SCHEMA_STATE=ready`,
+`DEP3_RESTORE_BASELINE_VERIFIED`, `DEP3_RESTORE_COMPLETED`,
+`DEP3_RESTORE_PASS`로 끝났다.
+
+### DEP3 actual DB·API·Browser
+
+복원 DB는 Policy 3,273, CollectionRun 61, 행정구역 538, alias 1,080,
+지역 rule 123,884, 검색 document 3,273건이며 Alembic은 `20260810_0006`이다.
+대표 stable identity 3/3과 orphan 0을 복원 검증기가 확인했다. PostgreSQL은 host
+port를 공개하지 않고 Backend·Frontend만 각각 `127.0.0.1:8000`·`:3000`에
+bind됐다.
+
+API smoke에서 `/api/v1/health`는 `ok`, `서울 청년 주거` 검색은 37건 중 5건을
+반환했고 검색 응답은 605ms였다. 실제 상세 id 6197은 HTTPS 원문과 eligibility
+coverage를 반환했다. 추천은 조건 없는 요청 1,301건, `age=27` 1,269건,
+`category=housing` 223건, `region=서울특별시` 1건을 반환했으며, 이유와 비단정
+문구가 포함됐다. `서울특별시+housing` 0건은 조건별 분해 결과 실제 데이터 교집합
+없음으로 확인했다. 무토큰 `/api/v1/admin/me`는 401, 공백 검색은 422였다.
+
+첫 Browser actual에서는 API에 존재하는 id 6197이 UI에서 “찾을 수 없음”으로
+표시됐다. 원인은 Frontend Docker build가 `VITE_API_BASE_URL`만 받고
+`VITE_USE_MOCK`을 지정하지 않아 코드 기본값인 Mock 모드로 빌드된 것이었다.
+Compose build arg와 Dockerfile에 `VITE_USE_MOCK=false`를 고정하고 재빌드했다.
+이후 상세 화면에서 `청년월세 지원사업`, 공식 원문, 자격 정보 미확인 안내가
+actual API 데이터로 렌더링됐다. 경상남도·25세 추천은 실제 정책 7건과 추천 이유,
+미확정 조건, D-Day를 표시했다. actual 관리자 로그인 화면에서는 Mock 전용 PIN
+안내도 숨겼다.
+
+전체 서비스를 stop 후 다시 `up --wait`한 결과 Policy count는 3,273 → 3,273으로
+유지됐고 세 서비스가 다시 healthy가 됐다. container log에서 5개 secret 값과
+Raw payload marker를 검사해 노출 0건을 확인했다.
+
+사용자가 초기화 시 입력한 PIN으로 직접 로그인한 뒤 Browser DOM을 다시 확인했다.
+로그인 전 `/api/v1/admin/me` 401 경계와 달리 로그인 후 `/admin` 보호 route에서
+로그아웃 버튼, 최신 CollectionRun과 관리자 navigation이 렌더링됐다. 이어 actual
+`/admin/policies`에서 10개 row와 `1 / 328 페이지`, 정책 id 3160~3169를 확인했다.
+PIN·access token 값은 읽거나 문서·로그에 기록하지 않았다. 이로써 DEP3의 마지막
+수동 인증 경계까지 통과해 `DEP3_PASS`다.
+
 후속 Slice에서도 다음 값을 실제 실행 결과로 계속 기록한다.
 
 - Git SHA와 worktree 상태
@@ -288,7 +369,7 @@ Browser 접속, Volume 보존 종료와 전달 package 구성을 구분했다. D
 
 ## 주요 변경 파일
 
-DEP0~DEP2에서 변경하거나 생성한 파일은 다음과 같다.
+DEP0~DEP3에서 변경하거나 생성한 주요 파일은 다음과 같다.
 
 - `docs/development/develop_plan/deploy/01_docker_acceptance_environment.md`
 - `docs/development/development_notes/deploy/docker_acceptance_environment.md`
@@ -311,13 +392,16 @@ DEP0~DEP2에서 변경하거나 생성한 파일은 다음과 같다.
 - `frontend/docker-server.mjs`
 - `deployment/postgres/restore.ps1`
 - `deployment/postgres/restore.sh`
+- `deployment/postgres/initialize_compose_env.ps1`
+- `deployment/postgres/prepare_acceptance_schema.py`
 - `deployment/postgres/verify_snapshot.py`
 - `deployment/postgres/verify_restored_database.py`
+- `frontend/src/pages/admin/AdminLoginPage.tsx`
 - `tests/test_docker_acceptance_contract.py`
 - `tests/test_verify_acceptance_snapshot.py`
 - `docs/development/docker_acceptance_setup.md`
 
-DEP2 실제 구현 파일은 위 목록과 개발 계획의 DEP2 절에 반영했다.
+DEP2·DEP3 실제 구현 파일은 위 목록과 개발 계획의 해당 절에 반영했다.
 
 ## 설계 결정
 
@@ -333,6 +417,9 @@ DEP2 실제 구현 파일은 위 목록과 개발 계획의 DEP2 절에 반영�
    두지 않는다.
 5. CI는 합성 Seed로 image·Compose를 검증하고 실제 snapshot Acceptance는
    승인된 로컬 clean-room Gate로 유지한다.
+6. `run_docker.bat` one-click launcher는 DEP3~DEP5의 실제 절차가 고정된 뒤 만드는
+   비차단 후속 작업으로 둔다. Deploy 01 안에서는 launcher 편의를 위해 미검증
+   restore·secret·Volume 동작을 추가하지 않는다.
 
 ## 검증 결과
 
@@ -360,8 +447,17 @@ DEP2 실제 구현 파일은 위 목록과 개발 계획의 DEP2 절에 반영�
 | 빈 DB Migration guard | 통과, 예상 차단 exit 1·임시 Volume 제거 |
 | 잘못된 test DB명 guard | 통과, 예상 차단 exit 64·임시 Volume 제거 |
 | DEP1·DEP2 도구/계약 단위 테스트 | 22개 통과 |
-| restore·Migration·health | 미실행 |
-| actual DB·API·Browser | 미실행 |
+| DEP3 project·port preflight | 통과, 기존 project·matching Volume 0·3000/8000 free |
+| DEP3 snapshot·config·image preflight | 통과, hash·집계·Git ancestor 일치·두 image build 성공 |
+| DEP3 Compose secret | 통과, 보안 프롬프트 생성·PIN hash만 저장·현재 사용자 ACL·Git ignore 확인 |
+| restore·Migration·health | 통과, `DEP3_RESTORE_PASS`·revision `20260810_0006`·세 서비스 healthy |
+| actual DB·API | 통과, Policy 3,273·Run 61·stable identity 3/3·orphan 0·검색/상세/추천/401/422 |
+| actual Browser | 통과, actual 상세·추천·원문·미확정·D-Day·PIN 로그인·관리자 정책 1/328페이지 확인 |
+| Frontend Mock→actual 통합 결함 | 수정·재검증, `VITE_USE_MOCK=false` build 계약·Mock PIN 안내 비노출 |
+| Frontend unit·lint·actual build | 통과, unit 216개·lint·`VITE_USE_MOCK=false` build |
+| DEP1~DEP3 도구/계약 단위 테스트 | 25개 통과 |
+| credential·Raw payload log scan | 통과, secret value 0·raw marker 0 |
+| 서비스 재시작·Volume 보존 | 통과, Policy 3,273 → 3,273·세 서비스 healthy |
 | clean-room·재시작·복구 | 미실행 |
 | test DB·Volume 격리 | 미실행 |
 | 문서 검증 | `Documentation validation passed.` |
@@ -371,11 +467,12 @@ DEP2 실제 구현 파일은 위 목록과 개발 계획의 DEP2 절에 반영�
 
 ## 남은 작업
 
-1. DEP3에서 실제 빈 Acceptance Volume restore·Migration·health·actual smoke를
-   수행한다.
-2. DEP4 clean-room·재시작·복구·test 격리를 검증한다.
-3. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
-4. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+1. DEP4 clean-room·복구·test 격리를 검증한다.
+2. DEP5 동일 환경 package를 BE·FE 담당자와 리뷰어·QA에게 인계한다.
+3. 모든 근거가 일치할 때만 `DOCKER_ACCEPTANCE_PASS`를 기록하고 DTL5-5를 연다.
+
+`run_docker.bat`은 `DOCKER_ACCEPTANCE_PASS` 이후 별도 backlog에서 구현한다.
+Deploy 01 완료와 DTL5-5 시작을 막는 항목은 아니다.
 
 ## 관련 문서
 

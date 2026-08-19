@@ -4,6 +4,7 @@ import os
 import sys
 
 import psycopg2
+from psycopg2 import sql
 
 
 ALLOWLIST_TABLES = (
@@ -23,6 +24,14 @@ STABLE_IDENTITIES = (
     ),
     ("regional-gyeongnam-youth-platform", "2091"),
 )
+EXPECTED_ROW_COUNTS = {
+    "administrative_region_aliases": 1080,
+    "administrative_regions": 538,
+    "collection_runs": 61,
+    "policies": 3273,
+    "policy_region_rules": 123884,
+    "policy_search_documents": 3273,
+}
 
 
 class RestoredDatabaseError(RuntimeError):
@@ -44,10 +53,16 @@ def verify(connection) -> None:
         tables = tuple(row[0] for row in cursor.fetchall())
         if tables != ALLOWLIST_TABLES:
             raise RestoredDatabaseError("public table allowlist mismatch")
-        if int(scalar(cursor, "SELECT count(*) FROM policies")) != 3273:
-            raise RestoredDatabaseError("Policy baseline count mismatch")
-        if int(scalar(cursor, "SELECT count(*) FROM collection_runs")) != 61:
-            raise RestoredDatabaseError("CollectionRun baseline count mismatch")
+        for table_name, expected_count in EXPECTED_ROW_COUNTS.items():
+            cursor.execute(
+                sql.SQL("SELECT count(*) FROM {}").format(
+                    sql.Identifier("public", table_name)
+                )
+            )
+            if int(cursor.fetchone()[0]) != expected_count:
+                raise RestoredDatabaseError(
+                    f"{table_name} baseline count mismatch"
+                )
         if scalar(cursor, "SELECT version_num FROM alembic_version") != "20260810_0006":
             raise RestoredDatabaseError("snapshot Alembic revision mismatch")
         for source_id, external_id in STABLE_IDENTITIES:
@@ -61,6 +76,22 @@ def verify(connection) -> None:
             )
             if count != 1:
                 raise RestoredDatabaseError("stable identity baseline mismatch")
+
+        orphan_queries = (
+            "SELECT count(*) FROM administrative_region_aliases a "
+            "LEFT JOIN administrative_regions r ON r.scheme=a.scheme "
+            "AND r.code=a.region_code WHERE r.code IS NULL",
+            "SELECT count(*) FROM policy_region_rules pr "
+            "LEFT JOIN policies p ON p.id=pr.policy_id WHERE p.id IS NULL",
+            "SELECT count(*) FROM policy_region_rules pr "
+            "LEFT JOIN administrative_regions r ON r.scheme=pr.region_scheme "
+            "AND r.code=pr.region_code WHERE pr.region_code IS NOT NULL "
+            "AND r.code IS NULL",
+            "SELECT count(*) FROM policy_search_documents ps "
+            "LEFT JOIN policies p ON p.id=ps.policy_id WHERE p.id IS NULL",
+        )
+        if any(int(scalar(cursor, statement)) != 0 for statement in orphan_queries):
+            raise RestoredDatabaseError("restored foreign-key orphan detected")
 
 
 def main() -> int:
@@ -79,7 +110,7 @@ def main() -> int:
             verify(connection)
         finally:
             connection.close()
-        print("DEP2_RESTORE_BASELINE_VERIFIED")
+        print("DEP3_RESTORE_BASELINE_VERIFIED")
         return 0
     except (RestoredDatabaseError, psycopg2.Error) as error:
         print(f"DEP2_BLOCKED: {error}", file=sys.stderr)
@@ -88,4 +119,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

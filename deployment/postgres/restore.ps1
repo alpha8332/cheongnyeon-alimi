@@ -35,7 +35,7 @@ if (
     $ResolvedSnapshotDir.Equals($RepositoryRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
     $ResolvedSnapshotDir.StartsWith($RepositoryPrefix, [System.StringComparison]::OrdinalIgnoreCase)
 ) {
-    throw "DEP2_BLOCKED: snapshot directory must be outside the workspace"
+    throw "DEP3_BLOCKED: snapshot directory must be outside the workspace"
 }
 
 if (-not $PythonExe) {
@@ -71,43 +71,43 @@ foreach ($Line in Get-Content -LiteralPath $ResolvedEnvFile) {
 }
 foreach ($Key in $RequiredEnvKeys) {
     if (-not $EnvValues.ContainsKey($Key) -or [string]::IsNullOrWhiteSpace($EnvValues[$Key])) {
-        throw "DEP2_BLOCKED: $Key is missing from the Compose env file"
+        throw "DEP3_BLOCKED: $Key is missing from the Compose env file"
     }
     if ($EnvValues[$Key] -match 'CHANGE_ME') {
-        throw "DEP2_BLOCKED: $Key still contains a CHANGE_ME placeholder"
+        throw "DEP3_BLOCKED: $Key still contains a CHANGE_ME placeholder"
     }
 }
 foreach ($Key in @("POSTGRES_DB", "POSTGRES_USER", "TEST_POSTGRES_DB", "TEST_POSTGRES_USER")) {
     if ($EnvValues[$Key] -notmatch '^[A-Za-z][A-Za-z0-9_]*$') {
-        throw "DEP2_BLOCKED: $Key must contain only a leading letter and alphanumeric or underscore characters"
+        throw "DEP3_BLOCKED: $Key must contain only a leading letter and alphanumeric or underscore characters"
     }
 }
 foreach ($Key in @("POSTGRES_PASSWORD", "TEST_POSTGRES_PASSWORD")) {
     if ($EnvValues[$Key] -notmatch '^[A-Za-z0-9_-]{32,}$') {
-        throw "DEP2_BLOCKED: $Key must be at least 32 URL-safe characters"
+        throw "DEP3_BLOCKED: $Key must be at least 32 URL-safe characters"
     }
 }
 if ($EnvValues["BACKEND_SECRET_KEY"].Length -lt 32) {
-    throw "DEP2_BLOCKED: BACKEND_SECRET_KEY must be at least 32 characters"
+    throw "DEP3_BLOCKED: BACKEND_SECRET_KEY must be at least 32 characters"
 }
 if ($EnvValues["ADMIN_TOKEN_SECRET"].Length -lt 32) {
-    throw "DEP2_BLOCKED: ADMIN_TOKEN_SECRET must be at least 32 characters"
+    throw "DEP3_BLOCKED: ADMIN_TOKEN_SECRET must be at least 32 characters"
 }
 if ($EnvValues["ADMIN_PIN_HASH"] -notmatch '^[0-9a-fA-F]{64}$') {
-    throw "DEP2_BLOCKED: ADMIN_PIN_HASH must be a SHA-256 hexadecimal digest"
+    throw "DEP3_BLOCKED: ADMIN_PIN_HASH must be a SHA-256 hexadecimal digest"
 }
 if (-not $EnvValues["TEST_POSTGRES_DB"].EndsWith("_test", [System.StringComparison]::Ordinal)) {
-    throw "DEP2_BLOCKED: TEST_POSTGRES_DB must end with _test"
+    throw "DEP3_BLOCKED: TEST_POSTGRES_DB must end with _test"
 }
 if ($EnvValues["POSTGRES_PASSWORD"] -eq $EnvValues["TEST_POSTGRES_PASSWORD"]) {
-    throw "DEP2_BLOCKED: service and test database passwords must differ"
+    throw "DEP3_BLOCKED: service and test database passwords must differ"
 }
 
 $VerificationOutput = & $PythonExe $Verifier `
     --snapshot-dir $ResolvedSnapshotDir `
     --repository-root $RepositoryRoot
 if ($LASTEXITCODE -ne 0) {
-    throw "DEP2_BLOCKED: snapshot verification failed"
+    throw "DEP3_BLOCKED: snapshot verification failed"
 }
 $Verification = $VerificationOutput | Out-String | ConvertFrom-Json
 
@@ -115,6 +115,7 @@ $Injected = @{
     ACCEPTANCE_SNAPSHOT_DIR = $ResolvedSnapshotDir.Replace('\', '/')
     ACCEPTANCE_DUMP_FILENAME = [string]$Verification.dump_filename
     ACCEPTANCE_DUMP_SHA256 = [string]$Verification.dump_sha256
+    ACCEPTANCE_ALEMBIC_REVISION = [string]$Verification.alembic_revision
 }
 $Previous = @{}
 foreach ($Name in $Injected.Keys) {
@@ -131,40 +132,45 @@ $ComposeArgs = @(
 try {
     & docker @ComposeArgs config --quiet
     if ($LASTEXITCODE -ne 0) {
-        throw "DEP2_BLOCKED: docker compose config validation failed"
+        throw "DEP3_BLOCKED: docker compose config validation failed"
     }
 
     if (-not $SkipBuild) {
         & docker @ComposeArgs build backend frontend
         if ($LASTEXITCODE -ne 0) {
-            throw "DEP2_BLOCKED: application image build failed"
+            throw "DEP3_BLOCKED: application image build failed"
         }
     }
 
     & docker @ComposeArgs up --detach --wait database
     if ($LASTEXITCODE -ne 0) {
-        throw "DEP2_BLOCKED: database did not become healthy"
+        throw "DEP3_BLOCKED: database did not become healthy"
+    }
+
+    & docker @ComposeArgs --profile restore run --rm schema-bootstrap
+    if ($LASTEXITCODE -ne 0) {
+        throw "DEP3_BLOCKED: schema bootstrap failed; the existing volume was preserved"
     }
 
     & docker @ComposeArgs --profile restore run --rm restore
     if ($LASTEXITCODE -ne 0) {
-        throw "DEP2_BLOCKED: one-shot restore failed; the existing volume was preserved"
+        throw "DEP3_BLOCKED: one-shot restore failed; the existing volume was preserved"
     }
 
     & docker @ComposeArgs run --rm migrate
     if ($LASTEXITCODE -ne 0) {
-        throw "DEP2_BLOCKED: migration failed; the existing volume was preserved"
+        throw "DEP3_BLOCKED: migration failed; the existing volume was preserved"
     }
 
     if ($StartServices) {
         & docker @ComposeArgs up --detach --wait backend frontend
         if ($LASTEXITCODE -ne 0) {
-            throw "DEP2_BLOCKED: application services did not become healthy"
+            throw "DEP3_BLOCKED: application services did not become healthy"
         }
     }
 
     [pscustomobject]@{
-        status = "DEP2_RESTORE_PASS"
+        status = "DEP3_RESTORE_PASS"
         snapshot_version = $Verification.snapshot_version
         dump_sha256 = $Verification.dump_sha256
         policy_count = $Verification.policy_count
