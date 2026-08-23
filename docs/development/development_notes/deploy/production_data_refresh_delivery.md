@@ -282,9 +282,27 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | Nginx actual | `/health` 200, `/api` 451건 조회, SPA `/` 200 |
 | Production network | host 공개 Nginx 1개, DB·Redis host port 0개 |
 | 원격 GHCR·Release | 미실행, P4 최종 Gate blocker로 명시 |
-| P4 최종 저장소 pytest | 576 passed, 28 skipped, 241 subtests passed |
+| P4 기본 로컬 pytest | 576 passed, 28 skipped, 241 subtests passed |
+| P4 Linux·PostgreSQL CI 동등 환경 | 602 passed, 2 skipped, 241 subtests passed |
 | P4 Frontend | 222 passed, lint·same-origin production build PASS |
 | Workflow lint | actionlint 1.7.12, 4 Workflow 0건 |
+
+### P4 원격 CI 첫 실행 회귀
+
+- 문제 상황: PR #20의 첫 CI에서 Frontend는 통과했지만 `backend-data`와
+  `image-contract`가 실패했다.
+- 원인: 정책 생명주기 도입 후 마감 정책이 공개 조회에서 제외되는데 기존
+  PostgreSQL 통합 테스트 2건이 과거 공개 건수를 기대했고, DB round-trip
+  테스트는 새 lifecycle timestamp 3개를 normalized 원문 필드처럼 비교했다.
+  별도로 `image-contract` job은 Python 의존성을 설치하지 않고 pytest를
+  실행했다.
+- 해결: DB 보존 4건과 공개 노출 3건을 분리해 검증하고 마감 상세 `404`를
+  명시했다. lifecycle timestamp는 시스템 관리 필드로 분리한 뒤 값의 의미를
+  별도 assertion으로 검증했으며, image contract job에 Python 3.14와 lockfile
+  설치 단계를 추가했다.
+- 결과: GitHub Runner와 같은 Linux·Python 3.14·PostgreSQL 18.4 환경에서
+  `602 passed, 2 skipped, 241 subtests passed`, P4 계약 8건과 actionlint가
+  모두 통과했다.
 
 ## 남은 작업
 

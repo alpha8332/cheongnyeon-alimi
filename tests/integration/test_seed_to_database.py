@@ -32,7 +32,17 @@ from collectors.validation import NormalizedProgramValidator  # noqa: E402
 
 
 SEED_PATH = ROOT / "data" / "seeds" / "initial_programs.json"
-SYSTEM_FIELDS = frozenset({"id", "created_at", "updated_at"})
+SYSTEM_FIELDS = frozenset(
+    {
+        "id",
+        "created_at",
+        "updated_at",
+        "last_seen_at",
+        "last_verified_at",
+        "inactive_at",
+    }
+)
+EXPIRED_EXTERNAL_ID = "SYN-YOUTH-001"
 ROLLBACK_FUNCTION = "reject_d2_test_policy"
 ROLLBACK_EXTERNAL_ID = "D2-ROLLBACK-FAIL"
 
@@ -140,8 +150,11 @@ def test_canonical_seed_to_postgresql_repository_contract():
         assert first.committed is True
         assert first.inserted == 4
         assert len(policies) == 4
-        assert repository_page.total == 4
-        assert len(repository_page.items) == 4
+        assert repository_page.total == 3
+        assert len(repository_page.items) == 3
+        assert EXPIRED_EXTERNAL_ID not in {
+            policy.external_id for policy in repository_page.items
+        }
 
         stored_by_identity = {
             (policy.source_id, policy.external_id): _serialized_policy(policy)
@@ -150,6 +163,18 @@ def test_canonical_seed_to_postgresql_repository_contract():
         for program in programs:
             identity = (program["source_id"], program["external_id"])
             assert stored_by_identity[identity] == _normalized_seed(program)
+        for policy in policies:
+            source = next(
+                program
+                for program in programs
+                if (program["source_id"], program["external_id"])
+                == (policy.source_id, policy.external_id)
+            )
+            assert policy.last_seen_at == datetime.fromisoformat(
+                source["collected_at"].replace("Z", "+00:00")
+            )
+            assert policy.last_verified_at is not None
+            assert policy.inactive_at is None
 
         with session_factory() as db:
             rerun = import_programs(db, programs)
