@@ -91,6 +91,11 @@
   DB 보유 PC 최신 review 재판정·partial 적재와 새 데이터 기준선 인계
 - [Docker Acceptance Environment 계획](development/develop_plan/deploy/01_docker_acceptance_environment.md):
   동일 Acceptance snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인수
+- [Production Data Refresh and Delivery 계획](development/develop_plan/deploy/02_production_data_refresh_delivery.md):
+  공개 normalized dataset·정책 생명주기·Celery/Redis 중앙 수집·Production
+  Compose·CI/CD와 clean-room Final Gate
+- [6주차 Final Release 실행 계획](development/weekly_plan/week_06_final_release.md):
+  `W6-P0`~`W6-P5` Critical Path와 `W6-G0_FINAL_RELEASE_PASS`
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):

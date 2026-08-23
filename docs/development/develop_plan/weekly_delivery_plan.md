@@ -351,20 +351,42 @@ Production 배포 범위를 대체하지 않는다.
 image·Nginx·CI·초기 bootstrap·운영 복구까지 확장하고 다시 clean-room으로
 검증한다. 5주차 Gate 통과만으로 Final 배포 완료를 선언하지 않는다.
 
+6주차 최우선 작업은
+[Deploy 02 Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md)다.
+`W6-P0` 공개 데이터 계약부터 `W6-P5` clean-room까지 순서대로 수행하며,
+Redis broker·Celery worker·단일 Beat를 실제 수동·정기 수집 queue로 사용한다.
+정책과 `CollectionRun` 상태 원본은 PostgreSQL에 유지한다.
+
+### Production Data Refresh Critical Path
+
+```text
+W6-P0 공개 데이터·라이선스 계약
+  → W6-P1 정책 생명주기
+  → W6-P2 Celery·Redis 중앙 수집
+  → W6-P3 clone/ZIP 최초 실행
+  → W6-P4 Production Compose·CI/CD
+  → W6-P5 clean-room
+  → W6-G0_FINAL_RELEASE_PASS
+```
+
 ### 배포
 
 - Frontend·Backend Production Dockerfile
 - PostgreSQL을 포함한 Compose, Volume과 health check
 - Nginx 정적 파일과 `/api` reverse proxy
 - 환경변수·비밀 분리와 초기 migration·실데이터 bootstrap
+- 공개 normalized dataset manifest·SHA-256과 API key 없는 bootstrap
+- Redis broker·Celery collector worker·단일 Beat scheduler
+- 완전 수집에서만 미발견 inactive, 실패·부분 수집에서는 기존 데이터 유지
 - Frontend build, Backend·Data test와 이미지 build CI
 - 로그, 장애 확인, 백업·복구와 버전 tag 안내
 
 ### Clean-room 검증
 
 - 새 PC 또는 깨끗한 환경에서 clone
-- README만 보고 설정·build·migration·초기 적재·실행
+- README만 보고 clone/ZIP·설정·dataset hash·migration·초기 적재·실행
 - 컨테이너 재시작과 데이터 유지
+- Redis·worker 장애, task 재전달·중복 방지와 dataset rollback
 - 실제 검색·추천·사용자·관리자 시나리오
 - 실패 시 로그 확인과 복구
 
@@ -384,7 +406,7 @@ image·Nginx·CI·초기 bootstrap·운영 복구까지 확장하고 다시 clea
 - 사용성 리뷰어는 새 환경에서 핵심 사용자 흐름과 실행 안내의 이해도를
   확인한다.
 - QA는 설치, build, migration, bootstrap, 컨테이너 재시작, Volume, 로그,
-  권한·비밀, 실패 복구와 전체 회귀를 검증한다.
+  권한·비밀, Celery·Redis 장애, task 멱등성, 실패 복구와 전체 회귀를 검증한다.
 
 ### 완료
 

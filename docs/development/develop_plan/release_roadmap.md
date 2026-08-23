@@ -292,10 +292,15 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
 - Frontend·Backend Production Dockerfile과 PostgreSQL을 포함한 Compose
 - Nginx 정적 파일 제공과 `/api` reverse proxy
 - 환경변수와 비밀 분리, Volume, health check와 데이터 유지
-- Migration, 초기 실데이터 bootstrap 또는 명시적 수집 절차
+- 공개 normalized dataset·versioned manifest·SHA-256과 API key 없는 bootstrap
+- `last_seen_at`·`last_verified_at`·`inactive_at` 정책 생명주기
+- Redis broker·Celery collector worker·단일 Beat scheduler와 실제 수동·정기 queue
+- 완전 수집에서만 미발견 inactive, 실패·partial 수집의 기존 데이터 보존
+- Migration, 중앙 수집과 명시적 운영자 API key 설정 절차
 - Frontend build, Backend·Data 테스트, 이미지 build를 수행하는 CI
+- GHCR immutable image와 검증된 dataset promotion·rollback
 - 버전·이미지 tag와 릴리스 체크리스트
-- 새 PC 또는 깨끗한 환경의 clone-to-run 검증
+- 새 PC 또는 깨끗한 환경의 clone/ZIP one-command 검증
 - 설치, 수집, 검색, 사용자·관리자 기능, 로그와 복구 안내
 - README, 아키텍처, 데이터 Schema, API, Collector 가이드
 - LICENSE, SBOM, CHANGELOG, 최종보고서, 시연 스크립트와 제출 자료
@@ -303,7 +308,14 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
 ### 릴리스 완료 조건
 
 - 깨끗한 환경에서 README만 따라 build·migration·초기 적재·실행이 성공한다.
+- 공개 dataset의 라이선스 allowlist·manifest·hash가 검증되고 API key 없는
+  bootstrap이 성공한다.
+- 관리자 수동 실행과 정기 실행이 Celery queue의 실제 worker로 연결되고,
+  PostgreSQL `CollectionRun`이 최종 상태 원본이다.
+- 신규·변경·inactive 전이와 실패·partial 수집 보존 경계가 실제 DB·API·
+  Browser에서 통과한다.
 - 컨테이너 재시작 후 DB와 필요한 Runtime 데이터가 유지된다.
+- Redis·worker 재시작과 task 재전달에도 중복 정책·실행 이력이 생기지 않는다.
 - 사용자 검색·추천·부가 기능과 관리자 시나리오가 배포 구성에서 통과한다.
 - QA가 clean-room 설치, 배포, 재시작, 로그와 복구 시나리오를 재검증했다.
 - CI와 릴리스 문서가 실제 명령 및 산출물과 일치한다.
@@ -328,6 +340,7 @@ Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Bro
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
 - [Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md)
 - [Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)
+- [Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md)
 - [시스템 흐름](../../architecture/system_flow.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)

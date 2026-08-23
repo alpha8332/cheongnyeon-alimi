@@ -4,7 +4,8 @@
 
 - 번호: Deploy 01
 - 담당 영역: Team Leader - Integration·Deploy
-- 상태: in-progress
+- 상태: completed
+- 완료일: `2026-08-23` (`DOCKER_ACCEPTANCE_PASS`)
 - 실행 시작일: `2026-08-19` (`DEP0_PASS`)
 - 계획일: `2026-08-19`
 - 권장 구현 브랜치: `feature/deploy/docker-acceptance-environment`
@@ -444,3 +445,4 @@ Seed·fixture로 다음만 검증한다.
 - [컨테이너 구조](../../../architecture/container_structure.md)
 - [브랜치 전략](../../../governance/branch_strategy.md)
 - [역할과 책임](../../../governance/role_assignment.md)
+- [Deploy 02 Production Data Refresh and Delivery](02_production_data_refresh_delivery.md)
