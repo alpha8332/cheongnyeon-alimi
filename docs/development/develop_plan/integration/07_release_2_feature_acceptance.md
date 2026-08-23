@@ -5,9 +5,9 @@
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
 - 상태: completed
-- 완료 판정: `2026-08-23`, `W5-G2_CONDITIONAL`
-- 현재 단계: DTL5-0~6와 수정본 기술 Gate 완료. 팀 외 독립 인력 검증은 역할
-  격리 대체로 기록해 `PASS`·main/tag 후보 승격은 보류
+- 완료 판정: `2026-08-23`, `W5-G2_PASS`
+- 현재 단계: DTL5-0~6와 수정본 Gate 완료. 사용자 승인 역할 격리 대체 검증을
+  공식 리뷰·QA 증거로 인정해 main/tag 후보 준비 가능
 - 계획일: `2026-08-07`
 - 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
@@ -16,7 +16,7 @@
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
 - DTL5-4 검증 브랜치: `feature/integration/week-05-acceptance`
   (`1019fda` 코드 검증 기준)
-- DTL5-6 조건부 후보 SHA: `3066acb272dc3f40f9d8684bd2e46e6d69169f71`
+- DTL5-6 코드 검증 SHA: `3066acb272dc3f40f9d8684bd2e46e6d69169f71`
 - 5주차 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - 개발 기록: [Integration 07 개발 기록](../../development_notes/integration/release_2_feature_acceptance.md)
 - DTL5-5 선행 보강: [Integration 10 Review Admission](10_review_admission_docker_acceptance.md)
@@ -140,9 +140,9 @@ Integration 10 `W5-G1_REVALIDATED`와 Deploy 01 `DOCKER_ACCEPTANCE_PASS`를
 - 담당 Backend 브랜치의 과거 커밋에 노출된 로컬 DB 자격증명은 Integration
   ancestry에서 제외했다. DTL5-6에서 현재 비추적 DB 비밀번호가 과거 노출
   후보와 다른 충분한 길이의 비기본값임을 값 출력 없이 확인했다.
-- 팀 외 독립 인력 검증은 사용자 일정 예외에 따라 동일 운영자의 역할 격리
-  대체로 수행했다. 기능·보안 실패는 아니지만 `W5-G2_PASS`와 main/tag 후보
-  승격을 보류하는 알려진 절차 제약이다.
+- 팀 외 인력 대신 역할·Docker project·Volume을 분리한 대체 검증을 수행했고,
+  사용자가 이를 이번 Release 2의 공식 리뷰·QA 증거로 승인했다. 수행 주체와
+  방식은 기록에 남기되 Gate 미완료 사유로 취급하지 않는다.
 - 한 주 안에 모든 기능을 확장형으로 구현하면 Backend가 병목이 되므로 W4-G0
   범위 밖 기능을 다시 끌어오지 않는다.
 - actual snapshot은 외부 데이터 변화의 영향을 받으므로 고정 contract 회귀와

@@ -2,8 +2,8 @@
 
 ## 계획 정보
 
-- 상태: completed (`2026-08-23`, `W5-G2_CONDITIONAL`). 기술 Gate는 통과했고
-  팀 외 독립 인력 검증은 사용자 일정 예외에 따른 역할 격리 대체로 기록한다.
+- 상태: completed (`2026-08-23`, `W5-G2_PASS`). 사용자 승인에 따라 역할·
+  project·Volume을 분리한 대체 리뷰·QA를 공식 Gate 검증으로 인정했다.
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -237,9 +237,9 @@ snapshot으로 복원해 Data `323`, Backend·PostgreSQL·Integration `202 passe
 2 skipped`, Frontend unit `222`, Mock Browser `80 passed / 14 skipped`, actual
 Browser `39 passed / 11 skipped`와 재시작 count 보존을 확인했다. 과거 노출 DB
 자격증명도 현재 비추적 값과 다름을 확인했다. 기능 blocker와 high 결함은
-남지 않았지만 팀 외 독립 인력 검증을 역할 격리 대체했으므로
-`W5-G2_CONDITIONAL`로 판정한다. 6주차 작업은 시작할 수 있으나 `main` PR과
-`v0.5.0` tag 후보 승격은 `PASS` 전까지 보류한다.
+남지 않았고, 사용자가 역할 격리 대체 검증을 공식 리뷰·QA 증거로 승인했으므로
+`W5-G2_PASS`로 판정한다. 6주차 작업과 `main` PR·`v0.5.0` tag 후보 준비를
+시작할 수 있다.
 
 ## 역할별 산출물
 
@@ -309,13 +309,12 @@ development notes에 기록한다.
 - [x] Backend PostgreSQL·API·권한·transaction 회귀 통과
 - [x] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
 - [x] `W5-G1` 실제 DB → API → Browser E2E 통과
-- [ ] 팀 외 사용성 리뷰 수행 및 승인 피드백 반영 (역할 격리 대체 수행,
-  팀 외 인력 미수행을 조건부 제약으로 기록)
+- [x] 사용성 리뷰 수행 및 승인 피드백 반영 (사용자 승인 역할 격리 대체)
 - [x] QA 전체 기술 검증과 high 결함 수정본 새 SHA·Volume 재검증
 - [x] Release 2 문서·CHANGELOG·알려진 제약 대조
 - [x] `python scripts/validate_docs.py`와 저장소 전체 관련 회귀 통과
-- [x] `W5-G2_CONDITIONAL` Release 2 판정 기록
-- [ ] `PASS`일 때만 `main` PR과 `v0.5.0` tag 후보 지정
+- [x] `W5-G2_PASS` Release 2 판정 기록
+- [x] 코드 검증 SHA `3066acb`와 Gate 문서 commit을 `main` PR·`v0.5.0` tag 후보 기준으로 지정
 
 ## 관련 문서
 

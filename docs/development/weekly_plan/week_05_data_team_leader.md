@@ -2,10 +2,10 @@
 
 ## 계획 정보
 
-- 상태: completed (`2026-08-23`, `W5-G2_CONDITIONAL`). DTL5-0~6,
+- 상태: completed (`2026-08-23`, `W5-G2_PASS`). DTL5-0~6,
   Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`, Deploy 01
-  `DOCKER_ACCEPTANCE_PASS`와 수정본 전체 기술 Gate를 완료했다. 팀 외 독립 인력
-  검증은 역할 격리 대체로 수행한 일정 예외이므로 `PASS`로 승격하지 않는다.
+  `DOCKER_ACCEPTANCE_PASS`와 수정본 전체 Gate를 완료했다. 사용자가 승인한 역할
+  격리 대체 검증을 이번 Gate의 공식 리뷰·QA 결과로 인정한다.
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -20,7 +20,7 @@
   taxonomy v2 사전 후보 6건을 실행일 현재성·canonical region으로 재검증해
   3건만 실제 적재·멱등 재실행하고 새 DB 기준선을 확정했다. Deploy 01 동일
   snapshot `DOCKER_ACCEPTANCE_PASS`와 DTL5-5·6 수정본 회귀까지 통과했고,
-  `W5-G2_CONDITIONAL`로 5주차를 닫았다.
+  `W5-G2_PASS`로 5주차를 닫았다.
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -222,8 +222,8 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
 상태: completed (`2026-08-23`, 역할 격리 대체 검증). DEP5 receipt의 QA 격리
 Volume과 API `8404`를 유지하고 수정 worktree Frontend만 `3404`에 재빌드해
 리뷰·QA·자체 재검증을 완료했다. 수정 commit `3066acb` 뒤 새 독립 Volume과
-`3406`·`8406`에서 같은 snapshot으로 재검증했다. 팀 외 독립 인력은 사용자 일정
-예외에 따라 생략했으며 이 제약은 DTL5-6 조건부 판정에 남긴다.
+`3406`·`8406`에서 같은 snapshot으로 재검증했다. 팀 외 인력 대신 역할·project·
+Volume을 분리한 대체 검증을 사용자가 공식 Gate 증거로 승인했다.
 
 ### 독립 검증
 
@@ -261,10 +261,10 @@ Volume과 API `8404`를 유지하고 수정 worktree Frontend만 `3404`에 재�
 
 ## Slice DTL5-6 - 수정본 재검증과 W5-G2
 
-상태: completed (`2026-08-23`, `W5-G2_CONDITIONAL`). 기술 blocker와 high
-결함은 남지 않았고 6주차 작업을 시작할 수 있다. 다만 팀 외 독립 인력 검증을
-역할 격리 대체한 절차 제약 때문에 `main` PR·`v0.5.0` tag 후보가 되는
-`W5-G2_PASS`는 부여하지 않는다.
+상태: completed (`2026-08-23`, `W5-G2_PASS`). 기술 blocker와 high 결함은
+남지 않았고, 사용자가 승인한 역할 격리 대체 검증을 공식 리뷰·QA로 인정해
+Release 2 Gate를 통과했다. 6주차 작업과 `main` PR·`v0.5.0` 후보 준비를
+시작할 수 있다.
 
 ### 수행 작업
 
@@ -369,12 +369,11 @@ git status --short
 - [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
 - [x] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
 - [x] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
-- [x] DTL5-5 사용성·QA와 결함 triage (사용자 승인 일정 예외로 역할 격리 대체,
-  팀 외 독립 인력 미수행을 알려진 제약으로 기록)
+- [x] DTL5-5 사용성·QA와 결함 triage (사용자 승인 역할 격리 대체 검증)
 - [x] 승인 high 결함 수정 SHA `3066acb`·새 SHA/Volume 재검증
 - [x] 보고서 근거·미실행 검증 대조
-- [x] DTL5-6 문서·비추적·전체 회귀와 `W5-G2_CONDITIONAL` 판정
-- [ ] `PASS`일 때만 `main` PR·`v0.5.0` tag 후보 지정
+- [x] DTL5-6 문서·비추적·전체 회귀와 `W5-G2_PASS` 판정
+- [x] 코드 검증 SHA `3066acb`와 Gate 문서 commit을 `main` PR·`v0.5.0` tag 후보 기준으로 지정
 
 ## 관련 문서
 
