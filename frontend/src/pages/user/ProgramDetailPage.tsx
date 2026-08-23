@@ -13,6 +13,7 @@ import { usePolicyQuery } from '@/hooks/usePoliciesQuery';
 import { isPolicyDetailApiError } from '@/utils/policyDetailErrorToast';
 import {
   formatPolicyEmploymentSummary,
+  getPolicyEligibilityDisplayText,
   splitPolicyTextToBullets,
 } from '@/utils/policyDetailContent';
 import {
@@ -126,6 +127,7 @@ export default function ProgramDetailPage() {
 
   const documentItems = policy.eligibility_summary.documents.map((item) => item.text);
   const contactItems = policy.eligibility_summary.institutional_contacts;
+  const eligibilityDisplayText = getPolicyEligibilityDisplayText(policy);
 
   return (
     <div className="page policy-detail-page">
@@ -142,7 +144,7 @@ export default function ProgramDetailPage() {
       <div className="policy-detail-sections">
         <PolicyDetailSection title="지원 대상 및 자격 요건" id="policy-detail-eligibility">
           <PolicyDetailTextContent
-            text={policy.eligibility_text}
+            text={eligibilityDisplayText}
             fallback="공식 원문에서 확인 가능한 자격 요건 요약이 없습니다."
           />
           <ConditionList

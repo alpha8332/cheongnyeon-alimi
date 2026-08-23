@@ -205,6 +205,10 @@ DB Policy row는 변경하지 않았다.
 | Data 06 인앱 Browser | 정책 `15095`, 한국장학재단·교육·접수 중·공식 원문 연결 통과 |
 | 문서·diff | `Documentation validation passed.`, `git diff --check` 통과 |
 | DTL5-4 Gate | `W5-G1_PASS`, DTL5-5 독립 사용성·QA 시작 가능 |
+| DTL5-5 격리 실제 UI | 검색·상세·추천·북마크·달력·알림·`.ics`, 관리자 PIN·정책·실행·로그·품질·로그아웃 통과 |
+| DTL5-5 결함 | `DTL5-5-FE-01` high: unknown 자격의 `제한 없음 해당없음` 확정 노출을 미확정 안내로 보정, commit SHA 미정 |
+| DTL5-5 Frontend | unit `222 passed`, lint·production build 통과; actual Browser `39 passed / 11 skipped` |
+| DTL5-5 DB·API | Migration `20260810_0006`, 정책 3,273·CollectionRun 61, health 200·무인증 admin 401, 추천 5회 중앙값 `1,563.5 ms` |
 
 DTL5-0·Data 브랜치 사전 회귀는 비교 기준으로만 사용했고, Gate 판정은
 Integration 코드 검증 SHA `1019fda`의 재실행 결과를 사용했다.
@@ -213,7 +217,8 @@ Starlette/httpx deprecation과 Vite native config·500 kB chunk 경고는 기존
 
 ## 남은 작업
 
-1. DTL5-5 팀 외 사용성 리뷰·QA·보고서 대조를 수행한다.
-2. 발견 결함을 심각도·담당·수정 SHA·자체/독립 재검증과 연결한다.
-3. 노출된 로컬 DB 자격증명 교체 확인을 `W5-G2` 선행 조치로 닫는다.
-4. 수정본 전체 회귀·문서·CHANGELOG를 대조한 뒤에만 DTL5-6 `W5-G2`를 판정한다.
+1. `DTL5-5-FE-01` 수정 commit SHA를 결함표에 연결하고 독립 인력 재검증을
+   수행한다. 현재 결과는 동일 운영자의 역할 격리 대체 검증이므로 독립 검증으로
+   과장하지 않는다.
+2. 노출된 로컬 DB 자격증명 교체 확인을 `W5-G2` 선행 조치로 닫는다.
+3. 수정본 전체 회귀·문서·CHANGELOG를 대조한 뒤에만 DTL5-6 `W5-G2`를 판정한다.

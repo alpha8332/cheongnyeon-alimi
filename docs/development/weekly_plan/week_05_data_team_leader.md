@@ -217,6 +217,11 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
 
 ## Slice DTL5-5 - 독립 사용성·QA와 결함 triage
 
+상태: in-progress (`2026-08-23`). DEP5 receipt의 QA 격리 Volume과 API
+`8404`를 유지하고 수정 worktree Frontend만 `3404`에 재빌드해 역할 격리 대체
+리뷰·QA·자체 재검증을 완료했다. 독립 인력 재검증과 수정 commit SHA 연결은
+아직 미완료이므로 DTL5-5를 completed로 닫지 않는다.
+
 ### 독립 검증
 
 - 사용성 리뷰어는 검색·상세·추천·저장·알림·캘린더와 관리자 흐름을 수행
@@ -232,6 +237,24 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
 | low | 기능을 막지 않는 문구·레이아웃·낮은 위험 UX | 근거와 영향이 있을 때만 알려진 제약 후보 |
 
 각 결함은 재현 조건·기대/실제·담당·수정 SHA·자체/독립 재검증을 가진다.
+
+### 2026-08-23 실행 결과
+
+| 결함 | 등급 | 재현·기대/실제 | 담당·수정 | 재검증 |
+| --- | --- | --- | --- | --- |
+| `DTL5-5-FE-01` | high | 정책 `3342`: 자격 coverage는 unknown인데 `제한 없음 해당없음`을 자격처럼 표시. 미확정 안내가 기대값 | Frontend·TL, worktree 수정 완료, commit SHA 미정 | unit 222, lint·build, 실제 UI, actual Browser 39 pass/11 skip 통과; 독립 인력 미수행 |
+
+- 사용자 실제 흐름: `천안 취업` 검색 31건, 천안·27세·취업 추천 7건,
+  북마크·달력·알림, 날짜 정책 `3426`의 활성 `.ics`, 정책 `3342`의 상시
+  `.ics` 비활성 경계를 확인했다.
+- 관리자 실제 흐름: 4자리 PIN 로그인, 정책 3,273건·CollectionRun 61건,
+  구조화 Log·데이터 품질 조회와 로그아웃 보호 route를 확인했다. 수동 실행,
+  rotate·삭제는 이번 읽기 중심 리뷰에서 수행하지 않았다.
+- 실제 API: health 200, 무인증 관리자 API 401, 추천 5회 중앙값
+  `1,563.5 ms`, 모두 11건 응답. DB는 Migration `20260810_0006`, 정책 3,273건,
+  CollectionRun 61건으로 API·화면과 일치했다.
+- 수정은 사용자 표시 helper·상세 소비·단위 테스트에 한정했다. Schema,
+  Migration, API·DB 원본과 acceptance Volume은 변경하지 않았다.
 
 ## Slice DTL5-6 - 수정본 재검증과 W5-G2
 
@@ -320,9 +343,10 @@ git status --short
 - [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
 - [x] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
 - [x] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
-- [ ] DTL5-5 독립 사용성·QA와 결함 triage
-- [ ] 승인 결함 수정·자체 및 독립 재검증
-- [ ] 보고서 근거·미실행 검증 대조
+- [ ] DTL5-5 독립 사용성·QA와 결함 triage (역할 격리 대체 수행 완료,
+  독립 인력 확인 미수행)
+- [ ] 승인 결함 수정 commit SHA·독립 재검증 (worktree 수정·자체 재검증 완료)
+- [x] 보고서 근거·미실행 검증 대조
 - [ ] DTL5-6 문서·비추적·전체 회귀와 `W5-G2` 판정
 - [ ] `PASS`일 때만 `main` PR·`v0.5.0` tag 후보 지정
 

@@ -15,6 +15,9 @@
    분야가 검색어의 취업 의도를 덮었다.
 5. actual Browser 회귀에서 Mock-first 주차 통합 경로가 합성 정책명과 PIN
    `0000`을 그대로 요구해 제품과 무관한 3건 실패를 만들었다.
+6. DTL5-5 상세 리뷰에서 정책 `3342`는 헤더와 구조화 자격에 각각
+   `연령 정보 없음`, `구조화된 조건 미확인`을 표시하면서 지원 자격 본문에는
+   `제한 없음 해당없음`을 확정 정보처럼 노출했다.
 
 ## 실제 원인
 
@@ -29,6 +32,10 @@ retired 중구·동구·서구 rule 때문에 충남 천안 질의까지 미확�
 
 주차 회귀 spec은 파일 주석대로 Mock-first였지만 actual 모드 skip 경계가 세
 Critical Path에 적용되지 않았다.
+
+정책 `3342`의 공개 API 원본은 `eligibility_text="제한 없음 해당없음"`이고
+`eligibility_summary.coverage="unknown"`이었다. 서로 다른 결측 표식을 이어 붙인
+원천 호환 문자열을 상세 UI가 일반 자격 원문과 구분하지 않은 것이 원인이었다.
 
 ## 해결
 
@@ -47,6 +54,10 @@ Critical Path에 적용되지 않았다.
   검색·추천·자격·사용자 서비스 spec과 관리자 API·Browser 검증을 별도로 쓴다.
 - 관리자 대시보드의 `run_id`, `source`, `started_at` 등은 한국어 의미와 API
   필드명을 함께 표시했다.
+- 구조화 자격 coverage가 `unknown`이고 자격 문자열 전체가 `제한 없음`과
+  `해당없음`의 결합 결측 표식인 경우에만 상세 사용자 표시에서 숨기고,
+  `공식 원문에서 확인 가능한 자격 요건 요약이 없습니다.`로 안내한다. API와 DB
+  원본 값, 확인된 자격 원문과 단일 `제한 없음` 표기는 그대로 보존한다.
 
 ## 확인 결과
 
@@ -57,7 +68,9 @@ Critical Path에 적용되지 않았다.
 - `0세 ~ 0세` 사용자 카드 노출 없음
 - actual 전용 5개 spec 최종 실행: 39 pass, 11 명시 skip, 0 fail
 - Mock-first actual 경계 수정 후 주차 spec: 3 pass, 3 명시 skip, 0 fail
-- Frontend unit: 220 pass
+- 정책 `3342`의 결합 결측 표식 노출: `1건 → 0건`, 자격 미확인 안내로 대체
+- DTL5-5 수정본 Frontend unit: 222 pass, lint·production build 통과
+- DTL5-5 actual 5개 spec: 39 pass, 11 명시 skip, 0 fail
 
 최종 전체 회귀 수치는 DEP5 개발 기록에 별도로 고정한다. 이 기록은 commit 전
 수정 worktree에서 실제 재현·수정한 내용이며 새 receipt 검증을 대신하지 않는다.
@@ -67,5 +80,7 @@ Critical Path에 적용되지 않았다.
 - `unknown`은 근거가 없는 범위에만 전파하고, hierarchy로 다른 province임을
   증명할 수 있는 정책을 지역 후보에 남기지 않는다.
 - sentinel과 실제 무제한 조건을 같은 문구·reason code로 합치지 않는다.
+- 자격 coverage가 `unknown`이면 원천의 결측 표식 조합을 실제 지원 자격으로
+  단정하지 않고, 원본 계약과 사용자 표시를 분리한다.
 - 저장 조건보다 사용자가 현재 자연어에 명시한 조건을 우선한다.
 - Mock과 actual spec은 실행 모드를 코드로 분리하고 skip 이유를 결과에 남긴다.

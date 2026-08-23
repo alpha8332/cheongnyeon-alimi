@@ -5,6 +5,7 @@ import { addDaysToYmd } from '../src/utils/calendarMonthGrid.js';
 import { getKstDateString } from '../src/utils/policyDeadline.js';
 import {
   formatPolicyIncomeSummary,
+  getPolicyEligibilityDisplayText,
   getPolicyStatusBadge,
   getPolicyDetailStatusBadges,
   sanitizePolicyText,
@@ -169,5 +170,49 @@ test('formatPolicyIncomeSummary는 eligibility_summary income을 우선한다', 
       }),
     ),
     '중위소득 150% 이하',
+  );
+});
+
+test('getPolicyEligibilityDisplayText는 unknown 자격의 결합 결측 표식을 숨긴다', () => {
+  assert.equal(
+    getPolicyEligibilityDisplayText(
+      createPolicy({
+        eligibility_text: '제한 없음 해당없음',
+        eligibility_summary: {
+          coverage: 'unknown',
+          requirements: [],
+          exclusions: [],
+          preferences: [],
+          documents: [],
+          unknowns: [],
+          institutional_contacts: [],
+        },
+      }),
+    ),
+    '',
+  );
+});
+
+test('getPolicyEligibilityDisplayText는 확인된 원문과 단일 제한 없음 표기를 보존한다', () => {
+  assert.equal(
+    getPolicyEligibilityDisplayText(createPolicy({ eligibility_text: '천안시 거주 청년' })),
+    '천안시 거주 청년',
+  );
+  assert.equal(
+    getPolicyEligibilityDisplayText(
+      createPolicy({
+        eligibility_text: '제한 없음',
+        eligibility_summary: {
+          coverage: 'unknown',
+          requirements: [],
+          exclusions: [],
+          preferences: [],
+          documents: [],
+          unknowns: [],
+          institutional_contacts: [],
+        },
+      }),
+    ),
+    '제한 없음',
   );
 });

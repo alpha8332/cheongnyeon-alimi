@@ -228,6 +228,26 @@ export function formatPolicyEmploymentSummary(policy: PolicyDto): string {
   return '취업·학력 조건 미확인';
 }
 
+/**
+ * 일부 원천은 자격 필드가 비어 있을 때 `제한 없음 해당없음`처럼 서로 다른
+ * 결측 표식을 이어 붙인다. 구조화 자격도 unknown인 경우 이 값을 실제 무제한
+ * 자격으로 노출하지 않는다. 원본 계약은 보존하고 사용자 표시만 보정한다.
+ */
+export function getPolicyEligibilityDisplayText(policy: PolicyDetailDto): string {
+  const eligibilityText = sanitizePolicyText(policy.eligibility_text);
+  if (!eligibilityText || policy.eligibility_summary.coverage !== 'unknown') {
+    return eligibilityText;
+  }
+
+  const compactText = eligibilityText.replace(/\s+/gu, '');
+  const isCombinedMissingMarker =
+    compactText.includes('제한없음') &&
+    compactText.includes('해당없음') &&
+    compactText.replace(/제한없음|해당없음/gu, '').length === 0;
+
+  return isCombinedMissingMarker ? '' : eligibilityText;
+}
+
 export function hasPolicyTextContent(value: string | null | undefined): boolean {
   return sanitizePolicyText(value).length > 0;
 }
