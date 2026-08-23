@@ -3,7 +3,8 @@
 ## 계획 정보
 
 - 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`, Integration 10
-  `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`; Deploy 01 뒤 DTL5-5)
+  `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`, Deploy 01
+  `DOCKER_ACCEPTANCE_PASS`; 다음 DTL5-5)
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -16,8 +17,8 @@
 - 현재 Slice: Integration 10 `RA0_PASS`·`RA1_PASS`·`RA2_PASS`·`RA3_PASS`·
   `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`.
   taxonomy v2 사전 후보 6건을 실행일 현재성·canonical region으로 재검증해
-  3건만 실제 적재·멱등 재실행하고 새 DB 기준선을 확정했다. 다음은 Deploy 01
-  동일 snapshot `DOCKER_ACCEPTANCE_PASS`, 그 뒤 DTL5-5다.
+  3건만 실제 적재·멱등 재실행하고 새 DB 기준선을 확정했다. Deploy 01 동일
+  snapshot `DOCKER_ACCEPTANCE_PASS`까지 통과했으며 다음은 DTL5-5다.
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -318,7 +319,7 @@ git status --short
 - [x] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
 - [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
 - [x] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
-- [ ] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
+- [x] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
 - [ ] DTL5-5 독립 사용성·QA와 결함 triage
 - [ ] 승인 결함 수정·자체 및 독립 재검증
 - [ ] 보고서 근거·미실행 검증 대조

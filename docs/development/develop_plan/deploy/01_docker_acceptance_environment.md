@@ -325,6 +325,22 @@ secret, service/test Volume과 ports를 분리해 개발자 검증을 수행했�
 역할별 격리 재검증 순서를 생략하지 않는다. 상세 수치와 증거는
 [Docker Acceptance 개발 기록](../../development_notes/deploy/docker_acceptance_environment.md)에 남긴다.
 
+### DEP5 최종 인수 결과 (2026-08-23)
+
+- 실행 checkout `51c35b64131bda2d62ece038e6723ede8b69cbe2`와 clean
+  worktree를 receipt로 고정했다.
+- archive SHA-256
+  `3cd3ce62372c7b2670b37d38edb9095199008ec5d2ed084be945db2f0ed26146`을
+  receipt와 대조하고 실제 수신 폴더 추출본을 다시 검증했다.
+- BE·FE·사용성·QA를 `isolated-role-substitute`로 분리해 네 project와 독립
+  Volume에서 모두 `DEP5_ROLE_PASS`를 확인했다.
+- Backend 수동 수집·재시작 보존, QA service/test DB host binding 0과 log secret
+  match 0을 포함해 차단 결함이 없었다.
+
+따라서 `DEP5_PASS`·`DOCKER_ACCEPTANCE_PASS`로 Deploy 01을 닫고 DTL5-5를 연다.
+이 판정은 독립 담당자 네 명의 사람 검토가 아니라 동일 실행자의 격리 역할 대체
+검증이며, DTL5-5 독립 사용성 리뷰·QA를 대신하지 않는다.
+
 ## 비차단 후속 - Docker one-click BAT
 
 `run_docker.bat`은 DEP3~DEP5에서 검증된 명령을 단순화하는 배포 편의 기능이다.

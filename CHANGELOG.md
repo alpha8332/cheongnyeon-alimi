@@ -10,6 +10,10 @@
 
 ### Changed
 
+- 최종 Docker Acceptance commit과 AES-256 package receipt를 고정하고 BE·FE·
+  사용성·QA를 역할별 project·secret·Volume으로 분리해 4건 모두 같은 Git SHA·
+  snapshot·dump·archive hash로 통과시켜 `DOCKER_ACCEPTANCE_PASS`를 확정했다
+  ([개발 기록](docs/development/development_notes/deploy/docker_acceptance_environment.md))
 - review admission v1으로 실행일 현재성·청년 taxonomy·canonical region을 모두
   통과한 지역 정책 3건을 실제 DB에 적재하고 동일 manifest 재실행의 전건
   `unchanged`와 Source별 CollectionRun을 검증했다. post-admission DB에서

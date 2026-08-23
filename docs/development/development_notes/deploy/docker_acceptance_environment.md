@@ -2,9 +2,9 @@
 
 ## 작업 정보
 
-- 상태: in-progress
-- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`
-  (`DOCKER_ACCEPTANCE_PENDING`)
+- 상태: completed
+- 실행 판정: `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`·
+  `DEP5_PASS`·`DOCKER_ACCEPTANCE_PASS`
 - 기록 시작일: `2026-08-19`
 - DEP1 preflight일: `2026-08-20`
 - DEP1 완료일: `2026-08-20`
@@ -14,6 +14,7 @@
 - DEP4 시작일: `2026-08-20`
 - DEP4 완료일: `2026-08-20`
 - DEP5 시작일: `2026-08-20`
+- DEP5 완료일: `2026-08-23`
 - 담당 영역: Team Leader - Integration·Deploy
 - 현재 브랜치: `feature/deploy/docker-acceptance-environment`
 - DEP0 기준 Git SHA: `9d6475d49275a06704ec82651bb9d1fcdcbfd478`
@@ -46,10 +47,10 @@ Integration 10이 확정한 동일 DB snapshot을 Backend·Frontend 담당자와
 | DEP2 | completed | 고정 image·Compose·fail-closed restore 도구·개발 override 구현, `DEP2_PASS` |
 | DEP3 | completed | 실제 3,273건 restore·Migration·health·API·Browser·관리자 PIN·Volume 보존 통과, `DEP3_PASS` |
 | DEP4 | completed | 별도 project clean-room·실패 복구·재시작·test DB/Volume 격리 통과, `DEP4_PASS` |
-| DEP5 | in-progress | 이식 가능한 암호화 package 도구·receipt·역할별 결과·결함 양식 준비, 최종 commit package와 독립 인수 4건 대기 (`DEP5_PACKAGE_READY`) |
+| DEP5 | completed | 최종 commit 암호화 package·receipt와 BE·FE·사용성·QA 격리 역할 대체 인수 4건 일치, `DEP5_PASS`·`DOCKER_ACCEPTANCE_PASS` |
 
-현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`,
-`DOCKER_ACCEPTANCE_PENDING`이다.
+현재 판정은 `DEP0_PASS`·`DEP1_PASS`·`DEP2_PASS`·`DEP3_PASS`·`DEP4_PASS`·
+`DEP5_PASS`·`DOCKER_ACCEPTANCE_PASS`다.
 
 ## 구현 내용
 
@@ -60,8 +61,9 @@ override, snapshot 검증·복원 도구를 구현하고 image build·구성·fa
 실제로 관찰한 실패와 수정·재검증 결과만 기록한다. DEP4에서는 기존 환경을
 유지한 채 별도 project·Volume으로 clean-room과 복구·test 격리를 검증했다.
 DEP5에서는 EFS 원본을 다른 PC로 전달할 수 없는 경계를 확인하고 이식 가능한
-암호화 package와 동일 환경 인수 계약을 구현했다. 실제 수신자 결과는 아직
-수집하지 않았으므로 전체 Gate는 pending으로 유지한다.
+암호화 package와 동일 환경 인수 계약을 구현했다. 최종 receipt SHA의 clean
+checkout과 실제 수신 package 추출본을 역할별 독립 Volume에 복원해 전체 Gate를
+닫았다.
 
 ### DEP0 기준선
 
@@ -643,20 +645,46 @@ worktree image 결과다.
   주차 경로의 actual 실행 3건 실패를 테스트 격리 결함으로 확인해 actual에서는
   이유 있는 skip으로 분리했다. 최종 actual 5-spec은 39 pass/11 skip/0 fail이다.
 
-네 역할은 기능·환경 차단 결함을 모두 수정한 개발자 검증까지 도달했다. 하지만
-최종 commit과 새 package·receipt가 없으므로 이 절을 `DEP5_PASS` 또는
-`DOCKER_ACCEPTANCE_PASS`로 해석하지 않는다. 최종 SHA를 고정한 뒤 동일 검증을
-clean checkout에서 다시 실행해 identity를 대조해야 한다.
+네 역할은 기능·환경 차단 결함을 모두 수정한 개발자 검증까지 도달했다. 이 절은
+최종 receipt 전 사전 검증 기록이며, 아래 최종 인수 결과가 실행 SHA와 package
+identity를 다시 고정한다.
+
+## 2026-08-23 최종 receipt 및 격리 역할 인수
+
+실행 코드 commit `51c35b64131bda2d62ece038e6723ede8b69cbe2`의 clean
+checkout에서 AES-256 encrypted-header package를 만들고, workspace 밖 새 수신
+폴더에 실제로 압축 해제했다. archive와 추출된 dump·manifest를 receipt와 다시
+대조했다.
+
+| 항목 | 최종 값 |
+| --- | --- |
+| receipt status | `DEP5_TRANSFER_PACKAGE_VERIFIED` |
+| snapshot | `acceptance-20260819-75510a9` |
+| dump SHA-256 | `46810a6ac6082680d2fae17ab98721597ec4b5e23ec667b3d086b5a4e9739a8b` |
+| archive SHA-256 | `3cd3ce62372c7b2670b37d38edb9095199008ec5d2ed084be945db2f0ed26146` |
+| baseline | Policy 3,273 / CollectionRun 61 / Alembic `20260810_0006` |
+
+외부 담당자 네 명의 회신을 기다리지 않고 한 실행자가 역할을 대체했으므로 결과
+형태는 `isolated-role-substitute`다. 독립 사람 검토로 표현하지 않았으며 project,
+secret, service DB Volume, QA test DB Volume과 host port는 역할별로 분리했다.
+
+| 역할 | Compose project | 복원·actual 결과 | 추가 경계 |
+| --- | --- | --- | --- |
+| Backend | `cheongnyeon-alimi-d5f-be-51c35b6` | 3,273/61, health·인증·검색·추천 통과 | keyless 수동 수집 `succeeded`, Run 62, 재시작 뒤 3,273/62 보존 |
+| Frontend | `cheongnyeon-alimi-d5f-fe-51c35b6` | 3,273/61, actual UI·관리자 로그인·API 소비 통과 | production build 및 UI route 200 |
+| 사용성 | `cheongnyeon-alimi-d5f-ux-51c35b6` | 3,273/61, 자연어 검색·추천·홈·관리자 진입 통과 | 사전 actual Browser 결함 수정 결과와 같은 응답 확인 |
+| QA | `cheongnyeon-alimi-d5f-qa-51c35b6` | 3,273/61, 인증 실패 경계·전체 재시작 통과 | service/test DB host binding 0, log secret match 0 |
+
+네 결과의 Git SHA·snapshot version·dump hash·archive hash unique count는 각각
+1이고 모두 `DEP5_ROLE_PASS`다. 역할 서비스는 `docker compose stop`으로 종료해
+13개 역할별 Volume을 보존했으며, 기존 `cheongnyeon-alimi-acceptance` 세 서비스는
+변경하지 않았다. 따라서 Deploy 01을 `DEP5_PASS`·`DOCKER_ACCEPTANCE_PASS`로
+판정하고 DTL5-5 착수를 승인한다.
 
 ## 남은 작업
 
-1. 현재 DEP5 변경을 commit하여 최종 실행 Git SHA를 고정한다.
-2. clean checkout에서 이식 가능한 암호화 package·receipt를 생성하고 archive
-   hash를 재확인한다.
-3. package를 BE·FE 담당자와 사용성 리뷰어·QA에게 인계하되 passphrase는 별도
-   승인 채널로 전달한다.
-4. 네 역할의 독립 결과를 대조하고 모든 근거가 일치할 때만
-   `DOCKER_ACCEPTANCE_PASS`를 기록하여 DTL5-5를 연다.
+Deploy 01의 차단 작업은 없다. 다음 단계는 DTL5-5의 독립 사용성 리뷰·QA와 결함
+triage이며, 위 격리 역할 대체 검증을 독립 사람 리뷰로 재사용하지 않는다.
 
 `run_docker.bat`은 `DOCKER_ACCEPTANCE_PASS` 이후 별도 backlog에서 구현한다.
 Deploy 01 완료와 DTL5-5 시작을 막는 항목은 아니다.

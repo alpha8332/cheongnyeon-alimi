@@ -11,6 +11,14 @@ PostgreSQL snapshot을 각자 격리된 Docker Volume에 복원하고 결과를 
 각 역할의 독립 실행 기록에서 Git SHA·snapshot version·dump hash가 모두 일치해야
 Gate를 닫는다.
 
+2026-08-23 최종 실행 receipt는 Git
+`51c35b64131bda2d62ece038e6723ede8b69cbe2`, archive SHA-256
+`3cd3ce62372c7b2670b37d38edb9095199008ec5d2ed084be945db2f0ed26146`이다.
+BE·FE·사용성·QA 네 격리 역할 대체 결과가 같은 identity로
+`DEP5_ROLE_PASS`를 반환해 `DEP5_PASS`·`DOCKER_ACCEPTANCE_PASS`로 판정했다.
+독립 사람 리뷰가 아니라는 제한은 개발 기록에 명시하며 DTL5-5에서 별도로
+검증한다.
+
 ## 고정 데이터 계약
 
 | 항목 | 승인 값 |
@@ -23,8 +31,8 @@ Gate를 닫는다.
 | Alembic revision | `20260810_0006` |
 | Policy / CollectionRun | `3273` / `61` |
 
-최종 Git SHA는 이 문서를 포함한 DEP5 commit 뒤 receipt에서 확정한다. 위 snapshot
-Git SHA는 데이터 생성 lineage이며 실행 checkout SHA를 대신하지 않는다.
+최종 실행 Git SHA는 위 receipt 값이다. 위 snapshot Git SHA는 데이터 생성
+lineage이며 실행 checkout SHA를 대신하지 않는다.
 
 ## 전달물
 
