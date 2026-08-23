@@ -3,10 +3,10 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, or_
 from sqlalchemy.orm import Session
 
-from app.models.policy import Policy
+from app.models.policy import utc_now
+from app.repositories.policy_lifecycle import mark_missing_policies_inactive
 from app.services.seed_importer import ImportResult, import_programs
 from app.services.aggregator_baseline import load_aggregator_baseline
 from collectors.cross_source_duplicate import (
@@ -41,7 +41,7 @@ class RuntimeImportResult:
     replay: RuntimeReplayResult
     database: ImportResult
     decision_manifest_id: str | None = None
-    pruned: int = 0
+    inactivated: int = 0
 
 
 def import_runtime_raw(
@@ -97,7 +97,7 @@ def import_runtime_raw(
         dry_run=dry_run,
         normalization_issues=normalization_issues,
     )
-    pruned = 0
+    inactivated = 0
     if checkpoint_root is not None and source_id in REGIONAL_DUPLICATE_SOURCE_IDS:
         checkpoint = _finalize_regional_checkpoint(
             replay,
@@ -105,46 +105,89 @@ def import_runtime_raw(
             redecision_audit=regional_redecision_audit,
             persist=not dry_run,
         )
-        if not dry_run:
-            accepted_ids = {
-                external_id
-                for external_id, outcome in checkpoint.decisions
-                if outcome is RegionalOutcome.ACCEPTED
-            }
-            pruned = _prune_regional_policies(
+        if not dry_run and _regional_lifecycle_is_complete(
+            checkpoint,
+            replay=replay,
+            database=database,
+        ):
+            inactivated = _inactivate_missing_policies(
                 db,
                 source_id=source_id,
-                accepted_ids=accepted_ids,
+                seen_external_ids=set(checkpoint.discovered_ids),
             )
+    elif not dry_run and _snapshot_lifecycle_is_complete(
+        replay,
+        database=database,
+    ):
+        inactivated = _inactivate_missing_policies(
+            db,
+            source_id=source_id,
+            seen_external_ids=set(replay.observed_external_ids),
+        )
     return RuntimeImportResult(
         replay=replay,
         database=database,
         decision_manifest_id=decision_manifest_id,
-        pruned=pruned,
+        inactivated=inactivated,
     )
 
 
-def _prune_regional_policies(
-    db: Session, *, source_id: str, accepted_ids: set[str]
+def _inactivate_missing_policies(
+    db: Session, *, source_id: str, seen_external_ids: set[str]
 ) -> int:
-    """Make a completed regional Source projection match accepted decisions."""
+    """Commit a soft-deactivation after the caller proves full coverage."""
 
-    statement = delete(Policy).where(Policy.source_id == source_id)
-    if accepted_ids:
-        statement = statement.where(
-            or_(
-                Policy.external_id.is_(None),
-                Policy.external_id.not_in(accepted_ids),
-            )
-        )
     try:
-        result = db.execute(statement)
-        pruned = result.rowcount or 0
+        count = mark_missing_policies_inactive(
+            db,
+            source_id=source_id,
+            seen_external_ids=seen_external_ids,
+            inactive_at=utc_now(),
+        )
         db.commit()
     except Exception:
         db.rollback()
         raise
-    return pruned
+    return count
+
+
+def _snapshot_lifecycle_is_complete(
+    replay: RuntimeReplayResult,
+    *,
+    database: ImportResult,
+) -> bool:
+    return (
+        replay.source_snapshot_complete
+        and replay.invalid_count == 0
+        and database.committed
+        and not (
+            database.skipped
+            or database.rejected
+            or database.failed
+        )
+    )
+
+
+def _regional_lifecycle_is_complete(
+    checkpoint: RegionalBatchCheckpoint,
+    *,
+    replay: RuntimeReplayResult,
+    database: ImportResult,
+) -> bool:
+    return (
+        checkpoint.complete
+        and all(
+            outcome is not RegionalOutcome.FAILED
+            for _, outcome in checkpoint.decisions
+        )
+        and replay.invalid_count == 0
+        and database.committed
+        and not (
+            database.skipped
+            or database.rejected
+            or database.failed
+        )
+    )
 
 
 def _finalize_regional_checkpoint(

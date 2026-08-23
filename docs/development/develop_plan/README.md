@@ -41,7 +41,7 @@
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 | Integration 10 | Review Admission and Deploy Handoff | [개발 계획](integration/10_review_admission_docker_acceptance.md) | completed |
 | Deploy 01 | Docker Acceptance Environment | [개발 계획](deploy/01_docker_acceptance_environment.md) | completed |
-| Deploy 02 | Production Data Refresh and Delivery | [개발 계획](deploy/02_production_data_refresh_delivery.md) | in-progress (`W6-P0_DATASET_CONTRACT_PASS`) |
+| Deploy 02 | Production Data Refresh and Delivery | [개발 계획](deploy/02_production_data_refresh_delivery.md) | in-progress (`W6-P1_LIFECYCLE_PASS`) |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.

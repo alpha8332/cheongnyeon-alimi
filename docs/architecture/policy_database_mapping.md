@@ -5,7 +5,7 @@
 - 상태: 현재 구현 기준
 - 입력 계약: `NormalizedProgram` 1.0.0·1.1.0·1.2.0
 - 저장 모델: Backend `Policy`, 행정구역·정책 지역 관계·검색 projection 모델
-- Migration head: `20260810_0006`
+- Migration head: `20260824_0007`
 
 이 문서는 Data의 canonical JSON, Backend importer, PostgreSQL `policies`
 테이블과 공개 Policy API 사이의 현재 필드 매핑을 정의한다. 논리 필드의 의미와
@@ -24,7 +24,9 @@
 - `provenance`는 DB에는 보존하지만 일반 사용자 Policy API에는 노출하지
   않는다.
 - 저장 계층이 생성하는 `id`, `created_at`, `updated_at`은 Normalized 입력
-  계약에는 없고 공개 Policy DTO에 추가된다.
+  계약에는 없고 공개 Policy DTO에 추가된다. `last_seen_at`,
+  `last_verified_at`, `inactive_at`은 내부 생명주기 필드이며 관리자 API에서만
+  조회한다.
 
 ## 37개 필드 매핑
 
@@ -116,6 +118,9 @@ index가 있다. 기존 Repository는 categories·regions의 exact membership
 | `id` | auto-increment integer | DB identity | 노출 |
 | `created_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
 | `updated_at` | `timestamptz` | Importer write instant, ORM·DB default fallback | 노출 |
+| `last_seen_at` | `timestamptz` | Source observation `collected_at`의 단조 최댓값 | 일반 API 비노출·관리자 노출 |
+| `last_verified_at` | `timestamptz` | accepted import 검증 시각의 단조 최댓값 | 일반 API 비노출·관리자 노출 |
+| `inactive_at` | nullable `timestamptz` | 완전 수집의 미발견 시각, 재등장 시 `NULL` | 일반 API 비노출·관리자 노출 |
 
 Importer는 최초 insert에 하나의 UTC aware write instant를 생성해 두 필드에
 같이 전달한다. ORM과 Migration의 `ck_policies_timestamp_order`는
@@ -127,6 +132,12 @@ insert에서는 ORM Python default와 DB `CURRENT_TIMESTAMP` server default가
 [Backend Policy Runtime Safety 계획](../development/develop_plan/backend/03_policy_runtime_safety.md)과
 [개발 기록](../development/development_notes/backend/policy_runtime_safety.md)에
 기록한다.
+
+Migration `20260824_0007`은 기존 행의 `collected_at`, `updated_at`으로 두
+생명주기 시각을 backfill하고 `inactive_at`은 추정하지 않는다. 공개 조회는
+inactive 행과 KST 기준 종료일 경과 행을 제외하고, 관리자 조회는 이력을
+보존한다. 완전·부분·실패 수집과 재등장 규칙은
+[정책 생명주기 계약](../data/policy_lifecycle.md)을 따른다.
 
 invalid는 DB enum에는 존재하지만 importer admission에서 거부되므로 정상
 Policy API에 도달하지 않는다. partial은 저장하며

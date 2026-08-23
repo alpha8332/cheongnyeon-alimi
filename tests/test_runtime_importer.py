@@ -14,8 +14,8 @@ for import_root in (ROOT, BACKEND_ROOT):
 
 from app.models.policy import Policy
 from app.services.runtime_importer import (
+    _inactivate_missing_policies,
     _matches_redecision_audit,
-    _prune_regional_policies,
 )
 from collectors.regional_expansion import RegionalOutcome
 
@@ -44,7 +44,7 @@ def _policy(source_id: str, external_id: str | None) -> Policy:
     )
 
 
-def test_prune_regional_policies_keeps_only_accepted_projection() -> None:
+def test_complete_source_soft_deactivates_only_missing_projection() -> None:
     engine = create_engine("sqlite+pysqlite:///:memory:")
     Policy.__table__.create(engine)
     with Session(engine) as db:
@@ -58,37 +58,44 @@ def test_prune_regional_policies_keeps_only_accepted_projection() -> None:
         )
         db.commit()
 
-        pruned = _prune_regional_policies(
+        inactivated = _inactivate_missing_policies(
             db,
             source_id="regional-busan-youth-platform",
-            accepted_ids={"accepted"},
+            seen_external_ids={"accepted"},
         )
 
-        assert pruned == 2
+        assert inactivated == 2
         identities = db.execute(
-            select(Policy.source_id, Policy.external_id).order_by(Policy.id)
+            select(
+                Policy.source_id,
+                Policy.external_id,
+                Policy.inactive_at,
+            ).order_by(Policy.id)
         ).all()
-        assert identities == [
-            ("regional-busan-youth-platform", "accepted"),
-            ("youthcenter-api", "unrelated"),
-        ]
+        assert len(identities) == 4
+        assert identities[0].inactive_at is None
+        assert identities[1].inactive_at is not None
+        assert identities[2].inactive_at is not None
+        assert identities[3].inactive_at is None
 
 
-def test_prune_regional_policies_removes_source_when_none_are_accepted() -> None:
+def test_complete_empty_source_preserves_history_as_inactive() -> None:
     engine = create_engine("sqlite+pysqlite:///:memory:")
     Policy.__table__.create(engine)
     with Session(engine) as db:
         db.add(_policy("regional-jeonbuk-youth-platform", "review"))
         db.commit()
 
-        pruned = _prune_regional_policies(
+        inactivated = _inactivate_missing_policies(
             db,
             source_id="regional-jeonbuk-youth-platform",
-            accepted_ids=set(),
+            seen_external_ids=set(),
         )
 
-        assert pruned == 1
-        assert db.scalar(select(Policy.id)) is None
+        assert inactivated == 1
+        policy = db.scalar(select(Policy))
+        assert policy is not None
+        assert policy.inactive_at is not None
 
 
 def test_redecision_audit_must_match_the_exact_source_delta() -> None:

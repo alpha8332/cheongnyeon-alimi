@@ -3,18 +3,18 @@
 ## 작업 정보
 
 - 상태: in-progress
-- 작업일: `2026-08-23`
+- 작업일: `2026-08-24`
 - 담당 영역: Data, Team Leader - Integration·Deploy
 - 계획: [Deploy 02 계획](../../develop_plan/deploy/02_production_data_refresh_delivery.md)
 - 주차 계획: [6주차 Final Release](../../weekly_plan/week_06_final_release.md)
 - 시작 SHA: `f838d4191cb5cc33c324d3e946c7a12ed8a56b1b`
-- 현재 Gate: `W6-P0_DATASET_CONTRACT_PASS`
+- 현재 Gate: `W6-P1_LIFECYCLE_PASS`
 
 ## 목적
 
 API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap 경계를
-확정하고, Source·field allowlist와 versioned manifest를 실행 가능한 계약으로
-구현한다.
+확정하고, Source·field allowlist·versioned manifest와 정책 생명주기를 실행
+가능한 계약으로 구현한다.
 
 ## Forest 범위
 
@@ -30,7 +30,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | Slice | 상태 | 결과 |
 | --- | --- | --- |
 | W6-P0 | completed | default-deny 계약, 451건 actual artifact·hash 재검증, `W6-P0_DATASET_CONTRACT_PASS` |
-| W6-P1 | pending | 정책 생명주기 |
+| W6-P1 | completed | 3 timestamp, soft-deactivation, 마감 기본 제외, `W6-P1_LIFECYCLE_PASS` |
 | W6-P2 | pending | Celery·Redis 중앙 수집 |
 | W6-P3 | pending | clone/ZIP 최초 실행 |
 | W6-P4 | pending | Production Compose·CI/CD |
@@ -68,6 +68,21 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
   `28c36be54ee859b63a496e2cea295d58ab88eb438ef1ffcce0b647198cf8ccb3`다.
 - 별도 검증 모드가 같은 version·451건·SHA-256을 재확인했다.
 
+### 정책 생명주기
+
+- `20260824_0007` Migration으로 `last_seen_at`, `last_verified_at`,
+  `inactive_at`과 조회 index·무결성 constraint를 추가했다.
+- 기존 3,273건은 `collected_at`, `updated_at`을 기준으로 전부 backfill했고
+  기존 행을 임의 inactive 처리하지 않았다.
+- 사용자 목록·상세·자연어 검색·추천·공개 dataset builder가 같은
+  `inactive_at IS NULL`·KST 종료일 predicate를 사용한다.
+- 기존 지역 projection의 물리 `DELETE`를 soft-deactivation으로 교체했다.
+- 완전 snapshot 전체 재생, invalid 0건, DB commit 성공일 때만 미발견
+  identity를 inactive 처리한다. 일부 limit·invalid·rejected·failed와 지역
+  `FAILED` 결정은 기존 상태를 보존한다.
+- 동일 identity 재등장 시 생명주기 시각을 단조 증가시키고 `inactive_at`을
+  `null`로 복구한다.
+
 ## 주요 변경 파일
 
 - `data/schema/public_policy_dataset_sources.schema.json`
@@ -78,6 +93,11 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - `tests/test_public_bootstrap_dataset.py`
 - `docs/data/public_policy_dataset.md`
 - `.gitignore`
+- `backend/alembic/versions/20260824_0007_policy_lifecycle.py`
+- `backend/app/repositories/policy_lifecycle.py`
+- `backend/app/models/policy.py`
+- `backend/app/services/runtime_importer.py`
+- `docs/data/policy_lifecycle.md`
 
 ## 설계 결정
 
@@ -117,13 +137,17 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | 개인정보 보수 경계 | 10건 제외, 발행 artifact match count 0 |
 | actual artifact | 451건, 1,247,899 bytes |
 | artifact 재검증 | version·row·SHA-256 일치 |
+| 전체 pytest | 548 passed, 27 skipped, 241 subtests passed |
+| 실제 PostgreSQL 전용 | 18 passed, upgrade·backfill·downgrade·upsert 포함 |
+| Acceptance Migration | `20260810_0006 → 20260824_0007`, 3,273건 보존 |
+| lifecycle backfill | `last_seen_at`·`last_verified_at` 누락 0건 |
+| 마감 기본 제외 | 1,093건 제외, 공개 후보·actual API 2,180건 |
+| 마감 상세 actual | 공개 상세 `404`, DB 행 보존 |
 
 ## 남은 작업
 
-1. W6-P1에서 lifecycle Migration과 complete·partial·failed inactive 경계를
-   구현한다.
-2. W6-P2에서 실제 Celery worker가 성공한 완전 수집만 dataset 후보로 넘긴다.
-3. W6-P3·P4에서 pointer, GitHub Release upload와 promotion·rollback을
+1. W6-P2에서 실제 Celery worker가 성공한 완전 수집만 dataset 후보로 넘긴다.
+2. W6-P3·P4에서 pointer, GitHub Release upload와 promotion·rollback을
    구현하고 새 Git SHA로 artifact를 재생성한다.
-4. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
+3. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.

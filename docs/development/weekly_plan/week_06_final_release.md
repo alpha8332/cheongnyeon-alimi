@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`2026-08-23`, `W6-P0_DATASET_CONTRACT_PASS`)
+- 상태: in-progress (`2026-08-24`, `W6-P1_LIFECYCLE_PASS`)
 - 대상 Release: `v1.0.0`
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -161,7 +161,8 @@ dataset version으로 합친다.
 ## 완료 체크리스트
 
 - [x] `W6-P0_DATASET_CONTRACT_PASS` (복지로 451건 actual artifact·manifest hash)
-- [ ] `W6-P1_LIFECYCLE_PASS`
+- [x] `W6-P1_LIFECYCLE_PASS` (3,273건 backfill, 마감 1,093건 제외,
+  PostgreSQL 18건·전체 548건 회귀)
 - [ ] `W6-P2_QUEUE_PASS`
 - [ ] `W6-P3_BOOTSTRAP_PASS`
 - [ ] `W6-P4_PRODUCTION_PASS`

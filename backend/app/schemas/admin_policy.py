@@ -24,6 +24,9 @@ class AdminPolicyItem(BaseModel):
     application_start: Optional[date] = None
     application_end: Optional[date] = None
     collected_at: datetime
+    last_seen_at: datetime
+    last_verified_at: datetime
+    inactive_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

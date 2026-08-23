@@ -15,7 +15,8 @@ COLLECTION_RUN_REVISION = "20260730_0002"
 TIMESTAMP_REVISION = "20260730_0003"
 SEARCH_REVISION = "20260803_0004"
 QUALITY_REVISION = "20260810_0005"
-HEAD_REVISION = "20260810_0006"
+ELIGIBILITY_REVISION = "20260810_0006"
+HEAD_REVISION = "20260824_0007"
 
 
 def alembic_config() -> Config:
@@ -53,6 +54,10 @@ def test_collection_quality_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == ELIGIBILITY_REVISION
+    )
+    assert (
+        scripts.get_revision(ELIGIBILITY_REVISION).down_revision
         == QUALITY_REVISION
     )
     assert (
@@ -86,6 +91,15 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
     assert "ADD COLUMN life_stages JSONB" in sql
     assert "ADD COLUMN target_groups JSONB" in sql
     assert "ADD COLUMN eligibility_summary JSONB" in sql
+    assert "ADD COLUMN last_seen_at TIMESTAMP WITH TIME ZONE" in sql
+    assert "ADD COLUMN last_verified_at TIMESTAMP WITH TIME ZONE" in sql
+    assert "ADD COLUMN inactive_at TIMESTAMP WITH TIME ZONE" in sql
+    assert "last_seen_at = collected_at" in sql
+    assert "last_verified_at = updated_at" in sql
+    assert "SET CONSTRAINTS ALL IMMEDIATE" in sql
+    assert "CONSTRAINT ck_policies_inactive_after_last_seen CHECK" in sql
+    assert "CREATE INDEX ix_policies_application_end" in sql
+    assert "CREATE INDEX ix_policies_inactive_at" in sql
     assert "external_codes JSONB" in sql
     assert "TIMESTAMP WITH TIME ZONE" in sql
     assert "CREATE TYPE policy_application_schedule AS ENUM" in sql
@@ -119,6 +133,9 @@ def test_upgrade_sql_matches_postgresql_policy_contract():
                 "target_groups",
                 "coverage_scope",
                 "eligibility_summary",
+                "last_seen_at",
+                "last_verified_at",
+                "inactive_at",
             }:
             assert f"ADD COLUMN {column.name} " in sql
         else:
@@ -152,6 +169,9 @@ def test_downgrade_sql_removes_table_indexes_and_enum_types():
     assert "DROP COLUMN rejected_count" in sql
     assert "DROP COLUMN duplicate_count" in sql
     assert "DROP COLUMN eligibility_summary" in sql
+    assert "DROP COLUMN inactive_at" in sql
+    assert "DROP COLUMN last_verified_at" in sql
+    assert "DROP COLUMN last_seen_at" in sql
     assert "DROP TABLE collection_runs" in sql
     assert "DROP CONSTRAINT ck_policies_timestamp_order" in sql
     assert "DROP TYPE collection_run_status" in sql

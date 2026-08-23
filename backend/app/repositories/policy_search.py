@@ -10,6 +10,7 @@ from app.models.administrative_region import (
     AdministrativeRegionAlias,
 )
 from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
+from app.repositories.policy_lifecycle import public_policy_predicates
 
 
 REGION_RULE_FIELDS = (
@@ -297,7 +298,10 @@ class PolicySearchRepository:
 
         # 2. 기본 정책 쿼리 생성
         from sqlalchemy import and_, or_
-        query = select(Policy).where(Policy.data_quality_status != "invalid")
+        query = select(Policy).where(
+            Policy.data_quality_status != "invalid",
+            *public_policy_predicates(),
+        )
         if not include_partial:
             query = query.where(Policy.data_quality_status == "valid")
 

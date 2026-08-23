@@ -60,6 +60,8 @@
   원칙
 - [공개 정책 bootstrap dataset 계약](data/public_policy_dataset.md):
   재배포 Source·field allowlist, versioned manifest·hash와 공개 Runtime 경계
+- [정책 생명주기 계약](data/policy_lifecycle.md): 관측·검증·inactive 시각,
+  마감 즉시 제외와 완전 수집에서만 허용하는 soft-deactivation 경계
 - [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
   versioned 지역·계층·별칭·유효기간 Seed와 exact code 해석 경계
 - [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터

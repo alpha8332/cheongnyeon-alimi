@@ -20,6 +20,7 @@
 - [데이터 정규화 규칙](normalization_rules.md)
 - [데이터 수집 정책](collection_policy.md)
 - [공개 정책 bootstrap dataset 계약](public_policy_dataset.md)
+- [정책 생명주기 계약](policy_lifecycle.md)
 - [Fixture와 Seed 계약](fixture_seed_contract.md)
 - [행정구역 기준정보](administrative_regions.md)
 - [Release 1 실데이터 품질 Profile](release_dataset_profile.md)

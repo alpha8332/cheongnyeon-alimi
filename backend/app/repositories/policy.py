@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
 from app.models.policy import Policy
+from app.repositories.policy_lifecycle import public_policy_predicates
 
 
 @dataclass(frozen=True)
@@ -47,7 +48,8 @@ class PolicyRepository:
         application_status: str | None = None,
     ) -> PolicyPage:
         predicates: list[ColumnElement[bool]] = [
-            Policy.data_quality_status.in_(quality_statuses)
+            Policy.data_quality_status.in_(quality_statuses),
+            *public_policy_predicates(),
         ]
         if category is not None:
             predicates.append(
@@ -95,5 +97,6 @@ class PolicyRepository:
             select(Policy).where(
                 Policy.id == policy_id,
                 Policy.data_quality_status.in_(quality_statuses),
+                *public_policy_predicates(),
             )
         )

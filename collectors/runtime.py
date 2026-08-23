@@ -125,6 +125,8 @@ class RuntimeReplayResult:
     duplicate_baseline: dict[str, Any] | None = None
     duplicate_manifest: CrossSourceDecisionManifest | None = None
     supplemental_decisions: tuple[dict[str, Any], ...] = ()
+    observed_external_ids: tuple[str, ...] = ()
+    source_snapshot_complete: bool = False
 
     @property
     def accepted_count(self) -> int:
@@ -346,6 +348,12 @@ def replay_runtime_raw(
         ),
         duplicate_manifest=duplicate_manifest,
         supplemental_decisions=supplemental_decisions,
+        observed_external_ids=tuple(
+            sorted({policy.external_id for policy in extracted})
+        ),
+        source_snapshot_complete=(
+            manifest is not None and limit >= manifest.item_count
+        ),
     )
 
 

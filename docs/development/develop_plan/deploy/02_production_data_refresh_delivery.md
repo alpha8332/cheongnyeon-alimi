@@ -5,7 +5,7 @@
 - 번호: Deploy 02
 - 담당 영역: Team Leader - Integration·Deploy
 - 상태: in-progress
-- 현재 Gate: `W6-P0_DATASET_CONTRACT_PASS` (`2026-08-23`)
+- 현재 Gate: `W6-P1_LIFECYCLE_PASS` (`2026-08-24`)
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
@@ -99,6 +99,10 @@ artifact와 manifest hash를 생성·재검증했다.
 - 사용자가 API key 없이 bootstrap할 수 있는 경계가 문서화됨
 
 ### W6-P1 - 정책 생명주기
+
+상태: completed (`2026-08-24`, `W6-P1_LIFECYCLE_PASS`). 기존 3,273건을
+생명주기 timestamp로 backfill하고 마감 1,093건을 기본 공개 조회에서 제외했다.
+완전 수집만 soft-deactivation을 허용하며 부분·실패에서는 기존 상태를 보존한다.
 
 #### 목적
 

@@ -53,7 +53,8 @@ API key와 작성자 로컬 PostgreSQL이 없는 사용자도 공개 재배포�
 
 다음 DB·Runtime 내용은 포함하지 않는다.
 
-- PostgreSQL `id`, `created_at`, `updated_at`
+- PostgreSQL `id`, `created_at`, `updated_at`, `last_seen_at`,
+  `last_verified_at`, `inactive_at`
 - PostgreSQL dump, Volume과 Migration 내부 상태
 - Raw API/XML/HTML payload와 첨부파일
 - API key, token과 비밀 query parameter
@@ -88,6 +89,9 @@ latest pointer 계약은
 
 W6-P4에서 다음 구조로 발행한다. W6-P0의 Runtime proof artifact는 아직 외부로
 발행하지 않는다.
+
+W6-P1부터 artifact 후보 query에도 사용자 API와 같은 lifecycle 경계를 적용해
+inactive 정책과 Asia/Seoul 기준 종료일 경과 정책을 발행하지 않는다.
 
 - GitHub Release immutable tag:
   `dataset-<public-bootstrap-YYYYMMDD-git-sha>`

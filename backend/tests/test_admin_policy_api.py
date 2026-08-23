@@ -58,6 +58,9 @@ def test_get_admin_policies_success(admin_token):
         assert "source_id" in first
         assert "title" in first
         assert "data_quality_status" in first
+        assert "last_seen_at" in first
+        assert "last_verified_at" in first
+        assert "inactive_at" in first
 
 
 def test_get_admin_policies_allowlist_sort_and_limit(admin_token):

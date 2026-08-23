@@ -52,6 +52,9 @@
       "application_start": "2026-01-01",
       "application_end": "2026-12-31",
       "collected_at": "2026-07-26T06:00:00Z",
+      "last_seen_at": "2026-07-26T06:00:00Z",
+      "last_verified_at": "2026-08-24T00:00:00Z",
+      "inactive_at": null,
       "created_at": "2026-08-01T00:00:00Z",
       "updated_at": "2026-08-01T00:00:00Z"
     }
@@ -98,6 +101,9 @@
   "application_start": "2026-01-01",
   "application_end": "2026-12-31",
   "collected_at": "2026-07-26T06:00:00Z",
+  "last_seen_at": "2026-07-26T06:00:00Z",
+  "last_verified_at": "2026-08-24T00:00:00Z",
+  "inactive_at": null,
   "created_at": "2026-08-01T00:00:00Z",
   "updated_at": "2026-08-01T00:00:00Z"
 }

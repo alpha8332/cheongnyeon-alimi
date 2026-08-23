@@ -28,6 +28,9 @@ from sqlalchemy.orm import Session  # noqa: E402
 from app.core.database import create_db_engine  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.models.policy_search import PolicyRegionRule  # noqa: E402
+from app.repositories.policy_lifecycle import (  # noqa: E402
+    public_policy_predicates,
+)
 from collectors.normalized import (  # noqa: E402
     NormalizedProgram,
     NormalizedProgramValidationError,
@@ -308,6 +311,7 @@ def load_records(
                 .where(
                     Policy.source_id.in_(allowed_source_ids),
                     Policy.data_quality_status.in_(("valid", "partial")),
+                    *public_policy_predicates(),
                 )
                 .order_by(Policy.source_id, Policy.external_id, Policy.id)
             )

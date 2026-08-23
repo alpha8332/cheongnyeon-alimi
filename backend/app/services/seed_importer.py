@@ -26,10 +26,13 @@ EXTERNAL_ID_REQUIRED_SOURCES = frozenset(
 )
 IDENTITY_FIELDS = frozenset({"source_id", "external_id"})
 IMMUTABLE_FIELDS = frozenset({"id", "created_at"})
+LIFECYCLE_FIELDS = frozenset(
+    {"last_seen_at", "last_verified_at", "inactive_at"}
+)
 POLICY_WRITE_FIELDS = tuple(
     column.name
     for column in Policy.__table__.columns
-    if column.name not in IMMUTABLE_FIELDS
+    if column.name not in IMMUTABLE_FIELDS | LIFECYCLE_FIELDS
 )
 MUTABLE_FIELDS = tuple(
     field
@@ -134,6 +137,7 @@ def _identity_issue(
 
 def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
     write_instant = utc_now()
+    collected_at = parse_datetime(item["collected_at"])
     return {
         "schema_version": item["schema_version"],
         "source_id": _nonempty_string(item.get("source_id")),
@@ -168,11 +172,14 @@ def _policy_values(item: Mapping[str, Any]) -> dict[str, Any]:
         "preferred_conditions": item["preferred_conditions"],
         "excluded_conditions": item["excluded_conditions"],
         "source_url": item["source_url"],
-        "collected_at": parse_datetime(item["collected_at"]),
+        "collected_at": collected_at,
         "provenance": item["provenance"],
         "data_quality_status": item["data_quality_status"],
         "created_at": write_instant,
         "updated_at": write_instant,
+        "last_seen_at": collected_at,
+        "last_verified_at": write_instant,
+        "inactive_at": None,
     }
 
 
@@ -188,15 +195,17 @@ def _postgresql_upsert(
         )
         .with_for_update()
     ).scalar_one_or_none()
-    if existing is not None and all(
+    business_unchanged = existing is not None and all(
         _business_values_equal(
             field,
             getattr(existing, field),
             values[field],
         )
         for field in BUSINESS_MUTABLE_FIELDS
-    ):
-        return "unchanged", existing.id
+    )
+    if business_unchanged and existing is not None:
+        reactivated = _refresh_policy_lifecycle(existing, values)
+        return ("updated" if reactivated else "unchanged"), existing.id
 
     statement = postgresql_insert(Policy).values(**values)
     changed = or_(
@@ -215,6 +224,15 @@ def _postgresql_upsert(
         Policy.updated_at,
         statement.excluded.updated_at,
     )
+    update_values["last_seen_at"] = func.greatest(
+        Policy.last_seen_at,
+        statement.excluded.last_seen_at,
+    )
+    update_values["last_verified_at"] = func.greatest(
+        Policy.last_verified_at,
+        statement.excluded.last_verified_at,
+    )
+    update_values["inactive_at"] = None
 
     statement = (
         statement.on_conflict_do_update(
@@ -232,15 +250,19 @@ def _postgresql_upsert(
     )
     row = db.execute(statement).first()
     if row is None:
-        policy_id = db.scalar(
-            select(Policy.id).where(
+        concurrent = db.scalar(
+            select(Policy).where(
                 Policy.source_id == values["source_id"],
                 Policy.external_id == values["external_id"],
             )
         )
-        if policy_id is None:
+        if concurrent is None:
             raise RuntimeError("upserted policy identity was not found")
-        return "unchanged", policy_id
+        reactivated = _refresh_policy_lifecycle(concurrent, values)
+        return (
+            "updated" if reactivated else "unchanged",
+            concurrent.id,
+        )
     return ("inserted" if row.inserted else "updated"), row.id
 
 
@@ -289,6 +311,25 @@ def _nondecreasing_datetime(
     return incoming
 
 
+def _refresh_policy_lifecycle(
+    existing: Policy,
+    values: Mapping[str, Any],
+) -> bool:
+    """Refresh observation metadata and report whether visibility changed."""
+
+    reactivated = existing.inactive_at is not None
+    existing.last_seen_at = _nondecreasing_datetime(
+        existing.last_seen_at,
+        values["last_seen_at"],
+    )
+    existing.last_verified_at = _nondecreasing_datetime(
+        existing.last_verified_at,
+        values["last_verified_at"],
+    )
+    existing.inactive_at = None
+    return reactivated
+
+
 def _portable_upsert(
     db: Session,
     values: Mapping[str, Any],
@@ -313,10 +354,12 @@ def _portable_upsert(
         )
         for field in BUSINESS_MUTABLE_FIELDS
     ):
-        return "unchanged", existing.id
+        reactivated = _refresh_policy_lifecycle(existing, values)
+        return ("updated" if reactivated else "unchanged"), existing.id
 
     for field in MUTABLE_FIELDS:
         setattr(existing, field, values[field])
+    _refresh_policy_lifecycle(existing, values)
     existing.updated_at = _nondecreasing_datetime(
         existing.updated_at,
         values["updated_at"],

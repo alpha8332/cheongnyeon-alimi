@@ -168,6 +168,20 @@ class Policy(Base):
         nullable=False,
     )
 
+    last_seen_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utc_now,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
+    last_verified_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utc_now,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
+    inactive_at = Column(DateTime(timezone=True), nullable=True)
+
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -208,9 +222,15 @@ class Policy(Base):
             "updated_at >= created_at",
             name="ck_policies_timestamp_order",
         ),
+        CheckConstraint(
+            "inactive_at IS NULL OR inactive_at >= last_seen_at",
+            name="ck_policies_inactive_after_last_seen",
+        ),
         Index("ix_policies_source_id", "source_id"),
         Index("ix_policies_external_id", "external_id"),
         Index("ix_policies_data_quality_status", "data_quality_status"),
+        Index("ix_policies_application_end", "application_end"),
+        Index("ix_policies_inactive_at", "inactive_at"),
         Index(
             "ix_policies_categories_gin",
             "categories",
