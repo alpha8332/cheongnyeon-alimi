@@ -8,7 +8,7 @@
 - 계획: [Deploy 02 계획](../../develop_plan/deploy/02_production_data_refresh_delivery.md)
 - 주차 계획: [6주차 Final Release](../../weekly_plan/week_06_final_release.md)
 - 시작 SHA: `f838d4191cb5cc33c324d3e946c7a12ed8a56b1b`
-- 현재 Gate: `W6-P1_LIFECYCLE_PASS`
+- 현재 Gate: `W6-P2_QUEUE_PASS`
 
 ## 목적
 
@@ -31,7 +31,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | --- | --- | --- |
 | W6-P0 | completed | default-deny 계약, 451건 actual artifact·hash 재검증, `W6-P0_DATASET_CONTRACT_PASS` |
 | W6-P1 | completed | 3 timestamp, soft-deactivation, 마감 기본 제외, `W6-P1_LIFECYCLE_PASS` |
-| W6-P2 | pending | Celery·Redis 중앙 수집 |
+| W6-P2 | completed | Redis AOF·Celery worker·단일 Beat·actual queue, `W6-P2_QUEUE_PASS` |
 | W6-P3 | pending | clone/ZIP 최초 실행 |
 | W6-P4 | pending | Production Compose·CI/CD |
 | W6-P5 | pending | clean-room·Final Gate |
@@ -83,6 +83,25 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - 동일 identity 재등장 시 생명주기 시각을 단조 증가시키고 `inactive_at`을
   `null`로 복구한다.
 
+### 중앙 Celery·Redis 수집 queue
+
+- 관리자 `POST /api/v1/admin/collection-runs`는 PostgreSQL에 `queued` row를
+  먼저 commit한 뒤 같은 `run_id`를 Celery task ID로 Redis에 발행한다.
+- FastAPI `BackgroundTasks` 실행을 제거해 외부 HTTP·Raw·Importer 작업이 API
+  process 자원과 생명주기를 점유하지 않는다.
+- `collection-worker`는 prefetch 1, late ack, worker-lost 재전달, soft/hard
+  timeout, bounded retry·jitter, 기본 `6/m` rate limit을 적용한다.
+- PostgreSQL partial unique index가 Source별 active row를 하나로 제한하고,
+  session advisory lock이 여러 worker의 실제 Source 겹침을 차단한다.
+- Redis는 AOF Volume을 사용하지만 최종 상태 원본은 PostgreSQL이다. Celery
+  result backend는 비활성화했다.
+- Beat는 단일 service이며 schedule은 기본 비활성화했다. API key와 호출 주기를
+  중앙 운영자가 승인한 뒤에만 활성화한다.
+- Frontend CollectionRun type·필터·badge·Mock과 active-run 판정을 `queued`까지
+  확장해 Backend `202` 응답을 실행 완료로 오해하지 않게 했다.
+- `20260824_0008`은 `queued` enum·constraint를, `20260824_0009`는 active Source
+  unique index와 기존 중복 active row의 명시적 failed 보정을 추가한다.
+
 ## 주요 변경 파일
 
 - `data/schema/public_policy_dataset_sources.schema.json`
@@ -98,6 +117,13 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - `backend/app/models/policy.py`
 - `backend/app/services/runtime_importer.py`
 - `docs/data/policy_lifecycle.md`
+- `backend/alembic/versions/20260824_0008_collection_queue.py`
+- `backend/alembic/versions/20260824_0009_active_source_run.py`
+- `backend/app/worker/celery_app.py`
+- `backend/app/worker/tasks.py`
+- `backend/app/services/collection_queue.py`
+- `backend/app/services/source_collection_lock.py`
+- `compose.yaml`
 
 ## 설계 결정
 
@@ -126,6 +152,13 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
    필드를 1.2.0 projection으로 검증하되 품질 상태는 보존했다.
 4. 개인 휴대전화 형식 10건이 발견돼 발행이 중단됐다. 레코드 단위 제외와
    manifest 제외 집계를 추가한 뒤 다시 생성했다.
+5. 첫 Beat 기동은 root 소유 named Volume에 schedule DB를 만들지 못해
+   `PermissionError`로 재시작했다. schedule은 상태 원본이 아니므로 non-root가
+   쓸 수 있는 `/tmp`로 옮기고 Redis AOF·PostgreSQL만 영속화했다.
+6. 실제 공개 웹 Source 2개 queue 실행이 `TransportError`로 종료됐다. worker가
+   internal DB·queue network에만 연결돼 외부 HTTP route가 없음을 확인해 worker
+   전용 `collector-egress` network를 추가했다. 같은 천안 Source를 다시 실행해
+   Raw 3·추출 1·accepted 1·unchanged 1, `succeeded`를 확인했다.
 
 ### 통과 결과
 
@@ -143,11 +176,26 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | lifecycle backfill | `last_seen_at`·`last_verified_at` 누락 0건 |
 | 마감 기본 제외 | 1,093건 제외, 공개 후보·actual API 2,180건 |
 | 마감 상세 actual | 공개 상세 `404`, DB 행 보존 |
+| queue 단위 경계 | 32 passed |
+| Acceptance Compose | PostgreSQL·Redis·Backend·worker·Beat·Frontend healthy |
+| queue Migration | `20260824_0007 → 0008 → 0009`, active Source unique index 1개 |
+| actual 성공 task | probe `335a7e79-…` `queued → running → succeeded` |
+| egress 실패 주입 | 수정 전 2건 `TransportError`, terminal failed·policy write 0 |
+| actual live Source | 천안 `098557da-…`, Raw 3·accepted 1·unchanged 1·`succeeded` |
+| broker restart | worker 중지 적재 `ce1d07c7-…`, Redis restart 후 `succeeded` |
+| PostgreSQL Source lock | 첫 획득 `true`, 동시 두 번째 획득 `false`, 해제 후 재획득 |
+| 컨테이너 PostgreSQL 전체 | 212 passed (Migration upgrade·downgrade 포함) |
+| 저장소 전체 pytest | 560 passed, 28 skipped, 241 subtests passed |
+| Runtime unittest | 327 passed |
+| Frontend unit | 222 passed |
+| Frontend lint·build | PASS (`queued` 계약 포함) |
+| 문서·Compose 검증 | PASS |
 
 ## 남은 작업
 
-1. W6-P2에서 실제 Celery worker가 성공한 완전 수집만 dataset 후보로 넘긴다.
-2. W6-P3·P4에서 pointer, GitHub Release upload와 promotion·rollback을
+1. W6-P3·P4에서 pointer, GitHub Release upload와 promotion·rollback을
    구현하고 새 Git SHA로 artifact를 재생성한다.
-3. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
+2. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.
+3. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
+   인증·TLS 오류를 Source별 운영 지표로 계속 구분한다.

@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Dict, Any, Optional
 from uuid import UUID
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -17,8 +18,11 @@ from app.services.collection_run_admin import (
     get_admin_collection_run_detail_service,
     trigger_manual_collection_run_service,
 )
-from app.services.manual_collection import execute_manual_collection_run
-from fastapi.responses import JSONResponse
+from app.services.collection_queue import (
+    CollectionQueuePublishError,
+    publish_collection_run,
+)
+from app.models.collection_run import CollectionRun, utc_now
 
 router = APIRouter()
 
@@ -34,10 +38,10 @@ router = APIRouter()
         403: {"description": "관리자 권한 부족"},
         409: {"description": "동일 수집원에 이미 진행 중인 수집 존재"},
         422: {"description": "요청 파라미터 유효성 검사 실패"},
+        503: {"description": "Redis broker에 수집 작업 발행 실패"},
     },
 )
 def trigger_manual_collection_run(
-    background_tasks: BackgroundTasks,
     request_dto: CollectionRunTriggerRequest = CollectionRunTriggerRequest(),
     db: Session = Depends(get_db),
     admin_payload: Dict[str, Any] = Depends(get_current_admin_payload),
@@ -62,12 +66,24 @@ def trigger_manual_collection_run(
             },
         )
 
-    background_tasks.add_task(
-        execute_manual_collection_run,
-        trigger_resp.run_id,
-        trigger_resp.source_id,
-        request_dto.requested_count or 100,
-    )
+    try:
+        publish_collection_run(
+            trigger_resp.run_id,
+            trigger_resp.source_id,
+            request_dto.requested_count or 100,
+        )
+    except CollectionQueuePublishError:
+        run = db.get(CollectionRun, trigger_resp.run_id)
+        if run is not None and run.status == "queued":
+            run.status = "failed"
+            run.finished_at = utc_now()
+            run.failed_count = 1
+            run.error_type = "CollectionQueuePublishError"
+            db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Collection broker is unavailable; the run was closed as failed.",
+        ) from None
     return trigger_resp
 
 
@@ -87,7 +103,7 @@ def list_collection_runs(
     page: int = Query(default=1, ge=1, description="페이지 번호"),
     size: int = Query(default=20, ge=1, le=100, description="페이지 당 항목 수"),
     source_id: Optional[str] = Query(default=None, description="수집원 ID 필터"),
-    status_param: Optional[str] = Query(default=None, alias="status", description="수집 상태 필터 (running, succeeded, partial_failure, failed)"),
+    status_param: Optional[str] = Query(default=None, alias="status", description="수집 상태 필터 (queued, running, succeeded, partial_failure, failed)"),
     run_type: Optional[str] = Query(default=None, description="실행 유형 필터 (seed_import, runtime_import, collection)"),
     trigger_type: Optional[str] = Query(default=None, description="트리거 주체 필터 (cli, scheduler, admin)"),
     start_date: Optional[datetime] = Query(default=None, description="검색 시작 일시"),

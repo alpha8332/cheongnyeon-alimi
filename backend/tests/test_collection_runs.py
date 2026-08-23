@@ -95,6 +95,31 @@ def test_writer_supports_cross_source_seed_and_safe_failure_type(db):
         session.close()
 
 
+def test_writer_persists_queued_claim_and_terminal_redelivery(db):
+    writer, session_factory = _writer(db)
+    run_id = writer.enqueue(
+        source_id="youthcenter-api",
+        trigger_type="admin",
+        requested_count=25,
+    )
+
+    session = session_factory()
+    try:
+        queued = session.get(CollectionRun, run_id)
+        assert queued.status == "queued"
+        assert queued.finished_at is None
+    finally:
+        session.close()
+
+    assert writer.mark_running(run_id) == "running"
+    writer.finish(
+        run_id,
+        status="succeeded",
+        counts=CollectionRunCounts(requested_count=25),
+    )
+    assert writer.mark_running(run_id) == "succeeded"
+
+
 def test_writer_rejects_negative_counts_and_invalid_contract_values(db):
     writer, _ = _writer(db)
 
@@ -139,6 +164,30 @@ def test_database_rejects_terminal_run_without_finished_at(db):
             status="failed",
             finished_at=None,
         )
+    )
+
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+    db.rollback()
+
+
+def test_database_rejects_two_active_runs_for_same_source(db):
+    db.add_all(
+        [
+            CollectionRun(
+                source_id="youthcenter-api",
+                run_type="collection",
+                trigger_type="admin",
+                status="queued",
+            ),
+            CollectionRun(
+                source_id="youthcenter-api",
+                run_type="collection",
+                trigger_type="scheduler",
+                status="running",
+            ),
+        ]
     )
 
     with pytest.raises(IntegrityError):

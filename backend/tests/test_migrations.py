@@ -16,7 +16,9 @@ TIMESTAMP_REVISION = "20260730_0003"
 SEARCH_REVISION = "20260803_0004"
 QUALITY_REVISION = "20260810_0005"
 ELIGIBILITY_REVISION = "20260810_0006"
-HEAD_REVISION = "20260824_0007"
+LIFECYCLE_REVISION = "20260824_0007"
+QUEUE_REVISION = "20260824_0008"
+HEAD_REVISION = "20260824_0009"
 
 
 def alembic_config() -> Config:
@@ -54,6 +56,14 @@ def test_collection_quality_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == QUEUE_REVISION
+    )
+    assert (
+        scripts.get_revision(QUEUE_REVISION).down_revision
+        == LIFECYCLE_REVISION
+    )
+    assert (
+        scripts.get_revision(LIFECYCLE_REVISION).down_revision
         == ELIGIBILITY_REVISION
     )
     assert (
@@ -155,6 +165,9 @@ def test_upgrade_sql_matches_collection_run_contract():
     assert "CREATE INDEX ix_collection_runs_started_at" in sql
     assert "ADD COLUMN duplicate_count INTEGER DEFAULT '0' NOT NULL" in sql
     assert "ADD COLUMN rejected_count INTEGER DEFAULT '0' NOT NULL" in sql
+    assert "ADD VALUE IF NOT EXISTS 'queued' BEFORE 'running'" in sql
+    assert "status IN ('queued', 'running')" in sql
+    assert "CREATE UNIQUE INDEX uq_collection_runs_active_source" in sql
 
     for column in CollectionRun.__table__.columns:
         if column.name in {"duplicate_count", "rejected_count"}:

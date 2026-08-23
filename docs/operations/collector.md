@@ -568,6 +568,27 @@ document ID만 출력하며 Raw payload, source URL query와 인증키를 출력
 [CollectionRun 데이터베이스 계약](../architecture/collection_run_database.md)을
 따른다.
 
+## 중앙 Celery·Redis 실행
+
+Docker 중앙 수집은 관리자 API 또는 단일 Celery Beat가 PostgreSQL
+`CollectionRun`을 `queued`로 먼저 만든 뒤 Redis `collection` queue에 같은
+`run_id` task를 발행한다. FastAPI `BackgroundTasks`에서는 Collector를 실행하지
+않는다. worker가 Source advisory lock을 획득한 뒤 `running`으로 전이하고 기존
+Collector·Runtime Importer를 호출한다.
+
+- Redis: AOF broker이며 Policy·실행 상태 원본이 아님
+- network: DB·queue는 internal, live HTTP는 worker 전용 `collector-egress`
+- worker: concurrency 기본 2, prefetch 1, late ack, worker lost 재전달
+- task: soft 900초·hard 960초, 최대 5회 lock retry, jitter backoff 최대 300초,
+  worker당 기본 `6/m` rate limit
+- Source 중복: active Source partial unique index와 PostgreSQL advisory lock
+- broker 발행 실패: 접수 row를 `CollectionQueuePublishError`로 종료하고 API 503
+- terminal 재전달: 동일 `run_id`를 다시 실행하지 않고 현재 상태 반환
+
+`.env.compose`의 `COLLECTION_SCHEDULE_ENABLED` 기본값은 `false`다. 중앙 운영자가
+API key·Source 호출량·이용약관을 확인한 뒤 Source와 cron을 설정해야 정기 수집이
+활성화된다. clone/ZIP 사용자의 로컬 scheduler를 자동 활성화하지 않는다.
+
 `runtime/raw`가 없거나 선택한 source에 Raw가 없으면 DB를 변경하지 않고
 명확한 오류와 종료 코드 1을 반환한다. `--dry-run`도 실제 DB upsert 결과를
 계산하므로 연결 가능한 Migration 적용 DB가 필요하다.

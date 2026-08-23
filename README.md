@@ -12,7 +12,7 @@
 PostgreSQL 재처리, Seed·Runtime 최소 실행 이력 기반이 구현되어 있다.
 환경변수와 안전한 실행 범위는
 [Collector 실행 문서](docs/operations/collector.md)를 따른다. 구현되지 않은
-전체 수집, Scheduler와 자동 주기 적재는 완료된 것으로 안내하지 않는다.
+Source 전체 수집과 공개 dataset 자동 배포는 완료된 것으로 안내하지 않는다.
 
 ## 데이터 수집과 최신성
 
@@ -25,10 +25,11 @@ image와 배포 package에 포함하지 않는다. API 키가 없는 사용자�
 현재 Collector는 명시적 CLI 실행, 저장된 Runtime Raw의 PostgreSQL 재처리와
 관리자 화면에서 요청하는 단일 Source 수동 수집·적재를 지원한다. Docker 환경은
 공개 웹 Source를 키 없이 수동 실행할 수 있고, 온통청년·복지로는 Git에서 무시되는
-`.env.compose`에 각 API key를 넣어야 한다. 자동 Scheduler, Source별 주기 실행,
-중앙 queue·worker와 날짜 경과 정책의 일일 마감 상태 정산은 아직 구현하지 않았다.
-따라서 Acceptance snapshot을 복원하고 웹 UI만 켠 상태로는 신규 정책이 자동
-추가되거나 기존 정책의 마감 상태가 자동 갱신되지 않는다.
+`.env.compose`에 각 API key를 넣어야 한다. Acceptance Compose에는 Redis broker,
+Celery worker와 단일 Beat가 구현돼 있지만 정기 수집은 안전하게
+`COLLECTION_SCHEDULE_ENABLED=false`가 기본값이다. 따라서 API key와 승인된
+Source 주기를 설정하지 않고 웹 UI만 켠 상태에서는 신규 정책이 자동 추가되지
+않는다. 종료일이 지난 정책은 현재 KST 기준 공개 검색·추천에서 즉시 제외된다.
 
 최종 공개 배포는 각 사용자 PC가 동일 Source를 직접 반복 수집하는 방식이 아니라,
 승인된 중앙 수집 환경이 API 키와 호출량을 관리하고 재배포가 허용된 정규화

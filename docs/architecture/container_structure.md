@@ -151,7 +151,7 @@ Nginx 도입 시점, TLS, 도메인과 네트워크 설정은 배포 Slice에서
 Deploy 01까지는 collector를 Backend image의 명시적 명령으로 실행했다. 정기·
 수동 수집의 비동기 실행, 독립 재시작과 중복 실행 제어가 Final Release 필수
 범위가 되어 Deploy 02에서 Redis broker·Celery Worker·단일 Beat 분리를
-승인했다. 아직 현재 구현 완료 상태는 아니며 구현 시 ADR과 실제 회귀로 확정한다.
+승인했고 W6-P2에서 Acceptance Compose와 실제 회귀까지 구현했다.
 
 - 수집 작업이 API 프로세스의 자원 또는 안정성에 영향을 줌
 - 독립적인 재시작, 확장 또는 배포 주기가 필요함
@@ -175,3 +175,11 @@ PostgreSQL에 둔다. scheduler는 단일 instance로 실행하고 Source별 DB 
 [아키텍처 결정 기록](decisions/README.md)에 근거와 영향을 남긴다. 상세 Gate는
 [Deploy 02 계획](../development/develop_plan/deploy/02_production_data_refresh_delivery.md)을
 따른다.
+
+현재 Compose의 `redis`는 AOF를 별도 Volume에 유지하고 외부 port를 공개하지
+않는다. `collection-worker`는 prefetch 1·late ack·worker lost 재전달, bounded
+retry·jitter·hard/soft timeout·task rate limit을 사용한다. `collection-scheduler`
+는 한 instance만 두며 기본 설정은 `COLLECTION_SCHEDULE_ENABLED=false`다. 운영
+API key를 설정하고 Source별 주기를 승인한 중앙 환경에서만 `true`로 바꾼다.
+DB·queue network는 `internal`로 유지하고 live Source HTTP가 필요한 worker만
+별도 `collector-egress` network에 연결한다.

@@ -105,8 +105,8 @@ export function handleCollectionRunTriggerMock(
     source_id: request.source_id ?? 'cheonan-youthcenter-web',
     run_type: 'collection',
     trigger_type: 'admin',
-    status: 'running',
+    status: 'queued',
     started_at: new Date().toISOString(),
-    message: 'Manual collection run initiated successfully.',
+    message: 'Manual collection run queued successfully.',
   };
 }

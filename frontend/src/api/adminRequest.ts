@@ -13,6 +13,7 @@ export const COLLECTION_RUN_TRIGGER_PATH =
   COLLECTION_RUN_ADMIN_ENDPOINTS.trigger.path;
 
 const COLLECTION_RUN_STATUSES = new Set<CollectionRunStatus>([
+  'queued',
   'running',
   'succeeded',
   'partial_failure',

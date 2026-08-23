@@ -91,8 +91,8 @@ export default function ManualCollectionRunTrigger({
       <div className="manual-run-trigger__header">
         <h2 className="manual-run-trigger__title">수동 실행</h2>
         <p className="manual-run-trigger__description">
-          관리자 trigger로 새 CollectionRun을 시작합니다. 실행 중인 run이 있으면
-          버튼이 비활성화됩니다.
+          관리자 trigger로 새 CollectionRun을 queue에 등록합니다. 대기·실행 중인
+          run이 있으면 버튼이 비활성화됩니다.
         </p>
       </div>
 
@@ -123,8 +123,8 @@ export default function ManualCollectionRunTrigger({
             수동 실행 확인
           </h3>
           <p className="manual-run-trigger__dialog-message">
-            새 CollectionRun을 시작합니다. 중복 제출을 방지하기 위해 확인 후 한
-            번만 실행됩니다. 계속할까요?
+            새 CollectionRun을 queue에 등록합니다. 중복 제출을 방지하기 위해
+            확인 후 한 번만 요청합니다. 계속할까요?
           </p>
 
           <div className="manual-run-trigger__dialog-actions">

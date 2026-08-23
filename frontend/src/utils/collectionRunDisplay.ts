@@ -5,6 +5,7 @@ import type {
 } from '../types/collectionRun.js';
 
 const STATUS_LABELS: Record<CollectionRunStatus, string> = {
+  queued: '대기 중',
   running: '실행 중',
   succeeded: '성공',
   partial_failure: '부분 실패',
@@ -40,7 +41,7 @@ export function getCollectionRunTriggerTypeLabel(
 export function isTerminalCollectionRunStatus(
   status: CollectionRunStatus,
 ): boolean {
-  return status !== 'running';
+  return status !== 'queued' && status !== 'running';
 }
 
 export function formatAdminTimestamp(value: string | null): string {

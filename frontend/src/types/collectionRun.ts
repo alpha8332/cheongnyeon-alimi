@@ -15,6 +15,7 @@ export type CollectionRunType =
 export type CollectionRunTriggerType = 'cli' | 'scheduler' | 'admin';
 
 export type CollectionRunStatus =
+  | 'queued'
   | 'running'
   | 'succeeded'
   | 'partial_failure'

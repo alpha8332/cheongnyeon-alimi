@@ -5,7 +5,7 @@
 - 번호: Deploy 02
 - 담당 영역: Team Leader - Integration·Deploy
 - 상태: in-progress
-- 현재 Gate: `W6-P1_LIFECYCLE_PASS` (`2026-08-24`)
+- 현재 Gate: `W6-P2_QUEUE_PASS` (`2026-08-24`)
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
@@ -121,6 +121,12 @@ artifact와 manifest hash를 생성·재검증했다.
 - 실패·부분 수집 재현에서 기존 정책이 잘못 비활성화되지 않음
 
 ### W6-P2 - 중앙 Celery Collector Worker·Scheduler
+
+상태: completed (`2026-08-24`, `W6-P2_QUEUE_PASS`). API process 내부
+`BackgroundTasks` 실행을 제거하고 Redis AOF broker·Celery worker·단일 Beat를
+실제 Compose에 연결했다. queued broker 재시작 전달, PostgreSQL Source lock과
+성공·실패 terminal 전이, worker 전용 egress의 실제 천안 Source 수집을 actual
+환경에서 검증했다.
 
 #### 목적
 

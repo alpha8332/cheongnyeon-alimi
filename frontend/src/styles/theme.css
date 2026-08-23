@@ -2316,6 +2316,11 @@ a.policy-card {
   background: #e0f2fe;
 }
 
+.collection-run-badge--queued {
+  color: #5b21b6;
+  background: #ede9fe;
+}
+
 .collection-run-badge--succeeded {
   color: #166534;
   background: #dcfce7;

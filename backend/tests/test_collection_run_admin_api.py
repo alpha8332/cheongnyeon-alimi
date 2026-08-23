@@ -12,6 +12,7 @@ from app.models.collection_run import CollectionRun
 from app.services.admin_access import create_admin_session_token, clear_rate_limit_state
 from app.api.deps import get_current_admin_payload
 from app.api.v1.endpoints.collection_run_admin import router as collection_run_admin_router
+from app.services.collection_queue import CollectionQueuePublishError
 
 client = TestClient(app)
 
@@ -38,10 +39,10 @@ def admin_token():
 
 
 @pytest.fixture
-def manual_collection_task(monkeypatch):
+def collection_queue_publisher(monkeypatch):
     task = Mock()
     monkeypatch.setattr(
-        "app.api.v1.endpoints.collection_run_admin.execute_manual_collection_run",
+        "app.api.v1.endpoints.collection_run_admin.publish_collection_run",
         task,
     )
     return task
@@ -193,7 +194,7 @@ def test_collection_run_admin_route_protection_dependencies():
 def test_trigger_collection_run_success_202(
     admin_token,
     db,
-    manual_collection_task,
+    collection_queue_publisher,
 ):
     """POST /api/v1/admin/collection-runs 수동 수집 기동 요청 성공시 202 Accepted 반환 및 DB 레코드 생성."""
     response = client.post(
@@ -204,7 +205,7 @@ def test_trigger_collection_run_success_202(
     assert response.status_code == 202
     data = response.json()
     assert data["source_id"] == "cheonan-youthcenter-web"
-    assert data["status"] == "running"
+    assert data["status"] == "queued"
     assert data["run_type"] == "collection"
     assert data["trigger_type"] == "admin"
     assert "run_id" in data
@@ -212,9 +213,9 @@ def test_trigger_collection_run_success_202(
     # DB에 생성되었는지 검증
     run_in_db = db.query(CollectionRun).filter(CollectionRun.run_id == uuid.UUID(data["run_id"])).first()
     assert run_in_db is not None
-    assert run_in_db.status == "running"
+    assert run_in_db.status == "queued"
     assert run_in_db.requested_count == 1
-    manual_collection_task.assert_called_once_with(
+    collection_queue_publisher.assert_called_once_with(
         uuid.UUID(data["run_id"]),
         "cheonan-youthcenter-web",
         1,
@@ -224,7 +225,7 @@ def test_trigger_collection_run_success_202(
 def test_trigger_collection_run_active_conflict_409(
     admin_token,
     db,
-    manual_collection_task,
+    collection_queue_publisher,
 ):
     """동일 source_id에 2시간 미만의 진행 중인 running 수집이 존재할 경우 409 Conflict 반환."""
     # 30분 전에 시작된 running 수집 생성
@@ -251,13 +252,13 @@ def test_trigger_collection_run_active_conflict_409(
     assert "error" in data
     assert "currently in progress" in data["error"]["message"]
     assert data["error"]["details"]["active_run_id"] == str(active_run.run_id)
-    manual_collection_task.assert_not_called()
+    collection_queue_publisher.assert_not_called()
 
 
 def test_trigger_collection_run_stale_active_allows_new_trigger(
     admin_token,
     db,
-    manual_collection_task,
+    collection_queue_publisher,
 ):
     """3시간 전 시작되어 Stale 상태인 running 수집이 존재할 경우 409 없이 202 성공 처리."""
     stale_run = CollectionRun(
@@ -280,7 +281,60 @@ def test_trigger_collection_run_stale_active_allows_new_trigger(
     )
     assert response.status_code == 202
     assert response.json()["source_id"] == "cheonan-youthcenter-web"
-    manual_collection_task.assert_called_once()
+    collection_queue_publisher.assert_called_once()
+    db.refresh(stale_run)
+    assert stale_run.status == "failed"
+    assert stale_run.error_type == "StaleCollectionRunReplaced"
+
+
+def test_trigger_collection_run_queued_conflict_409(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
+    active_run = CollectionRun(
+        source_id="cheonan-youthcenter-web",
+        run_type="collection",
+        trigger_type="admin",
+        status="queued",
+    )
+    db.add(active_run)
+    db.commit()
+
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "cheonan-youthcenter-web"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["details"]["active_run_id"] == str(
+        active_run.run_id
+    )
+    collection_queue_publisher.assert_not_called()
+
+
+def test_trigger_collection_run_broker_failure_closes_run_503(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
+    collection_queue_publisher.side_effect = CollectionQueuePublishError(
+        "ConnectionError"
+    )
+
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "cheonan-youthcenter-web", "requested_count": 1},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert response.status_code == 503
+    run = db.query(CollectionRun).one()
+    assert run.status == "failed"
+    assert run.finished_at is not None
+    assert run.failed_count == 1
+    assert run.error_type == "CollectionQueuePublishError"
 
 
 def test_trigger_collection_run_invalid_payload_422(admin_token):

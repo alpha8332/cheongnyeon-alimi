@@ -15,6 +15,7 @@ interface CollectionRunFiltersProps {
 const STATUS_OPTIONS: Array<{ value: CollectionRunStatus | ''; label: string }> =
   [
     { value: '', label: '전체 상태' },
+    { value: 'queued', label: '대기 중' },
     { value: 'running', label: '실행 중' },
     { value: 'succeeded', label: '성공' },
     { value: 'partial_failure', label: '부분 실패' },

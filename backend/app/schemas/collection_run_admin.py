@@ -81,6 +81,6 @@ class CollectionRunTriggerResponse(BaseModel):
     source_id: Optional[str] = None
     run_type: str = "collection"
     trigger_type: str = "admin"
-    status: str = "running"
+    status: str = "queued"
     started_at: datetime
-    message: str = "Manual collection run initiated successfully."
+    message: str = "Manual collection run queued successfully."

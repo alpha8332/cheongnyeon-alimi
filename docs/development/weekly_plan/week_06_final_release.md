@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`2026-08-24`, `W6-P1_LIFECYCLE_PASS`)
+- 상태: in-progress (`2026-08-24`, `W6-P2_QUEUE_PASS`)
 - 대상 Release: `v1.0.0`
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -27,10 +27,10 @@ Production Compose·CI/CD를 완성한다. 새 PC 사용자는 API key 없이 �
 
 - PostgreSQL 실제 Acceptance snapshot 복원·Migration·재시작 보존 검증 완료
 - Backend·Frontend Docker image와 actual Browser 흐름 검증 완료
-- `CollectionRun` 목록·상세·수동 실행 계약이 있으나 실제 작업 queue 연결은
-  6주차 범위
-- 운영 dataset 발행, 정책 inactive 생명주기, Redis·Celery worker·Beat,
-  Production Nginx·CI와 `run_docker.bat`은 아직 구현 전
+- `CollectionRun` 목록·상세·수동 실행은 Redis·Celery 실제 queue에 연결됐고
+  Source singleton·재전달·broker restart 회귀를 통과함
+- 공개 dataset 계약과 정책 inactive 생명주기는 완료됐으며 Production Nginx·
+  CI, 자동 dataset 발행과 `run_docker.bat`은 아직 구현 전
 
 ## 범위
 
@@ -163,7 +163,9 @@ dataset version으로 합친다.
 - [x] `W6-P0_DATASET_CONTRACT_PASS` (복지로 451건 actual artifact·manifest hash)
 - [x] `W6-P1_LIFECYCLE_PASS` (3,273건 backfill, 마감 1,093건 제외,
   PostgreSQL 18건·전체 548건 회귀)
-- [ ] `W6-P2_QUEUE_PASS`
+- [x] `W6-P2_QUEUE_PASS` (Redis AOF·worker·Beat healthy, actual queue 성공·
+  외부 Source 실패 종료·egress 보정 후 live 수집 성공·broker restart 재전달·
+  PostgreSQL Source lock)
 - [ ] `W6-P3_BOOTSTRAP_PASS`
 - [ ] `W6-P4_PRODUCTION_PASS`
 - [ ] clone·ZIP 독립 clean-room과 전체 actual 회귀

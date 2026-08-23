@@ -58,11 +58,11 @@ def get_active_running_collection_run(
     source_id: Optional[str] = None,
 ) -> Optional[CollectionRun]:
     """
-    특정 source_id(또는 전체)에 대해 현재 status가 'running'이고 finished_at이 None인 수집건 조회.
+    특정 source_id(또는 전체)에 대해 queued/running 활성 수집건 조회.
     최신 started_at 항목을 먼저 반환한다.
     """
     query = db.query(CollectionRun).filter(
-        CollectionRun.status == "running",
+        CollectionRun.status.in_(("queued", "running")),
         CollectionRun.finished_at.is_(None),
     )
     if source_id:
@@ -78,12 +78,12 @@ def create_admin_collection_run(
     run_type: str = "collection",
     trigger_type: str = "admin",
 ) -> CollectionRun:
-    """새로운 수동 수집 실행 기록(status='running')을 DB에 저장한다."""
+    """브로커 발행 전에 새 수동 수집 실행 기록을 queued로 저장한다."""
     new_run = CollectionRun(
         source_id=source_id,
         run_type=run_type,
         trigger_type=trigger_type,
-        status="running",
+        status="queued",
         requested_count=requested_count,
         started_at=datetime.now(timezone.utc),
     )
