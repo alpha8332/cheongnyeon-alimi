@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cheongnyeon-alimi:schema:production-release-manifest:1.0.0",
+  "title": "ProductionReleaseManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "release_version",
+    "generated_at",
+    "git_sha",
+    "alembic_revision",
+    "normalized_schema",
+    "dataset",
+    "images"
+  ],
+  "properties": {
+    "manifest_version": {"const": "1.0.0"},
+    "release_version": {"type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.-]+)?$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "alembic_revision": {"type": "string", "pattern": "^[0-9]{8}_[0-9]{4}$"},
+    "normalized_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "sha256"],
+      "properties": {
+        "version": {"const": "1.2.0"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "pointer_sha256", "manifest_sha256", "manifest_url"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^public-bootstrap-[0-9]{8}-[0-9a-f]{7,40}$"},
+        "pointer_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_url": {"type": "string", "pattern": "^https://"}
+      }
+    },
+    "images": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "frontend"],
+      "properties": {
+        "backend": {"$ref": "#/$defs/image"},
+        "frontend": {"$ref": "#/$defs/image"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "digest"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^ghcr\\.io/[a-z0-9._/-]+$"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

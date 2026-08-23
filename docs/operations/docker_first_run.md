@@ -8,8 +8,8 @@
 [Collector 실행](collector.md)의 중앙 운영자 범위다.
 
 W6-P3에서 실행기와 실제 공개 artifact clean Volume 검증을 완료했다. 기본
-GitHub Release pointer는 W6-P4 promotion에서 발행한다. 그 전에는 공개 배포용
-기본 URL이 아직 활성화되지 않으므로 P0 artifact를 가진 개발자만
+GitHub Release pointer는 W6-P4 원격 promotion 성공 때 발행한다. 그 전에는 공개
+배포용 기본 URL이 아직 활성화되지 않으므로 P0 artifact를 가진 개발자만
 `-DatasetManifestPath` 검증 경로를 사용한다.
 
 ## 요구 환경

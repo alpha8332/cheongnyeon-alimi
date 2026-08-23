@@ -42,6 +42,7 @@ class RuntimeImportResult:
     database: ImportResult
     decision_manifest_id: str | None = None
     inactivated: int = 0
+    is_complete_snapshot: bool = False
 
 
 def import_runtime_raw(
@@ -98,6 +99,7 @@ def import_runtime_raw(
         normalization_issues=normalization_issues,
     )
     inactivated = 0
+    is_complete_snapshot = False
     if checkpoint_root is not None and source_id in REGIONAL_DUPLICATE_SOURCE_IDS:
         checkpoint = _finalize_regional_checkpoint(
             replay,
@@ -105,30 +107,33 @@ def import_runtime_raw(
             redecision_audit=regional_redecision_audit,
             persist=not dry_run,
         )
-        if not dry_run and _regional_lifecycle_is_complete(
+        is_complete_snapshot = not dry_run and _regional_lifecycle_is_complete(
             checkpoint,
             replay=replay,
             database=database,
-        ):
+        )
+        if is_complete_snapshot:
             inactivated = _inactivate_missing_policies(
                 db,
                 source_id=source_id,
                 seen_external_ids=set(checkpoint.discovered_ids),
             )
-    elif not dry_run and _snapshot_lifecycle_is_complete(
-        replay,
-        database=database,
-    ):
-        inactivated = _inactivate_missing_policies(
-            db,
-            source_id=source_id,
-            seen_external_ids=set(replay.observed_external_ids),
+    elif not dry_run:
+        is_complete_snapshot = _snapshot_lifecycle_is_complete(
+            replay, database=database
         )
+        if is_complete_snapshot:
+            inactivated = _inactivate_missing_policies(
+                db,
+                source_id=source_id,
+                seen_external_ids=set(replay.observed_external_ids),
+            )
     return RuntimeImportResult(
         replay=replay,
         database=database,
         decision_manifest_id=decision_manifest_id,
         inactivated=inactivated,
+        is_complete_snapshot=is_complete_snapshot,
     )
 
 

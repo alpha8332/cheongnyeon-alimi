@@ -4,7 +4,10 @@ from types import SimpleNamespace
 from sqlalchemy.orm import sessionmaker
 
 from app.models.collection_run import CollectionRun
-from app.services.manual_collection import execute_manual_collection_run
+from app.services.manual_collection import (
+    execute_complete_collection_run,
+    execute_manual_collection_run,
+)
 from app.services.manual_collection_contract import MANUAL_COLLECTION_SOURCE_IDS
 from collectors.base import CollectionResult
 from collectors import default_registry
@@ -56,6 +59,13 @@ def _runtime_result():
     return SimpleNamespace(replay=replay, database=database)
 
 
+def _complete_runtime_result():
+    result = _runtime_result()
+    result.replay.raw_document_count = 2
+    result.is_complete_snapshot = True
+    return result
+
+
 def _create_run(db):
     run = CollectionRun(
         source_id="cheonan-youthcenter-web",
@@ -92,6 +102,34 @@ def test_manual_collection_finishes_same_run(db, tmp_path):
     assert run.accepted_count == 1
     assert run.inserted_count == 1
     assert run.failed_count == 0
+    assert run.is_complete_snapshot is False
+
+
+def test_complete_collection_persists_release_evidence(db, tmp_path):
+    run_id = _create_run(db)
+    factory = sessionmaker(bind=db.get_bind())
+
+    def snapshot_collector(*args, **kwargs):
+        return SimpleNamespace(snapshot_id="a" * 32, item_count=1)
+
+    execute_complete_collection_run(
+        run_id,
+        "cheonan-youthcenter-web",
+        100,
+        request_budget=12,
+        registry=FakeRegistry(),
+        importer=lambda *args, **kwargs: _complete_runtime_result(),
+        snapshot_collector=snapshot_collector,
+        session_factory=factory,
+        raw_root=tmp_path,
+        decision_root=tmp_path / "decisions",
+    )
+
+    db.expire_all()
+    run = db.get(CollectionRun, run_id)
+    assert run.status == "succeeded"
+    assert run.is_complete_snapshot is True
+    assert run.requested_count == 1
 
 
 def test_manual_collection_failure_is_terminal(db, tmp_path):

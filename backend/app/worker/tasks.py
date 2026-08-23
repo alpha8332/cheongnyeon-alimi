@@ -14,6 +14,7 @@ from app.models.collection_run import CollectionRun
 from app.repositories.collection_run_admin import get_active_running_collection_run
 from app.services.collection_runs import CollectionRunCounts, CollectionRunWriter
 from app.services.manual_collection import execute_manual_collection_run
+from app.services.manual_collection import execute_complete_collection_run
 from app.services.source_collection_lock import source_collection_lock
 from app.worker.celery_app import celery_app
 
@@ -40,6 +41,7 @@ def execute_queued_collection(
     run_id: UUID,
     source_id: str,
     requested_count: int,
+    complete_snapshot: bool = False,
 ) -> str:
     """Execute or safely acknowledge one broker delivery."""
     writer = CollectionRunWriter(SessionLocal)
@@ -49,12 +51,21 @@ def execute_queued_collection(
         current = writer.mark_running(run_id)
         if current != "running":
             return current
-        execute_manual_collection_run(
-            run_id,
-            source_id,
-            requested_count,
-            session_factory=SessionLocal,
-        )
+        if complete_snapshot:
+            execute_complete_collection_run(
+                run_id,
+                source_id,
+                requested_count,
+                request_budget=settings.COLLECTION_SNAPSHOT_REQUEST_BUDGET,
+                session_factory=SessionLocal,
+            )
+        else:
+            execute_manual_collection_run(
+                run_id,
+                source_id,
+                requested_count,
+                session_factory=SessionLocal,
+            )
     session = SessionLocal()
     try:
         completed = session.get(CollectionRun, run_id)
@@ -79,12 +90,14 @@ def collect_source_task(
     run_id: str,
     source_id: str,
     requested_count: int,
+    complete_snapshot: bool = False,
 ) -> str:
     parsed_run_id = UUID(run_id)
     outcome = execute_queued_collection(
         parsed_run_id,
         source_id,
         requested_count,
+        complete_snapshot,
     )
     if outcome != "busy":
         return outcome
@@ -148,6 +161,7 @@ def enqueue_scheduled_source_task() -> str:
             run_id,
             source_id,
             settings.COLLECTION_SCHEDULE_REQUESTED_COUNT,
+            complete_snapshot=settings.COLLECTION_SCHEDULE_COMPLETE_SNAPSHOT,
         )
     except CollectionQueuePublishError:
         CollectionRunWriter(SessionLocal).finish(

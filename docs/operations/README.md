@@ -27,3 +27,5 @@
   저장, 저장된 Runtime Raw의 PostgreSQL 재처리와 최소 실행 이력
 - [Windows Docker 최초 실행](docker_first_run.md): 공개 dataset 검증 cache,
   Migration·bootstrap·health·재실행과 fail-closed 복구 경계
+- [Production 배포와 데이터셋 발행](production_delivery.md): digest image·Nginx
+  Compose, GHCR·CI, dataset promotion과 rollback Gate

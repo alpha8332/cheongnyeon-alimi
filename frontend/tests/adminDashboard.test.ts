@@ -20,6 +20,7 @@ const SAMPLE_RUN: CollectionRunDetailDto = {
   finished_at: '2026-08-10T09:12:34.000Z',
   status: 'partial_failure',
   is_stale: false,
+  is_complete_snapshot: false,
   requested_count: 10,
   raw_document_count: 10,
   extracted_count: 10,

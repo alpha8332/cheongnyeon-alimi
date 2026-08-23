@@ -118,6 +118,10 @@ export default function CollectionRunDetailPage() {
               <dt>error_type</dt>
               <dd>{run.error_type ?? '—'}</dd>
             </div>
+            <div className="collection-run-detail-grid__item">
+              <dt>완전 Source snapshot</dt>
+              <dd>{run.is_complete_snapshot ? '확인됨' : '아님'}</dd>
+            </div>
           </dl>
 
           {run.is_stale ? (

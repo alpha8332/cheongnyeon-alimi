@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  workflow_call:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-data:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4-bookworm@sha256:882236b897e39051d2368c5ccc6cda944904723506b2dfc97f2a8f5bc9afa382
+        env:
+          POSTGRES_DB: cheongnyeon_alimi_ci_test
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci -d cheongnyeon_alimi_ci_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://ci:ci-only-password@127.0.0.1:5432/cheongnyeon_alimi_ci_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: backend/requirements.lock
+      - run: python -m pip install --require-hashes --no-deps -r backend/requirements.lock
+      - run: python -m pytest -q
+      - run: python scripts/validate_docs.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22.22.0"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test -- --run
+      - run: npm run lint
+      - run: npm run build
+        env:
+          VITE_API_BASE_URL: /
+          VITE_USE_MOCK: "false"
+
+  image-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate GitHub Actions workflows
+        run: >-
+          docker run --rm -v "$PWD:/repo" --workdir /repo
+          rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+      - name: Validate Production Compose rendering
+        env:
+          BACKEND_IMAGE: cheongnyeon-alimi-backend:ci
+          FRONTEND_IMAGE: cheongnyeon-alimi-frontend:ci
+          PUBLIC_DATASET_DIR: /tmp/public-dataset-contract
+          POSTGRES_DB: contract
+          POSTGRES_USER: contract
+          POSTGRES_PASSWORD: contract-password
+          BACKEND_SECRET_KEY: contract-secret
+          ADMIN_PIN_HASH: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          ADMIN_TOKEN_SECRET: contract-token-secret
+          CORS_ORIGINS: '["http://127.0.0.1:8080"]'
+        run: docker compose -f compose.production.yaml config --quiet
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: false
+          tags: cheongnyeon-alimi-backend:ci
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: false
+          tags: cheongnyeon-alimi-frontend:ci
+          build-args: |
+            VITE_API_BASE_URL=/
+            VITE_USE_MOCK=false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+      - run: python -m pytest -q tests/test_production_delivery.py

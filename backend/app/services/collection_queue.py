@@ -20,6 +20,7 @@ def publish_collection_run(
     source_id: str,
     requested_count: int,
     *,
+    complete_snapshot: bool = False,
     sender: Callable[..., Any] | None = None,
 ) -> str:
     """Publish one idempotent task using the run UUID as Celery task ID."""
@@ -31,7 +32,7 @@ def publish_collection_run(
     try:
         result = sender(
             COLLECTION_TASK_NAME,
-            args=(str(run_id), source_id, requested_count),
+            args=(str(run_id), source_id, requested_count, complete_snapshot),
             task_id=str(run_id),
             queue=settings.COLLECTION_QUEUE_NAME,
             retry=True,

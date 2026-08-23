@@ -102,6 +102,8 @@
   `W6-P0`~`W6-P5` Critical Path와 `W6-G0_FINAL_RELEASE_PASS`
 - [Production Data Refresh and Delivery 개발 기록](development/development_notes/deploy/production_data_refresh_delivery.md):
   W6-P0 공개 dataset 계약·451건 actual artifact와 후속 P1~P5 결과
+- [Production 배포와 데이터셋 발행](operations/production_delivery.md): GHCR
+  digest image·Nginx Compose·CI와 dataset promotion·rollback 절차
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):

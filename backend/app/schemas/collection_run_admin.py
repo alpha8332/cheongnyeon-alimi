@@ -16,6 +16,7 @@ class CollectionRunAdminItem(BaseModel):
     finished_at: Optional[datetime] = None
     status: str
     is_stale: bool = False
+    is_complete_snapshot: bool = False
     inserted_count: int = 0
     updated_count: int = 0
     failed_count: int = 0
@@ -34,6 +35,7 @@ class CollectionRunAdminDetail(BaseModel):
     finished_at: Optional[datetime] = None
     status: str
     is_stale: bool = False
+    is_complete_snapshot: bool = False
     requested_count: int = 0
     raw_document_count: int = 0
     extracted_count: int = 0

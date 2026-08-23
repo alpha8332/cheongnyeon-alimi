@@ -21,6 +21,7 @@ CLI의 `seed_import`·`runtime_import`와 Celery worker의 `collection` 이력�
 | `started_at` | `TIMESTAMPTZ` | 불가 | API·scheduler 접수 UTC 시각 |
 | `finished_at` | `TIMESTAMPTZ` | 가능 | 종료 시각. `queued`·`running`에서만 `null` |
 | `status` | `collection_run_status` | 불가 | `queued`, `running`, `succeeded`, `partial_failure`, `failed` |
+| `is_complete_snapshot` | `BOOLEAN` | 불가 | Source 권위 범위를 완전히 순회하고 lifecycle complete 판정을 통과했는지. 기본 `false` |
 | `requested_count` | `INTEGER` | 불가 | CLI가 요청한 최대 처리 수 또는 Seed 입력 수 |
 | `raw_document_count` | `INTEGER` | 불가 | 선택한 Raw 문서 수 |
 | `extracted_count` | `INTEGER` | 불가 | Extractor가 만든 항목 수 |
@@ -54,6 +55,11 @@ enqueue
 ```
 
 - 품질이 `partial`인 정책은 허용된 데이터이므로 그 자체로 실행 실패가 아니다.
+- `succeeded`는 제한 수집에도 가능하다. 공개 dataset promotion과 미발견 inactive는
+  별도 `is_complete_snapshot=true` 증거까지 요구한다.
+- 일반 관리자 수동 실행은 bounded preview이므로 항상 `false`다. 중앙 scheduler가
+  complete mode로 새 snapshot manifest를 만들고 같은 snapshot ID 전체를 오류 없이
+  import한 경우에만 `true`를 기록한다.
 - Runtime에서 invalid 일부를 제외하고 accepted batch를 정상 적재하면
   `partial_failure`다.
 - DB admission 거부, transaction 실패 또는 실행 예외는 `failed`다.
@@ -105,6 +111,7 @@ identity admission 거부를 포함해 저장 대상에서 제외된 전체 입�
 - 반복 품질 count revision: `20260810_0005`
 - queue 상태 revision: `20260824_0008`
 - Source active singleton revision: `20260824_0009`
+- 완전 snapshot 증거 revision: `20260824_0010`
 - ORM: `app.models.collection_run.CollectionRun`
 - write 경계: `app.services.collection_runs.CollectionRunWriter`
 

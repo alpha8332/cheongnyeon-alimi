@@ -30,7 +30,9 @@ Production Compose·CI/CD를 완성한다. 새 PC 사용자는 API key 없이 �
 - `CollectionRun` 목록·상세·수동 실행은 Redis·Celery 실제 queue에 연결됐고
   Source singleton·재전달·broker restart 회귀를 통과함
 - 공개 dataset 계약·정책 inactive·중앙 queue와 `run_docker.bat` actual clean
-  bootstrap은 완료됐으며 Production Nginx·CI와 자동 dataset 발행은 P4 범위
+  bootstrap은 완료됨
+- Production Nginx·CI·dataset promotion/rollback 구현과 local actual은 통과했고,
+  원격 GHCR·dataset Release 실행이 P4 최종 Gate로 남음
 
 ## 범위
 
@@ -166,7 +168,8 @@ dataset version으로 합친다.
 - [x] `W6-P2_QUEUE_PASS` (Redis AOF·worker·Beat healthy, actual queue 성공·
   외부 Source 실패 종료·egress 보정 후 live 수집 성공·broker restart 재전달·
   PostgreSQL Source lock)
-- [ ] `W6-P3_BOOTSTRAP_PASS`
+- [x] `W6-P3_BOOTSTRAP_PASS` (API key 없는 451건 clean Volume·offline 멱등·
+  hash fail-closed)
 - [ ] `W6-P4_PRODUCTION_PASS`
 - [ ] clone·ZIP 독립 clean-room과 전체 actual 회귀
 - [ ] README·Collector·운영·복구·LICENSE·SBOM·CHANGELOG·제출 문서 대조

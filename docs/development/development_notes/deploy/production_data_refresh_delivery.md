@@ -33,7 +33,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | W6-P1 | completed | 3 timestamp, soft-deactivation, 마감 기본 제외, `W6-P1_LIFECYCLE_PASS` |
 | W6-P2 | completed | Redis AOF·Celery worker·단일 Beat·actual queue, `W6-P2_QUEUE_PASS` |
 | W6-P3 | completed | actual 451건 clean Volume·offline 멱등 bootstrap, `W6-P3_BOOTSTRAP_PASS` |
-| W6-P4 | pending | Production Compose·CI/CD |
+| W6-P4 | in-progress | Compose·Nginx·CI/CD·promotion/rollback 구현 및 local actual PASS, 원격 GHCR·Release 대기 |
 | W6-P5 | pending | clean-room·Final Gate |
 
 ## 구현 내용
@@ -119,6 +119,32 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - 외부 GitHub Release pointer·asset 발행은 P4가 담당한다. P3에서는 같은 형식의
   actual P0 artifact를 로컬 검증 입력으로 사용해 소비 파이프라인을 확정했다.
 
+### Production Compose·CI/CD
+
+- `compose.production.yaml`은 source build 없이 Backend·Frontend release image를
+  입력받고 PostgreSQL·Redis·Migration·dataset bootstrap·Backend·worker·단일
+  Beat·Frontend·Nginx를 실행한다.
+- 외부 host port는 Nginx `8080` 하나뿐이다. Database·queue network는 internal,
+  collector egress는 worker에만 부여하고 로그·Runtime·DB·Redis를 분리된 named
+  Volume에 둔다.
+- Nginx는 `/api/`를 Backend로, 나머지를 Frontend로 reverse proxy하고 자체
+  `/health`를 제공한다. Frontend image는 same-origin `VITE_API_BASE_URL=/`로
+  빌드한다.
+- dataset promotion은 공개 allowlist Source마다 최신 CollectionRun 한 건을
+  요구한다. `collection`·`succeeded`·`is_complete_snapshot=true`·finished 및
+  invalid/rejected/failed 0건이 아니거나 더 최신 실행이 있으면 artifact 작성
+  전에 중단한다. 따라서 제한 수집 성공은 latest를 갱신할 수 없다.
+- 불변 dataset Release를 업로드한 뒤 다시 다운로드해 검증하고 마지막에만
+  `dataset-latest` pointer를 갱신한다. rollback도 기존 불변 asset을 재검증한
+  뒤 pointer만 이동한다.
+- 공통 CI는 Backend/Data pytest·PostgreSQL, Frontend unit·lint·build와 image
+  contract를 실행한다. Production release는 GHCR digest image, SBOM·provenance·
+  attestation, clean Compose smoke를 통과한 뒤 Git·Migration·Schema·dataset
+  version을 `production-release.json`에 묶는다.
+- `20260824_0010`은 완전 snapshot 증거를 CollectionRun에 영속한다. 일반 관리자
+  제한 수집은 항상 false이고, 중앙 scheduler의 명시적 complete mode가 bounded
+  multi-page manifest와 동일 snapshot 전체 import를 통과한 경우에만 true다.
+
 ## 주요 변경 파일
 
 - `data/schema/public_policy_dataset_sources.schema.json`
@@ -136,6 +162,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - `docs/data/policy_lifecycle.md`
 - `backend/alembic/versions/20260824_0008_collection_queue.py`
 - `backend/alembic/versions/20260824_0009_active_source_run.py`
+- `backend/alembic/versions/20260824_0010_collection_run_completeness.py`
 - `backend/app/worker/celery_app.py`
 - `backend/app/worker/tasks.py`
 - `backend/app/services/collection_queue.py`
@@ -145,6 +172,20 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - `run_docker.bat`
 - `docs/operations/docker_first_run.md`
 - `compose.yaml`
+- `compose.production.yaml`
+- `.env.production.example`
+- `deployment/nginx/nginx.conf`
+- `.github/workflows/ci.yml`
+- `.github/workflows/production-release.yml`
+- `.github/workflows/public-dataset-release.yml`
+- `.github/workflows/public-dataset-rollback.yml`
+- `scripts/promote_public_dataset.py`
+- `scripts/build_public_dataset_pointer.py`
+- `scripts/download_public_dataset.py`
+- `scripts/build_production_release_manifest.py`
+- `data/schema/production_release_manifest.schema.json`
+- `tests/test_production_delivery.py`
+- `docs/operations/production_delivery.md`
 
 ## 설계 결정
 
@@ -190,6 +231,12 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
    25개 때문에 `all predefined address pools have been fully subnetted`로
    중단됐다. 연결 컨테이너가 0인 프로젝트 network만 확인·정리하고 같은 실행을
    재개해 새 Volume bootstrap을 통과했다.
+9. 첫 Production Compose smoke는 inline `tmpfs` 문자열의 쉼표가 별도 mount로
+   해석돼 `mode=1777` 경로 오류로 중단됐다. mount option 전체를 명시적 YAML
+   문자열로 고정하고 clean project를 재생성했다.
+10. worker healthcheck의 destination을 single quote로 감싸 `$HOSTNAME`이 확장되지
+    않아 실제 worker가 ready인데도 `No nodes replied`가 발생했다. Compose escape만
+    남기고 shell quote를 제거한 뒤 worker·Beat·전체 wait가 healthy로 통과했다.
 
 ### 통과 결과
 
@@ -227,12 +274,25 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | API key 없는 clean Volume | Migration `0001 → 0009`, 451 inserted |
 | clean Compose health | PostgreSQL·Redis·Backend·worker·Beat·Frontend healthy |
 | hash 불일치 주입 | DB·latest 변경 없이 fail-closed PASS |
+| P4 신규 계약 회귀 | 8 passed, 제한 성공 promotion 차단 포함 |
+| P4 image build | Backend·same-origin Frontend local image PASS |
+| Production Migration | clean Volume `0001 → 20260824_0010 (head)` |
+| Production dataset | `public-bootstrap-20260823-f838d41`, 451 inserted·재실행 451 unchanged |
+| Production health | PostgreSQL·Redis·Backend·worker·Beat·Frontend·Nginx healthy |
+| Nginx actual | `/health` 200, `/api` 451건 조회, SPA `/` 200 |
+| Production network | host 공개 Nginx 1개, DB·Redis host port 0개 |
+| 원격 GHCR·Release | 미실행, P4 최종 Gate blocker로 명시 |
+| P4 최종 저장소 pytest | 576 passed, 28 skipped, 241 subtests passed |
+| P4 Frontend | 222 passed, lint·same-origin production build PASS |
+| Workflow lint | actionlint 1.7.12, 4 Workflow 0건 |
 
 ## 남은 작업
 
-1. W6-P4에서 기본 pointer, GitHub Release upload와 promotion·rollback을
-   구현하고 새 Git SHA로 artifact를 재생성한다.
-2. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
+1. 현재 변경을 commit·push한 뒤 공통 CI를 실행하고 보호된 중앙 runner에서
+   최신 완전 수집 run으로 dataset Release를 발행한다.
+2. `v1.0.0` 후보 Workflow의 GHCR digest·attestation·Production smoke와
+   `production-release.json`을 대조한 뒤 `W6-P4_PRODUCTION_PASS`를 기록한다.
+3. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.
-3. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
+4. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
    인증·TLS 오류를 Source별 운영 지표로 계속 구분한다.

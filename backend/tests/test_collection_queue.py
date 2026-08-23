@@ -48,6 +48,7 @@ def test_publish_uses_run_id_as_idempotent_celery_task_id():
         str(writer_id),
         "youthcenter-api",
         100,
+        False,
     )
     assert calls[0][1]["queue"] == "collection"
 
@@ -108,6 +109,49 @@ def test_worker_execution_is_terminal_redelivery_safe(db, monkeypatch):
         1,
     ) == "succeeded"
     assert calls == [run_id]
+
+
+def test_worker_routes_complete_snapshot_only_when_scheduler_marks_it(
+    db, monkeypatch
+):
+    factory = _factory(db)
+    writer = CollectionRunWriter(factory)
+    run_id = writer.enqueue(
+        source_id="bokjiro-central-welfare-api",
+        trigger_type="scheduler",
+        requested_count=500,
+    )
+    calls = []
+
+    def fake_complete(
+        received_run_id,
+        source_id,
+        page_size,
+        *,
+        request_budget,
+        session_factory,
+    ):
+        calls.append((received_run_id, source_id, page_size, request_budget))
+        CollectionRunWriter(session_factory).finish(
+            received_run_id,
+            status="succeeded",
+            counts=CollectionRunCounts(requested_count=page_size),
+            is_complete_snapshot=True,
+        )
+
+    monkeypatch.setattr(tasks, "SessionLocal", factory)
+    monkeypatch.setattr(tasks, "execute_complete_collection_run", fake_complete)
+    monkeypatch.setattr(tasks.settings, "COLLECTION_SNAPSHOT_REQUEST_BUDGET", 12)
+
+    assert tasks.execute_queued_collection(
+        run_id,
+        "bokjiro-central-welfare-api",
+        500,
+        True,
+    ) == "succeeded"
+    assert calls == [
+        (run_id, "bokjiro-central-welfare-api", 500, 12)
+    ]
 
 
 def test_source_lock_rejects_parallel_same_source_in_process(db):
@@ -183,8 +227,8 @@ def test_scheduler_publishes_the_same_collection_task_boundary(
     monkeypatch.setattr(tasks, "SessionLocal", factory)
     monkeypatch.setattr(
         "app.services.collection_queue.publish_collection_run",
-        lambda run_id, source_id, requested_count: published.append(
-            (run_id, source_id, requested_count)
+        lambda run_id, source_id, requested_count, **kwargs: published.append(
+            (run_id, source_id, requested_count, kwargs["complete_snapshot"])
         ),
     )
     monkeypatch.setattr(
@@ -197,6 +241,11 @@ def test_scheduler_publishes_the_same_collection_task_boundary(
         "COLLECTION_SCHEDULE_REQUESTED_COUNT",
         25,
     )
+    monkeypatch.setattr(
+        tasks.settings,
+        "COLLECTION_SCHEDULE_COMPLETE_SNAPSHOT",
+        True,
+    )
 
     run_id = tasks.enqueue_scheduled_source_task()
 
@@ -206,6 +255,6 @@ def test_scheduler_publishes_the_same_collection_task_boundary(
         assert run.status == "queued"
         assert run.trigger_type == "scheduler"
         assert run.requested_count == 25
-        assert published == [(run.run_id, "youthcenter-api", 25)]
+        assert published == [(run.run_id, "youthcenter-api", 25, True)]
     finally:
         session.close()

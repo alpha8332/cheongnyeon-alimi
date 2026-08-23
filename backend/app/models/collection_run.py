@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Column,
     DateTime,
@@ -11,6 +12,7 @@ from sqlalchemy import (
     String,
     Text,
     Uuid,
+    false,
     text,
 )
 
@@ -102,6 +104,12 @@ class CollectionRun(Base):
         nullable=False,
         default="running",
         server_default="running",
+    )
+    is_complete_snapshot = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=false(),
     )
 
     requested_count = Column(Integer, nullable=False, default=0, server_default="0")

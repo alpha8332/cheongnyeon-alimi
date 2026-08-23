@@ -153,6 +153,7 @@ class CollectionRunWriter:
         counts: CollectionRunCounts,
         error_type: str | None = None,
         finished_at: datetime | None = None,
+        is_complete_snapshot: bool = False,
     ) -> None:
         if status not in TERMINAL_STATUSES:
             raise ValueError(
@@ -177,6 +178,7 @@ class CollectionRunWriter:
             run.status = status
             run.finished_at = finished_at or utc_now()
             run.error_type = safe_error_type
+            run.is_complete_snapshot = is_complete_snapshot
             for field, value in asdict(counts).items():
                 setattr(run, field, value)
             session.commit()

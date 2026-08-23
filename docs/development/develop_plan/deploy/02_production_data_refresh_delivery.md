@@ -185,6 +185,11 @@ Windows 사용자가 저장소와 README만으로 공개 dataset을 검증·복�
 
 ### W6-P4 - Production Compose·CI/CD
 
+상태: in-progress (`2026-08-24`). Production Compose·Nginx·dataset promotion·
+rollback·GHCR Workflow 구현과 로컬 actual smoke는 통과했다. 원격 GHCR image와
+GitHub dataset Release가 아직 발행되지 않았으므로 현재 공식 Gate는
+`W6-P3_BOOTSTRAP_PASS`를 유지한다.
+
 #### 목적
 
 검증된 code image와 dataset만 버전이 연결된 배포 산출물로 발행한다.
@@ -202,6 +207,18 @@ Windows 사용자가 저장소와 README만으로 공개 dataset을 검증·복�
 - 실패·partial 수집은 새 latest dataset 또는 manifest를 발행하지 않음
 - Nginx `/api` reverse proxy와 정적 UI, health·로그·Volume이 검증됨
 - 실제 secret과 Raw·dump가 image·Git·CI artifact에 없음
+
+#### 현재 검증 증거와 남은 활성화
+
+- clean project에서 Migration `20260824_0010`, 공개 dataset 451건 import,
+  PostgreSQL·Redis·Backend·worker·Beat·Frontend·Nginx health를 확인함
+- Nginx `/health`, `/api/v1/policies`, SPA 정적 응답과 단일 host port를 확인함
+- 최신 Source별 성공·`is_complete_snapshot=true` CollectionRun만 허용하는
+  promotion Gate와 불변 asset
+  재다운로드 검증 뒤 latest pointer 갱신 순서를 구현함
+- tag/release Workflow를 원격에서 실행해 GHCR digest·attestation,
+  `production-release.json`, dataset Release가 일치해야
+  `W6-P4_PRODUCTION_PASS`로 닫음
 
 ### W6-P5 - clean-room과 Final Gate
 

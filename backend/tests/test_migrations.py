@@ -18,7 +18,8 @@ QUALITY_REVISION = "20260810_0005"
 ELIGIBILITY_REVISION = "20260810_0006"
 LIFECYCLE_REVISION = "20260824_0007"
 QUEUE_REVISION = "20260824_0008"
-HEAD_REVISION = "20260824_0009"
+ACTIVE_SOURCE_REVISION = "20260824_0009"
+HEAD_REVISION = "20260824_0010"
 
 
 def alembic_config() -> Config:
@@ -56,6 +57,10 @@ def test_collection_quality_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == ACTIVE_SOURCE_REVISION
+    )
+    assert (
+        scripts.get_revision(ACTIVE_SOURCE_REVISION).down_revision
         == QUEUE_REVISION
     )
     assert (
@@ -168,9 +173,14 @@ def test_upgrade_sql_matches_collection_run_contract():
     assert "ADD VALUE IF NOT EXISTS 'queued' BEFORE 'running'" in sql
     assert "status IN ('queued', 'running')" in sql
     assert "CREATE UNIQUE INDEX uq_collection_runs_active_source" in sql
+    assert "ADD COLUMN is_complete_snapshot BOOLEAN DEFAULT false NOT NULL" in sql
 
     for column in CollectionRun.__table__.columns:
-        if column.name in {"duplicate_count", "rejected_count"}:
+        if column.name in {
+            "duplicate_count",
+            "rejected_count",
+            "is_complete_snapshot",
+        }:
             assert f"ADD COLUMN {column.name} " in sql
         else:
             assert f"\n    {column.name} " in sql
@@ -181,6 +191,7 @@ def test_downgrade_sql_removes_table_indexes_and_enum_types():
 
     assert "DROP COLUMN rejected_count" in sql
     assert "DROP COLUMN duplicate_count" in sql
+    assert "DROP COLUMN is_complete_snapshot" in sql
     assert "DROP COLUMN eligibility_summary" in sql
     assert "DROP COLUMN inactive_at" in sql
     assert "DROP COLUMN last_verified_at" in sql
