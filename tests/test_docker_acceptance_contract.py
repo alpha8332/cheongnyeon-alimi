@@ -44,10 +44,27 @@ def test_profiles_and_test_volume_are_isolated():
     assert services["schema-bootstrap"]["profiles"] == ["restore"]
     assert services["restore"]["profiles"] == ["restore"]
     assert services["verify-restored"]["profiles"] == ["restore"]
+    assert services["public-dataset-bootstrap"]["profiles"] == ["bootstrap"]
     assert services["database-test"]["profiles"] == ["test"]
     assert services["database-test"]["volumes"] != services["database"]["volumes"]
     assert services["database-test"]["networks"] == ["database-test"]
     assert COMPOSE["networks"]["database-test"]["internal"] is True
+
+
+def test_public_dataset_bootstrap_is_verified_read_only_and_database_only():
+    service = COMPOSE["services"]["public-dataset-bootstrap"]
+    command = service["command"][-1]
+
+    assert service["depends_on"]["migrate"]["condition"] == (
+        "service_completed_successfully"
+    )
+    assert service["networks"] == ["database"]
+    assert service["read_only"] is True
+    assert service["volumes"][0]["read_only"] is True
+    assert "--verify-manifest /bootstrap/manifest.json" in command
+    assert command.index("--verify-manifest") < command.index(
+        "app.cli.import_public_dataset"
+    )
 
 
 def test_images_are_pinned_and_application_users_are_non_root():
@@ -137,3 +154,25 @@ def test_compose_env_initializer_keeps_pin_plaintext_out_of_file():
     assert "RandomNumberGenerator" in initializer
     assert "Set-Acl" in initializer
     assert "check-ignore --quiet -- .env.compose" in initializer
+
+
+def test_windows_one_command_bootstrap_is_fail_closed_and_cache_aware():
+    runner = (ROOT / "scripts" / "run_docker.ps1").read_text(encoding="utf-8")
+    batch = (ROOT / "run_docker.bat").read_text(encoding="utf-8")
+
+    assert "-ExecutionPolicy Bypass" in batch
+    assert "scripts\\run_docker.ps1" in batch
+    assert "docker.exe" in runner
+    assert '"compose",' in runner
+    assert "at least 2 GiB" in runner
+    assert "port $($PortCheck.Port) is already used" in runner
+    assert "downloaded manifest SHA-256 mismatch" in runner
+    assert "downloaded dataset SHA-256 mismatch" in runner
+    assert "downloaded dataset byte count mismatch" in runner
+    assert "latest.pointer.json" in runner
+    assert "public-dataset-bootstrap" in runner
+    assert '"run", "--rm", "migrate"' in runner
+    assert "Wait-HttpHealth" in runner
+    assert "Remove-DownloadDirectory" in runner
+    assert "docker volume rm" not in runner
+    assert "down --volumes" not in runner

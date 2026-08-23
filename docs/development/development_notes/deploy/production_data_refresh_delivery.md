@@ -8,7 +8,7 @@
 - 계획: [Deploy 02 계획](../../develop_plan/deploy/02_production_data_refresh_delivery.md)
 - 주차 계획: [6주차 Final Release](../../weekly_plan/week_06_final_release.md)
 - 시작 SHA: `f838d4191cb5cc33c324d3e946c7a12ed8a56b1b`
-- 현재 Gate: `W6-P2_QUEUE_PASS`
+- 현재 Gate: `W6-P3_BOOTSTRAP_PASS`
 
 ## 목적
 
@@ -32,7 +32,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | W6-P0 | completed | default-deny 계약, 451건 actual artifact·hash 재검증, `W6-P0_DATASET_CONTRACT_PASS` |
 | W6-P1 | completed | 3 timestamp, soft-deactivation, 마감 기본 제외, `W6-P1_LIFECYCLE_PASS` |
 | W6-P2 | completed | Redis AOF·Celery worker·단일 Beat·actual queue, `W6-P2_QUEUE_PASS` |
-| W6-P3 | pending | clone/ZIP 최초 실행 |
+| W6-P3 | completed | actual 451건 clean Volume·offline 멱등 bootstrap, `W6-P3_BOOTSTRAP_PASS` |
 | W6-P4 | pending | Production Compose·CI/CD |
 | W6-P5 | pending | clean-room·Final Gate |
 
@@ -102,6 +102,23 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - `20260824_0008`은 `queued` enum·constraint를, `20260824_0009`는 active Source
   unique index와 기존 중복 active row의 명시적 failed 보정을 추가한다.
 
+### clone/ZIP 최초 실행
+
+- 저장소 루트 `run_docker.bat`과 `scripts/run_docker.ps1`을 추가했다.
+- Docker engine·Compose v2·2 GiB disk·port와 `.env.compose` 없는 기존 기본
+  Volume 충돌을 먼저 검사한다.
+- HTTPS pointer, manifest SHA-256, dataset SHA-256·byte를 host에서 검증하고
+  `%LOCALAPPDATA%` 아래 version별 immutable cache로 옮긴다.
+- `public-dataset-bootstrap` Compose profile은 검증 cache를 read-only mount하고
+  P0 검증기로 manifest·Schema·Source allowlist·내용 안전성을 다시 검사한 뒤에만
+  PostgreSQL에 멱등 upsert한다.
+- 전체 검증과 import가 성공한 뒤에만 offline `latest.pointer.json`을 갱신한다.
+  network 장애만 직전 cache로 대체하고 hash 불일치는 그대로 중단한다.
+- Migration과 bootstrap 뒤 여섯 상시 service health를 기다린 다음 Browser를
+  열며, 두 번째 실행은 기존 cache·Volume을 재사용한다.
+- 외부 GitHub Release pointer·asset 발행은 P4가 담당한다. P3에서는 같은 형식의
+  actual P0 artifact를 로컬 검증 입력으로 사용해 소비 파이프라인을 확정했다.
+
 ## 주요 변경 파일
 
 - `data/schema/public_policy_dataset_sources.schema.json`
@@ -123,6 +140,10 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 - `backend/app/worker/tasks.py`
 - `backend/app/services/collection_queue.py`
 - `backend/app/services/source_collection_lock.py`
+- `backend/app/cli/import_public_dataset.py`
+- `scripts/run_docker.ps1`
+- `run_docker.bat`
+- `docs/operations/docker_first_run.md`
 - `compose.yaml`
 
 ## 설계 결정
@@ -139,6 +160,9 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
   전체 제외한다.
 - immutable versioned asset을 먼저 검증한 뒤 작은 latest pointer만 갱신하며
   실패 시 직전 pointer를 유지한다.
+- 다운로드 완료가 아니라 컨테이너 전체 계약 검증과 DB import 성공을 cache
+  latest 승격의 transaction 경계로 사용한다.
+- 실행기는 사용자가 소유한 기존 Volume을 자동 삭제·초기화하지 않는다.
 
 ## 검증 결과
 
@@ -159,6 +183,13 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
    internal DB·queue network에만 연결돼 외부 HTTP route가 없음을 확인해 worker
    전용 `collector-egress` network를 추가했다. 같은 천안 Source를 다시 실행해
    Raw 3·추출 1·accepted 1·unchanged 1, `succeeded`를 확인했다.
+7. 첫 P3 image build는 Backend Docker context allowlist가 `scripts/`를 제외해
+   공개 dataset 검증기 `COPY`에서 실패했다. 검증기 한 파일만 context에
+   명시적으로 포함해 image 비밀·Runtime 제외 경계는 유지했다.
+8. 독립 clean project 첫 시도는 이전 DEP4·DEP5 검증에서 남은 빈 Docker network
+   25개 때문에 `all predefined address pools have been fully subnetted`로
+   중단됐다. 연결 컨테이너가 0인 프로젝트 network만 확인·정리하고 같은 실행을
+   재개해 새 Volume bootstrap을 통과했다.
 
 ### 통과 결과
 
@@ -185,15 +216,21 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | broker restart | worker 중지 적재 `ce1d07c7-…`, Redis restart 후 `succeeded` |
 | PostgreSQL Source lock | 첫 획득 `true`, 동시 두 번째 획득 `false`, 해제 후 재획득 |
 | 컨테이너 PostgreSQL 전체 | 212 passed (Migration upgrade·downgrade 포함) |
-| 저장소 전체 pytest | 560 passed, 28 skipped, 241 subtests passed |
+| 저장소 전체 pytest | 566 passed, 28 skipped, 241 subtests passed |
 | Runtime unittest | 327 passed |
 | Frontend unit | 222 passed |
 | Frontend lint·build | PASS (`queued` 계약 포함) |
 | 문서·Compose 검증 | PASS |
+| P3 계약 단위 | 18 passed |
+| actual 기존 Volume 첫 P3 import | 451 updated, 검증·health PASS |
+| offline 재실행 | 451 unchanged, 기존 cache·Volume 재사용 PASS |
+| API key 없는 clean Volume | Migration `0001 → 0009`, 451 inserted |
+| clean Compose health | PostgreSQL·Redis·Backend·worker·Beat·Frontend healthy |
+| hash 불일치 주입 | DB·latest 변경 없이 fail-closed PASS |
 
 ## 남은 작업
 
-1. W6-P3·P4에서 pointer, GitHub Release upload와 promotion·rollback을
+1. W6-P4에서 기본 pointer, GitHub Release upload와 promotion·rollback을
    구현하고 새 Git SHA로 artifact를 재생성한다.
 2. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.

@@ -24,6 +24,7 @@ COPY collectors /app/collectors
 COPY data/reference /app/data/reference
 COPY data/schema /app/data/schema
 COPY data/seeds /app/data/seeds
+COPY scripts/build_public_bootstrap_dataset.py /app/scripts/build_public_bootstrap_dataset.py
 COPY deployment/postgres/prepare_acceptance_schema.py /opt/acceptance/prepare_acceptance_schema.py
 COPY deployment/postgres/verify_restored_database.py /opt/acceptance/verify_restored_database.py
 

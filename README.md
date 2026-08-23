@@ -11,8 +11,9 @@
 현재 온통청년·복지로의 제한 수집과 Raw 저장, 저장된 Runtime Raw의
 PostgreSQL 재처리, Seed·Runtime 최소 실행 이력 기반이 구현되어 있다.
 환경변수와 안전한 실행 범위는
-[Collector 실행 문서](docs/operations/collector.md)를 따른다. 구현되지 않은
-Source 전체 수집과 공개 dataset 자동 배포는 완료된 것으로 안내하지 않는다.
+[Collector 실행 문서](docs/operations/collector.md)를 따른다. Source 전체 수집과
+공개 dataset의 GitHub Release 자동 발행은 W6-P4 전까지 완료된 것으로 안내하지
+않는다.
 
 ## 데이터 수집과 최신성
 
@@ -34,8 +35,9 @@ Source 주기를 설정하지 않고 웹 UI만 켠 상태에서는 신규 정책
 최종 공개 배포는 각 사용자 PC가 동일 Source를 직접 반복 수집하는 방식이 아니라,
 승인된 중앙 수집 환경이 API 키와 호출량을 관리하고 재배포가 허용된 정규화
 dataset을 버전화하여 사용자가 최초 실행·갱신 때 검증 후 로컬 PostgreSQL에
-적재하는 구조를 목표로 한다. 이 Production 데이터 갱신·배포 파이프라인은
-아직 완료되지 않았으며 실제 정책 Raw와 DB dump를 Git에 커밋하지 않는다.
+적재한다. Windows 실행기, hash·Schema 검증, immutable cache, Migration과
+멱등 bootstrap은 구현됐고 실제 공개 Release 발행·CI promotion은 W6-P4 범위다.
+실제 정책 Raw와 DB dump는 Git에 커밋하지 않는다.
 
 Windows에서 Backend와 PostgreSQL 통합 테스트를 실행하는 절차는
 [Backend Windows 로컬 환경](docs/development/backend_local_setup.md)을
@@ -58,19 +60,21 @@ pgpass 경로가 필요하면 첫 번째 인자로 전달할 수 있다. Release
 
 ## Docker로 웹 UI 실행
 
-다른 PC에서 같은 PostgreSQL snapshot·Backend·Frontend를 실행하는 Docker
-Acceptance 경로를 구축하고 있다. 전체 웹 UI는 Frontend image 하나를 Docker
-Desktop에서 개별 실행하는 방식이 아니라, `compose.yaml`로 PostgreSQL →
-Migration → Backend → Frontend를 함께 시작한다.
+전체 웹 UI는 Frontend image 하나를 Docker Desktop에서 개별 실행하는 방식이
+아니라, 저장소 루트의 `run_docker.bat`이 PostgreSQL·Redis·Migration·공개
+dataset bootstrap·Backend·worker·Beat·Frontend를 함께 시작한다. API key는
+공개 최초 실행에 필요하지 않으며 첫 실행 때 관리자 4자리 PIN만 입력한다.
 
-현재 `DEP4_PASS`와 DEP5 암호화 package·receipt 도구 검증을 완료했고, 한
-실행자가 역할별 project·secret·Volume을 분리한 Backend·Frontend·사용성·QA
-대체 검증에서 발견한 결함도 수정했다. 다만 이 결과는 commit 전 worktree이며,
-최종 Git SHA로 새 package·receipt를 만들고 clean checkout 결과를 대조하는
-인계 Gate는 남아 있다. `DOCKER_ACCEPTANCE_PASS` 전까지는 대회
-심사자용 최종 실행 패키지로 안내하지 않는다. 최초 실행, Docker Desktop
-재실행과 웹 UI 접속 방법은
-[Docker Acceptance 환경 설정](docs/development/docker_acceptance_setup.md)을
-따른다. 다른 PC 인계용 암호화 package·receipt와 역할별 결과 양식은
-[Docker Acceptance 동일 환경 인계 패키지](docs/development/handoff/docker_acceptance/README.md)에
+```powershell
+.\run_docker.bat
+```
+
+기본 GitHub Release dataset pointer는 W6-P4에서 발행한다. 그 전에는 P0 actual
+artifact를 가진 개발자가 `-DatasetManifestPath`를 지정한 검증 경로만 사용할 수
+있다. 요구 환경, cache, offline 재실행과 실패 복구는
+[Windows Docker 최초 실행](docs/operations/docker_first_run.md)을 따른다.
+
+Acceptance snapshot을 다른 PC에 동일하게 인계하는 별도 절차는
+[Docker Acceptance 환경 설정](docs/development/docker_acceptance_setup.md)과
+[동일 환경 인계 패키지](docs/development/handoff/docker_acceptance/README.md)에
 정의되어 있다.

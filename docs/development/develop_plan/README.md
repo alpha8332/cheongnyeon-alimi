@@ -89,7 +89,7 @@ Production Data Refresh와 Final Release Gate다.
 | Data 06 뒤 | `R2-FEATURE-ACCEPTANCE` | actual E2E·독립 사용성·QA·수정본 재검증과 Release 2 판정 | 착수 전 integration domain 합의 |
 | 완료 | `R2-REVIEW-ADMISSION` | 최신 review 재판정·partial 적재·새 기준선·`W5-G1_REVALIDATED` | `feature/integration/week-05-acceptance` |
 | 완료 | `R2-DOCKER-ACCEPTANCE` | 동일 Git SHA·snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인계 | `feature/deploy/docker-acceptance-environment` |
-| 다음·`v1.0.0` 필수 | `R3-PRODUCTION-DATA-REFRESH` | 공개 dataset·정책 lifecycle·Celery/Redis 중앙 수집·one-command 실행·Production CI/CD·clean-room | `feature/deploy/production-data-refresh` |
+| 진행 중·`W6-P3_BOOTSTRAP_PASS` | `R3-PRODUCTION-DATA-REFRESH` | 공개 dataset·정책 lifecycle·Celery/Redis 중앙 수집·one-command 실행·Production CI/CD·clean-room | `feature/deploy/production-data-refresh` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text

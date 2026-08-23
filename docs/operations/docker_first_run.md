@@ -1,0 +1,111 @@
+# Windows Docker 최초 실행
+
+## 적용 범위
+
+저장소를 Git clone 또는 GitHub ZIP으로 받은 Windows 사용자가 API key 없이
+검증된 공개 normalized dataset을 PostgreSQL에 적재하고 전체 Web UI를 실행하는
+절차다. 실제 Source 수집과 정기 scheduler 활성화는
+[Collector 실행](collector.md)의 중앙 운영자 범위다.
+
+W6-P3에서 실행기와 실제 공개 artifact clean Volume 검증을 완료했다. 기본
+GitHub Release pointer는 W6-P4 promotion에서 발행한다. 그 전에는 공개 배포용
+기본 URL이 아직 활성화되지 않으므로 P0 artifact를 가진 개발자만
+`-DatasetManifestPath` 검증 경로를 사용한다.
+
+## 요구 환경
+
+- Windows 10 또는 11
+- 실행 중인 Docker Desktop과 Docker Compose v2
+- cache와 image·Volume을 위한 여유 공간 2 GiB 이상
+- 기본 host port `3000`, `8000` 또는 `.env.compose`에서 지정한 빈 port
+- 최초 실행 때 입력할 관리자용 4자리 PIN
+
+Node.js·Python·PostgreSQL을 host에 별도로 설치할 필요는 없다. API key, Raw와
+DB dump도 최초 공개 실행에 필요하지 않다.
+
+## 최초 실행
+
+저장소 루트에서 다음 파일을 실행한다.
+
+```powershell
+.\run_docker.bat
+```
+
+첫 실행에서는 4자리 관리자 PIN을 한 번 입력한다. 실행기는 비밀번호·token을
+무작위 생성해 Git에서 제외된 `.env.compose`에 저장하며 PIN 평문은 저장하지
+않는다. 이어서 다음 순서로 처리한다.
+
+1. Docker engine·Compose·disk·port·기존 Volume 충돌 사전 점검
+2. HTTPS latest pointer 다운로드
+3. manifest SHA-256과 dataset SHA-256·byte 수 검증
+4. immutable local cache 작성
+5. Backend·Frontend image build
+6. PostgreSQL Migration
+7. 컨테이너 안에서 manifest·Schema·Source allowlist·내용 안전성 재검증
+8. 공개 dataset 멱등 import
+9. PostgreSQL·Redis·Backend·worker·Beat·Frontend health 대기
+10. `http://127.0.0.1:3000` Browser 열기
+
+manifest 전체 검증과 DB import가 성공한 뒤에만 cache의 `latest.pointer.json`을
+갱신한다. 다운로드 중단·hash 불일치·Schema drift에서는 기존 latest cache와
+Volume을 변경하지 않는다.
+
+## P3 개발 검증 경로
+
+외부 Release 발행 전 실제 P0 artifact를 가진 개발자는 manifest와 같은
+디렉터리에 dataset을 둔 뒤 다음처럼 실행한다.
+
+```powershell
+.\run_docker.bat `
+  -DatasetManifestPath "C:\verified\public-bootstrap.manifest.json"
+```
+
+경로에 있는 파일도 동일한 host hash 검사와 컨테이너 전체 계약 검증을 거친다.
+검증을 생략하거나 DB dump로 대체하지 않는다.
+
+## 재실행과 offline cache
+
+두 번째 이후 실행도 같은 명령을 사용한다. 정책 identity upsert가 멱등하므로
+변경이 없으면 `unchanged`로 끝나며 기존 PostgreSQL Volume을 재사용한다.
+
+네트워크 없이 마지막으로 성공한 dataset을 사용하려면 다음과 같이 실행한다.
+
+```powershell
+.\run_docker.bat -Offline
+```
+
+기본 cache는
+`%LOCALAPPDATA%\cheongnyeon-alimi\public-dataset`에 있다. `-Offline`은 전체
+검증과 import까지 성공해 latest로 승인된 cache만 사용하며, cache가 없거나
+변조됐으면 실행을 중단한다.
+
+Browser를 자동으로 열지 않으려면 `-NoBrowser`를 추가한다. `.env.compose`에서
+host port를 바꿨으면 실행기가 해당 값을 읽는다. 일시적으로 지정하려면
+`-FrontendPort`, `-BackendPort`를 사용한다.
+
+## 상태 확인과 종료
+
+```powershell
+docker compose --env-file .env.compose ps
+docker compose --env-file .env.compose logs --tail 100 backend collection-worker
+docker compose --env-file .env.compose down
+```
+
+`down`은 컨테이너와 network를 내리지만 PostgreSQL·Redis·로그 Volume은
+보존한다. 실행기는 기존 Volume을 자동 삭제하거나 초기화하지 않는다.
+
+## 실패 시 안전 경계
+
+- `.env.compose` 없이 같은 기본 이름의 DB Volume이 있으면 소유권을 추측하지
+  않고 중단한다.
+- 다른 프로세스가 port를 쓰면 해당 port가 현재 Compose 서비스의 실제 mapping인지
+  확인하고, 아니면 중단한다.
+- manifest 또는 dataset hash·크기·Schema·Source 계약이 다르면 DB import 전에
+  중단한다.
+- 다운로드만 성공하고 전체 검증·import가 실패한 version은 offline latest로
+  승격하지 않는다.
+- 외부 endpoint 장애 때만 직전 검증 cache로 대체한다. hash 불일치는 cache
+  fallback으로 숨기지 않는다.
+
+환경을 강제로 초기화하기 전에 Volume과 `.env.compose`의 소유 관계를 확인한다.
+삭제·재생성이 필요한 경우 이 실행기가 자동 판단하지 않는다.

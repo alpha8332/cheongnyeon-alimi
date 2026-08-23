@@ -115,6 +115,41 @@ services:
       - no-new-privileges:true
     restart: "no"
 
+  public-dataset-bootstrap:
+    image: *backend-image
+    profiles: ["bootstrap"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+    volumes:
+      - type: bind
+        source: ${PUBLIC_DATASET_DIR:-C:/W6_P3_INJECTS_VERIFIED_DATASET}
+        target: /bootstrap
+        read_only: true
+    command:
+      - sh
+      - -ec
+      - >-
+        python /app/scripts/build_public_bootstrap_dataset.py
+        --verify-manifest /bootstrap/manifest.json &&
+        python -m app.cli.import_public_dataset
+        --manifest /bootstrap/manifest.json
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
   redis:
     image: *redis-image
     restart: unless-stopped

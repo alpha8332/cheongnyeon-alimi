@@ -13,6 +13,8 @@
 !data/schema/**
 !data/seeds/
 !data/seeds/**
+!scripts/
+!scripts/build_public_bootstrap_dataset.py
 !deployment/
 !deployment/postgres/
 !deployment/postgres/prepare_acceptance_schema.py

@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`2026-08-24`, `W6-P2_QUEUE_PASS`)
+- 상태: in-progress (`2026-08-24`, `W6-P3_BOOTSTRAP_PASS`)
 - 대상 Release: `v1.0.0`
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -29,8 +29,8 @@ Production Compose·CI/CD를 완성한다. 새 PC 사용자는 API key 없이 �
 - Backend·Frontend Docker image와 actual Browser 흐름 검증 완료
 - `CollectionRun` 목록·상세·수동 실행은 Redis·Celery 실제 queue에 연결됐고
   Source singleton·재전달·broker restart 회귀를 통과함
-- 공개 dataset 계약과 정책 inactive 생명주기는 완료됐으며 Production Nginx·
-  CI, 자동 dataset 발행과 `run_docker.bat`은 아직 구현 전
+- 공개 dataset 계약·정책 inactive·중앙 queue와 `run_docker.bat` actual clean
+  bootstrap은 완료됐으며 Production Nginx·CI와 자동 dataset 발행은 P4 범위
 
 ## 범위
 

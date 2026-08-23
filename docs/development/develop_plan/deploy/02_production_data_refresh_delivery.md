@@ -5,7 +5,7 @@
 - 번호: Deploy 02
 - 담당 영역: Team Leader - Integration·Deploy
 - 상태: in-progress
-- 현재 Gate: `W6-P2_QUEUE_PASS` (`2026-08-24`)
+- 현재 Gate: `W6-P3_BOOTSTRAP_PASS` (`2026-08-24`)
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
@@ -158,6 +158,11 @@ Admin API ───┘                                      ├→ Policy lifecy
 - Redis 유실 후에도 PostgreSQL의 최종 실행 이력과 정책 상태가 보존됨
 
 ### W6-P3 - clone/ZIP 최초 실행
+
+상태: completed (`2026-08-24`, `W6-P3_BOOTSTRAP_PASS`). actual 공개 dataset
+451건을 API key 없는 새 Compose project·새 PostgreSQL Volume에 `insert 451`로
+적재하고, offline 재실행에서 `unchanged 451`과 전체 service health를 확인했다.
+기본 GitHub Release pointer 발행은 W6-P4 promotion 입력으로 넘긴다.
 
 #### 목적
 
