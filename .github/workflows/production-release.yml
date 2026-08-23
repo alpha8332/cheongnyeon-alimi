@@ -1,0 +1,151 @@
+name: Production image release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Semantic release tag such as v1.0.0-rc.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  publish-and-smoke:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install --require-hashes --no-deps -r backend/requirements.lock
+      - name: Resolve immutable release identities
+        id: identity
+        shell: bash
+        run: |
+          repository="${GITHUB_REPOSITORY,,}"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            release_version="${{ inputs.release_version }}"
+          else
+            release_version="$GITHUB_REF_NAME"
+          fi
+          if ! [[ "$release_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+][A-Za-z0-9.-]+)?$ ]]; then
+            echo "invalid release version: $release_version" >&2
+            exit 1
+          fi
+          {
+            echo "backend=ghcr.io/${repository}-backend"
+            echo "frontend=ghcr.io/${repository}-frontend"
+            echo "version=$release_version"
+          } >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v4
+      - name: Build and publish backend
+        id: backend
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.identity.outputs.backend }}:sha-${{ github.sha }}
+            ${{ steps.identity.outputs.backend }}:${{ steps.identity.outputs.version }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+      - name: Build and publish frontend
+        id: frontend
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.identity.outputs.frontend }}:sha-${{ github.sha }}
+            ${{ steps.identity.outputs.frontend }}:${{ steps.identity.outputs.version }}
+          build-args: |
+            VITE_API_BASE_URL=/
+            VITE_USE_MOCK=false
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+      - uses: actions/attest@v4
+        with:
+          subject-name: ${{ steps.identity.outputs.backend }}
+          subject-digest: ${{ steps.backend.outputs.digest }}
+          push-to-registry: true
+      - uses: actions/attest@v4
+        with:
+          subject-name: ${{ steps.identity.outputs.frontend }}
+          subject-digest: ${{ steps.frontend.outputs.digest }}
+          push-to-registry: true
+      - name: Download and verify the current public dataset
+        run: |
+          python scripts/download_public_dataset.py \
+            --pointer-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/dataset-latest/public-dataset-pointer.json" \
+            --output-dir release-dataset
+      - name: Production Compose migration and smoke
+        shell: bash
+        env:
+          COMPOSE_PROJECT_NAME: cheongnyeon-alimi-release-smoke
+          BACKEND_IMAGE: ${{ steps.identity.outputs.backend }}@${{ steps.backend.outputs.digest }}
+          FRONTEND_IMAGE: ${{ steps.identity.outputs.frontend }}@${{ steps.frontend.outputs.digest }}
+          PUBLIC_DATASET_DIR: ${{ github.workspace }}/release-dataset
+          NGINX_HOST_PORT: "18080"
+          POSTGRES_DB: cheongnyeon_alimi_release
+          POSTGRES_USER: release_ci
+          POSTGRES_PASSWORD: release-ci-database-password
+          BACKEND_SECRET_KEY: release-ci-backend-secret-key-32-bytes
+          ADMIN_PIN_HASH: 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
+          ADMIN_TOKEN_SECRET: release-ci-admin-token-secret-32-bytes
+          CORS_ORIGINS: '["http://127.0.0.1:18080"]'
+          COLLECTION_SCHEDULE_ENABLED: "false"
+        run: |
+          cleanup() { docker compose -f compose.production.yaml down --volumes || true; }
+          trap cleanup EXIT
+          docker compose -f compose.production.yaml config --quiet
+          docker compose -f compose.production.yaml up --detach --wait --wait-timeout 240
+          curl --fail --silent http://127.0.0.1:18080/health
+          curl --fail --silent \
+            "http://127.0.0.1:18080/api/v1/policies?limit=1&include_partial=true" | \
+            python -c 'import json,sys; assert json.load(sys.stdin)["total"] > 0'
+          curl --fail --silent http://127.0.0.1:18080/ >/dev/null
+          docker compose -f compose.production.yaml exec -T backend alembic current | grep -q '(head)'
+          docker compose -f compose.production.yaml ps
+      - name: Bind image, code, migration, schema and dataset versions
+        run: |
+          python scripts/build_production_release_manifest.py \
+            --release-version "${{ steps.identity.outputs.version }}" \
+            --git-sha "$GITHUB_SHA" \
+            --backend-name "${{ steps.identity.outputs.backend }}" \
+            --backend-digest "${{ steps.backend.outputs.digest }}" \
+            --frontend-name "${{ steps.identity.outputs.frontend }}" \
+            --frontend-digest "${{ steps.frontend.outputs.digest }}" \
+            --dataset-pointer release-dataset/public-dataset-pointer.json \
+            --output production-release.json
+      - name: Publish immutable production release manifest
+        run: |
+          version="${{ steps.identity.outputs.version }}"
+          gh release view "$version" >/dev/null 2>&1 || \
+            gh release create "$version" --verify-tag --title "$version" --generate-notes
+          gh release upload "$version" production-release.json --clobber

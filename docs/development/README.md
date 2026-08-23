@@ -19,14 +19,17 @@
   병렬 작업, 역할별 책임과 통합 Gate
 - [개발 기록](development_notes/README.md): Forest에서 실제로 구현하고
   검증한 상세 결과
+- [프론트엔드 개발 히스토리 (1~5주차)](frontend_development_history_w1_w5.md):
+  주차별 UI/기능·UX 가치·구현 설계 종합 (Forest 개발 기록 요약)
 - [문서 품질 검증](documentation_validation.md): 문서 검증 명령과 검사 규칙
 - [Backend Windows 로컬 환경](backend_local_setup.md): Windows `.venv`,
   PostgreSQL 테스트 역할·DB와 전체 Backend 테스트 절차
 
 계획과 개발 기록은 담당 영역이 명확할 때 `data/`, `backend/`, `frontend/`,
-`integration/`으로 구분한다. 둘 이상의 영역에 걸친 공통 기반과 연결 작업은
-`integration/`에서 관리한다. 폴더는 실제 Forest 문서가 생길 때 생성하며,
-담당자 이름이 아니라 작업 책임을 기준으로 분류한다.
+`integration/`, `deploy/`로 구분한다. 둘 이상의 애플리케이션 영역에 걸친
+공통 기반과 연결 작업은 `integration/`, 배포 구성·재현 환경·운영 인계가
+독립 완료 기준인 작업은 `deploy/`에서 관리한다. 폴더는 실제 Forest 문서가
+생길 때 생성하며, 담당자 이름이 아니라 작업 책임을 기준으로 분류한다.
 
 ## 포함하지 않는 내용
 

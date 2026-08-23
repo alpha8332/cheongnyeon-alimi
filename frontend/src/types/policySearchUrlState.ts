@@ -8,14 +8,17 @@
  * parse/build/toRequest helpers: {@link ../utils/policySearchUrl.ts} (FE4-14).
  */
 
-import type { PolicySearchQueryParams } from '@/types/policySearch';
-import type { ApplicationStatus, PolicyCategory } from '@/types/policy';
+import type { PolicySearchQueryParams } from './policySearch.js';
+import type { ApplicationStatus, PolicyCategory } from './policy.js';
 
-/** Planned Frontend route for NL search (distinct from `/programs` list API). */
-export const POLICY_SEARCH_ROUTE = '/search';
+/** Planned Frontend route for NL search (home `/?q=…`; legacy `/search` redirects). */
+export const POLICY_SEARCH_ROUTE = '/';
+
+/** @deprecated Legacy `/search` path preserved for redirect and cross-route checks. */
+export const LEGACY_POLICY_SEARCH_ROUTE = '/search';
 
 /**
- * Browser URL query state for `/search`.
+ * Browser URL query state for home NL search (`/?q=…`).
  * Field set mirrors {@link PolicySearchQueryParams} fields that may appear in the URL.
  */
 export interface PolicySearchUrlQueryState {

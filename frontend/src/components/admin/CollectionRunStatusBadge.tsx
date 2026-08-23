@@ -8,6 +8,8 @@ interface CollectionRunStatusBadgeProps {
 
 function getStatusVariant(status: CollectionRunStatus): string {
   switch (status) {
+    case 'queued':
+      return 'queued';
     case 'running':
       return 'running';
     case 'succeeded':

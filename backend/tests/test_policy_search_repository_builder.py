@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from app.models.policy import Policy
 from app.models.policy_search import PolicySearchDocument
 from app.repositories.policy_search import (
@@ -156,6 +156,31 @@ def test_repository_search_policies_status_closed_filter(db, sample_policies):
     assert total == 1
     assert items[0].policy.id == sample_policies[2].id
     assert items[0].verdicts.status == "match"
+
+
+@pytest.mark.parametrize("lifecycle_state", ["inactive", "expired"])
+def test_repository_search_excludes_nonpublic_lifecycle_rows(
+    db,
+    sample_policies,
+    lifecycle_state,
+):
+    policy = sample_policies[0]
+    if lifecycle_state == "inactive":
+        policy.inactive_at = datetime.now(timezone.utc)
+    else:
+        policy.application_end = date.today() - timedelta(days=1)
+    db.commit()
+
+    interpreted = parse_search_query(q="서울 24세 월세 모집중", db=db)
+    items, total = PolicySearchRepository(db).search_policies(
+        interpreted,
+        include_partial=True,
+        page=1,
+        limit=10,
+    )
+
+    assert total == 0
+    assert items == []
 
 
 def test_repository_search_policies_deterministic_sorting(db, sample_policies):

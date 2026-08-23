@@ -1,0 +1,2058 @@
+{
+  "schema_version": "1.0.0",
+  "inventory_id": "supplemental-official-policy-inventory-20260817",
+  "inventory_date": "2026-08-17",
+  "input_evidence": {
+    "file_name": "청년정책_데이터수집_완료.xlsx",
+    "sha256": "c03aa55fba844639a89a4f62ec083dc74c5397b3ea7fbfab91450fbef97f2095",
+    "sheet_name": "청년정책 세부 수집방안",
+    "range": "A1:F71",
+    "url_row_count": 64,
+    "excluded_fields": [
+      "수집 방법 (가능한 모든 방법)",
+      "비고 (신청 필요 서류 및 안내)"
+    ],
+    "exclusion_reason": "공식 원문으로 검증되지 않은 수집 힌트와 필요서류는 정책 evidence로 import하지 않는다."
+  },
+  "quality_summary": {
+    "url_row_count": 64,
+    "candidate_identity_count": 60,
+    "collapsed_exact_duplicate_rows": 4,
+    "same_url_title_conflict_count": 3,
+    "direct_aggregator_row_count": 11,
+    "inventory_status_counts": {
+      "candidate": 55,
+      "data_error": 4,
+      "discovery_reference": 1
+    }
+  },
+  "same_url_title_conflicts": [
+    {
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005567",
+      "candidate_ids": [
+        "xlsx-row-012-1c61630eb082",
+        "xlsx-row-013-481148a890e3"
+      ],
+      "input_rows": [
+        12,
+        13
+      ]
+    },
+    {
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&systClId=SC00000117&systId=SI00000318&upprSystClId=",
+      "candidate_ids": [
+        "xlsx-row-015-64777b1ebd8c",
+        "xlsx-row-016-0c73f44ac3f4"
+      ],
+      "input_rows": [
+        15,
+        16
+      ]
+    },
+    {
+      "canonical_url": "https://enhuf.molit.go.kr/index.jsp",
+      "candidate_ids": [
+        "xlsx-row-054-5da7b658c0e3",
+        "xlsx-row-059-6b5af352821e"
+      ],
+      "input_rows": [
+        54,
+        58,
+        59
+      ]
+    }
+  ],
+  "policy_candidates": [
+    {
+      "candidate_id": "xlsx-row-002-96ef237a57a4",
+      "input_rows": [
+        2
+      ],
+      "category": "주거 지원",
+      "title": "26년 청년월세 지원사업",
+      "agency": "국토교통부 / 복지로",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00004661",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00004661",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00004661"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:4d0994be86b628f665325d26a6459f6080104063d004ed46c9b643e549220b1d",
+        "note_sha256": "sha256:21965a8b615c26771b3e28a96c461fa9139702cb676fbd6a6a098ebde0ec57d5",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-003-71fc53f4606b",
+      "input_rows": [
+        3
+      ],
+      "category": "주거 지원",
+      "title": "미혼청년 주거급여 분리지급",
+      "agency": "국토교통부 / 복지로",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00003201",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00003201",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00003201"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:cef72597796a2eceb6eeed13071255b5f5441466cad4e1216b54edf40a9c5220",
+        "note_sha256": "sha256:f3ff6fe98cbc7f336652fa51bc5843e17b8ed6ab09611bbc3934371f99838923",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-004-07290460a74e",
+      "input_rows": [
+        4
+      ],
+      "category": "주거 지원",
+      "title": "LH 청년 매입임대주택",
+      "agency": "국토교통부 / 한국토지주택공사(LH)",
+      "url": "https://apply.lh.or.kr/lhapply/cm/cntnts/cntntsView.do?cntntsId=201251&mi=1150",
+      "canonical_url": "https://apply.lh.or.kr/lhapply/cm/cntnts/cntntsView.do?cntntsId=201251&mi=1150",
+      "hostname": "apply.lh.or.kr",
+      "source_group": "lh-housing-announcements",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:1e62aebc2284a7b1ac844d9c23957570b5ef6f843d0b6966c393a1c8d4ddee64",
+        "note_sha256": "sha256:4d4127211640f20569927472997d5fd2b306bf61bd202c9c8c4b5dce7947019c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-005-704ca3f1f595",
+      "input_rows": [
+        5
+      ],
+      "category": "주거 지원",
+      "title": "LH 청년 행복주택",
+      "agency": "국토교통부 / 한국토지주택공사(LH)",
+      "url": "https://apply.lh.or.kr/lhapply/cm/cntnts/cntntsView.do?mi=1201662&cntntsId=1201371",
+      "canonical_url": "https://apply.lh.or.kr/lhapply/cm/cntnts/cntntsView.do?cntntsId=1201371&mi=1201662",
+      "hostname": "apply.lh.or.kr",
+      "source_group": "lh-housing-announcements",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:1e62aebc2284a7b1ac844d9c23957570b5ef6f843d0b6966c393a1c8d4ddee64",
+        "note_sha256": "sha256:4a5eb261cb4925cdebefb44d71ebf1297d16c0ebf4f417bff10501368411401c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-006-3dc9ad4b8195",
+      "input_rows": [
+        6
+      ],
+      "category": "주거 지원",
+      "title": "전세보증금반환보증 보증료 지원",
+      "agency": "국토교통부 / 주택도시기금",
+      "url": "https://www.gov.kr/portal/rcvfvrSvc/dtlEx/161300000103",
+      "canonical_url": "https://www.gov.kr/portal/rcvfvrSvc/dtlEx/161300000103",
+      "hostname": "www.gov.kr",
+      "source_group": "government-data-and-service",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:589ec148dd22c3d22bfdb5fecb9975f6d370c468a86768d3f4432dc8ae5d1926",
+        "note_sha256": "sha256:54689bc8afaad42d2491827cb2000011c4cef75fbd4708c862e89201de8dfb14",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-007-55ad8dbfb893",
+      "input_rows": [
+        7
+      ],
+      "category": "금융·자산 형성 지원",
+      "title": "청년내일저축계좌",
+      "agency": "보건복지부 / 복지로 / 자산형성지원센터",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00000060",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00000060",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00000060"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:e4de2ab22fbd9cb45f984b6727a5c6f473d9c86ff42e3c0491eb4539881e4f28",
+        "note_sha256": "sha256:6c9374ba8dac4aa0a398d31c0edffdb825a205f35d5c1722739f4c13ae38dcb2",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-008-1acdfe8c2f9d",
+      "input_rows": [
+        8
+      ],
+      "category": "복지·생활 지원",
+      "title": "고용보험 미적용자 출산급여 지원",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=10&systId=SI00000390&systClId=SC00000250",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=10&systClId=SC00000250&systId=SI00000390",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000390"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:7215a8e39f8c4f7754bbde2e01d3df3cfb9811c97a83fdf31309cb1cadd20766",
+        "note_sha256": "sha256:549274bcce8d5f3b05356dbfe5b59f021bbf6638e79e40ea27ca549ce9fc6f88",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-009-7db115678713",
+      "input_rows": [
+        9
+      ],
+      "category": "복지·생활 지원",
+      "title": "자립준비청년 자립수당 지급",
+      "agency": "보건복지부 / 인구아동정책관",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001175",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001175",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00001175"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:da5f708937aaccce67252abe546d1cc6ab852fe7cb6b79fc09259422712d14f6",
+        "note_sha256": "sha256:3d7295d752346d494ad3f9705dfaed3ad03c37afc5333a2a5f54a897710dd0a1",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-010-3462d33e6184",
+      "input_rows": [
+        10
+      ],
+      "category": "복지·생활 지원",
+      "title": "빈곤 청년에 대한 근로인센티브 확대",
+      "agency": "보건복지부 / 복지정책관",
+      "url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20250617005400110946?isNew=N",
+      "canonical_url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20250617005400110946?isNew=N",
+      "hostname": "www.youthcenter.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "plcyNo",
+        "value": "20250617005400110946"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:d356637191cf9204885c76baeb8af70369fc97d8ccdb958c45889e0bc47f5736",
+        "note_sha256": "sha256:915689cb2268d02db95f5546fe99ecf00ac301f29484991708883bed8d27ef9b",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-011-18be170621df",
+      "input_rows": [
+        11
+      ],
+      "category": "복지·생활 지원",
+      "title": "청년한부모 자립 지원",
+      "agency": "보건복지부 / 가족지원과",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001068",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001068",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00001068"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:cc0469629ef00aca54fda5ddd03139cef6fb82d031566cc18032e9eb9eff48eb",
+        "note_sha256": "sha256:862e8f2282a6ce133cce5187cb3672a2a7045f06a65496bdfebbda27cf3212d8",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-012-1c61630eb082",
+      "input_rows": [
+        12
+      ],
+      "category": "복지·생활 지원",
+      "title": "정신건강 심리상담 바우처사업",
+      "agency": "보건복지부 / 복지로",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005567",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005567",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00005567"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:b1d53051e20b91329e88e72c0f9ed64606238b3f5aac06e88971515025b9d37c",
+        "note_sha256": "sha256:0ae0c50c8cc4636699c858d1c01bf07c03a8f2eefa03029446884c2e0dd87d6e",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-013-481148a890e3",
+      "input_rows": [
+        13
+      ],
+      "category": "복지·생활 지원",
+      "title": "청년 마음건강 지원사업 (바우처)",
+      "agency": "보건복지부 자살예방정책과/ 복지로",
+      "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005567",
+      "canonical_url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005567",
+      "hostname": "www.bokjiro.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "wlfareInfoId",
+        "value": "WLF00005567"
+      },
+      "inventory_status": "data_error",
+      "decision_reason": "같은 URL의 다른 제목 또는 정책명과 URL의 불일치로 원문 identity를 확정할 수 없다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:2a7e1987d3701147eec7b2b2cc6655e697755ddf6c1d9c976ba3a6919b8eb6c8",
+        "note_sha256": "sha256:d625783e891d286764e2b03d4d85134f58f6f7685362ca5dcad8f9cc2ac078e9",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-014-6ef8a04a0463",
+      "input_rows": [
+        14
+      ],
+      "category": "복지·생활 지원",
+      "title": "국민취업지원제도 (청년층)",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/ua/t/a/1100/selectEmssRqutCeck.do",
+      "canonical_url": "https://www.work24.go.kr/ua/t/a/1100/selectEmssRqutCeck.do",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:609f6235c4313b55f602ba621dd4bf6af7e907e3df04d6ac2be1f0621aa95813",
+        "note_sha256": "sha256:412497698ed14a456545926126d6a55da7229925a6ae52b640e37a4a75be5023",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-015-64777b1ebd8c",
+      "input_rows": [
+        15
+      ],
+      "category": "복지·생활 지원",
+      "title": "청년일자리 도약장려금",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&upprSystClId=&systClId=SC00000117&systId=SI00000318",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&systClId=SC00000117&systId=SI00000318&upprSystClId=",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000318"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:86acaa71ea2adb8539871ce7c2b447347e5be0618ddc20e6dc455e7c1dee6f5a",
+        "note_sha256": "sha256:62c6785c2e78da65655194ff2238b22cdec35f9a2b4204de1257d603223aa807",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-016-0c73f44ac3f4",
+      "input_rows": [
+        16
+      ],
+      "category": "주거 / 금융 / 복지 (통합 API원천)",
+      "title": "온통청년 청년정책 Open API",
+      "agency": "한국고용정보원 (온통청년)",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&upprSystClId=&systClId=SC00000117&systId=SI00000318",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&systClId=SC00000117&systId=SI00000318&upprSystClId=",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000318"
+      },
+      "inventory_status": "data_error",
+      "decision_reason": "같은 URL의 다른 제목 또는 정책명과 URL의 불일치로 원문 identity를 확정할 수 없다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:4c5e24ea11d56afea48929fe7e6cd26e31ffe470e0f372d00c4e0652251b3d0f",
+        "note_sha256": "sha256:0e05e3965de73326d15438f0250455347336819093a59b846b6744b2ef759a0e",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-017-d3c5388fbf6b",
+      "input_rows": [
+        17
+      ],
+      "category": "주거 / 금융 / 복지 (통합 OpenAPI원천)",
+      "title": "공공데이터포털 청년정책 공공데이터",
+      "agency": "행정안전부 (공공데이터포털)",
+      "url": "https://www.data.go.kr",
+      "canonical_url": "https://www.data.go.kr/",
+      "hostname": "www.data.go.kr",
+      "source_group": "government-data-and-service",
+      "external_identity": null,
+      "inventory_status": "discovery_reference",
+      "decision_reason": "범용 공공데이터포털 홈은 정책 목록·상세 endpoint가 아니다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:7d844a943ba3ae9abdfb04073e9d433d3cf0b05a48f5ca867913af33e1da1ed6",
+        "note_sha256": "sha256:c5432403acd876321298b53592169174e74718cc3794ed0a181707c9c67c44e7",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-018-c20d589eac7a",
+      "input_rows": [
+        18
+      ],
+      "category": "일자리 취업 지원",
+      "title": "k-뉴딜 아카데미",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=10&systId=SI00000512&systClId=SC00000391",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=10&systClId=SC00000391&systId=SI00000512",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000512"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:cc8960502d4ff20397bef93865e8357fb69ed92c9522842c908dac3ef764214a",
+        "note_sha256": "sha256:29576601144f3adde47d54fa47398a6408329fb50565a3f821f599d0339d4494",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-019-ea29840eb663",
+      "input_rows": [
+        19
+      ],
+      "category": "일자리 취업 지원",
+      "title": "사회연대경제 청년일경험",
+      "agency": "행정안전부",
+      "url": "https://mois.go.kr/frt/bbs/type002/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000215&nttId=126775",
+      "canonical_url": "https://mois.go.kr/frt/bbs/type002/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000215&nttId=126775",
+      "hostname": "mois.go.kr",
+      "source_group": "central-ministry-boards",
+      "external_identity": {
+        "kind": "nttId",
+        "value": "126775"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:6704df271cb72b56bf6a197e498f8ec24f5cf992c07ca0458f7e8cc4d6f237c0",
+        "note_sha256": "sha256:736cd0b30b6b0e4a0dadfe275b4605096f9d9e5c29376c1843dca5721dd00fe5",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-020-a6d483776f0a",
+      "input_rows": [
+        20
+      ],
+      "category": "일자리 취업 지원",
+      "title": "구직자 취업지원 서비스",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&upprSystClId=&systClId=SC00000205&systId=SI00000447",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&systClId=SC00000205&systId=SI00000447&upprSystClId=",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000447"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:8c13bdd4c54524aeb978d4d80401e27417bc271d609344e8381389d9ac67e1e8",
+        "note_sha256": "sha256:63c955f5a2f9145adb4095e222763d75309e384285c8ce46246d1fbff8db8a44",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-021-ed64c31f3be3",
+      "input_rows": [
+        21
+      ],
+      "category": "일자리 취업 지원",
+      "title": "미래내일 일경험",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&upprSystClId=&systClId=SC00000203&systId=SI00000324",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&systClId=SC00000203&systId=SI00000324&upprSystClId=",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000324"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:abd6c375d4595350ad530ffa479a33b0a15ac3c34db3ddf3c082774dce873133",
+        "note_sha256": "sha256:24caa8ffcb246131b17cdaa64813ad7222be279742153b90106239dae1b0d49e",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-022-6e9df5abbd76",
+      "input_rows": [
+        22
+      ],
+      "category": "일자리 취업 지원",
+      "title": "청년 해외 취업 지원",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&upprSystClId=&systClId=SC00000204&systId=SI00000435",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=9&systClId=SC00000204&systId=SI00000435&upprSystClId=",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000435"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:0943e9eb8fbd515d92110e52350864a9fbc944ab759998c3805faf3be47ae477",
+        "note_sha256": "sha256:dd077dedb7440777b0813c1a7a1393f0e561c3f99e0775264782c68f85e69a11",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-023-6c985103e35f",
+      "input_rows": [
+        23
+      ],
+      "category": "일자리 취업 지원",
+      "title": "기업 인력 애로센터",
+      "agency": "중소벤처기업진흥공단",
+      "url": "https://job.kosmes.or.kr/bsnsIntrcn/kosmeInfo/info.do",
+      "canonical_url": "https://job.kosmes.or.kr/bsnsIntrcn/kosmeInfo/info.do",
+      "hostname": "job.kosmes.or.kr",
+      "source_group": "employment-business-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:5e576c364ebf5fe39370b387beedffcdf16e95e2fd2998e78b7d937b3b82e7a3",
+        "note_sha256": "sha256:6d91018ea99f4527177e37133f9824d36a722fd8702b82a4d6b8e03cd52a9178",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-024-58bbc8444f44",
+      "input_rows": [
+        24
+      ],
+      "category": "일자리 취업 지원",
+      "title": "중남미 지역기구 인턴파견",
+      "agency": "외교부",
+      "url": "https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369385&page=1&pitem=10",
+      "canonical_url": "https://www.mofa.go.kr/www/brd/m_4075/view.do?page=1&pitem=10&seq=369385",
+      "hostname": "www.mofa.go.kr",
+      "source_group": "central-ministry-boards",
+      "external_identity": {
+        "kind": "seq",
+        "value": "369385"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:d1479bc39ef80af608597442e8da32cb73e74b71cbc4e51aa7b014943882e34e",
+        "note_sha256": "sha256:7094e6a91ac2c6a9561a1b4fee311b70f3c30a4371c7fdf44bd97bbc22a82a63",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-025-be0d32925a0e",
+      "input_rows": [
+        25
+      ],
+      "category": "일자리 취업 지원",
+      "title": "청년내일채움공제(청년)",
+      "agency": "중소벤처기업부",
+      "url": "https://www.sbcplan.or.kr/page.do?mCode=B120000000",
+      "canonical_url": "https://www.sbcplan.or.kr/page.do?mCode=B120000000",
+      "hostname": "www.sbcplan.or.kr",
+      "source_group": "employment-business-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:813b958b691f4719c784081709456feacad4d43a97f180c412090b97925217c4",
+        "note_sha256": "sha256:91b9ecfafe8265d8b2e73e74384b542aff88b8d9f3eb4d40d072d9ebb5fae52c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-026-283fef9f3d20",
+      "input_rows": [
+        26
+      ],
+      "category": "일자리 취업 지원",
+      "title": "일자리채움청년지원금",
+      "agency": "고용노동부",
+      "url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=10&upprSystClId=&systClId=SC00000212&systId=SI00000338&systCnntId=CI00001096",
+      "canonical_url": "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?currentPageNo=1&recordCountPerPage=10&systClId=SC00000212&systCnntId=CI00001096&systId=SI00000338&upprSystClId=",
+      "hostname": "www.work24.go.kr",
+      "source_group": "work24-policy",
+      "external_identity": {
+        "kind": "systId",
+        "value": "SI00000338"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:41779e680c20e2ec40ee1508d23e4a7a9fe0c0696fe77b675a33c235fba01bd0",
+        "note_sha256": "sha256:4333460b1e7082c708f1996f6fd5abb941cca0babf2d788c6fa7c4cd14d5b2fe",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-027-86976516c7ad",
+      "input_rows": [
+        27
+      ],
+      "category": "창업 지원",
+      "title": "재도전 성공 패키지",
+      "agency": "중소벤처기업부 / 창업진흥원 / k-startup",
+      "url": "https://www.k-startup.go.kr/web/contents/webCMRCZN.do?schM=view&id=170007",
+      "canonical_url": "https://www.k-startup.go.kr/web/contents/webCMRCZN.do?id=170007&schM=view",
+      "hostname": "www.k-startup.go.kr",
+      "source_group": "k-startup-announcements",
+      "external_identity": {
+        "kind": "id",
+        "value": "170007"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:c817c943d30bf4e4475f76521f5bbdbd4f3293eb332443173283c2ddce0b823d",
+        "note_sha256": "sha256:44cb0242f664b519b48f0e72410e68487e28ef1597fe5b4d04292d07549e5972",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-028-8b50eda6d17f",
+      "input_rows": [
+        28
+      ],
+      "category": "창업 지원",
+      "title": "올해의 k-스타트업",
+      "agency": "중소벤처기업부 / 창업진흥원 /  K-Startup",
+      "url": "https://www.k-startup.go.kr/web/contents/bizpbanc-deadline.do?pbancClssCd=PBC010&schStr=%EA%B2%BD%EC%A7%84%EB%8C%80%ED%9A%8C&schM=view&pbancSn=176910",
+      "canonical_url": "https://www.k-startup.go.kr/web/contents/bizpbanc-deadline.do?pbancClssCd=PBC010&pbancSn=176910&schM=view&schStr=%EA%B2%BD%EC%A7%84%EB%8C%80%ED%9A%8C",
+      "hostname": "www.k-startup.go.kr",
+      "source_group": "k-startup-announcements",
+      "external_identity": {
+        "kind": "pbancSn",
+        "value": "176910"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:eca13c825cab572194360ffcc2b9897eb96ce95ea88af9eddac00281ba52168a",
+        "note_sha256": "sha256:bc05816dd2a28fbda27ec7f2589fedc2f880553484a2d1c96bd0483cc8b1db69",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-029-1826c89c8979",
+      "input_rows": [
+        29
+      ],
+      "category": "창업 지원",
+      "title": "지식재산 기반. 창업촉진(ip 디딤돌 프로그램)",
+      "agency": "지식재산청 / 한국발명진흥회",
+      "url": "https://pms.ripc.org/www/main.do",
+      "canonical_url": "https://pms.ripc.org/www/main.do",
+      "hostname": "pms.ripc.org",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:f3fa58fb33856ed9a7a69c920082cbc9e49ced1c5ae646764112557afe3ac4f5",
+        "note_sha256": "sha256:c6f66a7e44fc9d62cd4885571c27e32f3868df91c0f6dd008e9d9e8ac102af80",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-030-df006ad04895",
+      "input_rows": [
+        30
+      ],
+      "category": "창업 지원",
+      "title": "프리 팁스 2차 창업기업 모집",
+      "agency": "중소벤처기업부 / 창업진흥원 /  K-Startup",
+      "url": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?pbancClssCd=PBC010&schM=view&pbancSn=178481",
+      "canonical_url": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?pbancClssCd=PBC010&pbancSn=178481&schM=view",
+      "hostname": "www.k-startup.go.kr",
+      "source_group": "k-startup-announcements",
+      "external_identity": {
+        "kind": "pbancSn",
+        "value": "178481"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:e63082a4291d0306e92e0f4892c0bb7d324e9d3c0ff1e9e5eef14bc86948b94f",
+        "note_sha256": "sha256:5b4bf343a64c7fc04438303a2306427fe5fba2acd8e43ec213dfa168385a1a99",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-031-8cd16f60d8e4",
+      "input_rows": [
+        31
+      ],
+      "category": "창업 지원",
+      "title": "중앙부처 및 지자체 창업지원사업",
+      "agency": "중소벤처기업부 / 창업진흥원 / k-startup",
+      "url": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=view&pbancSn=175783",
+      "canonical_url": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?pbancSn=175783&schM=view",
+      "hostname": "www.k-startup.go.kr",
+      "source_group": "k-startup-announcements",
+      "external_identity": {
+        "kind": "pbancSn",
+        "value": "175783"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:eab77edd7288632d6bc3d797966b8fb8f4e89dfbf33dce9e2ddda5e4324f8a6a",
+        "note_sha256": "sha256:9f13ae15af318142e34803c5b3fa23c72c3db5580d19d64a8d6e197e3d111807",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-032-23802cb4edcf",
+      "input_rows": [
+        32
+      ],
+      "category": "창업 지원",
+      "title": "[HUG]청년이 만드는 부산의 새로운 업",
+      "agency": "부산광역시 / 부산창조경제혁신센터",
+      "url": "https://ccei.creativekorea.or.kr/busan/custom/notice_view.do?no=38189&rnum=7752&kind=relation&sPtime=relation",
+      "canonical_url": "https://ccei.creativekorea.or.kr/busan/custom/notice_view.do?kind=relation&no=38189&rnum=7752&sPtime=relation",
+      "hostname": "ccei.creativekorea.or.kr",
+      "source_group": "regional-discovery-seed",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:80fbcec77772c5a44dd9ad5fa3b8fb9d0b2d23c60e2465174719e442e1854179",
+        "note_sha256": "sha256:b0455212ffd909d18379f59c548c7ae2497d26d8eeb4b85e8c87bc933d9ec49c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-033-30348f2587cb",
+      "input_rows": [
+        33
+      ],
+      "category": "교육 직업 훈련",
+      "title": "청년도약 인재양성 부트캠프",
+      "agency": "교육부 / 한국산업기술진흥원",
+      "url": "https://www.nais.or.kr/event/19",
+      "canonical_url": "https://www.nais.or.kr/event/19",
+      "hostname": "www.nais.or.kr",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:4e95e83f210058b51b12a8d8dc7502f0382275289035359dc3f273f5688b798d",
+        "note_sha256": "sha256:d846f50ad7f74d7b7add1f1e7ebf7afe0532f99891de94e687acb8459ab971e9",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-034-4e145bcfb3ab",
+      "input_rows": [
+        34
+      ],
+      "category": "교육 직업 훈련",
+      "title": "산업맞춤 단기직무능력인증과정 Match",
+      "agency": "교육부 / 국가평생교육진흥원",
+      "url": "https://www.matchup.kr/main/mainView.do",
+      "canonical_url": "https://www.matchup.kr/main/mainView.do",
+      "hostname": "www.matchup.kr",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:b04b4a0192795b94e71abd1e0e314ca46ca9218021c4ee4db7b0fc288dc7bbfa",
+        "note_sha256": "sha256:4e8b4a58a0e742f16ceba9bcdd8afcd8f712a84ac8268bdcff00e321dfd5cd1c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-035-049d97a21693",
+      "input_rows": [
+        35
+      ],
+      "category": "교육 직업 훈련",
+      "title": "한국형 온라인 공개강좌(K-MOOC)",
+      "agency": "교육부 / 국가평생교육진흥원",
+      "url": "https://www.kmooc.kr/",
+      "canonical_url": "https://www.kmooc.kr/",
+      "hostname": "www.kmooc.kr",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:973737999610c9409f421ac7ca0f308f1fb359f9a3463eaf2999971f7d910ce9",
+        "note_sha256": "sha256:3f246bc02c1161a10546ec205ff58a8a9a3e8763a103bf07afb4cd5af1fbea6b",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-036-ad86bcaa33ea",
+      "input_rows": [
+        36
+      ],
+      "category": "교육 직업 훈련",
+      "title": "온국민평생배움터",
+      "agency": "교육부 / 국가평생교육진흥원",
+      "url": "https://www.all.go.kr/main/viewMain.do",
+      "canonical_url": "https://www.all.go.kr/main/viewMain.do",
+      "hostname": "www.all.go.kr",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:63f8c36b4292fc8e95f3cfcd85f2d77834b3e14c608d8f7a340ceaa2d2e24958",
+        "note_sha256": "sha256:4ca2cfcb1ea0c10c9a2abd4139029158eab0514a26d68ad4813518f7dbd3855d",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-037-9e2c0363451b",
+      "input_rows": [
+        37
+      ],
+      "category": "교육 직업 훈련",
+      "title": "디지털정부 Young Frontier 교육",
+      "agency": "행정안전부 / 한국지능정보사회진흥원",
+      "url": "https://www.nia.or.kr/site/nia_kor/ex/bbs/View.do?cbIdx=99835&bcIdx=29557&parentSeq=29557",
+      "canonical_url": "https://www.nia.or.kr/site/nia_kor/ex/bbs/View.do?bcIdx=29557&cbIdx=99835&parentSeq=29557",
+      "hostname": "www.nia.or.kr",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:319aae4e1e3fb13632674f67a18f7d15355f752f2f2cf4298970f234c473cf32",
+        "note_sha256": "sha256:f1ff4b93af3d996b87114e156e74fa8ebffb1f7d36913a158689e7d67e5f25cf",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-038-3523fe9d4f38",
+      "input_rows": [
+        38
+      ],
+      "category": "교육 직업 훈련",
+      "title": "청년 임산물 재배 교육",
+      "agency": "산림청 / 한국임업진흥원",
+      "url": "https://www.kofpi.or.kr/edu/edu_application_view.do",
+      "canonical_url": "https://www.kofpi.or.kr/edu/edu_application_view.do",
+      "hostname": "www.kofpi.or.kr",
+      "source_group": "education-and-training-portals",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:2639e61fb58e78d3e6dc79ee33f0432f40e4e6ebc7142776c79705e118b838b5",
+        "note_sha256": "sha256:82a4b6ef1dd8ac539cdc158e0463d241f28d33bc00dffea1029091b7508edc3b",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-039-9832413c1924",
+      "input_rows": [
+        39
+      ],
+      "category": "공식장학금지원제도",
+      "title": "소득연계형 국가장학금",
+      "agency": "한국장학재단",
+      "url": "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship_submain01&yr=2026&smtr=2&naviParam=JH,02,00,00",
+      "canonical_url": "https://www.kosaf.go.kr/ko/scholar.do?naviParam=JH%2C02%2C00%2C00&pg=scholarship_submain01&smtr=2&yr=2026",
+      "hostname": "www.kosaf.go.kr",
+      "source_group": "kosaf-scholarships",
+      "external_identity": {
+        "kind": "pg",
+        "value": "scholarship_submain01"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:68ecbe7bafffe661658eb00fecab722d5a509541fbbe7b4696ff3172156ba400",
+        "note_sha256": "sha256:a5a60b0e670c38033e90859885db2dbd6f87e86d8685cce55decc3e8657138a6",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-040-ea5d7210c177",
+      "input_rows": [
+        40
+      ],
+      "category": "공식장학금지원제도",
+      "title": "국가근로장학금",
+      "agency": "한국장학재단",
+      "url": "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship05_04_01&naviParam=JH,03,01,00",
+      "canonical_url": "https://www.kosaf.go.kr/ko/scholar.do?naviParam=JH%2C03%2C01%2C00&pg=scholarship05_04_01",
+      "hostname": "www.kosaf.go.kr",
+      "source_group": "kosaf-scholarships",
+      "external_identity": {
+        "kind": "pg",
+        "value": "scholarship05_04_01"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:68ecbe7bafffe661658eb00fecab722d5a509541fbbe7b4696ff3172156ba400",
+        "note_sha256": "sha256:8fd06336502492c91d39fce8e6f5577ef006184c42c76cd438f535dc6476917c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-041-b7b612a1eb60",
+      "input_rows": [
+        41
+      ],
+      "category": "공식장학금지원제도",
+      "title": "현장실습 지원금",
+      "agency": "한국장학재단",
+      "url": "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship05_19_01&naviParam=JH,03,05,00",
+      "canonical_url": "https://www.kosaf.go.kr/ko/scholar.do?naviParam=JH%2C03%2C05%2C00&pg=scholarship05_19_01",
+      "hostname": "www.kosaf.go.kr",
+      "source_group": "kosaf-scholarships",
+      "external_identity": {
+        "kind": "pg",
+        "value": "scholarship05_19_01"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:de25268faf2e753ea65e0c52ea39cd828af44b209a182dd63df5fa25c5bfa023",
+        "note_sha256": "sha256:fe2b1afb9833b3dc68b7d6c200ba834c0dc31b22afb6e2efe1967bc7f1e48672",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-042-605a9b6b6a63",
+      "input_rows": [
+        42
+      ],
+      "category": "공식장학금지원제도",
+      "title": "고교 취업연계 장려금",
+      "agency": "한국장학재단",
+      "url": "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship05_18_01&naviParam=JH,03,04,00",
+      "canonical_url": "https://www.kosaf.go.kr/ko/scholar.do?naviParam=JH%2C03%2C04%2C00&pg=scholarship05_18_01",
+      "hostname": "www.kosaf.go.kr",
+      "source_group": "kosaf-scholarships",
+      "external_identity": {
+        "kind": "pg",
+        "value": "scholarship05_18_01"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:68ecbe7bafffe661658eb00fecab722d5a509541fbbe7b4696ff3172156ba400",
+        "note_sha256": "sha256:5898b9733826d929d4b3884180febcdd60c099bb585368d9c5369bef84343ad4",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-043-1e000add36a4",
+      "input_rows": [
+        43
+      ],
+      "category": "공식장학금지원제도",
+      "title": "인문100년장학금",
+      "agency": "한국장학재단",
+      "url": "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship05_07_01&naviParam=JH,04,04,10",
+      "canonical_url": "https://www.kosaf.go.kr/ko/scholar.do?naviParam=JH%2C04%2C04%2C10&pg=scholarship05_07_01",
+      "hostname": "www.kosaf.go.kr",
+      "source_group": "kosaf-scholarships",
+      "external_identity": {
+        "kind": "pg",
+        "value": "scholarship05_07_01"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:68ecbe7bafffe661658eb00fecab722d5a509541fbbe7b4696ff3172156ba400",
+        "note_sha256": "sha256:ef3301a957b2c56034d471b52dea5c7e67530fcf83dbadafde6deb64982eb936",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-044-602675a7058e",
+      "input_rows": [
+        44
+      ],
+      "category": "공식장학금지원제도",
+      "title": "대통령과학장학금",
+      "agency": "한국장학재단",
+      "url": "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship05_05_01&naviParam=JH,04,02,15",
+      "canonical_url": "https://www.kosaf.go.kr/ko/scholar.do?naviParam=JH%2C04%2C02%2C15&pg=scholarship05_05_01",
+      "hostname": "www.kosaf.go.kr",
+      "source_group": "kosaf-scholarships",
+      "external_identity": {
+        "kind": "pg",
+        "value": "scholarship05_05_01"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:68ecbe7bafffe661658eb00fecab722d5a509541fbbe7b4696ff3172156ba400",
+        "note_sha256": "sha256:77bfa0d5ced704240126acf8aea1a5e3b30adce7db7f080c836b82683bf2bdf6",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-048-17edfb719e0b",
+      "input_rows": [
+        48
+      ],
+      "category": "일자리 취업 지원",
+      "title": "청년 국가기술자격 응시료 지원 사업",
+      "agency": "한국산업인력공단(큐넷) / 온통청년",
+      "url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20260527005400113224?isNew=N",
+      "canonical_url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20260527005400113224?isNew=N",
+      "hostname": "www.youthcenter.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "plcyNo",
+        "value": "20260527005400113224"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:d728c2c5c42d6e31616931b32789213f42fc32df116ce47bf80954cec4492cfb",
+        "note_sha256": "sha256:213f4a7423cbf8d98b57e3a304e40877bc13c960fb0fe902df98924316cab49e",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-049-96e8fb2096c1",
+      "input_rows": [
+        49
+      ],
+      "category": "교육 직업 훈련",
+      "title": "차세대 보안 리더",
+      "agency": "과학기술정보통신부 / 한국정보기술연구원",
+      "url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20250618005400111002?isNew=N",
+      "canonical_url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20250618005400111002?isNew=N",
+      "hostname": "www.youthcenter.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "plcyNo",
+        "value": "20250618005400111002"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:8d39ffd1925f8a13c4a5837b14e3c71bfe4b91e1fbce312bcd3966ae20a08cd3",
+        "note_sha256": "sha256:735da49fe3b3319de9cb470a91e43c684844e93f365141f7aafa4e22758bc174",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-050-ca053c5e02a9",
+      "input_rows": [
+        50
+      ],
+      "category": "교육 직업 훈련",
+      "title": "청년법조인 국제법무 전문인력 양성",
+      "agency": "법무부 / 국제법무지원과",
+      "url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20250612005400110919?isNew=N",
+      "canonical_url": "https://www.youthcenter.go.kr/youthPolicy/ythPlcyTotalSearch/ythPlcyDetail/20250612005400110919?isNew=N",
+      "hostname": "www.youthcenter.go.kr",
+      "source_group": "approved-aggregator-comparison",
+      "external_identity": {
+        "kind": "plcyNo",
+        "value": "20250612005400110919"
+      },
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:d4c07eaeaa460136e41d9fbfb7c259d6b8896604189e52fcb7bbef5c35a5ef1e",
+        "note_sha256": "sha256:574a39ecc3d2b7888180041880212c7a8c1a498fa94310f8a4bcde7b28a7831c",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-054-5da7b658c0e3",
+      "input_rows": [
+        54,
+        58
+      ],
+      "category": "주거 지원",
+      "title": "청년버팀목 전세자금대출",
+      "agency": "국토교통부 / 주택도시기금",
+      "url": "https://enhuf.molit.go.kr/index.jsp",
+      "canonical_url": "https://enhuf.molit.go.kr/index.jsp",
+      "hostname": "enhuf.molit.go.kr",
+      "source_group": "housing-fund-products",
+      "external_identity": null,
+      "inventory_status": "data_error",
+      "decision_reason": "같은 URL의 다른 제목 또는 정책명과 URL의 불일치로 원문 identity를 확정할 수 없다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:5bc915dc8811306986b6e69e3bf06a6ddf88fe55895bedbead7c11cdf4826690",
+        "note_sha256": "sha256:f56e6be2201096771f8310461f490813fb1d6d0ad0e1330c0a1727e0a74f4a11",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-055-62e5218528a7",
+      "input_rows": [
+        55,
+        65
+      ],
+      "category": "복지·생활 지원",
+      "title": "청년 채무조정 제공",
+      "agency": "금융위원회 / 금융소비자국",
+      "url": "https://cyber.ccrs.or.kr/debt/apply/guide.do",
+      "canonical_url": "https://cyber.ccrs.or.kr/debt/apply/guide.do",
+      "hostname": "cyber.ccrs.or.kr",
+      "source_group": "counseling-and-support-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:87db85b11d9605576243f8fa6cd856e44042d5cb3245267f081f9fea3f0124e3",
+        "note_sha256": "sha256:0e177fcac0250ff79849270db9baff1fc25926bf8ce27446ccadd01b909eb026",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-056-744b4ab2c476",
+      "input_rows": [
+        56,
+        66
+      ],
+      "category": "복지·생활 지원",
+      "title": "이주배경청년(청소년)지원",
+      "agency": "성평등가족부 / 학교밖청소년지원과",
+      "url": "https://www.rainbowyouth.or.kr/participation/requestOnlineConsultingForm.do",
+      "canonical_url": "https://www.rainbowyouth.or.kr/participation/requestOnlineConsultingForm.do",
+      "hostname": "www.rainbowyouth.or.kr",
+      "source_group": "counseling-and-support-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:af3200d46876b7d68e1a5b24a7043e2c503268b9f6c9159b35c5b570d13b3818",
+        "note_sha256": "sha256:b3ecf093d6593761947e03812b56e7e01a0446a1bffc16cacc1e385ac3c53e35",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-057-317b04fe82d5",
+      "input_rows": [
+        57,
+        69
+      ],
+      "category": "복지·생활 지원",
+      "title": "청년예술인 예술활동 적립계좌",
+      "agency": "문화체육관광부",
+      "url": "https://www.artloan.kr/notice/savingsAccountProcess.do",
+      "canonical_url": "https://www.artloan.kr/notice/savingsAccountProcess.do",
+      "hostname": "www.artloan.kr",
+      "source_group": "culture-and-benefit-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:efe96684da0f3056487e70153ab3f044da52e25d2af5ee4aab86130ef95fa3a1",
+        "note_sha256": "sha256:feacfcd391875f365dae73abc37840f6f1a01ed39b81a7b80fa04090c4ad4a64",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-059-6b5af352821e",
+      "input_rows": [
+        59
+      ],
+      "category": "주거 지원",
+      "title": "청년 주택드림 디딤돌 대출",
+      "agency": "국토교통부 / 주택도시기금",
+      "url": "https://enhuf.molit.go.kr/index.jsp",
+      "canonical_url": "https://enhuf.molit.go.kr/index.jsp",
+      "hostname": "enhuf.molit.go.kr",
+      "source_group": "housing-fund-products",
+      "external_identity": null,
+      "inventory_status": "data_error",
+      "decision_reason": "같은 URL의 다른 제목 또는 정책명과 URL의 불일치로 원문 identity를 확정할 수 없다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:44591bd4d4a35ddffca09fb178729455810f190463ffba67898a06c89924a8d9",
+        "note_sha256": "sha256:9ffb32a0f90180038f48aec497cd1491895d574ec9a3423a6ab783f942d6b6f3",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-060-f0757e5827b1",
+      "input_rows": [
+        60
+      ],
+      "category": "주거 지원",
+      "title": "청년주택드림 청약통장",
+      "agency": "국토교통부 / 주택도시기금",
+      "url": "https://www.molit.go.kr/2024dreamaccount/main.jsp",
+      "canonical_url": "https://www.molit.go.kr/2024dreamaccount/main.jsp",
+      "hostname": "www.molit.go.kr",
+      "source_group": "housing-fund-products",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:0b2a0ea447a00e34500a3c214752c8fff2b8ac209a66188a32d4f424a7ccd528",
+        "note_sha256": "sha256:82315d3675389d7979559d6e77a000f767ec5db9063913844429b6e360e57d78",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-061-88b9e91d2c78",
+      "input_rows": [
+        61
+      ],
+      "category": "금융·자산 형성 지원",
+      "title": "청년미래적금",
+      "agency": "금융위원회 / 서민금융진흥원",
+      "url": "https://fill4young.kinfa.or.kr/yfs/main",
+      "canonical_url": "https://fill4young.kinfa.or.kr/yfs/main",
+      "hostname": "fill4young.kinfa.or.kr",
+      "source_group": "kinfa-financial-products",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:09cd6d7e61419f12ffed1ec5d6d647604746da7609b1d837b9dcab0b65fd742c",
+        "note_sha256": "sha256:ba248a7f6bbee4fac858604cfa12d703a3060e0c80035cb78352e046096927f6",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-062-dde102eb83ee",
+      "input_rows": [
+        62
+      ],
+      "category": "금융·자산 형성 지원",
+      "title": "햇살론 유스 (청년햇살론)",
+      "agency": "금융위원회 / 서민금융진흥원",
+      "url": "https://www.kinfa.or.kr/financialProduct/hessalLoanYoos.do",
+      "canonical_url": "https://www.kinfa.or.kr/financialProduct/hessalLoanYoos.do",
+      "hostname": "www.kinfa.or.kr",
+      "source_group": "kinfa-financial-products",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:c96c23d9a266742c5599f9454ec905067c7b9c101dd6bc514dc59a24071a66f5",
+        "note_sha256": "sha256:d4bc5b8c59ba1f62d55c2aad5aa447712185d15a6e71c830953d02f1354dd86a",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-063-f512564c122c",
+      "input_rows": [
+        63
+      ],
+      "category": "금융·자산 형성 지원",
+      "title": "미소금융 청년 미래이음 대출",
+      "agency": "서민금융진흥원",
+      "url": "https://www.kinfa.or.kr/financialProduct/youngFutureLinkLoan.do",
+      "canonical_url": "https://www.kinfa.or.kr/financialProduct/youngFutureLinkLoan.do",
+      "hostname": "www.kinfa.or.kr",
+      "source_group": "kinfa-financial-products",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:6eed01e5c41cd5dced7467bac0d0de8a4f52a1716765381ec03eacdaed5ee020",
+        "note_sha256": "sha256:bf4b011f759e37c662ab5ff95c86c742c93653022e9f8a221b815f2027148997",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-064-fc4e580d797f",
+      "input_rows": [
+        64
+      ],
+      "category": "복지·생활 지원",
+      "title": "1인 광고콘텐츠 창작자 지원",
+      "agency": "문화체육관광부 / 광고교육원",
+      "url": "https://edu.kobaco.co.kr/content.jsp?content_id=youtu_contents",
+      "canonical_url": "https://edu.kobaco.co.kr/content.jsp?content_id=youtu_contents",
+      "hostname": "edu.kobaco.co.kr",
+      "source_group": "culture-and-benefit-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:7f22cd3f5b96ebc5331e35590a102f999c9d2b0258c31b1ce23a9763cf9c8306",
+        "note_sha256": "sha256:ca80f4b14d2be667fcd1f0d65133e044afb13c126b95347c538d0ddcce11a6a7",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-067-b7a6bfa254a3",
+      "input_rows": [
+        67
+      ],
+      "category": "복지·생활 지원",
+      "title": "케이-아트(K-Art) 청년 창작자 지원",
+      "agency": "문화체육관광부",
+      "url": "https://www.ncas.or.kr/",
+      "canonical_url": "https://www.ncas.or.kr/",
+      "hostname": "www.ncas.or.kr",
+      "source_group": "culture-and-benefit-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:cd891c482b082e1e5b655d0489bc5d7d431fe7dd070d9794fa4780033c9df15b",
+        "note_sha256": "sha256:56f0702a88734e65dc6a7b9b3cc59eca14532eebd3068373214acbfa4bca8ed3",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-068-277105898c43",
+      "input_rows": [
+        68
+      ],
+      "category": "복지·생활 지원",
+      "title": "청년문화예술패스",
+      "agency": "문화체육관광부",
+      "url": "https://youthculturepass.or.kr/kr/subPage.do?menuSn=204972",
+      "canonical_url": "https://youthculturepass.or.kr/kr/subPage.do?menuSn=204972",
+      "hostname": "youthculturepass.or.kr",
+      "source_group": "culture-and-benefit-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:09b5d28cbb03807606634042e60e7c73c4de1d0ceb4e1c4c021a585294a54e18",
+        "note_sha256": "sha256:c241a702f2b8a3f2b1ee885fe19bedf327c1602b365a85d1e9893bcac2d931e8",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-070-88b3385576db",
+      "input_rows": [
+        70
+      ],
+      "category": "복지·생활 지원",
+      "title": "농식품 바우처",
+      "agency": "농림축산식품부",
+      "url": "https://www.foodvoucher.go.kr/view/fm/vucintro/agriFood",
+      "canonical_url": "https://www.foodvoucher.go.kr/view/fm/vucintro/agriFood",
+      "hostname": "www.foodvoucher.go.kr",
+      "source_group": "culture-and-benefit-sites",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:8cae7a4cb8dce2cb428efec02c582027d0505c27858378cee7dda20cc44211ab",
+        "note_sha256": "sha256:fa481e51753074651fabeef28fb446346da69733fc2132295537f02b3bd07b79",
+        "note_present": true
+      }
+    },
+    {
+      "candidate_id": "xlsx-row-071-5f1c25f7b30c",
+      "input_rows": [
+        71
+      ],
+      "category": "복지·생활 지원",
+      "title": "K-패스 (청년 대중교통비 환급)",
+      "agency": "국토교통부 대도시광역교통위원회 / 한국교통안전공단 / 지자체",
+      "url": "https://korea-pass.kr/info/intro.do",
+      "canonical_url": "https://korea-pass.kr/info/intro.do",
+      "hostname": "korea-pass.kr",
+      "source_group": "kpass-transit-refund",
+      "external_identity": null,
+      "inventory_status": "candidate",
+      "decision_reason": "SOP1 중복 감사와 Source preflight 대상이다.",
+      "untrusted_input": {
+        "collection_method_sha256": "sha256:2d97c784c0ee9a6779cabd60e030158683f7f422c4877ff3f76333601ba8189e",
+        "note_sha256": "sha256:5ffa99d33dcdc3e4bcf473f9c32d683daffab78347472d07c12f25beb7465a7d",
+        "note_present": true
+      }
+    }
+  ],
+  "source_groups": [
+    {
+      "source_group_id": "approved-aggregator-comparison",
+      "input_rows": [
+        2,
+        3,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        48,
+        49,
+        50
+      ],
+      "input_domains": [
+        "www.bokjiro.go.kr",
+        "www.youthcenter.go.kr"
+      ],
+      "operator": "한국고용정보원·보건복지부/한국사회보장정보원",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "이미 승인·구현된 온통청년/복지로 Source의 직접 링크다. 새 Adapter가 아니라 SOP1 exact-ID 비교 fixture로만 사용한다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "allowed",
+          "url": "https://www.youthcenter.go.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://www.youthcenter.go.kr/"
+        },
+        "license": {
+          "status": "restricted",
+          "url": "https://www.youthcenter.go.kr/"
+        },
+        "technical_access": "available"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "없음. 기존 승인 Source와 DB row를 유지한다."
+    },
+    {
+      "source_group_id": "central-ministry-boards",
+      "input_rows": [
+        19,
+        24
+      ],
+      "input_domains": [
+        "mois.go.kr",
+        "www.mofa.go.kr"
+      ],
+      "operator": "행정안전부·외교부",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "서로 다른 운영자의 단일 게시물 seed로 공통 Source 계약을 만들 수 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "운영자별 목록과 stable 게시물 identity를 분리 검증한다."
+    },
+    {
+      "source_group_id": "counseling-and-support-sites",
+      "input_rows": [
+        55,
+        56,
+        65,
+        66
+      ],
+      "input_domains": [
+        "cyber.ccrs.or.kr",
+        "www.rainbowyouth.or.kr"
+      ],
+      "operator": "신용회복위원회·이주배경청소년지원재단",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "신청·상담 form 또는 단일 안내만 있어 공개 정책 목록 identity가 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "개인정보 없는 공식 정책 목록과 상세를 별도로 확인한다."
+    },
+    {
+      "source_group_id": "culture-and-benefit-sites",
+      "input_rows": [
+        57,
+        64,
+        67,
+        68,
+        69,
+        70
+      ],
+      "input_domains": [
+        "edu.kobaco.co.kr",
+        "www.artloan.kr",
+        "www.foodvoucher.go.kr",
+        "www.ncas.or.kr",
+        "youthculturepass.or.kr"
+      ],
+      "operator": "문화·교통·식품 지원 운영기관 다수",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "운영자와 신청 경계가 다른 단일 페이지 묶음이라 공통 Source 계약을 승인할 수 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "운영자별 공식 목록·상세·현재 신청 기간을 분리 검증한다."
+    },
+    {
+      "source_group_id": "education-and-training-portals",
+      "input_rows": [
+        29,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38
+      ],
+      "input_domains": [
+        "pms.ripc.org",
+        "www.all.go.kr",
+        "www.kmooc.kr",
+        "www.kofpi.or.kr",
+        "www.matchup.kr",
+        "www.nais.or.kr",
+        "www.nia.or.kr"
+      ],
+      "operator": "교육·훈련 공공기관 다수",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "운영자가 다른 landing·단일 상세를 한 Source로 승인할 수 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "운영자별 Source profile과 현재 모집 경계를 각각 만든다."
+    },
+    {
+      "source_group_id": "employment-business-portals",
+      "input_rows": [
+        23,
+        25
+      ],
+      "input_domains": [
+        "job.kosmes.or.kr",
+        "www.sbcplan.or.kr"
+      ],
+      "operator": "중소벤처기업진흥공단·중소벤처기업부",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "사업 소개 landing만 있고 청년 정책의 결정적 목록·상세 계약이 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "현재 모집 목록과 공고 identity를 공식 경로에서 확인한다."
+    },
+    {
+      "source_group_id": "government-data-and-service",
+      "input_rows": [
+        6,
+        17
+      ],
+      "input_domains": [
+        "www.data.go.kr",
+        "www.gov.kr"
+      ],
+      "operator": "정부24·공공데이터포털",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "정책 상세 1건과 범용 포털 홈뿐이며 Data 06용 목록·상세 계약이 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "승인된 정책 API 또는 목록 dataset 식별자를 확보한다."
+    },
+    {
+      "source_group_id": "housing-fund-products",
+      "input_rows": [
+        54,
+        58,
+        59,
+        60
+      ],
+      "input_domains": [
+        "enhuf.molit.go.kr",
+        "www.molit.go.kr"
+      ],
+      "operator": "국토교통부·주택도시기금",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "XLSX가 서로 다른 상품에 같은 범용 홈 URL을 사용해 stable detail identity를 확정할 수 없다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "공식 상품 목록과 상품별 stable detail identity를 별도 재탐색한다."
+    },
+    {
+      "source_group_id": "k-startup-announcements",
+      "input_rows": [
+        27,
+        28,
+        30,
+        31
+      ],
+      "input_domains": [
+        "www.k-startup.go.kr"
+      ],
+      "operator": "중소벤처기업부·창업진흥원",
+      "status": "blocked",
+      "implementation_status": "blocked",
+      "source_id": null,
+      "decision_reason": "robots.txt가 XLSX의 webCMRCZN, bizpbanc-ongoing, bizpbanc-deadline 경로를 명시적으로 차단한다. 우회하지 않는다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "disallowed",
+          "url": "https://www.k-startup.go.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://www.k-startup.go.kr/web/main/index.do"
+        },
+        "license": {
+          "status": "not_found",
+          "url": "https://www.k-startup.go.kr/web/main/index.do"
+        },
+        "technical_access": "blocked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "운영 주체의 API 승인 또는 robots 경로 변경을 공식 확인한다."
+    },
+    {
+      "source_group_id": "kinfa-financial-products",
+      "input_rows": [
+        61,
+        62,
+        63
+      ],
+      "input_domains": [
+        "fill4young.kinfa.or.kr",
+        "www.kinfa.or.kr"
+      ],
+      "operator": "서민금융진흥원",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "kinfa-financial-product-web",
+      "decision_reason": "robots가 공개 금융상품 경로를 허용하고 공식 전체보기와 개별 상품 페이지가 재현된다. 인증·상담 경로는 수집하지 않는다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "allowed",
+          "url": "https://www.kinfa.or.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://www.kinfa.or.kr/"
+        },
+        "license": {
+          "status": "restricted",
+          "url": "https://www.kinfa.or.kr/"
+        },
+        "technical_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.kinfa.or.kr/financialProduct/peopleFinancial.do"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.kinfa.or.kr/financialProduct/{approved product page}.do"
+      ],
+      "external_identity": "detail-page-key",
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "resume_condition": null
+    },
+    {
+      "source_group_id": "kosaf-scholarships",
+      "input_rows": [
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "input_domains": [
+        "www.kosaf.go.kr"
+      ],
+      "operator": "한국장학재단",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "kosaf-scholarship-web",
+      "decision_reason": "robots가 공개 경로를 허용하고 장학금 landing/detail의 pg identity와 신청 기간이 공개 HTML에서 재현된다. 원문을 복제하지 않고 최소 사실만 수집한다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "allowed",
+          "url": "https://www.kosaf.go.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://www.kosaf.go.kr/ko/agreement.do"
+        },
+        "license": {
+          "status": "restricted",
+          "url": "https://www.kosaf.go.kr/ko/customer.do"
+        },
+        "technical_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.kosaf.go.kr/ko/scholar.do?pg=scholarship_submain01"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.kosaf.go.kr/ko/scholar.do?pg={approved scholarship page key}"
+      ],
+      "external_identity": "pg",
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "resume_condition": null
+    },
+    {
+      "source_group_id": "kpass-transit-refund",
+      "input_rows": [
+        71
+      ],
+      "input_domains": [
+        "korea-pass.kr"
+      ],
+      "operator": "국토교통부 대도시권광역위원회·한국교통안전공단·전국 지자체",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "kpass-transit-refund-web",
+      "decision_reason": "공개 홈의 모두의카드소개 링크와 intro 상세, 가입조건 상세가 stable path로 재현된다. robots는 공개 경로를 허용하며 로그인·가입 요청 없이 최소 정책 사실만 수집한다. 후보는 실제 aggregator 중복 Gate에서 별도 판정한다.",
+      "preflight": {
+        "checked_at": "2026-08-17T15:05:06+09:00",
+        "robots": {
+          "status": "allowed",
+          "url": "https://korea-pass.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://korea-pass.kr/term/term01.do"
+        },
+        "license": {
+          "status": "restricted",
+          "url": "https://korea-pass.kr/"
+        },
+        "technical_access": "available"
+      },
+      "approved_list_urls": [
+        "https://korea-pass.kr/"
+      ],
+      "approved_detail_url_patterns": [
+        "https://korea-pass.kr/info/intro.do",
+        "https://korea-pass.kr/info/use_join.do"
+      ],
+      "external_identity": "static-program-page:intro",
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "resume_condition": null
+    },
+    {
+      "source_group_id": "lh-housing-announcements",
+      "input_rows": [
+        4,
+        5
+      ],
+      "input_domains": [
+        "apply.lh.or.kr"
+      ],
+      "operator": "한국토지주택공사",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "lh-housing-announcement-web",
+      "decision_reason": "공개 임대주택 공고 목록과 panId 상세가 재현되고 robots는 로그인·파일 경로만 제한한다. 첨부를 내려받지 않고 공개 HTML의 최소 사실만 수집한다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "allowed",
+          "url": "https://apply.lh.or.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://apply.lh.or.kr/lhapply/"
+        },
+        "license": {
+          "status": "restricted",
+          "url": "https://apply.lh.or.kr/lhapply/"
+        },
+        "technical_access": "available"
+      },
+      "approved_list_urls": [
+        "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026"
+      ],
+      "approved_detail_url_patterns": [
+        "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId={non_empty}&aisTpCd={non_empty}&uppAisTpCd={non_empty}&ccrCnntSysDsCd={non_empty}"
+      ],
+      "external_identity": "panId",
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "resume_condition": null
+    },
+    {
+      "source_group_id": "regional-discovery-seed",
+      "input_rows": [
+        32
+      ],
+      "input_domains": [
+        "ccei.creativekorea.or.kr"
+      ],
+      "operator": "부산창조경제혁신센터",
+      "status": "rejected",
+      "implementation_status": "rejected",
+      "source_id": null,
+      "decision_reason": "Data 05 부산 inventory에 discovery seed로 이미 이관됐으며 중앙 보완 Source가 아니다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "unchecked_not_required",
+          "url": null
+        },
+        "terms": {
+          "status": "not_found",
+          "url": null
+        },
+        "license": {
+          "status": "not_found",
+          "url": null
+        },
+        "technical_access": "unchecked"
+      },
+      "approved_list_urls": [],
+      "approved_detail_url_patterns": [],
+      "external_identity": null,
+      "request_budget": null,
+      "resume_condition": "Data 05의 지역 Source 경계에서만 재검토한다."
+    },
+    {
+      "source_group_id": "work24-policy",
+      "input_rows": [
+        8,
+        14,
+        15,
+        16,
+        18,
+        20,
+        21,
+        22,
+        26
+      ],
+      "input_domains": [
+        "www.work24.go.kr"
+      ],
+      "operator": "고용노동부·한국고용정보원",
+      "status": "approved",
+      "implementation_status": "implemented_http",
+      "source_id": "work24-policy-web",
+      "decision_reason": "공개 고용정책 목록과 systId 상세가 재현되고 대상 경로가 robots에서 차단되지 않는다. 저작권정책에 따라 출처를 남긴 최소 정책 사실만 수집한다.",
+      "preflight": {
+        "checked_at": "2026-08-17T11:29:04+09:00",
+        "robots": {
+          "status": "allowed",
+          "url": "https://www.work24.go.kr/robots.txt"
+        },
+        "terms": {
+          "status": "restricted",
+          "url": "https://www.work24.go.kr/cm/c/d/0130/retrieveUtzeStpt.do"
+        },
+        "license": {
+          "status": "allowed_with_attribution",
+          "url": "https://m.work24.go.kr/cm/c/d/0130/retrieveCpyrPoly.do"
+        },
+        "technical_access": "available"
+      },
+      "approved_list_urls": [
+        "https://www.work24.go.kr/cm/c/f/1100/selecPolicyInfo.do"
+      ],
+      "approved_detail_url_patterns": [
+        "https://www.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systId={SI followed by digits}"
+      ],
+      "external_identity": "systId",
+      "request_budget": {
+        "max_list_requests": 1,
+        "max_detail_requests": 3,
+        "minimum_interval_seconds": 2
+      },
+      "resume_condition": null
+    }
+  ]
+}

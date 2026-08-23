@@ -203,7 +203,7 @@ def _print_summary(
         f"inserted={database.inserted} "
         f"updated={database.updated} "
         f"unchanged={database.unchanged} "
-        f"pruned={result.pruned} "
+        f"inactivated={result.inactivated} "
         f"duplicate={database.duplicate} "
         f"skipped={database.skipped} "
         f"rejected={database.rejected} "

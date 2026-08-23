@@ -1,5 +1,7 @@
 """Shared collector infrastructure and registered official sources."""
 
+from functools import partial
+
 from collectors.base import (
     CollectionOptions,
     CollectionResult,
@@ -119,6 +121,24 @@ from collectors.regional_policy_gate import (
 )
 from collectors.registry import CollectorRegistry, default_registry
 from collectors.storage import RawDocumentStore
+from collectors.supplemental_official import (
+    KINFA_SOURCE_ID,
+    KPASS_SOURCE_ID,
+    KOSAF_SOURCE_ID,
+    LH_SOURCE_ID,
+    SUPPLEMENTAL_SOURCE_IDS,
+    WORK24_SOURCE_ID,
+    SupplementalDecision,
+    SupplementalListItem,
+    SupplementalOfficialCollector,
+    SupplementalOfficialExtractor,
+    SupplementalOutcome,
+    create_supplemental_official_collector,
+    decide_supplemental_policy,
+    discover_supplemental_list_items,
+    map_supplemental_duplicate_evidence,
+    supplemental_http_config_from_environment,
+)
 from collectors.validation import (
     JsonSchemaValidator,
     NormalizedProgramValidator,
@@ -152,6 +172,14 @@ default_registry.register(
     BUSAN_SOURCE_ID,
     create_busan_youth_collector,
 )
+for _supplemental_source_id in sorted(SUPPLEMENTAL_SOURCE_IDS):
+    default_registry.register(
+        _supplemental_source_id,
+        partial(
+            create_supplemental_official_collector,
+            _supplemental_source_id,
+        ),
+    )
 
 __all__ = [
     "AGGREGATOR_SOURCE_IDS",
@@ -193,7 +221,11 @@ __all__ = [
     "BusanYouthExtractor",
     "InstitutionalContact",
     "InstitutionalContactKind",
+    "KINFA_SOURCE_ID",
+    "KPASS_SOURCE_ID",
+    "KOSAF_SOURCE_ID",
     "JsonSchemaValidator",
+    "LH_SOURCE_ID",
     "NormalizedProgram",
     "NormalizedProgramValidator",
     "Normalizer",
@@ -225,10 +257,17 @@ __all__ = [
     "SourceType",
     "SourceFieldProfile",
     "SourceProvenance",
+    "SUPPLEMENTAL_SOURCE_IDS",
+    "SupplementalDecision",
+    "SupplementalListItem",
+    "SupplementalOfficialCollector",
+    "SupplementalOfficialExtractor",
+    "SupplementalOutcome",
     "ValidationIssue",
     "ValidationPartition",
     "ValidationResult",
     "YouthCenterExtractor",
+    "WORK24_SOURCE_ID",
     "default_registry",
     "map_bokjiro_eligibility",
     "map_cheonan_eligibility",
@@ -237,15 +276,20 @@ __all__ = [
     "map_youthcenter_eligibility",
     "regional_source_inventory_issues",
     "decide_gyeongbuk_regional_policy",
+    "decide_supplemental_policy",
+    "create_supplemental_official_collector",
     "decide_expanded_regional_policy",
     "decide_representative_regional_policy",
     "evaluate_cross_source_duplicate",
     "enforce_youth_target",
     "evaluate_regional_policy",
+    "discover_supplemental_list_items",
     "load_approved_regional_profile",
     "map_gyeongbuk_duplicate_evidence",
     "map_expanded_duplicate_evidence",
     "map_representative_duplicate_evidence",
+    "map_supplemental_duplicate_evidence",
+    "supplemental_http_config_from_environment",
     "outcome_from_decisions",
     "replay_profile_actions",
 ]

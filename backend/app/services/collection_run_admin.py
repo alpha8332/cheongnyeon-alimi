@@ -2,10 +2,12 @@ import math
 from datetime import datetime, timezone
 from typing import Optional, Tuple
 from uuid import UUID
+
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.logging import logger
-from app.models.collection_run import CollectionRun
+from app.models.collection_run import CollectionRun, utc_now
 from app.schemas.collection_run_admin import (
     CollectionRunAdminItem,
     CollectionRunAdminDetail,
@@ -27,10 +29,10 @@ def trigger_manual_collection_run_service(
 ) -> Tuple[Optional[CollectionRunTriggerResponse], Optional[CollectionRun]]:
     """
     수동 수집 실행 요청을 처리한다.
-    - 동일 source_id에 active (non-stale) running 수집이 존재하는 경우 (None, active_run) 반환 (Conflict 409 사유).
+    - 동일 source_id에 active (non-stale) queued/running 수집이 존재하는 경우 (None, active_run) 반환 (Conflict 409 사유).
     - 수집 기동 가능한 경우 새 CollectionRun 생성 및 (trigger_response_dto, None) 반환 (202 Accepted).
     """
-    source_id = request_dto.source_id or "youthcenter"
+    source_id = request_dto.source_id or "cheonan-youthcenter-web"
     requested_count = request_dto.requested_count or 100
 
     active_run = get_active_running_collection_run(db, source_id=source_id)
@@ -47,15 +49,30 @@ def trigger_manual_collection_run_service(
                 },
             )
             return None, active_run
+        active_run.status = "failed"
+        active_run.finished_at = utc_now()
+        active_run.failed_count = max(active_run.failed_count, 1)
+        active_run.error_type = "StaleCollectionRunReplaced"
+        db.commit()
 
     # 중복 진행 건이 없거나, 기존 건이 Stale인 경우 새 수동 수집건 시작
-    new_run = create_admin_collection_run(
-        db=db,
-        source_id=source_id,
-        requested_count=requested_count,
-        run_type="collection",
-        trigger_type="admin",
-    )
+    try:
+        new_run = create_admin_collection_run(
+            db=db,
+            source_id=source_id,
+            requested_count=requested_count,
+            run_type="collection",
+            trigger_type="admin",
+        )
+    except IntegrityError:
+        db.rollback()
+        concurrent_run = get_active_running_collection_run(
+            db,
+            source_id=source_id,
+        )
+        if concurrent_run is None:
+            raise
+        return None, concurrent_run
 
     response_dto = CollectionRunTriggerResponse(
         run_id=new_run.run_id,
@@ -64,7 +81,7 @@ def trigger_manual_collection_run_service(
         trigger_type=str(new_run.trigger_type),
         status=str(new_run.status),
         started_at=new_run.started_at,
-        message="Manual collection run initiated successfully.",
+        message="Manual collection run queued successfully.",
     )
 
     logger.info(
@@ -78,7 +95,7 @@ def trigger_manual_collection_run_service(
 
     return response_dto, None
 
-# Stale 판단 기준: running 상태에서 시작 후 2시간(7,200초) 이상 지연 시
+# Stale 판단 기준: queued/running 상태에서 접수 후 2시간(7,200초) 이상 지연 시
 STALE_THRESHOLD_SECONDS = 7200
 
 
@@ -89,9 +106,9 @@ def check_is_stale(
 ) -> bool:
     """
     CollectionRun의 Stale 상태 여부를 계산한다.
-    status가 'running'이고 finished_at이 None이며 started_at으로부터 2시간 이상 지난 경우 True.
+    status가 queued/running이고 finished_at이 None이며 started_at으로부터 2시간 이상 지난 경우 True.
     """
-    if status != "running" or finished_at is not None:
+    if status not in {"queued", "running"} or finished_at is not None:
         return False
 
     now = datetime.now(timezone.utc)
@@ -142,6 +159,7 @@ def list_admin_collection_runs_service(
                 finished_at=item.finished_at,
                 status=str(item.status),
                 is_stale=is_stale,
+                is_complete_snapshot=item.is_complete_snapshot,
                 inserted_count=item.inserted_count,
                 updated_count=item.updated_count,
                 failed_count=item.failed_count,
@@ -178,6 +196,7 @@ def get_admin_collection_run_detail_service(
         finished_at=item.finished_at,
         status=str(item.status),
         is_stale=is_stale,
+        is_complete_snapshot=item.is_complete_snapshot,
         requested_count=item.requested_count,
         raw_document_count=item.raw_document_count,
         extracted_count=item.extracted_count,

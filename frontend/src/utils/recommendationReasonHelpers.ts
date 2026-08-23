@@ -17,6 +17,19 @@ export function formatRecommendationReasonSummary(
   return '입력 조건과 관련된 정책 후보입니다.';
 }
 
+export function formatRecommendationAge(item: RecommendationItemDto): string {
+  if (item.min_age === 0 && item.max_age === 0) {
+    return '연령 정보 없음';
+  }
+  if (item.min_age !== null || item.max_age !== null) {
+    return `${item.min_age ?? '—'}~${item.max_age ?? '—'}세`;
+  }
+  if (item.reasons.some((reason) => reason.code === 'AGE_UNRESTRICTED')) {
+    return '연령 제한 없음';
+  }
+  return '연령 정보 없음';
+}
+
 export function hasRecommendationUnknownConditions(
   item: RecommendationItemDto,
 ): boolean {

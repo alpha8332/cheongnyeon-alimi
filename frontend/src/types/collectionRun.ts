@@ -15,6 +15,7 @@ export type CollectionRunType =
 export type CollectionRunTriggerType = 'cli' | 'scheduler' | 'admin';
 
 export type CollectionRunStatus =
+  | 'queued'
   | 'running'
   | 'succeeded'
   | 'partial_failure'
@@ -47,6 +48,7 @@ export interface CollectionRunListItemDto {
   finished_at: string | null;
   status: CollectionRunStatus;
   is_stale: boolean;
+  is_complete_snapshot: boolean;
   inserted_count: number;
   updated_count: number;
   failed_count: number;
@@ -63,6 +65,7 @@ export interface CollectionRunDetailDto {
   finished_at: string | null;
   status: CollectionRunStatus;
   is_stale: boolean;
+  is_complete_snapshot: boolean;
   requested_count: number;
   raw_document_count: number;
   extracted_count: number;

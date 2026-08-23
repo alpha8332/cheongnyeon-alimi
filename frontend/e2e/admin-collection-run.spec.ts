@@ -15,6 +15,10 @@ async function waitForRunsLoaded(page: Page) {
   });
 }
 
+function adminNav(page: Page) {
+  return page.getByRole('navigation', { name: '관리자 내비게이션' });
+}
+
 test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
   test('1. 보호 route — 미로그인 /admin/runs → login redirect', async ({
     page,
@@ -35,11 +39,17 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
     await expect(page).toHaveURL(/\/admin$/);
     await expect(page.getByRole('navigation', { name: '관리자 내비게이션' })).toBeVisible();
     await expect(page.getByRole('button', { name: '로그아웃' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '관리 대시보드' })).toBeVisible();
+    await expect(page.getByText('최신 수집 실행을 불러오는 중입니다.')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    await expect(page.getByRole('heading', { name: '최신 수집 실행' })).toBeVisible();
+    await expect(page.getByLabel('상태: 실행 중')).toBeVisible();
   });
 
   test('4. 실행 기록 list·pagination·filter', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\/runs$/);
 
     await waitForRunsLoaded(page);
@@ -60,7 +70,7 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
 
   test('5. run detail — status·stale·counts', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await waitForRunsLoaded(page);
 
     await page
@@ -77,7 +87,7 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
 
   test('6. detail 404 shell', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await waitForRunsLoaded(page);
 
     await page.evaluate(() => {
@@ -92,7 +102,7 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
 
   test('7a. 수동 실행 — running run 존재 시 disable', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await waitForRunsLoaded(page);
 
     const triggerButton = page.getByRole('button', { name: '수동 실행 요청' });
@@ -104,7 +114,7 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
 
   test('7b. 수동 실행 confirm — succeeded filter 후 trigger', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await waitForRunsLoaded(page);
 
     const filters = page.getByLabel('실행 기록 필터');
@@ -125,7 +135,7 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
 
   test('8. list → detail navigation', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await waitForRunsLoaded(page);
 
     await page
@@ -145,7 +155,7 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
     );
 
     await loginAsAdmin(page);
-    await page.getByRole('link', { name: '실행 기록' }).click();
+    await adminNav(page).getByRole('link', { name: '실행 기록', exact: true }).click();
     await waitForRunsLoaded(page);
 
     const table = page.getByRole('table');
@@ -157,5 +167,26 @@ test.describe('Admin CollectionRun browser flow (FE3-05)', () => {
 
     await expect(page.getByRole('heading', { name: '실행 상세' })).toBeVisible();
     await expect(page.getByText('run_id', { exact: true })).toBeVisible();
+  });
+
+  test('10. data quality — 회차별 집계·drill-down', async ({ page }) => {
+    await loginAsAdmin(page);
+    await adminNav(page).getByRole('link', { name: '데이터 품질', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/quality$/);
+    await expect(page.getByRole('heading', { name: '데이터 품질' })).toBeVisible();
+    await expect(page.getByText('수집 실행 목록을 불러오는 중입니다.')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+
+    const table = page.getByRole('table');
+    await expect(table.getByText('최근 수집 회차 품질 집계')).toBeVisible();
+    await expect(table.getByLabel('상태: 실행 중').first()).toBeVisible();
+
+    const failedRunLink = table.getByRole('link', { name: '50' }).first();
+    await expect(failedRunLink).toBeVisible();
+    await failedRunLink.click();
+
+    await expect(page.getByRole('heading', { name: '실행 상세' })).toBeVisible();
+    await expect(page.getByLabel('상태: 실패')).toBeVisible();
   });
 });

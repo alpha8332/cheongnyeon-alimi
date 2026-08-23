@@ -79,6 +79,28 @@ def test_postgresql_atomic_upsert_identity_and_outcomes():
         assert changed.updated == 1
         assert changed.unchanged == 3
 
+        with session_factory() as db:
+            returning_policy = db.scalar(
+                sa.select(Policy).where(
+                    Policy.source_id == changed_programs[0]["source_id"],
+                    Policy.external_id == changed_programs[0]["external_id"],
+                )
+            )
+            returning_policy.inactive_at = datetime.now(timezone.utc)
+            db.commit()
+        with session_factory() as db:
+            reappeared = import_programs(db, changed_programs)
+            returning_policy = db.scalar(
+                sa.select(Policy).where(
+                    Policy.source_id == changed_programs[0]["source_id"],
+                    Policy.external_id == changed_programs[0]["external_id"],
+                )
+            )
+
+        assert reappeared.updated == 1
+        assert reappeared.unchanged == 3
+        assert returning_policy.inactive_at is None
+
         missing_identity = copy.deepcopy(programs[0])
         missing_identity["external_id"] = None
         with session_factory() as db:

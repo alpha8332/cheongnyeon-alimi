@@ -4,6 +4,7 @@ import type { RecommendationItemDto, RecommendationResponse } from '../src/types
 import {
   buildRecommendationQueryWarningMessage,
   countRecommendationUnknownItems,
+  formatRecommendationAge,
   formatRecommendationReasonSummary,
   hasQueryLevelRecommendationWarnings,
   hasRecommendationUnknownConditions,
@@ -38,6 +39,23 @@ test('formatRecommendationReasonSummary는 reason label을 연결한다', () => 
   const summary = formatRecommendationReasonSummary(createItem());
 
   assert.match(summary, /지역 조건/);
+});
+
+test('formatRecommendationAge는 제한 없음과 0 sentinel을 구분한다', () => {
+  assert.equal(
+    formatRecommendationAge(
+      createItem({
+        min_age: null,
+        max_age: null,
+        reasons: [{ code: 'AGE_UNRESTRICTED', label: '연령 제한 없음' }],
+      }),
+    ),
+    '연령 제한 없음',
+  );
+  assert.equal(
+    formatRecommendationAge(createItem({ min_age: 0, max_age: 0 })),
+    '연령 정보 없음',
+  );
 });
 
 test('hasRecommendationUnknownConditions는 unknown_conditions 유무를 판별한다', () => {

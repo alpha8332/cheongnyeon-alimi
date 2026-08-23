@@ -69,6 +69,9 @@ def test_postgresql_upgrade_jsonb_round_trip_and_downgrade():
         assert isinstance(policies.c.provenance.type, JSONB)
         assert isinstance(policies.c.eligibility_summary.type, JSONB)
         assert policies.c.collected_at.type.timezone is True
+        assert policies.c.last_seen_at.type.timezone is True
+        assert policies.c.last_verified_at.type.timezone is True
+        assert policies.c.inactive_at.type.timezone is True
         assert collection_runs.c.started_at.type.timezone is True
         assert collection_runs.c.finished_at.type.timezone is True
 
@@ -217,11 +220,17 @@ def test_postgresql_eligibility_migration_backfills_without_version_rewrite():
                 sa.select(
                     after.c.schema_version,
                     after.c.eligibility_summary,
+                    after.c.last_seen_at,
+                    after.c.last_verified_at,
+                    after.c.inactive_at,
                 ).where(after.c.id == policy_id)
             ).one()
 
         assert row.schema_version == "1.1.0"
         assert row.eligibility_summary == EMPTY_ELIGIBILITY_SUMMARY
+        assert row.last_seen_at == collected_at
+        assert row.last_verified_at >= collected_at
+        assert row.inactive_at is None
 
         command.downgrade(config, PRE_ELIGIBILITY_REVISION)
         downgraded_columns = {
@@ -229,6 +238,9 @@ def test_postgresql_eligibility_migration_backfills_without_version_rewrite():
             for column in sa.inspect(db_engine).get_columns("policies")
         }
         assert "eligibility_summary" not in downgraded_columns
+        assert "last_seen_at" not in downgraded_columns
+        assert "last_verified_at" not in downgraded_columns
+        assert "inactive_at" not in downgraded_columns
     finally:
         try:
             command.downgrade(config, "base")

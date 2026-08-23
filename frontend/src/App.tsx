@@ -5,13 +5,14 @@ import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
 
 // user 페이지
 import HomePage from '@/pages/user/HomePage';
+import PolicySearchRedirect from '@/pages/user/PolicySearchRedirect';
 import SearchPage from '@/pages/user/SearchPage';
-import PolicySearchPage from '@/pages/user/PolicySearchPage';
 import RecommendationPage from '@/pages/user/RecommendationPage';
 import ProgramDetailPage from '@/pages/user/ProgramDetailPage';
 import FavoritesPage from '@/pages/user/FavoritesPage';
 import NotificationsPage from '@/pages/user/NotificationsPage';
 import CalendarPage from '@/pages/user/CalendarPage';
+import UserProfilePage from '@/pages/user/UserProfilePage';
 
 // admin 페이지
 import DashboardPage from '@/pages/admin/DashboardPage';
@@ -33,13 +34,14 @@ export const router = createBrowserRouter([
     errorElement: <RootErrorFallback />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'search', element: <PolicySearchPage /> },
+      { path: 'search', element: <PolicySearchRedirect /> },
       { path: 'recommendations', element: <RecommendationPage /> },
       { path: 'programs', element: <SearchPage /> },
       { path: 'programs/:id', element: <ProgramDetailPage /> },
       { path: 'favorites', element: <FavoritesPage /> },
       { path: 'notifications', element: <NotificationsPage /> },
       { path: 'calendar', element: <CalendarPage /> },
+      { path: 'profile', element: <UserProfilePage /> },
       { path: 'admin/login', element: <AdminLoginPage /> },
       {
         path: 'admin',

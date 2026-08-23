@@ -20,7 +20,8 @@
 | --- | --- | --- | --- |
 | 3주차 | 실데이터 정책 검색과 `v0.1.0` | completed (`main` 발행·tag 완료) | [3주차 상세 계획](week_03_release_1.md) |
 | 4주차 | 공식 웹 Source·지역 고유 정책·자격요건과 사용자·관리자 기본 기능 통합·DTL4-5 | completed (`W4-G4_MIDPOINT_PASS`) | [4주차 상세 계획](week_04_v0_5_0.md) |
-| 5주차 | Data 06 보완 공식 정책·안정화·사용자 검증과 Release 2 `v0.5.0` 판정 | approved (`develop@f0d3dd3`, W5-G0 실행 준비) | [5주차 상세 계획](week_05_release_2.md) |
+| 5주차 | Data 06 보완 공식 정책·안정화·사용자 검증과 Release 2 `v0.5.0` 판정 | completed (`W5-G2_PASS`) | [5주차 상세 계획](week_05_release_2.md) |
+| 6주차 | Production Data Refresh·배포 파이프라인과 Final Release `v1.0.0` | in-progress (`W6-P3_BOOTSTRAP_PASS`) | [6주차 상세 계획](week_06_final_release.md) |
 
 ## 현재 역할별 실행 계획
 
@@ -28,7 +29,8 @@
 | --- | --- | --- | --- |
 | 3주차 | Data·Team Leader | completed | [Data·Team Leader 계획](week_03_data_team_leader.md) |
 | 4주차 | Data·Team Leader | completed | [Data·Team Leader 계획](week_04_data_team_leader.md) |
-| 5주차 | Data·Team Leader | approved | [Data·Team Leader 계획](week_05_data_team_leader.md) |
+| 5주차 | Data·Team Leader | completed (`W5-G2_PASS`) | [Data·Team Leader 계획](week_05_data_team_leader.md) |
+| 6주차 | Data·Team Leader·Integration·Deploy | in-progress (`W6-P3_BOOTSTRAP_PASS`) | [Final Release 계획](week_06_final_release.md) |
 
 ## 현재 인수인계
 
@@ -42,8 +44,9 @@
 4주차 기본 기능·DTL4-5와 `W4-G4_MIDPOINT_PASS`를 선행 조건으로 승인했으며,
 해당 4주차 조건은 `2026-08-14` 충족됐다. Data 06은 5주차 W5-G1 전 필수
 완료 범위이며, 4주차 결과는 `2026-08-15` `develop`의 `f0d3dd3`에 병합됐다.
-5주차는 W5-G0 재검증 뒤 시작한다. 6주차는 선행 Gate와
-상세 Forest 범위가 확인된 뒤 생성한다.
+5주차는 `2026-08-23` `W5-G2_PASS`로 완료됐다. 6주차는 Deploy 02
+Production Data Refresh Forest와 함께 승인됐으며 `W6-P0`부터 Gate 순서대로
+수행한다.
 
 ## 문서 상태
 
@@ -99,4 +102,3 @@
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
 - [역할과 책임](../../governance/role_assignment.md)
 - [개발 기록 안내](../development_notes/README.md)
-

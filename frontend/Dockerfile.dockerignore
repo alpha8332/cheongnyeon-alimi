@@ -1,0 +1,17 @@
+**
+!frontend/
+!frontend/**
+!data/
+!data/seeds/
+!data/seeds/**
+frontend/.env
+frontend/.env.*
+frontend/node_modules/
+frontend/dist/
+frontend/.test-dist/
+frontend/playwright-report/
+frontend/test-results/
+**/*.log
+**/*.dump
+**/*.backup
+

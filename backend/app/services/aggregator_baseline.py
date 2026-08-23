@@ -61,6 +61,7 @@ def load_aggregator_baseline(
         .where(
             Policy.source_id.in_(AGGREGATOR_SOURCE_IDS),
             Policy.data_quality_status != "invalid",
+            Policy.inactive_at.is_(None),
         )
         .order_by(Policy.source_id, Policy.external_id, Policy.id)
     ).all()

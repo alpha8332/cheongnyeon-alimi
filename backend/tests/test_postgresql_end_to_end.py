@@ -26,7 +26,16 @@ from collectors.normalized import NormalizedProgram
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 SEED_PATH = BACKEND_ROOT.parent / "data" / "seeds" / "initial_programs.json"
-SYSTEM_FIELDS = frozenset({"id", "created_at", "updated_at"})
+SYSTEM_FIELDS = frozenset(
+    {
+        "id",
+        "created_at",
+        "updated_at",
+        "last_seen_at",
+        "last_verified_at",
+        "inactive_at",
+    }
+)
 
 
 def require_test_database_url() -> str:
@@ -173,9 +182,9 @@ def test_postgresql_seed_repository_api_end_to_end():
             app.dependency_overrides.pop(get_db, None)
 
         assert valid_list.status_code == 200
-        assert valid_list.json()["total"] == 2
+        assert valid_list.json()["total"] == 1
         assert public_list.status_code == 200
-        assert public_list.json()["total"] == 4
+        assert public_list.json()["total"] == 3
         assert finance.status_code == 200
         assert finance.json()["total"] == 2
         assert hidden_partial.status_code == 404

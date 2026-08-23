@@ -107,7 +107,7 @@ def test_repository_uses_exact_array_membership(db):
 
     assert finance.total == 2
     assert category_prefix.total == 0
-    assert seoul.total == 1
+    assert seoul.total == 0
     assert region_prefix.total == 0
 
 
@@ -153,15 +153,15 @@ def test_list_api_filters_and_paginates(client, db):
     )
 
     assert first_page.status_code == 200
-    assert first_page.json()["total"] == 4
+    assert first_page.json()["total"] == 3
     assert len(first_page.json()["items"]) == 1
-    assert second_page.json()["total"] == 4
+    assert second_page.json()["total"] == 3
     assert (
         first_page.json()["items"][0]["id"]
         != second_page.json()["items"][0]["id"]
     )
     assert category.json()["total"] == 2
-    assert region.json()["total"] == 1
+    assert region.json()["total"] == 0
     assert region_prefix.json()["total"] == 0
     assert open_status.json()["total"] == 1
     assert all(

@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
+from unittest.mock import Mock
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -10,6 +12,7 @@ from app.models.collection_run import CollectionRun
 from app.services.admin_access import create_admin_session_token, clear_rate_limit_state
 from app.api.deps import get_current_admin_payload
 from app.api.v1.endpoints.collection_run_admin import router as collection_run_admin_router
+from app.services.collection_queue import CollectionQueuePublishError
 
 client = TestClient(app)
 
@@ -33,6 +36,16 @@ def reset_state(db):
 @pytest.fixture
 def admin_token():
     return create_admin_session_token(expires_minutes=60)
+
+
+@pytest.fixture
+def collection_queue_publisher(monkeypatch):
+    task = Mock()
+    monkeypatch.setattr(
+        "app.api.v1.endpoints.collection_run_admin.publish_collection_run",
+        task,
+    )
+    return task
 
 
 @pytest.fixture
@@ -178,17 +191,21 @@ def test_collection_run_admin_route_protection_dependencies():
         assert get_current_admin_payload in dep_functions
 
 
-def test_trigger_collection_run_success_202(admin_token, db):
+def test_trigger_collection_run_success_202(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
     """POST /api/v1/admin/collection-runs 수동 수집 기동 요청 성공시 202 Accepted 반환 및 DB 레코드 생성."""
     response = client.post(
         "/api/v1/admin/collection-runs",
-        json={"source_id": "manual_source", "requested_count": 50},
+        json={"source_id": "cheonan-youthcenter-web", "requested_count": 1},
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert response.status_code == 202
     data = response.json()
-    assert data["source_id"] == "manual_source"
-    assert data["status"] == "running"
+    assert data["source_id"] == "cheonan-youthcenter-web"
+    assert data["status"] == "queued"
     assert data["run_type"] == "collection"
     assert data["trigger_type"] == "admin"
     assert "run_id" in data
@@ -196,16 +213,25 @@ def test_trigger_collection_run_success_202(admin_token, db):
     # DB에 생성되었는지 검증
     run_in_db = db.query(CollectionRun).filter(CollectionRun.run_id == uuid.UUID(data["run_id"])).first()
     assert run_in_db is not None
-    assert run_in_db.status == "running"
-    assert run_in_db.requested_count == 50
+    assert run_in_db.status == "queued"
+    assert run_in_db.requested_count == 1
+    collection_queue_publisher.assert_called_once_with(
+        uuid.UUID(data["run_id"]),
+        "cheonan-youthcenter-web",
+        1,
+    )
 
 
-def test_trigger_collection_run_active_conflict_409(admin_token, db):
+def test_trigger_collection_run_active_conflict_409(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
     """동일 source_id에 2시간 미만의 진행 중인 running 수집이 존재할 경우 409 Conflict 반환."""
     # 30분 전에 시작된 running 수집 생성
     active_run = CollectionRun(
         run_id=uuid.uuid4(),
-        source_id="conflict_source",
+        source_id="cheonan-youthcenter-web",
         run_type="collection",
         trigger_type="admin",
         started_at=datetime.now(timezone.utc) - timedelta(minutes=30),
@@ -218,7 +244,7 @@ def test_trigger_collection_run_active_conflict_409(admin_token, db):
     # 동일 source_id에 대해 수동 수집 요청
     response = client.post(
         "/api/v1/admin/collection-runs",
-        json={"source_id": "conflict_source"},
+        json={"source_id": "cheonan-youthcenter-web"},
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert response.status_code == 409
@@ -226,13 +252,18 @@ def test_trigger_collection_run_active_conflict_409(admin_token, db):
     assert "error" in data
     assert "currently in progress" in data["error"]["message"]
     assert data["error"]["details"]["active_run_id"] == str(active_run.run_id)
+    collection_queue_publisher.assert_not_called()
 
 
-def test_trigger_collection_run_stale_active_allows_new_trigger(admin_token, db):
+def test_trigger_collection_run_stale_active_allows_new_trigger(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
     """3시간 전 시작되어 Stale 상태인 running 수집이 존재할 경우 409 없이 202 성공 처리."""
     stale_run = CollectionRun(
         run_id=uuid.uuid4(),
-        source_id="stale_source",
+        source_id="cheonan-youthcenter-web",
         run_type="collection",
         trigger_type="admin",
         started_at=datetime.now(timezone.utc) - timedelta(hours=3),
@@ -245,15 +276,69 @@ def test_trigger_collection_run_stale_active_allows_new_trigger(admin_token, db)
     # 동일 source_id에 대해 수동 수집 요청
     response = client.post(
         "/api/v1/admin/collection-runs",
-        json={"source_id": "stale_source"},
+        json={"source_id": "cheonan-youthcenter-web", "requested_count": 1},
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert response.status_code == 202
-    assert response.json()["source_id"] == "stale_source"
+    assert response.json()["source_id"] == "cheonan-youthcenter-web"
+    collection_queue_publisher.assert_called_once()
+    db.refresh(stale_run)
+    assert stale_run.status == "failed"
+    assert stale_run.error_type == "StaleCollectionRunReplaced"
+
+
+def test_trigger_collection_run_queued_conflict_409(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
+    active_run = CollectionRun(
+        source_id="cheonan-youthcenter-web",
+        run_type="collection",
+        trigger_type="admin",
+        status="queued",
+    )
+    db.add(active_run)
+    db.commit()
+
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "cheonan-youthcenter-web"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["details"]["active_run_id"] == str(
+        active_run.run_id
+    )
+    collection_queue_publisher.assert_not_called()
+
+
+def test_trigger_collection_run_broker_failure_closes_run_503(
+    admin_token,
+    db,
+    collection_queue_publisher,
+):
+    collection_queue_publisher.side_effect = CollectionQueuePublishError(
+        "ConnectionError"
+    )
+
+    response = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "cheonan-youthcenter-web", "requested_count": 1},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert response.status_code == 503
+    run = db.query(CollectionRun).one()
+    assert run.status == "failed"
+    assert run.finished_at is not None
+    assert run.failed_count == 1
+    assert run.error_type == "CollectionQueuePublishError"
 
 
 def test_trigger_collection_run_invalid_payload_422(admin_token):
-    """requested_count가 범위 밖(0 또는 1001 이상)일 때 422 Unprocessable Entity 반환."""
+    """requested_count가 범위 밖(0 또는 501 이상)일 때 422 Unprocessable Entity 반환."""
     resp_zero = client.post(
         "/api/v1/admin/collection-runs",
         json={"requested_count": 0},
@@ -263,7 +348,14 @@ def test_trigger_collection_run_invalid_payload_422(admin_token):
 
     resp_too_large = client.post(
         "/api/v1/admin/collection-runs",
-        json={"requested_count": 1001},
+        json={"requested_count": 501},
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert resp_too_large.status_code == 422
+
+    resp_unknown_source = client.post(
+        "/api/v1/admin/collection-runs",
+        json={"source_id": "unknown-source"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp_unknown_source.status_code == 422

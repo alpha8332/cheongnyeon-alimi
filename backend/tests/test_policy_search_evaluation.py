@@ -102,6 +102,12 @@ def test_age_and_application_status_use_three_value_decisions():
         age_max=None,
         age_condition_text="세부 공고 확인",
     ).state is MatchState.UNKNOWN
+    assert evaluate_age_condition(
+        requested_age=27,
+        age_min=0,
+        age_max=0,
+        age_condition_text=None,
+    ).state is MatchState.UNKNOWN
 
     assert evaluate_application_status(
         requested_status="open",
@@ -184,6 +190,25 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
         "district",
         parent_code=chungnam.code,
     )
+    incheon = _region(
+        "2800000000",
+        "인천광역시",
+        "province",
+        parent_code=country.code,
+    )
+    retired_incheon = _region(
+        "2811000000",
+        "인천광역시 중구",
+        "district",
+        parent_code=incheon.code,
+        status="retired",
+    )
+    active_incheon = _region(
+        "2817700000",
+        "인천광역시 미추홀구",
+        "district",
+        parent_code=incheon.code,
+    )
     seoul_junggu = _region(
         "1114000000",
         "중구",
@@ -203,6 +228,9 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
             cheonan,
             dongnam,
             asan,
+            incheon,
+            retired_incheon,
+            active_incheon,
             seoul_junggu,
             busan_junggu,
         ]
@@ -244,6 +272,10 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
         "other": _policy("other", coverage_scope="regional"),
         "excluded": _policy("excluded", coverage_scope="regional"),
         "unresolved": _policy("unresolved", coverage_scope="regional"),
+        "mixed_other_province": _policy(
+            "mixed-other-province",
+            coverage_scope="regional",
+        ),
     }
     db.add_all(policies.values())
     db.flush()
@@ -260,6 +292,8 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
                 resolution_status="ambiguous",
                 source_text="중구",
             ),
+            _rule(policies["mixed_other_province"].id, retired_incheon.code),
+            _rule(policies["mixed_other_province"].id, active_incheon.code),
         ]
     )
     db.add(
@@ -300,6 +334,9 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
     ).reason is RegionDecisionReason.NATIONWIDE
     assert service.evaluate_policy_region(
         policies["other"].id, cheonan_query
+    ).reason is RegionDecisionReason.OTHER_REGION
+    assert service.evaluate_policy_region(
+        policies["mixed_other_province"].id, cheonan_query
     ).reason is RegionDecisionReason.OTHER_REGION
     assert service.evaluate_policy_region(
         policies["unknown"].id, cheonan_query

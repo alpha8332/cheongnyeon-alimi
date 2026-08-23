@@ -10,6 +10,47 @@
 
 ### Changed
 
+- 최종 Docker Acceptance commit과 AES-256 package receipt를 고정하고 BE·FE·
+  사용성·QA를 역할별 project·secret·Volume으로 분리해 4건 모두 같은 Git SHA·
+  snapshot·dump·archive hash로 통과시켜 `DOCKER_ACCEPTANCE_PASS`를 확정했다
+  ([개발 기록](docs/development/development_notes/deploy/docker_acceptance_environment.md))
+- review admission v1으로 실행일 현재성·청년 taxonomy·canonical region을 모두
+  통과한 지역 정책 3건을 실제 DB에 적재하고 동일 manifest 재실행의 전건
+  `unchanged`와 Source별 CollectionRun을 검증했다. post-admission DB에서
+  manifest를 다시 만들 때 이미 승격된 identity를 baseline에서 제외해 같은
+  manifest를 결정적으로 재적용할 수 있도록 audit/apply 계약을 보강했다
+  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
+- 홈·맞춤 추천·검색·북마크 UX: 홈 안내 문구 갱신, `/recommendations` 상단·결과 카드 `추가 확인 필요` 박스 제거, 검색 결과 자격 확인 뱃지 제거, 정책 카드 D-Day(`D-nn`) 표시, 북마크 페이지 전체 데이터 삭제 버튼 제거.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 관리자 대시보드(`/admin`): 최신 CollectionRun 집계 요약·수집 시각·품질 metric card. 데이터 품질(`/admin/quality`): 최근 회차별 failed·invalid·duplicate 집계 비교·drill-down.
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- 홈 추천 정책: 프로필 저장 조건(region·age·category) 있을 때 Recommendation API 연동·안내 캡션; 없을 때 open·상시 폴백(안내 문구 미노출).
+  ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
+- 북마크 폴더: `···` 메뉴 바깥 클릭·ESC 닫기, 사용자 폴더 삭제 확인 modal(기본 폴더 보호).
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 상세 헤더: 제목 행 우측 북마크, 주관기관 아래 공식 신청·ICS 액션 바, ○ 요약 줄바꿈·`YYYYMMDD` 기간 정규화.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 홈 첫 화면 featured 정책: 마감·예정·지난 마감일 제외, 상태·분야 뱃지 semantic 컬러(상시 민트·모집중 블루·마감 레드).
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 목록·상세: 카드 신청기간 `YYYY.MM.DD` 정규화, 카테고리·상태 뱃지를 달력 테마와 일치, 상세 메타 줄바꿈·본문 ordered/bullet 리스트.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 상세(`/programs/:id`): Summary Header(상태·D-Day·4대 메타)·섹션 카드·하단 Sticky CTA(북마크·공식 신청·ICS). `EligibilitySummary`·API schema 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 북마크(`/favorites`): 탭 리스트 → 폴더 그리드 탐색기(브레드크럼, 정렬, 그리드/리스트 뷰, 폴더 진입). localStorage v2 schema 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 홈 NL 검색: 결과·필터 칩·sidebar를 `/` URL state(`/?q=…`)에서 렌더; legacy `/search`는 query preserve redirect. 메인 컨텐츠 max-width 중앙 정렬. 프로필 저장 조건을 검색 API flat filter 기본값으로 merge.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): ISO 날짜 정규화·정책명 폴백·칩 button 중첩 제거로 일정 칩 미노출 버그 수정.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): 일정 칩 텍스트를 정책명(`title`)으로 표시(날짜 칸·all-day·주/일 뷰). 카테고리 색상 유지·말줄임 compact 스타일.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): macOS/Apple Calendar 스타일 2패널 UI(분야 필터·미니 달력, Day/Week/Month/Year, all-day 카테고리 칩·일정 상세 modal). KST `application_start`·`application_end` 매핑·`.monthly-calendar__grid` E2E 호환 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 북마크: localStorage schema v2(폴더·`bookmarks` entry), 기본 `기본 폴더`, 북마크 페이지 폴더 탭·`+ 새 폴더 만들기`, 저장 시 폴더 선택 모달. v1 flat `favorites[]`는 read 시 migrate.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 사용자 앱 sidebar: 메뉴 순서·라벨 정리(달력·관리자·사용자 프로필), sidebar 검색 링크 제거. `내 조건 저장`은 `/profile`에서만 편집 (홈 카드 제거). localStorage 조건은 맞춤 추천 등 기존과 동일 공유.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+
 - 4주차 실제 로컬 DB를 Migration `20260810_0006`과 정책 3,269건으로 정렬하고,
   지역 청년정책 109건의 멱등 적재와 서울·대구·부산 검색·상세 노출을 검증했다
   ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
@@ -27,6 +68,28 @@
 
 ### Fixed
 
+- Docker 관리자 수동 수집이 `running` 행만 만들고 실행되지 않던 문제를 실제
+  Collector·Raw replay·DB 반영·terminal 상태로 연결하고, snapshot 고정 count를
+  모든 재시작에 강제해 운영 데이터가 바뀌면 기동이 막히던 restore 검증을
+  restore 직후 one-shot 단계로 분리했다
+  ([문제 해결 기록](docs/troubleshooting/backend/docker_manual_collection_restart_recovery.md))
+- Docker Acceptance 격리 사용성·QA에서 다른 province의 retired 지역 rule이
+  천안 검색에 인천 정책을 포함하던 문제, `0세~0세` sentinel과 연령 제한 없음
+  설명 충돌, unknown 자격의 `제한 없음 해당없음` 결측 표식 노출, 저장 분야가
+  자연어 분야를 덮던 문제, Mock-first spec의 actual 경계 누락을 실제 UI·API
+  재현으로 수정했다
+  ([문제 해결 기록](docs/troubleshooting/integration/docker_acceptance_usability_consistency.md))
+
+- 맞춤 추천이 사용자 지역·연령·분야의 확정 불일치와 마감 정책을 점수만 낮춰
+  계속 반환하고 첫 200개 Policy만 평가하던 문제를 수정했다. 검색과 같은 3값
+  판정으로 명시적 지역을 fail-closed 처리하고, 전체 승인 snapshot의 지역 rule을
+  bulk 평가해 실제 3,273건 응답을 약 14.8초에서 약 1.4초로 개선했다
+  ([문제 해결 기록](docs/troubleshooting/backend/recommendation_full_inventory_performance.md),
+  [개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
+- review admission이 checkpoint의 과거 `open`을 재사용하고 canonical region
+  rule을 만들지 않던 문제를 수정해, 실행 기준일 재판정과 region/search
+  projection을 fail-closed 검증하도록 했다
+  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
 - `run.bat`가 Node.js를 시스템 PATH에서만 찾아 Codex 데스크톱 환경에서 시작하지
   못하던 문제를 수정하고, 번들 Node.js 자동 탐색과 명시적 실행 파일 인자를 추가
 - Windows actual 실행기가 DB 이름을 `cheongnyeon_alimi`로 고정해 격리 검증 DB를

@@ -9,7 +9,8 @@ from datetime import date
 from typing import Any
 
 
-AUDIT_SCHEMA_VERSION = "1.0.0"
+AUDIT_SCHEMA_VERSION = "1.1.0"
+REVIEW_SAMPLE_LIMIT = 20
 REGIONAL_EVIDENCE_FIELDS = (
     "implementing_organization_text",
     "region_eligibility_text",
@@ -233,6 +234,7 @@ def _audit_source(value: RegionalReviewAuditInput) -> dict[str, Any]:
         },
         "reason_counts": dict(sorted(reason_counts.items())),
         "review_reason_counts": dict(sorted(review_reason_counts.items())),
+        "review_reason_samples": _review_reason_samples(review_decisions),
         "review_reason_combinations": dict(sorted(combinations.items())),
         "review_evidence_coverage": coverage,
         "source_scope_attached_review_count": source_scope_attached,
@@ -280,6 +282,22 @@ def _reason_codes(decision: Mapping[str, Any]) -> tuple[str, ...]:
             "regional audit decision reasons are invalid"
         )
     return tuple(values)
+
+
+def _review_reason_samples(
+    decisions: Iterable[Mapping[str, Any]],
+) -> dict[str, list[str]]:
+    """Return stable, identity-only samples without copying Raw text."""
+
+    samples: dict[str, list[str]] = {}
+    ordered = sorted(decisions, key=lambda item: str(item["external_id"]))
+    for decision in ordered:
+        external_id = str(decision["external_id"])
+        for reason in sorted(_reason_codes(decision)):
+            selected = samples.setdefault(reason, [])
+            if len(selected) < REVIEW_SAMPLE_LIMIT:
+                selected.append(external_id)
+    return dict(sorted(samples.items()))
 
 
 def _evidence(decision: Mapping[str, Any]) -> Mapping[str, Any]:

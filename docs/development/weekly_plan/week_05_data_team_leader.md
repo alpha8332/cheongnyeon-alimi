@@ -2,15 +2,25 @@
 
 ## 계획 정보
 
-- 상태: approved (`W5-G0` 실행 준비, 구현 미착수)
+- 상태: completed (`2026-08-23`, `W5-G2_PASS`). DTL5-0~6,
+  Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`, Deploy 01
+  `DOCKER_ACCEPTANCE_PASS`와 수정본 전체 Gate를 완료했다. 사용자가 승인한 역할
+  격리 대체 검증을 이번 Gate의 공식 리뷰·QA 결과로 인정한다.
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
-- 시작 후보: `develop`·`origin/develop`
-  `f0d3dd3214827496af31a00d0b05a273f9371970`
+- 실제 시작 SHA: `develop`·`origin/develop`
+  `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - Data Forest: [Data 06 Supplemental Official Policy Ingestion](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
 - Integration Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
+- 선행 데이터 Forest: [Integration 10 Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- 선행 배포 Forest: [Deploy 01 Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - 공통 주차 계획: [5주차 Release 2 실행 계획](week_05_release_2.md)
-- 현재 Slice: `DTL5-0` 대기
+- 현재 Slice: Integration 10 `RA0_PASS`·`RA1_PASS`·`RA2_PASS`·`RA3_PASS`·
+  `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`.
+  taxonomy v2 사전 후보 6건을 실행일 현재성·canonical region으로 재검증해
+  3건만 실제 적재·멱등 재실행하고 새 DB 기준선을 확정했다. Deploy 01 동일
+  snapshot `DOCKER_ACCEPTANCE_PASS`와 DTL5-5·6 수정본 회귀까지 통과했고,
+  `W5-G2_PASS`로 5주차를 닫았다.
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -22,15 +32,17 @@
 - Migration 기준은 `20260810_0006`, 4주차 실제 DB 기준은 정책 3,269건과
   Data 05 지역정책 109건이다.
 - Data 05 `RYP0`~`RYP9`·`RYP-G6`는 completed다.
-- Data 06은 계획 승인 상태이며 SOP0 구현과 actual Source 승인은 시작하지 않았다.
+- Data 06은 `SOP-G5_PASS`로 완료됐으며 승인 Source 5개 actual과 KOSAF 신규
+  정책 1건의 DB·API·Browser 인수를 통과했다.
 - 독립 사용성 리뷰·QA·보고서 근거 대조는 아직 수행하지 않았다.
-- 따라서 5주차는 시작 가능하지만 `DTL5-0` 재검증 전에는 W5-G0 통과나 기능
-  동결로 기록하지 않는다.
+- `DTL5-0`에서 같은 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했다.
+  `2026-08-18` Backend·Frontend 담당 산출물과 Data 06을 Integration 브랜치에
+  통합하고 전체 PostgreSQL·Browser 회귀를 통과해 `W5-G1_PASS`로 판정했다.
 
 ## 담당 목표
 
-1. Data 06 후보를 원문·중복·이용 조건 기준으로 정제하고 최소 4개 공식
-   Source의 신규 정책을 DB → API → Browser로 인수한다.
+1. Data 06 후보를 원문·중복·이용 조건 기준으로 정제하고 승인 Source 5개를
+   제한 actual한다. 중복 제외 신규 정책 1개 이상을 DB → API → Browser로 인수한다.
 2. Backend·Frontend 안정화 결과와 Data 06을 실제 PostgreSQL 기반 하나의
    Release 2 후보로 묶는다.
 3. 구현자 자체 테스트와 독립 사용성·QA를 분리하고, 차단 결함을 같은
@@ -62,15 +74,23 @@ DTL5-0 W5-G0 기준선·환경·증거 계약
   → DTL5-2 Data 06 SOP3 Adapter·offline replay
   → DTL5-3 Data 06 SOP4~SOP5 actual·SOP-G5
   → DTL5-4 Data 06 포함 전체 actual E2E·W5-G1
+  → Integration 10 review admission·DB 재인수·W5-G1_REVALIDATED
+  → Deploy 01 동일 snapshot·Docker Acceptance
   → DTL5-5 독립 사용성·QA와 결함 triage
   → 영역별 수정·자체 재검증
   → DTL5-6 독립 재검증·문서 대조·W5-G2
 ```
 
 DTL5-1과 Backend·Frontend 안정화는 W5-G0 뒤 병렬로 진행한다. 독립 리뷰와
-QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
+QA는 DTL5-4에서 W5-G1을 통과하고 Integration 10 `W5-G1_REVALIDATED`와
+Deploy 01 `DOCKER_ACCEPTANCE_PASS`를 통과하기 전에는 시작하지 않는다. 기존
+`W5-G1_PASS`는 당시 인수 기록으로 유지하며 새 DB 수치를 의미하지 않는다.
 
 ## Slice DTL5-0 - W5-G0 기준선 고정
+
+상태: completed (`2026-08-17`, `W5-G0_PASS`). 실제 수치와 첫 실패·보정은
+[Integration 07 개발 기록](../development_notes/integration/release_2_feature_acceptance.md)에
+둔다.
 
 ### 목적
 
@@ -94,6 +114,13 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 ## Slice DTL5-1 - Data 06 SOP0~SOP2
 
+상태: completed (`2026-08-17`, `SOP-G0_PASS`~`SOP-G2_PASS`). 후보 60개 중
+exact duplicate 26·review 11·잠정 신규 19·비교 제외 4로 판정했고, 공식
+Source 5개를 승인·1개를 robots 차단·9개를 제외했다. 다섯 번째 모두의카드는
+보완 preflight에서 승인했지만 actual 중복 review로 DB 적재하지 않았다. 상세 근거는
+[Data 06 개발 기록](../development_notes/data/supplemental_official_policy_ingestion.md)에
+둔다.
+
 ### 목적
 
 구현 비용을 쓰기 전에 후보 오류·기존 정책 중복·수집 불가 Source를 제거한다.
@@ -113,6 +140,10 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 - `SOP-G0`~`SOP-G2` 통과 뒤에만 DTL5-2 해제
 
 ## Slice DTL5-2 - Data 06 SOP3 Adapter·판정 fixture
+
+상태: 완료 (`SOP-G3_PASS`, 2026-08-17). 승인 5개 Source의 stable identity·
+Source별 locator·offline Raw replay를 구현했고, accepted 이후에도 기존 aggregator
+중복 기준선이 없으면 Policy row를 만들지 않는 경계를 확인했다.
 
 ### 목적
 
@@ -134,9 +165,15 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 ## Slice DTL5-3 - Data 06 SOP4~SOP5 actual
 
+상태: completed (`SOP-G4_PASS`·`SOP-G5_PASS`, 2026-08-17). 모두의카드까지
+다섯 Source의 제한 actual을 완료했고, 재승인 기준에 따라 한국장학재단 신규
+정책 1개를 DB·API·Browser에 연결했다. 비accepted 결과는 무적재이며 전체
+Data·Backend 회귀와 문서 대조를 통과해 DTL5-4로 인계한다.
+
 ### 목적
 
-최소 4개 승인 공식 Source의 실제 신규 정책을 안전하게 적재하고 재실행한다.
+승인 Source 5개를 실제 제한 수집하고, 중복 제외 신규 정책 1개 이상을 안전하게
+적재·재실행한다.
 
 ### 수행 작업
 
@@ -148,7 +185,9 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 ### 완료 기준
 
-- 최소 4개 공식 Source의 신규 정책이 DB·API·Browser에 연결됨
+- 승인 Source 5개 제한 actual·offline replay 완료
+- 중복 제외 신규 정책 1개 이상이 DB·API·actual Browser에 연결됨
+- duplicate·review·closed·failed Policy row 0건
 - 모든 승인 Source의 제한 actual·replay·`SOP-G5` 통과
 - 최소 기준 미달이면 범위를 조용히 줄이지 않고 `W5-G1_BLOCKED` 또는 계획
   재승인 요청
@@ -169,7 +208,22 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 - 실제 PostgreSQL·FastAPI·React 핵심 흐름 통과
 - 알려진 제약·환경·독립 시나리오 인계가 완전하면 `W5-G1_PASS`
 
+상태: completed (`2026-08-18`, `W5-G1_PASS`). Backend `da20d9c`의 최종
+tree는 비밀 포함 과거 이력을 제외한 `babb432` squash로, Frontend `d19fd02`는
+`792320c` merge로 통합했다. actual fixture·stale assertion 보정 `1019fda` 뒤
+Data `334`·172 subtests, Backend PostgreSQL `187`, Frontend unit `216`·lint·
+build, Mock Browser `80 passed / 14 skipped`, actual 4-spec `36 passed / 8 skipped`,
+종단 actual acceptance `3 passed`를 확인했다. 실제 정책은 3,270건·지역 109건·
+KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선행 조치로
+유지한다.
+
 ## Slice DTL5-5 - 독립 사용성·QA와 결함 triage
+
+상태: completed (`2026-08-23`, 역할 격리 대체 검증). DEP5 receipt의 QA 격리
+Volume과 API `8404`를 유지하고 수정 worktree Frontend만 `3404`에 재빌드해
+리뷰·QA·자체 재검증을 완료했다. 수정 commit `3066acb` 뒤 새 독립 Volume과
+`3406`·`8406`에서 같은 snapshot으로 재검증했다. 팀 외 인력 대신 역할·project·
+Volume을 분리한 대체 검증을 사용자가 공식 Gate 증거로 승인했다.
 
 ### 독립 검증
 
@@ -187,7 +241,30 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 각 결함은 재현 조건·기대/실제·담당·수정 SHA·자체/독립 재검증을 가진다.
 
+### 2026-08-23 실행 결과
+
+| 결함 | 등급 | 재현·기대/실제 | 담당·수정 | 재검증 |
+| --- | --- | --- | --- | --- |
+| `DTL5-5-FE-01` | high | 정책 `3342`: 자격 coverage는 unknown인데 `제한 없음 해당없음`을 자격처럼 표시. 미확정 안내가 기대값 | Frontend·TL, `3066acb` | unit 222, lint·build, 실제 UI, actual Browser 39 pass/11 skip 재통과; 팀 외 인력 대신 새 SHA·독립 Volume 역할 격리 검증 |
+
+- 사용자 실제 흐름: `천안 취업` 검색 31건, 천안·27세·취업 추천 7건,
+  북마크·달력·알림, 날짜 정책 `3426`의 활성 `.ics`, 정책 `3342`의 상시
+  `.ics` 비활성 경계를 확인했다.
+- 관리자 실제 흐름: 4자리 PIN 로그인, 정책 3,273건·CollectionRun 61건,
+  구조화 Log·데이터 품질 조회와 로그아웃 보호 route를 확인했다. 수동 실행,
+  rotate·삭제는 이번 읽기 중심 리뷰에서 수행하지 않았다.
+- 실제 API: health 200, 무인증 관리자 API 401, 추천 5회 중앙값
+  `1,563.5 ms`, 모두 11건 응답. DB는 Migration `20260810_0006`, 정책 3,273건,
+  CollectionRun 61건으로 API·화면과 일치했다.
+- 수정은 사용자 표시 helper·상세 소비·단위 테스트에 한정했다. Schema,
+  Migration, API·DB 원본과 acceptance Volume은 변경하지 않았다.
+
 ## Slice DTL5-6 - 수정본 재검증과 W5-G2
+
+상태: completed (`2026-08-23`, `W5-G2_PASS`). 기술 blocker와 high 결함은
+남지 않았고, 사용자가 승인한 역할 격리 대체 검증을 공식 리뷰·QA로 인정해
+Release 2 Gate를 통과했다. 6주차 작업과 `main` PR·`v0.5.0` 후보 준비를
+시작할 수 있다.
 
 ### 수행 작업
 
@@ -205,6 +282,24 @@ QA는 DTL5-4에서 W5-G1을 통과하기 전에는 시작하지 않는다.
 
 `PASS`인 검증 SHA만 `main` PR과 `v0.5.0` tag 후보로 지정한다. 이 Slice에서
 직접 merge·tag·push하지 않으며 사용자의 별도 요청을 따른다.
+
+### 최종 검증 결과
+
+- 후보 SHA: `3066acb272dc3f40f9d8684bd2e46e6d69169f71`, clean worktree에서 시작
+- 자격증명: 현재 비추적 `.env.compose` DB 비밀번호가 과거 노출 후보와 다르고
+  충분한 길이의 비기본값임을 값 출력 없이 확인
+- Data unittest: `323 passed`
+- Backend·PostgreSQL·Integration: `202 passed / 2 skipped`; skip 2건은
+  `REVIEW_ADMISSION_MANIFEST`와 명시적 scratch opt-in이 필요한 RA 전용 검사이며
+  통과로 세지 않음
+- Frontend: unit `222 passed`, lint·production build 통과
+- Browser: Mock `80 passed / 14 skipped`, actual `39 passed / 11 skipped`
+- 새 Docker project `cheongnyeon-alimi-dtl5-g2-3066acb`: dump hash·Migration·
+  정책 3,273건·CollectionRun 61건 복원 검증, 서비스 재시작 뒤 health 200과
+  동일 count 유지
+- 결함 `DTL5-5-FE-01`: 정책 `3342`에서 결합 결측 표식 0건, 자격 미확정 안내
+  표시를 실제 Browser에서 재확인
+- 테스트 DB 정리: public table은 `alembic_version`만 유지
 
 ## 다른 담당자에게 요청할 산출물
 
@@ -266,23 +361,27 @@ git status --short
 
 ## 완료 체크리스트
 
-- [ ] DTL5-0·`W5-G0_PASS`
-- [ ] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
-- [ ] DTL5-2 Data 06 `SOP-G3`
-- [ ] DTL5-3 Data 06 `SOP-G4`~`SOP-G5`와 Forest 완료 판정
-- [ ] Backend·Frontend 담당자 전체 안정화 회귀
-- [ ] DTL5-4 Data 06 포함 actual E2E·`W5-G1_PASS`
-- [ ] DTL5-5 독립 사용성·QA와 결함 triage
-- [ ] 승인 결함 수정·자체 및 독립 재검증
-- [ ] 보고서 근거·미실행 검증 대조
-- [ ] DTL5-6 문서·비추적·전체 회귀와 `W5-G2` 판정
-- [ ] `PASS`일 때만 `main` PR·`v0.5.0` tag 후보 지정
+- [x] DTL5-0·`W5-G0_PASS`
+- [x] DTL5-1 Data 06 `SOP-G0`~`SOP-G2`
+- [x] DTL5-2 Data 06 `SOP-G3`
+- [x] DTL5-3 Data 06 actual과 `SOP-G4_PASS`·`SOP-G5_PASS`
+- [x] Backend·Frontend 담당자 산출물과 전체 안정화 회귀 인수
+- [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
+- [x] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
+- [x] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
+- [x] DTL5-5 사용성·QA와 결함 triage (사용자 승인 역할 격리 대체 검증)
+- [x] 승인 high 결함 수정 SHA `3066acb`·새 SHA/Volume 재검증
+- [x] 보고서 근거·미실행 검증 대조
+- [x] DTL5-6 문서·비추적·전체 회귀와 `W5-G2_PASS` 판정
+- [x] 코드 검증 SHA `3066acb`와 Gate 문서 commit을 `main` PR·`v0.5.0` tag 후보 기준으로 지정
 
 ## 관련 문서
 
 - [5주차 Release 2 실행 계획](week_05_release_2.md)
 - [4주차 Data·Team Leader 실행 결과](week_04_data_team_leader.md)
 - [Data 06 계획](../develop_plan/data/06_supplemental_official_policy_ingestion.md)
+- [Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - [Integration 07 계획](../develop_plan/integration/07_release_2_feature_acceptance.md)
 - [Release와 Milestone 계획](../develop_plan/release_roadmap.md)
 - [역할과 책임](../../governance/role_assignment.md)

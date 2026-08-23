@@ -13,6 +13,11 @@
 `valid`·`partial`을 함께 허용한다. `invalid` 정책은 어떤 경우에도 공개하지
 않는다.
 
+모든 사용자 목록·상세·자연어 검색·추천은 `inactive_at IS NULL`인 행 중
+`application_end`가 없거나 Asia/Seoul 오늘 이상인 정책만 반환한다. 종료일
+경과와 inactive 행은 명시적 `status=closed`에도 공개하지 않으며 관리자
+읽기 전용 API와 DB에는 감사 이력으로 보존한다.
+
 ## 정책 자연어 검색
 
 ```http
@@ -149,7 +154,7 @@ GET /api/v1/policies
 
 ```json
 {
-  "total": 2,
+  "total": 1,
   "page": 1,
   "limit": 10,
   "items": [
@@ -163,11 +168,11 @@ GET /api/v1/policies
       "summary": null,
       "category_text": "주거",
       "categories": ["housing"],
-      "application_period_text": "2026. 1. 1. ~ 2026. 6. 30.",
-      "application_start": "2026-01-01",
-      "application_end": "2026-06-30",
+      "application_period_text": "2026. 7. 1. ~ 2026. 12. 31.",
+      "application_start": "2026-07-01",
+      "application_end": "2026-12-31",
       "application_schedule": "fixed_period",
-      "application_status": "closed",
+      "application_status": "open",
       "region_text": "서울시",
       "regions": ["서울특별시"],
       "age_min": 19,

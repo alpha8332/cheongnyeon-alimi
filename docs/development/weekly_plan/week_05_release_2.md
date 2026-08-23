@@ -2,17 +2,20 @@
 
 ## 계획 정보
 
-- 상태: approved (`develop` 병합 완료, `W5-G0` 실행 준비)
+- 상태: completed (`2026-08-23`, `W5-G2_PASS`). 사용자 승인에 따라 역할·
+  project·Volume을 분리한 대체 리뷰·QA를 공식 Gate 검증으로 인정했다.
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
 - 독립 검증 역할: 사용성 리뷰어, QA
 - 근거 정리 역할: 보고서 담당
 - 상위 Forest: [Integration 07 Release 2 Feature Acceptance](../develop_plan/integration/07_release_2_feature_acceptance.md)
+- 선행 데이터 Forest: [Integration 10 Review Admission](../develop_plan/integration/10_review_admission_docker_acceptance.md)
+- 선행 배포 Forest: [Deploy 01 Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - Data·Team Leader 실행 계획:
   [5주차 Data·Team Leader 실행 계획](week_05_data_team_leader.md)
 - 공통 시작점: Data 06을 제외한 4주차 기본 기능과 Data 05가 `develop`에
-  병합되고 `W4-G4_MIDPOINT_PASS`로 판정된 `f0d3dd3`
+  병합되고 5주차 계획까지 동기화된 `29b2dd5`
 
 5주차는 Team Leader 단독 작업이 아니다. Data·Backend·Frontend가 각 담당
 영역의 결함 수정과 자체 회귀를 수행하고, Team Leader는 실제
@@ -24,8 +27,9 @@ PostgreSQL → FastAPI → React 통합, 독립 리뷰·QA와 Release 2 Gate를 
   구현을 4주차에서 5주차로 이동한다.
 - 4주차는 Data 05 완료 결과와 Backend·Frontend 변경을 병합한 뒤 DTL4-5,
   담당자 회귀와 W4-G4 midpoint를 먼저 닫는다.
-- Data 06은 범위 삭제가 아니라 실행 시점 변경이다. `v0.5.0` 필수 범위와 최소
-  4개 승인 Source 완료 기준은 유지하며 W5-G1 전까지 완료한다.
+- Data 06은 범위 삭제가 아니라 실행 시점 변경이다. `2026-08-17` 재승인 기준인
+  승인 Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Browser를
+  W5-G1 전까지 완료한다.
 - Data 06이 지연되면 독립 사용성 리뷰·QA를 먼저 시작하지 않는다. Backend·
   Frontend는 기다리는 동안 자기 영역 회귀와 결함 수정을 병렬로 수행한다.
 
@@ -54,16 +58,21 @@ blocker로 유지한다.
 
 ## 현재 기준선
 
-- `develop`·`origin/develop`은 `f0d3dd3214827496af31a00d0b05a273f9371970`
-  (`merge week 04 into develop`)에서 일치한다.
-- Data 05는 completed이며 Data 06 계획은 approved다. Data 06 구현과 기존 기능
-  안정화를 함께 수행하지만 `W5-G0` 재검증 전에는 실제 착수로 간주하지 않는다.
+- `develop`·`origin/develop`은 `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
+  (`docs(plan): detail week 5 release acceptance`)에서 일치한다.
+- Data 05는 completed다. Data 06은 `W5-D1`~`W5-D3`에서 후보 정제, 승인
+  Source 5개 Adapter·actual·offline replay와 KOSAF 신규 정책의
+  PostgreSQL·API·Browser 인수를 완료해 `SOP-G5_PASS`다. 다음 단계는
+  Data 06을 포함한 전체 actual E2E `W5-I1`이다.
 - `v0.5.0` 기능 계약은 Integration 05와 각 담당 Forest를 따른다.
 - Release 2 인수·판정은 Integration 07을 따른다.
 - 실제 시작 SHA와 테스트 수치는 착수 뒤 해당 개발 기록에만 기록한다.
 - 4주차 기준은 실제 DB 3,269건·Migration `20260810_0006`·지역정책 109건과
   검색 Browser 인수를 통과했다. 이 수치는 W5-G0에서 재확인할 기준값이며,
   Data 06 적재 뒤의 기대 최종 건수를 미리 고정하지 않는다.
+- `2026-08-17` DTL5-0에서 같은 Migration·DB 기준, 전용 PostgreSQL 테스트,
+  local Backend·Frontend readiness와 Chromium 실행을 확인해 `W5-G0_PASS`로
+  판정했다. 상세 수치는 Integration 07 개발 기록에 둔다.
 
 ## 실행 작업 단위
 
@@ -76,8 +85,10 @@ blocker로 유지한다.
 | `W5-B1` | Backend | 안정화 회귀 | PostgreSQL·Migration·transaction·권한·API 결함 목록 | `W5-I1` 또는 수정 |
 | `W5-F1` | Frontend | 안정화 회귀 | actual API·Browser·오류·접근성·반응형 결함 목록 | `W5-I1` 또는 수정 |
 | `W5-D2` | Data | Data 06 SOP3 | Source Adapter·판정 fixture·offline replay와 `SOP-G3` 판정 | `W5-D3` |
-| `W5-D3` | Data | Data 06 SOP4~SOP5 | 최소 4개 승인 Source actual·재실행·DB/API/Browser·`SOP-G5` | `W5-I1` |
+| `W5-D3` | Data | Data 06 SOP4~SOP5 | 승인 5개 Source actual·신규 1개 이상·비accepted 무적재·DB/API/Browser·`SOP-G5` | `W5-I1` |
 | `W5-I1` | Team Leader | Integration 07 A2 | Data 06 포함 전체 actual E2E와 `W5-G1` 판정 | 독립 검증 |
+| `W5-RA` | Data·Backend·Frontend·Integration | Integration 10 RA0~RA4 | 최신 review 재판정·partial 적재·새 기준선·`W5-G1_REVALIDATED` | `W5-DEP` |
+| `W5-DEP` | Integration·Deploy, BE·FE 지원 | Deploy 01 DEP0~DEP5 | 동일 snapshot·Docker·clean-room·`DOCKER_ACCEPTANCE_PASS` | 독립 검증 |
 | `W5-Q1` | 사용성·QA | Integration 07 A2 | 독립 시나리오 결과·결함 심각도·재현 조건 | 영역별 수정 |
 | `W5-FIX` | Data·Backend·Frontend | 담당 Forest | 승인 결함 수정과 담당자 자체 재검증 | 독립 재검증 |
 | `W5-I2` | Team Leader | Integration 07 A3 | 수정본 독립 재검증·문서 대조·`W5-G2` 판정 | Release 후보 |
@@ -202,6 +213,14 @@ Migration·DB 기준·actual API mode와 명령을 다시 확인한 뒤에만
 - Data 05·06 정책의 lineage와 검색 노출이 대조됨
 - 리뷰어·QA에 넘길 알려진 제약과 테스트 환경이 기록됨
 
+`2026-08-18` Integration 브랜치에서 Backend `W5-B1`, Frontend `W5-F1`과
+Data 06을 통합했다. 실제 정책 3,270건·지역 109건·KOSAF 1건, Data `334`,
+Backend PostgreSQL `187`, Frontend unit `216`, Mock Browser `80`, actual
+4-spec `36`과 종단 acceptance `3`건이 실패 없이 통과했다. 알려진 환경·
+독립 시나리오·비밀 이력 경계를 기록해 `W5-G1_PASS`로 판정하며 `W5-Q1`을
+시작할 수 있다. 실제 노출 자격증명 교체 확인과 독립 검증 없이는 `W5-G2`를
+판정하지 않는다.
+
 ### W5-G2 - Release 2 Gate
 
 - 리뷰어 시나리오와 QA 전체 검증이 수행됨
@@ -212,6 +231,15 @@ Migration·DB 기준·actual API mode와 명령을 다시 확인한 뒤에만
 
 판정은 `W5-G2_PASS`, `W5-G2_CONDITIONAL`, `W5-G2_BLOCKED` 중 하나로
 기록한다. `PASS`인 `develop`만 `main` PR과 `v0.5.0` tag 후보가 된다.
+
+`2026-08-23` 수정 commit `3066acb`를 새 Docker project·독립 Volume에 같은
+snapshot으로 복원해 Data `323`, Backend·PostgreSQL·Integration `202 passed /
+2 skipped`, Frontend unit `222`, Mock Browser `80 passed / 14 skipped`, actual
+Browser `39 passed / 11 skipped`와 재시작 count 보존을 확인했다. 과거 노출 DB
+자격증명도 현재 비추적 값과 다름을 확인했다. 기능 blocker와 high 결함은
+남지 않았고, 사용자가 역할 격리 대체 검증을 공식 리뷰·QA 증거로 승인했으므로
+`W5-G2_PASS`로 판정한다. 6주차 작업과 `main` PR·`v0.5.0` tag 후보 준비를
+시작할 수 있다.
 
 ## 역할별 산출물
 
@@ -235,7 +263,8 @@ Migration·DB 기준·actual API mode와 명령을 다시 확인한 뒤에만
 - 결함은 `ID`, 발견 역할, 시나리오, 심각도, 재현 조건, 기대·실제 결과,
   수정 담당, 수정 SHA, 자체 재검증, 독립 재검증 상태를 가진다.
 - 인증 우회·비밀 노출·데이터 손실·Migration 실패·핵심 actual E2E 실패와
-  Data 06 최소 4개 Source 미달은 Release blocker다.
+  Data 06 재승인 기준(승인 5개 actual·신규 1개 이상·비accepted 무적재·Browser)
+  미달은 Release blocker다.
 - 낮은 위험의 문구·비차단 UX 문제만 알려진 제약 후보가 될 수 있으며,
   Team Leader가 근거 없이 `conditional`로 낮추지 않는다.
 
@@ -274,18 +303,18 @@ development notes에 기록한다.
 
 ## 완료 체크리스트
 
-- [ ] `W5-G0` 통합 기준선 통과
-- [ ] Data 06 SOP0~SOP5·SOP-G5와 Forest 완료 판정
-- [ ] Data 수집·품질·Data 05·06 actual 회귀 통과
-- [ ] Backend PostgreSQL·API·권한·transaction 회귀 통과
-- [ ] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
-- [ ] `W5-G1` 실제 DB → API → Browser E2E 통과
-- [ ] 팀 외 사용성 리뷰 수행 및 승인 피드백 반영
-- [ ] QA 전체 검증과 릴리스 차단 결함 수정본 재검증
-- [ ] Release 2 문서·CHANGELOG·알려진 제약 대조
-- [ ] `python scripts/validate_docs.py`와 저장소 전체 관련 회귀 통과
-- [ ] `W5-G2` Release 2 판정 기록
-- [ ] `PASS`일 때만 `main` PR과 `v0.5.0` tag 후보 지정
+- [x] `W5-G0` 통합 기준선 통과
+- [x] Data 06 SOP0~SOP5·SOP-G5와 Forest 완료 판정
+- [x] Data 수집·품질·Data 05·06 actual 회귀 통과
+- [x] Backend PostgreSQL·API·권한·transaction 회귀 통과
+- [x] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
+- [x] `W5-G1` 실제 DB → API → Browser E2E 통과
+- [x] 사용성 리뷰 수행 및 승인 피드백 반영 (사용자 승인 역할 격리 대체)
+- [x] QA 전체 기술 검증과 high 결함 수정본 새 SHA·Volume 재검증
+- [x] Release 2 문서·CHANGELOG·알려진 제약 대조
+- [x] `python scripts/validate_docs.py`와 저장소 전체 관련 회귀 통과
+- [x] `W5-G2_PASS` Release 2 판정 기록
+- [x] 코드 검증 SHA `3066acb`와 Gate 문서 commit을 `main` PR·`v0.5.0` tag 후보 기준으로 지정
 
 ## 관련 문서
 

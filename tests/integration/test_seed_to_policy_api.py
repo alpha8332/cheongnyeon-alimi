@@ -30,6 +30,7 @@ from collectors.normalized import NormalizedProgram  # noqa: E402
 
 SEED_PATH = ROOT / "data" / "seeds" / "initial_programs.json"
 SYSTEM_FIELDS = frozenset({"id", "created_at", "updated_at"})
+EXPIRED_EXTERNAL_ID = "SYN-YOUTH-001"
 
 
 def _require_test_database_url() -> str:
@@ -191,8 +192,13 @@ def test_canonical_seed_postgresql_policy_api_contract():
                     params={"status": "open"},
                 )
 
-                valid_program = programs[0]
+                expired_program = programs[0]
+                valid_program = programs[1]
                 partial_program = programs[2]
+                expired_detail = client.get(
+                    f"/api/v1/policies/"
+                    f"{policy_ids[expired_program['external_id']]}"
+                )
                 valid_detail = client.get(
                     f"/api/v1/policies/"
                     f"{policy_ids[valid_program['external_id']]}"
@@ -253,38 +259,41 @@ def test_canonical_seed_postgresql_policy_api_contract():
             app.dependency_overrides.pop(get_db, None)
 
         assert valid_list.status_code == 200
-        assert valid_list.json()["total"] == 2
+        assert valid_list.json()["total"] == 1
         assert {
             item["data_quality_status"]
             for item in valid_list.json()["items"]
         } == {"valid"}
 
         assert public_list.status_code == 200
-        assert public_list.json()["total"] == 4
+        assert public_list.json()["total"] == 3
         public_by_external_id = {
             item["external_id"]: item
             for item in public_list.json()["items"]
         }
         for program in programs:
+            if program["external_id"] == EXPIRED_EXTERNAL_ID:
+                continue
             _assert_public_program(
                 public_by_external_id[program["external_id"]],
                 program,
             )
+        assert EXPIRED_EXTERNAL_ID not in public_by_external_id
 
         assert first_page.status_code == 200
-        assert first_page.json()["total"] == 4
+        assert first_page.json()["total"] == 3
         assert first_page.json()["page"] == 1
         assert first_page.json()["limit"] == 1
         assert len(first_page.json()["items"]) == 1
         assert second_page.status_code == 200
-        assert second_page.json()["total"] == 4
+        assert second_page.json()["total"] == 3
         assert len(second_page.json()["items"]) == 1
         assert (
             first_page.json()["items"][0]["id"]
             != second_page.json()["items"][0]["id"]
         )
         assert empty_page.status_code == 200
-        assert empty_page.json()["total"] == 4
+        assert empty_page.json()["total"] == 3
         assert empty_page.json()["items"] == []
 
         assert finance.status_code == 200
@@ -306,6 +315,8 @@ def test_canonical_seed_postgresql_policy_api_contract():
             "SYN-YOUTH-002"
         )
 
+        assert expired_detail.status_code == 404
+        assert expired_detail.json() == {"detail": "Policy not found"}
         assert valid_detail.status_code == 200
         _assert_public_program(
             valid_detail.json(),

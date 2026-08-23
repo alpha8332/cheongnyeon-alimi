@@ -154,4 +154,8 @@ test('resolveCollectionRunListQuery는 page·size 경계를 검증한다', () =>
     page: 2,
     size: 5,
   });
+  assert.equal(
+    resolveCollectionRunListQuery({ status: 'queued' }).status,
+    'queued',
+  );
 });

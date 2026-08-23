@@ -104,6 +104,30 @@ python scripts/validate_docs.py
 - 승인 DTO에 개인 비교나 강제 재구조화 계약이 추가되면 계약 문서와 세 영역
   소비 테스트를 먼저 함께 갱신해야 한다.
 
+## 후속 UX slice (2026-07-28)
+
+- `ProgramDetailPage` 상단 Summary Header·본문 섹션 카드·Sticky Action Bar UX
+  개편. `EligibilitySummary` 컴포넌트·detail API schema는 변경 없음.
+- 구현·검증: [user_service_features development notes](../../development_notes/frontend/user_service_features.md) § 정책 상세 가독성.
+
+## 후속 UX slice — 목록·상세 스타일 정규화 (2026-07-28)
+
+- 목록 카드 신청기간 `YYYY.MM.DD`, 카테고리·상태 뱃지를 달력 `calendarCategoryTheme`과
+  일치, 상세 메타 stack·본문 ordered/bullet 리스트.
+- 구현·검증: [user_service_features development notes](../../development_notes/frontend/user_service_features.md) § 정책 목록·상세 가독성/스타일.
+
+## 후속 UX slice — 홈 featured·뱃지 테마 (2026-07-28)
+
+- 홈 default view featured 카드에서 마감·예정·지난 마감일 제외, status/category 뱃지
+  컬러를 달력 테마·semantic variant와 일치.
+- 구현·검증: [user_service_features development notes](../../development_notes/frontend/user_service_features.md) § 홈 마감 정책 제외·뱃지 테마.
+
+## 후속 UX slice — 상세 헤더 북마크·인라인 액션 (2026-07-28)
+
+- Summary Header 카드 내 북마크(제목 행 우측)·공식 신청·ICS 액션 바. Sticky CTA는
+  헤더 통합으로 대체.
+- 구현·검증: [user_service_features development notes](../../development_notes/frontend/user_service_features.md) § 정책 상세 헤더 레이아웃·액션.
+
 ## 관련 문서
 
 - [Eligibility Summary UI 개발 기록](../../development_notes/frontend/eligibility_summary_ui.md)

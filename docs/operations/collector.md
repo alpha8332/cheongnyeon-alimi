@@ -347,7 +347,10 @@ checkpoint가 미완료이거나 replay identity가 다르면 실패한다. acce
 closed outcome이 현재 regional Gate와 충돌해 DB projection에 영향을 줄 수
 있어도 실패한다. 이미 미적재인 duplicate가 새 Gate에서 review로 바뀐 경우는
 숨기지 않고 `checkpoint_decision_drift`로 집계한다. 보고서는 Git 제외 Runtime
-경계에 원자적으로 작성되며 Raw payload를 포함하지 않는다.
+경계에 원자적으로 작성되며 Raw payload를 포함하지 않는다. schema `1.1.0`부터
+`review_reason_samples`에 Source별 각 reason code의 정렬된 `external_id`를 최대
+20개만 기록해 같은 표본을 재검토할 수 있게 한다. 제목·자격 원문·Raw 본문은
+표본에 복사하지 않는다.
 
 RYP8 부산 replay는 목록 HTML의 `meta[name=author]`, `<title>`,
 `select[name=endstat] option[selected]`을 Source scope locator로 보존하고 상세
@@ -565,9 +568,78 @@ document ID만 출력하며 Raw payload, source URL query와 인증키를 출력
 [CollectionRun 데이터베이스 계약](../architecture/collection_run_database.md)을
 따른다.
 
+## 중앙 Celery·Redis 실행
+
+Docker 중앙 수집은 관리자 API 또는 단일 Celery Beat가 PostgreSQL
+`CollectionRun`을 `queued`로 먼저 만든 뒤 Redis `collection` queue에 같은
+`run_id` task를 발행한다. FastAPI `BackgroundTasks`에서는 Collector를 실행하지
+않는다. worker가 Source advisory lock을 획득한 뒤 `running`으로 전이하고 기존
+Collector·Runtime Importer를 호출한다.
+
+- Redis: AOF broker이며 Policy·실행 상태 원본이 아님
+- network: DB·queue는 internal, live HTTP는 worker 전용 `collector-egress`
+- worker: concurrency 기본 2, prefetch 1, late ack, worker lost 재전달
+- task: soft 900초·hard 960초, 최대 5회 lock retry, jitter backoff 최대 300초,
+  worker당 기본 `6/m` rate limit
+- Source 중복: active Source partial unique index와 PostgreSQL advisory lock
+- broker 발행 실패: 접수 row를 `CollectionQueuePublishError`로 종료하고 API 503
+- terminal 재전달: 동일 `run_id`를 다시 실행하지 않고 현재 상태 반환
+
+`.env.compose`의 `COLLECTION_SCHEDULE_ENABLED` 기본값은 `false`다. 중앙 운영자가
+API key·Source 호출량·이용약관을 확인한 뒤 Source와 cron을 설정해야 정기 수집이
+활성화된다. clone/ZIP 사용자의 로컬 scheduler를 자동 활성화하지 않는다.
+
 `runtime/raw`가 없거나 선택한 source에 Raw가 없으면 DB를 변경하지 않고
 명확한 오류와 종료 코드 1을 반환한다. `--dry-run`도 실제 DB upsert 결과를
 계산하므로 연결 가능한 Migration 적용 DB가 필요하다.
+
+## Review admission 감사와 dry-run
+
+완료 checkpoint의 `review`는 기존 regional producer를 다시 실행해 덮어쓰지
+않고 versioned admission 명령으로 판정한다. 먼저 실제 서비스 DB를 읽기 전용
+기준선으로 사용해 identity-only manifest를 만든다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\audit_review_admission.py `
+  --as-of 2026-08-19 `
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints `
+  --decision-root runtime/decisions `
+  --output runtime/decisions/review-admission-v1.json
+```
+
+출력은 Git 제외 대상이다. Raw 본문이나 credential을 포함하지 않으며 Schema,
+입력 hash와 `manifest_sha256`이 일치해야 apply 입력으로 사용할 수 있다.
+
+RA2 dry-run은 변경 전 dump를 복원한 PostgreSQL scratch DB에서만 실행한다.
+데이터베이스 이름은 `_test`로 끝나야 하며 서비스 DB URL을 넘기면 fail-closed한다.
+아래 URL은 로컬 전용 예시이고 비밀번호는 pgpass 또는 격리 컨테이너의 비밀
+주입으로 제공한다.
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts\apply_review_admission.py `
+  --manifest runtime/decisions/review-admission-v1.json `
+  --raw-root runtime/raw `
+  --checkpoint-root runtime/decisions/regional-checkpoints `
+  --decision-root runtime/decisions `
+  --database-url postgresql://review_admission@127.0.0.1:55432/cheongnyeon_alimi_admission_test `
+  --dry-run
+```
+
+apply 명령은 scratch DB의 Migration·정책 수·aggregator baseline까지 이용해
+manifest를 다시 계산한다. checkpoint의 과거 `open`을 그대로 사용하지 않고
+실행 기준일의 regional Gate로 현재성과 canonical region을 다시 물질화한다.
+하나라도 달라지면 쓰기 전에 실패한다. 일치하면 기존 Importer로
+Policy·region rule·search projection을 실제로 쓴 뒤 transaction을 rollback하고
+전후 Policy 수가 같은지 확인한다.
+
+RA3 실제 적용은 별도 승인된 동일 manifest에서만 `--apply`를 사용한다. Source별
+transaction과 `runtime_import` CollectionRun을 남기며, 동일 manifest 재실행은
+이미 적재된 승인 identity만 pre-admission baseline에서 제외해 검증한 뒤 전건
+`unchanged`여야 한다.
+
+[Review Admission 규칙](../data/review_admission_rules.md)에 taxonomy와 판정 순서가
+정의돼 있다.
 
 ## 테스트와 실제 호출 분리
 

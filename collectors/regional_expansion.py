@@ -625,7 +625,10 @@ class RegionalBrowserExtractor:
 
 
 def decide_expanded_regional_policy(
-    policy: ExtractedPolicy, *, as_of: date | None = None
+    policy: ExtractedPolicy,
+    *,
+    as_of: date | None = None,
+    require_youth_target: bool = True,
 ) -> RegionalPolicyDecision:
     try:
         spec = REGIONAL_EXPANSION_SPECS[policy.source_id]
@@ -693,7 +696,9 @@ def decide_expanded_regional_policy(
             }.get(policy.source_id, ())
         ),
     )
-    return enforce_youth_target(policy, decision)
+    if require_youth_target:
+        return enforce_youth_target(policy, decision)
+    return decision
 
 
 def _regional_source_scope(

@@ -14,6 +14,7 @@
 | Recurrent Collection and Quality Operations | [개발 기록](data/recurrent_collection_quality_operations.md) | DTL4-2A~2B | 반복·수정·중복·실패 판정과 품질 운영 |
 | Public HTTPS Policy Ingestion | [개발 기록](data/public_https_policy_ingestion.md) | DTL4-3A~ | 승인 공식 웹 Source의 제한 호출·HTML 추출과 actual 검증 |
 | Regional Youth Policy Ingestion | [개발 기록](data/regional_youth_policy_ingestion.md) | RYP0~ | 17개 Source inventory·지역 mapping 검토 경계와 후속 수집 검증 |
+| Supplemental Official Policy Ingestion | [개발 기록](data/supplemental_official_policy_ingestion.md) | SOP0~SOP5 | 승인 Source 5개 actual·KOSAF DB/API/Browser 인수·`SOP-G5_PASS` |
 | Policy Discovery | [개발 기록](frontend/policy_discovery.md) | FE 2~FE 2A | 공개 Policy DTO·Mock/API Client·정책 UI |
 | Policy Search | [개발 기록](frontend/policy_search.md) | FE4-11~ | Gate G1 search contract types·Mock-first Search UI |
 | Recommendation UI | [개발 기록](frontend/recommendation_ui.md) | FE6-00 | recommendation DTO·Mock·`/recommendations` route |
@@ -31,6 +32,7 @@
 | Backend Policy Search | [개발 기록](backend/policy_search.md) | W3-B0~B4 | PostgreSQL 기반 정책 검색 API·파서 및 DTO 구현 |
 | Backend Admin Access Control | [개발 기록](backend/admin_access_control.md) | A0~A3 | 관리자 인증·권한 세션 API 및 Fail-closed 기준선 |
 | Backend CollectionRun Admin API | [개발 기록](backend/collection_run_admin_api.md) | C0~C3 | CollectionRun 실행 이력 목록·상세 및 수동 실행 기준선 |
+| v0.5.0 Backend Stabilization | [개발 기록](backend/v0_5_0_backend_stabilization.md) | BE5-00~ | Release 2 (v0.5.0) 백엔드 회귀 검증, Data 06 연동 대조 및 QA 결함 수정 |
 | Recommendation Vertical Slice | [개발 기록](integration/recommendation_vertical_slice.md) | R0~R3 | 사용자 조건 기반 결정적 맞춤 추천 API 및 비단정 계약 |
 | Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | ES0~ES4 | 정책 상세 자격요건 구조화 응답 DTO 및 Evidence 출처 보증 |
 | Admin Data and Log Console | [개발 기록](integration/admin_data_log_console.md) | AO0~AO5 | 관리자 읽기 전용 정책 데이터 표 API 및 파일 로그 콘솔 |
@@ -38,6 +40,10 @@
 | Policy Search Data Foundation | [개발 기록](integration/policy_search_data_foundation.md) | PSF0~PSF8 | Source 중립 검색 데이터·지역 관계·projection 기반과 소비 검증 |
 | Release 1 Acceptance | [개발 기록](integration/release_1_acceptance.md) | IA0~IA3F | 실제 snapshot DB → API → UI 인수, 경량 팀 리뷰와 Release 1 G4 통과 |
 | v0.5.0 Contract Baseline | [개발 기록](integration/v0_5_0_contract_baseline.md) | DTL4-0~DTL4-8 | 4주차 계약·actual E2E·전체 회귀와 `W4-G4_MIDPOINT_PASS` 근거 |
+| Release 2 Feature Acceptance | [개발 기록](integration/release_2_feature_acceptance.md) | DTL5-0~DTL5-6 | 5주차 시작 기준, Data 06 포함 actual E2E·독립 검증과 Release 2 Gate |
+| Review Admission and Deploy Handoff | [개발 기록](integration/review_admission_docker_acceptance.md) | RA0~RA4 | 최신 DB·Runtime inventory, review 재판정·partial 적재와 Deploy 입력 인계 |
+| Docker Acceptance Environment | [개발 기록](deploy/docker_acceptance_environment.md) | DEP0~DEP5 | 동일 post-admission snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인수 |
+| Production Data Refresh and Delivery | [개발 기록](deploy/production_data_refresh_delivery.md) | W6-P0~P5 | 공개 dataset·Celery/Redis 중앙 수집·Production 배포와 Final Gate |
 | Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | DTL4-4A~ | 조건·서류·시설 연락처 공통 계약과 Source evidence mapping |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를
@@ -60,6 +66,7 @@ data/data_pipeline.md
 backend/favorites.md
 frontend/calendar.md
 integration/policy_delivery.md
+deploy/acceptance_environment.md
 ```
 
 담당 영역과 독립적인 완료 기준을 가진 Forest별로 상세 개발 기록을 작성한다.
@@ -70,6 +77,9 @@ Data, Backend와 Frontend 중 한 영역의 구현 결과는 해당 영역에 �
 Seed → API → 화면처럼 여러 영역을 하나의 완료 기준으로 검증한 결과는
 `integration/`에 기록한다. 한 영역의 상세 구현 기록과 통합 검증 결과가 모두
 필요하면 서로 링크하고 같은 내용을 장문으로 복제하지 않는다.
+
+컨테이너·동일 환경 재현·배포·운영 인계처럼 배포 자체가 독립 완료 기준인
+구현과 검증 결과는 `deploy/`에 기록한다.
 
 ## 필수 항목
 

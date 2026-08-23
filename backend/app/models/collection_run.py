@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Column,
     DateTime,
@@ -11,6 +12,7 @@ from sqlalchemy import (
     String,
     Text,
     Uuid,
+    false,
     text,
 )
 
@@ -28,6 +30,7 @@ COLLECTION_RUN_TRIGGER_TYPE_VALUES = (
     "admin",
 )
 COLLECTION_RUN_STATUS_VALUES = (
+    "queued",
     "running",
     "succeeded",
     "partial_failure",
@@ -102,6 +105,12 @@ class CollectionRun(Base):
         default="running",
         server_default="running",
     )
+    is_complete_snapshot = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=false(),
+    )
 
     requested_count = Column(Integer, nullable=False, default=0, server_default="0")
     raw_document_count = Column(
@@ -134,8 +143,8 @@ class CollectionRun(Base):
             name="ck_collection_runs_timestamp_order",
         ),
         CheckConstraint(
-            "(status = 'running' AND finished_at IS NULL) OR "
-            "(status <> 'running' AND finished_at IS NOT NULL)",
+            "(status IN ('queued', 'running') AND finished_at IS NULL) OR "
+            "(status NOT IN ('queued', 'running') AND finished_at IS NOT NULL)",
             name="ck_collection_runs_terminal_finished_at",
         ),
         CheckConstraint(
@@ -145,4 +154,15 @@ class CollectionRun(Base):
         Index("ix_collection_runs_source_id", "source_id"),
         Index("ix_collection_runs_started_at", "started_at"),
         Index("ix_collection_runs_status", "status"),
+        Index(
+            "uq_collection_runs_active_source",
+            "source_id",
+            unique=True,
+            postgresql_where=text(
+                "source_id IS NOT NULL AND status IN ('queued', 'running')"
+            ),
+            sqlite_where=text(
+                "source_id IS NOT NULL AND status IN ('queued', 'running')"
+            ),
+        ),
     )

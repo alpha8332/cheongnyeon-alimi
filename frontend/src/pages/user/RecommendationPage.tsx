@@ -1,14 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Link } from 'react-router';
 import RecommendationConditionForm from '@/components/recommendation/RecommendationConditionForm';
 import RecommendationEmptyShell from '@/components/recommendation/RecommendationEmptyShell';
 import RecommendationErrorShell from '@/components/recommendation/RecommendationErrorShell';
 import RecommendationLoadingShell from '@/components/recommendation/RecommendationLoadingShell';
 import RecommendationResultList from '@/components/recommendation/RecommendationResultList';
-import RecommendationUnconfirmedBanner from '@/components/recommendation/RecommendationUnconfirmedBanner';
 import { postRecommendations } from '@/api/recommendation';
 import type { RecommendationResponse } from '@/types/recommendation';
-import { RECOMMENDATION_APP_ROUTE } from '@/types/recommendation';
 import type { UserSavedConditions } from '@/types/userLocalStorage';
 import {
   isRecommendationEmptyResults,
@@ -16,7 +13,6 @@ import {
   mapRecommendationError,
 } from '@/utils/recommendationErrors';
 import { toRecommendationRequestFromConditions } from '@/utils/savedConditionsForm';
-import { USER_CROSS_ROUTE_PATHS } from '@/utils/userRouteIdentity';
 
 type FetchPhase = 'idle' | 'loading' | 'success' | 'error';
 
@@ -70,13 +66,6 @@ export default function RecommendationPage() {
         </p>
       </header>
 
-      <p role="note" className="policy-eligibility-notice">
-        추천 결과는 자격 충족이나 수혜 가능성을 확정하지 않습니다. 자연어 검색은{' '}
-        <Link to={USER_CROSS_ROUTE_PATHS.search}>/search</Link> route를
-        사용하세요. 이 route(<code>{RECOMMENDATION_APP_ROUTE}</code>)는 구조화
-        조건 추천 전용입니다.
-      </p>
-
       <RecommendationConditionForm
         onSubmit={(conditions) => void fetchRecommendations(conditions)}
         isSubmitting={phase === 'loading'}
@@ -98,10 +87,7 @@ export default function RecommendationPage() {
       ) : null}
 
       {showResults && response ? (
-        <>
-          <RecommendationUnconfirmedBanner response={response} />
-          <RecommendationResultList response={response} />
-        </>
+        <RecommendationResultList response={response} />
       ) : null}
     </div>
   );

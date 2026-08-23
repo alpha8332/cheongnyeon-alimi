@@ -221,6 +221,38 @@ class CrossSourceDuplicateTests(unittest.TestCase):
             decision.reason_codes,
         )
 
+    def test_material_contained_title_requires_review(self) -> None:
+        program = candidate_program(title="모두의카드")
+        selected = baseline()
+        selected = replace(
+            selected,
+            records=(
+                replace(
+                    selected.records[0],
+                    title="대중교통비 환급 지원(모두의카드)",
+                    organization="국토교통부",
+                    canonical_region_keys=(),
+                    application_start=None,
+                    application_end=None,
+                    support_content="청년 교통비 환급",
+                ),
+                selected.records[1],
+            ),
+        )
+
+        decision = evaluate_cross_source_duplicate(
+            program,
+            evidence(program, "new_policy"),
+            selected,
+        )
+
+        self.assertFalse(decision.accepted)
+        self.assertEqual(
+            ("material_title_containment_requires_review",),
+            decision.reason_codes,
+        )
+        self.assertEqual(("title",), decision.match_fields)
+
     def test_evidence_requires_a_locator_and_matching_provenance(self) -> None:
         program = candidate_program()
         with self.assertRaisesRegex(

@@ -86,12 +86,12 @@
 | **목표** | browser-only user payload key·schema_version·허용 필드·corrupt recovery |
 | **예상 변경 파일** | `types/userLocalStorage.ts`, `utils/userLocalStorage.ts` |
 | **선행** | Policy `id` numeric contract (Frontend 01) |
-| **인터페이스** | `favorites: number[]`, `conditions: {region,age,category}|null`, `updated_at` |
+| **인터페이스** | v2: `bookmark_folders[]`, `bookmarks[{policy_id,folder_id}]`, `conditions`, `updated_at` (v1 `favorites[]`는 read 시 migrate) |
 | **검증** | unit test (normalize·parse); SSR/no-storage graceful |
 | **완료 기준** | corrupt·wrong version → reset; 검색·상세 flow 차단 없음 |
 
 2026-08-11 구현: key `cheongnyeon-alimi.user-local.v1`, schema version `1`(W4-G0
-proposal). `readUserLocalStorage`는 corrupt·unsupported version·invalid shape 시
+proposal). **2026-07-28 UX slice** schema version `2` + v1→v2 migrate on read. `readUserLocalStorage`는 corrupt·unsupported version·invalid shape 시
 default payload로 reset persist. storage unavailable 시 in-memory default만
 반환. 후속 Slice(FE5-01~)는 `updateUserLocalStorage`·`clearUserLocalStorage`를
 사용한다.
@@ -131,7 +131,7 @@ PolicyCard·ProgramDetailPage에 연결. `/favorites`는 id별 `getPolicyById(in
 | **완료 기준** | URL·서버·log에 조건 영구 저장 없음; favorites unchanged after conditions-only clear |
 
 2026-08-11 구현: `userConditionsStorage` + `useSavedConditions` +
-`SavedConditionsPanel`(홈 `/`). `saveSavedConditions`·`clearSavedConditions`는
+`SavedConditionsPanel`(~~홈 `/`~~ **2026-07-28** `/profile`). `saveSavedConditions`·`clearSavedConditions`는
 FE5-00 `UserSavedConditions` 계약만 사용. 조건 초기화 시 favorites 유지.
 Browser reload 검증은 FE5-07 범위.
 
@@ -150,7 +150,10 @@ Browser reload 검증은 FE5-07 범위.
 
 2026-08-11 구현: `policyDeadline.ts`(KST `Intl`), `CalendarPage` `/calendar`,
 `policyDisplay.getDDayLabel` 통합, `PolicyCard` 마감 임박 tag. unit
-`policyDeadline.test.ts`. Browser 검증은 FE5-07.
+`policyDeadline.test.ts`. Browser 검증은 FE5-07. **2026-07-28 UX slice**:
+list → monthly Sunday-start grid, start/end badges, day detail modal.
+**2026-07-28 UX slice (홈 featured)**: `isHomeFeaturedPolicy`로 홈 default
+view 마감·예정 제외; E2E 홈 북마크 시나리오는 open seed(id 2) 사용.
 
 ---
 
@@ -217,6 +220,11 @@ Browser cross-route 시나리오는 FE5-07.
 (저장 조건·북마크 cross-route·reload·조건-only clear·달력·알림 empty·전체 reset·ICS
 disabled·nav·keyboard·mobile·home→search golden) + Real API skip 1건.
 unit·lint·build·`validate_docs.py` 통과.
+
+**2026-07-28 UX slice (북마크 폴더 더보기·삭제)**: `BookmarkFolderGrid` `···` 메뉴
+바깥 클릭·`Escape` 닫기(`useDismissOnOutsidePress`), 사용자 폴더 `폴더 삭제` 확인 modal,
+`deleteBookmarkFolder` localStorage v2. 기본 폴더(`default`) 보호. rename·bookmark
+일괄 이동은 범위 밖. 상세: [개발 기록](../../development_notes/frontend/user_service_features.md).
 
 ### FE5-08 — 사용자 localStorage 전체 초기화 UX — completed
 

@@ -544,6 +544,7 @@ def decide_gyeongbuk_regional_policy(
     policy: ExtractedPolicy,
     *,
     as_of: date | None = None,
+    require_youth_target: bool = True,
 ) -> RegionalPolicyDecision:
     """Map approved Gyeongbuk fields into the common RYP3 gate."""
     if policy.source_id != SOURCE_ID:
@@ -610,15 +611,15 @@ def decide_gyeongbuk_regional_policy(
         ),
         provenance=policy.provenance,
     )
-    return enforce_youth_target(
+    decision = evaluate_regional_policy(
         policy,
-        evaluate_regional_policy(
-            policy,
-            evidence,
-            expected_region_text="경상북도",
-            as_of=as_of,
-        ),
+        evidence,
+        expected_region_text="경상북도",
+        as_of=as_of,
     )
+    if require_youth_target:
+        return enforce_youth_target(policy, decision)
+    return decision
 
 
 def map_gyeongbuk_duplicate_evidence(

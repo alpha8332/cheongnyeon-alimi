@@ -2,10 +2,10 @@
 
 ## 작업 정보
 
-- 작업일: 2026-08-11 (FE3-06 Toast·a11y: 2026-08-12)
+- 작업일: 2026-08-11 (FE3-06 Toast·a11y: 2026-08-12, Phase 2 dashboard: 2026-07-28)
 - 담당 영역: Frontend
 - 상태: completed
-- 브랜치: `feature/frontend/bookmarks-calendar-admin`
+- 브랜치: `feature/frontend/style-and-ux-fixes` (Phase 2)
 - 관련 계획:
   [CollectionRun Admin UI Forest 개발 계획](../../develop_plan/frontend/03_collection_run_admin_ui.md)
 - 현재 Slice: FE3-06 completed (Forest 완료)
@@ -31,6 +31,44 @@ smoke 재검증은 Integration Gate 후 공동 확인한다.
 | FE3-04 | completed | manual run confirm·duplicate guard·list refetch |
 | FE3-05 | completed | Playwright admin-run spec·env toggle·Mock E2E |
 | FE3-06 | completed | ApiErrorToast·admin wiring·Toast/a11y Browser E2E |
+| Phase 2 dashboard | completed | 집계 기반 DashboardPage·DataQualityPage·drill-down |
+
+## Phase 2 — 집계 기반 관리자 대시보드 (2026-07-28)
+
+Backend list·detail 집계 API 범위 내에서 placeholder였던
+`DashboardPage`·`DataQualityPage`를 구현했다. 건별 파싱 실패·중복 후보
+목록 API는 미제공이므로 UI·caption에서 제외하고 run detail·Log
+바로가기로 drill-down한다.
+
+- `frontend/src/pages/admin/DashboardPage.tsx` — 최신 run 1건 list+detail,
+  started_at/finished_at·status badge·집계 metric card (2026-07-28 UX: subtitle·
+  페이지 내 quick link nav 제거 — shell nav 사용)
+- `frontend/src/pages/admin/DataQualityPage.tsx` — 최근 10회 list + parallel
+  detail fetch, 회차별 failed/invalid/duplicate 비교 table
+- `frontend/src/utils/adminDashboard.ts` — metric 정의·drill-down URL·variant
+- `frontend/src/hooks/useAdminQualityRunSummaries.ts`
+- `frontend/src/components/admin/AdminMetricCard.tsx`
+- `frontend/src/components/admin/CollectionRunQualityTable.tsx`
+- `frontend/e2e/admin-collection-run.spec.ts` — dashboard·quality 시나리오 추가
+- `frontend/tests/adminDashboard.test.ts`
+
+### 설계 결정 (Phase 2)
+
+| 항목 | 결정 | 근거 |
+| --- | --- | --- |
+| invalid/duplicate 표시 | detail API 병렬 fetch | list DTO subset에 없음 |
+| Log drill-down | `/admin/logs` (필터 URL 미지원) | AdminLogsPage가 query 초기화 없음 |
+| 건별 failure list | UI 미구현 | Backend API 보류 |
+
+### Phase 2 검증
+
+```text
+cd frontend && npm test              — 213 passed
+cd frontend && npm run lint          — passed
+cd frontend && npm run build         — passed
+cd frontend && npm run test:e2e -- e2e/admin-collection-run.spec.ts — 10 passed, 1 skipped
+python3 scripts/validate_docs.py   — passed
+```
 
 ## 구현 내용
 

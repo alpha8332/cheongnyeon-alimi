@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from app.models.policy import Policy
 from app.services.aggregator_baseline import load_aggregator_baseline
 from app.services.seed_importer import import_programs
 from collectors.snapshot import SnapshotManifest, SnapshotManifestStore
@@ -18,6 +19,19 @@ def test_loads_approved_snapshot_and_database_baseline(db, tmp_path) -> None:
     result = import_programs(db, programs)
     assert result.inserted == 4
 
+    inactive_program = programs[-1]
+    inactive_policy = db.query(Policy).filter(
+        Policy.source_id == inactive_program["source_id"],
+        Policy.external_id == inactive_program["external_id"],
+    ).one()
+    inactive_policy.inactive_at = datetime(
+        2026,
+        8,
+        11,
+        tzinfo=timezone.utc,
+    )
+    db.commit()
+
     source_counts = {
         source_id: sum(
             program["source_id"] == source_id for program in programs
@@ -27,6 +41,8 @@ def test_loads_approved_snapshot_and_database_baseline(db, tmp_path) -> None:
             "bokjiro-central-welfare-api",
         )
     }
+    active_source_counts = dict(source_counts)
+    active_source_counts[inactive_program["source_id"]] -= 1
     store = SnapshotManifestStore(tmp_path)
     for source_id, marker in (
         ("youthcenter-api", "1"),
@@ -57,9 +73,9 @@ def test_loads_approved_snapshot_and_database_baseline(db, tmp_path) -> None:
         now=lambda: datetime(2026, 8, 11, 1, tzinfo=timezone.utc),
     )
 
-    assert len(baseline.records) == 4
+    assert len(baseline.records) == 3
     assert {
         descriptor.source_id: descriptor.database_policy_count
         for descriptor in baseline.descriptors
-    } == source_counts
+    } == active_source_counts
     assert len(baseline.baseline_id) == 32

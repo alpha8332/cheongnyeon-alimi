@@ -27,7 +27,7 @@ def setup_seed_data(db):
 
 def test_get_policy_detail_eligibility_summary(db):
     """GET /api/v1/policies/{id} 응답에 eligibility_summary 구조가 포함되는지 검증."""
-    policy = db.query(Policy).first()
+    policy = db.query(Policy).filter(Policy.application_end.is_(None)).first()
     assert policy is not None
 
     response = client.get(f"/api/v1/policies/{policy.id}")

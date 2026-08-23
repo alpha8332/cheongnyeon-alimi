@@ -19,6 +19,10 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "data" / "schema" / "normalized_program.schema.json"
 SEED_PATH = ROOT / "data" / "seeds" / "initial_programs.json"
 SYSTEM_FIELDS = frozenset({"id", "created_at", "updated_at"})
+LIFECYCLE_FIELDS = frozenset(
+    {"last_seen_at", "last_verified_at", "inactive_at"}
+)
+ORM_SYSTEM_FIELDS = SYSTEM_FIELDS | LIFECYCLE_FIELDS
 DATE_FIELDS = frozenset({"application_start", "application_end"})
 JSON_ARRAY_FIELDS = frozenset(
     {
@@ -70,10 +74,10 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     schema = load_schema()
     normalized_fields = frozenset(schema["properties"])
     orm_fields = (
-        frozenset(Policy.__table__.columns.keys()) - SYSTEM_FIELDS
+        frozenset(Policy.__table__.columns.keys()) - ORM_SYSTEM_FIELDS
     )
     importer_fields = (
-        frozenset(_policy_values(load_seed()[0])) - SYSTEM_FIELDS
+        frozenset(_policy_values(load_seed()[0])) - ORM_SYSTEM_FIELDS
     )
     list_api_fields = frozenset(PolicyRead.model_fields)
     detail_api_fields = frozenset(PolicyDetailRead.model_fields)
@@ -98,7 +102,7 @@ def test_nullable_and_jsonb_columns_match_the_normalized_contract():
     normalized_columns = [
         column
         for column in Policy.__table__.columns
-        if column.name not in SYSTEM_FIELDS
+        if column.name not in ORM_SYSTEM_FIELDS
     ]
     actual_nullable = frozenset(
         column.name for column in normalized_columns if column.nullable

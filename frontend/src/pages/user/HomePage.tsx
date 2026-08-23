@@ -1,41 +1,217 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
-import SavedConditionsPanel from '@/components/user/SavedConditionsPanel';
-import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
+import SearchBar from '@/components/policySearch/SearchBar';
+import SearchPagination from '@/components/policySearch/SearchPagination';
+import PolicySearchResultCard from '@/components/policySearch/PolicySearchResultCard';
+import PolicySearchEmptyShell from '@/components/policySearch/PolicySearchEmptyShell';
+import PolicySearchErrorShell from '@/components/policySearch/PolicySearchErrorShell';
+import PolicySearchLoadingShell from '@/components/policySearch/PolicySearchLoadingShell';
+import InterpretedConditionChips from '@/components/policySearch/InterpretedConditionChips';
+import PolicySearchSidebar from '@/components/policySearch/PolicySearchSidebar';
+import { useHomeRecommendedPolicies } from '@/hooks/useHomeRecommendedPolicies';
+import { useSavedConditions } from '@/hooks/useSavedConditions';
+import { usePolicySearchQuery } from '@/hooks/usePolicySearchQuery';
 import {
-  buildPolicySearchEntryPath,
+  buildInterpretedFilterChips,
+  mapChipDimensionToFilterDimension,
+} from '@/utils/interpretedConditionChips';
+import {
+  removePolicySearchFilter,
+  updatePolicySearchFilter,
+} from '@/utils/policySearchFilterMutations';
+import type { InterpretedConditionDimension } from '@/types/policySearch';
+import type { PolicySearchFilterValue } from '@/utils/policySearchFilterMutations';
+import type { InterpretedFilterChip } from '@/utils/interpretedConditionChips';
+import {
+  isPolicySearchEmptyResults,
+  mapPolicySearchEmptyResults,
+  mapPolicySearchError,
+} from '@/utils/policySearchErrors';
+import { findSelectedHit } from '@/utils/policySearchReason';
+import { POLICY_ELIGIBILITY_NOTICE } from '@/utils/policyDisplay';
+import {
+  buildPolicySearchUrlParams,
+  getPolicySearchTotalPages,
+  hasPolicySearchQuery,
+  isPolicySearchResponseCurrent,
+  isPolicySearchUrlStateValid,
+  parsePolicySearchUrl,
+  toPolicySearchRequest,
+  withPolicySearchPage,
+} from '@/utils/policySearchUrl';
+import { mergeSavedConditionsIntoSearchState } from '@/utils/policySearchSavedConditions';
+import { HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION } from '@/utils/homeRecommendedPolicies';
+import {
   HOME_RECOMMENDED_SEARCHES,
+  buildPolicySearchEntryPath,
 } from '@/utils/policySearchNavigation';
+import '@/components/policySearch/PolicySearchSidebar.css';
 import './HomePage.css';
 
 export default function HomePage() {
-  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const { data: policyList, isLoading } = usePoliciesQuery({
-    page: 1,
-    limit: 3,
-    include_partial: false,
-  });
-  const featuredPolicies = policyList?.items ?? [];
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
+  const { conditions: savedConditions } = useSavedConditions();
 
-  const navigateToPolicySearch = (q: string) => {
-    const path = buildPolicySearchEntryPath(q);
+  const urlState = useMemo(
+    () => parsePolicySearchUrl(searchParams),
+    [searchParams],
+  );
+  const effectiveUrlState = useMemo(
+    () => mergeSavedConditionsIntoSearchState(urlState, savedConditions),
+    [urlState, savedConditions],
+  );
+  const request = useMemo(
+    () => toPolicySearchRequest(effectiveUrlState),
+    [effectiveUrlState],
+  );
+  const shouldFetch = hasPolicySearchQuery(urlState);
+
+  const {
+    policies: homeRecommendedPolicies,
+    isPersonalized: isHomeRecommendationPersonalized,
+    isLoading: isHomeRecommendationLoading,
+  } = useHomeRecommendedPolicies(savedConditions);
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = usePolicySearchQuery(request);
+
+  const isResponseCurrent =
+    data !== undefined && isPolicySearchResponseCurrent(data, request);
+  const sidebarResponse = isResponseCurrent ? data : null;
+  const activeSelectedPolicyId = useMemo(() => {
+    if (!sidebarResponse?.items.length) {
+      return null;
+    }
+
+    if (
+      selectedPolicyId !== null &&
+      sidebarResponse.items.some((hit) => hit.policy.id === selectedPolicyId)
+    ) {
+      return selectedPolicyId;
+    }
+
+    return sidebarResponse.items[0]?.policy.id ?? null;
+  }, [sidebarResponse, selectedPolicyId]);
+  const selectedHit = useMemo(
+    () => findSelectedHit(sidebarResponse, activeSelectedPolicyId),
+    [sidebarResponse, activeSelectedPolicyId],
+  );
+
+  const filterChips = useMemo(
+    () => buildInterpretedFilterChips(effectiveUrlState, sidebarResponse),
+    [effectiveUrlState, sidebarResponse],
+  );
+
+  const applyUrlState = (nextState: ReturnType<typeof parsePolicySearchUrl>) => {
+    if (!isPolicySearchUrlStateValid(nextState)) {
+      return;
+    }
+
+    setSearchParams(buildPolicySearchUrlParams(nextState), { replace: false });
+  };
+
+  const submitSearchQuery = (draftQ: string) => {
+    const trimmedQ = draftQ.trim();
+    if (!trimmedQ) {
+      return;
+    }
+
+    const nextState = mergeSavedConditionsIntoSearchState(
+      withPolicySearchPage(
+        {
+          ...urlState,
+          q: trimmedQ,
+        },
+        1,
+      ),
+      savedConditions,
+    );
+
+    applyUrlState(nextState);
+  };
+
+  const handleSearchSubmit = (draftQ: string) => {
+    submitSearchQuery(draftQ);
+  };
+
+  const handleRecommendedSearch = (term: string) => {
+    const path = buildPolicySearchEntryPath(term);
     if (path) {
       navigate(path);
     }
   };
 
-  const handleSearch = (event?: FormEvent) => {
-    event?.preventDefault();
-    navigateToPolicySearch(searchTerm);
+  const handleSearchClear = () => {
+    applyUrlState(
+      withPolicySearchPage(
+        {
+          ...urlState,
+          q: '',
+        },
+        1,
+      ),
+    );
+    setSelectedPolicyId(null);
   };
 
+  const handleFilterRemove = (
+    dimension: InterpretedFilterChip['dimension'],
+  ) => {
+    const filterDimension = mapChipDimensionToFilterDimension(dimension);
+    if (!filterDimension) {
+      return;
+    }
+
+    applyUrlState(removePolicySearchFilter(effectiveUrlState, filterDimension));
+  };
+
+  const handleFilterUpdate = (
+    dimension: InterpretedConditionDimension,
+    value: PolicySearchFilterValue,
+  ) => {
+    applyUrlState(updatePolicySearchFilter(effectiveUrlState, dimension, value));
+  };
+
+  const handleFilterAdd = (
+    dimension: InterpretedConditionDimension,
+    value: PolicySearchFilterValue,
+  ) => {
+    applyUrlState(updatePolicySearchFilter(effectiveUrlState, dimension, value));
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    applyUrlState(withPolicySearchPage(effectiveUrlState, nextPage));
+  };
+
+  const showLoading =
+    shouldFetch && (isLoading || (isFetching && !isResponseCurrent));
+  const showError = shouldFetch && isError && !showLoading;
+  const showSuccess = shouldFetch && !showLoading && !isError && isResponseCurrent;
+  const showEmptyResults =
+    showSuccess && data !== undefined && isPolicySearchEmptyResults(data);
+  const showResultCards =
+    showSuccess && data !== undefined && !isPolicySearchEmptyResults(data);
+
+  const errorPresentation = showError ? mapPolicySearchError(error) : null;
+  const emptyPresentation =
+    showEmptyResults && data ? mapPolicySearchEmptyResults(data) : null;
+
   return (
-    <div className="page">
+    <div
+      className={`page home-page${shouldFetch ? ' home-page--search-active policy-search-page' : ''}`}
+    >
       <header className="greeting">
         <h1 className="greeting__title">안녕하세요, 청년님 👋</h1>
         <p className="greeting__subtitle">
@@ -43,62 +219,138 @@ export default function HomePage() {
         </p>
       </header>
 
-      <SavedConditionsPanel />
+      <SearchBar
+        key={urlState.q}
+        defaultQ={urlState.q}
+        onSubmit={handleSearchSubmit}
+        onClear={handleSearchClear}
+        isSubmitting={showLoading}
+      />
 
-      <form onSubmit={handleSearch}>
-        <div className="search-wrap">
-          <span className="search-wrap__icon" aria-hidden="true">
-            🔍
-          </span>
-          <input
-            className="search-wrap__input"
-            type="search"
-            placeholder="예: 천안 사는 24세 청년 지원금"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            aria-label="정책 검색어"
-          />
-          <Button type="submit">검색하기</Button>
-        </div>
-      </form>
+      {!shouldFetch ? (
+        <>
+          <section className="home-search-suggestions" aria-label="예시 검색어">
+            <p className="chips-label">예시 검색어</p>
+            <div className="chips-row home-search-suggestions__row">
+              {HOME_RECOMMENDED_SEARCHES.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  className="chip home-search-suggestions__chip"
+                  onClick={() => handleRecommendedSearch(term)}
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </section>
 
-      <section className="home-search-suggestions" aria-label="예시 검색어">
-        <p className="chips-label">예시 검색어</p>
-        <div className="chips-row home-search-suggestions__row">
-          {HOME_RECOMMENDED_SEARCHES.map((term) => (
-            <button
-              key={term}
-              type="button"
-              className="chip home-search-suggestions__chip"
-              onClick={() => navigateToPolicySearch(term)}
+          {isHomeRecommendationLoading ? (
+            <LoadingState message="정책을 불러오는 중입니다." />
+          ) : (
+            <section
+              className="home-recommended-policies"
+              aria-label={
+                isHomeRecommendationPersonalized
+                  ? '저장된 조건 추천 정책'
+                  : '추천 정책'
+              }
             >
-              {term}
-            </button>
-          ))}
-        </div>
-      </section>
+              {isHomeRecommendationPersonalized ? (
+                <p className="home-recommended-policies__caption" role="note">
+                  {HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION}
+                </p>
+              ) : null}
+              {homeRecommendedPolicies.length > 0 ? (
+                <div className="cards-grid">
+                  {homeRecommendedPolicies.map((policy) => (
+                    <PolicyCard key={policy.id} policy={policy} />
+                  ))}
+                </div>
+              ) : isHomeRecommendationPersonalized ? (
+                <p className="home-recommended-policies__empty" role="status">
+                  저장된 조건에 맞는 추천 정책을 찾지 못했습니다.
+                </p>
+              ) : null}
+            </section>
+          )}
 
-      {isLoading ? (
-        <LoadingState message="주요 정책을 불러오는 중입니다." />
+          <Card title="📋 더 많은 정책 보기">
+            <p className="hint-text">
+              자연어 검색은 상단 검색창을, 전체목록은 정책 목록페이지에서 확인할
+              수 있습니다.
+            </p>
+            <div style={{ marginTop: '16px' }}>
+              <Button variant="secondary" onClick={() => navigate('/programs')}>
+                정책 목록 보기
+              </Button>
+            </div>
+          </Card>
+        </>
       ) : (
-        <div className="cards-grid">
-          {featuredPolicies.map((policy) => (
-            <PolicyCard key={policy.id} policy={policy} />
-          ))}
+        <div className="policy-search-layout">
+          <div className="policy-search-layout__primary">
+            <InterpretedConditionChips
+              chips={filterChips}
+              onRemove={handleFilterRemove}
+              onUpdate={handleFilterUpdate}
+              onAdd={handleFilterAdd}
+              disabled={showLoading}
+            />
+
+            {showLoading ? <PolicySearchLoadingShell /> : null}
+
+            {showError && errorPresentation ? (
+              <PolicySearchErrorShell
+                presentation={errorPresentation}
+                onRetry={
+                  errorPresentation.retryable ? () => void refetch() : undefined
+                }
+              />
+            ) : null}
+
+            {showEmptyResults && emptyPresentation ? (
+              <PolicySearchEmptyShell presentation={emptyPresentation} />
+            ) : null}
+
+            {showResultCards && data ? (
+              <section aria-label="검색 결과">
+                <p className="policy-eligibility-notice" role="note">
+                  {POLICY_ELIGIBILITY_NOTICE}
+                </p>
+                <div className="cards-grid">
+                  {data.items.map((hit) => (
+                    <PolicySearchResultCard
+                      key={hit.policy.id}
+                      hit={hit}
+                      searchIncludePartial={effectiveUrlState.include_partial}
+                      isSelected={activeSelectedPolicyId === hit.policy.id}
+                      onSelect={(nextHit) =>
+                        setSelectedPolicyId(nextHit.policy.id)
+                      }
+                    />
+                  ))}
+                </div>
+
+                {getPolicySearchTotalPages(data.total, data.limit) > 1 ? (
+                  <SearchPagination
+                    total={data.total}
+                    page={data.page}
+                    limit={data.limit}
+                    onPageChange={handlePageChange}
+                    disabled={showLoading}
+                  />
+                ) : null}
+              </section>
+            ) : null}
+          </div>
+
+          <PolicySearchSidebar
+            response={sidebarResponse}
+            selectedHit={selectedHit}
+          />
         </div>
       )}
-
-      <Card title="📋 더 많은 정책 보기">
-        <p className="hint-text">
-          자연어 검색은 상단 검색창을, 전체 목록·exact 필터는 정책 목록 페이지에서
-          확인할 수 있습니다.
-        </p>
-        <div style={{ marginTop: '16px' }}>
-          <Button variant="secondary" onClick={() => navigate('/programs')}>
-            정책 목록 보기
-          </Button>
-        </div>
-      </Card>
     </div>
   );
 }

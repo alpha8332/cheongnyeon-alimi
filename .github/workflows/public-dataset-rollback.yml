@@ -1,0 +1,41 @@
+name: Public dataset rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      dataset_version:
+        description: Existing immutable public dataset version
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production-data
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DATASET_VERSION: ${{ inputs.dataset_version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install --require-hashes --no-deps -r backend/requirements.lock
+      - name: Download and verify immutable release
+        run: |
+          mkdir rollback
+          gh release download "dataset-${DATASET_VERSION}" -D rollback
+          python scripts/build_public_bootstrap_dataset.py \
+            --verify-manifest "rollback/${DATASET_VERSION}.manifest.json"
+      - name: Build and verify rollback pointer
+        run: |
+          python scripts/build_public_dataset_pointer.py \
+            --manifest "rollback/${DATASET_VERSION}.manifest.json" \
+            --manifest-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/dataset-${DATASET_VERSION}/${DATASET_VERSION}.manifest.json" \
+            --output rollback/public-dataset-pointer.json
+          python scripts/build_public_dataset_pointer.py --verify rollback/public-dataset-pointer.json
+      - name: Move latest pointer
+        run: gh release upload dataset-latest rollback/public-dataset-pointer.json --clobber

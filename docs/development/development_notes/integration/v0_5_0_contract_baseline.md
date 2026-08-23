@@ -342,6 +342,11 @@ Data 06, 승인 추가 기능, 결함 수정, UI/UX 최적화와 독립 QA·사�
 대조를 시작할 수 있다. 이 판정은 Release 2 최종 Gate나 `v0.5.0` tag 승인이
 아니다.
 
+DB 선택·권한·Migration, Node 탐색과 Runtime log 비추적을 실제 환경에서 복구한
+과정은
+[Windows actual Runtime·DB 연결 환경 복구](../../../troubleshooting/integration/windows_actual_runtime_acceptance.md)에
+별도로 기록했다.
+
 ## 주요 변경 파일
 
 - `.gitignore`

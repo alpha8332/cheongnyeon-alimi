@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-07
+- 기준일: 2026-08-19
 - 범위: `v0.1.0`, `v0.5.0`, `v1.0.0`
 - 역할: 여러 Forest의 릴리스 목표와 통합 완료 조건을 정하는 기준선
 
@@ -50,7 +50,7 @@ PR #15의 `main` 커밋 `2b33ed7`에 `v0.1.0` tag를 생성해 publication을
 | Data | 실제 정책 bootstrap·품질 기준 | 반복 수집·중복·품질 운영 | 초기 적재·복구·Source 라이선스 |
 | Backend | 자연어 해석·서버 검색 API | 추천·사용자·관리자 API 안정화 | Production image·migration·health·로그 |
 | Frontend | 자연어 전달·해석 결과·실데이터 UI | 전체 사용자·관리자 UI·접근성 | Production build·배포 UI 회귀 |
-| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·결함 triage와 Release 2 결정 | 배포 파이프라인·clean-room과 Final 결정 |
+| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·review admission·동일 snapshot Acceptance 환경·결함 triage와 Release 2 결정 | Production 배포 파이프라인·clean-room과 Final 결정 |
 | 보고서 | 데이터·검색·검증 근거 | 기능·리뷰·QA·수정 결과 | 최종보고서·README·LICENSE·SBOM·제출 |
 | 사용성 리뷰어 | golden query 이해도 사전 확인 | 독립 사용자 시나리오와 수정본 확인 | 새 환경 실행 안내·최종 사용성 확인 |
 | QA | 핵심 검색 smoke | 전체 기능·통합·회귀·탐색 테스트 | 설치·배포·재시작·데이터 유지·복구 테스트 |
@@ -188,6 +188,11 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)를
 따른다.
 
+독립 리뷰·QA 진입 전에는
+[Integration 10 Review Admission](integration/10_review_admission_docker_acceptance.md)과
+[Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)을
+순서대로 통과한다.
+
 ### 필수 범위
 
 - 사용자 조건 기반 추천과 이해 가능한 추천 이유
@@ -208,6 +213,8 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 - 실데이터 갱신 절차, 실패 복구와 데이터 유지 검증
 - 검색·추천 정확도, DB migration, transaction과 주요 API 안정화
 - 접근성, 반응형, 빈 화면·오류 화면과 핵심 사용자 흐름 개선
+- 최신 review 재판정 뒤 재고정한 실제 DB snapshot을 동일 Git SHA의 Docker
+  Acceptance 환경으로 BE·FE 담당자, 리뷰어와 QA에게 인계
 
 Data 04의 웹 수집은 임의 사이트 범용 크롤러가 아니라 승인된 공식 Source 한
 곳을 세로 기준선으로 한다. Data 05는 이 기준선을 재사용해 승인된 지역 Source를
@@ -217,9 +224,10 @@ Source를 추가하되 XLSX 행을 직접 import하지 않고 실제 공식 원�
 snapshot으로 신규 여부를 다시 판정한다. 자격요건 화면은 Source 근거가 있는 조건을 요약하되 데이터가
 부분적이면 `추가 확인 필요`로 표시하고 수혜·선정 가능성을 확정하지 않는다.
 
-Data 06의 `v0.5.0` 필수 범위와 최소 4개 승인 Source 기준은 유지한다. 다만
-`2026-08-14` 일정 재승인으로 구현 시점을 5주차 W5-G0~G1로 옮기고, 4주차는
-Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한다.
+Data 06의 `v0.5.0` 필수 범위는 유지한다. `2026-08-14` 일정 재승인으로 구현
+시점을 5주차 W5-G0~G1로 옮겼고, `2026-08-17` 완료 기준 재승인으로 승인
+Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Browser 인수를
+고정했다.
 
 이 릴리스에서 “모든 기능 완성”은 이메일 발송이나 Google Calendar 직접
 연동 같은 확장 기능까지 의미하지 않는다. 웹 내부 알림과 `.ics`를 기준으로
@@ -227,7 +235,9 @@ Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한�
 
 ### 리뷰어 검증
 
-팀원이 아닌 리뷰어가 최소한 다음 흐름을 수행한다.
+팀원이 아닌 리뷰어는 `REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED`와
+`DOCKER_ACCEPTANCE_PASS`가 기록된 동일 Git SHA·snapshot 환경에서 최소한
+다음 흐름을 수행한다.
 
 1. 조건 또는 자연어로 정책 검색
 2. 상세의 핵심 신청 조건·제외·서류·확인 필요와 공식 근거 확인
@@ -251,10 +261,13 @@ Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한�
   연결되고 17개 지역의 implemented·blocked·rejected 상태가 기록됐다. 지원하는
   비차단 지역은 open 고유 정책이 있으면 검색에 노출되고, 0건이면 추출 누락이
   아닌 원문상 open 정책 부재가 확인됐다.
-- Data 06의 모든 계획 Source군이 최종 상태를 가지고 최소 4개 승인 공식
-  Source의 신규 정책이 중복 제외를 거쳐 DB·API·Browser에 연결됐다.
+- Data 06의 모든 계획 Source군이 최종 상태를 가지고 승인 공식 Source 5개가
+  actual·replay를 통과했으며 신규 정책 1개 이상이 중복 제외를 거쳐
+  DB·API·Browser에 연결됐다.
 - 관리자 정책 데이터 표와 파일 로그·조회·보호된 삭제가 실제 환경에서
   검증됐다.
+- Integration 10의 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`와 Deploy 01의
+  `DOCKER_ACCEPTANCE_PASS`가 같은 Git SHA·snapshot version으로 연결됐다.
 - 주요 데이터 오류, migration과 transaction 문제가 해결됐다.
 - 리뷰어 시나리오를 통과하고 승인된 피드백이 반영됐다.
 - QA가 전체 기능·통합·회귀 테스트를 수행하고 릴리스 차단 결함의 수정본을
@@ -279,10 +292,15 @@ Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한�
 - Frontend·Backend Production Dockerfile과 PostgreSQL을 포함한 Compose
 - Nginx 정적 파일 제공과 `/api` reverse proxy
 - 환경변수와 비밀 분리, Volume, health check와 데이터 유지
-- Migration, 초기 실데이터 bootstrap 또는 명시적 수집 절차
+- 공개 normalized dataset·versioned manifest·SHA-256과 API key 없는 bootstrap
+- `last_seen_at`·`last_verified_at`·`inactive_at` 정책 생명주기
+- Redis broker·Celery collector worker·단일 Beat scheduler와 실제 수동·정기 queue
+- 완전 수집에서만 미발견 inactive, 실패·partial 수집의 기존 데이터 보존
+- Migration, 중앙 수집과 명시적 운영자 API key 설정 절차
 - Frontend build, Backend·Data 테스트, 이미지 build를 수행하는 CI
+- GHCR immutable image와 검증된 dataset promotion·rollback
 - 버전·이미지 tag와 릴리스 체크리스트
-- 새 PC 또는 깨끗한 환경의 clone-to-run 검증
+- 새 PC 또는 깨끗한 환경의 clone/ZIP one-command 검증
 - 설치, 수집, 검색, 사용자·관리자 기능, 로그와 복구 안내
 - README, 아키텍처, 데이터 Schema, API, Collector 가이드
 - LICENSE, SBOM, CHANGELOG, 최종보고서, 시연 스크립트와 제출 자료
@@ -290,7 +308,14 @@ Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한�
 ### 릴리스 완료 조건
 
 - 깨끗한 환경에서 README만 따라 build·migration·초기 적재·실행이 성공한다.
+- 공개 dataset의 라이선스 allowlist·manifest·hash가 검증되고 API key 없는
+  bootstrap이 성공한다.
+- 관리자 수동 실행과 정기 실행이 Celery queue의 실제 worker로 연결되고,
+  PostgreSQL `CollectionRun`이 최종 상태 원본이다.
+- 신규·변경·inactive 전이와 실패·partial 수집 보존 경계가 실제 DB·API·
+  Browser에서 통과한다.
 - 컨테이너 재시작 후 DB와 필요한 Runtime 데이터가 유지된다.
+- Redis·worker 재시작과 task 재전달에도 중복 정책·실행 이력이 생기지 않는다.
 - 사용자 검색·추천·부가 기능과 관리자 시나리오가 배포 구성에서 통과한다.
 - QA가 clean-room 설치, 배포, 재시작, 로그와 복구 시나리오를 재검증했다.
 - CI와 릴리스 문서가 실제 명령 및 산출물과 일치한다.
@@ -303,6 +328,7 @@ Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한�
 | `v0.1.0`에서 실제 또는 sample 데이터 허용 | 실제 진행 중 정책 snapshot 필수 | 합성 Seed만으로는 실제 검색 MVP를 증명할 수 없음 |
 | 검색이 keyword·기본 필터 중심 | Backend 자연어 해석과 서버 검색을 `v0.1.0` 필수로 포함 | 해석 기준을 한곳에 두고 현재 사용자 기대 시나리오를 client-only 문자열 검색 없이 만족해야 함 |
 | `v0.1.0`에 Docker Compose 포함 | Production 배포 파이프라인은 `v1.0.0`으로 이동 | 사용자가 정한 Final Release 목표와 현재 컨테이너 아키텍처 시점을 반영 |
+| 5주차 리뷰를 각 PC의 로컬 DB로 수행 | review admission 뒤 동일 snapshot Docker Acceptance 환경에서 수행 | BE·FE·리뷰어·QA의 데이터·실행환경 차이로 인한 재현 불일치를 제거하되 Production 배포 범위는 6주차에 유지 |
 | 3주차와 병행해 관리자 기능 진행 | `v0.1.0` 실데이터·검색 차단 조건을 먼저 처리 | 관리자 기능보다 Release 1의 검색 결과 신뢰성이 선행함 |
 | LLM·벡터 검색을 후속 실험으로 검토 | 그대로 유지 | 기본 SQL·조건 검색을 먼저 완성하고 복잡도를 검증 후 추가 |
 
@@ -312,6 +338,9 @@ Data 05와 Backend·Frontend 결과의 DTL4-5·W4-G4 통합을 먼저 완료한�
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)
+- [Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md)
 - [시스템 흐름](../../architecture/system_flow.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)

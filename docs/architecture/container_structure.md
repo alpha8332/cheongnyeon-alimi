@@ -2,12 +2,20 @@
 
 ## 문서 상태
 
-- 상태: 초기 목표 기준선
-- 현재 구현 상태: Docker 구성 미구현
+- 상태: Acceptance 기준선 구현 완료, Production 목표 승인
+- 현재 구현 상태: Deploy 01 `DOCKER_ACCEPTANCE_PASS`; Deploy 02 Production
+  Data Refresh는 계획 승인·구현 전
 
 이 문서는 초기 개발과 Release 1에서 목표로 하는 실행 단위를 정의한다.
 아래 서비스 이름과 연결은 구현 시 검증해야 하며, 현재 실행 가능하다는
 의미가 아니다.
+
+구현은 두 단계로 나눈다. 5주차
+[Deploy 01 Docker Acceptance Environment](../development/develop_plan/deploy/01_docker_acceptance_environment.md)은
+BE·FE 담당자, 리뷰어와 QA가 동일 Git SHA·실제 DB snapshot으로 검증하기 위한
+내부 Acceptance 환경을 만든다. 6주차 `v1.0.0` 배포 Forest는 이를 Nginx,
+Production image, CI, 초기 bootstrap과 운영 복구까지 확장한다. Deploy 01
+통과만으로 Production 배포가 완료된 것은 아니다.
 
 ## 초기 구성
 
@@ -138,24 +146,40 @@ Nginx
 Nginx 도입 시점, TLS, 도메인과 네트워크 설정은 배포 Slice에서 확정한다.
 초기 개발 기준선에 구현 완료 사항으로 포함하지 않는다.
 
-## 향후 분리 조건
+## 6주차 Production 분리 목표
 
-다음 조건이 생기면 Collector Worker와 Scheduler의 별도 컨테이너 분리를 ADR로
-검토한다.
+Deploy 01까지는 collector를 Backend image의 명시적 명령으로 실행했다. 정기·
+수동 수집의 비동기 실행, 독립 재시작과 중복 실행 제어가 Final Release 필수
+범위가 되어 Deploy 02에서 Redis broker·Celery Worker·단일 Beat 분리를
+승인했고 W6-P2에서 Acceptance Compose와 실제 회귀까지 구현했다.
 
 - 수집 작업이 API 프로세스의 자원 또는 안정성에 영향을 줌
 - 독립적인 재시작, 확장 또는 배포 주기가 필요함
 - 정기 작업과 수동 실행의 동시성 제어가 필요함
 
-검토 대상 구조:
+승인된 목표 구조:
 
 ```text
-frontend
-backend
-collector-worker
-scheduler
-database
+Browser
+  ↓
+frontend-nginx → backend → database
+                    ↓ enqueue   ↑ Policy·CollectionRun
+                  redis → collector-worker
+                       ↑
+                    scheduler
 ```
 
-조건을 충족하기 전에는 복잡도를 미리 늘리지 않는다. 실행 단위를 변경하면
-[아키텍처 결정 기록](decisions/README.md)에 근거와 영향을 남긴다.
+Redis는 message broker로만 사용하고 Policy·CollectionRun 상태 원본은
+PostgreSQL에 둔다. scheduler는 단일 instance로 실행하고 Source별 DB lock과
+멱등 task로 중복 실행·재전달을 방어한다. 실행 단위를 변경하면
+[아키텍처 결정 기록](decisions/README.md)에 근거와 영향을 남긴다. 상세 Gate는
+[Deploy 02 계획](../development/develop_plan/deploy/02_production_data_refresh_delivery.md)을
+따른다.
+
+현재 Compose의 `redis`는 AOF를 별도 Volume에 유지하고 외부 port를 공개하지
+않는다. `collection-worker`는 prefetch 1·late ack·worker lost 재전달, bounded
+retry·jitter·hard/soft timeout·task rate limit을 사용한다. `collection-scheduler`
+는 한 instance만 두며 기본 설정은 `COLLECTION_SCHEDULE_ENABLED=false`다. 운영
+API key를 설정하고 Source별 주기를 승인한 중앙 환경에서만 `true`로 바꾼다.
+DB·queue network는 `internal`로 유지하고 live Source HTTP가 필요한 worker만
+별도 `collector-egress` network에 연결한다.

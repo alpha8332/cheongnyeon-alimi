@@ -38,10 +38,25 @@ async function createAdminToken(request: APIRequestContext) {
 }
 
 async function waitForHomePolicies(page: Page) {
-  await expect(page.getByText('주요 정책을 불러오는 중입니다.')).toHaveCount(0, {
+  await expect(page.getByText('정책을 불러오는 중입니다.')).toHaveCount(0, {
     timeout: 15_000,
   });
   await expect(page.locator('article.policy-card').first()).toBeVisible();
+}
+
+async function confirmBookmarkModal(page: Page) {
+  const dialog = page.getByRole('dialog', { name: '북마크 저장' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: '저장' }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
+async function openBookmarkFolder(page: Page, folderName: string) {
+  await page
+    .getByRole('button', {
+      name: new RegExp(`^${folderName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(\\d+\\)$`),
+    })
+    .click();
 }
 
 test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () => {
@@ -161,14 +176,15 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
 
     await page.goto(`/programs/${eligibilityPolicyId}?include_partial=true`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByText('핵심 신청 조건')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '핵심 신청 조건' }),
+    ).toBeVisible();
     await expect(
       page.getByText(/실제 자격 충족이나 선정을 확정하지 않습니다/),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: /원문 열기/ }).first()).toHaveAttribute(
-      'href',
-      /^https:\/\//,
-    );
+    await expect(
+      page.getByRole('link', { name: /^https:\/\// }).first(),
+    ).toHaveAttribute('href', /^https:\/\//);
 
     await page.goto(`/programs/${regionalPolicyId}?include_partial=true`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -204,9 +220,12 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     await page.locator('article.policy-card').first().getByRole('button', {
       name: '북마크 추가',
     }).click();
+    await confirmBookmarkModal(page);
     await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.locator('article.policy-card').first()).toBeVisible();
     await page.reload();
+    await openBookmarkFolder(page, '기본 폴더');
     await expect(page.locator('article.policy-card').first()).toBeVisible();
 
     await page.goto('/calendar');
@@ -214,11 +233,11 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     await expect(page.getByText('달력 데이터를 불러오는 중입니다.')).toHaveCount(0, {
       timeout: 15_000,
     });
-    const hasDeadline = (await page.locator('.calendar-deadline-list__day').count()) > 0;
+    const hasEvents = (await page.locator('.calendar-event-badge').count()) > 0;
     const hasEmptyCalendar = await page
-      .getByText('표시할 신청 마감일이 있는 정책이 없습니다.')
+      .getByText('표시할 신청 시작·마감일이 있는 정책이 없습니다.')
       .isVisible();
-    expect(hasDeadline || hasEmptyCalendar).toBe(true);
+    expect(hasEvents || hasEmptyCalendar).toBe(true);
 
     await page.goto('/notifications');
     await expect(page.getByText('알림 대상 정책을 불러오는 중입니다.')).toHaveCount(0, {
@@ -237,6 +256,14 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /안녕하세요/, level: 1 })).toBeVisible();
-    await expect(page.getByText('아직 저장된 조건이 없습니다.')).toBeVisible();
+    await expect(
+      page.getByRole('status', { name: '저장 데이터 복구 안내' }),
+    ).toBeVisible();
+    const recoveredPayload = await page.evaluate(() =>
+      JSON.parse(
+        window.localStorage.getItem('cheongnyeon-alimi.user-local.v1') ?? 'null',
+      ),
+    );
+    expect(recoveredPayload).toMatchObject({ schema_version: 2, conditions: null });
   });
 });

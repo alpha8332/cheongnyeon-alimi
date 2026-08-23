@@ -6,6 +6,7 @@ import {
   getDDayLabel,
   getKstDateString,
   getPolicyDeadlineInfo,
+  isHomeFeaturedPolicy,
 } from '../src/utils/policyDeadline.js';
 
 function createPolicy(overrides: Partial<PolicyDto> = {}): PolicyDto {
@@ -92,4 +93,48 @@ test('closed 상태 정책은 마감 라벨과 calendar slot 없음', () => {
 
   assert.equal(info.label, '마감');
   assert.equal(info.hasCalendarSlot, false);
+});
+
+test('isHomeFeaturedPolicy는 마감·예정·지난 마감일을 제외한다', () => {
+  const reference = new Date('2026-08-11T05:00:00.000Z');
+
+  assert.equal(
+    isHomeFeaturedPolicy(
+      createPolicy({ application_status: 'closed' }),
+      reference,
+    ),
+    false,
+  );
+  assert.equal(
+    isHomeFeaturedPolicy(
+      createPolicy({ application_status: 'scheduled' }),
+      reference,
+    ),
+    false,
+  );
+  assert.equal(
+    isHomeFeaturedPolicy(
+      createPolicy({ application_end: '2026-08-01', application_status: 'open' }),
+      reference,
+    ),
+    false,
+  );
+  assert.equal(
+    isHomeFeaturedPolicy(
+      createPolicy({
+        application_schedule: 'always',
+        application_end: null,
+        application_status: 'open',
+      }),
+      reference,
+    ),
+    true,
+  );
+  assert.equal(
+    isHomeFeaturedPolicy(
+      createPolicy({ application_end: '2026-12-31', application_status: 'open' }),
+      reference,
+    ),
+    true,
+  );
 });

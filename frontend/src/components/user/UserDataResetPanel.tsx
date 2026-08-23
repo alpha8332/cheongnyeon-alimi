@@ -3,7 +3,11 @@ import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import { resetAllUserLocalStorage } from '@/utils/userDataReset';
 
-export default function UserDataResetPanel() {
+interface UserDataResetPanelProps {
+  onReset?: () => void;
+}
+
+export default function UserDataResetPanel({ onReset }: UserDataResetPanelProps) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const handleReset = () => {
@@ -29,6 +33,9 @@ export default function UserDataResetPanel() {
         ? '브라우저에 저장된 사용자 데이터를 모두 삭제했습니다.'
         : '저장소를 사용할 수 없어 데이터를 삭제하지 못했습니다.',
     );
+    if (cleared) {
+      onReset?.();
+    }
   };
 
   return (

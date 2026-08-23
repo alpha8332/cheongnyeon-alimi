@@ -11,13 +11,13 @@ export default function AppShellLayout() {
   const { pathname } = useLocation();
 
   const isHome = pathname === '/';
-  const isSearch = pathname.startsWith('/search');
   const isRecommendations = pathname.startsWith('/recommendations');
   const isPrograms = pathname.startsWith('/programs');
   const isFavorites = pathname.startsWith('/favorites');
-  const isNotifications = pathname.startsWith('/notifications');
   const isCalendar = pathname.startsWith('/calendar');
+  const isNotifications = pathname.startsWith('/notifications');
   const isAdmin = pathname.startsWith('/admin');
+  const isProfile = pathname.startsWith('/profile');
 
   return (
     <ApiErrorToastProvider>
@@ -28,14 +28,6 @@ export default function AppShellLayout() {
         </Link>
         <Link to="/" className={navClass(isHome)} title="홈" aria-label="홈">
           🏠
-        </Link>
-        <Link
-          to="/search"
-          className={navClass(isSearch)}
-          title="정책 검색"
-          aria-label="정책 검색"
-        >
-          🔍
         </Link>
         <Link
           to="/recommendations"
@@ -64,8 +56,8 @@ export default function AppShellLayout() {
         <Link
           to="/calendar"
           className={navClass(isCalendar)}
-          title="마감 달력"
-          aria-label="마감 달력"
+          title="달력"
+          aria-label="달력"
         >
           📅
         </Link>
@@ -81,14 +73,19 @@ export default function AppShellLayout() {
         <Link
           to="/admin"
           className={navClass(isAdmin)}
-          title="관리"
-          aria-label="관리"
+          title="관리자"
+          aria-label="관리자"
         >
           📊
         </Link>
-        <span className="app-shell__avatar" title="프로필">
-          Y
-        </span>
+        <Link
+          to="/profile"
+          className={navClass(isProfile)}
+          title="사용자 프로필"
+          aria-label="사용자 프로필"
+        >
+          👤
+        </Link>
       </nav>
 
       <main className="app-shell__main">

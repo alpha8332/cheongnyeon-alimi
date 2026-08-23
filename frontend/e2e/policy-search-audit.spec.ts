@@ -1,4 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+  ACTUAL_API_FIXTURES,
+  skipIfActualApi,
+  skipUnlessActualApi,
+} from './helpers/e2eMode';
 
 async function waitForSearchSettled(page: Page) {
   await expect(page.getByLabel('검색 결과 로딩 중')).toHaveCount(0, {
@@ -8,13 +13,13 @@ async function waitForSearchSettled(page: Page) {
 
 test.describe('Policy Search browser audit (FE4-14~21)', () => {
   test('1. 검색어 입력 & URL Sync & 지우기', async ({ page }) => {
-    await page.goto('/search');
+    await page.goto('/');
 
     const input = page.getByLabel('정책 검색어');
     await input.fill('서울 주거');
     await input.press('Enter');
 
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
     expect(page.url()).toContain('q=');
 
     await waitForSearchSettled(page);
@@ -26,7 +31,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     await expect(input).toHaveValue('');
     expect(page.url()).not.toMatch(/[?&]q=/);
-    await expect(page.getByText(/검색어를 입력하고 검색하기 버튼을 눌러 주세요/)).toBeVisible();
+    await expect(page.getByLabel('예시 검색어')).toBeVisible();
   });
 
   test('2. 필터 칩 삭제 시 URL 반영 및 page=1 리셋', async ({ page }) => {
@@ -40,7 +45,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(removeRegionChip).toBeVisible();
     await removeRegionChip.click();
 
-    await expect(page).toHaveURL(/\/search\?/);
+    await expect(page).toHaveURL(/\/?\?/);
     expect(page.url()).not.toContain('region=');
     expect(page.url()).not.toMatch(/page=2/);
   });
@@ -48,6 +53,8 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
   test('3. 페이지네이션 클릭 및 새 검색어 입력 시 page=1 리셋', async ({
     page,
   }) => {
+    skipIfActualApi(test);
+
     await page.goto('/search?q=%EC%A0%84%EA%B5%AD+%EC%B2%AD%EB%85%84&limit=1&page=1');
 
     await waitForSearchSettled(page);
@@ -128,8 +135,8 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
 
     await expect(page.getByText('정보 일부 누락').first()).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /자격요건 직접 확인 필요/ }).first(),
-    ).toBeVisible();
+      page.getByRole('button', { name: /자격요건 직접 확인 필요/ }),
+    ).toHaveCount(0);
   });
 
   test('6. 우측 사이드바 Reason·미해석 키워드 노출', async ({ page }) => {
@@ -150,17 +157,17 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(sidebar.getByRole('heading', { name: /자격 조건/ })).toBeVisible();
   });
 
-  test('7a. 홈 검색·추천 칩 → /search?q= 이동', async ({ page }) => {
+  test('7a. 홈 검색·추천 칩 → /?q= 이동', async ({ page }) => {
     await page.goto('/');
 
     await page.getByLabel('정책 검색어').fill('서울 주거');
     await page.getByRole('button', { name: '검색하기' }).click();
 
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
 
     await page.goto('/');
     await page.getByRole('button', { name: '서울 주거' }).click();
-    await expect(page).toHaveURL(/\/search\?.*q=/);
+    await expect(page).toHaveURL(/\/?\?.*q=/);
   });
 
   test('7b. 검색 결과 카드 → /programs/{id} (+ include_partial)', async ({
@@ -184,14 +191,9 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
   test('8. 실제 API golden 첫 페이지·근거·상세·자격 비확정 안내', async ({
     page,
   }) => {
-    test.skip(
-      process.env.VITE_USE_MOCK !== 'false',
-      'VITE_USE_MOCK=false인 실제 API 감사에서만 실행합니다.',
-    );
+    skipUnlessActualApi(test);
 
-    await page.goto(
-      '/search?q=%EC%B2%9C%EC%95%88+%EC%82%AC%EB%8A%94+27%EC%82%B4+%EC%B2%AD%EB%85%84+%EB%8B%A8%EA%B8%B0%EC%88%99%EC%86%8C+%EC%A7%80%EC%9B%90+%EB%B0%9B%EC%9D%84+%EC%88%98+%EC%9E%88%EB%82%98%3F',
-    );
+    await page.goto(ACTUAL_API_FIXTURES.SEARCH_GOLDEN_QUERY);
 
     await waitForSearchSettled(page);
 
@@ -199,7 +201,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(resultRegion).toBeVisible();
     await expect(
       resultRegion.locator('a.policy-card').first(),
-    ).toContainText('청년단기숙소 지원사업');
+    ).toContainText(ACTUAL_API_FIXTURES.SEARCH_GOLDEN_POLICY_TITLE);
     await expect(
       resultRegion.getByRole('note'),
     ).toContainText('실제 자격 충족을 확정하지 않습니다');
@@ -228,7 +230,7 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
         .filter({ hasText: '실제 자격 충족을 확정하지 않습니다' }),
     ).toBeVisible();
     await expect(
-      page.getByRole('button', { name: '원문 링크 열기' }),
+      page.getByRole('button', { name: /공식 신청 사이트 바로가기/ }),
     ).toBeVisible();
   });
 });

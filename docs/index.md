@@ -42,10 +42,26 @@
   지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태의 실행 계약
 - [지역 청년정책 Source inventory](../data/reference/regional_youth_policy_sources.json):
   17개 지역 포털의 RYP1 action profile과 13개 승인·3개 차단·1개 제외 판정
+- [Supplemental Official Policy Inventory JSON Schema](../data/schema/supplemental_official_policy_inventory.schema.json):
+  Data 06 XLSX 후보 lineage·오류 격리와 공식 Source preflight 실행 계약
+- [Supplemental Duplicate Audit JSON Schema](../data/schema/supplemental_official_policy_duplicate_audit.schema.json):
+  온통청년·복지로 snapshot·PostgreSQL 선행 중복 감사 계약
+- [Data 06 후보·Source inventory](../data/reference/supplemental_official_policy_inventory.json):
+  URL 64행 정제 결과와 approved 5·blocked 1·rejected 9 Source 판정
+- [Data 06 선행 중복 감사](../data/reference/supplemental_official_policy_duplicate_audit.json):
+  exact duplicate 26·review 11·잠정 신규 19·비교 제외 4 판정
+- [Review Admission 규칙](data/review_admission_rules.md):
+  taxonomy v2와 versioned `promote_partial`·보류·hard exclusion 계약
+- [Review Admission Audit JSON Schema](../data/schema/review_admission_audit.schema.json):
+  identity·근거 code·provenance·fingerprint 기반 감사 manifest 계약
 - [정규화 규칙](data/normalization_rules.md): 날짜, 검색 배열, 지역, 연령과
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
+- [공개 정책 bootstrap dataset 계약](data/public_policy_dataset.md):
+  재배포 Source·field allowlist, versioned manifest·hash와 공개 Runtime 경계
+- [정책 생명주기 계약](data/policy_lifecycle.md): 관측·검증·inactive 시각,
+  마감 즉시 제외와 완전 수집에서만 허용하는 soft-deactivation 경계
 - [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
   versioned 지역·계층·별칭·유효기간 Seed와 exact code 해석 경계
 - [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터
@@ -75,6 +91,19 @@
   Data·Backend·Frontend 안정화, 사용성 리뷰·QA와 Release 2 `v0.5.0` 판정
 - [5주차 Data·Team Leader 실행 계획](development/weekly_plan/week_05_data_team_leader.md):
   Data 06 SOP0~SOP5, W5-G0~G2 actual 인수·독립 검증과 Release 2 판정
+- [Review Admission Forest 계획](development/develop_plan/integration/10_review_admission_docker_acceptance.md):
+  DB 보유 PC 최신 review 재판정·partial 적재와 새 데이터 기준선 인계
+- [Docker Acceptance Environment 계획](development/develop_plan/deploy/01_docker_acceptance_environment.md):
+  동일 Acceptance snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인수
+- [Production Data Refresh and Delivery 계획](development/develop_plan/deploy/02_production_data_refresh_delivery.md):
+  공개 normalized dataset·정책 생명주기·Celery/Redis 중앙 수집·Production
+  Compose·CI/CD와 clean-room Final Gate
+- [6주차 Final Release 실행 계획](development/weekly_plan/week_06_final_release.md):
+  `W6-P0`~`W6-P5` Critical Path와 `W6-G0_FINAL_RELEASE_PASS`
+- [Production Data Refresh and Delivery 개발 기록](development/development_notes/deploy/production_data_refresh_delivery.md):
+  W6-P0 공개 dataset 계약·451건 actual artifact와 후속 P1~P5 결과
+- [Production 배포와 데이터셋 발행](operations/production_delivery.md): GHCR
+  digest image·Nginx Compose·CI와 dataset promotion·rollback 절차
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):
@@ -110,6 +139,8 @@
   실행 이력 조회·수동 실행의 관리자 API 계획
 - [Backend Policy Search Forest 계획](development/develop_plan/backend/06_policy_search.md):
   Gate G1 승인 PostgreSQL 기반 정책 검색 API·파서 및 W3-B0 계약
+- [v0.5.0 Backend Stabilization Forest 계획](development/develop_plan/backend/07_v0_5_0_backend_stabilization.md):
+  5주차 Release 2 (v0.5.0) 백엔드 전체 회귀 검증, Data 06 적재 연동 대조, QA/리뷰 결함 수정 및 인수 게이트 계획
 - [Policy Data Database Integration Forest 계획](development/develop_plan/integration/02_policy_data_database_integration.md):
   Backend의 검증된 저장 경계를 사용해 Data 파이프라인의 Seed·Runtime
   결과를 PostgreSQL과 Policy API까지 연결하는 데이터 담당 2주차 공동 계획
@@ -139,10 +170,24 @@
 - [Admin Data and Log Console Forest 계획](development/develop_plan/integration/09_admin_data_log_console.md):
   관리자 읽기 전용 정책 데이터 표와 구조화 파일 로그·조회·archive 삭제·감사
   (Frontend UI Slice: [FE8-xx](development/develop_plan/frontend/08_admin_observability_ui.md))
+- [Review Admission Forest 계획](development/develop_plan/integration/10_review_admission_docker_acceptance.md):
+  최신 DB·Runtime 기반 review admission, partial 적재와 Deploy 입력 확정
+- [Review Admission Forest 개발 기록](development/development_notes/integration/review_admission_docker_acceptance.md):
+  RA0 실제 기준선·변경 전 보호와 RA1~RA4 실행 근거
+- [Docker Acceptance Environment 계획](development/develop_plan/deploy/01_docker_acceptance_environment.md):
+  snapshot hash·Docker Compose·Volume·clean-room과 동일 환경 인계
+- [Docker Acceptance Environment 개발 기록](development/development_notes/deploy/docker_acceptance_environment.md):
+  DEP0~DEP5 실제 구현·검증과 `DOCKER_ACCEPTANCE_PASS` 근거
+- [Docker Acceptance 웹 UI 실행 방법](development/docker_acceptance_setup.md):
+  Docker Desktop 최초 복원·Compose 실행·웹 UI 접속·재시작·종료 방법과 현재 검증 상태
+- [Docker Acceptance 동일 환경 인계 패키지](development/handoff/docker_acceptance/README.md):
+  AES-256 snapshot 전달, receipt 대조와 BE·FE·사용성 리뷰어·QA 독립 결과 계약
 - [ADR 0001 정책 검색 데이터 기반](architecture/decisions/0001-policy-search-data-foundation.md):
   장기 지역 Source 확장을 위한 데이터·DB 구조 제안과 검증 기준
 - [Forest 개발 기록](development/development_notes/README.md): Forest별
   실제 구현과 검증 결과
+- [프론트엔드 개발 히스토리 (1~5주차)](development/frontend_development_history_w1_w5.md):
+  1~5주차 Frontend UI/기능·UX·구현 설계 종합 (백엔드·데이터 제외)
 - [Docs System Forest 개발 기록](development/development_notes/integration/docs_system.md)
 - [Data Pipeline Forest 개발 기록](development/development_notes/data/data_pipeline.md)
 - [Release Dataset Bootstrap Forest 개발 기록](development/development_notes/data/release_dataset_bootstrap.md):
@@ -154,6 +199,8 @@
 - [Regional Youth Policy Ingestion Forest 개발 기록](development/development_notes/data/regional_youth_policy_ingestion.md):
   RYP0 inventory부터 RYP2 경북 Adapter, RYP3 지역·신청 상태와 RYP4 교차 Source
   제외 Gate 검증 결과
+- [Supplemental Official Policy Ingestion Forest 개발 기록](development/development_notes/data/supplemental_official_policy_ingestion.md):
+  SOP0 후보 정제·SOP1 실제 DB 중복 감사·SOP2 공식 Source allowlist 판정
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
   DTL4-4 조건·서류·시설 연락처 계약부터 실제 PostgreSQL·API·Browser 인수까지
 - [Policy Discovery Forest 개발 기록](development/development_notes/frontend/policy_discovery.md)
@@ -185,6 +232,8 @@
   관리자 4자리 PIN 세션 인증, fail-closed 및 401/403/429/422 상태코드 검증 결과
 - [Backend CollectionRun Admin API Forest 개발 기록](development/development_notes/backend/collection_run_admin_api.md):
   CollectionRun 실행 이력 목록·상세, 수동 실행 202 및 Stale 판정 계약 결과
+- [v0.5.0 Backend Stabilization Forest 개발 기록](development/development_notes/backend/v0_5_0_backend_stabilization.md):
+  5주차 Release 2 (v0.5.0) 백엔드 회귀 검증, Data 06 연동 대조 및 QA 결함 수정 개발 기록
 - [Recommendation Vertical Slice Forest 개발 기록](development/development_notes/integration/recommendation_vertical_slice.md):
   사용자 조건 기반 결정적 맞춤 추천 API, 부합도 점수, 사유 Code 및 비단정 계약 결과
 - [Eligibility Evidence and Summary Forest 개발 기록](development/development_notes/integration/eligibility_evidence_summary.md):
@@ -199,6 +248,8 @@
   DT5 실제 snapshot 복구·PostgreSQL·HTTP·Browser 통합과 결함 수정 결과
 - [v0.5.0 Contract Baseline Forest 개발 기록](development/development_notes/integration/v0_5_0_contract_baseline.md):
   DTL4-0 시작 SHA·환경·Forest 소유 경계와 W4-G0 진행 근거
+- [Release 2 Feature Acceptance 개발 기록](development/development_notes/integration/release_2_feature_acceptance.md):
+  DTL5-0 W5-G0 기준선, Data 06 포함 actual E2E·독립 검증과 Release 2 판정 근거
 - [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
   category·region·status 필터와 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약
@@ -212,8 +263,25 @@
   Windows `.venv`, PostgreSQL 테스트 DB와 Backend 전체 테스트 절차
 - [Collector 실행](operations/collector.md): 온통청년·복지로 제한 수집,
   환경변수, Runtime Raw 경계와 저장 Raw의 PostgreSQL 재처리
+- [실측 기반 문제 해결·개선율 보고서](troubleshooting/integration/measured_improvement_report.md):
+  응답시간 90.7% 감소, 식별 오류 100% 제거와 지역정책 판정 개선을 실제 전후
+  수치로 종합한 보고서
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
+- [Docker 수동 수집·재시작 복구](troubleshooting/backend/docker_manual_collection_restart_recovery.md):
+  관리자 수동 실행의 `running` 고착과 가변 DB 재시작 차단을 실제 Docker에서
+  재현하고 terminal 상태·데이터 보존으로 수정한 기록
+- [추천 전체 정책 판정의 N+1과 오추천 해결](troubleshooting/backend/recommendation_full_inventory_performance.md):
+  추천 정확성 보완 중 드러난 N+1을 제거해 실제 3,273건 응답을 약 14.8초에서
+  약 1.4초로 개선한 문제 해결 기록
+- [연령 `0세~0세` placeholder 오판 보정](troubleshooting/data/release_age_placeholder_normalization.md):
+  실제 631건의 근거 없는 연령 bound를 미확정으로 복구하고 멱등 재적재한 기록
+- [지역 Browser 수집 실패·drift 안전 복구](troubleshooting/data/regional_browser_capture_recovery.md):
+  page-context·timeout·identity drift를 제한 복구하고 미해결 실패를 격리한 기록
+- [Review admission 현재성·지역 projection 오적재 복구](troubleshooting/data/review_admission_currentness_recovery.md):
+  잘못된 5건 승격을 rollback하고 현재성·region rule·manifest baseline을 보정한 기록
+- [Windows actual Runtime·DB 연결 환경 복구](troubleshooting/integration/windows_actual_runtime_acceptance.md):
+  DB 권한·Migration·Node·Runtime log를 정렬해 실제 종단 실행을 복구한 기록
 - [변경 이력](../CHANGELOG.md): 사용자와 팀에 의미 있는 변경 사항
 - [Release 1 검증 증거 안내](contest/release_1_evidence_guide.md):
   DT7E actual snapshot·contract hash 기반 경량 QA·사용성 검증 절차
@@ -278,6 +346,8 @@ golden 정책은 온통청년의 명시적 `상시` 근거로 안전성 감사�
 | `W4-G2-FE-READINESS` | completed (`2026-08-14`) | DTL4-7 actual E2E | unit·lint·build 통과, Mock Browser 79건 통과·Real API 조건부 11건 실행 조건 명시 |
 | `W4-G3-ACTUAL-E2E` | completed (`2026-08-14`) | DTL4-8 전체 회귀 | 실제 PostgreSQL·Runtime·FastAPI·React 관리자·웹 Source·사용자 E2E와 Release 1 검색·상세 회귀 통과 |
 | `W4-G4-MIDPOINT` | completed (`2026-08-14`) | 5주차 승인 작업·독립 검증 | 전체 회귀·계약·문서·비추적 대조, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건 검색 인수 통과; Release 2 최종 Gate는 아님 |
+| `W5-G0` | completed (`2026-08-17`) | Data 06·영역별 안정화 | 5주차 시작 SHA·Migration·DB·Runtime·actual API mode와 검증 환경 고정 |
+| `W5-G1` | completed (`2026-08-18`) | Deploy 01 | Backend·Frontend·Data 06 통합 PostgreSQL·API·Browser 전체 회귀 통과. `2026-08-19` review admission 뒤 `W5-G1_REVALIDATED` 완료 |
 
 Team Leader는 천안청년센터 공지 674번의 최소 수집·비재배포 경계를 포함해
 `W4-G0_APPROVED`로 판정했다. 위 후속 항목은 W4-G1 구현 적합성
@@ -364,6 +434,7 @@ UI/UX 최적화와 독립 QA·사용성 리뷰·보고서 대조를 수행한다
 | Backend 즐겨찾기 계획 | `docs/development/develop_plan/backend/` |
 | Frontend 캘린더 구현 결과 | `docs/development/development_notes/frontend/` |
 | Seed → API → 화면 통합 | `docs/development/develop_plan/integration/` 및 대응하는 `development_notes/integration/` |
+| Docker·Compose·동일 환경 인계 | `docs/development/develop_plan/deploy/` 및 대응하는 `development_notes/deploy/` |
 | 현재 데이터 계약 | `docs/data/` |
 | Frontend ↔ Backend API 계약 | `docs/api/` |
 | 실제 해결한 Backend 장애 | `docs/troubleshooting/backend/` |
@@ -372,7 +443,9 @@ UI/UX 최적화와 독립 QA·사용성 리뷰·보고서 대조를 수행한다
 - 실제 구현과 검증 결과는 `development_notes/`에 기록한다.
 - 현재 유효한 계약은 `data/`, `api/`, `architecture/`, `operations/` 등 관련
   기준 문서에 반영한다.
-- 둘 이상의 영역이 함께 책임지는 계획·결과·문제는 `integration/`에 둔다.
+- 둘 이상의 애플리케이션 영역이 함께 책임지는 계획·결과·문제는
+  `integration/`에 두고, 배포 구성·재현 환경·운영 인계가 독립 완료 기준이면
+  `deploy/`에 둔다.
 - 실제 문서가 없으면 담당 영역 디렉터리를 미리 만들지 않는다.
 
 ### AI Agent 최소 필독 문서

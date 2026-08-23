@@ -4,16 +4,23 @@
 
 - 번호: Integration 07
 - 담당 영역: Team Leader - Integration
-- 상태: approved
-- 현재 단계: 4주차 A0·A1 근거 완료, 5주차 A2·A3 착수 준비
+- 상태: completed
+- 완료 판정: `2026-08-23`, `W5-G2_PASS`
+- 현재 단계: DTL5-0~6와 수정본 Gate 완료. 사용자 승인 역할 격리 대체 검증을
+  공식 리뷰·QA 증거로 인정해 main/tag 후보 준비 가능
 - 계획일: `2026-08-07`
 - 5주차 승인일: `2026-08-16`
 - 대상 Release: `v0.5.0`
 - 선행 Forest: Backend 04·05, Frontend 03·05, Data 03·04·05·06,
   Integration 06·08·09
 - 참여·검증: Data·Backend·Frontend, 보고서·사용성 리뷰어·QA
-- 작업 브랜치: 4주차 `feature/integration/week-04-acceptance` 선례와 현재
-  브랜치 전략의 domain 목록이 달라, A2 변경 착수 전에 사용자 합의 필요
+- DTL5-4 검증 브랜치: `feature/integration/week-05-acceptance`
+  (`1019fda` 코드 검증 기준)
+- DTL5-6 코드 검증 SHA: `3066acb272dc3f40f9d8684bd2e46e6d69169f71`
+- 5주차 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
+- 개발 기록: [Integration 07 개발 기록](../../development_notes/integration/release_2_feature_acceptance.md)
+- DTL5-5 선행 보강: [Integration 10 Review Admission](10_review_admission_docker_acceptance.md)
+  → [Deploy 01 Docker Acceptance](../deploy/01_docker_acceptance_environment.md)
 
 ## 목적
 
@@ -66,7 +73,8 @@ Forest에서 관리한다.
 - 공통 시작 SHA, Migration, snapshot과 실제 API 모드를 고정한다.
 - 역할별 테스트 명령·지원 환경·증거 양식을 확정한다.
 - 4주차 A0 근거는 `develop@f0d3dd3`, Migration `20260810_0006`, 실제 DB
-  3,269건과 `W4-G4_MIDPOINT_PASS`다. 5주차 W5-G0에서 재검증한다.
+  3,269건과 `W4-G4_MIDPOINT_PASS`다. 5주차에는 `develop@29b2dd5`에서 같은
+  Migration·DB 기준과 실행 환경을 재검증해 `W5-G0_PASS`로 판정했다.
 
 ### A1 - 4주차 승인 기본 기능 midpoint acceptance
 
@@ -90,6 +98,16 @@ Forest에서 관리한다.
   팀 외 사용성 시나리오와 QA 전체 회귀를 수행한다.
 - 재현 가능한 결함을 수정 담당·심각도·재검증 조건과 연결한다.
 - 보고서 담당은 이 단계의 결정·화면·테스트와 미실행 검증을 대조한다.
+
+`2026-08-18` Integration 브랜치에서 Backend `W5-B1`, Frontend `W5-F1`과
+Data 06을 통합했다. Data·Backend PostgreSQL 전체 회귀, Frontend
+unit·lint·build, Mock 94건과 actual 핵심 44건, DTL4-7 actual acceptance를
+통과해 `W5-G1_PASS`로 기능 동결했다. 이후 최신 review 후보의 admission과
+동일 실제 DB 공유 문제가 확인돼 Integration 10과 Deploy 01을 DTL5-5 선행
+보강으로 둔다. 기존 `W5-G1_PASS`는 당시 인수 기록으로 보존하되,
+Integration 10 `W5-G1_REVALIDATED`와 Deploy 01 `DOCKER_ACCEPTANCE_PASS`를
+통과한 뒤에만 팀 외 DTL5-5 사용성·QA를 시작한다. 이 결과를 Release 2 최종
+`W5-G2`로 해석하지 않는다.
 
 ### A3 - Release 2 Gate
 
@@ -119,9 +137,12 @@ Forest에서 관리한다.
 
 ## 위험과 미확정 사항
 
-- 4주차에는 `integration` domain 브랜치를 실제 사용했지만 현재 브랜치 전략의
-  domain 표에는 없다. A2 변경 브랜치를 만들기 전에 실제 관행과 거버넌스를
-  정렬해야 한다.
+- 담당 Backend 브랜치의 과거 커밋에 노출된 로컬 DB 자격증명은 Integration
+  ancestry에서 제외했다. DTL5-6에서 현재 비추적 DB 비밀번호가 과거 노출
+  후보와 다른 충분한 길이의 비기본값임을 값 출력 없이 확인했다.
+- 팀 외 인력 대신 역할·Docker project·Volume을 분리한 대체 검증을 수행했고,
+  사용자가 이를 이번 Release 2의 공식 리뷰·QA 증거로 승인했다. 수행 주체와
+  방식은 기록에 남기되 Gate 미완료 사유로 취급하지 않는다.
 - 한 주 안에 모든 기능을 확장형으로 구현하면 Backend가 병목이 되므로 W4-G0
   범위 밖 기능을 다시 끌어오지 않는다.
 - actual snapshot은 외부 데이터 변화의 영향을 받으므로 고정 contract 회귀와

@@ -10,6 +10,7 @@ from app.models.administrative_region import (
     AdministrativeRegionAlias,
 )
 from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
+from app.repositories.policy_lifecycle import public_policy_predicates
 
 
 REGION_RULE_FIELDS = (
@@ -117,6 +118,28 @@ class PolicySearchRepository:
                 .order_by(PolicyRegionRule.id)
             ).all()
         )
+
+    def policy_region_rules_for_policies(
+        self,
+        policy_ids: Sequence[int],
+    ) -> dict[int, tuple[PolicyRegionRule, ...]]:
+        selected_ids = tuple(sorted(set(policy_ids)))
+        if not selected_ids:
+            return {}
+        grouped: dict[int, list[PolicyRegionRule]] = {
+            policy_id: [] for policy_id in selected_ids
+        }
+        rules = self.db.scalars(
+            select(PolicyRegionRule)
+            .where(PolicyRegionRule.policy_id.in_(selected_ids))
+            .order_by(PolicyRegionRule.policy_id, PolicyRegionRule.id)
+        ).all()
+        for rule in rules:
+            grouped[rule.policy_id].append(rule)
+        return {
+            policy_id: tuple(policy_rules)
+            for policy_id, policy_rules in grouped.items()
+        }
 
     def alias_candidates(
         self,
@@ -275,7 +298,10 @@ class PolicySearchRepository:
 
         # 2. 기본 정책 쿼리 생성
         from sqlalchemy import and_, or_
-        query = select(Policy).where(Policy.data_quality_status != "invalid")
+        query = select(Policy).where(
+            Policy.data_quality_status != "invalid",
+            *public_policy_predicates(),
+        )
         if not include_partial:
             query = query.where(Policy.data_quality_status == "valid")
 

@@ -519,6 +519,21 @@ def evaluate_cross_source_duplicate(
             title_matches,
             fingerprint,
         )
+    contained_title_matches = tuple(
+        record
+        for record in records
+        if _material_title_containment(candidate.title, record.title)
+    )
+    if contained_title_matches:
+        return _decision(
+            identity,
+            candidate,
+            DuplicateOutcome.DUPLICATE_REVIEW_REQUIRED,
+            ("material_title_containment_requires_review",),
+            ("title",),
+            contained_title_matches,
+            fingerprint,
+        )
     return _decision(
         identity,
         candidate,
@@ -703,6 +718,15 @@ def _fingerprint_fields_match(
         ),
     )
     return all(left and right and left == right for left, right in fields)
+
+
+def _material_title_containment(left: str, right: str) -> bool:
+    left_value = _comparison_text(left)
+    right_value = _comparison_text(right)
+    if left_value == right_value:
+        return False
+    shorter, longer = sorted((left_value, right_value), key=len)
+    return len(shorter) >= 5 and shorter in longer
 
 
 def _comparison_is_incomplete(

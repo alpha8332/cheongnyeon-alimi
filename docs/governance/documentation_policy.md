@@ -41,8 +41,8 @@ Frontend와 Backend를 포함한 각 영역 담당자 또는 담당 AI Agent는 
 
 아직 완료하지 않은 Forest를 관리한다. Forest마다 계획 문서 하나를 두고,
 내부 Slice의 범위, 의존성, 구현 순서, 검증과 완료 기준을 기록한다. 담당
-영역이 명확한 계획은 `data/`, `backend/`, `frontend/`, `integration/` 아래에서
-관리한다. 구현 결과를 계획 문서만으로 대체하지 않는다.
+영역이 명확한 계획은 `data/`, `backend/`, `frontend/`, `integration/`,
+`deploy/` 아래에서 관리한다. 구현 결과를 계획 문서만으로 대체하지 않는다.
 
 ### `docs/development/development_notes/`
 
@@ -113,9 +113,10 @@ CHANGELOG는 만들지 않고 루트 파일 하나를 릴리스 기준으로 유
 5. 현재 시스템이 따라야 하는 계약이면 담당 영역 폴더가 아니라 `docs/data/`,
    `docs/api/`, `docs/architecture/`, `docs/operations/`의 기준 문서를
    갱신한다.
-6. `<owner>`는 `data`, `backend`, `frontend`, `integration` 중에서 작업
-   책임을 기준으로 고른다. 둘 이상의 영역이 공동 책임을 가지면
-   `integration`을 사용한다.
+6. `<owner>`는 `data`, `backend`, `frontend`, `integration`, `deploy` 중에서
+   작업 책임을 기준으로 고른다. 둘 이상의 애플리케이션 영역이 공동 책임을
+   가지면 `integration`, 배포 구성·재현 환경·운영 인계가 독립 완료 기준이면
+   `deploy`를 사용한다.
 
 문서를 작성한 사람이나 AI Agent의 역할이 아니라 변경 대상과 책임 경계를
 기준으로 위치를 선택한다. 예를 들어 데이터 담당자가 API 계약을 수정했다면

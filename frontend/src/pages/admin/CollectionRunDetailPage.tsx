@@ -89,7 +89,7 @@ export default function CollectionRunDetailPage() {
 
           <dl className="collection-run-detail-grid">
             <div className="collection-run-detail-grid__item">
-              <dt>run_id</dt>
+              <dt>실행 ID (run_id)</dt>
               <dd>
                 <code>{run.run_id}</code>
               </dd>
@@ -107,16 +107,20 @@ export default function CollectionRunDetailPage() {
               <dd>{getCollectionRunTriggerTypeLabel(run.trigger_type)}</dd>
             </div>
             <div className="collection-run-detail-grid__item">
-              <dt>started_at</dt>
+              <dt>시작 시각 (started_at)</dt>
               <dd>{formatAdminTimestamp(run.started_at)}</dd>
             </div>
             <div className="collection-run-detail-grid__item">
-              <dt>finished_at</dt>
+              <dt>종료 시각 (finished_at)</dt>
               <dd>{formatAdminTimestamp(run.finished_at)}</dd>
             </div>
             <div className="collection-run-detail-grid__item">
               <dt>error_type</dt>
               <dd>{run.error_type ?? '—'}</dd>
+            </div>
+            <div className="collection-run-detail-grid__item">
+              <dt>완전 Source snapshot</dt>
+              <dd>{run.is_complete_snapshot ? '확인됨' : '아님'}</dd>
             </div>
           </dl>
 

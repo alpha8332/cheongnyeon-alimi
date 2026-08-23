@@ -120,13 +120,13 @@ def test_postgresql_repository_jsonb_filters_and_quality_policy():
                 include_partial=True,
             )
 
-        assert default_page.total == 2
+        assert default_page.total == 1
         assert finance.total == 2
         assert category_prefix.total == 0
-        assert seoul.total == 1
+        assert seoul.total == 0
         assert region_prefix.total == 0
-        assert page_one.total == 4
-        assert page_two.total == 4
+        assert page_one.total == 3
+        assert page_two.total == 3
         assert page_one.items[0].id != page_two.items[0].id
         assert hidden_partial is None
         assert visible_partial is not None

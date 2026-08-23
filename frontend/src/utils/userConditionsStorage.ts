@@ -3,6 +3,7 @@ import { USER_LOCAL_STORAGE_KEY } from '../types/userLocalStorage.js';
 import {
   readUserLocalStorage,
   updateUserLocalStorage,
+  deriveFavoritePolicyIds,
 } from './userLocalStorage.js';
 
 const conditionListeners = new Set<() => void>();
@@ -133,7 +134,7 @@ export function clearSavedConditions(): ClearSavedConditionsResult {
   const before = readSavedConditions();
   const snapshot = updateUserLocalStorage({ conditions: null });
   const changed = before !== null;
-  const favoritesAfter = snapshot.data.favorites;
+  const favoritesAfter = deriveFavoritePolicyIds(snapshot.data.bookmarks);
 
   if (changed) {
     notifySavedConditionsChanged();

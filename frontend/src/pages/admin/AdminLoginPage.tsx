@@ -17,6 +17,8 @@ interface LoginLocationState {
   from?: string;
 }
 
+const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+
 export default function AdminLoginPage() {
   return (
     <ApiErrorToastProvider>
@@ -178,10 +180,12 @@ function AdminLoginPageContent() {
         </div>
       </form>
 
-      <p className="hint-text">
-        Mock 환경 테스트 PIN: <code>0000</code> (429 cooldown: <code>4290</code>,
-        503 Toast: <code>5000</code>)
-      </p>
+      {USE_MOCK ? (
+        <p className="hint-text">
+          Mock 환경 테스트 PIN: <code>0000</code> (429 cooldown:{' '}
+          <code>4290</code>, 503 Toast: <code>5000</code>)
+        </p>
+      ) : null}
 
       <p className="admin-login-page__back">
         <Link to="/">사용자 홈으로</Link>

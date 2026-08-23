@@ -56,8 +56,8 @@ export default function CollectionRunsPage() {
         ? error.message
         : '실행 기록을 불러오지 못했습니다.';
 
-  const hasRunningRun = (response?.items ?? []).some(
-    (item) => item.status === 'running',
+  const hasActiveRun = (response?.items ?? []).some(
+    (item) => item.status === 'queued' || item.status === 'running',
   );
 
   const handleApplyFilters = () => {
@@ -93,10 +93,10 @@ export default function CollectionRunsPage() {
 
       <ManualCollectionRunTrigger
         accessToken={accessToken}
-        disabled={hasRunningRun}
+        disabled={hasActiveRun}
         disabledReason={
-          hasRunningRun
-            ? '실행 중인 run이 있어 수동 실행을 일시 중지했습니다.'
+          hasActiveRun
+            ? '대기·실행 중인 run이 있어 수동 실행을 일시 중지했습니다.'
             : undefined
         }
         onTriggered={handleManualTriggered}
@@ -140,10 +140,10 @@ export default function CollectionRunsPage() {
               <thead>
                 <tr>
                   <th scope="col">상태</th>
-                  <th scope="col">run_id</th>
+                  <th scope="col">실행 ID</th>
                   <th scope="col">source</th>
                   <th scope="col">type / trigger</th>
-                  <th scope="col">started_at</th>
+                  <th scope="col">시작 시각</th>
                   <th scope="col">counts</th>
                 </tr>
               </thead>

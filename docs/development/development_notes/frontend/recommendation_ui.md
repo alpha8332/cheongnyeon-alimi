@@ -125,11 +125,58 @@ python3 scripts/validate_docs.py — passed
 
 Browser·Playwright E2E는 FE6-05에서 실행 완료.
 
+## UX slice — 홈 저장 조건 맞춤 추천 (2026-07-28)
+
+- **브랜치**: `feature/frontend/style-and-ux-fixes`
+- **범위**: `HomePage` default view에서 FE5 저장 조건 → FE6 Recommendation API 연동
+
+### 구현
+
+- `frontend/src/utils/homeRecommendedPolicies.ts` — request builder·open/always filter·폴백 pick
+- `frontend/src/hooks/useHomeRecommendedPolicies.ts` — 조건 유/무 분기 query
+- `frontend/src/utils/recommendationPolicyMapping.ts` — `RecommendationItemDto` → `PolicyDto` (홈·결과 카드 공유)
+- `HomePage`: 조건 있을 때만 `"저장된 조건으로 추천된 정책입니다."` 캡션
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 207 pass (+ homeRecommendedPolicies unit) |
+| `npm run lint` | pass |
+| `npm run build` | pass |
+| `npm run test:e2e` (week4-regression Path C) | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
+## W5-F1 인수 보완 — unknown_conditions 아코디언 복구 (`2026-08-17`)
+
+### 문제
+
+2026-07-28 UX 단순화 slice에서 `RecommendationResultCard`의
+`unknown_conditions` 노출 UI가 제거되어 승인 계약 데이터가 은폐됐다.
+
+### 조치
+
+- `RecommendationUnknownConditionsAccordion` — 「추가 확인 필요 N건」
+  toggle·`aria-expanded`·목록 펼침; `unknown_conditions` 없으면 미렌더
+- `RecommendationResultCard`에 연결
+- `theme.css` — accordion 스타일·모바일 `overflow-wrap`
+
+페이지 상단 `RecommendationUnconfirmedBanner`는 UX slice에서 제거된 상태
+유지(본 slice 범위: 카드 단위 unknown만 복구).
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 216 pass |
+| `VITE_USE_MOCK=false` E2E golden #13 | pass |
+| `python3 scripts/validate_docs.py` | pass |
+
 ## 남은 작업
 
-- Real API E2E(`VITE_USE_MOCK=false`) 및 partial·long-region positive Browser case는
-  Backend actual API·Seed 데이터 준비 후 FE9 또는 별도 회귀에서 실행
-- W4-G0 Gate 후 `docs/api/` recommendation 절 추가
+- Real API golden과 통합 actual acceptance는 `2026-08-18` W5-I1에서
+  통과했다. partial·long-region positive Browser case는 DTL5-5 독립 QA에서
+  재확인한다.
 
 ## 관련 문서
 
