@@ -43,6 +43,7 @@
 | Release 2 Feature Acceptance | [개발 기록](integration/release_2_feature_acceptance.md) | DTL5-0~DTL5-6 | 5주차 시작 기준, Data 06 포함 actual E2E·독립 검증과 Release 2 Gate |
 | Review Admission and Deploy Handoff | [개발 기록](integration/review_admission_docker_acceptance.md) | RA0~RA4 | 최신 DB·Runtime inventory, review 재판정·partial 적재와 Deploy 입력 인계 |
 | Docker Acceptance Environment | [개발 기록](deploy/docker_acceptance_environment.md) | DEP0~DEP5 | 동일 post-admission snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인수 |
+| Production Data Refresh and Delivery | [개발 기록](deploy/production_data_refresh_delivery.md) | W6-P0~P5 | 공개 dataset·Celery/Redis 중앙 수집·Production 배포와 Final Gate |
 | Eligibility Evidence and Summary | [개발 기록](integration/eligibility_evidence_summary.md) | DTL4-4A~ | 조건·서류·시설 연락처 공통 계약과 Source evidence mapping |
 
 새 Forest 개발 기록을 추가하면 이 표와 [`docs/index.md`](../../index.md)를

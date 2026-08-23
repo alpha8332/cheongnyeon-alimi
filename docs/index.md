@@ -58,6 +58,8 @@
   카테고리 변환 기준
 - [수집 정책](data/collection_policy.md): HTTP, Raw 보존, 보안과 라이선스
   원칙
+- [공개 정책 bootstrap dataset 계약](data/public_policy_dataset.md):
+  재배포 Source·field allowlist, versioned manifest·hash와 공개 Runtime 경계
 - [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,
   versioned 지역·계층·별칭·유효기간 Seed와 exact code 해석 경계
 - [Fixture와 Seed 계약](data/fixture_seed_contract.md): 합성 Raw부터
@@ -96,6 +98,8 @@
   Compose·CI/CD와 clean-room Final Gate
 - [6주차 Final Release 실행 계획](development/weekly_plan/week_06_final_release.md):
   `W6-P0`~`W6-P5` Critical Path와 `W6-G0_FINAL_RELEASE_PASS`
+- [Production Data Refresh and Delivery 개발 기록](development/development_notes/deploy/production_data_refresh_delivery.md):
+  W6-P0 공개 dataset 계약·451건 actual artifact와 후속 P1~P5 결과
 - [Docs System Forest 계획](development/develop_plan/integration/01_docs_system.md)
 - [Data Pipeline Forest 계획](development/develop_plan/data/01_data_pipeline.md)
 - [Release Dataset Bootstrap Forest 계획](development/develop_plan/data/02_release_dataset_bootstrap.md):

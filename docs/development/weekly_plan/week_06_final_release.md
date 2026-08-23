@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: approved (`2026-08-23`)
+- 상태: in-progress (`2026-08-23`, `W6-P0_DATASET_CONTRACT_PASS`)
 - 대상 Release: `v1.0.0`
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -160,7 +160,7 @@ dataset version으로 합친다.
 
 ## 완료 체크리스트
 
-- [ ] `W6-P0_DATASET_CONTRACT_PASS`
+- [x] `W6-P0_DATASET_CONTRACT_PASS` (복지로 451건 actual artifact·manifest hash)
 - [ ] `W6-P1_LIFECYCLE_PASS`
 - [ ] `W6-P2_QUEUE_PASS`
 - [ ] `W6-P3_BOOTSTRAP_PASS`
@@ -179,4 +179,3 @@ dataset version으로 합친다.
 - [Deploy 01 Docker Acceptance](../develop_plan/deploy/01_docker_acceptance_environment.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [CollectionRun DB 계약](../../architecture/collection_run_database.md)
-

@@ -1,0 +1,140 @@
+{
+  "contract_version": "1.0.0",
+  "checked_at": "2026-08-23",
+  "default_decision": "exclude",
+  "normalized_program": {
+    "schema_version": "1.2.0",
+    "schema_path": "data/schema/normalized_program.schema.json",
+    "allowed_fields": [
+      "schema_version",
+      "source_id",
+      "source_name",
+      "external_id",
+      "title",
+      "organization",
+      "summary",
+      "category_text",
+      "categories",
+      "keywords",
+      "life_stages",
+      "target_groups",
+      "application_period_text",
+      "application_start",
+      "application_end",
+      "application_schedule",
+      "application_status",
+      "region_text",
+      "regions",
+      "coverage_scope",
+      "region_rules",
+      "age_min",
+      "age_max",
+      "age_condition_text",
+      "eligibility_text",
+      "eligibility_summary",
+      "support_content",
+      "application_method",
+      "education_statuses",
+      "employment_statuses",
+      "required_conditions",
+      "preferred_conditions",
+      "excluded_conditions",
+      "source_url",
+      "collected_at",
+      "provenance",
+      "data_quality_status"
+    ],
+    "forbidden_database_fields": [
+      "id",
+      "created_at",
+      "updated_at"
+    ]
+  },
+  "content_rules": {
+    "include_raw_payload": false,
+    "include_database_dump": false,
+    "allow_institutional_contacts": false,
+    "unsafe_record_action": "exclude",
+    "reject_email": true,
+    "reject_personal_mobile": true,
+    "forbidden_query_keys": [
+      "servicekey",
+      "api-key",
+      "api_key",
+      "apikey",
+      "openapivlak",
+      "access-token",
+      "access_token"
+    ]
+  },
+  "included_sources": [
+    {
+      "source_id": "bokjiro-central-welfare-api",
+      "decision": "include",
+      "provider": "한국사회보장정보원",
+      "dataset_name": "한국사회보장정보원_중앙부처복지서비스",
+      "license_name": "이용허락범위 제한 없음",
+      "license_url": "https://www.data.go.kr/data/15090532/openapi.do",
+      "evidence_checked_at": "2026-08-23",
+      "attribution": "출처: 한국사회보장정보원 중앙부처복지서비스, 공공데이터포털"
+    }
+  ],
+  "known_exclusions": [
+    {
+      "selector": "source_id",
+      "value": "youthcenter-api",
+      "reason_code": "terms_restrict_redistribution",
+      "evidence_reference": "https://www.youthcenter.go.kr/cmnFooter/termsInfo",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_prefix",
+      "value": "regional-",
+      "reason_code": "no_explicit_open_license",
+      "evidence_reference": "data/reference/regional_youth_policy_sources.json",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_id",
+      "value": "cheonan-youthcenter-web",
+      "reason_code": "no_explicit_open_license",
+      "evidence_reference": "https://www.ch2030youth.kr/",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_id",
+      "value": "kosaf-scholarship-web",
+      "reason_code": "no_explicit_open_license",
+      "evidence_reference": "https://www.kosaf.go.kr/ko/customer.do",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_id",
+      "value": "work24-policy-web",
+      "reason_code": "item_level_license_unverified",
+      "evidence_reference": "https://m.work24.go.kr/cm/c/d/0130/retrieveCpyrPoly.do",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_id",
+      "value": "kinfa-financial-product-web",
+      "reason_code": "no_explicit_open_license",
+      "evidence_reference": "https://www.kinfa.or.kr/",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_id",
+      "value": "kpass-transit-refund-web",
+      "reason_code": "no_explicit_open_license",
+      "evidence_reference": "https://korea-pass.kr/",
+      "evidence_checked_at": "2026-08-23"
+    },
+    {
+      "selector": "source_id",
+      "value": "lh-housing-announcement-web",
+      "reason_code": "no_explicit_open_license",
+      "evidence_reference": "https://apply.lh.or.kr/lhapply/",
+      "evidence_checked_at": "2026-08-23"
+    }
+  ]
+}

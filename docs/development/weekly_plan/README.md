@@ -21,7 +21,7 @@
 | 3주차 | 실데이터 정책 검색과 `v0.1.0` | completed (`main` 발행·tag 완료) | [3주차 상세 계획](week_03_release_1.md) |
 | 4주차 | 공식 웹 Source·지역 고유 정책·자격요건과 사용자·관리자 기본 기능 통합·DTL4-5 | completed (`W4-G4_MIDPOINT_PASS`) | [4주차 상세 계획](week_04_v0_5_0.md) |
 | 5주차 | Data 06 보완 공식 정책·안정화·사용자 검증과 Release 2 `v0.5.0` 판정 | completed (`W5-G2_PASS`) | [5주차 상세 계획](week_05_release_2.md) |
-| 6주차 | Production Data Refresh·배포 파이프라인과 Final Release `v1.0.0` | approved | [6주차 상세 계획](week_06_final_release.md) |
+| 6주차 | Production Data Refresh·배포 파이프라인과 Final Release `v1.0.0` | in-progress (`W6-P0_DATASET_CONTRACT_PASS`) | [6주차 상세 계획](week_06_final_release.md) |
 
 ## 현재 역할별 실행 계획
 
@@ -30,7 +30,7 @@
 | 3주차 | Data·Team Leader | completed | [Data·Team Leader 계획](week_03_data_team_leader.md) |
 | 4주차 | Data·Team Leader | completed | [Data·Team Leader 계획](week_04_data_team_leader.md) |
 | 5주차 | Data·Team Leader | completed (`W5-G2_PASS`) | [Data·Team Leader 계획](week_05_data_team_leader.md) |
-| 6주차 | Data·Team Leader·Integration·Deploy | approved | [Final Release 계획](week_06_final_release.md) |
+| 6주차 | Data·Team Leader·Integration·Deploy | in-progress (`W6-P0_DATASET_CONTRACT_PASS`) | [Final Release 계획](week_06_final_release.md) |
 
 ## 현재 인수인계
 
@@ -102,4 +102,3 @@ Production Data Refresh Forest와 함께 승인됐으며 `W6-P0`부터 Gate 순�
 - [전체 Forest 로드맵](../develop_plan/forest_roadmap.md)
 - [역할과 책임](../../governance/role_assignment.md)
 - [개발 기록 안내](../development_notes/README.md)
-

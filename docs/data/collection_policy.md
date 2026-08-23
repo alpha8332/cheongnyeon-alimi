@@ -246,6 +246,11 @@ runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
 조건을 확인할 수 없거나 저장·재배포가 허용되는지 불명확하면 해당 원문을
 Git Fixture에 포함하지 않는다.
 
+공개 bootstrap dataset은 수집 승인과 별도로
+[공개 정책 dataset 계약](public_policy_dataset.md)의 Source·field allowlist를
+통과해야 한다. allowlist에 없는 Source, Raw·DB dump·비밀 query·개인 연락처는
+중앙 Runtime DB에 존재하더라도 공개 artifact에 포함하지 않는다.
+
 ## 실패 처리
 
 - 인증키 누락, Timeout, HTTP 오류, 파싱 오류를 구분한다.

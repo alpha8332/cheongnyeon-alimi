@@ -19,6 +19,7 @@
 - [Eligibility Summary 공통 계약](eligibility_summary_contract.md)
 - [데이터 정규화 규칙](normalization_rules.md)
 - [데이터 수집 정책](collection_policy.md)
+- [공개 정책 bootstrap dataset 계약](public_policy_dataset.md)
 - [Fixture와 Seed 계약](fixture_seed_contract.md)
 - [행정구역 기준정보](administrative_regions.md)
 - [Release 1 실데이터 품질 Profile](release_dataset_profile.md)
@@ -41,6 +42,12 @@
   taxonomy v2, hard exclusion과 versioned review 승격 계약
 - [Review Admission Audit JSON Schema](../../data/schema/review_admission_audit.schema.json):
   identity-only 판정 manifest와 hash 검증 계약
+- [Public Dataset Source Contract JSON Schema](../../data/schema/public_policy_dataset_sources.schema.json):
+  default-deny Source·field 공개 allowlist 계약
+- [Public Dataset Manifest JSON Schema](../../data/schema/public_policy_dataset_manifest.schema.json):
+  version·Source attribution·artifact hash와 안전 경계 계약
+- [Public Dataset Pointer JSON Schema](../../data/schema/public_policy_dataset_pointer.schema.json):
+  immutable manifest를 가리키는 latest pointer 계약
 
 ## 실행 가능한 개발 데이터
 
@@ -53,6 +60,7 @@
 - [Data 06 후보·Source inventory](../../data/reference/supplemental_official_policy_inventory.json)
 - [Data 06 선행 중복 감사](../../data/reference/supplemental_official_policy_duplicate_audit.json)
 - [Review Admission 계약 Fixture](../../data/fixtures/contracts/review_admission_cases.json)
+- [Public Dataset Source Contract](../../data/reference/public_policy_dataset_sources.json)
 
 Normalized Fixture와 canonical 개발 Seed는 결정적으로 재생성되는 같은 JSON
 계약이며 실제 API 원문이 아닌 합성 데이터다. 행정구역 두 Seed는 잠긴 공식

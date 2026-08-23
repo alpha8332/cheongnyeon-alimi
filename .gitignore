@@ -19,6 +19,7 @@ runtime/raw/
 runtime/html/
 runtime/logs/
 runtime/decisions/
+runtime/public_dataset/
 data/runtime/raw/
 backend/logs/
 

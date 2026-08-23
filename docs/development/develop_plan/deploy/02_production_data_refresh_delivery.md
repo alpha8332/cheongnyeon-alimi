@@ -4,7 +4,8 @@
 
 - 번호: Deploy 02
 - 담당 영역: Team Leader - Integration·Deploy
-- 상태: approved
+- 상태: in-progress
+- 현재 Gate: `W6-P0_DATASET_CONTRACT_PASS` (`2026-08-23`)
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
@@ -74,6 +75,10 @@ Celery·Redis 기반 수집 queue에서 신규·변경·종료 정책을 지속�
 ## Slice 계획
 
 ### W6-P0 - 공개 데이터·라이선스 계약
+
+상태: completed (`2026-08-23`, `W6-P0_DATASET_CONTRACT_PASS`). 복지로
+allowlist 후보 461건 중 개인 휴대전화 형식 10건을 제외한 451건 actual
+artifact와 manifest hash를 생성·재검증했다.
 
 #### 목적
 
@@ -251,4 +256,3 @@ Windows 사용자가 저장소와 README만으로 공개 dataset을 검증·복�
 - [수집 정책](../../../data/collection_policy.md)
 - [Celery periodic tasks](https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html)
 - [Celery task retry](https://docs.celeryq.dev/en/stable/userguide/tasks.html#retrying)
-
