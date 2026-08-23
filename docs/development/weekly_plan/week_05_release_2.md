@@ -2,8 +2,8 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`W5-G1_PASS`, Integration 10 review admission → Deploy 01
-  Docker Acceptance 선행, 이후 `W5-Q1`·DTL5-5 독립 사용성·QA)
+- 상태: completed (`2026-08-23`, `W5-G2_CONDITIONAL`). 기술 Gate는 통과했고
+  팀 외 독립 인력 검증은 사용자 일정 예외에 따른 역할 격리 대체로 기록한다.
 - 권장 실행 창: `2026-08-17`~`2026-08-21` (달력보다 Gate 순서를 우선)
 - 대상 Release: `v0.5.0`
 - 수행 역할: Data, Backend, Frontend, Team Leader - Integration
@@ -232,6 +232,15 @@ Backend PostgreSQL `187`, Frontend unit `216`, Mock Browser `80`, actual
 판정은 `W5-G2_PASS`, `W5-G2_CONDITIONAL`, `W5-G2_BLOCKED` 중 하나로
 기록한다. `PASS`인 `develop`만 `main` PR과 `v0.5.0` tag 후보가 된다.
 
+`2026-08-23` 수정 commit `3066acb`를 새 Docker project·독립 Volume에 같은
+snapshot으로 복원해 Data `323`, Backend·PostgreSQL·Integration `202 passed /
+2 skipped`, Frontend unit `222`, Mock Browser `80 passed / 14 skipped`, actual
+Browser `39 passed / 11 skipped`와 재시작 count 보존을 확인했다. 과거 노출 DB
+자격증명도 현재 비추적 값과 다름을 확인했다. 기능 blocker와 high 결함은
+남지 않았지만 팀 외 독립 인력 검증을 역할 격리 대체했으므로
+`W5-G2_CONDITIONAL`로 판정한다. 6주차 작업은 시작할 수 있으나 `main` PR과
+`v0.5.0` tag 후보 승격은 `PASS` 전까지 보류한다.
+
 ## 역할별 산출물
 
 | 역할 | 산출물 |
@@ -300,11 +309,12 @@ development notes에 기록한다.
 - [x] Backend PostgreSQL·API·권한·transaction 회귀 통과
 - [x] Frontend 사용자·관리자·오류·접근성·반응형 회귀 통과
 - [x] `W5-G1` 실제 DB → API → Browser E2E 통과
-- [ ] 팀 외 사용성 리뷰 수행 및 승인 피드백 반영
-- [ ] QA 전체 검증과 릴리스 차단 결함 수정본 재검증
-- [ ] Release 2 문서·CHANGELOG·알려진 제약 대조
-- [ ] `python scripts/validate_docs.py`와 저장소 전체 관련 회귀 통과
-- [ ] `W5-G2` Release 2 판정 기록
+- [ ] 팀 외 사용성 리뷰 수행 및 승인 피드백 반영 (역할 격리 대체 수행,
+  팀 외 인력 미수행을 조건부 제약으로 기록)
+- [x] QA 전체 기술 검증과 high 결함 수정본 새 SHA·Volume 재검증
+- [x] Release 2 문서·CHANGELOG·알려진 제약 대조
+- [x] `python scripts/validate_docs.py`와 저장소 전체 관련 회귀 통과
+- [x] `W5-G2_CONDITIONAL` Release 2 판정 기록
 - [ ] `PASS`일 때만 `main` PR과 `v0.5.0` tag 후보 지정
 
 ## 관련 문서

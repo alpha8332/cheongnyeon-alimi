@@ -2,9 +2,10 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`DTL5-0`~`DTL5-4`, `W5-G1_PASS`, Integration 10
-  `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`, Deploy 01
-  `DOCKER_ACCEPTANCE_PASS`; 다음 DTL5-5)
+- 상태: completed (`2026-08-23`, `W5-G2_CONDITIONAL`). DTL5-0~6,
+  Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`, Deploy 01
+  `DOCKER_ACCEPTANCE_PASS`와 수정본 전체 기술 Gate를 완료했다. 팀 외 독립 인력
+  검증은 역할 격리 대체로 수행한 일정 예외이므로 `PASS`로 승격하지 않는다.
 - 대상 Release: `v0.5.0`
 - 권장 실행 창: `2026-08-17`~`2026-08-21`
 - 실제 시작 SHA: `develop`·`origin/develop`
@@ -18,7 +19,8 @@
   `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`.
   taxonomy v2 사전 후보 6건을 실행일 현재성·canonical region으로 재검증해
   3건만 실제 적재·멱등 재실행하고 새 DB 기준선을 확정했다. Deploy 01 동일
-  snapshot `DOCKER_ACCEPTANCE_PASS`까지 통과했으며 다음은 DTL5-5다.
+  snapshot `DOCKER_ACCEPTANCE_PASS`와 DTL5-5·6 수정본 회귀까지 통과했고,
+  `W5-G2_CONDITIONAL`로 5주차를 닫았다.
 
 이 문서는 Data 구현과 Team Leader Gate 주관 순서를 정한다. 실제 구현·수집·
 테스트 결과는 Data 06과 Integration 07 development note에 기록하며, 계획에
@@ -217,10 +219,11 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
 
 ## Slice DTL5-5 - 독립 사용성·QA와 결함 triage
 
-상태: in-progress (`2026-08-23`). DEP5 receipt의 QA 격리 Volume과 API
-`8404`를 유지하고 수정 worktree Frontend만 `3404`에 재빌드해 역할 격리 대체
-리뷰·QA·자체 재검증을 완료했다. 독립 인력 재검증과 수정 commit SHA 연결은
-아직 미완료이므로 DTL5-5를 completed로 닫지 않는다.
+상태: completed (`2026-08-23`, 역할 격리 대체 검증). DEP5 receipt의 QA 격리
+Volume과 API `8404`를 유지하고 수정 worktree Frontend만 `3404`에 재빌드해
+리뷰·QA·자체 재검증을 완료했다. 수정 commit `3066acb` 뒤 새 독립 Volume과
+`3406`·`8406`에서 같은 snapshot으로 재검증했다. 팀 외 독립 인력은 사용자 일정
+예외에 따라 생략했으며 이 제약은 DTL5-6 조건부 판정에 남긴다.
 
 ### 독립 검증
 
@@ -242,7 +245,7 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
 
 | 결함 | 등급 | 재현·기대/실제 | 담당·수정 | 재검증 |
 | --- | --- | --- | --- | --- |
-| `DTL5-5-FE-01` | high | 정책 `3342`: 자격 coverage는 unknown인데 `제한 없음 해당없음`을 자격처럼 표시. 미확정 안내가 기대값 | Frontend·TL, worktree 수정 완료, commit SHA 미정 | unit 222, lint·build, 실제 UI, actual Browser 39 pass/11 skip 통과; 독립 인력 미수행 |
+| `DTL5-5-FE-01` | high | 정책 `3342`: 자격 coverage는 unknown인데 `제한 없음 해당없음`을 자격처럼 표시. 미확정 안내가 기대값 | Frontend·TL, `3066acb` | unit 222, lint·build, 실제 UI, actual Browser 39 pass/11 skip 재통과; 팀 외 인력 대신 새 SHA·독립 Volume 역할 격리 검증 |
 
 - 사용자 실제 흐름: `천안 취업` 검색 31건, 천안·27세·취업 추천 7건,
   북마크·달력·알림, 날짜 정책 `3426`의 활성 `.ics`, 정책 `3342`의 상시
@@ -257,6 +260,11 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
   Migration, API·DB 원본과 acceptance Volume은 변경하지 않았다.
 
 ## Slice DTL5-6 - 수정본 재검증과 W5-G2
+
+상태: completed (`2026-08-23`, `W5-G2_CONDITIONAL`). 기술 blocker와 high
+결함은 남지 않았고 6주차 작업을 시작할 수 있다. 다만 팀 외 독립 인력 검증을
+역할 격리 대체한 절차 제약 때문에 `main` PR·`v0.5.0` tag 후보가 되는
+`W5-G2_PASS`는 부여하지 않는다.
 
 ### 수행 작업
 
@@ -274,6 +282,24 @@ KOSAF 1건이다. 노출된 로컬 DB 자격증명 교체 확인은 `W5-G2` 선�
 
 `PASS`인 검증 SHA만 `main` PR과 `v0.5.0` tag 후보로 지정한다. 이 Slice에서
 직접 merge·tag·push하지 않으며 사용자의 별도 요청을 따른다.
+
+### 최종 검증 결과
+
+- 후보 SHA: `3066acb272dc3f40f9d8684bd2e46e6d69169f71`, clean worktree에서 시작
+- 자격증명: 현재 비추적 `.env.compose` DB 비밀번호가 과거 노출 후보와 다르고
+  충분한 길이의 비기본값임을 값 출력 없이 확인
+- Data unittest: `323 passed`
+- Backend·PostgreSQL·Integration: `202 passed / 2 skipped`; skip 2건은
+  `REVIEW_ADMISSION_MANIFEST`와 명시적 scratch opt-in이 필요한 RA 전용 검사이며
+  통과로 세지 않음
+- Frontend: unit `222 passed`, lint·production build 통과
+- Browser: Mock `80 passed / 14 skipped`, actual `39 passed / 11 skipped`
+- 새 Docker project `cheongnyeon-alimi-dtl5-g2-3066acb`: dump hash·Migration·
+  정책 3,273건·CollectionRun 61건 복원 검증, 서비스 재시작 뒤 health 200과
+  동일 count 유지
+- 결함 `DTL5-5-FE-01`: 정책 `3342`에서 결합 결측 표식 0건, 자격 미확정 안내
+  표시를 실제 Browser에서 재확인
+- 테스트 DB 정리: public table은 `alembic_version`만 유지
 
 ## 다른 담당자에게 요청할 산출물
 
@@ -343,11 +369,11 @@ git status --short
 - [x] DTL5-4 Backend·Frontend·Data 06 통합 actual E2E·`W5-G1_PASS`
 - [x] Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`
 - [x] Deploy 01 `DOCKER_ACCEPTANCE_PASS`·동일 snapshot 인계
-- [ ] DTL5-5 독립 사용성·QA와 결함 triage (역할 격리 대체 수행 완료,
-  독립 인력 확인 미수행)
-- [ ] 승인 결함 수정 commit SHA·독립 재검증 (worktree 수정·자체 재검증 완료)
+- [x] DTL5-5 사용성·QA와 결함 triage (사용자 승인 일정 예외로 역할 격리 대체,
+  팀 외 독립 인력 미수행을 알려진 제약으로 기록)
+- [x] 승인 high 결함 수정 SHA `3066acb`·새 SHA/Volume 재검증
 - [x] 보고서 근거·미실행 검증 대조
-- [ ] DTL5-6 문서·비추적·전체 회귀와 `W5-G2` 판정
+- [x] DTL5-6 문서·비추적·전체 회귀와 `W5-G2_CONDITIONAL` 판정
 - [ ] `PASS`일 때만 `main` PR·`v0.5.0` tag 후보 지정
 
 ## 관련 문서

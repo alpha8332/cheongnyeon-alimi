@@ -2,15 +2,17 @@
 
 ## 작업 정보
 
-- 상태: in-progress
-- 작업일: `2026-08-17`~`2026-08-18`
+- 상태: completed
+- 완료 판정: `W5-G2_CONDITIONAL`
+- 작업일: `2026-08-17`~`2026-08-23`
 - 담당 영역: Data, Team Leader - Integration
 - 현재 브랜치: `feature/integration/week-05-acceptance`
 - 시작 SHA: `29b2dd5ef596286ec2df1ede48398d94c0d010d7`
 - DTL5-4 코드 검증 SHA: `1019fda6d55744f4d146b7abab96715a730f8705`
+- DTL5-6 조건부 후보 SHA: `3066acb272dc3f40f9d8684bd2e46e6d69169f71`
 - 계획: [Integration 07 Release 2 Feature Acceptance](../../develop_plan/integration/07_release_2_feature_acceptance.md)
 - 주차 계획: [5주차 Data·Team Leader 실행 계획](../../weekly_plan/week_05_data_team_leader.md)
-- 현재 판정: `W5-G1_PASS` (DTL5-5 독립 사용성·QA 진행 가능)
+- 현재 판정: `W5-G2_CONDITIONAL` (6주차 착수 가능, main/tag 후보 승격 보류)
 
 ## 목적
 
@@ -24,9 +26,8 @@ Migration, 실제 DB, Runtime, API, Browser와 테스트 실행 환경을 재검
 - A2 / DTL5-1~5 Data 06, 전체 actual E2E, 독립 사용성·QA와 결함 수정
 - A3 / DTL5-6 수정본 독립 재검증과 Release 2 Gate
 
-이 기록은 A0 기준선, Data 06 DTL5-1~3, Backend·Frontend 담당 산출물 통합과
-DTL5-4 `W5-G1`까지 다룬다. 독립 사용성·QA와 Release 2 최종 판정은 아직
-수행하지 않았다.
+이 기록은 A0 기준선부터 Data 06, Backend·Frontend 통합, 역할 격리 대체
+사용성·QA, 결함 수정과 DTL5-6 Release 2 조건부 판정까지 다룬다.
 
 ## Slice 진행 현황
 
@@ -35,8 +36,8 @@ DTL5-4 `W5-G1`까지 다룬다. 독립 사용성·QA와 Release 2 최종 판정�
 | A0 / DTL5-0 | completed | `develop@29b2dd5`, Migration `20260810_0006`, 실제 DB 3,269건·지역정책 109건, Runtime·API·Browser·테스트 환경 확인과 `W5-G0_PASS` |
 | A2 / DTL5-1~3 | completed | Data 06 승인 Source 5개 actual·KOSAF DB/API/Browser 인수·`SOP-G5_PASS` |
 | A2 / DTL5-4 | completed | Backend `W5-B1`·Frontend `W5-F1`·Data 06 통합, 전체 PostgreSQL·Browser 회귀와 `W5-G1_PASS` |
-| A2 / DTL5-5 | pending | 독립 사용성·QA, 결함 triage·수정·재검증 |
-| A3 / DTL5-6 | pending | 문서·전체 회귀와 W5-G2 Release 2 판정 |
+| A2 / DTL5-5 | completed | 역할 격리 대체 사용성·QA, high 결함 `DTL5-5-FE-01` 수정 `3066acb` |
+| A3 / DTL5-6 | completed | 새 SHA·독립 Volume 전체 회귀, 자격증명 교체·비추적 확인, `W5-G2_CONDITIONAL` |
 
 ## 구현 내용
 
@@ -206,9 +207,15 @@ DB Policy row는 변경하지 않았다.
 | 문서·diff | `Documentation validation passed.`, `git diff --check` 통과 |
 | DTL5-4 Gate | `W5-G1_PASS`, DTL5-5 독립 사용성·QA 시작 가능 |
 | DTL5-5 격리 실제 UI | 검색·상세·추천·북마크·달력·알림·`.ics`, 관리자 PIN·정책·실행·로그·품질·로그아웃 통과 |
-| DTL5-5 결함 | `DTL5-5-FE-01` high: unknown 자격의 `제한 없음 해당없음` 확정 노출을 미확정 안내로 보정, commit SHA 미정 |
+| DTL5-5 결함 | `DTL5-5-FE-01` high: unknown 자격의 `제한 없음 해당없음` 확정 노출을 `3066acb`에서 미확정 안내로 보정 |
 | DTL5-5 Frontend | unit `222 passed`, lint·production build 통과; actual Browser `39 passed / 11 skipped` |
 | DTL5-5 DB·API | Migration `20260810_0006`, 정책 3,273·CollectionRun 61, health 200·무인증 admin 401, 추천 5회 중앙값 `1,563.5 ms` |
+| DTL5-6 Data | unittest `323 passed` |
+| DTL5-6 Backend·PostgreSQL | `202 passed / 2 skipped`; RA manifest·scratch opt-in 전용 skip, 테스트 DB는 `alembic_version`만 유지 |
+| DTL5-6 Frontend | unit `222 passed`, lint·build, Mock `80 passed / 14 skipped`, actual `39 passed / 11 skipped` |
+| DTL5-6 Docker | `3066acb` image·새 project/Volume, snapshot hash·3,273/61 복원과 재시작 보존·health 200 통과 |
+| DTL5-6 비밀 경계 | 현재 비추적 DB 비밀번호가 과거 노출 후보와 다르고 비기본·충분한 길이임을 값 출력 없이 확인 |
+| DTL5-6 Gate | 기능 blocker/high 0건, 팀 외 독립 인력 미수행 절차 제약으로 `W5-G2_CONDITIONAL` |
 
 DTL5-0·Data 브랜치 사전 회귀는 비교 기준으로만 사용했고, Gate 판정은
 Integration 코드 검증 SHA `1019fda`의 재실행 결과를 사용했다.
@@ -217,8 +224,8 @@ Starlette/httpx deprecation과 Vite native config·500 kB chunk 경고는 기존
 
 ## 남은 작업
 
-1. `DTL5-5-FE-01` 수정 commit SHA를 결함표에 연결하고 독립 인력 재검증을
-   수행한다. 현재 결과는 동일 운영자의 역할 격리 대체 검증이므로 독립 검증으로
-   과장하지 않는다.
-2. 노출된 로컬 DB 자격증명 교체 확인을 `W5-G2` 선행 조치로 닫는다.
-3. 수정본 전체 회귀·문서·CHANGELOG를 대조한 뒤에만 DTL5-6 `W5-G2`를 판정한다.
+1. 팀 외 독립 인력 검증을 추가로 수행하면 같은 `3066acb` 시나리오와 snapshot
+   기준으로 결과를 연결하고 `W5-G2_PASS` 승격 여부를 재판정한다.
+2. `PASS` 전에는 `main` PR·`v0.5.0` tag 후보로 지정하지 않는다.
+3. 6주차 production 배포구조·최신화 파이프라인 작업은 조건부 제약을 유지한 채
+   별도 Forest로 시작한다.
