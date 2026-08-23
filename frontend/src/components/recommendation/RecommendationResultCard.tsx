@@ -17,6 +17,7 @@ import {
   getCategoryLabel,
 } from '@/utils/policyDisplay';
 import {
+  formatRecommendationAge,
   formatRecommendationReasonSummary,
   hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
@@ -98,9 +99,7 @@ export default function RecommendationResultCard({
 
         <div className="policy-card__footer">
           <span className="policy-card__eligibility">
-            {item.min_age !== null || item.max_age !== null
-              ? `${item.min_age ?? '—'}~${item.max_age ?? '—'}세`
-              : '연령 정보 없음'}
+            {formatRecommendationAge(item)}
           </span>
           <Link to={detailPath} className="policy-card__arrow" aria-label="상세 보기">
             →

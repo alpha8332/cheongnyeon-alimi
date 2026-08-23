@@ -156,6 +156,11 @@ $AdminPin = $null
 `restore.ps1`이 검증 후 현재 process에만 주입하므로 example의 해당 placeholder를
 실제 값으로 Git에 기록하지 않는다.
 
+관리자 수동 수집에서 온통청년 또는 복지로 API Source를 사용할 때만 이 비추적
+파일의 `YOUTHCENTER_API_KEY` 또는 `BOKJIRO_API_KEY`를 채운다. 키가 없으면 공개
+웹 Source만 선택한다. API key를 저장소·image·receipt에 넣지 않으며, 키가 필요한
+Source의 실패도 CollectionRun `failed`로 종결된다.
+
 ## 2. Compose 계약 확인
 
 ```powershell

@@ -140,10 +140,10 @@ export default function CollectionRunsPage() {
               <thead>
                 <tr>
                   <th scope="col">상태</th>
-                  <th scope="col">run_id</th>
+                  <th scope="col">실행 ID</th>
                   <th scope="col">source</th>
                   <th scope="col">type / trigger</th>
-                  <th scope="col">started_at</th>
+                  <th scope="col">시작 시각</th>
                   <th scope="col">counts</th>
                 </tr>
               </thead>

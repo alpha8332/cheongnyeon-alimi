@@ -26,7 +26,7 @@ export default function AdminLogEventTable({
             <th scope="col">level</th>
             <th scope="col">component</th>
             <th scope="col">event</th>
-            <th scope="col">run_id</th>
+            <th scope="col">수집 실행 ID</th>
             <th scope="col">error_type</th>
           </tr>
         </thead>
@@ -90,7 +90,7 @@ export function AdminLogEventDetailPanel({
         <div><dt>component</dt><dd>{event.component}</dd></div>
         <div><dt>event</dt><dd>{event.event}</dd></div>
         <div><dt>request_id</dt><dd>{event.request_id ?? '—'}</dd></div>
-        <div><dt>collection_run_id</dt><dd>{event.collection_run_id ?? '—'}</dd></div>
+        <div><dt>수집 실행 ID (collection_run_id)</dt><dd>{event.collection_run_id ?? '—'}</dd></div>
         <div><dt>source_id</dt><dd>{event.source_id ?? '—'}</dd></div>
         <div><dt>duration_ms</dt><dd>{event.duration_ms ?? '—'}</dd></div>
         <div><dt>error_type</dt><dd>{event.error_type ?? '—'}</dd></div>

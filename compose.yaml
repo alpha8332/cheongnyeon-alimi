@@ -104,7 +104,30 @@ services:
     command:
       - sh
       - -ec
-      - python /opt/acceptance/verify_restored_database.py && alembic upgrade head
+      - alembic upgrade head
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  verify-restored:
+    image: *backend-image
+    profiles: ["restore"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+    command: ["python", "/opt/acceptance/verify_restored_database.py"]
     networks:
       - database
     read_only: true
@@ -130,6 +153,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:?Set CORS_ORIGINS as a JSON array in .env.compose}
       ADMIN_PIN_HASH: ${ADMIN_PIN_HASH:?Set ADMIN_PIN_HASH in .env.compose}
       ADMIN_TOKEN_SECRET: ${ADMIN_TOKEN_SECRET:?Set ADMIN_TOKEN_SECRET in .env.compose}
+      YOUTHCENTER_API_KEY: ${YOUTHCENTER_API_KEY:-}
+      BOKJIRO_API_KEY: ${BOKJIRO_API_KEY:-}
     ports:
       - 127.0.0.1:${BACKEND_HOST_PORT:-8000}:8000
     volumes:

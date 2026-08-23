@@ -81,10 +81,15 @@ def evaluate_policy_recommendation(
         )
         if age_decision.state is MatchState.MATCH:
             score += 30
+            unrestricted = age_decision.reason.value == "unrestricted"
             reasons.append(
                 RecommendationReason(
-                    code="MATCHED_AGE",
-                    label=f"연령 조건 부합 (만 {request.age}세)",
+                    code=("AGE_UNRESTRICTED" if unrestricted else "MATCHED_AGE"),
+                    label=(
+                        "연령 제한 없음"
+                        if unrestricted
+                        else f"연령 조건 부합 (만 {request.age}세)"
+                    ),
                 )
             )
         elif age_decision.state is MatchState.MISMATCH:

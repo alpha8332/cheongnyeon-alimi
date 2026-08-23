@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -17,6 +17,7 @@ from app.services.collection_run_admin import (
     get_admin_collection_run_detail_service,
     trigger_manual_collection_run_service,
 )
+from app.services.manual_collection import execute_manual_collection_run
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
@@ -36,6 +37,7 @@ router = APIRouter()
     },
 )
 def trigger_manual_collection_run(
+    background_tasks: BackgroundTasks,
     request_dto: CollectionRunTriggerRequest = CollectionRunTriggerRequest(),
     db: Session = Depends(get_db),
     admin_payload: Dict[str, Any] = Depends(get_current_admin_payload),
@@ -51,7 +53,7 @@ def trigger_manual_collection_run(
             status_code=status.HTTP_409_CONFLICT,
             content={
                 "error": {
-                    "message": f"A collection run for source '{request_dto.source_id or 'youthcenter'}' is currently in progress.",
+                    "message": f"A collection run for source '{request_dto.source_id or 'cheonan-youthcenter-web'}' is currently in progress.",
                     "details": {
                         "active_run_id": str(active_run.run_id),
                         "started_at": active_run.started_at.isoformat(),
@@ -60,6 +62,12 @@ def trigger_manual_collection_run(
             },
         )
 
+    background_tasks.add_task(
+        execute_manual_collection_run,
+        trigger_resp.run_id,
+        trigger_resp.source_id,
+        request_dto.requested_count or 100,
+    )
     return trigger_resp
 
 

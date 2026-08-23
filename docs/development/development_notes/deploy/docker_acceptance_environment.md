@@ -562,10 +562,91 @@ DEP2~DEP4 실제 구현·검증 파일은 위 목록과 개발 계획의 해당 
 | DEP5 package·인수 계약 단위 테스트 | 3개 통과 |
 | DEP5 package dirty worktree guard | 예상 차단 통과, `DEP5_BLOCKED`·archive/receipt 미생성 |
 | DEP5 portable 7-Zip·암호화 probe | 통과, 26.02 official digest 일치·7zAES·encrypted header test |
+| DEP5 Backend 최종 회귀 | 177 pass, 17 skip |
+| DEP5 Data·Docker 계약 최종 회귀 | 323 pass |
+| DEP5 Frontend unit·lint·actual build | 220 pass·lint pass·build pass |
+| DEP5 Frontend Mock Browser | 80 pass, 14 actual/환경 skip, 0 fail |
+| DEP5 QA actual Browser 5-spec | 39 pass, 11 Mock-only skip, 0 fail |
 | 문서 검증 | `Documentation validation passed.` |
 | 문서 검증기 단위 테스트 | 11개 통과 |
 
 미실행 항목은 통과로 계산하지 않는다.
+
+## 2026-08-23 DEP5 사전 역할 검증에서 발견한 차단 결함
+
+receipt `e5d18bd`의 Backend 격리 Volume에서 관리자 수동 실행을 actual 호출하자
+API는 `202`와 새 `running` 행을 만들었지만 Collector process를 시작하지 않았다.
+3초 뒤에도 종료 시각과 모든 count가 비어 있었고 runtime Raw 파일도 0건이었다.
+이로 인해 CollectionRun이 61건에서 62건으로 바뀐 뒤 Compose 재시작 시
+`migrate`가 고정 snapshot count 61을 다시 강제해 서비스 기동까지 차단됐다.
+
+수정 작업tree에서는 restore baseline 검증을 `verify-restored` one-shot service로
+분리해 실제 restore 직후에만 실행하고, 일반 재시작의 `migrate`는 Alembic head만
+적용하도록 변경했다. 관리자 요청은 같은 `run_id`에서 live Collector → Runtime
+Raw replay → PostgreSQL 반영을 process 내부 background task로 수행하며, 실패도
+terminal `failed`와 안전한 `error_type`으로 종결한다.
+
+공개 천안 청년센터 Source actual은 `202 → succeeded`, Raw 3건, accepted 1건,
+기존 Policy unchanged 1건, failed 0건이었다. 변경 뒤 stop/up 전후 DB는
+Policy 3,273건·CollectionRun 62건으로 유지됐고 database·backend·frontend가 모두
+healthy였다. Backend 회귀는 `177 passed, 17 skipped`다. 기존 snapshot에 이미
+있던 running 1건은 별도 과거 이력이며 이번 수동 실행은 terminal로 끝났다.
+
+이 결과는 commit과 새 package 전 수정 작업tree 검증이다. receipt SHA를 갱신하고
+네 역할 격리 검증을 다시 수행하기 전에는 `DEP5_PASS`로 판정하지 않는다. 상세
+재현과 원인은 [Docker 수동 수집·재시작 복구 기록](../../../troubleshooting/backend/docker_manual_collection_restart_recovery.md)에 남긴다.
+
+## 2026-08-23 FE·사용성·QA 격리 역할 대체 검증
+
+담당자 네 명의 독립 회신을 기다리는 대신 한 실행자가 역할별 Compose project,
+secret, service DB Volume, test DB Volume과 host port를 분리해 순차 검증했다. 이는
+독립 검토가 아닌 `격리 역할 대체 검증`이며, 아직 receipt Git SHA가 아닌 수정
+worktree image 결과다.
+
+### Frontend 역할
+
+- project `cheongnyeon-alimi-dep5-fe`, ports `8202/3202`, 새 Volume에서
+  `DEP3_RESTORE_PASS`와 Policy/Run `3,273/61`을 확인했다.
+- actual Browser에서 홈·서울 주거 검색 37건·상세·원문·partial/unknown·추천·
+  즐겨찾기·D-Day·관리자 PIN·Policy·Run·Log·로그아웃을 확인했다.
+- actual 수동 수집은 같은 run이 `succeeded`로 끝나 Run 62건이 됐다.
+- 신청 방법의 날짜 `1/9~12/31`을 slash 기준으로 잘못 쪼개던 UI를 수정했다.
+- Frontend unit 220건·lint·actual build, Mock Browser 80 pass/14 skip,
+  Docker actual Path C 1 pass를 확인했다. 최종 회귀 수치는 아래 QA 결과로 다시
+  고정한다.
+
+### 사용성 리뷰 역할
+
+- project `cheongnyeon-alimi-dep5-ux`, ports `8203/3203`, 새 Volume에서
+  `3,273/61`과 세 서비스 healthy를 확인했다.
+- 자연어 검색, 조건 분석, 빈 결과, 추천 이유·미확정, 상세 원문, 북마크 폴더,
+  11월 30일 달력 event, D-7 알림 제외 안내와 관리자 용어를 실제 Browser에서
+  검토했다.
+- 천안 질의의 인천 정책 혼입, `0세~0세` 노출, 추천 연령 문구 충돌, 저장 주거
+  조건이 `천안 취업`을 덮는 문제를 재현하고 수정했다. 관리자 API 필드명도
+  한국어 의미를 함께 표시했다.
+- 상세 기록은 [Docker Acceptance 사용성·판정 일관성 복구](../../../troubleshooting/integration/docker_acceptance_usability_consistency.md)에 남겼다.
+
+### QA 역할
+
+- project `cheongnyeon-alimi-dep5-qa`, ports `8204/3204`, 새 service DB Volume에서
+  `DEP3_RESTORE_PASS`, `3,273/61`, Migration `20260810_0006`, 세 서비스 healthy를
+  확인했다.
+- 무토큰 관리자 401, 잘못된 PIN 401, 정상 session, 천안 질의의 인천 known-region
+  누출 0, 정책 3342 age `unknown`, 정책 3162 `AGE_UNRESTRICTED`를 확인했다.
+- keyless 천안 Source 수동 실행은 `succeeded`, extracted/accepted/unchanged
+  `1/1/1`, failed 0이었고 Run은 62건이 됐다.
+- stop/up 전후 Policy/Run은 `3,273/62`로 불변, 세 서비스 healthy, PIN·Raw marker
+  log 노출 0이었다. service/test PostgreSQL의 HostConfig PortBindings는 모두
+  `{}`이고 별도 test DB Volume은 healthy였다.
+- actual 전용 검색·추천·자격·사용자 서비스 Browser 경로는 통과했다. Mock-first
+  주차 경로의 actual 실행 3건 실패를 테스트 격리 결함으로 확인해 actual에서는
+  이유 있는 skip으로 분리했다. 최종 actual 5-spec은 39 pass/11 skip/0 fail이다.
+
+네 역할은 기능·환경 차단 결함을 모두 수정한 개발자 검증까지 도달했다. 하지만
+최종 commit과 새 package·receipt가 없으므로 이 절을 `DEP5_PASS` 또는
+`DOCKER_ACCEPTANCE_PASS`로 해석하지 않는다. 최종 SHA를 고정한 뒤 동일 검증을
+clean checkout에서 다시 실행해 identity를 대조해야 한다.
 
 ## 남은 작업
 

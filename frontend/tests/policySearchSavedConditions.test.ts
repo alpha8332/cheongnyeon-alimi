@@ -4,7 +4,7 @@ import type { PolicySearchUrlQueryState } from '../src/types/policySearchUrlStat
 import { mergeSavedConditionsIntoSearchState } from '../src/utils/policySearchSavedConditions.js';
 
 const BASE_STATE = {
-  q: '청년 지원금',
+  q: '청년 정책',
   include_partial: true,
   page: 1,
   limit: 20,
@@ -52,4 +52,14 @@ test('mergeSavedConditionsIntoSearchState는 URL explicit filter를 덮어쓰지
   assert.equal(merged.region, '서울특별시');
   assert.equal(merged.age, 30);
   assert.equal(merged.category, 'finance');
+});
+
+test('검색어에 분야가 명시되면 저장된 분야보다 검색 의도를 우선한다', () => {
+  const merged = mergeSavedConditionsIntoSearchState(
+    { ...BASE_STATE, q: '천안 취업' },
+    { region: null, age: 24, category: 'housing' },
+  );
+
+  assert.equal(merged.category, null);
+  assert.equal(merged.age, 24);
 });

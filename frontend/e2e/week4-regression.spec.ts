@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { skipIfActualApi } from './helpers/e2eMode';
 
 /**
  * FE9-02 W4-F10 + W4-I3 Mock-first regression matrix.
@@ -82,6 +83,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
   test('Path A — admin: PIN → runs → manual trigger → policies → logs (W4-I1)', async ({
     page,
   }) => {
+    skipIfActualApi(test);
     await loginAsAdmin(page);
 
     await page.getByRole('link', { name: '실행 기록' }).click();
@@ -122,6 +124,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
   test('Path B — eligibility: detail → card → evidence → 원문 (W4-IE1)', async ({
     page,
   }) => {
+    skipIfActualApi(test);
     await page.goto(`/programs/${MOCK_HOUSING_POLICY_ID}`);
     await waitForProgramDetailSettled(page);
 
@@ -141,6 +144,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
   test('Path C — user: conditions → recommend → favorite → calendar → notify → .ics (W4-I2)', async ({
     page,
   }) => {
+    skipIfActualApi(test);
     await clearUserLocalStorage(page);
 
     await page.goto('/profile');

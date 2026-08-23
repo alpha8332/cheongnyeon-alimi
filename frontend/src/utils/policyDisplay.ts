@@ -68,6 +68,15 @@ export function formatRegion(
 }
 
 export function formatAge(policy: PolicyDto): string {
+  const compactAgeText = policy.age_condition_text?.replace(/\s+/g, '');
+  if (
+    (policy.age_min === 0 && policy.age_max === 0) ||
+    compactAgeText === '0세~0세' ||
+    compactAgeText === '0~0'
+  ) {
+    return '연령 정보 없음';
+  }
+
   if (policy.age_min !== null && policy.age_max !== null) {
     return `${policy.age_min}세 ~ ${policy.age_max}세`;
   }

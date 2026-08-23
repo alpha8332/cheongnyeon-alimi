@@ -49,6 +49,12 @@ integration/seed_api_contract_mismatch.md
 - [Windows PostgreSQL 테스트 환경 복구](backend/windows_postgresql_test_environment.md):
   다른 PC의 Unix 가상환경, PostgreSQL 역할 인증과 전용 테스트 DB를 Windows
   환경에서 복구한 실제 절차
+- [Docker 수동 수집·재시작 복구](backend/docker_manual_collection_restart_recovery.md):
+  실행 없이 `running`만 만들던 관리자 API와 가변 DB 재시작을 막던 restore
+  baseline 검증을 실제 Docker 재현으로 수정한 기록
+- [Docker Acceptance 사용성·판정 일관성 복구](integration/docker_acceptance_usability_consistency.md):
+  격리 역할 검증에서 발견한 지역 불일치 혼입·연령 sentinel·추천 설명 충돌·
+  저장 조건 우선순위·Mock/actual 회귀 경계를 실제 UI와 API로 바로잡은 기록
 - [추천 전체 정책 판정의 N+1과 오추천 해결](backend/recommendation_full_inventory_performance.md):
   첫 200건 제한과 가산점 방식의 오추천을 바로잡고, 전체 3,273건 평가에서
   드러난 지역 판정 N+1을 bulk 조회로 개선한 실제 과정

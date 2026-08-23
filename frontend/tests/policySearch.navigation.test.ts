@@ -19,5 +19,6 @@ test('buildPolicySearchEntryPath는 빈 q에 null을 반환한다', () => {
 
 test('HOME_RECOMMENDED_SEARCHES는 golden flow 칩 후보를 제공한다', () => {
   assert.ok(HOME_RECOMMENDED_SEARCHES.length >= 2);
+  assert.ok(HOME_RECOMMENDED_SEARCHES.includes('천안 취업'));
   assert.ok(HOME_RECOMMENDED_SEARCHES.includes('서울 주거'));
 });

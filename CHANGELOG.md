@@ -64,6 +64,17 @@
 
 ### Fixed
 
+- Docker 관리자 수동 수집이 `running` 행만 만들고 실행되지 않던 문제를 실제
+  Collector·Raw replay·DB 반영·terminal 상태로 연결하고, snapshot 고정 count를
+  모든 재시작에 강제해 운영 데이터가 바뀌면 기동이 막히던 restore 검증을
+  restore 직후 one-shot 단계로 분리했다
+  ([문제 해결 기록](docs/troubleshooting/backend/docker_manual_collection_restart_recovery.md))
+- Docker Acceptance 격리 사용성·QA에서 다른 province의 retired 지역 rule이
+  천안 검색에 인천 정책을 포함하던 문제, `0세~0세` sentinel과 연령 제한 없음
+  설명 충돌, 저장 분야가 자연어 분야를 덮던 문제, Mock-first spec의 actual
+  경계 누락을 실제 UI·API 재현으로 수정했다
+  ([문제 해결 기록](docs/troubleshooting/integration/docker_acceptance_usability_consistency.md))
+
 - 맞춤 추천이 사용자 지역·연령·분야의 확정 불일치와 마감 정책을 점수만 낮춰
   계속 반환하고 첫 200개 Policy만 평가하던 문제를 수정했다. 검색과 같은 3값
   판정으로 명시적 지역을 fail-closed 처리하고, 전체 승인 snapshot의 지역 rule을

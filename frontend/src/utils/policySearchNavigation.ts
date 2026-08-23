@@ -8,7 +8,7 @@ export const LEGACY_POLICY_SEARCH_ROUTE = '/search';
 
 /** Golden-flow entry paths from Home hero or recommended chips (FE4-20). */
 export const HOME_RECOMMENDED_SEARCHES = [
-  '천안시 24세 청년 지원금',
+  '천안 취업',
   '청년도약계좌',
   '서울 주거',
   '전국 청년',

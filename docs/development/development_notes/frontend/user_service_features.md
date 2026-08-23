@@ -635,6 +635,23 @@ DB의 정책 `15095` 국가근로장학금, `application_end=null`, eligibility
 `coverage=unknown`을 검증한다. Release 1 검색·추천은 제목·조건 계약으로
 검증한다. 별도 DTL4-7 actual acceptance 3건도 Integration에서 통과했다.
 
+## DEP5 Docker actual 사용성 보정 (`2026-08-23`)
+
+역할별 격리 Docker Browser 검증에서 실제 snapshot 기반으로 다음을 수정했다.
+
+- retired 지역 rule이 섞인 인천 정책을 천안 검색의 unknown 후보로 포함하던
+  Backend 판정을 province 근거로 fail-closed 보정
+- `0세 ~ 0세` sentinel은 사용자 카드에서 `연령 정보 없음`으로 표시
+- 연령 제한 없음 추천은 reason code `AGE_UNRESTRICTED`와 동일 문구로 표시
+- 자연어에 `취업` 등 분야가 명시되면 저장 category보다 현재 검색 의도를 우선
+- 실제 결과가 분명한 홈 예시 `천안 취업` 적용
+- 관리자 실행 ID·소스·시각 필드에 한국어 의미 병기
+- 주차 Mock-first 경로를 actual mode의 이유 있는 skip으로 격리
+
+Frontend unit은 신규 보정 테스트를 포함해 최종 회귀에서 다시 고정한다. 실제
+재현·원인·API/Browser 결과는
+[Docker Acceptance 사용성·판정 일관성 복구](../../../troubleshooting/integration/docker_acceptance_usability_consistency.md)를 따른다.
+
 ## 남은 작업
 
 - D-7 알림 positive Browser case는 실제 D-7 후보가 있는 현재 DB에서 DTL5-5

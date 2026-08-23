@@ -30,7 +30,7 @@ def trigger_manual_collection_run_service(
     - 동일 source_id에 active (non-stale) running 수집이 존재하는 경우 (None, active_run) 반환 (Conflict 409 사유).
     - 수집 기동 가능한 경우 새 CollectionRun 생성 및 (trigger_response_dto, None) 반환 (202 Accepted).
     """
-    source_id = request_dto.source_id or "youthcenter"
+    source_id = request_dto.source_id or "cheonan-youthcenter-web"
     requested_count = request_dto.requested_count or 100
 
     active_run = get_active_running_collection_run(db, source_id=source_id)

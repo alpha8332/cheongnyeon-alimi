@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+
+from app.services.manual_collection_contract import MANUAL_COLLECTION_SOURCE_IDS
 
 
 class CollectionRunAdminItem(BaseModel):
@@ -61,8 +63,16 @@ class CollectionRunAdminListResponse(BaseModel):
 
 class CollectionRunTriggerRequest(BaseModel):
     """CollectionRun 수동 실행 요청 DTO."""
-    source_id: Optional[str] = Field(default="youthcenter", description="수동 수집원 ID")
-    requested_count: Optional[int] = Field(default=100, ge=1, le=1000, description="수집 요청 문서 수")
+    source_id: Optional[str] = Field(default="cheonan-youthcenter-web", description="수동 수집원 ID")
+    requested_count: Optional[int] = Field(default=100, ge=1, le=500, description="수집 요청 문서 수")
+
+    @field_validator("source_id")
+    @classmethod
+    def validate_source_id(cls, value: Optional[str]) -> str:
+        selected = value or "cheonan-youthcenter-web"
+        if selected not in MANUAL_COLLECTION_SOURCE_IDS:
+            raise ValueError("source_id must identify a registered live collector")
+        return selected
 
 
 class CollectionRunTriggerResponse(BaseModel):

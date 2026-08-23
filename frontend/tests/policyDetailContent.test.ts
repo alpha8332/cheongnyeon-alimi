@@ -88,6 +88,17 @@ test('splitPolicyTextToItems는 세미콜론 구분을 bullet으로 분리한다
   assert.deepEqual(result.items, ['서류 A', '서류 B', '서류 C']);
 });
 
+test('splitPolicyTextToItems는 날짜 slash를 보존하고 ※ 항목만 분리한다', () => {
+  const result = splitPolicyTextToItems(
+    '※ 1/9~12/31. 방문 접수 ※ 1차 종료/ 2차 5~6월 예정',
+  );
+  assert.equal(result.ordered, false);
+  assert.deepEqual(result.items, [
+    '1/9~12/31. 방문 접수',
+    '1차 종료/ 2차 5~6월 예정',
+  ]);
+});
+
 test('splitCircleBulletLines는 ○ 구분 요약을 줄 단위로 분리한다', () => {
   assert.deepEqual(
     splitCircleBulletLines('○ (지원대상) 청년 ○ (소득요건) 중위소득 150% ○ (지원내용) 월 30만원'),

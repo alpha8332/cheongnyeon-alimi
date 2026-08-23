@@ -3,6 +3,7 @@
 ## 실행자·역할
 
 - 역할: Backend / Frontend / 사용성 리뷰어 / QA
+- 수행 형태: 독립 담당자 / 격리 역할 대체 검증
 - 실행자:
 - 실행 시작·종료 시각과 timezone:
 - 결과: pass / conditional / blocked
@@ -36,7 +37,7 @@
 | ID | 명령·시나리오 | 기대 | 실제 | pass / fail / skip | 증거 |
 | --- | --- | --- | --- | --- | --- |
 | ENV-01 | Git·archive·snapshot identity | receipt와 일치 |  |  |  |
-| ENV-02 | restore·Migration·health | 3273·61·healthy |  |  |  |
+| ENV-02 | restore·Migration·health | 최초 3273·61·healthy |  |  |  |
 | ROLE-01 | 역할 핵심 시나리오 | 역할별 계약 충족 |  |  |  |
 | ROLE-02 | 실패·경계 시나리오 | fail-closed·복구 |  |  |  |
 | REG-01 | 역할별 회귀 명령 | 0 failed |  |  |  |

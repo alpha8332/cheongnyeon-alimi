@@ -4,6 +4,7 @@ import type { PolicyDto } from '../src/types/policy.js';
 import {
   formatApplicationPeriodCard,
   formatApplicationPeriodDisplay,
+  formatAge,
   formatCollectedAt,
   formatPolicyDateDot,
   POLICY_ELIGIBILITY_NOTICE,
@@ -62,6 +63,30 @@ test('collected_at을 한국 표준시로 표시한다', () => {
 
 test('잘못된 collected_at은 미확인으로 표시한다', () => {
   assert.equal(formatCollectedAt('not-a-date'), '수집 시각 미확인');
+});
+
+test('0세~0세 sentinel은 실제 연령 조건처럼 표시하지 않는다', () => {
+  assert.equal(formatAge(createPolicy({ age_min: 0, age_max: 0 })), '연령 정보 없음');
+  assert.equal(
+    formatAge(
+      createPolicy({
+        age_min: null,
+        age_max: null,
+        age_condition_text: '0세 ~ 0세',
+      }),
+    ),
+    '연령 정보 없음',
+  );
+  assert.equal(
+    formatAge(
+      createPolicy({
+        age_min: 0,
+        age_max: 0,
+        age_condition_text: '공식 공고 확인',
+      }),
+    ),
+    '연령 정보 없음',
+  );
 });
 
 test('formatPolicyDateDot은 ISO·YMD를 YYYY.MM.DD로 변환한다', () => {

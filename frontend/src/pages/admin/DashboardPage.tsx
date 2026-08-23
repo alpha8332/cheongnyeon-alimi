@@ -108,7 +108,7 @@ export default function DashboardPage() {
 
           <dl className="admin-dashboard-latest-run__meta">
             <div className="admin-dashboard-latest-run__meta-item">
-              <dt>run_id</dt>
+              <dt>실행 ID (run_id)</dt>
               <dd>
                 <Link to={buildCollectionRunDetailDrillDownUrl(latestRun.run_id)}>
                   <code>{latestRun.run_id.slice(0, 8)}…</code>
@@ -116,22 +116,22 @@ export default function DashboardPage() {
               </dd>
             </div>
             <div className="admin-dashboard-latest-run__meta-item">
-              <dt>source</dt>
+              <dt>수집 소스 (source)</dt>
               <dd>{latestRun.source_id ?? '—'}</dd>
             </div>
             <div className="admin-dashboard-latest-run__meta-item">
-              <dt>유형 / trigger</dt>
+              <dt>실행 유형 / 시작 방식</dt>
               <dd>
                 {getCollectionRunTypeLabel(latestRun.run_type)} /{' '}
                 {getCollectionRunTriggerTypeLabel(latestRun.trigger_type)}
               </dd>
             </div>
             <div className="admin-dashboard-latest-run__meta-item">
-              <dt>started_at</dt>
+              <dt>시작 시각 (started_at)</dt>
               <dd>{formatAdminTimestamp(latestRun.started_at)}</dd>
             </div>
             <div className="admin-dashboard-latest-run__meta-item">
-              <dt>finished_at</dt>
+              <dt>종료 시각 (finished_at)</dt>
               <dd>{formatAdminTimestamp(latestRun.finished_at)}</dd>
             </div>
           </dl>

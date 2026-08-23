@@ -255,6 +255,9 @@
   수치로 종합한 보고서
 - [Windows PostgreSQL 테스트 환경 복구](troubleshooting/backend/windows_postgresql_test_environment.md):
   다른 PC 환경에서 발생한 가상환경·DB 역할 인증·테스트 DB 문제의 해결 기록
+- [Docker 수동 수집·재시작 복구](troubleshooting/backend/docker_manual_collection_restart_recovery.md):
+  관리자 수동 실행의 `running` 고착과 가변 DB 재시작 차단을 실제 Docker에서
+  재현하고 terminal 상태·데이터 보존으로 수정한 기록
 - [추천 전체 정책 판정의 N+1과 오추천 해결](troubleshooting/backend/recommendation_full_inventory_performance.md):
   추천 정확성 보완 중 드러난 N+1을 제거해 실제 3,273건 응답을 약 14.8초에서
   약 1.4초로 개선한 문제 해결 기록

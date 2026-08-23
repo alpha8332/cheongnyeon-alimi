@@ -102,7 +102,7 @@ export function handleCollectionRunTriggerMock(
 ): CollectionRunTriggerResponse {
   return {
     run_id: '55555555-5555-4555-8555-555555555555',
-    source_id: request.source_id ?? 'youthcenter',
+    source_id: request.source_id ?? 'cheonan-youthcenter-web',
     run_type: 'collection',
     trigger_type: 'admin',
     status: 'running',

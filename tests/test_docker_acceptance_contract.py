@@ -27,6 +27,9 @@ def test_health_dependency_chain_is_fail_closed():
     assert services["migrate"]["depends_on"]["database"]["condition"] == (
         "service_healthy"
     )
+    assert services["verify-restored"]["depends_on"]["database"]["condition"] == (
+        "service_healthy"
+    )
     assert services["backend"]["depends_on"]["migrate"]["condition"] == (
         "service_completed_successfully"
     )
@@ -40,6 +43,7 @@ def test_profiles_and_test_volume_are_isolated():
 
     assert services["schema-bootstrap"]["profiles"] == ["restore"]
     assert services["restore"]["profiles"] == ["restore"]
+    assert services["verify-restored"]["profiles"] == ["restore"]
     assert services["database-test"]["profiles"] == ["test"]
     assert services["database-test"]["volumes"] != services["database"]["volumes"]
     assert services["database-test"]["networks"] == ["database-test"]
@@ -87,6 +91,17 @@ def test_restore_bootstraps_snapshot_schema_before_transactional_data_load():
     assert restore_runner.index("run --rm schema-bootstrap") < restore_runner.index(
         "run --rm restore"
     )
+    assert restore_runner.index("run --rm restore") < restore_runner.index(
+        "run --rm verify-restored"
+    )
+    assert restore_runner.index("run --rm verify-restored") < restore_runner.index(
+        "run --rm migrate"
+    )
+    assert COMPOSE["services"]["verify-restored"]["command"] == [
+        "python",
+        "/opt/acceptance/verify_restored_database.py",
+    ]
+    assert COMPOSE["services"]["migrate"]["command"][-1] == "alembic upgrade head"
     assert "--data-only" in restore_script
     assert "--disable-triggers" in restore_script
     assert "--single-transaction" in restore_script

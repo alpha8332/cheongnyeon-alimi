@@ -69,6 +69,15 @@ export function splitPolicyTextToItems(value: string | null | undefined): {
     };
   }
 
+  const noticeItems = sanitized
+    .split(/\s*※\s*/u)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (noticeItems.length >= 2) {
+    return { items: noticeItems, ordered: false };
+  }
+
   const bulletCandidates = lines
     .flatMap((line) => line.split(/(?<=[.;!?])\s+(?=[•\-–*])/u))
     .map((line) => line.replace(/^[\s•\-–*]+/u, '').trim())
@@ -79,7 +88,7 @@ export function splitPolicyTextToItems(value: string | null | undefined): {
   }
 
   const semicolonSplit = sanitized
-    .split(/\s*;\s*|\s*\/\s*(?=\S)/)
+    .split(/\s*;\s*|\s+\/\s+/)
     .map((part) => part.trim())
     .filter(Boolean);
 

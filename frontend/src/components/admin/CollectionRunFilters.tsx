@@ -57,7 +57,7 @@ export default function CollectionRunFilters({
             onChange={(event) =>
               onChange({ ...draft, source_id: event.target.value })
             }
-            placeholder="예: youthcenter"
+            placeholder="예: youthcenter-api"
           />
         </label>
 

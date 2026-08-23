@@ -192,7 +192,8 @@ docs/development/docker_acceptance_setup.md
 
 최초 시작은 `restore.ps1`이 `database health → snapshot verify → empty restore →
 restore baseline verify → migrate → backend health → frontend readiness`로
-고정한다. 재시작은 복원 baseline을 다시 확인한 뒤 Migration을 통과한다.
+고정한다. 정확한 snapshot 집계 검증은 restore 직후에만 수행하고, 재시작은
+운영 중 추가된 Policy·CollectionRun을 보존한 채 Migration만 통과한다.
 Backend는 Compose 내부 `database` host를 사용하고, Frontend는 Browser가 접근할
 수 없는 Compose service hostname을 bundle에 넣지 않는다.
 
@@ -311,6 +312,18 @@ Docker·Compose version과 test command를 남겨 서로 다른 입력을 같은
 이 결과는 `DEP5_PACKAGE_READY`다. 최종 handoff commit에서 package·receipt를
 생성하고 Backend·Frontend·사용성 리뷰어·QA의 독립 실행 결과를 대조하기
 전까지 `DEP5_PASS` 또는 `DOCKER_ACCEPTANCE_PASS`로 판정하지 않는다.
+
+### DEP5 격리 역할 대체 검증 결과 (2026-08-23)
+
+일정상 외부 담당자 회신을 기다리지 않고 한 실행자가 BE·FE·사용성·QA project,
+secret, service/test Volume과 ports를 분리해 개발자 검증을 수행했다. 수동 수집이
+실행되지 않던 Backend blocker와 가변 DB 재시작 blocker, 실제 UI의 지역·연령·
+추천·저장 조건 일관성 문제, Mock/actual 테스트 격리 문제를 재현·수정했다.
+
+이 결과는 최종 receipt SHA가 아니라 수정 worktree 검증이다. 구현 결함을 먼저
+제거하는 근거로만 사용하며, clean handoff commit → 새 package/receipt → 같은
+역할별 격리 재검증 순서를 생략하지 않는다. 상세 수치와 증거는
+[Docker Acceptance 개발 기록](../../development_notes/deploy/docker_acceptance_environment.md)에 남긴다.
 
 ## 비차단 후속 - Docker one-click BAT
 

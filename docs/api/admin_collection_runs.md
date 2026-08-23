@@ -19,7 +19,7 @@
 | --- | --- | --- | --- | --- |
 | `page` | `integer` | `1` | 1 이상 | 페이지 번호 |
 | `size` | `integer` | `20` | 1 이상 100 이하 | 페이지 당 항목 수 |
-| `source_id` | `string` | `null` | 예: `youthcenter` | 특정 수집원 ID 필터 |
+| `source_id` | `string` | `null` | 예: `youthcenter-api` | 특정 수집원 ID 필터 |
 | `status` | `string` | `null` | `running`, `succeeded`, `partial_failure`, `failed` | 수집 상태 필터 |
 | `run_type` | `string` | `null` | `seed_import`, `runtime_import`, `collection` | 실행 유형 필터 |
 | `trigger_type` | `string` | `null` | `cli`, `scheduler`, `admin` | 트리거 주체 필터 |
@@ -39,7 +39,7 @@
   "items": [
     {
       "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "source_id": "youthcenter",
+      "source_id": "youthcenter-api",
       "run_type": "collection",
       "trigger_type": "admin",
       "started_at": "2026-08-10T12:00:00Z",
@@ -79,7 +79,7 @@
 ```json
 {
   "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "source_id": "youthcenter",
+  "source_id": "cheonan-youthcenter-web",
   "run_type": "collection",
   "trigger_type": "admin",
   "started_at": "2026-08-10T12:00:00Z",
@@ -115,26 +115,29 @@
 
 ```json
 {
-  "source_id": "youthcenter",
+  "source_id": "cheonan-youthcenter-web",
   "requested_count": 100
 }
 ```
 
 | 필드명 | 타입 | 필수 여부 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
-| `source_id` | `string` | 선택 | `youthcenter` | 수동 수집을 실행할 수집원 ID |
-| `requested_count` | `integer` | 선택 | `100` | 수동 수집 요청 문서 수 (1~1000) |
+| `source_id` | `string` | 선택 | `cheonan-youthcenter-web` | 등록된 live Collector의 Source ID |
+| `requested_count` | `integer` | 선택 | `100` | 단일 페이지 수집 요청 문서 수 (1~500) |
 
 ---
 
 ### 성공 응답 (202 Accepted)
 
-수동 수집 요청이 수신되어 백그라운드 작업으로 즉시 트리거된 경우 반환한다.
+수동 수집 요청이 수신되어 API process 내부 백그라운드 작업으로 즉시 트리거된
+경우 반환한다. 같은 `run_id`는 실제 수집·Raw replay·DB 반영 뒤
+`succeeded`·`partial_failure`·`failed` 중 하나로 종결된다. `202` 자체는 최종
+성공을 뜻하지 않으므로 상세 endpoint에서 terminal 상태를 확인한다.
 
 ```json
 {
   "run_id": "8f3a1b2c-9d4e-4f5a-8b7c-1d2e3f4a5b6c",
-  "source_id": "youthcenter",
+  "source_id": "cheonan-youthcenter-web",
   "run_type": "collection",
   "trigger_type": "admin",
   "status": "running",
@@ -183,7 +186,7 @@
 ```json
 {
   "error": {
-    "message": "A collection run for source 'youthcenter' is currently in progress.",
+    "message": "A collection run for source 'cheonan-youthcenter-web' is currently in progress.",
     "details": {
       "active_run_id": "8f3a1b2c-9d4e-4f5a-8b7c-1d2e3f4a5b6c",
       "started_at": "2026-08-10T14:30:00Z"

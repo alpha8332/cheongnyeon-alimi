@@ -157,6 +157,11 @@ try {
         throw "DEP3_BLOCKED: one-shot restore failed; the existing volume was preserved"
     }
 
+    & docker @ComposeArgs --profile restore run --rm verify-restored
+    if ($LASTEXITCODE -ne 0) {
+        throw "DEP3_BLOCKED: restored database baseline verification failed; the existing volume was preserved"
+    }
+
     & docker @ComposeArgs run --rm migrate
     if ($LASTEXITCODE -ne 0) {
         throw "DEP3_BLOCKED: migration failed; the existing volume was preserved"

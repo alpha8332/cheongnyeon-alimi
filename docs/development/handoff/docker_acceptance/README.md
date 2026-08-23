@@ -91,7 +91,7 @@ Get-FileHash 'C:\received\package.7z' -Algorithm SHA256
 
 ### Backend
 
-- Migration baseline·head와 restart 뒤 Policy 3,273·Run 61 유지
+- 최초 restore의 Policy 3,273·Run 61과 수동 실행 뒤 현재 수치의 restart 유지
 - health, 검색·상세·추천 actual API
 - PIN session 200, 무토큰 401, 권한·rate limit 경계
 - CollectionRun 목록·상세·수동 실행·stale
@@ -127,7 +127,8 @@ Get-FileHash 'C:\received\package.7z' -Algorithm SHA256
 ## DTL5-5 시작 승인 기준
 
 다음 네 역할 receipt가 모두 같은 Git SHA·snapshot version·dump hash를 가져야
-한다.
+한다. 한 실행자가 역할을 대체 수행할 때도 Compose project·secret·Volume을
+역할별로 분리하고, 독립 검토가 아닌 `격리 역할 대체 검증`임을 결과에 명시한다.
 
 - Backend 담당자: environment identity와 actual API 결과
 - Frontend 담당자: environment identity와 actual Browser 결과

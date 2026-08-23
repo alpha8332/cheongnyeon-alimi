@@ -77,6 +77,20 @@
    - FastAPI `custom_openapi()`에 `HTTPBearer` securityScheme 노출 확인
    - `python scripts/validate_docs.py` 통과
 
+## 2026-08-23 Docker actual 결함 수정
+
+기존 C2 구현은 `202`와 `running` 행만 만들고 실제 Collector를 시작하지 않아
+완료 기준의 “실행 결과가 CollectionRun과 연결됨”을 충족하지 못했다. DEP5 격리
+환경에서 이 차이를 확인해 등록된 live Collector → Runtime Raw replay → DB import를
+process 내부 background task로 연결하고, 성공·부분 실패·실패를 같은 `run_id`의
+terminal 상태와 count로 기록하도록 수정했다. 등록되지 않은 Source와 500건 초과
+요청은 `422`이며, 외부 실패도 `running`에 방치하지 않는다.
+
+공개 천안 Source PostgreSQL actual은 `202 → succeeded`, Raw 3건, accepted 1건,
+unchanged 1건, failed 0건이었다. 관련 Backend 회귀는 `177 passed, 17 skipped`다.
+새 receipt 기반 역할 검증 전이므로 이 기록만으로 Docker Gate를 PASS 처리하지
+않는다.
+
 ## 주요 변경 파일
 
 - `backend/app/schemas/collection_run_admin.py`: CollectionRun 관리자 DTO 정의
