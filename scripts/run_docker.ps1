@@ -54,7 +54,17 @@ function Invoke-Docker {
 
 function Get-FileSha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
-    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    $Stream = [IO.File]::OpenRead($Path)
+    $Hasher = [Security.Cryptography.SHA256]::Create()
+    try {
+        return (($Hasher.ComputeHash($Stream) | ForEach-Object {
+            $_.ToString("x2")
+        }) -join "")
+    }
+    finally {
+        $Hasher.Dispose()
+        $Stream.Dispose()
+    }
 }
 
 function Read-JsonFile {

@@ -170,6 +170,8 @@ def test_windows_one_command_bootstrap_is_fail_closed_and_cache_aware():
     assert "downloaded manifest SHA-256 mismatch" in runner
     assert "downloaded dataset SHA-256 mismatch" in runner
     assert "downloaded dataset byte count mismatch" in runner
+    assert "[Security.Cryptography.SHA256]::Create()" in runner
+    assert "Get-FileHash" not in runner
     assert "latest.pointer.json" in runner
     assert "public-dataset-bootstrap" in runner
     assert '"run", "--rm", "migrate"' in runner
