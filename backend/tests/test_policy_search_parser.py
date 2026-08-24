@@ -175,6 +175,7 @@ def test_parse_search_query_resolves_suffixless_yangsan(db):
     db.commit()
 
     inferred = parse_search_query(q="양산 청년 취업", db=db)
+    compound = parse_search_query(q="경상남도 양산시 청년 취업", db=db)
     explicit = parse_search_query(q="청년 취업", region="양산", db=db)
 
     inferred_region = next(
@@ -187,9 +188,18 @@ def test_parse_search_query_resolves_suffixless_yangsan(db):
         for condition in explicit.conditions
         if condition.dimension == "region"
     )
+    compound_region = next(
+        condition
+        for condition in compound.conditions
+        if condition.dimension == "region"
+    )
     assert inferred_region.value == "경상남도 양산시"
     assert inferred_region.resolution == "resolved"
     assert "양산" not in inferred.uninterpreted_terms
+    assert compound_region.value == "경상남도 양산시"
+    assert compound_region.resolution == "resolved"
+    assert "경상남도" not in compound.uninterpreted_terms
+    assert "양산시" not in compound.uninterpreted_terms
     assert explicit_region.candidates == ["경상남도 양산시"]
     assert explicit_region.resolution == "resolved"
 

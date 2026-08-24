@@ -416,18 +416,41 @@ def _extract_category_from_query(query_text: str) -> tuple[str, PolicyCategory] 
 
 def _extract_region_from_query(query_text: str, db: Session | None = None) -> str | None:
     """q 문장에서 알려진 또는 DB 내 행정구역 별칭/이름 키워드 매칭"""
-    # 1. ambiguous 지역 키워드 확인
+    # 1. DB의 활성 정식 지역명은 광역 키워드보다 먼저, 가장 긴 이름부터
+    # 매칭한다. 예: "경상남도 양산시"가 "경상남도"로 축약되는 것을 방지한다.
+    if db is not None:
+        try:
+            from sqlalchemy import literal, select
+            from app.models.administrative_region import AdministrativeRegion
+
+            full_names = db.scalars(
+                select(AdministrativeRegion.full_name)
+                .where(
+                    AdministrativeRegion.status == "active",
+                    literal(query_text).contains(
+                        AdministrativeRegion.full_name
+                    ),
+                )
+                .distinct()
+            ).all()
+            for full_name in sorted(full_names, key=len, reverse=True):
+                if len(full_name) >= 2 and full_name in query_text:
+                    return full_name
+        except Exception:
+            pass
+
+    # 2. ambiguous 지역 키워드 확인
     for amb_kw in AMBIGUOUS_REGION_CANDIDATES.keys():
         if amb_kw in query_text:
             return amb_kw
 
-    # 2. REGION_KEYWORD_MAP의 키워드를 길이가 긴 순서대로 매칭
+    # 3. REGION_KEYWORD_MAP의 키워드를 길이가 긴 순서대로 매칭
     sorted_kws = sorted(REGION_KEYWORD_MAP.keys(), key=len, reverse=True)
     for kw in sorted_kws:
         if kw in query_text:
             return kw
 
-    # 3. DB 세션이 전달된 경우 DB AdministrativeRegionAlias / AdministrativeRegion 동적 검색
+    # 4. DB 세션이 전달된 경우 DB AdministrativeRegionAlias / AdministrativeRegion 동적 검색
     if db is not None:
         try:
             from sqlalchemy import select
@@ -496,6 +519,14 @@ def _resolve_region_name(region_name: str, db: Session | None) -> tuple[str, lis
                 cands = [c.full_name for c in res.candidates]
                 return "ambiguous", cands
             else:
+                exact_candidates = _resolve_exact_region_candidates(
+                    name_clean,
+                    db,
+                )
+                if len(exact_candidates) == 1:
+                    return "resolved", exact_candidates
+                if len(exact_candidates) > 1:
+                    return "ambiguous", exact_candidates
                 suffixless_candidates = _resolve_suffixless_region_candidates(
                     name_clean,
                     db,
@@ -510,6 +541,26 @@ def _resolve_region_name(region_name: str, db: Session | None) -> tuple[str, lis
 
     # 기본 키워드 맵에 없고 ambiguous에도 없는 일반 문자열의 경우 unmapped 판정
     return "unmapped", []
+
+
+def _resolve_exact_region_candidates(
+    region_name: str,
+    db: Session,
+) -> list[str]:
+    from sqlalchemy import or_, select
+
+    from app.models.administrative_region import AdministrativeRegion
+
+    active_regions = db.scalars(
+        select(AdministrativeRegion).where(
+            AdministrativeRegion.status == "active",
+            or_(
+                AdministrativeRegion.full_name == region_name,
+                AdministrativeRegion.name == region_name,
+            ),
+        )
+    ).all()
+    return sorted({region.full_name for region in active_regions})
 
 
 def _strip_region_suffix(name: str) -> str | None:
