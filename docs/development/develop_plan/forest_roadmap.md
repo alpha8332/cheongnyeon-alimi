@@ -144,7 +144,7 @@ v0.1.0 → W4-G0
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | [Deploy 02 Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md) | Team Leader - Integration·Deploy | Data·Backend·Frontend, QA·사용성 리뷰 | in-progress (W6-P5 clean-room PASS, LICENSE pending) | 공개 dataset·lifecycle·Celery/Redis queue·one-command bootstrap·Production Compose/CI·clean-room | `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS` |
+| 1 | [Deploy 02 Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md) | Team Leader - Integration·Deploy | Data·Backend·Frontend, QA·사용성 리뷰 | completed (`W6-G0_FINAL_RELEASE_PASS`) | 공개 dataset·lifecycle·Celery/Redis queue·one-command bootstrap·Production Compose/CI·clean-room·MIT License | `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS` |
 | 2 | Final Documentation and Submission | 보고서 담당 | Team Leader 최종 확인, 전 담당 근거 제공 | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | Deploy 02 `W6-G0_FINAL_RELEASE_PASS` |
 
 Deploy 02는 5주차 Acceptance 구성을 입력으로 공개 normalized dataset,

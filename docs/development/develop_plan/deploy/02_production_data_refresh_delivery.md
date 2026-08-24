@@ -4,9 +4,8 @@
 
 - 번호: Deploy 02
 - 담당 영역: Team Leader - Integration·Deploy
-- 상태: in-progress
-- 진행: `W6-P5` clean-room completed, Final Gate pending LICENSE
-- 현재 Gate: `W6-P4_PRODUCTION_PASS` (`2026-08-24`)
+- 상태: completed
+- 현재 Gate: `W6-G0_FINAL_RELEASE_PASS` (`2026-08-24`)
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
@@ -223,9 +222,10 @@ Windows 사용자가 저장소와 README만으로 공개 dataset을 검증·복�
 
 ### W6-P5 - clean-room과 Final Gate
 
-상태: clean-room completed (`2026-08-24`, candidate `d420608`). clone과 GitHub
+상태: completed (`2026-08-24`, runtime candidate `d420608`). clone과 GitHub
 ZIP을 독립 project·Volume에 실행하고 장애·복구·Browser actual을 통과했다.
-저장소에 프로젝트 코드 `LICENSE`가 없어 `W6-G0_FINAL_RELEASE_PASS`만 보류한다.
+MIT License, README·운영·복구·SBOM attestation·CHANGELOG를 대조해
+`W6-G0_FINAL_RELEASE_PASS`로 닫았다.
 
 #### 목적
 
