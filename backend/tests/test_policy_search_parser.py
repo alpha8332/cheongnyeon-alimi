@@ -135,3 +135,99 @@ def test_parse_search_query_cheonan_short_stay_anchor(db):
     assert dim_map["category"].value == "housing"
     assert dim_map["keyword"].value == "단기숙소"
     assert res.uninterpreted_terms == ["청년", "지원"]
+
+
+def test_parse_search_query_resolves_suffixless_yangsan(db):
+    from app.models.administrative_region import (
+        AdministrativeRegion,
+        AdministrativeRegionAlias,
+    )
+
+    gyeongnam = AdministrativeRegion(
+        scheme="kr-bjd-20260803",
+        code="4800000000",
+        name="경상남도",
+        full_name="경상남도",
+        level="province",
+        status="active",
+    )
+    yangsan = AdministrativeRegion(
+        scheme="kr-bjd-20260803",
+        code="4833000000",
+        name="양산시",
+        full_name="경상남도 양산시",
+        level="district",
+        status="active",
+        parent_code=gyeongnam.code,
+    )
+    db.add_all(
+        [
+            gyeongnam,
+            yangsan,
+            AdministrativeRegionAlias(
+                scheme="kr-bjd-20260803",
+                region_code=yangsan.code,
+                alias="양산시",
+                kind="official_short",
+            ),
+        ]
+    )
+    db.commit()
+
+    inferred = parse_search_query(q="양산 청년 취업", db=db)
+    explicit = parse_search_query(q="청년 취업", region="양산", db=db)
+
+    inferred_region = next(
+        condition
+        for condition in inferred.conditions
+        if condition.dimension == "region"
+    )
+    explicit_region = next(
+        condition
+        for condition in explicit.conditions
+        if condition.dimension == "region"
+    )
+    assert inferred_region.value == "경상남도 양산시"
+    assert inferred_region.resolution == "resolved"
+    assert "양산" not in inferred.uninterpreted_terms
+    assert explicit_region.candidates == ["경상남도 양산시"]
+    assert explicit_region.resolution == "resolved"
+
+
+def test_parse_search_query_marks_duplicate_suffixless_county_ambiguous(db):
+    from app.models.administrative_region import AdministrativeRegion
+
+    db.add_all(
+        [
+            AdministrativeRegion(
+                scheme="kr-bjd-20260803",
+                code="4282000000",
+                name="고성군",
+                full_name="강원특별자치도 고성군",
+                level="district",
+                status="active",
+            ),
+            AdministrativeRegion(
+                scheme="kr-bjd-20260803",
+                code="4882000000",
+                name="고성군",
+                full_name="경상남도 고성군",
+                level="district",
+                status="active",
+            ),
+        ]
+    )
+    db.commit()
+
+    result = parse_search_query(q="고성 청년 정책", db=db)
+    region = next(
+        condition
+        for condition in result.conditions
+        if condition.dimension == "region"
+    )
+
+    assert region.resolution == "ambiguous"
+    assert region.candidates == [
+        "강원특별자치도 고성군",
+        "경상남도 고성군",
+    ]
