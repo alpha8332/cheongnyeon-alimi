@@ -5,6 +5,7 @@ from app.models.policy_search import PolicySearchDocument
 from app.repositories.policy_search import (
     PolicySearchRepository,
     _candidate_search_terms,
+    _region_match_sort_key,
 )
 from app.services.policy_search_parser import parse_search_query
 
@@ -234,6 +235,35 @@ def test_repository_generic_only_query_keeps_or_discovery(db, sample_policies):
         sample_policies[0].id,
         sample_policies[1].id,
     }
+
+
+def test_region_match_sort_prioritizes_narrow_direct_scope():
+    local = _region_match_sort_key(
+        has_region_condition=True,
+        verdict="match",
+        reason="exact",
+        region_count=1,
+    )
+    broad = _region_match_sort_key(
+        has_region_condition=True,
+        verdict="match",
+        reason="exact",
+        region_count=254,
+    )
+    nationwide = _region_match_sort_key(
+        has_region_condition=True,
+        verdict="match",
+        reason="nationwide",
+        region_count=0,
+    )
+    unknown = _region_match_sort_key(
+        has_region_condition=True,
+        verdict="unknown",
+        reason=None,
+        region_count=0,
+    )
+
+    assert local < broad < nationwide < unknown
 
 
 def test_explicit_generic_keyword_is_still_a_required_anchor():

@@ -19,6 +19,33 @@ from app.services.policy_search_evaluation import (
 )
 
 
+def _recommendation_region_sort_key(
+    item: RecommendationItem,
+    request: RecommendationRequest,
+) -> tuple[int, int]:
+    """동점 추천에서 지역 직접 정책을 넓은 범위·미확정보다 우선한다."""
+    if not request.region:
+        return (0, 0)
+
+    reason_codes = {reason.code for reason in item.reasons}
+    if "REGION_UNCONFIRMED" in reason_codes:
+        return (3, 1_000_000)
+
+    region_reason = next(
+        (
+            reason
+            for reason in item.reasons
+            if reason.code == "MATCHED_REGION"
+        ),
+        None,
+    )
+    if region_reason is None:
+        return (4, 1_000_000)
+    if "(전국)" in region_reason.label:
+        return (2, 1_000_000)
+    return (0, max(len(item.regions), 1))
+
+
 def evaluate_policy_recommendation(
     policy: Policy,
     request: RecommendationRequest,
@@ -201,8 +228,14 @@ def recommend_policies_service(
         if item is not None:
             evaluated_items.append(item)
 
-    # 결정적 정렬: score 내림차순, id 오름차순
-    evaluated_items.sort(key=lambda x: (-x.score, x.id))
+    # 결정적 정렬: score 내림차순, 지역 직접성/범위, id 오름차순
+    evaluated_items.sort(
+        key=lambda item: (
+            -item.score,
+            *_recommendation_region_sort_key(item, request),
+            item.id,
+        )
+    )
 
     # limit 개수 제한
     result_items = evaluated_items[: request.limit]

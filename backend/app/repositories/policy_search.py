@@ -44,6 +44,32 @@ GENERIC_RELEVANCE_TERMS = frozenset(
 )
 
 
+def _region_match_sort_key(
+    *,
+    has_region_condition: bool,
+    verdict: str | None,
+    reason: str | None,
+    region_count: int,
+) -> tuple[int, int, int]:
+    """지역 검색에서 좁고 직접적인 적용 범위를 먼저 정렬한다."""
+    if not has_region_condition:
+        return (0, 0, 0)
+    if verdict == "unknown":
+        return (2, 1_000_000, 0)
+    if verdict != "match":
+        return (3, 1_000_000, 0)
+
+    if reason == "nationwide":
+        return (1, 1_000_000, 0)
+
+    relation_order = {
+        "exact": 0,
+        "ancestor": 1,
+        "descendant": 1,
+    }.get(reason or "", 2)
+    return (0, max(region_count, 1), relation_order)
+
+
 def _deduplicated_search_terms(values: Sequence[str]) -> list[str]:
     terms: list[str] = []
     seen: set[str] = set()
@@ -268,8 +294,9 @@ class PolicySearchRepository:
     ) -> tuple[list["PolicySearchResultItem"], int]:
         """PostgreSQL/DB 기반 정책 검색 Query Builder.
 
-        mismatch 항목을 확정 제외하고 4단계 결정적 정렬을 적용한다:
-        score DESC -> unknown_count ASC -> status 우선순위 -> policy.id ASC
+        mismatch 항목을 확정 제외하고 결정적 정렬을 적용한다:
+        score DESC -> 지역 직접성/범위 -> unknown_count ASC
+        -> status 우선순위 -> policy.id ASC
         """
         from app.models.policy import Policy
         from app.schemas.policy import PolicyRead
@@ -350,13 +377,16 @@ class PolicySearchRepository:
         if req_region is not None:
             query_resolution = eval_service.resolve_region_alias(str(req_region.value))
 
-        evaluated_items: list[tuple[float, int, int, int, PolicySearchResultItem]] = []
+        evaluated_items: list[
+            tuple[float, int, int, int, int, int, int, PolicySearchResultItem]
+        ] = []
 
         for policy in policies:
             verdicts = DimensionVerdicts()
             unconfirmed: list[UnconfirmedCondition] = []
             reason_codes: list[str] = []
             is_mismatch = False
+            region_reason: str | None = None
 
             # --- Status 판정 ---
             if req_status is not None:
@@ -454,6 +484,7 @@ class PolicySearchRepository:
                 )
                 if reg_dec.state == MatchState.MATCH:
                     verdicts.region = "match"
+                    region_reason = reg_dec.reason.value
                     reason_codes.append("REGION_MATCH")
                 elif reg_dec.state == MatchState.MISMATCH:
                     verdicts.region = "mismatch"
@@ -526,16 +557,33 @@ class PolicySearchRepository:
                 unconfirmed_conditions=unconfirmed,
             )
 
-            evaluated_items.append((score, unknown_count, status_order, policy.id, item))
+            region_group, region_breadth, region_relation = _region_match_sort_key(
+                has_region_condition=req_region is not None,
+                verdict=verdicts.region,
+                reason=region_reason,
+                region_count=len(policy.regions or []),
+            )
+            evaluated_items.append(
+                (
+                    score,
+                    region_group,
+                    region_breadth,
+                    region_relation,
+                    unknown_count,
+                    status_order,
+                    policy.id,
+                    item,
+                )
+            )
 
-        # 4단계 결정적 정렬: score DESC -> unknown_count ASC -> status_order ASC -> policy.id ASC
+        # score가 같은 지역 검색은 직접·좁은 범위 정책을 광역/전국/미확정보다 우선한다.
         evaluated_items.sort(
-            key=lambda x: (-x[0], x[1], x[2], x[3])
+            key=lambda x: (-x[0], x[1], x[2], x[3], x[4], x[5], x[6])
         )
 
         total = len(evaluated_items)
         start_idx = (page - 1) * limit
         end_idx = start_idx + limit
-        paginated_items = [x[4] for x in evaluated_items[start_idx:end_idx]]
+        paginated_items = [x[7] for x in evaluated_items[start_idx:end_idx]]
 
         return paginated_items, total

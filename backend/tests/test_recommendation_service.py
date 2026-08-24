@@ -1,5 +1,9 @@
 from app.models.policy import Policy
-from app.schemas.recommendation import RecommendationRequest
+from app.schemas.recommendation import (
+    RecommendationItem,
+    RecommendationReason,
+    RecommendationRequest,
+)
 from app.services.policy_search_evaluation import (
     MatchState,
     RegionDecision,
@@ -7,7 +11,10 @@ from app.services.policy_search_evaluation import (
     RegionQueryResolution,
     RegionResolutionState,
 )
-from app.services.recommendation import evaluate_policy_recommendation
+from app.services.recommendation import (
+    _recommendation_region_sort_key,
+    evaluate_policy_recommendation,
+)
 
 
 def test_unknown_region_is_unconfirmed_candidate_not_nationwide() -> None:
@@ -49,3 +56,55 @@ def test_unknown_region_is_unconfirmed_candidate_not_nationwide() -> None:
         reason.code == "REGION_UNCONFIRMED" for reason in item.reasons
     )
     assert any("지역 제한 근거" in message for message in item.unknown_conditions)
+
+
+def test_recommendation_region_sort_prioritizes_local_scope() -> None:
+    request = RecommendationRequest(region="경상남도 양산시")
+    base = dict(
+        source_id="test",
+        external_id="test",
+        title="테스트 정책",
+        category="welfare",
+        min_age=None,
+        max_age=None,
+        application_start=None,
+        application_end=None,
+        application_status="open",
+        data_quality_status="valid",
+        score=30,
+        unknown_conditions=[],
+        disclaimer="원문 확인",
+    )
+    local = RecommendationItem(
+        id=1,
+        regions=["경상남도 양산시"],
+        reasons=[
+            RecommendationReason(
+                code="MATCHED_REGION",
+                label="거주지 조건 부합 (경상남도 양산시)",
+            )
+        ],
+        **base,
+    )
+    broad = local.model_copy(
+        update={"id": 2, "regions": [f"지역 {index}" for index in range(200)]}
+    )
+    nationwide = local.model_copy(
+        update={
+            "id": 3,
+            "regions": [],
+            "reasons": [
+                RecommendationReason(
+                    code="MATCHED_REGION",
+                    label="거주지 조건 부합 (전국)",
+                )
+            ],
+        }
+    )
+
+    assert _recommendation_region_sort_key(
+        local, request
+    ) < _recommendation_region_sort_key(broad, request)
+    assert _recommendation_region_sort_key(
+        broad, request
+    ) < _recommendation_region_sort_key(nationwide, request)
