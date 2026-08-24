@@ -210,7 +210,7 @@ def test_postgresql_golden_query_unmatched_term_zero(postgresql_session):
     assert items == []
 
 
-def test_explicit_region_is_match_only_but_inferred_region_keeps_unknown(
+def test_explicit_and_inferred_region_keep_unknown_as_unconfirmed_candidate(
     postgresql_session,
 ):
     session = postgresql_session
@@ -264,8 +264,20 @@ def test_explicit_region_is_match_only_but_inferred_region_keeps_unknown(
     explicit_items, _ = repo.search_policies(
         explicit, include_partial=True, page=1, limit=100
     )
-    assert unknown.id not in {item.policy.id for item in explicit_items}
-    assert all(item.verdicts.region == "match" for item in explicit_items)
+    explicit_unknown = next(
+        item for item in explicit_items if item.policy.id == unknown.id
+    )
+    assert explicit_unknown.verdicts.region == "unknown"
+    assert "REGION_UNKNOWN" in explicit_unknown.reason_codes
+    assert any(
+        condition.reason_code == "DATA_MISSING_REGION"
+        for condition in explicit_unknown.unconfirmed_conditions
+    )
+    assert explicit_items.index(explicit_unknown) > max(
+        index
+        for index, item in enumerate(explicit_items)
+        if item.verdicts.region == "match"
+    )
 
 
 def test_postgresql_explain_query_plan(postgresql_session):

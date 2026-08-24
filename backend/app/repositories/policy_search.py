@@ -460,17 +460,17 @@ class PolicySearchRepository:
                     is_mismatch = True
                 else:
                     verdicts.region = "unknown"
-                    if req_region.source == "explicit":
-                        is_mismatch = True
-                    else:
-                        reason_codes.append("REGION_UNKNOWN")
-                        unconfirmed.append(
-                            UnconfirmedCondition(
-                                field="region",
-                                reason_code="DATA_MISSING_REGION",
-                                message="지역 제한 근거 데이터가 누락되었습니다.",
-                            )
+                    reason_codes.append("REGION_UNKNOWN")
+                    unconfirmed.append(
+                        UnconfirmedCondition(
+                            field="region",
+                            reason_code="DATA_MISSING_REGION",
+                            message=(
+                                "지역 제한 근거가 없어 거주지 일치 여부를 "
+                                "확인할 수 없습니다. 공식 원문을 확인해 주세요."
+                            ),
                         )
+                    )
             else:
                 verdicts.region = None
 

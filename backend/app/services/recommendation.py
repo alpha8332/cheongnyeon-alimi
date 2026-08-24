@@ -67,9 +67,10 @@ def evaluate_policy_recommendation(
         elif region_decision.state is MatchState.MISMATCH:
             return None
         else:
-            # 사용자가 명시한 지역은 검색 API와 같은 fail-closed 경계를 쓴다.
-            # 근거가 unknown인 다른 지역 정책을 추천 후보에 섞지 않는다.
-            return None
+            unknown_conditions.append(
+                "지역 제한 근거가 없어 거주지 일치 여부를 확인할 수 없습니다. "
+                "공식 원문을 확인해 주세요."
+            )
 
     # 3. 연령 (Age) 판정 (+30점). 누락은 일치로 추정하지 않는다.
     if request.age is not None:
@@ -133,7 +134,9 @@ def evaluate_policy_recommendation(
         title=policy.title,
         lead=policy.summary,
         category=policy.categories[0] if policy.categories else (policy.category_text or "기타"),
-        regions=policy.regions or ["전국"],
+        # 빈 지역은 전국이 아니라 미확정이다. Frontend가 빈 배열을
+        # '지역 미정'으로 표시하고 unknown_conditions를 함께 안내한다.
+        regions=policy.regions or [],
         min_age=policy.age_min,
         max_age=policy.age_max,
         application_start=policy.application_start.isoformat() if policy.application_start else None,
