@@ -1,95 +1,182 @@
-# cheongnyeon-alimi
+# 청년정책알리미
 
-공공 청년정책 데이터를 수집·정제하고 사용자가 정책을 검색하고 추천받을 수
-있도록 만드는 오픈소스 웹 플랫폼이다.
+[![CI](https://github.com/alpha8332/cheongnyeon-alimi/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alpha8332/cheongnyeon-alimi/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/alpha8332/cheongnyeon-alimi)](https://github.com/alpha8332/cheongnyeon-alimi/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 문서
+지역·연령·관심 분야에 맞는 청년정책을 검색하고 추천받을 수 있는 오픈소스 웹
+서비스입니다. 공식 정책 데이터를 정규화해 검색·추천·신청 조건·마감일을 한곳에
+보여주고, 수집 이력과 데이터 품질을 관리자 화면에서 추적합니다.
 
-프로젝트의 문서 구조, 개발 전후 확인 사항과 변경 유형별 문서 갱신 기준은
-[docs/index.md](docs/index.md)에서 확인한다.
+> 대회 심사자와 일반 사용자는 API key, Python, Node.js, PostgreSQL을 설치할
+> 필요가 없습니다. Windows와 Docker Desktop만 있으면 공개 정책 데이터가 포함된
+> 전체 서비스를 실행할 수 있습니다.
 
-현재 온통청년·복지로의 제한 수집과 Raw 저장, 저장된 Runtime Raw의
-PostgreSQL 재처리, Seed·Runtime 최소 실행 이력 기반이 구현되어 있다.
-환경변수와 안전한 실행 범위는
-[Collector 실행 문서](docs/operations/collector.md)를 따른다. Source 전체 수집과
-공개 dataset의 GitHub Release·GHCR 자동 발행 Workflow가 구현됐고 `v1.0.0`
-원격 Production과 공개 dataset 457건 발행을 완료했다.
+## 바로 실행하기
 
-## 데이터 수집과 최신성
+### 1. 준비 사항
 
-GitHub에서 저장소를 clone하거나 ZIP으로 내려받고 Docker를 실행하는 것만으로
-최신 청년정책이 자동 수집되지는 않는다. 온통청년·복지로 실제 수집에는 각각
-`YOUTHCENTER_API_KEY`, `BOKJIRO_API_KEY`가 필요하며 실제 키는 저장소, Docker
-image와 배포 package에 포함하지 않는다. API 키가 없는 사용자는 Collector를
-직접 실행할 수 없다.
+- Windows 10 또는 11
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)과 Docker
+  Compose v2
+- image·cache·Volume 저장 공간 2 GiB 이상
+- 기본 포트 `3000`, `8000`을 사용 중이지 않은 환경
 
-현재 Collector는 명시적 CLI 실행, 저장된 Runtime Raw의 PostgreSQL 재처리와
-관리자 화면에서 요청하는 단일 Source 수동 수집·적재를 지원한다. Docker 환경은
-공개 웹 Source를 키 없이 수동 실행할 수 있고, 온통청년·복지로는 Git에서 무시되는
-`.env.compose`에 각 API key를 넣어야 한다. Acceptance Compose에는 Redis broker,
-Celery worker와 단일 Beat가 구현돼 있지만 정기 수집은 안전하게
-`COLLECTION_SCHEDULE_ENABLED=false`가 기본값이다. 따라서 API key와 승인된
-Source 주기를 설정하지 않고 웹 UI만 켠 상태에서는 신규 정책이 자동 추가되지
-않는다. 종료일이 지난 정책은 현재 KST 기준 공개 검색·추천에서 즉시 제외된다.
-공개 dataset 발행용 완전 수집은 중앙 환경에서만
-`COLLECTION_SCHEDULE_COMPLETE_SNAPSHOT=true`로 별도 승인하며, 관리자 화면의
-일반 제한 수집 성공은 공개 latest를 갱신하지 않는다.
+Docker Desktop을 설치한 뒤 화면 왼쪽 아래의 Engine 상태가 실행 중인지
+확인합니다. 그 외 개발 도구는 필요하지 않습니다.
 
-최종 공개 배포는 각 사용자 PC가 동일 Source를 직접 반복 수집하는 방식이 아니라,
-승인된 중앙 수집 환경이 API 키와 호출량을 관리하고 재배포가 허용된 정규화
-dataset을 버전화하여 사용자가 최초 실행·갱신 때 검증 후 로컬 PostgreSQL에
-적재한다. Windows 실행기, hash·Schema 검증, immutable cache, Migration과
-멱등 bootstrap과 Production Compose·CI promotion/rollback은 구현됐다. 실제
-공개 Release는 보호된 `production-data` Environment의 GitHub-hosted 일회성
-PostgreSQL·Redis·Celery 수집과 완전성 검증 뒤에만 갱신한다. 사용자 PC의 DB
-접속 정보나 장기 Self-hosted Runner는 사용하지 않는다.
-실제 정책 Raw와 DB dump는 Git에 커밋하지 않는다.
+### 2. 소스 받기
 
-Windows에서 Backend와 PostgreSQL 통합 테스트를 실행하는 절차는
-[Backend Windows 로컬 환경](docs/development/backend_local_setup.md)을
-따른다.
+Git을 사용할 수 있으면 PowerShell에서 다음 명령을 실행합니다.
 
-Windows에서 실제 PostgreSQL을 사용하는 전체 시스템을 실행하려면 저장소
-루트의 `run.bat`를 실행한다. Backend와 Frontend가 같은 터미널에서 실행되고
-홈 화면이 열리며, 종료할 때는 해당 터미널에서 `Ctrl+C`를 누른다. 별도
-pgpass 경로가 필요하면 첫 번째 인자로 전달할 수 있다. Release 1 역할별 확인
-항목은
-[Release 1 독립 검증 증거 안내](docs/contest/release_1_evidence_guide.md)를
-따른다.
+```powershell
+git clone https://github.com/alpha8332/cheongnyeon-alimi.git
+cd cheongnyeon-alimi
+```
 
-기본 DB가 아닌 명시적으로 준비한 격리 DB를 사용하려면 PowerShell에서
-`run.bat -PgpassFile <path> -DatabaseName <database>`로 실행한다. DB 이름은
-영문자·숫자·밑줄·하이픈만 허용하며 pgpass에도 해당 DB 또는 `*` 항목이 있어야
-한다. Node.js는 PATH를 우선 사용하고 Codex 데스크톱의 번들 Node.js가 있으면
-자동으로 대체 사용한다. 다른 Node.js 실행 파일을 지정하려면
-`-NodeExecutable <path>`를 함께 전달한다.
+Git이 없으면 GitHub의 **Code → Download ZIP**을 선택하고 ZIP을 해제한 뒤,
+해제한 폴더에서 PowerShell을 엽니다.
 
-## Docker로 웹 UI 실행
+### 3. 서비스 시작
 
-전체 웹 UI는 Frontend image 하나를 Docker Desktop에서 개별 실행하는 방식이
-아니라, 저장소 루트의 `run_docker.bat`이 PostgreSQL·Redis·Migration·공개
-dataset bootstrap·Backend·worker·Beat·Frontend를 함께 시작한다. API key는
-공개 최초 실행에 필요하지 않으며 첫 실행 때 관리자 4자리 PIN만 입력한다.
+저장소 루트에서 다음 한 줄을 실행합니다.
 
 ```powershell
 .\run_docker.bat
 ```
 
-기본 GitHub Release dataset pointer가 활성화되어 공개 dataset 457건을 자동으로
-검증·적재한다. 요구 환경, cache, offline 재실행과 실패 복구는
-[Windows Docker 최초 실행](docs/operations/docker_first_run.md)을 따른다.
+첫 실행 때 관리자 화면에 사용할 숫자 4자리 PIN을 한 번 입력합니다. PIN 평문은
+저장되지 않습니다. 실행기는 다음 작업을 자동으로 처리합니다.
 
-운영 image·Nginx Compose, GHCR release와 dataset 승격·롤백은
-[Production 배포와 데이터셋 발행](docs/operations/production_delivery.md)을
-따른다.
+1. Docker·Compose·디스크·포트 확인
+2. 공개 정책 dataset 다운로드와 SHA-256 검증
+3. Backend·Frontend image build
+4. PostgreSQL Migration과 dataset 적재
+5. Redis·Backend·수집 worker·scheduler·Frontend 시작
+6. health check 통과 후 브라우저 열기
 
-Acceptance snapshot을 다른 PC에 동일하게 인계하는 별도 절차는
-[Docker Acceptance 환경 설정](docs/development/docker_acceptance_setup.md)과
-[동일 환경 인계 패키지](docs/development/handoff/docker_acceptance/README.md)에
-정의되어 있다.
+첫 build는 Docker image 다운로드 때문에 시간이 걸릴 수 있습니다. 다음 메시지가
+차례대로 표시되면 실행에 성공한 것입니다.
+
+```text
+W6_P3_DATASET_VERIFIED: ...
+W6_P3_BOOTSTRAP_READY: url=http://127.0.0.1:3000 ...
+```
+
+- 사용자 화면: <http://127.0.0.1:3000>
+- 관리자 로그인: <http://127.0.0.1:3000/admin/login>
+- Backend health: <http://127.0.0.1:8000/health>
+
+관리자 로그인에는 첫 실행 때 입력한 4자리 PIN을 사용합니다.
+
+### 4. 종료와 재실행
+
+컨테이너를 종료하되 정책 DB와 설정을 보존하려면 다음 명령을 사용합니다.
+
+```powershell
+docker compose --env-file .env.compose down
+```
+
+다시 시작할 때는 `run_docker.bat`을 재실행합니다. 기존 PostgreSQL Volume을
+재사용하고 최신 공개 dataset을 검증한 뒤 멱등 반영합니다.
+
+## 주요 기능
+
+| 영역 | 제공 기능 |
+| --- | --- |
+| 정책 탐색 | 키워드·지역·연령·분야·신청 상태 검색, 일부 정보 정책 선택 조회 |
+| 정책 상세 | 핵심 신청 조건, 제외 조건, 필요 서류, D-Day, 공식 원문 연결 |
+| 맞춤 추천 | 사용자가 저장한 지역·연령·관심 분야에 따른 결정적 추천과 이유 |
+| 개인 도구 | 브라우저 기반 조건 저장, 폴더형 북마크, 마감 알림·달력, `.ics` 다운로드 |
+| 관리자 | 4자리 PIN 세션, 정책 데이터 조회, CollectionRun 실행·이력·상세·stale 표시 |
+| 품질·감사 | 수집 품질 집계, 구조화 로그 조회·보관 로그 정리와 감사 기록 |
+| 데이터 운영 | 중앙 Celery·Redis 수집 queue, 정책 생명주기, 공개 dataset 검증·승격·rollback |
+
+북마크와 맞춤 조건은 현재 브라우저의 `localStorage`에만 저장되며 서버로 전송하지
+않습니다. 추천 결과는 신청 자격의 최종 판정이 아니므로 반드시 공식 원문을 함께
+확인해야 합니다.
+
+## 서비스 구조
+
+```mermaid
+flowchart LR
+    S[공식 정책 Source] --> C[중앙 Collector<br/>Celery + Redis]
+    C --> V[정규화·품질·생명주기 검증]
+    V --> D[Versioned 공개 dataset]
+    D --> B[Docker 최초 실행·PostgreSQL bootstrap]
+    B --> A[FastAPI Backend]
+    A --> F[React Frontend]
+    A --> M[관리자 품질·수집·로그]
+```
+
+일반 사용자 PC가 원본 Source API를 반복 호출하지 않습니다. API key와 호출량은
+중앙 수집 환경에서만 관리하고, 완전 수집과 품질 검증을 통과한 정규화 dataset만
+버전과 hash를 고정해 공개합니다.
+
+Docker Compose 실행 단위는 PostgreSQL, Redis, Migration, dataset bootstrap,
+FastAPI Backend, Celery worker·scheduler, React Frontend입니다. 자세한 구조는
+[아키텍처 개요](docs/architecture/overview.md)와
+[컨테이너 구조](docs/architecture/container_structure.md)를 참고하세요.
+
+## 정책 데이터와 최신성
+
+- 최초 실행에는 온통청년·복지로 API key가 필요하지 않습니다.
+- 현재 공개 bootstrap dataset은 검증된 청년정책 457건으로 구성됩니다.
+- `run_docker.bat` 재실행 시 최신 dataset pointer와 hash를 다시 검증합니다.
+- 신규·변경 정책은 중앙 완전 수집이 성공한 경우에만 새 dataset으로 승격됩니다.
+- 종료일이 지난 정책은 KST 기준 기본 검색·추천에서 즉시 제외됩니다.
+- 실패·부분 수집에서는 기존 정책을 임의로 비활성화하지 않습니다.
+- 실제 Raw, PostgreSQL dump, API key와 개인정보는 GitHub Release에 포함하지
+  않습니다.
+
+데이터의 재배포 Source·허용 필드·출처 표시는
+[공개 정책 dataset 계약](docs/data/public_policy_dataset.md), 생명주기 규칙은
+[정책 생명주기 계약](docs/data/policy_lifecycle.md)에서 확인할 수 있습니다.
+
+## 자주 발생하는 문제
+
+| 증상 | 확인 방법 |
+| --- | --- |
+| `docker.exe`를 찾지 못함 | Docker Desktop을 설치하고 새 PowerShell을 연 뒤 `docker version` 확인 |
+| Docker engine이 실행 중이 아님 | Docker Desktop을 실행하고 Engine 시작 완료 후 재시도 |
+| `3000` 또는 `8000` 포트 충돌 | 사용 중인 프로그램을 종료하거나 [포트 변경 방법](docs/operations/docker_first_run.md#재실행과-offline-cache) 사용 |
+| dataset endpoint 접속 실패 | 이전 검증 cache가 있으면 `run_docker.bat -Offline`, 없으면 네트워크 확인 |
+| `.env.compose` 없이 기존 DB Volume 발견 | 기존 환경의 `.env.compose`를 복구하고 소유 관계를 확인한 뒤 실행 |
+| 브라우저가 자동으로 열리지 않음 | <http://127.0.0.1:3000>을 직접 열거나 `docker compose --env-file .env.compose ps` 확인 |
+
+실행기의 cache·offline·실패 안전 경계와 상세 복구 절차는
+[Windows Docker 최초 실행](docs/operations/docker_first_run.md)을 따릅니다.
+
+> 현재 one-command 실행기는 Windows 10/11에서 검증되었습니다. macOS와 Linux는
+> `run_docker.bat` 실행 대상이 아니며 아직 동일한 clean-room Gate를 통과하지
+> 않았습니다.
+
+## 개발과 검증
+
+개발자는 [문서 안내](docs/index.md)에서 데이터 계약, API, 아키텍처, 운영과 개발
+기록을 찾을 수 있습니다.
+
+- Backend Windows 환경: [backend_local_setup.md](docs/development/backend_local_setup.md)
+- Collector 실행과 API key 경계: [collector.md](docs/operations/collector.md)
+- Production 배포·dataset 승격: [production_delivery.md](docs/operations/production_delivery.md)
+- 변경 이력: [CHANGELOG.md](CHANGELOG.md)
+- 기여 방법: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+CI는 PostgreSQL 기반 Backend/Data 테스트, 문서 계약, Frontend unit·lint·build,
+Docker image와 Production Compose 계약을 검증합니다. 현재 Production release와
+공급망 증거는 [GitHub Releases](https://github.com/alpha8332/cheongnyeon-alimi/releases)와
+[artifact attestations](https://github.com/alpha8332/cheongnyeon-alimi/attestations)에서
+확인할 수 있습니다.
+
+## 보안과 비밀정보
+
+`.env.compose`는 첫 실행 때 로컬에 생성되고 Git에서 제외됩니다. 원본 API key,
+DB password, 관리자 PIN 평문, Runtime Raw·로그·dump를 Issue나 commit에 올리지
+마세요. 공개 저장소에 비밀정보가 노출됐다고 판단되면 값을 즉시 폐기·재발급한 뒤
+저장소 관리자에게 비공개 채널로 알려주세요.
 
 ## 라이선스
 
-프로젝트 코드는 [MIT License](LICENSE)로 배포한다. 정책 데이터의 재배포 범위와
-출처 표시는 코드 라이선스와 별개이며
-[공개 정책 dataset 계약](docs/data/public_policy_dataset.md)을 따른다.
+프로젝트 코드는 [MIT License](LICENSE)로 배포합니다. 정책 데이터는 코드
+라이선스와 별도이며 각 Source의 재배포 조건과
+[공개 정책 dataset 계약](docs/data/public_policy_dataset.md)을 따릅니다.
