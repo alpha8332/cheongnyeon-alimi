@@ -87,9 +87,12 @@ jobs:
         id: collection
         shell: bash
         run: |
-          collection_json=$(python scripts/run_complete_collection.py \
-            --source-id bokjiro-central-welfare-api \
-            --page-size 500 --timeout-seconds 1200)
+          if ! collection_json=$(python scripts/run_complete_collection.py \
+              --source-id bokjiro-central-welfare-api \
+              --page-size 500 --timeout-seconds 1200); then
+            cat "$RUNNER_TEMP/collection-worker.log" >&2
+            exit 1
+          fi
           echo "$collection_json"
           run_id=$(python -c 'import json,sys; print(json.load(sys.stdin)["collection_run_id"])' \
             <<<"$collection_json")

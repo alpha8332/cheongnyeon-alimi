@@ -100,6 +100,24 @@ def test_wait_for_promotable_run_rejects_unsafe_terminal_state(
         )
 
 
+def test_failed_run_reports_safe_error_type():
+    run_id = uuid4()
+    with pytest.raises(
+        CompleteCollectionError,
+        match=r"terminated with failed \(AuthenticationError\)",
+    ):
+        wait_for_promotable_run(
+            run_id,
+            timeout_seconds=10,
+            poll_interval_seconds=1,
+            state_reader=lambda _: _state(
+                run_id,
+                status="failed",
+                error_type="AuthenticationError",
+            ),
+        )
+
+
 def test_queue_and_wait_publishes_complete_snapshot_task(
     monkeypatch, session_factory
 ):

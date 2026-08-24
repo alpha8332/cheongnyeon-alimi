@@ -269,6 +269,7 @@ def test_ci_release_and_rollback_workflows_are_fail_closed():
     assert "postgres:" in dataset and "redis:" in dataset
     assert 'kill -0 "$worker_pid"' in dataset
     assert 'cat "$RUNNER_TEMP/collection-worker.log"' in dataset
+    assert "if ! collection_json=$(" in dataset
     assert "grep -qE ' ready\\.$'" in dataset
     assert "inspect ping" not in dataset
     assert dataset.index("--verify-manifest") < dataset.rindex("dataset-latest")

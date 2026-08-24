@@ -80,8 +80,11 @@ def wait_for_promotable_run(
         status = state.get("status")
         if status in TERMINAL_STATUSES:
             if status != "succeeded":
+                error_type = state.get("error_type")
+                error_suffix = f" ({error_type})" if error_type else ""
                 raise CompleteCollectionError(
                     f"complete collection terminated with {status}"
+                    f"{error_suffix}"
                 )
             if state.get("is_complete_snapshot") is not True:
                 raise CompleteCollectionError(
@@ -173,7 +176,7 @@ def main() -> int:
         return 0
     except (OSError, ValueError, CompleteCollectionError) as exc:
         print(
-            f"W6_P4_COMPLETE_COLLECTION_BLOCKED: {type(exc).__name__}",
+            f"W6_P4_COMPLETE_COLLECTION_BLOCKED: {type(exc).__name__}: {exc}",
             file=sys.stderr,
         )
         return 1
