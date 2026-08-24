@@ -97,6 +97,7 @@ export function toRecommendationRequestFromConditions(
     region: conditions.region,
     age: conditions.age,
     category: conditions.category,
+    include_partial: true,
   };
 }
 

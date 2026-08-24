@@ -30,7 +30,7 @@ export function buildHomeRecommendationRequest(
 ): RecommendationRequest {
   return {
     ...toRecommendationRequestFromConditions(conditions),
-    include_partial: false,
+    include_partial: true,
     limit: HOME_RECOMMENDATION_FETCH_LIMIT,
   };
 }

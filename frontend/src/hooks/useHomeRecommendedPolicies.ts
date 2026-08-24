@@ -27,7 +27,7 @@ export function useHomeRecommendedPolicies(
     page: 1,
     limit: 12,
     status: 'open',
-    include_partial: false,
+    include_partial: true,
   });
 
   const recommendationQuery = useQuery({

@@ -1,4 +1,4 @@
-import type { PolicyCategory, PolicyDto } from '@/types/policy';
+import type { PolicyCategory, PolicyDto } from '../types/policy.js';
 
 export interface ProgramFilterState {
   search: string;
@@ -13,7 +13,7 @@ export const EMPTY_PROGRAM_FILTERS: ProgramFilterState = {
   region: '',
   category: '',
   age: '',
-  includePartial: false,
+  includePartial: true,
 };
 
 function normalizeSearch(value: string): string {
