@@ -74,8 +74,7 @@ jobs:
               cat "$RUNNER_TEMP/collection-worker.log" >&2
               exit 1
             fi
-            if python -m celery -A app.worker.celery_app inspect ping \
-              --timeout=2 | grep -q pong; then
+            if grep -qE ' ready\.$' "$RUNNER_TEMP/collection-worker.log"; then
               exit 0
             fi
             echo "waiting for collection worker ($attempt/30)"
