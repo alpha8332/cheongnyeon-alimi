@@ -67,9 +67,14 @@ jobs:
             --loglevel=INFO --queues=collection --concurrency=1 \
             --hostname=production-data@%h \
             >"$RUNNER_TEMP/collection-worker.log" 2>&1 &
+          worker_pid=$!
           for attempt in {1..30}; do
+            if ! kill -0 "$worker_pid" 2>/dev/null; then
+              echo "collection worker exited before becoming ready" >&2
+              cat "$RUNNER_TEMP/collection-worker.log" >&2
+              exit 1
+            fi
             if python -m celery -A app.worker.celery_app inspect ping \
-              --destination="production-data@$(hostname)" \
               --timeout=2 | grep -q pong; then
               exit 0
             fi
@@ -77,6 +82,7 @@ jobs:
             sleep 2
           done
           echo "collection worker did not become ready" >&2
+          cat "$RUNNER_TEMP/collection-worker.log" >&2
           exit 1
       - name: Queue and await the complete public Source snapshot
         id: collection
