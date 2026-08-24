@@ -152,6 +152,7 @@ def test_compose_env_initializer_keeps_pin_plaintext_out_of_file():
     assert "ADMIN_PIN=$Pin" not in initializer
     assert "refusing overwrite" in initializer
     assert "RandomNumberGenerator" in initializer
+    assert "Import-Module Microsoft.PowerShell.Security -ErrorAction Stop" in initializer
     assert "Set-Acl" in initializer
     assert "check-ignore --quiet -- .env.compose" in initializer
 

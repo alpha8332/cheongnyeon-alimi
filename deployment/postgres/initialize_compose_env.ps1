@@ -123,6 +123,7 @@ try {
         [Security.AccessControl.AccessControlType]::Allow
     )
     [void]$Acl.AddAccessRule($Rule)
+    Import-Module Microsoft.PowerShell.Security -ErrorAction Stop
     Set-Acl -LiteralPath $TemporaryPath -AclObject $Acl
 
     Move-Item -LiteralPath $TemporaryPath -Destination $TargetPath
