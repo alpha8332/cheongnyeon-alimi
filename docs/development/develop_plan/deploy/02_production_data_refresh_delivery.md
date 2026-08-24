@@ -9,6 +9,7 @@
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
+- 라이선스 패치 Release: `v1.0.1` (`ea6d3fa`)
 - 선행 Forest: Integration 07 `W5-G2_PASS`, Deploy 01
   `DOCKER_ACCEPTANCE_PASS`
 - 주차 계획: [6주차 Final Release 실행 계획](../../weekly_plan/week_06_final_release.md)
@@ -226,6 +227,12 @@ Windows 사용자가 저장소와 README만으로 공개 dataset을 검증·복�
 ZIP을 독립 project·Volume에 실행하고 장애·복구·Browser actual을 통과했다.
 MIT License, README·운영·복구·SBOM attestation·CHANGELOG를 대조해
 `W6-G0_FINAL_RELEASE_PASS`로 닫았다.
+
+Final Gate 뒤 MIT 배포 조건을 source archive에도 명확히 반영하기 위해
+`ea6d3fa`를 `v1.0.1`로 패치 발행했다. Production workflow `32693225940`의
+Backend·Frontend 검증, GHCR digest build·attestation, 공개 dataset hash,
+clean Migration·Nginx smoke와 release receipt가 모두 통과했고, tag source ZIP의
+루트 `LICENSE` 포함도 별도로 확인했다.
 
 #### 목적
 

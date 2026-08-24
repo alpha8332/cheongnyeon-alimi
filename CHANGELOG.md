@@ -8,11 +8,22 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-08-24
+
 ### Added
 
 - 프로젝트 코드를 `cheongnyeon-alimi contributors` 명의의 MIT License로
   배포하고, 정책 dataset의 Source별 재배포 계약과 코드 라이선스 경계를 README에
   명시했다
+
+### Fixed
+
+- Final Gate SHA `ea6d3fa`를 MIT `LICENSE`가 포함된 annotated `v1.0.1` tag와
+  GitHub Release로 다시 발행하고, GHCR image·Production Compose smoke·공개
+  dataset을 새 `production-release.json`으로 대조했다
+  ([운영 문서](docs/operations/production_delivery.md#v101-mit-라이선스-패치-발행-증거))
+
+## [1.0.0] - 2026-08-24
 
 ### Changed
 
