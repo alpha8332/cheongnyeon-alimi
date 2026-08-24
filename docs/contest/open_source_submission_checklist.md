@@ -2,7 +2,7 @@
 
 ## 기준
 
-- 상태: in progress
+- 상태: remote branch clean-room passed, release gate in progress
 - 대상 Release: `v1.0.2`
 - 목표: 심사자가 README만 읽고 Git clone 또는 GitHub ZIP에서 전체 서비스를
   재현하고, 공개 저장소의 코드·문서·라이선스·데이터 경계를 확인할 수 있게 한다.
@@ -74,12 +74,37 @@ cache, project, port, PostgreSQL·Redis·log Volume은 모두 분리했다. 따�
 소스·상태 격리 실행 증거로는 유효하지만 “Docker를 처음 설치한 물리적 새 PC”
 검증으로 표기하지 않는다.
 
+## v1.0.2 원격 브랜치 clean-room actual
+
+`2026-08-24`에 `feature/release/v1.0.2-submission-readiness`를 GitHub에 push한
+뒤 commit `92f52fe55407103b1f87e16dcdeb77ec9e6efc9c`를 clone과 Download ZIP으로
+각각 다시 받았다. 두 경로 모두 기존 후보 디렉터리와 다른 source, env, dataset
+cache, Compose project, port, PostgreSQL·Redis·log Volume을 사용했다.
+
+| 항목 | GitHub clone | GitHub Download ZIP |
+| --- | --- | --- |
+| source 기준 | 원격 HEAD와 local HEAD가 `92f52fe55407`로 일치 | README Git blob `9c48d070c3aa638a6c103559669315dcd7ee4e90` 일치 |
+| 공개 파일·금지 파일 | `.env.compose`, `venv`, `.venv`, `node_modules`, `dist`, `runtime`, `.DS_Store` 없음 | 823개 파일, clone과 같은 금지 파일 없음 |
+| Docker project | `v102clone92f52fe` | `v102zip92f52fe` |
+| 격리 port | Frontend `13212`, Backend `18212` | Frontend `13213`, Backend `18213` |
+| 공개 dataset | `public-bootstrap-20260824-f5883bb79c594f`, SHA-256 `6457a37f...ed1f9`, 457건 | 동일 version·hash·457건 |
+| 최초 실행 | dataset 검증·Migration·bootstrap·6개 장기 service health 통과 | dataset 검증·Migration·bootstrap·6개 장기 service health 통과 |
+| 실제 Browser | 홈, `서울 주거` 35건, 청년월세 상세·복지로 원문, PIN 로그인, 관리자 삽입 457건 | 홈, `서울 주거` 35건, PIN 로그인, 관리자 삽입 457건 |
+| offline 재실행 | `inserted 0`, `updated 0`, `unchanged 457`, Backend health `ok` | `inserted 0`, `updated 0`, `unchanged 457`, Backend health `ok` |
+| 종료·보존 | running container 0, named Volume 4개 보존 | running container 0, named Volume 4개 보존 |
+
+Download ZIP 자체의 SHA-256은
+`bbd7918f4f28b7b3ed8cf8fc71c43abdb7069b16fd9b01126099f09163b1868b`였다.
+Windows clone의 README는 checkout 과정에서 LF가 CRLF로 변환되어 일반 파일
+hash가 달랐지만, 줄바꿈 정규화 내용과 GitHub ZIP의 Git blob ID는 원격 commit과
+일치했다.
+
 ## 최종 제출 Gate
 
 - [ ] 후보 commit·PR CI 통과와 `main`·`develop` 동기화
 - [ ] 원격 `main`의 fresh clone에서 README 절차 통과
 - [ ] 원격 `main` Download ZIP에서 README 절차 통과
-- [ ] clone·ZIP 각각 고유 env·cache·Volume에서 457건과 Browser 흐름 대조
+- [x] 원격 후보 브랜치 clone·ZIP 각각 고유 env·cache·Volume에서 457건과 Browser 흐름 대조
 - [ ] Docker image/cache가 없는 별도 Windows PC 또는 동등한 신규 환경 검증
 - [ ] `v1.0.2` annotated tag·Production Release·source archive 검증
 - [ ] 대회 제출 양식·시연 URL·대표 화면·라이선스·SBOM·성과 근거 최종 대조
