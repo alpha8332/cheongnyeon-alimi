@@ -5,7 +5,7 @@
 - 상태: 현재 구현 기준
 - 입력 계약: `NormalizedProgram` 1.0.0·1.1.0·1.2.0
 - 저장 모델: Backend `Policy`, 행정구역·정책 지역 관계·검색 projection 모델
-- Migration head: `20260824_0007`
+- Migration head: `20260824_0011`
 
 이 문서는 Data의 canonical JSON, Backend importer, PostgreSQL `policies`
 테이블과 공개 Policy API 사이의 현재 필드 매핑을 정의한다. 논리 필드의 의미와
@@ -27,6 +27,23 @@
   계약에는 없고 공개 Policy DTO에 추가된다. `last_seen_at`,
   `last_verified_at`, `inactive_at`은 내부 생명주기 필드이며 관리자 API에서만
   조회한다.
+
+## 공개 dataset projection 경계
+
+`policies`는 로컬 수집·과거 개발 데이터까지 보존하는 전체 저장소이며 그 자체가
+공개 목록은 아니다. 일반 사용자 목록·검색·추천·상세는
+`public_dataset_installations.status = active`인 단 하나의 검증된 dataset과
+`public_dataset_memberships`로 연결된 정책만 조회한다.
+
+- installation은 dataset version, manifest·artifact SHA-256, 예상 정책 수와
+  설치·활성 시각을 보존한다.
+- membership은 dataset version별 `source_id + external_id`와 기존 `policy_id`를
+  연결한다. dataset 교체가 기존 정책 row를 삭제하거나 ID를 다시 만들지 않는다.
+- 정책 upsert, membership 완성, 이전 version 비활성화와 새 version 활성화는 한
+  트랜잭션이다. 검증·대응 수가 하나라도 다르면 이전 active version이 유지된다.
+- 일반 seed·runtime 수집은 membership을 만들지 않으며 active 정책 row도
+  덮어쓰거나 inactive 처리하지 않는다. 새 identity는 관리자 검토용 DB에
+  남아도 dataset 승격 전에는 공개되지 않는다.
 
 ## 37개 필드 매핑
 

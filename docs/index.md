@@ -60,6 +60,8 @@
   원칙
 - [공개 정책 bootstrap dataset 계약](data/public_policy_dataset.md):
   재배포 Source·field allowlist, versioned manifest·hash와 공개 Runtime 경계
+- [공개 dataset 사용자 결과 동등성 계약](data/public_dataset_parity.md):
+  작성자 DB와 공개 bootstrap 사이의 Source·안전성 차이 fail-closed 감사
 - [정책 생명주기 계약](data/policy_lifecycle.md): 관측·검증·inactive 시각,
   마감 즉시 제외와 완전 수집에서만 허용하는 soft-deactivation 경계
 - [행정구역 기준정보](data/administrative_regions.md): 공식 법정동 snapshot,

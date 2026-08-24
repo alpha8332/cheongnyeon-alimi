@@ -53,6 +53,12 @@ from collectors.eligibility_mapping import (
     map_youthcenter_eligibility,
 )
 from collectors.http import HttpClient, HttpClientConfig
+from collectors.incheon_youth_programs import (
+    SOURCE_ID as INCHEON_YOUTH_PROGRAMS_SOURCE_ID,
+    IncheonYouthProgramsCollector,
+    IncheonYouthProgramsExtractor,
+    create_incheon_youth_programs_collector,
+)
 from collectors.gyeongbuk_youth import (
     SOURCE_ID as GYEONGBUK_YOUTH_SOURCE_ID,
     GyeongbukYouthExtractor,
@@ -161,6 +167,10 @@ default_registry.register(
     create_bokjiro_collector,
 )
 default_registry.register(
+    INCHEON_YOUTH_PROGRAMS_SOURCE_ID,
+    create_incheon_youth_programs_collector,
+)
+default_registry.register(
     CHEONAN_YOUTHCENTER_SOURCE_ID,
     create_cheonan_youthcenter_collector,
 )
@@ -217,6 +227,9 @@ __all__ = [
     "FieldStatistics",
     "HttpClient",
     "HttpClientConfig",
+    "INCHEON_YOUTH_PROGRAMS_SOURCE_ID",
+    "IncheonYouthProgramsCollector",
+    "IncheonYouthProgramsExtractor",
     "GyeongbukYouthExtractor",
     "BusanYouthExtractor",
     "InstitutionalContact",
@@ -292,4 +305,5 @@ __all__ = [
     "supplemental_http_config_from_environment",
     "outcome_from_decisions",
     "replay_profile_actions",
+    "create_incheon_youth_programs_collector",
 ]

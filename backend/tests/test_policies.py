@@ -404,9 +404,10 @@ def test_seed_root_must_be_an_array(db, tmp_path):
     assert db.query(Policy).count() == 0
 
 
-def test_get_policies_quality_filter(client, db):
+def test_get_policies_quality_filter(client, db, activate_all_policies):
     """품질 필터링 테스트 (3-A: 기본 valid만, include_partial=True시 partial 포함)"""
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
 
     # 1. 기본 조회는 마감된 valid 정책을 제외한다.
     response = client.get("/api/v1/policies")
@@ -422,9 +423,10 @@ def test_get_policies_quality_filter(client, db):
     assert data_partial["total"] == 3
 
 
-def test_get_policy_detail_no_provenance(client, db):
+def test_get_policy_detail_no_provenance(client, db, activate_all_policies):
     """일반 사용자 API 응답 패킷에 provenance 비노출 검증 (4-A)"""
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
     first_policy = db.query(Policy).filter(Policy.application_end.is_(None)).first()
 
     response = client.get(f"/api/v1/policies/{first_policy.id}")
@@ -434,9 +436,10 @@ def test_get_policy_detail_no_provenance(client, db):
     assert detail["title"] == first_policy.title
 
 
-def test_policy_date_and_text(client, db):
+def test_policy_date_and_text(client, db, activate_all_policies):
     """Date 파싱 및 원문 Text 동시 보존 검증 (5-A)"""
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
     valid_policy = db.query(Policy).filter(
         Policy.data_quality_status == "valid",
         Policy.application_end.is_(None),

@@ -13,6 +13,12 @@
 `valid`·`partial`을 함께 허용한다. `invalid` 정책은 어떤 경우에도 공개하지
 않는다.
 
+모든 사용자 목록·상세·자연어 검색·추천은 검증을 마치고 원자적으로 활성화된
+공개 dataset의 membership에 포함된 정책만 반환한다. 로컬 수집, 과거 개발
+데이터와 수동 수집 결과는 `policies`에 보존될 수 있지만 membership 승격 전에는
+이 API에서 조회되지 않는다. active dataset이 없으면 임의의 DB row로 대체하지
+않고 빈 결과 또는 상세 404를 반환한다.
+
 모든 사용자 목록·상세·자연어 검색·추천은 `inactive_at IS NULL`인 행 중
 `application_end`가 없거나 Asia/Seoul 오늘 이상인 정책만 반환한다. 종료일
 경과와 inactive 행은 명시적 `status=closed`에도 공개하지 않으며 관리자
@@ -38,11 +44,21 @@ GET /api/v1/policies/search
 | `page` | integer | `1` | 1 이상 |
 | `limit` | integer | `20` | 1~100 |
 
-`region`을 명시적으로 전달하면 검색 결과는 해당 지역이 `match`로 확인된
-정책만 반환한다. 지역 근거가 없는 `unknown`과 다른 지역인 `mismatch`는
-반환하지 않는다. 반면 `q`에서만 지역을 해석한 경우에는 기존 탐색 계약을
-유지해 `unknown`을 미확인 후보로 남기며, 응답의 `verdicts.region`과
-`unconfirmed_conditions`로 이를 구분한다.
+`region`을 명시적으로 전달하거나 `q`에서 지역을 해석한 경우, 다른 지역으로
+확인된 `mismatch`는 반환하지 않는다. 지역 근거가 없는 `unknown`은 공개
+bootstrap처럼 지역 필드가 누락된 전국 단위 정책의 발견 가능성을 보존하기
+위해 낮은 우선순위의 미확인 후보로 남긴다. 응답의 `verdicts.region`,
+`reason_codes=REGION_UNKNOWN`, `unconfirmed_conditions`로 확인된 지역 일치와
+명확히 구분하며 실제 거주지 자격은 공식 원문에서 확인해야 한다.
+
+지역 계층은 양방향 발견 규칙을 사용한다. 사용자가 시·군·구를 선택하면 그
+지역에 직접 지정된 정책과 상위 시·도 정책을 함께 반환한다. 사용자가 광역
+시·도를 선택하면 해당 광역 지역에 직접 지정된 정책뿐 아니라 하위 시·군·구에
+지정된 정책도 반환한다. 단, 하위 한 지역의 `exclude` 규칙만으로 광역 전체를
+제외하지 않는다.
+
+검색 관련도가 같으면 요청 지역에 직접 적용되는 좁은 범위 정책을 여러 지역을
+열거한 정책, 전국 정책, 지역 미확정 정책보다 먼저 정렬한다.
 
 ### 응답
 
@@ -123,8 +139,8 @@ GET /api/v1/policies/search
   필드 중 하나만 일치해도 된다.
 - `청년`, `지원`, `정책`, `사업` 같은 일반 term만 있는 탐색은 기존 발견
   가능성을 위해 term 중 하나가 일치하는 후보를 허용한다.
-- 이 규칙은 후보 집합만 제한하며 `score DESC`, `unknown_count ASC`, 상태,
-  `policy.id ASC`의 최종 결정적 정렬 순서는 바꾸지 않는다.
+- 이 규칙은 후보 집합만 제한한다. 최종 결정적 정렬은 `score DESC`, 지역
+  직접성·적용 범위, `unknown_count ASC`, 상태, `policy.id ASC` 순서다.
 
 ## 정책 목록
 

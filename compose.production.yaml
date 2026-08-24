@@ -53,7 +53,12 @@ services:
     depends_on:
       database: {condition: service_healthy}
     environment: *backend-environment
-    command: [alembic, upgrade, head]
+    command:
+      - sh
+      - -ec
+      - >-
+        alembic upgrade head &&
+        python -m app.cli.import_regions
     networks: [database]
     read_only: true
     tmpfs: ["/tmp:size=32m,mode=1777"]

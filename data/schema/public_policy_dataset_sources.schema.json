@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:cheongnyeon-alimi:schema:public-policy-dataset-sources:1.0.0",
+  "$id": "urn:cheongnyeon-alimi:schema:public-policy-dataset-sources:1.1.0",
   "title": "PublicPolicyDatasetSources",
   "description": "Default-deny source and field contract for public normalized policy datasets.",
   "type": "object",
@@ -16,7 +16,7 @@
   ],
   "properties": {
     "contract_version": {
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "checked_at": {
       "type": "string",

@@ -144,6 +144,7 @@ def test_postgresql_policy_search_evaluation_primitives():
 
             service = PolicySearchEvaluationService(db)
             query = service.resolve_region_alias("천안")
+            province_query = service.resolve_region_alias("충청남도")
             ambiguous = service.resolve_region_alias("중구")
 
             assert query.status is RegionResolutionState.MATCHED
@@ -157,6 +158,12 @@ def test_postgresql_policy_search_evaluation_primitives():
             assert service.evaluate_policy_region(
                 policies["other"].id, query
             ).reason is RegionDecisionReason.OTHER_REGION
+            assert service.evaluate_policy_region(
+                policies["exact"].id, province_query
+            ).reason is RegionDecisionReason.DESCENDANT
+            assert service.evaluate_policy_region(
+                policies["other"].id, province_query
+            ).reason is RegionDecisionReason.DESCENDANT
             assert service.evaluate_policy_region(
                 policies["nationwide"].id, query
             ).reason is RegionDecisionReason.NATIONWIDE

@@ -19,6 +19,33 @@ from app.services.policy_search_evaluation import (
 )
 
 
+def _recommendation_region_sort_key(
+    item: RecommendationItem,
+    request: RecommendationRequest,
+) -> tuple[int, int]:
+    """동점 추천에서 지역 직접 정책을 넓은 범위·미확정보다 우선한다."""
+    if not request.region:
+        return (0, 0)
+
+    reason_codes = {reason.code for reason in item.reasons}
+    if "REGION_UNCONFIRMED" in reason_codes:
+        return (3, 1_000_000)
+
+    region_reason = next(
+        (
+            reason
+            for reason in item.reasons
+            if reason.code == "MATCHED_REGION"
+        ),
+        None,
+    )
+    if region_reason is None:
+        return (4, 1_000_000)
+    if "(전국)" in region_reason.label:
+        return (2, 1_000_000)
+    return (0, max(len(item.regions), 1))
+
+
 def evaluate_policy_recommendation(
     policy: Policy,
     request: RecommendationRequest,
@@ -67,9 +94,16 @@ def evaluate_policy_recommendation(
         elif region_decision.state is MatchState.MISMATCH:
             return None
         else:
-            # 사용자가 명시한 지역은 검색 API와 같은 fail-closed 경계를 쓴다.
-            # 근거가 unknown인 다른 지역 정책을 추천 후보에 섞지 않는다.
-            return None
+            reasons.append(
+                RecommendationReason(
+                    code="REGION_UNCONFIRMED",
+                    label="거주지 일치 미확인",
+                )
+            )
+            unknown_conditions.append(
+                "지역 제한 근거가 없어 거주지 일치 여부를 확인할 수 없습니다. "
+                "공식 원문을 확인해 주세요."
+            )
 
     # 3. 연령 (Age) 판정 (+30점). 누락은 일치로 추정하지 않는다.
     if request.age is not None:
@@ -133,7 +167,9 @@ def evaluate_policy_recommendation(
         title=policy.title,
         lead=policy.summary,
         category=policy.categories[0] if policy.categories else (policy.category_text or "기타"),
-        regions=policy.regions or ["전국"],
+        # 빈 지역은 전국이 아니라 미확정이다. Frontend가 빈 배열을
+        # '지역 미정'으로 표시하고 unknown_conditions를 함께 안내한다.
+        regions=policy.regions or [],
         min_age=policy.age_min,
         max_age=policy.age_max,
         application_start=policy.application_start.isoformat() if policy.application_start else None,
@@ -192,8 +228,14 @@ def recommend_policies_service(
         if item is not None:
             evaluated_items.append(item)
 
-    # 결정적 정렬: score 내림차순, id 오름차순
-    evaluated_items.sort(key=lambda x: (-x.score, x.id))
+    # 결정적 정렬: score 내림차순, 지역 직접성/범위, id 오름차순
+    evaluated_items.sort(
+        key=lambda item: (
+            -item.score,
+            *_recommendation_region_sort_key(item, request),
+            item.id,
+        )
+    )
 
     # limit 개수 제한
     result_items = evaluated_items[: request.limit]

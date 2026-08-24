@@ -3,11 +3,13 @@ import test from 'node:test';
 import type { RecommendationItemDto, RecommendationResponse } from '../src/types/recommendation.js';
 import {
   buildRecommendationQueryWarningMessage,
+  countRecommendationUnconfirmedRegionItems,
   countRecommendationUnknownItems,
   formatRecommendationAge,
   formatRecommendationReasonSummary,
   hasQueryLevelRecommendationWarnings,
   hasRecommendationUnknownConditions,
+  hasRecommendationUnconfirmedRegion,
 } from '../src/utils/recommendationReasonHelpers.js';
 
 function createItem(
@@ -78,4 +80,22 @@ test('hasQueryLevelRecommendationWarnings는 response item 중 unknown을 감지
   assert.equal(hasQueryLevelRecommendationWarnings(response), true);
   assert.equal(countRecommendationUnknownItems(response), 1);
   assert.match(buildRecommendationQueryWarningMessage(response), /1건/);
+});
+
+test('지역 미확정 추천은 지역 정책으로 단정하지 않는 안내를 만든다', () => {
+  const item = createItem({
+    regions: [],
+    reasons: [{ code: 'REGION_UNCONFIRMED', label: '거주지 일치 미확인' }],
+    unknown_conditions: ['지역 제한 근거가 없습니다.'],
+  });
+  const response: RecommendationResponse = {
+    items: [item],
+    total: 1,
+    evaluated_at: '2026-01-01',
+  };
+
+  assert.equal(hasRecommendationUnconfirmedRegion(item), true);
+  assert.equal(countRecommendationUnconfirmedRegionItems(response), 1);
+  assert.match(formatRecommendationReasonSummary(item), /거주지 일치 미확인/);
+  assert.match(buildRecommendationQueryWarningMessage(response), /해당 지역 정책으로 확인된 결과가 아닙니다/);
 });

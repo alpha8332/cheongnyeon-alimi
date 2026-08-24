@@ -28,6 +28,7 @@ class RegionResolutionState(str, Enum):
 class RegionDecisionReason(str, Enum):
     EXACT = "exact"
     ANCESTOR = "ancestor"
+    DESCENDANT = "descendant"
     NATIONWIDE = "nationwide"
     EXCLUDE = "exclude"
     OTHER_REGION = "other_region"
@@ -95,6 +96,7 @@ class RegionRuleEvidence:
     province_scheme: str | None = None
     province_code: str | None = None
     match_distance: int | None = None
+    query_relation: str | None = None
 
 
 @dataclass(frozen=True)
@@ -285,7 +287,18 @@ def evaluate_region_condition(
             (rule.region_scheme, rule.region_code)
         )
         if distance is not None:
-            matched.append(replace(rule, match_distance=distance))
+            matched.append(
+                replace(
+                    rule,
+                    match_distance=distance,
+                    query_relation=("exact" if distance == 0 else "ancestor"),
+                )
+            )
+        elif rule.relation == "include" and rule.query_relation == "descendant":
+            # 광역 시·도 또는 aggregate 시를 검색하면 그 하위 시·군·구에
+            # 명시적으로 포함된 정책도 발견할 수 있어야 한다. 하위 exclude는
+            # 광역 전체를 제외한다는 뜻이 아니므로 여기서는 포함하지 않는다.
+            matched.append(rule)
 
     matching_excludes = sorted(
         (rule for rule in matched if rule.relation == "exclude"),
@@ -308,9 +321,13 @@ def evaluate_region_condition(
         return RegionDecision(
             MatchState.MATCH,
             (
-                RegionDecisionReason.EXACT
-                if evidence.match_distance == 0
-                else RegionDecisionReason.ANCESTOR
+                RegionDecisionReason.DESCENDANT
+                if evidence.query_relation == "descendant"
+                else (
+                    RegionDecisionReason.EXACT
+                    if evidence.match_distance == 0
+                    else RegionDecisionReason.ANCESTOR
+                )
             ),
             query,
             evidence,
@@ -455,30 +472,34 @@ class PolicySearchEvaluationService:
             )
         }
         query_path = self._query_path(query, catalog)
-        rules = tuple(
-            RegionRuleEvidence(
-                relation=rule.relation,
-                resolution_status=rule.resolution_status,
-                region_scheme=rule.region_scheme,
-                region_code=rule.region_code,
-                region_status=(
-                    catalog[(rule.region_scheme, rule.region_code)].status
-                    if (
-                        rule.region_scheme is not None
-                        and rule.region_code is not None
-                        and (rule.region_scheme, rule.region_code) in catalog
-                    )
-                    else None
-                ),
-                source_code=rule.source_code,
-                source_text=rule.source_text,
-                **_province_evidence(
-                    rule.region_scheme,
-                    rule.region_code,
-                    catalog,
-                ),
-            )
-            for rule in rule_models
+        rules = _annotate_descendant_evidence(
+            query,
+            catalog,
+            tuple(
+                RegionRuleEvidence(
+                    relation=rule.relation,
+                    resolution_status=rule.resolution_status,
+                    region_scheme=rule.region_scheme,
+                    region_code=rule.region_code,
+                    region_status=(
+                        catalog[(rule.region_scheme, rule.region_code)].status
+                        if (
+                            rule.region_scheme is not None
+                            and rule.region_code is not None
+                            and (rule.region_scheme, rule.region_code) in catalog
+                        )
+                        else None
+                    ),
+                    source_code=rule.source_code,
+                    source_text=rule.source_text,
+                    **_province_evidence(
+                        rule.region_scheme,
+                        rule.region_code,
+                        catalog,
+                    ),
+                )
+                for rule in rule_models
+            ),
         )
         return evaluate_region_condition(
             coverage_scope=policy.coverage_scope,
@@ -512,30 +533,40 @@ class PolicySearchEvaluationService:
 
         decisions: dict[int, RegionDecision] = {}
         for policy in selected:
-            evidence = tuple(
-                RegionRuleEvidence(
-                    relation=rule.relation,
-                    resolution_status=rule.resolution_status,
-                    region_scheme=rule.region_scheme,
-                    region_code=rule.region_code,
-                    region_status=(
-                        catalog[(rule.region_scheme, rule.region_code)].status
-                        if (
-                            rule.region_scheme is not None
-                            and rule.region_code is not None
-                            and (rule.region_scheme, rule.region_code) in catalog
-                        )
-                        else None
-                    ),
-                    source_code=rule.source_code,
-                    source_text=rule.source_text,
-                    **_province_evidence(
-                        rule.region_scheme,
-                        rule.region_code,
-                        catalog,
-                    ),
-                )
-                for rule in grouped_rules.get(policy.id, ())
+            evidence = _annotate_descendant_evidence(
+                query,
+                catalog,
+                tuple(
+                    RegionRuleEvidence(
+                        relation=rule.relation,
+                        resolution_status=rule.resolution_status,
+                        region_scheme=rule.region_scheme,
+                        region_code=rule.region_code,
+                        region_status=(
+                            catalog[
+                                (rule.region_scheme, rule.region_code)
+                            ].status
+                            if (
+                                rule.region_scheme is not None
+                                and rule.region_code is not None
+                                and (
+                                    rule.region_scheme,
+                                    rule.region_code,
+                                )
+                                in catalog
+                            )
+                            else None
+                        ),
+                        source_code=rule.source_code,
+                        source_text=rule.source_text,
+                        **_province_evidence(
+                            rule.region_scheme,
+                            rule.region_code,
+                            catalog,
+                        ),
+                    )
+                    for rule in grouped_rules.get(policy.id, ())
+                ),
             )
             decisions[policy.id] = evaluate_region_condition(
                 coverage_scope=policy.coverage_scope,
@@ -644,6 +675,62 @@ def _province_evidence(
             break
         current = catalog.get((current.scheme, parent_code))
     return {"province_scheme": None, "province_code": None}
+
+
+def _annotate_descendant_evidence(
+    query: RegionQueryResolution,
+    catalog: dict[tuple[str, str], AdministrativeRegion],
+    rules: tuple[RegionRuleEvidence, ...],
+) -> tuple[RegionRuleEvidence, ...]:
+    return tuple(
+        replace(
+            rule,
+            match_distance=distance,
+            query_relation="descendant",
+        )
+        if (
+            rule.relation == "include"
+            and (distance := _descendant_distance(query, rule, catalog))
+            is not None
+        )
+        else rule
+        for rule in rules
+    )
+
+
+def _descendant_distance(
+    query: RegionQueryResolution,
+    rule: RegionRuleEvidence,
+    catalog: dict[tuple[str, str], AdministrativeRegion],
+) -> int | None:
+    if query.status is not RegionResolutionState.MATCHED:
+        return None
+    if len(query.candidates) != 1:
+        return None
+    if rule.region_scheme is None or rule.region_code is None:
+        return None
+
+    target = query.candidates[0]
+    if rule.region_scheme != target.scheme:
+        return None
+
+    current_key = (rule.region_scheme, rule.region_code)
+    target_key = (target.scheme, target.code)
+    distance = 0
+    seen: set[tuple[str, str]] = set()
+    while current_key not in seen:
+        seen.add(current_key)
+        if current_key == target_key:
+            return distance if distance > 0 else None
+        current = catalog.get(current_key)
+        if current is None:
+            return None
+        parent_code = current.aggregate_parent_code or current.parent_code
+        if parent_code is None:
+            return None
+        current_key = (current.scheme, parent_code)
+        distance += 1
+    raise RuntimeError("region hierarchy contains a cycle")
 
 
 def _candidate(region: AdministrativeRegion) -> RegionCandidate:

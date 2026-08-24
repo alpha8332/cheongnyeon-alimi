@@ -17,9 +17,10 @@ SEED_FILE_PATH = (
 
 
 @pytest.fixture(autouse=True)
-def setup_seed_data(db):
+def setup_seed_data(db, activate_all_policies):
     app.dependency_overrides[get_db] = lambda: db
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
     yield
     app.dependency_overrides.pop(get_db, None)
 

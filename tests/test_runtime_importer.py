@@ -12,6 +12,8 @@ for import_root in (ROOT, BACKEND_ROOT):
     if str(import_root) not in sys.path:
         sys.path.insert(0, str(import_root))
 
+import app.models  # noqa: F401
+from app.core.database import Base
 from app.models.policy import Policy
 from app.services.runtime_importer import (
     _inactivate_missing_policies,
@@ -46,7 +48,7 @@ def _policy(source_id: str, external_id: str | None) -> Policy:
 
 def test_complete_source_soft_deactivates_only_missing_projection() -> None:
     engine = create_engine("sqlite+pysqlite:///:memory:")
-    Policy.__table__.create(engine)
+    Base.metadata.create_all(engine)
     with Session(engine) as db:
         db.add_all(
             [
@@ -81,7 +83,7 @@ def test_complete_source_soft_deactivates_only_missing_projection() -> None:
 
 def test_complete_empty_source_preserves_history_as_inactive() -> None:
     engine = create_engine("sqlite+pysqlite:///:memory:")
-    Policy.__table__.create(engine)
+    Base.metadata.create_all(engine)
     with Session(engine) as db:
         db.add(_policy("regional-jeonbuk-youth-platform", "review"))
         db.commit()
