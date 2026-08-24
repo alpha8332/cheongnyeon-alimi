@@ -87,3 +87,9 @@ Acceptance snapshot을 다른 PC에 동일하게 인계하는 별도 절차는
 [Docker Acceptance 환경 설정](docs/development/docker_acceptance_setup.md)과
 [동일 환경 인계 패키지](docs/development/handoff/docker_acceptance/README.md)에
 정의되어 있다.
+
+## 라이선스
+
+프로젝트 코드는 [MIT License](LICENSE)로 배포한다. 정책 데이터의 재배포 범위와
+출처 표시는 코드 라이선스와 별개이며
+[공개 정책 dataset 계약](docs/data/public_policy_dataset.md)을 따른다.

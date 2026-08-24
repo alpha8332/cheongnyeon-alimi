@@ -2,8 +2,8 @@
 
 ## 작업 정보
 
-- 상태: in-progress
-- 진행: W6-P5 clean-room PASS, Final Gate pending LICENSE
+- 상태: completed
+- 현재 Gate: `W6-G0_FINAL_RELEASE_PASS` (`2026-08-24`)
 - 작업일: `2026-08-24`
 - 담당 영역: Data, Team Leader - Integration·Deploy
 - 계획: [Deploy 02 계획](../../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -35,7 +35,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | W6-P2 | completed | Redis AOF·Celery worker·단일 Beat·actual queue, `W6-P2_QUEUE_PASS` |
 | W6-P3 | completed | actual 451건 clean Volume·offline 멱등 bootstrap, `W6-P3_BOOTSTRAP_PASS` |
 | W6-P4 | completed | 중앙 dataset Release·GHCR digest·SLSA provenance·clean Production smoke, `W6-P4_PRODUCTION_PASS` |
-| W6-P5 | clean-room completed | clone·ZIP·장애·복구·actual Browser PASS; Final Gate는 LICENSE 결정 대기 |
+| W6-P5 | completed | clone·ZIP·장애·복구·actual Browser·MIT License 대조, `W6-G0_FINAL_RELEASE_PASS` |
 
 ## 구현 내용
 
@@ -367,11 +367,23 @@ remote-control 응답 의존을 제거하고, 안전한 오류 유형·worker lo
 [Windows clone·ZIP clean-room 복구](../../../troubleshooting/integration/windows_clone_zip_clean_room_recovery.md)에
 기록했다.
 
+### Final Gate 판정
+
+- 프로젝트 코드 라이선스는 MIT로 확정하고 루트 `LICENSE`와 README에 표시했다.
+- 코드 MIT License와 정책 dataset의 Source별 재배포 계약을 별도 경계로
+  문서화했다.
+- README·Collector·운영·복구·SBOM attestation·CHANGELOG·제출 문서를
+  clean-room 결과와 대조했다.
+- W6-P0~P5, blocker/high 0건과 원격 CI 통과를 근거로
+  `W6-G0_FINAL_RELEASE_PASS`를 판정했다.
+
 ## 남은 작업
 
-1. 프로젝트 코드 라이선스를 소유자가 선택해 루트 `LICENSE`로 추가하고 README·
-   제출 문서와 대조한 뒤 `W6-G0_FINAL_RELEASE_PASS`를 판정한다.
-2. 공개 제외 4건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
+Final Gate를 차단하는 남은 작업은 없다. 아래 항목은 배포 후 운영 관찰 범위다.
+
+## 비차단 운영 후속
+
+1. 공개 제외 4건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.
-3. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
+2. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
    인증·TLS 오류를 Source별 운영 지표로 계속 구분한다.

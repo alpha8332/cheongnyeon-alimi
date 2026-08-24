@@ -41,7 +41,7 @@
 | Integration 09 | Admin Data and Log Console | [개발 계획](integration/09_admin_data_log_console.md) | draft |
 | Integration 10 | Review Admission and Deploy Handoff | [개발 계획](integration/10_review_admission_docker_acceptance.md) | completed |
 | Deploy 01 | Docker Acceptance Environment | [개발 계획](deploy/01_docker_acceptance_environment.md) | completed |
-| Deploy 02 | Production Data Refresh and Delivery | [개발 계획](deploy/02_production_data_refresh_delivery.md) | in-progress (W6-P5 clean-room PASS, LICENSE pending) |
+| Deploy 02 | Production Data Refresh and Delivery | [개발 계획](deploy/02_production_data_refresh_delivery.md) | completed (`W6-G0_FINAL_RELEASE_PASS`) |
 
 새 Forest 계획을 추가하면 이 표와 [`docs/index.md`](../../index.md)를 함께
 갱신한다.
@@ -89,7 +89,7 @@ Production Data Refresh와 Final Release Gate다.
 | Data 06 뒤 | `R2-FEATURE-ACCEPTANCE` | actual E2E·독립 사용성·QA·수정본 재검증과 Release 2 판정 | 착수 전 integration domain 합의 |
 | 완료 | `R2-REVIEW-ADMISSION` | 최신 review 재판정·partial 적재·새 기준선·`W5-G1_REVALIDATED` | `feature/integration/week-05-acceptance` |
 | 완료 | `R2-DOCKER-ACCEPTANCE` | 동일 Git SHA·snapshot의 Docker·clean-room·BE·FE·리뷰어 환경 인계 | `feature/deploy/docker-acceptance-environment` |
-| Final Gate 전·LICENSE pending | `R3-PRODUCTION-DATA-REFRESH` | 공개 dataset·정책 lifecycle·Celery/Redis 중앙 수집·one-command 실행·Production CI/CD·clean-room | `codex/w6-p5-clean-room` |
+| 완료·`W6-G0_FINAL_RELEASE_PASS` | `R3-PRODUCTION-DATA-REFRESH` | 공개 dataset·정책 lifecycle·Celery/Redis 중앙 수집·one-command 실행·Production CI/CD·clean-room | `codex/w6-final-license` |
 | 보류 | `SOURCE-NULL-ID` | external ID 없는 새 Source가 실제 도입될 때 재개 | 현재 브랜치 생성 안 함 |
 
 ```text

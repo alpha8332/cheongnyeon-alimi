@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- 프로젝트 코드를 `cheongnyeon-alimi contributors` 명의의 MIT License로
+  배포하고, 정책 dataset의 Source별 재배포 계약과 코드 라이선스 경계를 README에
+  명시했다
+
 ### Changed
 
 - Git `f5883bb`를 `v1.0.0`으로 발행하고 중앙 완전 수집 461건 중 개인정보
