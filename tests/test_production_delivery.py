@@ -296,8 +296,12 @@ def test_ci_release_and_rollback_workflows_are_fail_closed():
     assert "scripts/run_complete_collection.py" in dataset
     assert "scripts/audit_public_dataset_parity.py" in dataset
     assert "--require-parity" in dataset
+    assert "python -m app.cli.import_public_dataset" in dataset
+    assert dataset.index("promote_public_dataset.py") < dataset.index(
+        "python -m app.cli.import_public_dataset"
+    ) < dataset.index("audit_public_dataset_parity.py")
     assert dataset.index("audit_public_dataset_parity.py") < dataset.index(
-        "promote_public_dataset.py"
+        'gh release create "dataset-${DATASET_VERSION}"'
     )
     assert "youthcenter-api" in dataset
     assert "data-go-kr-incheon-youth-programs" in dataset

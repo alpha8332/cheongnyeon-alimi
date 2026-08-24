@@ -142,15 +142,18 @@ Workflow는 Migration 뒤 격리 Celery worker를 시작하고
 - `finished_at` 존재
 - `invalid_count`·`rejected_count`·`failed_count`가 모두 0
 
-조건이 맞지 않으면 artifact 작성 전 중단한다. 통과하면 불변 Release를 먼저
-업로드하고, 업로드된 파일을 다시 내려받아 검증한 뒤에만 `dataset-latest`
-pointer를 갱신한다. 실패·`partial_failure`·더 최신 실행 존재 시 기존 latest는
-그대로 남는다.
+조건이 맞지 않으면 artifact 작성 전 중단한다. 통과하면 Source contract와 content
+safety 검증을 거쳐 artifact를 만들고, 같은 임시 DB에 artifact를 설치·활성화한다.
+설치는 manifest·artifact hash와 전체 row를 단일 트랜잭션으로 검증하며, 활성
+membership에 포함된 정책만 사용자 조회 경계가 된다.
 
-완전 수집 직후에는 `audit_public_dataset_parity.py --require-parity`를 실행한다.
-수집 DB에서 사용자에게 노출될 수 있지만 공개 Source·content safety 경계를 통과하지
-못하는 레코드가 하나라도 있으면 dataset 작성 전에 중단한다. Source 누락과 안전성
-제외를 조용히 row 감소로 처리하지 않는다.
+활성화 직후 `audit_public_dataset_parity.py --require-parity`를 실행해 실제 사용자
+projection이 허용 Source와 content safety 경계를 모두 만족하는지 확인한다. 이
+감사가 통과해야만 불변 Release를 업로드한다. 업로드된 파일을 다시 내려받아 검증한
+뒤에만 `dataset-latest` pointer를 갱신하며, 어느 단계든 실패하거나 더 최신 수집이
+존재하면 기존 latest는 그대로 남는다. 수집 원본 중 안전 경계에서 제외된 row와
+허가되지 않은 로컬 개발 Source는 DB에 남을 수 있지만 활성 membership에는 들어가지
+않으므로 사용자 API에 노출되지 않는다.
 
 공개 dataset 수집 Source는 `bokjiro-central-welfare-api`, `youthcenter-api`,
 `data-go-kr-incheon-youth-programs`다. Worker는 bounded multi-page snapshot

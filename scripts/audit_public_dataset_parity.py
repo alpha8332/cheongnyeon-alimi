@@ -28,6 +28,9 @@ from app.core.database import create_db_engine  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.models.policy_search import PolicyRegionRule  # noqa: E402
 from app.repositories.policy_lifecycle import public_policy_predicates  # noqa: E402
+from app.repositories.public_dataset import (  # noqa: E402
+    active_public_dataset_membership_predicate,
+)
 from scripts.build_public_bootstrap_dataset import (  # noqa: E402
     DEFAULT_CONTRACT,
     content_safety_counts,
@@ -88,6 +91,7 @@ def build_report(
     rules_by_policy: Mapping[int, Sequence[PolicyRegionRule]],
     contract: Mapping[str, Any],
     as_of: date,
+    dataset_scope: str = "provided_policy_set",
 ) -> dict[str, Any]:
     allowed_source_ids = {
         str(item["source_id"]) for item in contract["included_sources"]
@@ -173,6 +177,7 @@ def build_report(
         "source_contract_version": contract["contract_version"],
         "comparison_contract": {
             "user_visible_quality_statuses": ["valid", "partial"],
+            "dataset_scope": dataset_scope,
             "lifecycle": "active and application_end >= as_of or absent",
             "exact_title_is_review_only": True,
             "raw_payload_compared": False,
@@ -210,13 +215,14 @@ def audit_database(
                     .where(
                         Policy.data_quality_status.in_(("valid", "partial")),
                         *public_policy_predicates(as_of=as_of),
+                        active_public_dataset_membership_predicate(Policy.id),
                     )
                     .order_by(Policy.source_id, Policy.external_id, Policy.id)
                 )
             )
             if not policies:
                 raise PublicDatasetParityError(
-                    "no user-visible policy was found"
+                    "no user-visible policy was found in the active public dataset"
                 )
             policy_ids = [int(policy.id) for policy in policies]
             rules_by_policy: dict[int, list[PolicyRegionRule]] = defaultdict(list)
@@ -232,6 +238,7 @@ def audit_database(
                 rules_by_policy=rules_by_policy,
                 contract=contract,
                 as_of=as_of,
+                dataset_scope="active_public_dataset_membership",
             )
     finally:
         engine.dispose()

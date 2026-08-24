@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import date, datetime
 from pathlib import Path
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 
@@ -17,9 +17,16 @@ for import_root in (ROOT, ROOT / "backend"):
 
 from app.core.database import Base  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
-from app.repositories.policy_lifecycle import public_policy_predicates  # noqa: E402
+from app.models.public_dataset import (  # noqa: E402
+    PublicDatasetInstallation,
+    PublicDatasetMembership,
+)
 from collectors.normalized import NormalizedProgram  # noqa: E402
-from scripts.audit_public_dataset_parity import build_report  # noqa: E402
+from scripts import audit_public_dataset_parity as parity_module  # noqa: E402
+from scripts.audit_public_dataset_parity import (  # noqa: E402
+    audit_database,
+    build_report,
+)
 from scripts.build_public_bootstrap_dataset import (  # noqa: E402
     DEFAULT_CONTRACT,
     load_source_contract,
@@ -147,8 +154,12 @@ def test_parity_report_passes_when_every_visible_record_is_publishable():
     assert report["summary"]["parity_gap_row_count"] == 0
 
 
-def test_database_query_uses_public_lifecycle_boundary():
-    engine = create_engine("sqlite+pysqlite:///:memory:")
+def test_database_audit_uses_active_membership_and_public_lifecycle(
+    tmp_path, monkeypatch
+):
+    database_path = tmp_path / "parity.sqlite3"
+    database_url = f"sqlite+pysqlite:///{database_path.as_posix()}"
+    engine = create_engine(database_url)
     Base.metadata.create_all(engine)
     with Session(engine) as session:
         session.add_all(
@@ -160,21 +171,59 @@ def test_database_query_uses_public_lifecycle_boundary():
                 ),
                 _policy(
                     2,
-                    source_id="regional-busan-youth-platform",
+                    source_id="bokjiro-central-welfare-api",
                     title="과거 정책",
                     application_end=date(2026, 8, 23),
+                ),
+                _policy(
+                    3,
+                    source_id="regional-busan-youth-platform",
+                    title="비공개 로컬 정책",
+                ),
+            ]
+        )
+        session.add(
+            PublicDatasetInstallation(
+                dataset_version="public-bootstrap-20260824-abcdef0",
+                manifest_sha256="a" * 64,
+                artifact_sha256="b" * 64,
+                expected_policy_count=2,
+                status="active",
+                activated_at=datetime(2026, 8, 24, 0, 0),
+            )
+        )
+        session.add_all(
+            [
+                PublicDatasetMembership(
+                    dataset_version="public-bootstrap-20260824-abcdef0",
+                    source_id="bokjiro-central-welfare-api",
+                    external_id="POLICY-1",
+                    policy_id=1,
+                ),
+                PublicDatasetMembership(
+                    dataset_version="public-bootstrap-20260824-abcdef0",
+                    source_id="bokjiro-central-welfare-api",
+                    external_id="POLICY-2",
+                    policy_id=2,
                 ),
             ]
         )
         session.commit()
-        policies = list(
-            session.scalars(
-                select(Policy).where(
-                    Policy.data_quality_status.in_(("valid", "partial")),
-                    *public_policy_predicates(as_of=date(2026, 8, 24)),
-                )
-            )
-        )
     engine.dispose()
 
-    assert [policy.title for policy in policies] == ["현재 정책"]
+    monkeypatch.setattr(
+        parity_module,
+        "policy_to_normalized_program",
+        lambda policy, _rules: {"source_id": policy.source_id},
+    )
+    report = audit_database(
+        database_url,
+        contract=load_source_contract(DEFAULT_CONTRACT),
+        as_of=date(2026, 8, 24),
+    )
+
+    assert report["summary"]["parity_status"] == "pass"
+    assert report["summary"]["user_visible_row_count"] == 1
+    assert report["comparison_contract"]["dataset_scope"] == (
+        "active_public_dataset_membership"
+    )

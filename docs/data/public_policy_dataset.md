@@ -103,6 +103,8 @@ inactive 정책과 Asia/Seoul 기준 종료일 경과 정책을 발행하지 않
 - 최근 성공 12개와 application release가 참조한 version은 보존
 - 그 외 artifact는 최소 90일 뒤 별도 승인된 정리 작업에서만 삭제
 - 실패·partial 수집·hash 불일치 시 직전 latest pointer 유지
+- 발행 전 격리 DB에 후보 artifact를 설치·활성화하고, 활성 membership 기준
+  사용자 projection parity가 통과한 경우에만 immutable Release 생성
 
 `run_docker.bat`은 P3에서 latest pointer → manifest → dataset 순으로 hash를
 검증하고, 네트워크 실패 시 검증된 cache 또는 release 고정 fallback을 사용한다.

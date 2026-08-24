@@ -111,14 +111,6 @@ jobs:
               echo "incheon_run_id=$run_id" >> "$GITHUB_OUTPUT"
             fi
           done
-      - name: Refuse user-visible public dataset parity gaps
-        shell: bash
-        run: |
-          python scripts/audit_public_dataset_parity.py \
-            --database-url "$DATABASE_URL" \
-            --as-of "$(TZ=Asia/Seoul date +%F)" \
-            --output "$RUNNER_TEMP/public-dataset-parity.json" \
-            --require-parity
       - name: Resolve immutable dataset version
         id: version
         shell: bash
@@ -181,6 +173,21 @@ jobs:
             --git-sha "$GITHUB_SHA" \
             "${previous_args[@]}" \
             --manifest-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/dataset-${DATASET_VERSION}/${DATASET_VERSION}.manifest.json"
+      - name: Install and activate the staged public dataset
+        shell: bash
+        env:
+          DATASET_VERSION: ${{ steps.version.outputs.dataset_version }}
+        run: |
+          python -m app.cli.import_public_dataset \
+            --manifest "release/${DATASET_VERSION}.manifest.json"
+      - name: Refuse user-visible public dataset parity gaps
+        shell: bash
+        run: |
+          python scripts/audit_public_dataset_parity.py \
+            --database-url "$DATABASE_URL" \
+            --as-of "$(TZ=Asia/Seoul date +%F)" \
+            --output "$RUNNER_TEMP/public-dataset-parity.json" \
+            --require-parity
       - name: Publish and re-verify immutable assets
         shell: bash
         env:
