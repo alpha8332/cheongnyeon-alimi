@@ -7,6 +7,18 @@
 APIkey.txt
 opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx
 
+# Operating system and editor metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.fleet/
+.vscode/
+*.suo
+*.user
+*.swp
+*.swo
+
 # Local database credentials and artifacts
 .pgpass
 *.db
@@ -28,7 +40,28 @@ backend/logs/
 __pycache__/
 *.py[cod]
 .venv/
+venv/
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
 
-# Editor-local settings
-.vscode/
+# Frontend local artifacts
+node_modules/
+dist/
+.vite/
+.test-dist/
+coverage/
+playwright-report/
+test-results/
+
+# Logs, temporary files and local packages
+*.log
+*.tmp
+*.temp
+*.bak
+tmp/
+*.7z
+*.zip
