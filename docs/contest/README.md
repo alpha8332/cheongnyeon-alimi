@@ -36,6 +36,8 @@
 
 - [프로젝트 MIT License](../../LICENSE): 코드 사용·복제·수정·배포 조건. 정책
   dataset의 재배포 조건은 별도 Source 계약을 따른다.
+- [오픈소스 개발대회 제출 준비 체크리스트](open_source_submission_checklist.md):
+  `v1.0.2` 공개 저장소 정리, README 재현성과 clone·ZIP·신규 PC Final Gate
 - [Release 1 검증 증거 안내](release_1_evidence_guide.md): DT7E 경량 QA·사용성 수행 절차와 정합성 검증
 - [Release 1 수동 증거 템플릿](release_1_evidence_template.json): 현재 contract hash·actual snapshot에 고정된 작성 시작점
 - [Release 1 기술 증거](release_1_technical_evidence.json): 실제 PostgreSQL 검색 acceptance의 안전한 JSON 결과

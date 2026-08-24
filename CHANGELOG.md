@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 대회 제출과 일반 사용자의 최초 실행을 기준으로 README를 Quick Start·기능·
+  데이터 최신성·문제 해결 중심으로 재구성하고, 기여 가이드와 제출 clean-room
+  Gate를 추가했다
+- 플랫폼 종속 `venv/` 605개 파일과 `.DS_Store`의 Git 추적을 해제하고 OS·IDE·
+  Python·Frontend·테스트·로그·임시 package의 ignore 경계를 보강했다
+- 코드와 CSS에서 사용하지 않는 Vite·React starter image와 social icon sprite를
+  공개 tree에서 제거했다
+
 ## [1.0.1] - 2026-08-24
 
 ### Added
