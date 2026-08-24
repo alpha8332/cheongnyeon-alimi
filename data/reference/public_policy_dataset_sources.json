@@ -1,6 +1,6 @@
 {
   "contract_version": "1.0.0",
-  "checked_at": "2026-08-23",
+  "checked_at": "2026-08-24",
   "default_decision": "exclude",
   "normalized_program": {
     "schema_version": "1.2.0",
@@ -77,6 +77,16 @@
       "license_url": "https://www.data.go.kr/data/15090532/openapi.do",
       "evidence_checked_at": "2026-08-23",
       "attribution": "출처: 한국사회보장정보원 중앙부처복지서비스, 공공데이터포털"
+    },
+    {
+      "source_id": "data-go-kr-incheon-youth-programs",
+      "decision": "include",
+      "provider": "인천광역시",
+      "dataset_name": "인천광역시_청년공간 유유기지 인천 프로그램 정보제공_20260713",
+      "license_name": "이용허락범위 제한 없음",
+      "license_url": "https://www.data.go.kr/data/15038491/fileData.do?recommendDataYn=Y",
+      "evidence_checked_at": "2026-08-24",
+      "attribution": "출처: 인천광역시 청년공간 유유기지 인천 프로그램 정보제공, 공공데이터포털"
     }
   ],
   "known_exclusions": [

@@ -28,7 +28,12 @@ from app.services.collection_runs import (  # noqa: E402
 
 
 TERMINAL_STATUSES = frozenset({"succeeded", "partial_failure", "failed"})
-SAFE_SOURCE_IDS = frozenset({"bokjiro-central-welfare-api"})
+SAFE_SOURCE_IDS = frozenset(
+    {
+        "bokjiro-central-welfare-api",
+        "data-go-kr-incheon-youth-programs",
+    }
+)
 
 
 class CompleteCollectionError(RuntimeError):

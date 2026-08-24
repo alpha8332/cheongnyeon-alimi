@@ -77,7 +77,10 @@ class PublicBootstrapDatasetTest(unittest.TestCase):
         self.assertEqual(contract["default_decision"], "exclude")
         self.assertEqual(
             [item["source_id"] for item in contract["included_sources"]],
-            ["bokjiro-central-welfare-api"],
+            [
+                "bokjiro-central-welfare-api",
+                "data-go-kr-incheon-youth-programs",
+            ],
         )
         self.assertEqual(
             frozenset(contract["normalized_program"]["allowed_fields"]),
@@ -169,6 +172,21 @@ class PublicBootstrapDatasetTest(unittest.TestCase):
                 "personal_mobile": 1,
             },
         )
+
+    def test_content_safety_ignores_opaque_provenance_identifiers(self) -> None:
+        contract = load_source_contract(DEFAULT_CONTRACT)
+        record = public_program()
+        phone_shaped = "01012345678"
+        record["provenance"][0]["raw_document_id"] = (
+            phone_shaped + "0" * 21
+        )
+        record["provenance"][0]["content_hash"] = (
+            "sha256:" + phone_shaped + "a" * 53
+        )
+
+        counts = content_safety_counts([record], contract)
+
+        self.assertEqual(counts["personal_mobile_match_count"], 0)
 
 
 if __name__ == "__main__":

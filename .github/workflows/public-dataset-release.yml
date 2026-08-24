@@ -83,20 +83,28 @@ jobs:
           echo "collection worker did not become ready" >&2
           cat "$RUNNER_TEMP/collection-worker.log" >&2
           exit 1
-      - name: Queue and await the complete public Source snapshot
+      - name: Queue and await all complete public Source snapshots
         id: collection
         shell: bash
         run: |
-          if ! collection_json=$(python scripts/run_complete_collection.py \
-              --source-id bokjiro-central-welfare-api \
-              --page-size 500 --timeout-seconds 1200); then
-            cat "$RUNNER_TEMP/collection-worker.log" >&2
-            exit 1
-          fi
-          echo "$collection_json"
-          run_id=$(python -c 'import json,sys; print(json.load(sys.stdin)["collection_run_id"])' \
-            <<<"$collection_json")
-          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          for source_id in \
+            bokjiro-central-welfare-api \
+            data-go-kr-incheon-youth-programs; do
+            if ! collection_json=$(python scripts/run_complete_collection.py \
+                --source-id "$source_id" \
+                --page-size 500 --timeout-seconds 1200); then
+              cat "$RUNNER_TEMP/collection-worker.log" >&2
+              exit 1
+            fi
+            echo "$collection_json"
+            run_id=$(python -c 'import json,sys; print(json.load(sys.stdin)["collection_run_id"])' \
+              <<<"$collection_json")
+            if [ "$source_id" = "bokjiro-central-welfare-api" ]; then
+              echo "bokjiro_run_id=$run_id" >> "$GITHUB_OUTPUT"
+            else
+              echo "incheon_run_id=$run_id" >> "$GITHUB_OUTPUT"
+            fi
+          done
       - name: Resolve immutable dataset version
         id: version
         shell: bash
@@ -139,7 +147,8 @@ jobs:
         shell: bash
         env:
           DATASET_VERSION: ${{ steps.version.outputs.dataset_version }}
-          COLLECTION_RUN_ID: ${{ steps.collection.outputs.run_id }}
+          BOKJIRO_COLLECTION_RUN_ID: ${{ steps.collection.outputs.bokjiro_run_id }}
+          INCHEON_COLLECTION_RUN_ID: ${{ steps.collection.outputs.incheon_run_id }}
           PREVIOUS_VERSION: ${{ steps.previous.outputs.version }}
         run: |
           previous_args=()
@@ -148,7 +157,8 @@ jobs:
           fi
           python scripts/promote_public_dataset.py \
             --database-url "$DATABASE_URL" \
-            --collection-run-id "$COLLECTION_RUN_ID" \
+            --collection-run-id "$BOKJIRO_COLLECTION_RUN_ID" \
+            --collection-run-id "$INCHEON_COLLECTION_RUN_ID" \
             --output-dir release \
             --dataset-version "$DATASET_VERSION" \
             --generated-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \

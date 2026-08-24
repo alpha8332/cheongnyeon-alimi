@@ -3,6 +3,7 @@
 MANUAL_COLLECTION_SOURCE_IDS = (
     "bokjiro-central-welfare-api",
     "cheonan-youthcenter-web",
+    "data-go-kr-incheon-youth-programs",
     "kinfa-financial-product-web",
     "kosaf-scholarship-web",
     "kpass-transit-refund-web",

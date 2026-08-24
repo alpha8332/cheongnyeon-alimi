@@ -150,7 +150,7 @@ class RawPolicyDocumentTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 
-    def test_json_and_xml_examples_pass_json_schema(self) -> None:
+    def test_json_xml_and_csv_examples_pass_json_schema(self) -> None:
         list_response = make_document(
             raw_payload=(
                 b'{"result":{"youthPolicyList":'
@@ -174,8 +174,19 @@ class RawPolicyDocumentTests(unittest.TestCase):
                 b"<wantedDtl><servId>WLF000001</servId></wantedDtl>"
             ),
         )
+        csv_response = make_document(
+            document_id="4" * 32,
+            raw_format=RawFormat.CSV,
+            content_type="text/csv; charset=cp949",
+            raw_payload="연번,정책명\n1,청년정책\n".encode("cp949"),
+        )
 
-        for document in (list_response, list_item, detail_response):
+        for document in (
+            list_response,
+            list_item,
+            detail_response,
+            csv_response,
+        ):
             with self.subTest(role=document.document_role.value):
                 self.assertEqual(
                     [],

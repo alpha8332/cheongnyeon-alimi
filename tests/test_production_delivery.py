@@ -58,11 +58,15 @@ def public_program() -> dict[str, object]:
 
 
 def _collection_run(
-    *, status: str, started_at: datetime, is_complete_snapshot: bool | None = None
+    *,
+    status: str,
+    started_at: datetime,
+    is_complete_snapshot: bool | None = None,
+    source_id: str = "bokjiro-central-welfare-api",
 ) -> CollectionRun:
     return CollectionRun(
         run_id=uuid4(),
-        source_id="bokjiro-central-welfare-api",
+        source_id=source_id,
         run_type="collection",
         trigger_type="scheduler",
         status=status,
@@ -184,6 +188,33 @@ def test_latest_clean_success_authorizes_exact_source_set():
     assert evidence == {"bokjiro-central-welfare-api": str(run.run_id)}
 
 
+def test_latest_clean_success_authorizes_all_public_sources():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    now = datetime.now(timezone.utc)
+    bokjiro = _collection_run(status="succeeded", started_at=now)
+    incheon = _collection_run(
+        status="succeeded",
+        started_at=now,
+        source_id="data-go-kr-incheon-youth-programs",
+    )
+    with Session(engine) as session:
+        session.add_all((bokjiro, incheon))
+        session.commit()
+        evidence = assert_promotable_runs(
+            session,
+            source_ids={
+                "bokjiro-central-welfare-api",
+                "data-go-kr-incheon-youth-programs",
+            },
+            run_ids=[bokjiro.run_id, incheon.run_id],
+        )
+    assert evidence == {
+        "bokjiro-central-welfare-api": str(bokjiro.run_id),
+        "data-go-kr-incheon-youth-programs": str(incheon.run_id),
+    }
+
+
 def test_limited_success_cannot_be_promoted_as_complete_snapshot():
     engine = create_engine("sqlite+pysqlite:///:memory:")
     Base.metadata.create_all(engine)
@@ -263,6 +294,8 @@ def test_ci_release_and_rollback_workflows_are_fail_closed():
     assert "runs-on: ubuntu-latest" in dataset
     assert "environment: production-data" in dataset
     assert "scripts/run_complete_collection.py" in dataset
+    assert "data-go-kr-incheon-youth-programs" in dataset
+    assert dataset.count('--collection-run-id "$') == 2
     assert "BOKJIRO_API_KEY: ${{ secrets.BOKJIRO_API_KEY }}" in dataset
     assert "PRODUCTION_DATASET_DATABASE_URL" not in dataset
     assert "self-hosted" not in dataset

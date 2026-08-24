@@ -58,6 +58,19 @@ PERSONAL_MOBILE_PATTERN = re.compile(
     r"(?<!\d)(?:\+?82[- .]?)?0?1(?:0|1|6|7|8|9)"
     r"[- .]?\d{3,4}[- .]?\d{4}(?!\d)"
 )
+CONTENT_SAFETY_OPAQUE_FIELDS = frozenset(
+    {
+        "schema_version",
+        "source_id",
+        "external_id",
+        "raw_document_id",
+        "content_hash",
+        "region_scheme",
+        "region_code",
+        "source_code",
+        "collected_at",
+    }
+)
 
 
 class PublicDatasetError(ValueError):
@@ -192,7 +205,9 @@ def _walk_strings(value: Any) -> Iterable[str]:
     if isinstance(value, str):
         yield value
     elif isinstance(value, Mapping):
-        for child in value.values():
+        for key, child in value.items():
+            if key in CONTENT_SAFETY_OPAQUE_FIELDS:
+                continue
             yield from _walk_strings(child)
     elif isinstance(value, Sequence) and not isinstance(
         value, (str, bytes, bytearray)
