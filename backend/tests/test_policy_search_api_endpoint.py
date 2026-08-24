@@ -83,6 +83,95 @@ def test_search_api_basic_200_ok(client, db, activate_all_policies):
     assert top_item["verdicts"]["region"] == "match"
 
 
+def test_search_api_resolves_compound_local_region(
+    client,
+    db,
+    activate_all_policies,
+):
+    now = datetime.now(timezone.utc)
+    policy = Policy(
+        source_id="test_search_yangsan",
+        external_id="SEARCH-YANGSAN-1",
+        source_name="온통청년",
+        title="양산 청년 취업 지원",
+        summary="양산시 거주 청년 취업 지원",
+        categories=["employment"],
+        application_status="open",
+        region_text="경상남도 양산시",
+        regions=["4833000000"],
+        age_min=19,
+        age_max=39,
+        coverage_scope="regional",
+        data_quality_status="valid",
+        source_url="https://example.com/yangsan-search",
+        collected_at=now,
+    )
+    gyeongnam = AdministrativeRegion(
+        scheme="kr-bjd-20260803",
+        code="4800000000",
+        name="경상남도",
+        full_name="경상남도",
+        level="province",
+        status="active",
+    )
+    yangsan = AdministrativeRegion(
+        scheme="kr-bjd-20260803",
+        code="4833000000",
+        name="양산시",
+        full_name="경상남도 양산시",
+        level="district",
+        status="active",
+        parent_code=gyeongnam.code,
+    )
+    db.add_all([policy, gyeongnam, yangsan])
+    db.flush()
+    db.add_all(
+        [
+            PolicyRegionRule(
+                policy_id=policy.id,
+                relation="include",
+                resolution_status="matched",
+                region_scheme="kr-bjd-20260803",
+                region_code=yangsan.code,
+                source_code=yangsan.code,
+                source_text=yangsan.full_name,
+            ),
+            PolicySearchDocument(
+                policy_id=policy.id,
+                title_text="양산 청년 취업 지원",
+                keyword_text="양산 청년 취업 일자리",
+                summary_text="양산시 거주 청년 취업 지원",
+                eligibility_text="19세~39세 양산시 거주 청년",
+                support_text="취업 상담 지원",
+                search_text="양산 청년 취업 일자리 지원",
+                projection_version="1.1.0",
+                updated_at=now,
+            ),
+        ]
+    )
+    db.commit()
+    activate_all_policies()
+
+    response = client.get(
+        "/api/v1/policies/search?q=경상남도 양산시 청년 취업"
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["policy"]["id"] == policy.id
+    region = next(
+        condition
+        for condition in data["interpreted_conditions"]["conditions"]
+        if condition["dimension"] == "region"
+    )
+    assert region["value"] == "경상남도 양산시"
+    assert region["resolution"] == "resolved"
+    assert "양산시" not in data["interpreted_conditions"][
+        "uninterpreted_terms"
+    ]
+
+
 def test_search_api_empty_q_422(client):
     response = client.get("/api/v1/policies/search?q=   ")
     assert response.status_code == 422
