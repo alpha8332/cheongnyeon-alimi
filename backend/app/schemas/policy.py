@@ -20,6 +20,56 @@ ApplicationSchedule = Literal[
 ]
 ApplicationStatus = Literal["open", "closed", "scheduled"]
 DataQualityStatus = Literal["valid", "partial"]
+EligibilityCoverage = Literal["complete", "partial", "unknown"]
+EligibilityCategory = Literal[
+    "age",
+    "region",
+    "income",
+    "asset",
+    "employment",
+    "education",
+    "housing",
+    "household",
+    "other",
+]
+EvidenceLocatorType = Literal["source_field", "css_selector"]
+InstitutionalContactKind = Literal["phone", "official_channel"]
+
+
+class EligibilityEvidenceRead(BaseModel):
+    source_id: str
+    source_url: str
+    collected_at: datetime
+    locator_type: EvidenceLocatorType
+    locator: str
+
+
+class EligibilityConditionRead(BaseModel):
+    category: EligibilityCategory
+    text: str
+    evidence: list[EligibilityEvidenceRead]
+
+
+class EligibilityDocumentRead(BaseModel):
+    text: str
+    evidence: list[EligibilityEvidenceRead]
+
+
+class InstitutionalContactRead(BaseModel):
+    kind: InstitutionalContactKind
+    label: str
+    value: str
+    evidence: list[EligibilityEvidenceRead]
+
+
+class EligibilitySummaryRead(BaseModel):
+    coverage: EligibilityCoverage
+    requirements: list[EligibilityConditionRead]
+    exclusions: list[EligibilityConditionRead]
+    preferences: list[EligibilityConditionRead]
+    documents: list[EligibilityDocumentRead]
+    unknowns: list[EligibilityConditionRead]
+    institutional_contacts: list[InstitutionalContactRead]
 
 
 class PolicyBase(BaseModel):
@@ -63,6 +113,12 @@ class PolicyRead(PolicyBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PolicyDetailRead(PolicyRead):
+    """Detail response with source-backed eligibility evidence."""
+
+    eligibility_summary: EligibilitySummaryRead
 
 
 class PolicyListResponse(BaseModel):

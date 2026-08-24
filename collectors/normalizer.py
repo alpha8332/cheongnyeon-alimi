@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from calendar import monthrange
 from collections.abc import Iterable
 from datetime import date, timedelta, timezone
 from html.parser import HTMLParser
@@ -12,6 +13,11 @@ from collectors.extracted import (
     ExtractedCoverageScope,
     ExtractedPolicy,
     ExtractedRegionRelation,
+)
+from collectors.eligibility import empty_eligibility_summary
+from collectors.eligibility_mapping import (
+    ELIGIBILITY_SOURCE_IDS,
+    map_eligibility,
 )
 from collectors.normalized import (
     ApplicationSchedule,
@@ -44,6 +50,14 @@ _DATE_TOKEN = re.compile(
     r"|(\d{4})(\d{2})(\d{2})"
     r")(?!\d)"
 )
+_MONTH_RANGE = re.compile(
+    r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
+    r"(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?(?!\d)"
+)
+_SAME_YEAR_MONTH_RANGE = re.compile(
+    r"(?<!\d)(\d{4})\s*[.\-/년]\s*(\d{1,2})(?:월|\.)?\s*~\s*"
+    r"(\d{1,2})(?:월|\.)?(?!\d)"
+)
 _NUMBER = re.compile(r"(?<!\d)(\d{1,3})(?!\d)")
 _RANGE_MARKER = re.compile(r"~|～|이상.*이하")
 _REGION_CODES = re.compile(r"^\d{5}(?:\s*,\s*\d{5})*$")
@@ -67,6 +81,7 @@ _CATEGORY_MAP: dict[str, tuple[Category, ...]] = {
     "취업·일자리": (Category.EMPLOYMENT,),
     "창업": (Category.STARTUP,),
     "교육": (Category.EDUCATION,),
+    "장학금": (Category.EDUCATION,),
     "직업훈련": (Category.EDUCATION,),
     "교육·직업훈련": (Category.EDUCATION,),
     "금융·복지·문화": (Category.FINANCE, Category.WELFARE),
@@ -169,6 +184,12 @@ class Normalizer:
         )
         issues.extend(age_issues)
 
+        eligibility_summary = (
+            map_eligibility(policy)
+            if policy.source_id in ELIGIBILITY_SOURCE_IDS
+            else empty_eligibility_summary()
+        )
+
         candidate: dict[str, Any] = {
             "schema_version": NormalizedProgram.SCHEMA_VERSION,
             "source_id": policy.source_id,
@@ -215,6 +236,7 @@ class Normalizer:
             "age_max": age_max,
             "age_condition_text": age_condition_text,
             "eligibility_text": normalize_text(policy.eligibility_text),
+            "eligibility_summary": eligibility_summary.to_dict(),
             "support_content": normalize_text(policy.support_content),
             "application_method": normalize_text(
                 policy.application_method
@@ -366,7 +388,21 @@ def _normalize_application_period(
             issues,
         )
     if len(parsed_dates) == 1:
-        start = parsed_dates[0]
+        boundary = parsed_dates[0]
+        if "까지" in value:
+            status = (
+                ApplicationStatus.CLOSED
+                if as_of > boundary
+                else ApplicationStatus.OPEN
+            )
+            return (
+                None,
+                boundary,
+                ApplicationSchedule.FIXED_PERIOD,
+                status,
+                [],
+            )
+        start = boundary
         status = (
             ApplicationStatus.SCHEDULED
             if as_of < start
@@ -375,6 +411,59 @@ def _normalize_application_period(
         return (
             start,
             None,
+            ApplicationSchedule.FIXED_PERIOD,
+            status,
+            [],
+        )
+    month_range = _MONTH_RANGE.search(value)
+    same_year_month_range = _SAME_YEAR_MONTH_RANGE.search(value)
+    if month_range is not None:
+        start_year, start_month, end_year, end_month = map(
+            int, month_range.groups()
+        )
+    elif same_year_month_range is not None:
+        start_year, start_month, end_month = map(
+            int, same_year_month_range.groups()
+        )
+        end_year = start_year
+    else:
+        start_year = start_month = end_year = end_month = None
+    if start_year is not None:
+        try:
+            start = date(start_year, start_month, 1)
+            end = date(
+                end_year,
+                end_month,
+                monthrange(end_year, end_month)[1],
+            )
+        except ValueError:
+            return None, None, None, None, [
+                _warning(
+                    "$.application_period_text",
+                    "invalid_application_date",
+                    "application period contains an invalid calendar month",
+                )
+            ]
+        if start > end:
+            return None, None, None, None, [
+                _warning(
+                    "$.application_period_text",
+                    "invalid_application_date_order",
+                    "application period start is after its end",
+                )
+            ]
+        status = (
+            ApplicationStatus.SCHEDULED
+            if as_of < start
+            else (
+                ApplicationStatus.CLOSED
+                if as_of > end
+                else ApplicationStatus.OPEN
+            )
+        )
+        return (
+            start,
+            end,
             ApplicationSchedule.FIXED_PERIOD,
             status,
             [],

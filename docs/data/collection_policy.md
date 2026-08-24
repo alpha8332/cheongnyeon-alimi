@@ -3,8 +3,9 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API Collector·Extractor와
-  공통 Normalizer·Validator, 합성 Fixture·canonical Seed 구현
+- 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API와 승인 웹
+  Collector·Extractor·Runtime replay, 공통 Normalizer·Validator와 PostgreSQL
+  적재 경계 구현
 
 이 문서는 외부 정책 데이터를 안전하고 재현 가능하게 수집하기 위한 공통
 원칙을 정의한다.
@@ -54,11 +55,20 @@ origin이나 비표준 포트로 전달되는 일을 막고 3xx를 명시적 오
 information을 `<redacted>`로 바꾼다. 응답 본문과 하위 전송 예외 메시지는
 공통 예외에 포함하지 않는다.
 
-HTML Collector는 현재 Forest 범위 밖이다. 이후 별도 Forest에서 승인되면
-HTML 파서와 웹 수집 정책의 구현 범위를 다시 확정한다.
+HTML Collector는 Data 04 DTL4-3A~3B에서 `cheonan-youthcenter-web`의 승인
+표본만 구현하고 저장된 actual Raw를 PostgreSQL까지 검증했다. 아래 최소 경계
+밖의 확대 수집은 승인하지 않았다.
 
 ## 웹 수집 원칙
 
+- 허용 목록은 `/bbs/board.php?bo_table=notice` 1회, 허용 상세는
+  `/bbs/board.php?bo_table=notice&wr_id={positive_integer}` 중 승인 표본 1건이다.
+- 동시 요청은 1개, 요청 시작 간격은 최소 2초이며 pagination과 bulk 순회는
+  하지 않는다.
+- 로그인·회원·신청·CAPTCHA·첨부·이미지·개인정보 URL을 따라가지
+  않는다.
+- 공개 시설 대표전화·공식 문의 채널은 기관 정보로 Raw와 Source 전용 필드에
+  보존한다. 개인 휴대전화·개인 이메일·성명은 구조화 추출하지 않는다.
 - robots 정책과 이용약관을 확인한다.
 - 공개 목록과 필요한 상세 페이지만 제한적으로 요청한다.
 - 정적 HTML을 우선한다.
@@ -67,6 +77,8 @@ HTML 파서와 웹 수집 정책의 구현 범위를 다시 확정한다.
 - Playwright나 Selenium은 정적 HTML과 공개 요청으로 데이터를 얻을 수 없을
   때만 별도 검토한다.
 - 로그인 우회, CAPTCHA 우회와 접근 통제 회피를 구현하지 않는다.
+- robots directive와 별도 이용약관을 확인하지 못한 현재 상태에서는 승인
+  예산을 넘기지 않고 실제 원문·이미지를 Git에 재배포하지 않는다.
 
 ## 인증정보
 
@@ -209,7 +221,9 @@ runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
 
 ## 개인정보와 민감정보
 
-- 정책 정보 수집에 필요하지 않은 이름, 연락처와 식별정보는 저장하지 않는다.
+- 정책 정보 수집에 필요하지 않은 이름, 개인 연락처와 식별정보는 저장하지
+  않는다. 공개 시설 대표전화와 공식 문의 채널은 출처가 확인되는 기관
+  정보로 구분해 Source 전용 필드에 보존할 수 있다.
 - 개인정보가 포함된 게시물, 첨부파일 또는 응답 필드는 수집 대상에서
   제외하거나 저장 전에 안전한 처리 기준을 별도로 확정한다.
 - 운영 원문을 Fixture로 복사하기 전에 민감정보를 검토한다.
@@ -231,6 +245,16 @@ runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
 
 조건을 확인할 수 없거나 저장·재배포가 허용되는지 불명확하면 해당 원문을
 Git Fixture에 포함하지 않는다.
+
+공개 bootstrap dataset은 수집 승인과 별도로
+[공개 정책 dataset 계약](public_policy_dataset.md)의 Source·field allowlist를
+통과해야 한다. allowlist에 없는 Source, Raw·DB dump·비밀 query·개인 연락처는
+중앙 Runtime DB에 존재하더라도 공개 artifact에 포함하지 않는다.
+
+정책 미발견은 완전 snapshot·검증·DB commit이 모두 성공한 실행에서만
+`inactive_at`으로 전이한다. limit 일부 재생, invalid·rejected·failed와 지역
+checkpoint의 `FAILED` 결정에서는 기존 활성 상태를 유지한다. 종료일과 재등장
+규칙은 [정책 생명주기 계약](policy_lifecycle.md)을 따른다.
 
 ## 실패 처리
 

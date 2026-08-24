@@ -1,0 +1,58 @@
+{
+  "observations": [
+    {
+      "expected": "healthy",
+      "identity_present": true,
+      "navigation_completed": true,
+      "ready_visible": true,
+      "title_matches": true,
+      "field_row_count": 27,
+      "deleted_or_private": false
+    },
+    {
+      "expected": "page_or_identity_changed",
+      "identity_present": false,
+      "navigation_completed": false,
+      "ready_visible": false,
+      "title_matches": false,
+      "field_row_count": 0,
+      "deleted_or_private": false
+    },
+    {
+      "expected": "dynamic_render_wait",
+      "identity_present": true,
+      "navigation_completed": true,
+      "ready_visible": false,
+      "title_matches": false,
+      "field_row_count": 0,
+      "deleted_or_private": false
+    },
+    {
+      "expected": "detail_click_or_post_contract",
+      "identity_present": true,
+      "navigation_completed": false,
+      "ready_visible": false,
+      "title_matches": false,
+      "field_row_count": 0,
+      "deleted_or_private": false
+    },
+    {
+      "expected": "response_success_without_field_dom",
+      "identity_present": true,
+      "navigation_completed": true,
+      "ready_visible": true,
+      "title_matches": true,
+      "field_row_count": 0,
+      "deleted_or_private": false
+    },
+    {
+      "expected": "deleted_or_private",
+      "identity_present": true,
+      "navigation_completed": true,
+      "ready_visible": false,
+      "title_matches": false,
+      "field_row_count": 0,
+      "deleted_or_private": true
+    }
+  ]
+}

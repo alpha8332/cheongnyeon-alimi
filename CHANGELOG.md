@@ -8,6 +8,266 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 최종 Docker Acceptance commit과 AES-256 package receipt를 고정하고 BE·FE·
+  사용성·QA를 역할별 project·secret·Volume으로 분리해 4건 모두 같은 Git SHA·
+  snapshot·dump·archive hash로 통과시켜 `DOCKER_ACCEPTANCE_PASS`를 확정했다
+  ([개발 기록](docs/development/development_notes/deploy/docker_acceptance_environment.md))
+- review admission v1으로 실행일 현재성·청년 taxonomy·canonical region을 모두
+  통과한 지역 정책 3건을 실제 DB에 적재하고 동일 manifest 재실행의 전건
+  `unchanged`와 Source별 CollectionRun을 검증했다. post-admission DB에서
+  manifest를 다시 만들 때 이미 승격된 identity를 baseline에서 제외해 같은
+  manifest를 결정적으로 재적용할 수 있도록 audit/apply 계약을 보강했다
+  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
+- 홈·맞춤 추천·검색·북마크 UX: 홈 안내 문구 갱신, `/recommendations` 상단·결과 카드 `추가 확인 필요` 박스 제거, 검색 결과 자격 확인 뱃지 제거, 정책 카드 D-Day(`D-nn`) 표시, 북마크 페이지 전체 데이터 삭제 버튼 제거.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 관리자 대시보드(`/admin`): 최신 CollectionRun 집계 요약·수집 시각·품질 metric card. 데이터 품질(`/admin/quality`): 최근 회차별 failed·invalid·duplicate 집계 비교·drill-down.
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- 홈 추천 정책: 프로필 저장 조건(region·age·category) 있을 때 Recommendation API 연동·안내 캡션; 없을 때 open·상시 폴백(안내 문구 미노출).
+  ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
+- 북마크 폴더: `···` 메뉴 바깥 클릭·ESC 닫기, 사용자 폴더 삭제 확인 modal(기본 폴더 보호).
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 상세 헤더: 제목 행 우측 북마크, 주관기관 아래 공식 신청·ICS 액션 바, ○ 요약 줄바꿈·`YYYYMMDD` 기간 정규화.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 홈 첫 화면 featured 정책: 마감·예정·지난 마감일 제외, 상태·분야 뱃지 semantic 컬러(상시 민트·모집중 블루·마감 레드).
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 목록·상세: 카드 신청기간 `YYYY.MM.DD` 정규화, 카테고리·상태 뱃지를 달력 테마와 일치, 상세 메타 줄바꿈·본문 ordered/bullet 리스트.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 정책 상세(`/programs/:id`): Summary Header(상태·D-Day·4대 메타)·섹션 카드·하단 Sticky CTA(북마크·공식 신청·ICS). `EligibilitySummary`·API schema 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 북마크(`/favorites`): 탭 리스트 → 폴더 그리드 탐색기(브레드크럼, 정렬, 그리드/리스트 뷰, 폴더 진입). localStorage v2 schema 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 홈 NL 검색: 결과·필터 칩·sidebar를 `/` URL state(`/?q=…`)에서 렌더; legacy `/search`는 query preserve redirect. 메인 컨텐츠 max-width 중앙 정렬. 프로필 저장 조건을 검색 API flat filter 기본값으로 merge.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): ISO 날짜 정규화·정책명 폴백·칩 button 중첩 제거로 일정 칩 미노출 버그 수정.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): 일정 칩 텍스트를 정책명(`title`)으로 표시(날짜 칸·all-day·주/일 뷰). 카테고리 색상 유지·말줄임 compact 스타일.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 마감 달력(`/calendar`): macOS/Apple Calendar 스타일 2패널 UI(분야 필터·미니 달력, Day/Week/Month/Year, all-day 카테고리 칩·일정 상세 modal). KST `application_start`·`application_end` 매핑·`.monthly-calendar__grid` E2E 호환 유지.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 북마크: localStorage schema v2(폴더·`bookmarks` entry), 기본 `기본 폴더`, 북마크 페이지 폴더 탭·`+ 새 폴더 만들기`, 저장 시 폴더 선택 모달. v1 flat `favorites[]`는 read 시 migrate.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 사용자 앱 sidebar: 메뉴 순서·라벨 정리(달력·관리자·사용자 프로필), sidebar 검색 링크 제거. `내 조건 저장`은 `/profile`에서만 편집 (홈 카드 제거). localStorage 조건은 맞춤 추천 등 기존과 동일 공유.
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+
+- 4주차 실제 로컬 DB를 Migration `20260810_0006`과 정책 3,269건으로 정렬하고,
+  지역 청년정책 109건의 멱등 적재와 서울·대구·부산 검색·상세 노출을 검증했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- DTL4-7에서 실제 PostgreSQL·Runtime·FastAPI·React를 연결해 관리자 데이터·
+  CollectionRun·로그 정리, 공식 Source 자격요건, 추천·북마크·달력·알림·`.ics`
+  세 Critical Path와 Release 1 검색·상세 회귀를 검증했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- DTL4-5에서 관리자 Policy·로그 Backend OpenAPI와 Frontend TypeScript·Mock을
+  동일 DTO·pagination·오류 계약으로 정렬하고, 현재 로그 rotate 정리·감사와
+  request/run/source correlation을 연결했다
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- 관리자 기본 PIN `0000`을 local client의 development/local/test로 제한하고,
+  production token 서명은 전용 `ADMIN_TOKEN_SECRET` 없이는 fail-closed 처리했다
+  ([개발 기록](docs/development/development_notes/backend/admin_access_control.md))
+
+### Fixed
+
+- Docker 관리자 수동 수집이 `running` 행만 만들고 실행되지 않던 문제를 실제
+  Collector·Raw replay·DB 반영·terminal 상태로 연결하고, snapshot 고정 count를
+  모든 재시작에 강제해 운영 데이터가 바뀌면 기동이 막히던 restore 검증을
+  restore 직후 one-shot 단계로 분리했다
+  ([문제 해결 기록](docs/troubleshooting/backend/docker_manual_collection_restart_recovery.md))
+- Docker Acceptance 격리 사용성·QA에서 다른 province의 retired 지역 rule이
+  천안 검색에 인천 정책을 포함하던 문제, `0세~0세` sentinel과 연령 제한 없음
+  설명 충돌, unknown 자격의 `제한 없음 해당없음` 결측 표식 노출, 저장 분야가
+  자연어 분야를 덮던 문제, Mock-first spec의 actual 경계 누락을 실제 UI·API
+  재현으로 수정했다
+  ([문제 해결 기록](docs/troubleshooting/integration/docker_acceptance_usability_consistency.md))
+
+- 맞춤 추천이 사용자 지역·연령·분야의 확정 불일치와 마감 정책을 점수만 낮춰
+  계속 반환하고 첫 200개 Policy만 평가하던 문제를 수정했다. 검색과 같은 3값
+  판정으로 명시적 지역을 fail-closed 처리하고, 전체 승인 snapshot의 지역 rule을
+  bulk 평가해 실제 3,273건 응답을 약 14.8초에서 약 1.4초로 개선했다
+  ([문제 해결 기록](docs/troubleshooting/backend/recommendation_full_inventory_performance.md),
+  [개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
+- review admission이 checkpoint의 과거 `open`을 재사용하고 canonical region
+  rule을 만들지 않던 문제를 수정해, 실행 기준일 재판정과 region/search
+  projection을 fail-closed 검증하도록 했다
+  ([개발 기록](docs/development/development_notes/integration/review_admission_docker_acceptance.md))
+- `run.bat`가 Node.js를 시스템 PATH에서만 찾아 Codex 데스크톱 환경에서 시작하지
+  못하던 문제를 수정하고, 번들 Node.js 자동 탐색과 명시적 실행 파일 인자를 추가
+- Windows actual 실행기가 DB 이름을 `cheongnyeon_alimi`로 고정해 격리 검증 DB를
+  선택할 수 없던 문제를 수정하고, 검증된 `DatabaseName` 인자로 pgpass 대상 DB를
+  명시할 수 있게 했다
+  ([검증 안내](docs/contest/release_1_evidence_guide.md))
+- Runtime 로그 `backend/logs/app.log`가 Git에 추적되던 경계를 정리하고 Backend
+  로그 디렉터리 전체를 비추적 대상으로 고정했다
+- DTL4-6에서 Integration 08 승인 Eligibility DTO와 충돌하던 과거 fixture id,
+  개인 조건 비교·summary 새로고침 E2E/API hook·미사용 CSS를 제거하고 현재
+  seed·evidence 원문 계약으로 Browser 회귀와 수동 검증 문서를 정렬
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend `/` white screen after FE9-01: harden localStorage recovery notice reads,
+  module-init storage sync, layout error boundaries, and route error fallback
+  ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))
+- Frontend W4-F9 cross-Forest integration (FE9-01): shared admin 401 redirect hook,
+  localStorage corrupt recovery banner, AdminLoginPage cooldown lint
+  ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))
+- Admin policy data table row detail drawer did not appear when clicking
+  상세보기: replaced grid sidebar with fixed overlay slide-in drawer and
+  `isDrawerOpen` state on `/admin/policies`
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend `/`·`/favorites` 접속 시 404 UI가 뜨던 문제: `useFavorites` snapshot
+  참조 불안정으로 layout error boundary가 트리거되던 것을 수정
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- 충북의 과거 상시모집 공고에서 종료된 운영기간을 우선 판정해 만료 정책이 현재
+  신청 가능한 정책으로 노출되지 않도록 보정
+
+- 명시적 지역 자연어 검색을 match-only로 격리하고 광주·인천·울산·제주 정책 상세의
+  공식 지역·대상·시행 기관 근거와 대구·서울의 정책 단위 지역 표기를 보강해 실제
+  신청 가능한 지역 정책 68건을 검색 DB에 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- Browser navigation timeout 뒤 요청 URL과 준비 DOM을 검증하고 locator 신호
+  대신 페이지 DOM selector를 polling해, 정상 로드된 충북·울산 페이지의 false
+  timeout으로 인한 중단을 방지
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 울산 목록 상태 badge와 상세 제목·본문 렌더 race를 구분하고 identity별 tab
+  격리로 597건의 신청기간 관찰 상태를 전건 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 충북 공식 상세의 한글 순번 `제출기한`을 `훈련기간`과 구분해 신청 마감으로
+  추출하고, 단일 신청 마감일을 open·ended 상태로 판정하도록 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 강원 상세 실패 325건을 목록 page 컨텍스트가 유실된 동일 유형으로 분류해
+  대표 3건만 복구하고, 제주 비정형 상세 2건은 공식 제목 기한·등록일 근거로
+  종료 판정을 복구하면서 failed 자동 승격을 제한
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 충북·울산·대전·강원 공식 상세의 신청기간 selector와 서울 compact 날짜 해석을
+  보강하고, 원문 빈 값·목록 total/identity drift는 checkpoint·DB 판정을 바꾸지
+  않은 채 review 근거로 보존
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 대전 current-only identity를 판정에 편입하지 않는 명시적 교집합 재캡처 경계와
+  강원 기존 상세 12건 제한 보강으로 두 Source의 legacy 필드 상태를 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 서울시·자치구 정책 110건을 공식 목록과 재대조하고 review 97건의 구조화 상세를
+  제한 재캡처해 빈 신청기간과 실제 라벨 부재를 구분
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 대구 현재목록의 identity 교체 drift를 checkpoint 고정 상세 URL·제목 계약으로
+  격리하고, 기존 197건만 제한 재캡처해 legacy 필드 상태를 전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 광주 접수중 목록의 추가 4·누락 1 identity 교체 drift를 checkpoint 고정
+  `policyId` 상세 계약으로 격리하고, 기존 31건만 제한 재캡처해 legacy 필드
+  상태를 전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 인천 접수중 목록에서 빠진 마감 전환 정책을 checkpoint 고정 `poly_seq` 상세
+  계약으로 격리하고, 기존 28건의 상세 필드 관찰 상태를 전건 보강
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 전북 checkpoint 89건, 경북 review 58건, 경남 review 28건의 공식 상세 근거를
+  재대조하고 HTML entity와 공식 경남 JSON endpoint를 반영해 legacy 필드 상태를
+  전건 해소
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 제주 review 207건의 공식 상세를 checkpoint 고정 `wr_id` 계약으로 보강해 지역
+  Source 전체 legacy 필드 상태를 0으로 해소하고 RYP8 완료 감사를 통과
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+### Added
+
+- 강원 잔여 상세 실패를 초기·중기·후기 page 순환 canary로 읽기 전용 감시하고,
+  경남·제주 종료 이력·필드 null 상태·실패 원인·checkpoint outcome을 함께
+  대조하는 RYP8 완료 감사를 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 지역 Source review 1,903건을 사유·필드 coverage로 감사하고, 공식 목록 scope와
+  정책별 지역·청년 근거를 함께 요구하는 안전한 승격 계약 및 Browser 필드 관찰
+  상태를 추가
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 13개 승인 지역 Source에서 4,606개 정책 identity를 checkpoint 기반으로 전체
+  순회해 수집 인프라 기준 신청 가능성·지역 고유성·온통청년/복지로 중복을
+  누락 없이 분류하고,
+  accepted 부산 16건·경북 2건만 PostgreSQL에 동기화
+  ([개발 기록](docs/development/development_notes/data/regional_youth_policy_ingestion.md))
+
+- 정책 상세에 Source 근거가 있는 신청 조건·제외 조건·필요 서류·공개 시설
+  문의처 요약을 추가하고 NormalizedProgram 1.2·PostgreSQL JSONB·반응형 UI와
+  실제 세로 인수로 연결
+  ([개발 기록](docs/development/development_notes/integration/eligibility_evidence_summary.md))
+- 승인한 천안청년센터 공개 공지를 제한 수집하고 Runtime Raw → 정규화 →
+  PostgreSQL → partial 정책 상세 API까지 재처리하는 첫 공식 웹 Source 기반 추가
+  ([개발 기록](docs/development/development_notes/data/public_https_policy_ingestion.md))
+- 반복 수집에서 metadata-only 재실행·business 변경·실행 내 중복·실패
+  rollback을 구분하고 품질 집계를 CollectionRun에 영속하는 Data 03 기반 추가
+  ([개발 기록](docs/development/development_notes/data/recurrent_collection_quality_operations.md))
+- 천안청년센터 공개 공지 표본과 최소 수집·비재배포 경계를 포함한 v0.5.0
+  `W4-G0` 계약 기준선 승인
+  ([개발 기록](docs/development/development_notes/integration/v0_5_0_contract_baseline.md))
+- Frontend W4-F10 week4 regression matrix E2E (FE9-02): `week4-regression.spec.ts`
+  covering admin·eligibility·user·Release 1 golden·mobile cross checks
+  ([개발 기록](docs/development/development_notes/frontend/integration_and_regression.md))
+- Frontend CollectionRun Admin DTO·Mock·route shell (FE3-00): admin session·
+  collection run types, Mock-first API client, nested `/admin` layout
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend CollectionRun Admin PIN session·run list·manual trigger (FE3-01~04):
+  protected `/admin` routes, filters·detail·confirm dialog
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend CollectionRun Admin Browser E2E (FE3-05): Playwright admin PIN·run
+  list·detail·manual trigger Mock-first flow
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend CollectionRun Admin Toast·a11y (FE3-06): shared ApiErrorToast·401/429/5xx
+  admin wiring·keyboard PIN·confirm Escape·Browser E2E
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend admin API clients aligned to Backend 04·05 Real OpenAPI (FE3-00):
+  `size`/`pages` list envelope, dual error parsing, Bearer header option
+  ([개발 기록](docs/development/development_notes/frontend/collection_run_admin_ui.md))
+- Frontend 홈 저장 조건 UI(FE5-02): region·age·category 브라우저 localStorage
+  저장·복원·조건-only 초기화(북마크 유지)
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- Frontend KST D-Day·마감 달력·in-app 알림·`.ics`·전체 데이터 삭제 (FE5-03~05,
+  FE5-08): `/calendar`, `/notifications`, detail `.ics` download
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- Frontend eligibility summary DTO·Mock detail fixtures (FE7-00): complete·
+  partial·unknown 표본 envelope와 contract tests
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend eligibility summary card UI (FE7-01~04): policy detail 핵심 신청 조건
+  sections, local condition badges, evidence links (Mock-first)
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend Eligibility Summary Browser E2E (FE7-05): Playwright complete·partial·
+  unknown mock detail fixtures, comparison badges, search golden regression
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend Eligibility Detail Toast·a11y (FE7-06): policy detail summary refetch
+  5xx Toast·422 inline·section nav·long text expand Browser E2E
+  ([개발 기록](docs/development/development_notes/frontend/eligibility_summary_ui.md))
+- Frontend admin observability DTO·Mock handlers (FE8-00): read-only policy
+  projection list/detail·log file/event pagination·safe error contract
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend admin observability UI (FE8-01~04): `/admin/policies` table·row detail,
+  `/admin/logs` event filter·refresh, archive delete·rotate confirm (Mock-first)
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend Admin Observability Browser E2E (FE8-05): Playwright PIN session·policy
+  table·log view·maintenance confirm·admin nav regression
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend Admin Observability Toast·a11y (FE8-06): policy·log ApiErrorToast·409
+  delete conflict·table keyboard·column toggle Escape·Browser E2E
+  ([개발 기록](docs/development/development_notes/frontend/admin_observability_ui.md))
+- Frontend recommendation UI (FE6-01~04): `/recommendations` 조건 form·FE5
+  localStorage 연동·결과·reason·error/retry·region collapse
+  ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
+- Frontend Recommendation Browser E2E (FE6-05): Playwright structured
+  recommendation·empty·cross-route·search golden Mock-first flow
+  ([개발 기록](docs/development/development_notes/frontend/recommendation_ui.md))
+- Frontend cross-route policy identity (FE5-06): shared detail path·추천 결과
+  favorite toggle·sidebar `/recommendations`·`/calendar` nav
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+- Frontend User Service Browser E2E (FE5-07): Playwright favorites·conditions·
+  calendar·notifications·reset·cross-route Mock-first flow
+  ([개발 기록](docs/development/development_notes/frontend/user_service_features.md))
+
 ## [0.1.0] - 2026-08-06
 
 ### Added

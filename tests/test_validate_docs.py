@@ -116,6 +116,26 @@ class DocumentationValidationTests(unittest.TestCase):
 
             self.assertEqual([], errors)
 
+    def test_deploy_is_an_allowed_owner_area(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            plan_dir = root / "docs/development/develop_plan/deploy"
+            plan_dir.mkdir(parents=True)
+            plan = "\n".join(
+                [
+                    "# Deploy Forest",
+                    "",
+                    "## 계획 정보",
+                    "- 상태: approved",
+                    *(f"\n## {heading}" for heading in validate_docs.PLAN_HEADINGS[1:]),
+                ]
+            )
+            (plan_dir / "01_acceptance.md").write_text(plan, encoding="utf-8")
+
+            errors = validate_docs.check_forest_documents(root)
+
+            self.assertEqual([], errors)
+
     def test_in_progress_plan_requires_note_in_same_owner_area(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

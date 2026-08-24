@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: completed (`Gate G4 pass`, `develop` 병합 `4629a61`)
+- 상태: completed (`Gate G4 pass`, `main` `2b33ed7`, tag `v0.1.0`)
 - 대상 Release: `v0.1.0`
 - 실행 주차: 3주차
 - 주 담당: Data, Backend, Frontend
@@ -349,8 +349,9 @@ Team Leader가 다음 증거를 확인한다.
 모든 증거가 충족된 `develop`만 `main` 릴리스 PR과 `v0.1.0` tag 후보가 된다.
 
 Release 1 구현과 Gate 근거는 `2026-08-06` 커밋 `4629a61`로 `develop`에
-병합됐다. `main` 릴리스 PR과 `v0.1.0` tag는 저장소 publication 절차로 남아
-있으며, 실제 완료 전에는 생성된 것으로 기록하지 않는다.
+병합됐다. PR #15를 통해 `main` 커밋 `2b33ed7`에 발행하고 같은 커밋에
+`v0.1.0` tag를 생성했다. 이후 `develop`도 `2b33ed7`로 fast-forward해
+3주차와 Release 1 publication을 종료했다.
 
 ## 역할별 산출물
 

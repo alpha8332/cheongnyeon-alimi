@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiClient } from '@/api/client';
+import { PolicyDetailApiError } from '@/api/policyDetailApiError';
 import {
   buildPolicyDetailPath,
   POLICY_COLLECTION_PATH,
@@ -9,15 +10,40 @@ import {
   createMockPolicyListResponse,
   findMockPolicyById,
 } from '@/mocks/policyContract';
-import { mockPolicies } from '@/mocks/policies';
+import { mockPolicies, mockPolicyDetails } from '@/mocks/policies';
 import type {
-  PolicyDto,
+  PolicyDetailDto,
   PolicyListQuery,
   PolicyListResponse,
 } from '@/types/policy';
 
 const MOCK_DELAY_MS = 300;
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+
+function readPolicyDetailErrorDetail(data: unknown): string {
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'detail' in data &&
+    typeof data.detail === 'string'
+  ) {
+    return data.detail;
+  }
+
+  return '정책 상세를 불러오지 못했습니다.';
+}
+
+function throwPolicyDetailApiErrorFromAxios(error: unknown): never {
+  if (!axios.isAxiosError(error)) {
+    throw error;
+  }
+
+  const status = error.response?.status ?? 0;
+  throw new PolicyDetailApiError(
+    status,
+    readPolicyDetailErrorDetail(error.response?.data),
+  );
+}
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -45,16 +71,20 @@ export async function getPolicies(
 export async function getPolicyById(
   policyId: number,
   includePartial = false,
-): Promise<PolicyDto | null> {
+): Promise<PolicyDetailDto | null> {
   const detailPath = buildPolicyDetailPath(policyId);
 
   if (USE_MOCK) {
     await delay(MOCK_DELAY_MS);
-    return findMockPolicyById(mockPolicies, policyId, includePartial);
+    return findMockPolicyById(
+      mockPolicyDetails,
+      policyId,
+      includePartial,
+    );
   }
 
   try {
-    const response = await apiClient.get<PolicyDto>(
+    const response = await apiClient.get<PolicyDetailDto>(
       detailPath,
       {
         params: {
@@ -68,6 +98,6 @@ export async function getPolicyById(
       return null;
     }
 
-    throw error;
+    throwPolicyDetailApiErrorFromAxios(error);
   }
 }

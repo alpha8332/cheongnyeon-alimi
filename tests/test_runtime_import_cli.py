@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import io
 import unittest
+from dataclasses import replace
 from uuid import UUID
 from unittest.mock import Mock, patch
 
-from scripts.import_runtime_data import main
+from scripts.import_runtime_data import _runtime_run_counts, main
 
 from app.services.runtime_importer import RuntimeImportResult
 from app.services.seed_importer import ImportResult
@@ -54,6 +55,22 @@ def _result() -> RuntimeImportResult:
 
 
 class RuntimeImportCliTests(unittest.TestCase):
+    def test_cross_source_filters_use_skipped_not_duplicate_count(self) -> None:
+        result = _result()
+        result = replace(
+            result,
+            replay=replace(
+                result.replay,
+                regional_decisions=({"accepted": False},),
+                duplicate_decisions=({"accepted": False},),
+            ),
+        )
+
+        counts = _runtime_run_counts(result, requested_count=10)
+
+        self.assertEqual(2, counts.skipped_count)
+        self.assertEqual(0, counts.duplicate_count)
+
     def test_cli_owns_a_non_echo_database_engine_by_default(self) -> None:
         engine = Mock()
         db = Mock()
@@ -99,6 +116,10 @@ class RuntimeImportCliTests(unittest.TestCase):
             "partial_failure",
             run_writer.finish.call_args.kwargs["status"],
         )
+        counts = run_writer.finish.call_args.kwargs["counts"]
+        self.assertEqual(1, counts.invalid_count)
+        self.assertEqual(1, counts.rejected_count)
+        self.assertEqual(0, counts.duplicate_count)
 
     def test_cli_reports_safe_summary_and_validation_raw_ids(self) -> None:
         stdout = io.StringIO()
@@ -132,6 +153,7 @@ class RuntimeImportCliTests(unittest.TestCase):
         self.assertIn("raw=4", stdout.getvalue())
         self.assertIn("invalid=1", stdout.getvalue())
         self.assertIn("inserted=1", stdout.getvalue())
+        self.assertIn("duplicate=0", stdout.getvalue())
         self.assertIn("raw_document_ids=", stdout.getvalue())
         self.assertIn(
             "run_id=22222222-2222-4222-8222-222222222222",

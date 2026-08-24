@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3000';
+const webServerCommand =
+  process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ??
+  'npm run dev -- --host 127.0.0.1';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -9,14 +14,19 @@ export default defineConfig({
   reporter: [['list']],
   timeout: 60_000,
   use: {
-    baseURL: 'http://127.0.0.1:3000',
+    baseURL,
     trace: 'off',
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1',
-    url: 'http://127.0.0.1:3000',
+    command: webServerCommand,
+    url: baseURL,
     reuseExistingServer: true,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      VITE_USE_MOCK: process.env.VITE_USE_MOCK ?? 'true',
+      VITE_API_BASE_URL: process.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000',
+    },
   },
 });

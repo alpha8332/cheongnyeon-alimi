@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-07
 - 역할: 완료 Forest와 릴리스별 후속 Forest의 순서·의존성 조정
 
 이 문서는 포트폴리오 수준의 순서를 정한다. `draft`, `approved`,
@@ -39,7 +39,8 @@ Forest 계획을 만들고 [`README.md`](README.md) 색인에 등록해야 한�
 | 5 | [Integration 04 Release 1 Acceptance](integration/04_release_1_acceptance.md) | Team Leader - Integration | Data·Backend·Frontend, 경량 QA·사용성 리뷰 | completed (`IA3F`, `G4 pass`) | golden 기술·기간 안전성·FE actual 검증, 경량 팀 리뷰와 Release 1 후보 승인 | Data 02, Integration 03, Backend 06, Frontend 04 |
 
 위 Release 1 Forest 결과는 `2026-08-06` 커밋 `4629a61`로 `develop`에
-병합됐다. `main` 릴리스 PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
+병합됐고 PR #15의 `main` 커밋 `2b33ed7`과 `v0.1.0` tag로 발행됐다.
+`develop`도 같은 커밋으로 fast-forward해 후속 Forest의 기준점을 맞췄다.
 
 Data 02는 수집 시각의 전체 외부 데이터를 무조건 저장한다는 의미가 아니다.
 API pagination·할당량·이용 조건을 확인해 “릴리스 수집 범위”를 먼저 고정한다.
@@ -80,50 +81,76 @@ Frontend API 연결은 Backend endpoint를 기다린다.
 
 ## `v0.5.0` Forest
 
-기존 관리자 계획은 폐기하지 않고 `v0.1.0` 이후에 실행한다.
+기존 관리자 계획은 폐기하지 않고 Integration 05 W4-G0 승인 뒤 실행한다.
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | Backend 04 Admin Access Control | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | v0.1.0 계약 동결 |
-| 2 | Backend 05 CollectionRun Admin API | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
-| 3 | Frontend 03 CollectionRun Admin UI | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
-| 4 | Recommendation | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | 계획 필요 | 조건 기반 추천, 점수·추천 이유와 정확도 검증 | v0.1.0 검색 |
-| 5 | User Service Features | Backend·Frontend | Team Leader 계약 조정, 리뷰어·QA 검증 | 계획 필요 | 사용자 조건, 즐겨찾기, D-Day, 웹 알림, `.ics` | 인증·저장 경계 결정 |
-| 6 | Data Quality Operations | Data·Backend·Frontend | Team Leader 통합, QA 검증 | 계획 필요 | 실패·partial·invalid·중복 후보 확인과 운영 처리 | 관리자 기준선 |
-| 7 | Release 2 Reviewer Hardening | Team Leader - Integration | 사용성 리뷰어·QA, 보고서 담당 | 계획 필요 | 외부 리뷰어 테스트, 결함 수정, 전체 회귀와 Release 2 근거 | 모든 v0.5.0 기능 |
+| 1 | [Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md) | Team Leader - Integration | Data·Backend·Frontend 공동 검토 | completed | 저장·인증·웹 Source·자격요건·추천·관리자 데이터·로그·수동 실행·품질 W4-G0~G4 | `v0.1.0` publication |
+| 2 | [Backend 04 Admin Access Control](backend/04_admin_access_control.md) | Backend | Team Leader 보안·통합 검토 | draft | 관리자 인증·권한 기준선 | Integration 05 |
+| 3 | [Backend 05 CollectionRun Admin API](backend/05_collection_run_admin_api.md) | Backend | Data·Team Leader 운영 검토 | draft | 실행 이력·상세·수동 실행·stale 판정 | Backend 04 |
+| 4 | [Frontend 03 CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md) | Frontend | Backend 소비 검토 | draft | 이력·실패·수동 실행 UI | Backend 05 |
+| 5 | [Data 04 Public HTTPS Policy Ingestion](data/04_public_https_policy_ingestion.md) | Data | Team Leader Source 승인, Backend 소비 검토 | in-progress | 공식 HTTPS Source 1곳의 목록·상세·조건 근거 수집과 DB 적재 | Integration 05, Data 01 |
+| 6 | [Integration 08 Eligibility Evidence and Summary](integration/08_eligibility_evidence_summary.md) | Data·Backend·Frontend | Team Leader 계약·실제 E2E | completed | 조건·서류·문의처를 실제 DB→API→Browser로 대조하고 Release 1 golden 회귀 통과 | Integration 05, Data 04 병렬 보강 |
+| 7 | [Integration 09 Admin Data and Log Console](integration/09_admin_data_log_console.md) | Backend·Frontend | Team Leader 보안·운영 검토 | draft | 읽기 전용 정책 데이터 표, 구조화 파일 로그·조회·archive 삭제 UI | Integration 05, Backend 04 |
+| 8 | [Integration 06 Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md) | Backend·Frontend | Data 조건 검토, 리뷰어·QA 검증 | draft | 결정적 추천, 이유·미확정 조건과 실제 UI | Integration 05·08, v0.1.0 검색 |
+| 9 | [Frontend 05 User Service Features](frontend/05_user_service_features.md) | Frontend | Team Leader 계약, 리뷰어·QA 검증 | draft | localStorage 조건·즐겨찾기·D-Day·내부 알림·`.ics` | Integration 05 |
+| 10 | [Data 03 Recurrent Collection and Quality Operations](data/03_recurrent_collection_quality_operations.md) | Data | Backend 소비·Team Leader 통합 | completed | 반복 수집, 수정·중복·실패 격리와 품질 통계 | Integration 05, Data 02 |
+| 11 | [Data 05 Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 13개 승인 Source 전체 순회·지역별 실제 open 고유 정책 DB·API·Browser 검색 연결·RYP-G6 통과 | Data 03·04, Integration 08 |
+| 12 | [Data 06 Supplemental Official Policy Ingestion](data/06_supplemental_official_policy_ingestion.md) | Data | Team Leader Source·actual Gate, Backend·Frontend 회귀 검토 | completed | 중앙·공공기관 공식 Source 후보 정제, actual·replay·중복 감사와 `SOP-G5_PASS` | Data 05 completed, Data 02·04 |
+| 13 | [Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md) | Team Leader - Integration | 전 담당, 사용성 리뷰어·QA·보고서 | completed | W5-G0~G2, Data 06·hardening·역할 격리 리뷰/QA와 `W5-G2_PASS` | 모든 v0.5.0 기능과 Data 05·06 |
+| 14 | [Integration 10 Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md) | Team Leader - Integration | Data review 판정, Backend·Frontend 영향 확인 | completed | RA0~RA4·taxonomy v2·현재성 재판정 3건 적재·멱등성·추천 회귀, `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`와 Deploy 입력 인계 | Integration 07 W5-G1 |
+| 15 | [Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md) | Team Leader - Deploy | Data snapshot 확인, Backend·Frontend image 지원, 리뷰어·QA clean-room 검증 | completed | 동일 Git SHA·snapshot의 Compose 복원·health·actual smoke·환경 인계와 `DOCKER_ACCEPTANCE_PASS` | Integration 10 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED` |
 
-Recommendation, User Service Features와 Data Quality Operations는 구현 전에
-영역별로 분리할지 Integration Forest 하나로 묶을지 확정한다. 다음 조건을
-따른다.
+Frontend 05는 W4-G0 제안대로 서버 사용자 계정 없이 브라우저 로컬 기능만
+다루므로 Frontend 독립 Forest로 둔다. Data 04는 Source 선정·수집·추출·적재라는
+독립 완료 기준이 있어 Data 03 품질 운영에 섞지 않는다. Integration 08은
+Data Schema·Backend 상세 DTO·Frontend 상세 UI가 함께 바뀌므로 Integration
+Forest로 관리한다. Integration 06은 승인된 조건 구조를 추천에 소비한다.
+Data 05는 Data 04의 단일 웹 Source 세로 기준선을 재사용하되 지역 고유성·
+교차 Source 중복 제외와 광역 inventory라는 별도 완료 기준을 가지며,
+Integration 07 전에 완료해야 하는 `v0.5.0` Data Forest로 둔다.
+Data 06은 Data 05의 공통 실행·중복 Gate를 재사용하지만 지역 고유 정책이 아닌
+중앙·공공기관 누락 정책을 대상으로 하므로 별도 Source inventory·신청 가능성·
+actual 완료 기준을 가진 독립 Data Forest로 둔다. `2026-08-14` 일정 재승인에
+따라 4주차 DTL4-5와 W4-G4를 먼저 닫고 5주차 W5-G0~G1에서 구현한다.
+Integration 09는 관리자 인증 위에서 DB projection·파일 보존·API·UI와 삭제
+감사 경계가 함께 바뀌므로 독립 Integration Forest로 둔다. Schema, `null`,
+빈 배열 또는 enum을 바꾸면 Data·Backend·Frontend 소비 검토와 기준 문서를
+같은 Forest에서 갱신한다.
 
-- API·DB·UI가 하나의 완료 시나리오로 함께 바뀌면 Integration Forest로 묶는다.
-- 한 영역의 독립 산출물과 완료 기준이 명확하면 영역별 Forest로 나눈다.
-- 사용자 계정과 즐겨찾기 저장 위치, 알림 생성 주체는 구현 전에 공동 계약으로
-  확정한다.
-- Schema, `null`, 빈 배열 또는 enum을 변경하면 Data·Backend·Frontend
-  소비 검토와 기준 문서를 같은 Forest에서 갱신한다.
+Integration 10은 독립 리뷰 전에 최신 review queue를 다시 판정하고 실제 DB
+기준선을 재고정한다. Deploy 01은 그 기준선을 BE·FE 담당자, 리뷰어와 QA가
+각자 격리된 환경에서 동일하게 재현하도록 하는 Acceptance 전용 Forest다.
+Nginx·CI·공개 운영 image 등 Final 배포 산출물은 `v1.0.0` Forest에 남긴다.
 
 ### `v0.5.0` 의존 흐름
 
 ```text
-v0.1.0
-  ├→ 관리자 인증 → 실행 API → 관리자 UI ─┐
-  ├→ 추천 ────────────────────────────────┤
-  ├→ 사용자 부가 기능 ───────────────────┤
-  └→ 데이터 품질 운영 ───────────────────┘
-                  → 리뷰어 검증·수정 → v0.5.0
+v0.1.0 → W4-G0
+  ├→ 관리자 인증 → 실행 API·데이터 표·로그 API → 관리자 UI ┐
+  ├→ 공식 웹 Source → 자격요건 상세 API·UI ┤
+  ├→ 자격요건 → 추천 API·UI ──────────────┤
+  ├→ Frontend 로컬 사용자 기능 ───────────┤
+  ├→ 데이터 품질 운영 ────────────────────┤
+  ├→ 지역 Source 탐색·중복 제외·actual ───┤
+  └→ 보완 공식 Source 중복 감사·actual ───┘
+                  → midpoint → W5-G1
+                  → review admission·W5-G1_REVALIDATED
+                  → Docker Acceptance·DOCKER_ACCEPTANCE_PASS
+                  → 동일 환경 리뷰·QA·수정 → v0.5.0
 ```
 
 ## `v1.0.0` Forest
 
 | 순서 | Forest | 주 담당 | 참여·검증 | 상태 | 핵심 산출물 | 선행 조건 |
 | ---: | --- | --- | --- | --- | --- | --- |
-| 1 | Open-source Deployment Pipeline | Team Leader - Integration·Deploy | Data·Backend·Frontend 지원, QA 검증 | 계획 필요 | Dockerfile, Compose, Nginx, Volume, health check, CI | v0.5.0 기능 동결 |
-| 2 | Clean-room Distribution Verification | Team Leader - Integration·Deploy | QA 주 검증, 리뷰어 사용성 확인 | 계획 필요 | 새 환경 clone-to-run, migration·bootstrap·전체 시나리오 | 배포 파이프라인 |
-| 3 | Final Documentation and Submission | 보고서 담당 | Team Leader 최종 확인, 전 담당 근거 제공 | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | clean-room 검증 |
+| 1 | [Deploy 02 Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md) | Team Leader - Integration·Deploy | Data·Backend·Frontend, QA·사용성 리뷰 | in-progress (`W6-P2_QUEUE_PASS`) | 공개 dataset·lifecycle·Celery/Redis queue·one-command bootstrap·Production Compose/CI·clean-room | `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS` |
+| 2 | Final Documentation and Submission | 보고서 담당 | Team Leader 최종 확인, 전 담당 근거 제공 | 계획 필요 | README, 계약 문서, LICENSE, SBOM, 최종보고서·시연 자료 | Deploy 02 `W6-G0_FINAL_RELEASE_PASS` |
 
-Docker·Compose는 영역별 구현이 `develop`에 병합되고 manifest·lockfile과 실행
-방법이 준비된 뒤 통합 담당이 구성한다. Kubernetes는 현재 완료 조건이 아니다.
+Deploy 02는 5주차 Acceptance 구성을 입력으로 공개 normalized dataset,
+정책 생명주기, Redis broker·Celery worker·단일 Beat, Production image·Nginx·
+CI/CD와 복구 절차까지 확장한다. `W6-P0`~`W6-P5`를 순서대로 검증하고 새 PC
+clean-room 뒤에만 Final Gate를 판정한다. Kubernetes는 현재 완료 조건이 아니다.
 
 ## 브랜치 계획
 
@@ -143,7 +170,16 @@ feature/data/release-dataset-bootstrap
 feature/database/policy-search-foundation
 feature/backend/policy-search
 feature/frontend/policy-search
+docs/docs/v0-5-contract-baseline
 feature/backend/admin-run-management
+feature/backend/recommendation
+feature/frontend/recommendation
+feature/frontend/user-service-features
+feature/data/recurrent-quality-operations
+feature/data/public-web-policy-source
+feature/data/regional-youth-policy-ingestion
+feature/backend/admin-observability
+feature/frontend/admin-observability
 feature/deploy/open-source-runtime
 ```
 
@@ -156,6 +192,12 @@ Data 02가 `develop`에 병합되기 전에는 stacked 의존 관계와 병합 �
 
 Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표나 독립 완료
 기준을 한 브랜치에 장기간 누적하지 않는다.
+
+Integration 07은 Data·Backend·Frontend 실제 통합과 리뷰 증거를 함께 다룬다.
+4주차에는 `feature/integration/week-04-acceptance`를 실제 사용했지만 현재
+브랜치 전략의 domain 표에는 `integration`이 없다. A2 변경 착수 전 실제 관행을
+정책에 반영할지 기존 domain으로 귀속할지 합의하고, 그 전에는 통합 브랜치를
+임의로 만들지 않는다.
 
 ## 범위 변경 규칙
 
@@ -173,7 +215,16 @@ Slice마다 새 브랜치를 만들지 않는다. 서로 다른 릴리스 목표
 - [Release와 Milestone 계획](release_roadmap.md)
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
+- [4주차 상세 실행 계획](../weekly_plan/week_04_v0_5_0.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md)
+- [Recommendation Vertical Slice](integration/06_recommendation_vertical_slice.md)
+- [User Service Features](frontend/05_user_service_features.md)
+- [Data Quality Operations](data/03_recurrent_collection_quality_operations.md)
+- [Regional Youth Policy Ingestion](data/05_regional_youth_policy_ingestion.md)
+- [Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)
+- [Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)
 - [Backend Admin Access Control](backend/04_admin_access_control.md)
 - [Backend CollectionRun Admin API](backend/05_collection_run_admin_api.md)
 - [Frontend CollectionRun Admin UI](frontend/03_collection_run_admin_ui.md)

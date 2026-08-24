@@ -1,0 +1,423 @@
+name: ${COMPOSE_PROJECT_NAME:-cheongnyeon-alimi-acceptance}
+
+x-postgres-image: &postgres-image postgres:18.4-bookworm@sha256:882236b897e39051d2368c5ccc6cda944904723506b2dfc97f2a8f5bc9afa382
+x-redis-image: &redis-image redis:7.4.2-alpine@sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952
+x-backend-image: &backend-image ${BACKEND_IMAGE_NAME:-cheongnyeon-alimi-backend}:${ACCEPTANCE_IMAGE_TAG:-local}
+
+services:
+  database:
+    image: *postgres-image
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}
+    volumes:
+      - acceptance-db:/var/lib/postgresql
+    networks:
+      - database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  restore:
+    image: *postgres-image
+    profiles: ["restore"]
+    user: postgres
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      PGHOST: database
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      PGUSER: ${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}
+      ACCEPTANCE_DUMP_FILENAME: ${ACCEPTANCE_DUMP_FILENAME:?Run restore.ps1 to inject the verified dump filename}
+      ACCEPTANCE_DUMP_SHA256: ${ACCEPTANCE_DUMP_SHA256:?Run restore.ps1 to inject the verified dump hash}
+      ACCEPTANCE_ALEMBIC_REVISION: ${ACCEPTANCE_ALEMBIC_REVISION:-20260810_0006}
+    volumes:
+      - type: bind
+        source: ${ACCEPTANCE_SNAPSHOT_DIR:?Set an absolute snapshot directory outside the workspace}
+        target: /snapshot
+        read_only: true
+      - type: bind
+        source: ./deployment/postgres/restore.sh
+        target: /opt/acceptance/restore.sh
+        read_only: true
+    command: ["sh", "/opt/acceptance/restore.sh"]
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  schema-bootstrap:
+    image: *backend-image
+    profiles: ["restore"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+      ACCEPTANCE_ALEMBIC_REVISION: ${ACCEPTANCE_ALEMBIC_REVISION:-20260810_0006}
+    command:
+      - sh
+      - -ec
+      - >-
+        python /opt/acceptance/prepare_acceptance_schema.py &&
+        alembic upgrade "$${ACCEPTANCE_ALEMBIC_REVISION}" &&
+        python /opt/acceptance/prepare_acceptance_schema.py
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  migrate:
+    image: *backend-image
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+    command:
+      - sh
+      - -ec
+      - alembic upgrade head
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  public-dataset-bootstrap:
+    image: *backend-image
+    profiles: ["bootstrap"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+    volumes:
+      - type: bind
+        source: ${PUBLIC_DATASET_DIR:-C:/W6_P3_INJECTS_VERIFIED_DATASET}
+        target: /bootstrap
+        read_only: true
+    command:
+      - sh
+      - -ec
+      - >-
+        python /app/scripts/build_public_bootstrap_dataset.py
+        --verify-manifest /bootstrap/manifest.json &&
+        python -m app.cli.import_public_dataset
+        --manifest /bootstrap/manifest.json
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  redis:
+    image: *redis-image
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --appendfsync
+      - everysec
+    volumes:
+      - redis-data:/data
+    networks:
+      - queue
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    security_opt:
+      - no-new-privileges:true
+
+  verify-restored:
+    image: *backend-image
+    profiles: ["restore"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+    command: ["python", "/opt/acceptance/verify_restored_database.py"]
+    networks:
+      - database
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  backend:
+    image: *backend-image
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Set CORS_ORIGINS as a JSON array in .env.compose}
+      ADMIN_PIN_HASH: ${ADMIN_PIN_HASH:?Set ADMIN_PIN_HASH in .env.compose}
+      ADMIN_TOKEN_SECRET: ${ADMIN_TOKEN_SECRET:?Set ADMIN_TOKEN_SECRET in .env.compose}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      COLLECTION_QUEUE_NAME: collection
+    ports:
+      - 127.0.0.1:${BACKEND_HOST_PORT:-8000}:8000
+    volumes:
+      - backend-logs:/app/backend/logs
+      - backend-runtime:/app/backend/runtime
+    networks:
+      - app
+      - database
+      - queue
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  collection-worker:
+    image: *backend-image
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      COLLECTION_QUEUE_NAME: collection
+      COLLECTION_TASK_MAX_RETRIES: ${COLLECTION_TASK_MAX_RETRIES:-5}
+      COLLECTION_TASK_RETRY_BACKOFF_MAX_SECONDS: ${COLLECTION_TASK_RETRY_BACKOFF_MAX_SECONDS:-300}
+      COLLECTION_TASK_RATE_LIMIT: ${COLLECTION_TASK_RATE_LIMIT:-6/m}
+      COLLECTION_SCHEDULE_ENABLED: ${COLLECTION_SCHEDULE_ENABLED:-false}
+      COLLECTION_SCHEDULE_SOURCE_ID: ${COLLECTION_SCHEDULE_SOURCE_ID:-youthcenter-api}
+      COLLECTION_SCHEDULE_REQUESTED_COUNT: ${COLLECTION_SCHEDULE_REQUESTED_COUNT:-100}
+      COLLECTION_SNAPSHOT_REQUEST_BUDGET: ${COLLECTION_SNAPSHOT_REQUEST_BUDGET:-12}
+      YOUTHCENTER_API_KEY: ${YOUTHCENTER_API_KEY:-}
+      BOKJIRO_API_KEY: ${BOKJIRO_API_KEY:-}
+    command:
+      - celery
+      - -A
+      - app.worker.celery_app:celery_app
+      - worker
+      - --loglevel=INFO
+      - --queues=collection
+      - --concurrency=${COLLECTION_WORKER_CONCURRENCY:-2}
+    volumes:
+      - backend-logs:/app/backend/logs
+      - backend-runtime:/app/backend/runtime
+    networks:
+      - database
+      - queue
+      - collector-egress
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - celery -A app.worker.celery_app:celery_app inspect ping --destination "celery@$${HOSTNAME}" --timeout 5 | grep -q pong
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  collection-scheduler:
+    image: *backend-image
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      collection-worker:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: acceptance
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in .env.compose}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}@database:5432/${POSTGRES_DB:?Set POSTGRES_DB in .env.compose}
+      SECRET_KEY: ${BACKEND_SECRET_KEY:?Set BACKEND_SECRET_KEY in .env.compose}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      COLLECTION_QUEUE_NAME: collection
+      COLLECTION_SCHEDULE_ENABLED: ${COLLECTION_SCHEDULE_ENABLED:-false}
+      COLLECTION_SCHEDULE_SOURCE_ID: ${COLLECTION_SCHEDULE_SOURCE_ID:-youthcenter-api}
+      COLLECTION_SCHEDULE_REQUESTED_COUNT: ${COLLECTION_SCHEDULE_REQUESTED_COUNT:-100}
+      COLLECTION_SCHEDULE_CRON_HOUR: ${COLLECTION_SCHEDULE_CRON_HOUR:-3}
+      COLLECTION_SCHEDULE_CRON_MINUTE: ${COLLECTION_SCHEDULE_CRON_MINUTE:-0}
+      COLLECTION_SCHEDULE_COMPLETE_SNAPSHOT: ${COLLECTION_SCHEDULE_COMPLETE_SNAPSHOT:-false}
+      COLLECTION_SNAPSHOT_REQUEST_BUDGET: ${COLLECTION_SNAPSHOT_REQUEST_BUDGET:-12}
+    command:
+      - celery
+      - -A
+      - app.worker.celery_app:celery_app
+      - beat
+      - --loglevel=INFO
+      - --schedule=/tmp/celerybeat-schedule
+    networks:
+      - queue
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  frontend:
+    image: ${FRONTEND_IMAGE_NAME:-cheongnyeon-alimi-frontend}:${ACCEPTANCE_IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:?Set the browser-visible Backend URL in .env.compose}
+        VITE_USE_MOCK: ${VITE_USE_MOCK:-false}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      PORT: "3000"
+    ports:
+      - 127.0.0.1:${FRONTEND_HOST_PORT:-3000}:3000
+    networks:
+      - app
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    security_opt:
+      - no-new-privileges:true
+
+  database-test:
+    image: *postgres-image
+    profiles: ["test"]
+    restart: "no"
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        case "$$POSTGRES_DB" in
+          *_test) exec docker-entrypoint.sh postgres ;;
+          *) echo "DEP2_BLOCKED: test database name must end with _test" >&2; exit 64 ;;
+        esac
+    environment:
+      POSTGRES_DB: ${TEST_POSTGRES_DB:?Set TEST_POSTGRES_DB in .env.compose}
+      POSTGRES_USER: ${TEST_POSTGRES_USER:?Set TEST_POSTGRES_USER in .env.compose}
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD:?Set TEST_POSTGRES_PASSWORD in .env.compose}
+    volumes:
+      - acceptance-test-db:/var/lib/postgresql
+    networks:
+      - database-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  acceptance-db:
+  acceptance-test-db:
+  backend-logs:
+  backend-runtime:
+  redis-data:
+
+networks:
+  app:
+  database:
+    internal: true
+  queue:
+    internal: true
+  collector-egress:
+  database-test:
+    internal: true

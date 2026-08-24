@@ -32,6 +32,8 @@ class CollectionRunCounts:
     accepted_count: int = 0
     partial_count: int = 0
     invalid_count: int = 0
+    duplicate_count: int = 0
+    rejected_count: int = 0
     inserted_count: int = 0
     updated_count: int = 0
     unchanged_count: int = 0
@@ -85,6 +87,64 @@ class CollectionRunWriter:
             session.close()
         return run_id
 
+    def enqueue(
+        self,
+        *,
+        source_id: str,
+        run_type: str = "collection",
+        trigger_type: str,
+        requested_count: int = 0,
+        started_at: datetime | None = None,
+    ) -> UUID:
+        """Create the durable run record before publishing its queue task."""
+        _validate_choice("run_type", run_type, COLLECTION_RUN_TYPE_VALUES)
+        _validate_choice(
+            "trigger_type",
+            trigger_type,
+            COLLECTION_RUN_TRIGGER_TYPE_VALUES,
+        )
+        counts = CollectionRunCounts(requested_count=requested_count)
+        session = self._session_factory()
+        try:
+            run = CollectionRun(
+                source_id=_normalized_source_id(source_id),
+                run_type=run_type,
+                trigger_type=trigger_type,
+                started_at=started_at or utc_now(),
+                status="queued",
+                **asdict(counts),
+            )
+            session.add(run)
+            session.commit()
+            run_id = run.run_id
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return run_id
+
+    def mark_running(self, run_id: UUID) -> str:
+        """Claim a queued run; terminal redeliveries remain no-ops."""
+        session = self._session_factory()
+        try:
+            run = session.get(CollectionRun, run_id)
+            if run is None:
+                raise LookupError("collection run was not found")
+            current_status = str(run.status)
+            if current_status in TERMINAL_STATUSES:
+                return current_status
+            if current_status not in {"queued", "running"}:
+                raise ValueError("collection run has an invalid active status")
+            run.status = "running"
+            session.commit()
+            return "running"
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def finish(
         self,
         run_id: UUID,
@@ -93,6 +153,7 @@ class CollectionRunWriter:
         counts: CollectionRunCounts,
         error_type: str | None = None,
         finished_at: datetime | None = None,
+        is_complete_snapshot: bool = False,
     ) -> None:
         if status not in TERMINAL_STATUSES:
             raise ValueError(
@@ -111,12 +172,13 @@ class CollectionRunWriter:
             run = session.get(CollectionRun, run_id)
             if run is None:
                 raise LookupError("collection run was not found")
-            if run.status != "running":
+            if run.status not in {"queued", "running"}:
                 raise ValueError("collection run is already terminal")
 
             run.status = status
             run.finished_at = finished_at or utc_now()
             run.error_type = safe_error_type
+            run.is_complete_snapshot = is_complete_snapshot
             for field, value in asdict(counts).items():
                 setattr(run, field, value)
             session.commit()

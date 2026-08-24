@@ -31,7 +31,13 @@ JSON_COLUMNS = {
 RELATIONAL_STORAGE_FIELDS = {
     "region_rules",
 }
+LIFECYCLE_STORAGE_FIELDS = {
+    "last_seen_at",
+    "last_verified_at",
+    "inactive_at",
+}
 JSON_COLUMNS.update({"keywords", "life_stages", "target_groups"})
+JSON_COLUMNS.add("eligibility_summary")
 
 
 def policy_values(**overrides):
@@ -71,9 +77,10 @@ def test_policy_columns_cover_current_normalized_storage_contract():
         "id",
         "created_at",
         "updated_at",
+        *LIFECYCLE_STORAGE_FIELDS,
     }
 
-    assert len(schema["required"]) == 36
+    assert len(schema["required"]) == 37
     assert model_columns == set(schema["properties"]) - RELATIONAL_STORAGE_FIELDS
 
 
@@ -92,7 +99,14 @@ def test_json_columns_use_jsonb_only_for_postgresql():
 
 
 def test_timestamp_columns_are_timezone_aware():
-    for column_name in ("collected_at", "created_at", "updated_at"):
+    for column_name in (
+        "collected_at",
+        "last_seen_at",
+        "last_verified_at",
+        "inactive_at",
+        "created_at",
+        "updated_at",
+    ):
         assert Policy.__table__.c[column_name].type.timezone is True
 
     assert utc_now().utcoffset() == timedelta(0)
@@ -123,6 +137,15 @@ def test_json_arrays_and_provenance_round_trip_in_sqlite_unit_boundary(db):
     assert policy.preferred_conditions == ["신규 신청자"]
     assert policy.excluded_conditions == ["중복 수혜자"]
     assert policy.provenance == values["provenance"]
+    assert policy.eligibility_summary == {
+        "coverage": "unknown",
+        "requirements": [],
+        "exclusions": [],
+        "preferences": [],
+        "documents": [],
+        "unknowns": [],
+        "institutional_contacts": [],
+    }
 
 
 def test_policy_constraint_and_index_names_are_stable():
@@ -139,6 +162,7 @@ def test_policy_constraint_and_index_names_are_stable():
         "ck_policies_age_order",
         "ck_policies_application_date_order",
         "ck_policies_timestamp_order",
+        "ck_policies_inactive_after_last_seen",
         "policy_application_schedule",
         "policy_application_status",
         "policy_data_quality_status",
@@ -148,6 +172,8 @@ def test_policy_constraint_and_index_names_are_stable():
         "ix_policies_source_id",
         "ix_policies_external_id",
         "ix_policies_data_quality_status",
+        "ix_policies_application_end",
+        "ix_policies_inactive_at",
         "ix_policies_categories_gin",
         "ix_policies_regions_gin",
         "ix_policies_keywords_gin",

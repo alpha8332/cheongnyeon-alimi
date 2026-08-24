@@ -1,4 +1,6 @@
 import type {
+  EligibilitySummaryDto,
+  PolicyDetailDto,
   PolicyDto,
   PolicyListResponse,
   PublicDataQualityStatus,
@@ -12,7 +14,7 @@ type SeedQualityStatus = PublicDataQualityStatus | 'invalid';
 
 export interface SeedPolicyProgram
   extends Omit<
-    PolicyDto,
+    PolicyDetailDto,
     'id' | 'created_at' | 'updated_at' | 'data_quality_status'
   > {
   provenance: unknown[];
@@ -68,6 +70,24 @@ function toPolicyDto(program: SeedPolicyProgram, id: number): PolicyDto {
   };
 }
 
+function cloneEligibilitySummary(
+  summary: EligibilitySummaryDto,
+): EligibilitySummaryDto {
+  return structuredClone(summary);
+}
+
+function toPolicyDetailDto(
+  program: SeedPolicyProgram,
+  id: number,
+): PolicyDetailDto {
+  return {
+    ...toPolicyDto(program, id),
+    eligibility_summary: cloneEligibilitySummary(
+      program.eligibility_summary,
+    ),
+  };
+}
+
 export function createMockPolicies(
   seedPrograms: readonly SeedPolicyProgram[],
 ): PolicyDto[] {
@@ -75,6 +95,16 @@ export function createMockPolicies(
     program.data_quality_status === 'invalid'
       ? []
       : [toPolicyDto(program, index + 1)],
+  );
+}
+
+export function createMockPolicyDetails(
+  seedPrograms: readonly SeedPolicyProgram[],
+): PolicyDetailDto[] {
+  return seedPrograms.flatMap((program, index) =>
+    program.data_quality_status === 'invalid'
+      ? []
+      : [toPolicyDetailDto(program, index + 1)],
   );
 }
 
@@ -118,10 +148,10 @@ export function createMockPolicyListResponse(
 }
 
 export function findMockPolicyById(
-  policies: readonly PolicyDto[],
+  policies: readonly PolicyDetailDto[],
   policyId: number,
   includePartial = false,
-): PolicyDto | null {
+): PolicyDetailDto | null {
   const policy = policies.find((candidate) => candidate.id === policyId);
 
   if (

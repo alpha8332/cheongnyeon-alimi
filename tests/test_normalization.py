@@ -137,7 +137,11 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
             program.regions,
         )
         self.assertEqual(2, len(program.provenance))
-        self.assertEqual("1.1.0", program.SCHEMA_VERSION)
+        self.assertEqual("1.2.0", program.SCHEMA_VERSION)
+        self.assertEqual(
+            "unknown",
+            program.eligibility_summary.coverage.value,
+        )
         self.assertEqual((), program.keywords)
         self.assertEqual((), program.life_stages)
         self.assertEqual((), program.target_groups)
@@ -293,6 +297,46 @@ class TextAndFieldNormalizationTests(unittest.TestCase):
             future.application_status,
         )
         self.assertEqual(34, future.age_max)
+
+    def test_single_until_date_is_an_open_deadline_not_a_future_start(self) -> None:
+        program = self.normalizer.normalize(
+            extracted_policy(
+                application_period_text="~2026. 8. 18.(화) 11:00까지"
+            )
+        ).program
+
+        assert program is not None
+        self.assertIsNone(program.application_start)
+        self.assertEqual("2026-08-18", str(program.application_end))
+        self.assertEqual(ApplicationStatus.OPEN, program.application_status)
+
+    def test_month_range_uses_calendar_month_boundaries(self) -> None:
+        program = self.normalizer.normalize(
+            extracted_policy(
+                application_period_text=(
+                    "2026. 3. ~ 2026. 12. 각 회차별 행사일 7일 전까지"
+                )
+            )
+        ).program
+
+        assert program is not None
+        self.assertEqual("2026-03-01", str(program.application_start))
+        self.assertEqual("2026-12-31", str(program.application_end))
+        self.assertEqual(
+            ApplicationSchedule.FIXED_PERIOD,
+            program.application_schedule,
+        )
+        self.assertEqual(ApplicationStatus.OPEN, program.application_status)
+
+    def test_same_year_month_range_inherits_the_start_year(self) -> None:
+        program = self.normalizer.normalize(
+            extracted_policy(application_period_text="2026. 1월~12월")
+        ).program
+
+        assert program is not None
+        self.assertEqual("2026-01-01", str(program.application_start))
+        self.assertEqual("2026-12-31", str(program.application_end))
+        self.assertEqual(ApplicationStatus.OPEN, program.application_status)
 
     def test_partial_fixture_keeps_text_and_reports_field_locations(
         self,
@@ -452,6 +496,7 @@ class SchemaAndValidatorTests(unittest.TestCase):
         assert program is not None
         legacy = program.to_dict()
         legacy["schema_version"] = "1.0.0"
+        legacy.pop("eligibility_summary")
         for field in NormalizedProgram.SEARCH_FIELD_NAMES:
             legacy.pop(field)
 
@@ -459,16 +504,47 @@ class SchemaAndValidatorTests(unittest.TestCase):
 
         self.assertEqual(DataQualityStatus.VALID, result.status)
         self.assertIsNotNone(result.program)
-        self.assertEqual("1.1.0", result.candidate["schema_version"])
+        self.assertEqual("1.2.0", result.candidate["schema_version"])
         self.assertEqual([], result.candidate["keywords"])
         self.assertEqual([], result.candidate["life_stages"])
         self.assertEqual([], result.candidate["target_groups"])
         self.assertEqual("unknown", result.candidate["coverage_scope"])
         self.assertEqual([], result.candidate["region_rules"])
+        self.assertEqual(
+            {
+                "coverage": "unknown",
+                "requirements": [],
+                "exclusions": [],
+                "preferences": [],
+                "documents": [],
+                "unknowns": [],
+                "institutional_contacts": [],
+            },
+            result.candidate["eligibility_summary"],
+        )
         upgraded = result.program
         assert upgraded is not None
         self.assertEqual(CoverageScope.UNKNOWN, upgraded.coverage_scope)
         self.assertEqual((), upgraded.region_rules)
+
+    def test_legacy_1_1_input_is_upgraded_with_unknown_eligibility(
+        self,
+    ) -> None:
+        program = self.valid_result.program
+        assert program is not None
+        legacy = program.to_dict()
+        legacy["schema_version"] = "1.1.0"
+        legacy.pop("eligibility_summary")
+
+        result = self.validator.validate(legacy)
+
+        self.assertEqual(DataQualityStatus.VALID, result.status)
+        self.assertIsNotNone(result.program)
+        self.assertEqual("1.2.0", result.candidate["schema_version"])
+        self.assertEqual(
+            "unknown",
+            result.candidate["eligibility_summary"]["coverage"],
+        )
 
     def test_valid_partial_invalid_json_fixtures_are_classified(
         self,

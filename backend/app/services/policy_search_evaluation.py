@@ -92,6 +92,8 @@ class RegionRuleEvidence:
     region_status: str | None
     source_code: str | None
     source_text: str | None
+    province_scheme: str | None = None
+    province_code: str | None = None
     match_distance: int | None = None
 
 
@@ -145,6 +147,9 @@ def evaluate_age_condition(
         or not 0 <= requested_age <= 150
     ):
         raise ValueError("requested_age must be an integer from 0 to 150")
+    if age_min == 0 and age_max == 0:
+        age_min = None
+        age_max = None
     if age_min is not None and requested_age < age_min:
         return AgeDecision(
             MatchState.MISMATCH,
@@ -310,10 +315,26 @@ def evaluate_region_condition(
             query,
             evidence,
         )
-    if unresolved or active_includes == 0:
+    query_province = next(
+        (
+            (candidate.scheme, candidate.code)
+            for candidate in query_path
+            if candidate.level == "province"
+        ),
+        None,
+    )
+    relevant_unresolved = [
+        rule
+        for rule in unresolved
+        if query_province is None
+        or rule.province_scheme is None
+        or rule.province_code is None
+        or (rule.province_scheme, rule.province_code) == query_province
+    ]
+    if relevant_unresolved or active_includes == 0:
         evidence = (
-            sorted(unresolved, key=_evidence_sort_key)[0]
-            if unresolved
+            sorted(relevant_unresolved, key=_evidence_sort_key)[0]
+            if relevant_unresolved
             else None
         )
         return RegionDecision(
@@ -451,6 +472,11 @@ class PolicySearchEvaluationService:
                 ),
                 source_code=rule.source_code,
                 source_text=rule.source_text,
+                **_province_evidence(
+                    rule.region_scheme,
+                    rule.region_code,
+                    catalog,
+                ),
             )
             for rule in rule_models
         )
@@ -460,6 +486,64 @@ class PolicySearchEvaluationService:
             query_path=query_path,
             rules=rules,
         )
+
+    def evaluate_policy_regions(
+        self,
+        policies: Sequence[Policy],
+        query: RegionQueryResolution,
+    ) -> dict[int, RegionDecision]:
+        """여러 정책의 지역 판정을 rule·region bulk query 두 번으로 계산한다."""
+        selected = tuple(policies)
+        grouped_rules = self.repository.policy_region_rules_for_policies(
+            [policy.id for policy in selected]
+        )
+        schemes = {
+            rule.region_scheme
+            for rules in grouped_rules.values()
+            for rule in rules
+            if rule.region_scheme is not None
+        }
+        schemes.update(candidate.scheme for candidate in query.candidates)
+        catalog = {
+            (region.scheme, region.code): region
+            for region in self.repository.regions_for_schemes(tuple(schemes))
+        }
+        query_path = self._query_path(query, catalog)
+
+        decisions: dict[int, RegionDecision] = {}
+        for policy in selected:
+            evidence = tuple(
+                RegionRuleEvidence(
+                    relation=rule.relation,
+                    resolution_status=rule.resolution_status,
+                    region_scheme=rule.region_scheme,
+                    region_code=rule.region_code,
+                    region_status=(
+                        catalog[(rule.region_scheme, rule.region_code)].status
+                        if (
+                            rule.region_scheme is not None
+                            and rule.region_code is not None
+                            and (rule.region_scheme, rule.region_code) in catalog
+                        )
+                        else None
+                    ),
+                    source_code=rule.source_code,
+                    source_text=rule.source_text,
+                    **_province_evidence(
+                        rule.region_scheme,
+                        rule.region_code,
+                        catalog,
+                    ),
+                )
+                for rule in grouped_rules.get(policy.id, ())
+            )
+            decisions[policy.id] = evaluate_region_condition(
+                coverage_scope=policy.coverage_scope,
+                query=query,
+                query_path=query_path,
+                rules=evidence,
+            )
+        return decisions
 
     def evaluate_policy_age(
         self,
@@ -533,6 +617,33 @@ class PolicySearchEvaluationService:
                 raise LookupError("region hierarchy parent was not found")
             current = _candidate(parent)
         return tuple(path)
+
+
+def _province_evidence(
+    scheme: str | None,
+    code: str | None,
+    catalog: dict[tuple[str, str], AdministrativeRegion],
+) -> dict[str, str | None]:
+    """Return a canonical province only when the stored hierarchy proves one."""
+    if scheme is None or code is None:
+        return {"province_scheme": None, "province_code": None}
+    current = catalog.get((scheme, code))
+    seen: set[tuple[str, str]] = set()
+    while current is not None:
+        identity = (current.scheme, current.code)
+        if identity in seen:
+            break
+        seen.add(identity)
+        if current.level == "province":
+            return {
+                "province_scheme": current.scheme,
+                "province_code": current.code,
+            }
+        parent_code = current.aggregate_parent_code or current.parent_code
+        if parent_code is None:
+            break
+        current = catalog.get((current.scheme, parent_code))
+    return {"province_scheme": None, "province_code": None}
 
 
 def _candidate(region: AdministrativeRegion) -> RegionCandidate:

@@ -42,6 +42,8 @@ def test_writer_persists_source_runtime_lifecycle(db):
             accepted_count=2,
             partial_count=0,
             invalid_count=1,
+            duplicate_count=2,
+            rejected_count=1,
             inserted_count=2,
         ),
         finished_at=finished_at,
@@ -55,6 +57,8 @@ def test_writer_persists_source_runtime_lifecycle(db):
         assert run.status == "partial_failure"
         assert run.accepted_count == 2
         assert run.invalid_count == 1
+        assert run.duplicate_count == 2
+        assert run.rejected_count == 1
         assert run.inserted_count == 2
         assert run.error_type is None
     finally:
@@ -91,11 +95,40 @@ def test_writer_supports_cross_source_seed_and_safe_failure_type(db):
         session.close()
 
 
+def test_writer_persists_queued_claim_and_terminal_redelivery(db):
+    writer, session_factory = _writer(db)
+    run_id = writer.enqueue(
+        source_id="youthcenter-api",
+        trigger_type="admin",
+        requested_count=25,
+    )
+
+    session = session_factory()
+    try:
+        queued = session.get(CollectionRun, run_id)
+        assert queued.status == "queued"
+        assert queued.finished_at is None
+    finally:
+        session.close()
+
+    assert writer.mark_running(run_id) == "running"
+    writer.finish(
+        run_id,
+        status="succeeded",
+        counts=CollectionRunCounts(requested_count=25),
+    )
+    assert writer.mark_running(run_id) == "succeeded"
+
+
 def test_writer_rejects_negative_counts_and_invalid_contract_values(db):
     writer, _ = _writer(db)
 
     with pytest.raises(ValueError):
         CollectionRunCounts(invalid_count=-1)
+    with pytest.raises(ValueError):
+        CollectionRunCounts(duplicate_count=-1)
+    with pytest.raises(ValueError):
+        CollectionRunCounts(rejected_count=-1)
     with pytest.raises(ValueError):
         writer.start(
             source_id=" ",
@@ -131,6 +164,30 @@ def test_database_rejects_terminal_run_without_finished_at(db):
             status="failed",
             finished_at=None,
         )
+    )
+
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+    db.rollback()
+
+
+def test_database_rejects_two_active_runs_for_same_source(db):
+    db.add_all(
+        [
+            CollectionRun(
+                source_id="youthcenter-api",
+                run_type="collection",
+                trigger_type="admin",
+                status="queued",
+            ),
+            CollectionRun(
+                source_id="youthcenter-api",
+                run_type="collection",
+                trigger_type="scheduler",
+                status="running",
+            ),
+        ]
     )
 
     with pytest.raises(IntegrityError):

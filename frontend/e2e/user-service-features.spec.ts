@@ -1,0 +1,324 @@
+import { expect, test, type Page } from '@playwright/test';
+import {
+  DATA06_KOSAF_IDENTITY,
+  isActualApiMode,
+  MOCK_ONLY,
+  resolveActualPolicyByIdentity,
+  skipUnlessActualApi,
+} from './helpers/e2eMode';
+import {
+  confirmBookmarkModal,
+  favoritePolicyOnHome,
+  getFirstHomePolicyTitle,
+  waitForHomePolicies,
+} from './helpers/homePolicy';
+
+const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
+
+async function clearUserLocalStorage(page: Page) {
+  await page.goto('/');
+  await page.evaluate((key) => {
+    window.localStorage.removeItem(key);
+  }, USER_LOCAL_STORAGE_KEY);
+}
+
+async function acceptAllDialogsDuring(page: Page, action: () => Promise<void>) {
+  const handler = (dialog: { accept: () => Promise<void> }) => {
+    void dialog.accept();
+  };
+
+  page.on('dialog', handler);
+
+  try {
+    await action();
+  } finally {
+    page.off('dialog', handler);
+  }
+}
+
+async function gotoProfileConditions(page: Page) {
+  await page.goto('/profile');
+  await expect(page.getByRole('heading', { name: '사용자 프로필', level: 1 })).toBeVisible();
+}
+
+async function openBookmarkFolder(page: Page, folderName: string) {
+  await page
+    .getByRole('button', {
+      name: new RegExp(`^${folderName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(\\d+\\)$`),
+    })
+    .click();
+}
+
+function homeBookmarkTargetTitle(): string | undefined {
+  return isActualApiMode() ? undefined : MOCK_ONLY.ALWAYS_OPEN_POLICY_TITLE;
+}
+
+test.describe('User Service browser flow (FE5-07)', () => {
+  test.beforeEach(async ({ page }) => {
+    await clearUserLocalStorage(page);
+  });
+
+  test('1. 프로필 — 저장 조건 저장 및 reload 유지', async ({ page }) => {
+    await gotoProfileConditions(page);
+
+    const form = page.getByRole('form', { name: '저장 조건 편집' });
+    await form.getByPlaceholder('예: 서울특별시').fill('서울특별시');
+    await form.getByPlaceholder('예: 24').fill('24');
+    await form.getByLabel('관심 분야').selectOption('housing');
+    await form.getByRole('button', { name: '조건 저장' }).click();
+
+    await expect(page.getByText('저장 조건을 브라우저에 저장했습니다.')).toBeVisible();
+    await expect(page.getByText(/저장됨:.*서울특별시/)).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText(/저장됨:.*서울특별시/)).toBeVisible();
+    await expect(form.getByPlaceholder('예: 서울특별시')).toHaveValue('서울특별시');
+  });
+
+  test('2. 북마크 toggle — 홈→북마크→상세 cross-route', async ({ page }) => {
+    await page.goto('/');
+    const title = await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
+
+    await page.getByRole('link', { name: '북마크' }).click();
+    await expect(page).toHaveURL(/\/favorites$/);
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.getByText(title)).toBeVisible();
+
+    await page
+      .locator('article.policy-card')
+      .filter({ hasText: title })
+      .getByRole('link', { name: title })
+      .click();
+
+    await expect(page).toHaveURL(/\/programs\/\d+/);
+    await expect(page.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
+  });
+
+  test('3. 북마크 reload 후 유지', async ({ page }) => {
+    await page.goto('/');
+    const title = await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
+
+    await page.reload();
+    await waitForHomePolicies(page);
+
+    const card = page.locator('article.policy-card').filter({ hasText: title });
+    await expect(card.getByRole('button', { name: '북마크 폴더 관리' })).toBeVisible();
+
+    await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.getByText(title)).toBeVisible();
+  });
+
+  test('4. 조건-only 초기화 — 북마크 유지', async ({ page }) => {
+    await page.goto('/');
+    const title = await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
+
+    await gotoProfileConditions(page);
+    const form = page.getByRole('form', { name: '저장 조건 편집' });
+    await form.getByPlaceholder('예: 서울특별시').fill('대전광역시');
+    await form.getByRole('button', { name: '조건 저장' }).click();
+    await expect(page.getByText(/저장됨:.*대전광역시/)).toBeVisible();
+
+    await acceptAllDialogsDuring(page, async () => {
+      await form.getByRole('button', { name: '조건 초기화' }).click();
+    });
+
+    await expect(page.getByText('저장 조건을 초기화했습니다.')).toBeVisible();
+    await expect(page.getByText('아직 저장된 조건이 없습니다.')).toBeVisible();
+
+    await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.getByText(title)).toBeVisible();
+  });
+
+  test('5. 북마크 empty·loading shell', async ({ page }) => {
+    await page.goto('/favorites');
+    await expect(page.getByRole('heading', { name: '북마크' })).toBeVisible();
+    await expect(
+      page.getByText(/정책 카드의 ☆ 버튼으로 북마크를 추가해 보세요/),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /기본 폴더 \(0\)/ })).toBeVisible();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.getByText('저장된 정책이 없습니다.')).toBeVisible();
+  });
+
+  test('6. 마감 달력 — scope toggle·empty states', async ({ page }) => {
+    await page.goto('/calendar');
+
+    await expect(page.getByRole('heading', { name: '마감 달력' })).toBeVisible();
+    await expect(
+      page.getByText('북마크한 정책이 없습니다. 정책 카드에서 ☆ 버튼으로 추가해 보세요.'),
+    ).toBeVisible();
+
+    await page.getByRole('tab', { name: '전체 정책' }).click();
+    await expect(page.getByText('달력 데이터를 불러오는 중입니다.')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+
+    const monthlyGrid = page.locator('.monthly-calendar__grid');
+    await expect(monthlyGrid).toBeVisible();
+    const hasEvents = (await page.locator('.calendar-event-badge').count()) > 0;
+    const emptyMessage = page.getByText('표시할 신청 시작·마감일이 있는 정책이 없습니다.');
+    const hasEmpty = await emptyMessage.isVisible();
+
+    expect(hasEvents || hasEmpty).toBeTruthy();
+  });
+
+  test('7. 알림 — empty shell (북마크 없음·마감 임박 없음)', async ({ page }) => {
+    await page.goto('/notifications');
+
+    await expect(page.getByRole('heading', { name: '알림' })).toBeVisible();
+    await expect(
+      page.getByText('북마크한 정책이 없습니다. 마감 임박 알림은 북마크한 정책에만 표시됩니다.'),
+    ).toBeVisible();
+    await expect(
+      page.getByText('외부 push·이메일·Service Worker 알림은 사용하지 않습니다.'),
+    ).toBeVisible();
+
+    await page.goto('/');
+    await favoritePolicyOnHome(page, homeBookmarkTargetTitle());
+
+    await page.getByRole('link', { name: '알림' }).click();
+    await expect(page.getByText('알림 대상 정책을 불러오는 중입니다.')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByText(
+        '마감 임박 알림이 없습니다. 상시·일정 미정·D-7 초과 정책은 알림에 포함되지 않습니다.',
+      ),
+    ).toBeVisible();
+  });
+
+  test('9. 상세 — 종료일 없으면 ICS 버튼 disabled', async ({ page, request }) => {
+    if (isActualApiMode()) {
+      const policy = await resolveActualPolicyByIdentity(request);
+      expect(policy.application_end).toBeNull();
+      await page.goto(`/programs/${policy.id}?include_partial=true`);
+      await expect(
+        page.getByRole('heading', { name: DATA06_KOSAF_IDENTITY.title }),
+      ).toBeVisible({ timeout: 15_000 });
+    } else {
+      await page.goto('/programs/2');
+      await expect(
+        page.getByRole('heading', { name: MOCK_ONLY.ALWAYS_OPEN_POLICY_TITLE }),
+      ).toBeVisible({ timeout: 15_000 });
+    }
+
+    const icsButton = page.getByRole('button', { name: /캘린더 \(\.ics\) 다운로드/ });
+    await expect(icsButton).toBeDisabled();
+  });
+
+  test('10. sidebar nav — 추천·달력 cross-route', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('link', { name: '맞춤 추천' }).click();
+    await expect(page).toHaveURL(/\/recommendations$/);
+    await expect(page.getByRole('heading', { name: '맞춤 추천', level: 1 })).toBeVisible();
+    await expect(page.getByRole('form', { name: '맞춤 추천 조건 편집' })).toBeVisible();
+
+    await page.getByRole('link', { name: '달력' }).click();
+    await expect(page).toHaveURL(/\/calendar$/);
+    await expect(page.getByRole('tab', { name: '북마크' })).toBeVisible();
+  });
+
+  test('11. keyboard — favorite toggle aria-pressed', async ({ page }) => {
+    await page.goto('/');
+    await waitForHomePolicies(page);
+
+    const card = page.locator('article.policy-card').first();
+    await card.getByRole('button', { name: '북마크 추가' }).click();
+    await confirmBookmarkModal(page);
+
+    const toggle = card.getByRole('button', { name: '북마크 폴더 관리' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+    await toggle.focus();
+    await toggle.press('Space');
+    await expect(page.getByRole('dialog', { name: '북마크 저장' })).toBeVisible();
+    await page.getByRole('dialog', { name: '북마크 저장' }).getByRole('button', { name: '취소' }).click();
+    await expect(page.getByRole('dialog', { name: '북마크 저장' })).toHaveCount(0);
+  });
+
+  test('12. mobile viewport — 홈·프로필·북마크 페이지', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { name: /안녕하세요/, level: 1 })).toBeVisible();
+    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toHaveCount(0);
+
+    await gotoProfileConditions(page);
+    await expect(page.getByRole('form', { name: '저장 조건 편집' })).toBeVisible();
+
+    await page.goto('/favorites');
+    await expect(page.getByRole('heading', { name: '북마크', level: 1 })).toBeVisible();
+  });
+
+  test('13. 홈→검색 golden entry', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByLabel('정책 검색어').fill('서울 주거');
+    await page.getByRole('button', { name: '검색하기' }).click();
+
+    await expect(page).toHaveURL(/\/?\?.*q=/);
+    await expect(page.getByLabel('검색 결과 로딩 중')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    await expect(page.getByRole('region', { name: '검색 결과' })).toBeVisible();
+  });
+
+  test('14. 북마크 폴더 — 생성·그리드 필터·모달 저장', async ({ page }) => {
+    await page.goto('/favorites');
+    await page.getByRole('button', { name: '새 폴더 만들기' }).click();
+    const createDialog = page.getByRole('dialog', { name: '새 폴더 만들기' });
+    await expect(createDialog).toBeVisible();
+    await createDialog.getByLabel('새 폴더 이름').fill('주거정책모음');
+    await createDialog.getByRole('button', { name: '만들기' }).click();
+    await expect(page.getByText('저장된 정책이 없습니다.')).toBeVisible();
+
+    await page.getByRole('button', { name: '< 북마크' }).click();
+    await expect(page.getByRole('button', { name: /주거정책모음 \(0\)/ })).toBeVisible();
+
+    await page.goto('/');
+    await waitForHomePolicies(page);
+    const title = homeBookmarkTargetTitle()
+      ? homeBookmarkTargetTitle()!
+      : await getFirstHomePolicyTitle(page);
+
+    const card = page.locator('article.policy-card').filter({ hasText: title }).first();
+    await card.getByRole('button', { name: '북마크 추가' }).click();
+    const dialog = page.getByRole('dialog', { name: '북마크 저장' });
+    await dialog.getByRole('radio', { name: '주거정책모음' }).check();
+    await dialog.getByRole('button', { name: '저장' }).click();
+
+    await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.getByText(title)).toHaveCount(0);
+    await page.getByRole('button', { name: '< 북마크' }).click();
+    await openBookmarkFolder(page, '주거정책모음');
+    await expect(page.getByText(title)).toBeVisible();
+  });
+
+  test('15. Real API favorites persistence golden', async ({ page }) => {
+    skipUnlessActualApi(test);
+
+    await page.goto('/');
+    await waitForHomePolicies(page);
+
+    await page.locator('article.policy-card').first().getByRole('button', {
+      name: '북마크 추가',
+    }).click();
+    await confirmBookmarkModal(page);
+
+    await page.getByRole('link', { name: '북마크' }).click();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.locator('article.policy-card').first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await page.reload();
+    await openBookmarkFolder(page, '기본 폴더');
+    await expect(page.locator('article.policy-card').first()).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+});

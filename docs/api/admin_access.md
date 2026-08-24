@@ -1,0 +1,129 @@
+# 관리자 인증 API 계약 (Admin Access Control)
+
+## 개요
+
+이 문서는 `cheongnyeon-alimi` 백엔드의 관리자 전용 세션 생성 및 인증·권한 API 계약을 정의한다.
+
+---
+
+## 1. 관리자 세션 생성 (로그인)
+
+- **Endpoint**: `POST /api/v1/admin/session`
+- **Content-Type**: `application/json`
+- **인증**: 필요 없음 (Public)
+
+### 요청 (Request Body)
+
+```json
+{
+  "pin": "0000"
+}
+```
+
+| 필드명 | 타입 | 필수 여부 | 제약 조건 | 설명 |
+| --- | --- | --- | --- | --- |
+| `pin` | `string` | **필수** | 정확히 4자리 숫자 (`^\d{4}$`) | 관리자 접근 4자리 PIN |
+
+---
+
+### 응답 (Response)
+
+#### 200 OK (세션 생성 성공)
+
+```json
+{
+  "access_token": "admin.1770475800.a1b2c3d4e5f67890",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "role": "admin"
+}
+```
+
+| 필드명 | 타입 | 설명 |
+| --- | --- | --- |
+| `access_token` | `string` | 세션 발급 관리자 서명 토큰 (`admin.<expires_at>.<sig>`) |
+| `token_type` | `string` | 토큰 인증 타입 (`"bearer"`) |
+| `expires_in` | `integer` | 토큰 유효 기간 (초 단위, 기본 3600초/60분) |
+| `role` | `string` | 부여된 역할 (`"admin"`) |
+
+---
+
+## 2. 관리자 권한 상태 확인 (보호 라우트 샘플)
+
+- **Endpoint**: `GET /api/v1/admin/me`
+- **인증**: Bearer 토큰 필요 (`Authorization: Bearer <access_token>`)
+
+### 요청 헤더 (Headers)
+
+```text
+Authorization: Bearer admin.1770475800.a1b2c3d4e5f67890
+```
+
+### 응답 (Response)
+
+#### 200 OK (인증 및 권한 확인 성공)
+
+```json
+{
+  "role": "admin",
+  "expires_at": 1770475800,
+  "status": "authenticated"
+}
+```
+
+---
+
+## 3. 오류 응답 표준 (Error Responses)
+
+#### 401 Unauthorized (인증 실패 / 헤더 누락 / 토큰 만료)
+
+- 세션 생성 시: 잘못된 PIN 또는 배포 환경의 인증 비활성화 (Fail-closed)
+- 보호 라우트 접근 시: Authorization 헤더 누락, 서명 변조, 또는 토큰 만료
+
+```json
+{
+  "detail": "Invalid or expired admin session token."
+}
+```
+
+#### 403 Forbidden (권한 부족)
+
+유효한 토큰이지만 관리자 역할(`role == "admin"`)이 아니거나 관리자 API 접근 권한이 부족한 경우 반환한다.
+
+```json
+{
+  "detail": "Admin authorization required."
+}
+```
+
+#### 429 Too Many Requests (점진적 Rate Limit 및 Lockout)
+
+동일 IP에서 5회 연속 로그인 실패 시 단계별 점진적 락아웃(5초 ➔ 10초 ➔ 30초 ➔ 60초 ➔ 120초 ➔ 300초)을 적용한다.
+
+```json
+{
+  "error": {
+    "message": "Too many failed login attempts. Account temporarily locked for 5 seconds.",
+    "details": {
+      "cooldown_seconds": 5
+    }
+  }
+}
+```
+
+#### 422 Unprocessable Entity (형식 검증 실패)
+
+PIN이 4자리 숫자가 아니거나 유효하지 않은 JSON 요청인 경우 반환한다.
+
+---
+
+## 4. 환경별 PIN 검증 규칙
+
+1. **로컬 / 개발 환경 (`ENVIRONMENT` = `development` / `local` / `test`)**:
+   - `ADMIN_PIN_HASH` 환경변수가 설정되지 않고 실제 요청 client가 loopback인 경우에만
+     로컬 시연용 최초 PIN `0000`을 허용한다. 외부 client 요청에는 개발 환경이어도
+     기본 PIN을 허용하지 않는다.
+2. **배포 / 프로덕션 환경 (`ENVIRONMENT` = `production`)**:
+   - 명시적 `ADMIN_PIN_HASH`가 지정되지 않은 경우 **Fail-closed** 정책을 적용하여 `0000`을 포함한 모든 PIN 로그인을 `401`로 즉시 거부한다.
+   - `ADMIN_TOKEN_SECRET`을 별도로 지정해야 하며, 미설정 시 공용 `SECRET_KEY`로
+     fallback하지 않고 세션 발급을 거부한다.

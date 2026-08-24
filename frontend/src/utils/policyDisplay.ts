@@ -4,6 +4,9 @@ import type {
   PolicyDto,
   PolicyCategory,
 } from '../types/policy.js';
+import { getDDayLabel, normalizePolicyYmd } from './policyDeadline.js';
+
+export { getDDayLabel, normalizePolicyYmd };
 
 const CATEGORY_LABELS: Record<PolicyCategory, string> = {
   housing: '주거',
@@ -34,7 +37,9 @@ export function getCategoryLabel(category: PolicyCategory): string {
   return CATEGORY_LABELS[category];
 }
 
-export function formatCategoryTags(policy: PolicyDto): string[] {
+export function formatCategoryTags(
+  policy: Pick<PolicyDto, 'categories' | 'category_text'>,
+): string[] {
   if (policy.categories.length > 0) {
     return policy.categories.map(getCategoryLabel);
   }
@@ -46,11 +51,15 @@ export function formatCategoryTags(policy: PolicyDto): string[] {
   return ['분류 없음'];
 }
 
-export function formatOrganization(policy: PolicyDto): string {
+export function formatOrganization(
+  policy: Pick<PolicyDto, 'organization'>,
+): string {
   return policy.organization ?? '기관 정보 없음';
 }
 
-export function formatRegion(policy: PolicyDto): string {
+export function formatRegion(
+  policy: Pick<PolicyDto, 'regions' | 'region_text'>,
+): string {
   if (policy.regions.length > 0) {
     return policy.regions.join(', ');
   }
@@ -59,6 +68,15 @@ export function formatRegion(policy: PolicyDto): string {
 }
 
 export function formatAge(policy: PolicyDto): string {
+  const compactAgeText = policy.age_condition_text?.replace(/\s+/g, '');
+  if (
+    (policy.age_min === 0 && policy.age_max === 0) ||
+    compactAgeText === '0세~0세' ||
+    compactAgeText === '0~0'
+  ) {
+    return '연령 정보 없음';
+  }
+
   if (policy.age_min !== null && policy.age_max !== null) {
     return `${policy.age_min}세 ~ ${policy.age_max}세`;
   }
@@ -94,24 +112,89 @@ export function formatApplicationStatus(
   return STATUS_LABELS[status];
 }
 
-export function formatApplicationPeriod(policy: PolicyDto): string {
+/** YYYY-MM-DD / ISO datetime → `YYYY.MM.DD` */
+export function formatPolicyDateDot(value: string | null | undefined): string | null {
+  const normalized = normalizePolicyYmd(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const [year, month, day] = normalized.split('-');
+  return `${year}.${month}.${day}`;
+}
+
+function normalizePeriodTextDates(text: string): string {
+  return text
+    .replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1.$2.$3')
+    .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, '$1.$2.$3')
+    .replace(
+      /\b(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?\b/g,
+      (_, year: string, month: string, day: string) =>
+        `${year}.${month.padStart(2, '0')}.${day.padStart(2, '0')}`,
+    )
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/** 상세·modal용 신청 기간 (`YYYY.MM.DD`) */
+export function formatApplicationPeriodDisplay(policy: PolicyDto): string {
   if (policy.application_period_text) {
-    return policy.application_period_text;
+    return normalizePeriodTextDates(policy.application_period_text);
   }
 
-  if (policy.application_start && policy.application_end) {
-    return `${policy.application_start} ~ ${policy.application_end}`;
+  const start = formatPolicyDateDot(policy.application_start);
+  const end = formatPolicyDateDot(policy.application_end);
+
+  if (start && end) {
+    return `${start} ~ ${end}`;
   }
 
-  if (policy.application_start) {
-    return `${policy.application_start} ~`;
+  if (start) {
+    return `${start} ~`;
   }
 
-  if (policy.application_end) {
-    return `~ ${policy.application_end}`;
+  if (end) {
+    return `~ ${end}`;
+  }
+
+  if (policy.application_schedule === 'always') {
+    return '상시';
   }
 
   return '신청 기간 미정';
+}
+
+/** 목록 카드용 compact 신청 기간 */
+export function formatApplicationPeriodCard(policy: PolicyDto): string {
+  const start = formatPolicyDateDot(policy.application_start);
+  const end = formatPolicyDateDot(policy.application_end);
+
+  if (start && end) {
+    return `${start} ~ ${end}`;
+  }
+
+  if (end) {
+    return `${end} 마감`;
+  }
+
+  if (start) {
+    return `${start} 시작`;
+  }
+
+  if (policy.application_schedule === 'always') {
+    return '상시';
+  }
+
+  if (policy.application_period_text) {
+    const normalized = normalizePeriodTextDates(policy.application_period_text);
+    return normalized.length > 48 ? `${normalized.slice(0, 48)}…` : normalized;
+  }
+
+  return '기간 미정';
+}
+
+export function formatApplicationPeriod(policy: PolicyDto): string {
+  return formatApplicationPeriodDisplay(policy);
 }
 
 export function formatCollectedAt(value: string): string {
@@ -125,51 +208,40 @@ export function formatCollectedAt(value: string): string {
   return `${date} ${time} KST`;
 }
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function parseDateOnly(value: string): Date {
-  const [year, month, day] = value.split('-').map(Number);
-  return new Date(year, month - 1, day);
-}
-
-export function getDDayLabel(
-  policy: PolicyDto,
-  referenceDate: Date = new Date(),
-): string {
-  if (policy.application_status === 'closed') {
-    return '마감';
-  }
-
-  if (policy.application_schedule === 'always' && policy.application_status === 'open') {
-    return '상시';
-  }
-
-  if (!policy.application_end) {
-    return '일정 미정';
-  }
-
-  const today = startOfDay(referenceDate);
-  const endDate = startOfDay(parseDateOnly(policy.application_end));
-  const diffDays = Math.ceil(
-    (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (diffDays > 0) {
-    return `D-${diffDays}`;
-  }
-
-  if (diffDays === 0) {
-    return 'D-Day';
-  }
-
-  return '마감';
-}
-
 export function formatNullableText(
   value: string | null,
   fallback: string,
 ): string {
   return value ?? fallback;
+}
+
+function stripHtmlTags(value: string): string {
+  return value.replace(/<[^>]*>/g, '').trim();
+}
+
+/** Calendar·카드 등 UI 표시용 정책명 (API 필드명·HTML 변형 폴백). */
+export function getPolicyDisplayTitle(
+  policy: Pick<PolicyDto, 'title' | 'category_text'>,
+): string {
+  const legacy = policy as Pick<PolicyDto, 'title' | 'category_text'> &
+    Record<string, unknown>;
+  const candidates = [
+    policy.title,
+    legacy['policy_name'],
+    legacy['name'],
+    legacy['polyBizSjnm'],
+    legacy['plcyNm'],
+    policy.category_text,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string') {
+      const normalized = stripHtmlTags(candidate);
+      if (normalized) {
+        return normalized;
+      }
+    }
+  }
+
+  return '정책';
 }

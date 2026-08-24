@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-19
 - 범위: `v0.1.0`, `v0.5.0`, `v1.0.0`
 - 역할: 여러 Forest의 릴리스 목표와 통합 완료 조건을 정하는 기준선
 
@@ -13,10 +13,10 @@
 
 ## 계획 해석 원칙
 
-`opensource_plan`의 초기 계획은 방향을 정하는 읽기 전용 참고 자료다. 현재
-코드, 자동화된 계약, 실행 결과와 `docs/`가 초기 계획과 다르면 현재 저장소를
-우선한다. 구현하지 않았거나 실제 데이터로 검증하지 않은 항목은 릴리스 완료로
-간주하지 않는다.
+초기 binary 계획 자료의 결정은 현재 `docs/` 기준선에 반영됐으며 원본 자료는
+저장소에서 제거됐다. 코드, 자동화된 계약, 실행 결과와 계획이 다르면 실제
+저장소를 우선한다. 구현하지 않았거나 실제 데이터로 검증하지 않은 항목은
+릴리스 완료로 간주하지 않는다.
 
 정책 검색 요청은 PostgreSQL만 조회한다. 온통청년·복지로 API 호출은 별도
 수집·적재 흐름에서 수행하며 사용자 검색 요청마다 외부 API를 호출하지 않는다.
@@ -39,9 +39,9 @@
 - Gate G4 경량 QA·사용성 검토와 Release 1 blocker 0건 판정
 
 Release 1 구현과 근거는 `2026-08-06` 커밋 `4629a61`로 `develop`에 병합됐다.
-`main` 릴리스 PR과 `v0.1.0` tag는 아직 완료하지 않았으며 저장소 publication
-절차로 남아 있다. 자동 주기 수집, 보고서 근거 대조와 API 오류 토스트 검증은
-`v0.5.0` 후속 범위다.
+PR #15의 `main` 커밋 `2b33ed7`에 `v0.1.0` tag를 생성해 publication을
+완료했고 `develop`도 같은 커밋으로 fast-forward했다. 자동 주기 수집,
+보고서 근거 대조와 API 오류 토스트 검증은 `v0.5.0` 후속 범위다.
 
 ## 릴리스 역할과 승인 증거
 
@@ -50,7 +50,7 @@ Release 1 구현과 근거는 `2026-08-06` 커밋 `4629a61`로 `develop`에 병�
 | Data | 실제 정책 bootstrap·품질 기준 | 반복 수집·중복·품질 운영 | 초기 적재·복구·Source 라이선스 |
 | Backend | 자연어 해석·서버 검색 API | 추천·사용자·관리자 API 안정화 | Production image·migration·health·로그 |
 | Frontend | 자연어 전달·해석 결과·실데이터 UI | 전체 사용자·관리자 UI·접근성 | Production build·배포 UI 회귀 |
-| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·결함 triage와 Release 2 결정 | 배포 파이프라인·clean-room과 Final 결정 |
+| Team Leader - Integration·Deploy | 실제 데이터 E2E와 Release 1 결정 | 통합·review admission·동일 snapshot Acceptance 환경·결함 triage와 Release 2 결정 | Production 배포 파이프라인·clean-room과 Final 결정 |
 | 보고서 | 데이터·검색·검증 근거 | 기능·리뷰·QA·수정 결과 | 최종보고서·README·LICENSE·SBOM·제출 |
 | 사용성 리뷰어 | golden query 이해도 사전 확인 | 독립 사용자 시나리오와 수정본 확인 | 새 환경 실행 안내·최종 사용성 확인 |
 | QA | 핵심 검색 smoke | 전체 기능·통합·회귀·탐색 테스트 | 설치·배포·재시작·데이터 유지·복구 테스트 |
@@ -182,17 +182,52 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 사용자 기능과 관리자 기능을 모두 연결하고, 팀 외 리뷰어가 실제 시스템을
 사용한 결과를 반영해 시연 가능한 서비스 수준으로 안정화한다.
 
+4주차 구현 전 계약은
+[Integration 05 v0.5.0 Contract Baseline](integration/05_v0_5_0_contract_baseline.md),
+기능 연결과 최종 Gate는
+[Integration 07 Release 2 Feature Acceptance](integration/07_release_2_feature_acceptance.md)를
+따른다.
+
+독립 리뷰·QA 진입 전에는
+[Integration 10 Review Admission](integration/10_review_admission_docker_acceptance.md)과
+[Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)을
+순서대로 통과한다.
+
 ### 필수 범위
 
 - 사용자 조건 기반 추천과 이해 가능한 추천 이유
+- 공공 API를 보강하는 승인 공식 HTTPS Source 한 곳의 제한 수집·DB 적재
+- 광역자치단체 공식 포털에서 지역 고유·신청 가능 정책을 수집하고 온통청년·
+  복지로 중복을 제외하는 Data 05 actual 적재
+- 중앙부처·공공기관 공식 Source에서 온통청년·복지로 누락 정책을 찾고 중복·
+  마감·근거 부족을 제외하는 Data 06 actual 적재
+- 정책 상세의 근거 있는 핵심 신청 조건·제외 조건·필요 서류·확인 필요 표시
 - 즐겨찾기, D-Day, 웹 내부 알림과 `.ics` 캘린더 등록
 - 사용자 조건 입력·저장 방식과 필요한 인증 경계 확정
 - 관리자 인증·권한
 - 수집 실행 이력, 수동 실행, stale 실행 판정과 오류 표시
+- 관리자 읽기 전용 정책 데이터 표·row 상세·pagination·filter
+- 구조화된 영속 파일 로그, 단계·request·run correlation과 관리자 조회 UI
+- 회전 archive 로그의 보호된 삭제와 별도 감사 기록
 - 파싱 실패, partial·invalid, 중복 후보와 데이터 품질 확인 UI
 - 실데이터 갱신 절차, 실패 복구와 데이터 유지 검증
 - 검색·추천 정확도, DB migration, transaction과 주요 API 안정화
 - 접근성, 반응형, 빈 화면·오류 화면과 핵심 사용자 흐름 개선
+- 최신 review 재판정 뒤 재고정한 실제 DB snapshot을 동일 Git SHA의 Docker
+  Acceptance 환경으로 BE·FE 담당자, 리뷰어와 QA에게 인계
+
+Data 04의 웹 수집은 임의 사이트 범용 크롤러가 아니라 승인된 공식 Source 한
+곳을 세로 기준선으로 한다. Data 05는 이 기준선을 재사용해 승인된 지역 Source를
+한 곳씩 추가하고 전국 재게시·온통청년·복지로 중복을 사용자 Policy에서
+제외한다. Data 06은 같은 공통 실행·중복 Gate를 재사용해 승인 중앙·공공기관
+Source를 추가하되 XLSX 행을 직접 import하지 않고 실제 공식 원문과 현재
+snapshot으로 신규 여부를 다시 판정한다. 자격요건 화면은 Source 근거가 있는 조건을 요약하되 데이터가
+부분적이면 `추가 확인 필요`로 표시하고 수혜·선정 가능성을 확정하지 않는다.
+
+Data 06의 `v0.5.0` 필수 범위는 유지한다. `2026-08-14` 일정 재승인으로 구현
+시점을 5주차 W5-G0~G1로 옮겼고, `2026-08-17` 완료 기준 재승인으로 승인
+Source 5개 actual·신규 정책 1개 이상·비accepted 무적재·DB/API/Browser 인수를
+고정했다.
 
 이 릴리스에서 “모든 기능 완성”은 이메일 발송이나 Google Calendar 직접
 연동 같은 확장 기능까지 의미하지 않는다. 웹 내부 알림과 `.ics`를 기준으로
@@ -200,14 +235,19 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 
 ### 리뷰어 검증
 
-팀원이 아닌 리뷰어가 최소한 다음 흐름을 수행한다.
+팀원이 아닌 리뷰어는 `REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED`와
+`DOCKER_ACCEPTANCE_PASS`가 기록된 동일 Git SHA·snapshot 환경에서 최소한
+다음 흐름을 수행한다.
 
 1. 조건 또는 자연어로 정책 검색
-2. 결과와 상세의 자격·신청 정보 확인
-3. 추천 이유 확인
-4. 즐겨찾기와 D-Day·알림 확인
-5. 캘린더 파일 등록
-6. 관리자로 수집 이력·실패·품질 상태 확인과 수동 실행
+2. 상세의 핵심 신청 조건·제외·서류·확인 필요와 공식 근거 확인
+3. 결과와 상세의 자격·신청 정보 확인
+4. 추천 이유 확인
+5. 즐겨찾기와 D-Day·알림 확인
+6. 캘린더 파일 등록
+7. 관리자로 적재 정책 데이터를 표·상세로 확인
+8. 관리자로 수집 이력·실패·품질 상태 확인과 수동 실행
+9. 오류 로그를 run·request·단계로 찾고 회전 archive 삭제 확인
 
 혼란, 기대와 다른 결과, 빈 화면, 오류와 접근성 문제를 기록한다. 심각도와
 재현 조건을 분류하고, 릴리스 범위로 승인한 문제를 수정한 뒤 같은 시나리오를
@@ -216,6 +256,18 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 ### 릴리스 완료 조건
 
 - 승인된 사용자·관리자 기능이 실제 API와 DB로 동작한다.
+- 승인 웹 Source의 제한 actual 수집과 조건 요약 lineage가 검증됐다.
+- Data 05 승인 지역 Source의 실제 정책이 중복 제외를 거쳐 DB·API·Browser에
+  연결되고 17개 지역의 implemented·blocked·rejected 상태가 기록됐다. 지원하는
+  비차단 지역은 open 고유 정책이 있으면 검색에 노출되고, 0건이면 추출 누락이
+  아닌 원문상 open 정책 부재가 확인됐다.
+- Data 06의 모든 계획 Source군이 최종 상태를 가지고 승인 공식 Source 5개가
+  actual·replay를 통과했으며 신규 정책 1개 이상이 중복 제외를 거쳐
+  DB·API·Browser에 연결됐다.
+- 관리자 정책 데이터 표와 파일 로그·조회·보호된 삭제가 실제 환경에서
+  검증됐다.
+- Integration 10의 `REVIEW_ADMISSION_PASS`·`W5-G1_REVALIDATED`와 Deploy 01의
+  `DOCKER_ACCEPTANCE_PASS`가 같은 Git SHA·snapshot version으로 연결됐다.
 - 주요 데이터 오류, migration과 transaction 문제가 해결됐다.
 - 리뷰어 시나리오를 통과하고 승인된 피드백이 반영됐다.
 - QA가 전체 기능·통합·회귀 테스트를 수행하고 릴리스 차단 결함의 수정본을
@@ -240,10 +292,15 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 - Frontend·Backend Production Dockerfile과 PostgreSQL을 포함한 Compose
 - Nginx 정적 파일 제공과 `/api` reverse proxy
 - 환경변수와 비밀 분리, Volume, health check와 데이터 유지
-- Migration, 초기 실데이터 bootstrap 또는 명시적 수집 절차
+- 공개 normalized dataset·versioned manifest·SHA-256과 API key 없는 bootstrap
+- `last_seen_at`·`last_verified_at`·`inactive_at` 정책 생명주기
+- Redis broker·Celery collector worker·단일 Beat scheduler와 실제 수동·정기 queue
+- 완전 수집에서만 미발견 inactive, 실패·partial 수집의 기존 데이터 보존
+- Migration, 중앙 수집과 명시적 운영자 API key 설정 절차
 - Frontend build, Backend·Data 테스트, 이미지 build를 수행하는 CI
+- GHCR immutable image와 검증된 dataset promotion·rollback
 - 버전·이미지 tag와 릴리스 체크리스트
-- 새 PC 또는 깨끗한 환경의 clone-to-run 검증
+- 새 PC 또는 깨끗한 환경의 clone/ZIP one-command 검증
 - 설치, 수집, 검색, 사용자·관리자 기능, 로그와 복구 안내
 - README, 아키텍처, 데이터 Schema, API, Collector 가이드
 - LICENSE, SBOM, CHANGELOG, 최종보고서, 시연 스크립트와 제출 자료
@@ -251,7 +308,14 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 ### 릴리스 완료 조건
 
 - 깨끗한 환경에서 README만 따라 build·migration·초기 적재·실행이 성공한다.
+- 공개 dataset의 라이선스 allowlist·manifest·hash가 검증되고 API key 없는
+  bootstrap이 성공한다.
+- 관리자 수동 실행과 정기 실행이 Celery queue의 실제 worker로 연결되고,
+  PostgreSQL `CollectionRun`이 최종 상태 원본이다.
+- 신규·변경·inactive 전이와 실패·partial 수집 보존 경계가 실제 DB·API·
+  Browser에서 통과한다.
 - 컨테이너 재시작 후 DB와 필요한 Runtime 데이터가 유지된다.
+- Redis·worker 재시작과 task 재전달에도 중복 정책·실행 이력이 생기지 않는다.
 - 사용자 검색·추천·부가 기능과 관리자 시나리오가 배포 구성에서 통과한다.
 - QA가 clean-room 설치, 배포, 재시작, 로그와 복구 시나리오를 재검증했다.
 - CI와 릴리스 문서가 실제 명령 및 산출물과 일치한다.
@@ -264,6 +328,7 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 | `v0.1.0`에서 실제 또는 sample 데이터 허용 | 실제 진행 중 정책 snapshot 필수 | 합성 Seed만으로는 실제 검색 MVP를 증명할 수 없음 |
 | 검색이 keyword·기본 필터 중심 | Backend 자연어 해석과 서버 검색을 `v0.1.0` 필수로 포함 | 해석 기준을 한곳에 두고 현재 사용자 기대 시나리오를 client-only 문자열 검색 없이 만족해야 함 |
 | `v0.1.0`에 Docker Compose 포함 | Production 배포 파이프라인은 `v1.0.0`으로 이동 | 사용자가 정한 Final Release 목표와 현재 컨테이너 아키텍처 시점을 반영 |
+| 5주차 리뷰를 각 PC의 로컬 DB로 수행 | review admission 뒤 동일 snapshot Docker Acceptance 환경에서 수행 | BE·FE·리뷰어·QA의 데이터·실행환경 차이로 인한 재현 불일치를 제거하되 Production 배포 범위는 6주차에 유지 |
 | 3주차와 병행해 관리자 기능 진행 | `v0.1.0` 실데이터·검색 차단 조건을 먼저 처리 | 관리자 기능보다 Release 1의 검색 결과 신뢰성이 선행함 |
 | LLM·벡터 검색을 후속 실험으로 검토 | 그대로 유지 | 기본 SQL·조건 검색을 먼저 완성하고 복잡도를 검증 후 추가 |
 
@@ -273,6 +338,9 @@ Gate는 경량 QA·사용성 리뷰를 요구하고 역할 독립·보고서 대
 - [주차별 실행 계획](weekly_delivery_plan.md)
 - [3주차 상세 실행 계획](../weekly_plan/week_03_release_1.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [Review Admission and Deploy Handoff](integration/10_review_admission_docker_acceptance.md)
+- [Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)
+- [Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md)
 - [시스템 흐름](../../architecture/system_flow.md)
 - [컨테이너 구조](../../architecture/container_structure.md)
 - [Policy API 계약](../../api/policies.md)

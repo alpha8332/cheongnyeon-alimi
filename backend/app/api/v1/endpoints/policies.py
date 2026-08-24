@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories.policy import PolicyRepository
-from app.schemas.policy import PolicyListResponse, PolicyRead
+from app.schemas.policy import PolicyDetailRead, PolicyListResponse, PolicyRead
 from app.schemas.policy_search import PolicySearchResponse
 from app.services.policy import PolicyListRequest, PolicyService
 
@@ -75,7 +75,11 @@ def get_policies(
     )
 
 
-@router.get("/{policy_id}", response_model=PolicyRead, summary="정책 상세 조회")
+@router.get(
+    "/{policy_id}",
+    response_model=PolicyDetailRead,
+    summary="정책 상세 조회",
+)
 def get_policy_detail(
     policy_id: int,
     include_partial: bool = Query(
@@ -83,7 +87,7 @@ def get_policy_detail(
         description="partial 정책 상세 조회 허용 여부; 기본값은 valid만",
     ),
     service: PolicyService = Depends(get_policy_service),
-) -> PolicyRead:
+) -> PolicyDetailRead:
     policy = service.get(
         policy_id,
         include_partial=include_partial,
@@ -93,4 +97,4 @@ def get_policy_detail(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Policy not found",
         )
-    return policy
+    return PolicyDetailRead.model_validate(policy)

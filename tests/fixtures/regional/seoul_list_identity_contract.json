@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-08-14",
+  "total_count": 110,
+  "total_pages": 23,
+  "city_count": 89,
+  "city_pages": 18,
+  "district_count": 21,
+  "district_pages": 5,
+  "checkpoint_digest": "25c9e42b9fe450e03ff4ee6856dead5ac21432e50ce9a45fad38022265f65caf",
+  "added_ids": [],
+  "missing_ids": [],
+  "common_order_diff": 0,
+  "city_first_id": "V202600008",
+  "city_last_id": "20250227005400210572",
+  "district_first_id": "20260804005400213319",
+  "district_last_id": "20250224005400210564"
+}

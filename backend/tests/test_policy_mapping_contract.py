@@ -7,7 +7,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.policy import Policy
-from app.schemas.policy import PolicyRead
+from app.schemas.policy import PolicyDetailRead, PolicyRead
 from app.services.seed_importer import (
     EXTERNAL_ID_REQUIRED_SOURCES,
     _policy_values,
@@ -19,6 +19,10 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "data" / "schema" / "normalized_program.schema.json"
 SEED_PATH = ROOT / "data" / "seeds" / "initial_programs.json"
 SYSTEM_FIELDS = frozenset({"id", "created_at", "updated_at"})
+LIFECYCLE_FIELDS = frozenset(
+    {"last_seen_at", "last_verified_at", "inactive_at"}
+)
+ORM_SYSTEM_FIELDS = SYSTEM_FIELDS | LIFECYCLE_FIELDS
 DATE_FIELDS = frozenset({"application_start", "application_end"})
 JSON_ARRAY_FIELDS = frozenset(
     {
@@ -32,6 +36,7 @@ JSON_ARRAY_FIELDS = frozenset(
         "required_conditions",
         "preferred_conditions",
         "excluded_conditions",
+        "eligibility_summary",
         "provenance",
     }
 )
@@ -69,33 +74,35 @@ def test_normalized_importer_orm_and_api_field_sets_are_explicit():
     schema = load_schema()
     normalized_fields = frozenset(schema["properties"])
     orm_fields = (
-        frozenset(Policy.__table__.columns.keys()) - SYSTEM_FIELDS
+        frozenset(Policy.__table__.columns.keys()) - ORM_SYSTEM_FIELDS
     )
     importer_fields = (
-        frozenset(_policy_values(load_seed()[0])) - SYSTEM_FIELDS
+        frozenset(_policy_values(load_seed()[0])) - ORM_SYSTEM_FIELDS
     )
-    public_api_fields = frozenset(PolicyRead.model_fields)
+    list_api_fields = frozenset(PolicyRead.model_fields)
+    detail_api_fields = frozenset(PolicyDetailRead.model_fields)
 
     storage_candidate_fields = normalized_fields - {"region_rules"}
 
-    assert len(normalized_fields) == 36
+    assert len(normalized_fields) == 37
     assert frozenset(schema["required"]) == normalized_fields
     assert NormalizedProgram.FIELD_NAMES == normalized_fields
     assert orm_fields == storage_candidate_fields
     assert importer_fields == storage_candidate_fields
-    assert public_api_fields == (
+    assert list_api_fields == (
         normalized_fields
         - NormalizedProgram.SEARCH_FIELD_NAMES
-        - {"provenance"}
+        - {"eligibility_summary", "provenance"}
         | SYSTEM_FIELDS
     )
+    assert detail_api_fields == list_api_fields | {"eligibility_summary"}
 
 
 def test_nullable_and_jsonb_columns_match_the_normalized_contract():
     normalized_columns = [
         column
         for column in Policy.__table__.columns
-        if column.name not in SYSTEM_FIELDS
+        if column.name not in ORM_SYSTEM_FIELDS
     ]
     actual_nullable = frozenset(
         column.name for column in normalized_columns if column.nullable

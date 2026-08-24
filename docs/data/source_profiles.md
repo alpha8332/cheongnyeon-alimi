@@ -1,11 +1,11 @@
-# API Source Profile
+# Source Profile
 
 ## 문서 상태
 
 - 상태: 기준선
-- 마지막 공식 자료 확인: 2026-07-26
-- 마지막 실호출 확인: 2026-08-04
-- 범위: 온통청년 청년정책 API, 복지로 중앙부처 복지서비스 API
+- 마지막 공식 자료 확인: 2026-08-17
+- 마지막 실호출 확인: 2026-08-17 (Data 06 제한 actual, Raw Git 미저장)
+- 범위: 온통청년·복지로 API, 천안청년센터·지역 Source와 Data 06 승인 Source actual
 
 이 문서는 Source Preflight에서 확인한 요청 계약, 응답 구조, 필드와 호출
 제약을 기록한다. 공식 자료의 명세, 실제 응답과 로컬 과거 샘플을 구분하며,
@@ -17,9 +17,17 @@
 | --- | --- | --- | --- |
 | `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
+| `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
+| `regional-gyeongbuk-youth-platform` | 경북청년포털 청년e끌림 | RYP1 승인 | 목록 243건·상세 표본 1건 제한 확인 |
+| `work24-policy-web` | 고용24 정책 | SOP-G5 통과 | 제한 actual 완료, 신청 가능 근거 부족 review·DB 0 |
+| `lh-housing-announcement-web` | LH 임대 공고 | SOP-G5 통과 | 제한 actual 완료, 공개 HTML 근거 부족 review·DB 0 |
+| `kosaf-scholarship-web` | 한국장학재단 장학 | SOP-G5 통과 | 국가근로장학금 actual·DB·API·Browser 인수 |
+| `kinfa-financial-product-web` | 서민금융진흥원 상품 | SOP-G5 통과 | 제한 actual 완료, aggregator 중복 review·DB 0 |
+| `kpass-transit-refund-web` | 모두의카드(K-패스) | SOP-G5 통과 | 제한 actual 완료, 복지로 중복 review·DB 0 |
 
 Source ID는 원문 제공기관의 ID와 구분되는 프로젝트 내부 식별자다.
-Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`로 확정했다.
+Raw `external_id`는 온통청년의 `plcyNo`, 복지로의 `servId`, 천안 공지 번호와
+경북 정책 `no`로 확정했다.
 목록 항목과 상세 응답은 같은 `source_id + external_id`로 연결하고 목록
 항목은 부모 전체 응답의 `document_id`도 참조한다. Data 4에서 두
 Extractor가 공통 `ExtractedPolicy`와 기여 Raw provenance를 사용하도록
@@ -459,6 +467,188 @@ DT1의 같은 Raw 14개를 네트워크 없이 새 Adapter로 재생했다.
 사용했다. 일반 본문 날짜 탐지는 Source mapping을 대체하지 않으며 관찰 건수만
 profile에 남긴다.
 
+## 천안청년센터 이음 공개 공지
+
+### W4-G0 승인 요청 계약
+
+| 항목 | 확인·승인 값 |
+| --- | --- |
+| Source ID | `cheonan-youthcenter-web` |
+| 운영 근거 | 천안시 청년지원기관 천안청년센터 이음 공개 공지 |
+| 목록 | `https://www.ch2030youth.kr/bbs/board.php?bo_table=notice` |
+| 상세 | `/bbs/board.php?bo_table=notice&wr_id={positive_integer}` |
+| identity | `notice:{wr_id}` |
+| 표본 | `notice:674` |
+| 요청 예산 | 동시 1개, 시작 간격 최소 2초, 목록 1회·표본 상세 1건 |
+| 보존 | actual HTML은 Runtime 전용, Git은 합성·최소 구조 Fixture만 허용 |
+
+`2026-08-10` 익명 공개 상세에서 제목·게시일·대상·지원 내용·제출서류와
+유의사항을 확인했다. 회원가입·로그인이 필요한 신청 단계는 수집 범위가 아니다.
+첨부·이미지·개인정보 페이지는 따라가지 않는다. 공개 시설 대표전화와 공식
+카카오채널은 기관 문의 정보로 Runtime Raw와 `institutional_contact`에 보존하고,
+개인 휴대전화·개인 이메일·성명은 구조화 추출하지 않는다.
+
+DTL4-4A에서 세 Source의 자격요건 승격 규칙을
+[Eligibility Summary 공통 계약](eligibility_summary_contract.md)으로 고정했다.
+온통청년 `ptcpPrpTrgtCn`과 복지로 `slctCritCn`은 실제 원문 의미가 필수·제외·
+우대로 단일하지 않아 자동 분류하지 않고 `unknowns`로 보존한다. 천안 웹은
+승인 section과 `#bo_v_con` evidence를 사용하며 대표전화·공식 채널만
+`institutional_contacts`로 승격한다.
+
+표본 게시일은 `2026-07-24`, 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`인데 제목에는 “곧 마감”이 있어 서로
+충돌한다. Extractor는 신청 상태를 보정하지 않고 `data_quality_status=partial`,
+신청 상태 `unknown`과 확인 필요 evidence를 만든다.
+
+`/robots.txt`는 directive가 아닌 404 페이지였고 별도 이용약관은 찾지 못했다.
+footer의 `all rights reserved`를 고려해 공개 사실의 최소 추출만 승인하며,
+pagination·대량 순회·원문 HTML 또는 이미지의 Git 재배포는 승인하지 않는다.
+actual DOM은 목록 `#bo_list`, 상세 `#bo_v`·`#bo_v_title`·`#bo_v_info`·
+`#bo_v_con`으로 확인했다. `</img>` 비표준 종료 태그를 허용하되 필수 selector
+누락은 drift로 실패한다.
+
+### 2026-08-10 DTL4-3B actual replay
+
+DTL4-3A의 actual Raw 3건을 외부 요청 없이 replay했다. Extractor·Normalizer는
+정책 1건을 `partial`, 신청 상태 `unknown`으로 분류하고 provenance 3건을
+유지했다. 전용 PostgreSQL 최초 적재는 `inserted=1`, 동일 Raw 재실행은
+`unchanged=1`이었으며 CollectionRun 2건과 정책 row 1건이 일치했다. 공개 정책
+상세 API는 기본 partial 비노출 `404`, `include_partial=true`에서 `200`을
+반환했고 Raw provenance는 공개 DTO에 포함하지 않았다.
+
+합성 HTML PostgreSQL 통합 테스트에서는 최초 `inserted`, 동일 `unchanged`,
+지원 내용 변경 `updated`와 후속 selector drift 실패 뒤 기존 row 보존을
+확인했다. Source 전용 section의 제외조건·필요서류와 기관 연락처는 DTL4-4의
+공통 조건·소비 계약 전까지 자동 승격하지 않는다.
+
+## 지역 청년정책 Source RYP1 Browser Discovery profile
+
+`2026-08-11`에 사용자 제공 17개 홈을 Browser로 제한 탐색했다. 승인된 13개 Source의
+운영 수집은 아래 목록·상세 identity로만 제한하며 홈 재귀 순회, 첨부 일괄
+다운로드와 실제 HTML·이미지의 Git 저장은 허용하지 않는다. 공통 파일럿 예산은
+목록 1회, 상세 3건, 요청 시작 간격 최소 2초다.
+
+17개 모두 정책 상세 identity까지 확인했다. 원시 HTTP 접근과 Browser 접근을
+분리하며, 반복 실행 방식은 `http_html`, `http_json` 또는 `browser` collection
+mode로 고정한다.
+
+| Source ID | 방식 | 상세 identity | 이용 경계 |
+| --- | --- | --- | --- |
+| `regional-seoul-youth-platform` | Browser | `plcyBizId` | robots 허용, WebGate 우회 없이 렌더링 경로 사용 |
+| `regional-busan-youth-platform` | 서버 HTML GET | `bizSid` | 약관 제한, 최소 사실만 |
+| `regional-daegu-youth-platform` | 서버 HTML GET | `ap_seq` | 약관 제한, 최소 사실만 |
+| `regional-incheon-youth-platform` | 서버 HTML GET | `poly_seq` | 명시 라이선스 없음, 최소 사실만 |
+| `regional-gwangju-integrated-youth-platform` | 서버 HTML GET | `policyId` | 통합특별시 공식 플랫폼, 저작권 정책 제한 |
+| `regional-daejeon-youth-platform` | 서버 HTML GET | `CT_` 식별자 | robots 미게시, 약관 제한 |
+| `regional-ulsan-youth-platform` | 게시판 HTML GET | `dataId` | 공개 게시판 최소 사실만 |
+| `regional-gangwon-youth-platform` | Browser | 온통청년형 외부 정책 ID | robots `/youth` 허용 범위 |
+| `regional-chungbuk-youth-platform` | Browser | `nttNo` | 공개 정책 상세 최소 사실만 |
+| `regional-jeonbuk-youth-platform` | 서버 HTML GET | `id` | robots 미게시, 약관 제한 |
+| `regional-gyeongbuk-youth-platform` | JSON POST·상세 modal POST | `no` | 실제 허용 경로, 최소 사실만 |
+| `regional-gyeongnam-youth-platform` | HTML GET·공식 상세 JSON GET | `policy_no` | robots 미게시, 약관 제한 |
+| `regional-jeju-youth-platform` | Browser | `wr_id` | 공개 정책 상세 최소 사실만 |
+
+비승인 Source는 세종·경기·충남과 전남 구 포털이다. 세종·경기·충남은
+Browser 상세에 도달했지만 robots가 정책 collection 경로를 허용하지 않아
+차단했다. 전남 구 포털은 통합 플랫폼으로 대체되어 제외했다. 접근 통제나
+robots를 우회하지 않는 원칙은 유지한다. 전체 URL·preflight·판정 근거는
+[`regional_youth_policy_sources.json`](../../data/reference/regional_youth_policy_sources.json)을
+기준으로 한다.
+
+## 경북 청년정책 RYP2 실행 profile
+
+- Source ID: `regional-gyeongbuk-youth-platform`
+- 홈: `GET https://gbyouth.go.kr/main.tc`
+- 목록: `POST https://gbyouth.go.kr/policy/list.json`
+- 상세: `POST https://gbyouth.go.kr/policy/detail.modal`
+- external identity: 목록과 상세의 정수형 `no`
+- canonical URL: 정책 목록 URL과 `no` query 조합
+- 인증: 없음. 홈의 cookie와 CSRF meta 값만 같은 실행에서 사용
+- 예산: page 1, 목록 1회, 상세 최대 3건, 요청 시작 간격 최소 2초
+- Raw 역할: `list_response` → `list_item`은 parent ID, `detail`은 external ID로 연결
+- 주요 원문 field: 정책명, 정책유형, 지역, 지원내용·규모·기간, 시행기관,
+  문의처, 첨부파일·제출서류
+
+Collector는 목록·상세 구조와 identity가 맞지 않으면 아무 Raw도 확정하지 않고
+drift로 실패한다. 공개 기관 대표 연락처는 institutional contact 후보로 전달할
+수 있지만 개인 연락처는 수집하지 않는다. 지역 field는 RYP3 evidence 판정 전
+정책의 지역 고유성으로 승격하지 않으며, 온통청년·복지로 중복 제거도 RYP4
+판정 전에는 수행하지 않는다. 저장소 fixture는 계약을 재현하는 최소 구조만 담고
+실제 응답 HTML·JSON은 포함하지 않는다.
+
+## 경북 청년정책 RYP3 판정 profile
+
+- 시행기관: 상세 `supervising_organization` 또는 목록 `sprvsnInstNm`
+- 지원 지역: 상세 `eligibility_text` 또는 목록 `policyScl`
+- Source 지역: 상세 `region_text` 또는 목록 `rgnSeNm`
+- 신청기간: 상세 `application_period_text` 또는 목록
+  `aplyBgngDt + aplyEndDt`
+- 추가 혜택: 상세 `support_content` 또는 목록 `policyCnDtl`
+- 신청 채널: 상세 `application_method`, 없으면 null 유지
+
+각 값은 위 locator와 기여 Raw provenance를 함께 가진다. Source 지역·시행기관·
+지원 대상이 모두 경북 canonical 관할과 일치할 때만 `regional_confirmed`다.
+시·군·구가 명시되면 `kr-bjd-20260803` ancestor 관계를 확인하고 더 구체적인
+include rule을 보존한다. 포털 관할만 확인되면 `regional_review_required`, 전국·
+타 지역이면 `non_regional`이다.
+
+신청기간은 KST 수집일 기준으로 open·scheduled·closed를 판정한다. `상시`는
+open이지만 `예산 소진 시까지`는 명시적 접수중 근거가 없으면
+`review_required`다. 두 판정이 `regional_confirmed + open`인 경우만 Runtime
+Normalizer로 넘긴다. 표본 `no=1098`은 지역은 confirmed, 신청 상태는 closed다.
+
+## 경북 청년정책 RYP4 교차 Source profile
+
+- 비교 Source: `youthcenter-api`, `bokjiro-central-welfare-api`
+- 기준선: Source별 최신 완료 snapshot ID·완료 시각·item 수와 현재 PostgreSQL
+  유효 row identity·확인 시각
+- 확정 제외: 명시적 aggregator external ID, canonical URL 또는 발행기관이
+  포함된 공식 공고 ID exact 일치
+- 검토 격리: 제목·기관·canonical 지역·신청기간·지원내용 fingerprint 전체
+  일치 또는 동일 제목인데 비교 근거가 부족한 경우
+- 신규 승인: 교차 후보가 없거나 동일 제목의 기관·기간·지원내용이 명확히 다름
+- 기록: `runtime/decisions/<source_id>/<manifest_id>.json`
+
+경북 mapper는 현재 상세 canonical URL과 URL 형태의 신청 경로만 explicit
+evidence로 제공한다. Source 원문에 온통청년 `plcyNo`, 복지로 `servId` 또는
+공식 공고 ID가 추가로 확인되는 Adapter는 해당 field locator와 Raw provenance를
+함께 제공해야 한다. 기준선이 없거나 두 aggregator 중 하나가 불완전하면 open
+후보를 사용자 정책으로 적재하지 않는다.
+
+## Data 06 보완 공식 Source SOP2 profile
+
+Data 06 inventory와 2026-08-17 제한 preflight는 다음 5개 Source의 SOP3 구현
+경계를 승인했다. 모든 Source는 목록 1회·상세 최대 3회·요청 시작 간격 최소
+2초이며, HTML·첨부 원문을 Git에 저장하지 않고 최소 정책 사실과 provenance만
+처리한다.
+
+| Source ID | 목록 allowlist | 상세 identity | 조건 |
+| --- | --- | --- | --- |
+| `work24-policy-web` | `/cm/c/f/1100/selecPolicyInfo.do` | `systId` | robots 허용, 저작권정책에 따른 출처 표시 |
+| `lh-housing-announcement-web` | `/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026` | `panId` | 로그인·`lhFile.do` 제외, 공개 HTML만 |
+| `kosaf-scholarship-web` | `/ko/scholar.do?pg=scholarship_submain01` | 승인 `pg` key | robots 허용, 원문 복제 금지 |
+| `kinfa-financial-product-web` | `/financialProduct/peopleFinancial.do` | detail page key | 인증·상담·검색 경로 제외 |
+| `kpass-transit-refund-web` | `/`의 사업소개 link | static `intro` + 가입조건 | 공개 HTML만, 로그인·가입 요청 제외 |
+
+고용24의 회원 인증 Open API는 정책 HTML Source와 별도다. 승인 Source ID는
+공개 고용정책 목록·상세만 의미하며 인증키 신청이나 로그인 자동화를 포함하지
+않는다. LH는 robots가 로그인과 파일 경로를 제한하므로 공고 첨부를 내려받지
+않는다. 서민금융진흥원은 `fill4young` 인증 화면 대신 공개 `www.kinfa.or.kr`
+상품 목록·상세만 사용한다.
+
+K-Startup은 robots가 `webCMRCZN.do`, `bizpbanc-ongoing.do`,
+`bizpbanc-deadline.do`를 차단하므로 Source ID·allowlist·요청 예산을 부여하지
+않았다. 운영 주체의 공식 API 승인 또는 robots 변경 전에는 Browser·다른 경로로
+우회하지 않는다.
+
+구체적인 input 행·공식 URL·approved/blocked/rejected·재개 조건은
+[`supplemental_official_policy_inventory.json`](../../data/reference/supplemental_official_policy_inventory.json),
+온통청년·복지로 비교 기준과 판정은
+[`supplemental_official_policy_duplicate_audit.json`](../../data/reference/supplemental_official_policy_duplicate_audit.json)을
+따른다. SOP3는 실제 목록 구조로 stable identity selector를 대조하고, 합성 최소
+fixture에 Source별 field locator와 Raw replay 계약을 고정했다. 전체 실제 상세
+필드 대조·accepted 판정과 적재는 SOP4 제한 actual에서 수행한다.
+
 ## 공통 비밀정보 경계
 
 - 인증키 값은 환경변수에서만 읽고 코드, 문서, Fixture와 테스트 snapshot에
@@ -477,11 +667,14 @@ profile에 남긴다.
 ## Collector 실행 계약
 
 - 기본 Registry source ID:
-  `youthcenter-api`, `bokjiro-central-welfare-api`
+  `youthcenter-api`, `bokjiro-central-welfare-api`,
+  `cheonan-youthcenter-web`, `regional-gyeongbuk-youth-platform`
 - 공통 옵션: `page` 1~1000, `limit` 1~500, `detail_limit` 0~5
 - CLI 기본값: page 1, limit 10, 복지로 상세 3건
 - 온통청년 요청 수: 목록 1회
 - 복지로 요청 수: 목록 1회와 선택한 상세 수
+- 천안청년센터 요청 수: page 1의 승인 목록 1회와 `notice:674` 상세 최대 1회,
+  같은 실행의 요청 시작 간격 최소 2초
 - 테스트는 주입한 HTTP Client와 임시 Raw root를 사용하며 외부 호출하지 않음
 - 실제 호출은 환경변수를 주입한 명시적 CLI 실행으로만 수행
 - 응답 payload에서 요청 인증키가 발견되면 Raw 저장 전에 파싱 오류로 중단

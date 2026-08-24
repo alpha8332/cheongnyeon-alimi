@@ -6,12 +6,17 @@
 - 인증: 현재 없음
 - 응답 형식: JSON
 - 정렬: `id` 오름차순
-- 데이터 기준: `NormalizedProgram` 1.0.0·1.1.0 전환 호환
+- 데이터 기준: `NormalizedProgram` 1.0.0·1.1.0·1.2.0 전환 호환
 
 일반 사용자 Policy API는 Raw provenance를 반환하지 않는다. 목록과 상세는
 기본적으로 `valid` 정책만 노출하며 `include_partial=true`일 때
 `valid`·`partial`을 함께 허용한다. `invalid` 정책은 어떤 경우에도 공개하지
 않는다.
+
+모든 사용자 목록·상세·자연어 검색·추천은 `inactive_at IS NULL`인 행 중
+`application_end`가 없거나 Asia/Seoul 오늘 이상인 정책만 반환한다. 종료일
+경과와 inactive 행은 명시적 `status=closed`에도 공개하지 않으며 관리자
+읽기 전용 API와 DB에는 감사 이력으로 보존한다.
 
 ## 정책 자연어 검색
 
@@ -32,6 +37,12 @@ GET /api/v1/policies/search
 | `include_partial` | boolean | `true` | partial 정책 포함 여부 (기본값: true) |
 | `page` | integer | `1` | 1 이상 |
 | `limit` | integer | `20` | 1~100 |
+
+`region`을 명시적으로 전달하면 검색 결과는 해당 지역이 `match`로 확인된
+정책만 반환한다. 지역 근거가 없는 `unknown`과 다른 지역인 `mismatch`는
+반환하지 않는다. 반면 `q`에서만 지역을 해석한 경우에는 기존 탐색 계약을
+유지해 `unknown`을 미확인 후보로 남기며, 응답의 `verdicts.region`과
+`unconfirmed_conditions`로 이를 구분한다.
 
 ### 응답
 
@@ -79,7 +90,7 @@ GET /api/v1/policies/search
   "items": [
     {
       "policy": {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "id": 1,
         "title": "청년단기숙소 지원사업"
       },
@@ -143,12 +154,12 @@ GET /api/v1/policies
 
 ```json
 {
-  "total": 2,
+  "total": 1,
   "page": 1,
   "limit": 10,
   "items": [
     {
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "source_id": "youthcenter-api",
       "source_name": "온통청년 청년정책 API",
       "external_id": "SYN-YOUTH-001",
@@ -157,11 +168,11 @@ GET /api/v1/policies
       "summary": null,
       "category_text": "주거",
       "categories": ["housing"],
-      "application_period_text": "2026. 1. 1. ~ 2026. 6. 30.",
-      "application_start": "2026-01-01",
-      "application_end": "2026-06-30",
+      "application_period_text": "2026. 7. 1. ~ 2026. 12. 31.",
+      "application_start": "2026-07-01",
+      "application_end": "2026-12-31",
       "application_schedule": "fixed_period",
-      "application_status": "closed",
+      "application_status": "open",
       "region_text": "서울시",
       "regions": ["서울특별시"],
       "age_min": 19,
@@ -209,8 +220,10 @@ GET /api/v1/policies/{policy_id}
 | `policy_id` | path | integer | 없음 | 조회할 DB ID |
 | `include_partial` | query | boolean | `false` | partial 상세 허용 |
 
-응답 DTO는 목록의 `items` 원소와 같다. partial 정책 ID를 기본 요청으로
-조회하면 404이며, `include_partial=true`일 때만 조회할 수 있다.
+응답 DTO는 목록의 `items` 원소에 `eligibility_summary`를 추가한
+`PolicyDetailRead`다. partial 정책 ID를 기본 요청으로 조회하면 404이며,
+`include_partial=true`일 때만 조회할 수 있다. 요약의 배열과 coverage는 항상
+존재하고, 내부 Raw provenance는 포함하지 않는다.
 
 ## 오류
 
@@ -238,7 +251,7 @@ GET /api/v1/policies/{policy_id}
 
 ## 저장·검색 경계
 
-- Normalized 1.1.0의 36개 논리 필드와 현재 31개 DB 저장 필드의 전환 관계는
+- Normalized 1.2.0의 37개 논리 필드와 현재 DB 저장 필드의 전환 관계는
   [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
   따른다.
 - PostgreSQL category·region 필터는 JSONB `@>` 연산자를 사용해 배열 원소를
@@ -249,6 +262,8 @@ GET /api/v1/policies/{policy_id}
 - `provenance`는 DB에 보존하지만 목록·상세 공개 DTO에서 제외한다.
 - `keywords`, `life_stages`, `target_groups`, `coverage_scope`, `region_rules`는
   검색 내부 계약이며 이 기존 목록·상세 DTO에는 추가하지 않는다.
+- `eligibility_summary`는 PostgreSQL JSONB에 저장하며 상세 DTO에만 노출한다.
+  목록·검색 응답에는 포함하지 않는다.
 
 ## Frontend D6 인계
 
@@ -277,7 +292,7 @@ export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 export type PublicDataQualityStatus = 'valid' | 'partial';
 
 export interface PolicyDto {
-  schema_version: '1.0.0' | '1.1.0';
+  schema_version: '1.0.0' | '1.1.0' | '1.2.0';
   source_id: string;
   source_name: string;
   external_id: string | null;
@@ -318,11 +333,54 @@ export interface PolicyListResponse {
   limit: number;
   items: PolicyDto[];
 }
+
+export interface EligibilityEvidenceDto {
+  source_id: string;
+  source_url: string;
+  collected_at: string;
+  locator_type: 'source_field' | 'css_selector';
+  locator: string;
+}
+
+export interface EligibilityConditionDto {
+  category:
+    | 'age' | 'region' | 'income' | 'asset' | 'employment'
+    | 'education' | 'housing' | 'household' | 'other';
+  text: string;
+  evidence: EligibilityEvidenceDto[];
+}
+
+export interface EligibilityDocumentDto {
+  text: string;
+  evidence: EligibilityEvidenceDto[];
+}
+
+export interface InstitutionalContactDto {
+  kind: 'phone' | 'official_channel';
+  label: string;
+  value: string;
+  evidence: EligibilityEvidenceDto[];
+}
+
+export interface EligibilitySummaryDto {
+  coverage: 'complete' | 'partial' | 'unknown';
+  requirements: EligibilityConditionDto[];
+  exclusions: EligibilityConditionDto[];
+  preferences: EligibilityConditionDto[];
+  documents: EligibilityDocumentDto[];
+  unknowns: EligibilityConditionDto[];
+  institutional_contacts: InstitutionalContactDto[];
+}
+
+export interface PolicyDetailDto extends PolicyDto {
+  eligibility_summary: EligibilitySummaryDto;
+}
 ```
 
 `PolicyDto`에는 `provenance`와 `invalid` 품질 상태가 없다. 상세 route와
 React key는 nullable `external_id`나 source 조합이 아니라 API가 반환한 숫자
-`id`를 사용한다.
+`id`를 사용한다. 상세 route는 `PolicyDetailDto`를 사용하며 목록 DTO에
+`eligibility_summary`를 역으로 추가하지 않는다.
 
 ### API Client 전환 기준
 
@@ -370,6 +428,7 @@ canonical Seed 4건을 Mock 사례로 사용할 수 있지만 다음 변환이 �
 5. 목록은 `PolicyListResponse` envelope로 감싼다.
 6. 상세는 숫자 `id`로 찾고 partial 기본 요청은 404와 같은 비노출 상태로
    처리한다.
+7. 상세에만 Seed의 `eligibility_summary`를 추가하고 목록에서는 제거한다.
 
 Frontend 소비 테스트는 최소한 다음 상태를 확인한다.
 
@@ -379,6 +438,7 @@ Frontend 소비 테스트는 최소한 다음 상태를 확인한다.
 - partial 표시와 목록·상세 opt-in 일관성
 - timezone offset 문자열이 달라도 같은 instant로 해석
 - 공개 응답과 화면 상태에 provenance가 포함되지 않음
+- 상세의 Eligibility Summary 7개 필드와 목록 비노출 경계
 
 ### 현재 Frontend branch 검토 결과
 
@@ -398,6 +458,17 @@ Node.js 24.18.0 환경에서 소비 테스트 7건, lint와 production build가
 API 모드 브라우저 캡처에서 홈·목록의 기본 valid 2건과 공개 필드 렌더링을
 확인해 D0·D6 Frontend 소비 검토를 완료했다.
 
+2026-08-10 ES2는 기존 목록 `PolicyDto`를 유지하면서 상세에만
+`eligibility_summary`를 추가했다. ES3는 1.2.0 version union과
+`PolicyDetailDto`, 제외 조건·필요 서류·문의처·공개 evidence UI 소비를
+구현했다. 목록 Mock과 실제 목록 응답에는 요약을 추가하지 않는다.
+
+ES4는 승인 천안 fixture를 실제 PostgreSQL에 Runtime 적재해 DB JSONB와 상세
+응답의 요약을 exact 대조하고, Chromium에서 모든 항목·시설 전화 `tel:` 링크·
+공식 채널·6개 evidence URL이 API와 일치함을 확인했다. 공개 상세 응답에는 내부
+`provenance`가 없었고 Release 1 실제 API golden 검색·상세 Browser 회귀도
+통과했다.
+
 ## 통합 검증
 
 `tests/integration/test_seed_to_policy_api.py`는 canonical Seed 4건을 실제
@@ -405,7 +476,7 @@ PostgreSQL에 적재하고 목록·상세 API를 호출해 다음 계약을 검�
 
 - 기본 valid 2건과 `include_partial=true`의 4건
 - pagination과 category·region·status의 exact filter
-- 공개 30개 Normalized 필드의 Seed 값 보존과 provenance 비노출
+- 목록 공개 필드의 Seed 값 보존, 상세 Eligibility Summary와 provenance 비노출
 - partial 상세 opt-in, 404, query·path 422와 내부 상세가 없는 500 응답
 
 테스트는 저장소의 합성 Seed와 로컬 테스트 DB만 사용하며 외부 API를 호출하지

@@ -1,0 +1,413 @@
+# Integration 05 v0.5.0 Contract Baseline
+
+## 작업 정보
+
+- 기간: `2026-08-10`
+- 상태: completed
+- 담당 영역: Data, Team Leader - Integration
+- 현재 작업 브랜치: `docs/docs/v0-5-contract-baseline`
+- 권장 Forest 브랜치: `docs/docs/v0-5-contract-baseline`
+- merge target: `develop`
+- 시작 SHA: `e5ff8c81e0e902723c5b79dee1267be7e5e2e66c`
+- 계획: [Integration 05 개발 계획](../../develop_plan/integration/05_v0_5_0_contract_baseline.md)
+- 주차 계획: [4주차 Data·Team Leader 실행 계획](../../weekly_plan/week_04_data_team_leader.md)
+
+## 목적
+
+4주차 구현 전에 실제 Release 1 기준선과 로컬 실행 환경을 확인하고, 각 Forest의
+구현·소비 검토·actual E2E 책임과 merge 경계를 고정하고 Team Leader가
+`W4-G0_APPROVED`를 판정한 근거를 남긴다.
+
+## Forest 범위
+
+- 사용자 저장·관리자 인증·웹 Source·자격요건·추천·날짜·수동 실행·품질·
+  관리자 데이터·로그 계약의 공동 기준선
+- Data·Backend·Frontend 소비 초안 대조와 `W4-G0` 판정
+- 승인된 계약의 실제 기능 구현은 후속 Forest 범위
+
+## Slice 진행 현황
+
+| Slice | 상태 | 결과 |
+| --- | --- | --- |
+| DTL4-0 | 완료 | 시작 SHA·환경·Forest 소유·merge target과 비추적 경계 확인 |
+| DTL4-1 / C0~C4 | 완료 | Data inventory·Backend 대조·웹 Source 경계 승인, `W4-G0_APPROVED` |
+| DTL4-5 | 완료 | Data·OpenAPI·TypeScript·Mock 소비 대조, 관리자 보안·로그 계약 정렬, `W4-G1_APPROVED` |
+| DTL4-6 | 완료 | PostgreSQL 포함 전 영역 자체 검증·actual 환경 준비·Eligibility 잔재 정리, `W4-G2_APPROVED` |
+| DTL4-7 | 완료 | 실제 PostgreSQL·Runtime·FastAPI·React 세 Critical Path와 Release 1 회귀, `W4-G3_APPROVED` |
+| DTL4-8 | 완료 | 전 영역 전체 회귀·계약·문서·비추적 대조, `W4-G4_MIDPOINT_PASS` |
+
+## 구현 내용
+
+### DTL4-0 시작 기준
+
+- 작업 시작 시 `develop`은 `origin/develop`과 같은
+  `e5ff8c81e0e902723c5b79dee1267be7e5e2e66c`였고 작업 트리는 깨끗했다.
+- `main`·`origin/main`·`v0.1.0`은
+  `2b33ed7d8d4e281487b5734bd88cfd73b6d60175`로 일치해 Release 1 publication을
+  확인했다.
+- 브랜치는 사용자 지시대로 생성하지 않았다. Integration 05의 독립 목표와
+  완료 기준에는 계획의 `docs/docs/v0-5-contract-baseline`을 사용하고
+  `develop`로 병합한다.
+- API key 파일은 저장소 밖 `C:\git\APIkey.txt`에 존재하고 현재 사용자에게
+  읽기 권한이 있음을 파일 open만으로 확인했다. 값은 읽거나 출력하지 않았다.
+- 기본 `pgpass.conf`, `PGPASSFILE`, `DATABASE_URL`, `TEST_DATABASE_URL`은 현재
+  환경에 없다. 따라서 PostgreSQL 서비스 readiness와 인증 가능한 전용 test
+  DB 실행 가능 여부를 구분한다.
+
+### 실행 환경과 Release 1 재사용성
+
+| 항목 | 확인 결과 | DTL4-1 이후 사용 경계 |
+| --- | --- | --- |
+| PostgreSQL | `127.0.0.1:5432` TCP와 PostgreSQL 18 `pg_isready` 응답 성공 | 인증과 `_test` 전용 DB는 별도 credential 주입 뒤 검증 |
+| Python | `.venv` Python `3.11.9` 실행, `uv` 없음 | 기존 `.venv` 사용, 새 설치 없음 |
+| Node | Node `v24.18.0`, npm `11.16.0` 실행 | Frontend 기존 scripts 사용 |
+| Browser | 설치된 Playwright Chromium headless launch 성공 | actual E2E는 해당 Slice에서 별도 실행 |
+| API 자료 | `opensource_plan/api_info` 3개 자료와 외부 API key 파일 존재 | Source 요청 전 사용법·keyword와 호출 예산 확인 |
+| Release Raw | 승인 manifest 2개와 Runtime Raw 존재 | 외부 API·DB 없이 고정 snapshot replay 가능 |
+| 비추적 경계 | `runtime/raw`, DB 파일 제외 확인; 누락된 `runtime/html`, `runtime/logs` 제외 규칙 추가 | Raw·HTML·로그·DB 산출물 커밋 금지 |
+
+고정 snapshot strict offline profile은 3,156건을 수용하고 invalid 0건,
+신청기간 safety `passed=true`를 반환했다. Source별 결과는 온통청년 2,695건,
+복지로 461건으로 Release 1 기준선과 일치했다. 따라서 Data 02 Raw·profile
+기준선은 DTL4-1 inventory에 재사용할 수 있다. PostgreSQL Runtime DB의 현재
+row는 credential 미주입으로 조회하지 않았으며 재사용 가능으로 단정하지 않는다.
+
+### Forest 책임과 병합 경계
+
+| Forest | 구현 주 담당 | 소비 검토 | 브랜치와 merge target | 완료 기준 |
+| --- | --- | --- | --- | --- |
+| Integration 05 | Team Leader, Data 근거 | Backend·Frontend | `docs/docs/v0-5-contract-baseline` → `develop` | `W4-G0_APPROVED` |
+| Data 03 | Data | Backend 05·Team Leader | `feature/data/recurrent-quality-operations` → `develop` | 반복·변경·중복·실패·품질 통계 검증 |
+| Data 04 | Data | Backend·Frontend·Integration 08 | `feature/data/public-web-policy-source` → `develop` | 공식 Source actual 수집·DB 적재 |
+| Integration 08 | Data·Backend·Frontend 영역별 구현 | 상호 소비 검토·Team Leader | Data 04 기반 뒤 영역별 브랜치 → `develop` | evidence → 상세 API → UI E2E |
+| Backend 04·05 | Backend | Frontend·Data·Team Leader | Backend Forest 브랜치 → `develop` | 인증·CollectionRun 계약과 PostgreSQL 검증 |
+| Frontend 03 | Frontend | Backend·Team Leader | 관리자 Forest 브랜치 → `develop` | PIN·관리자 actual API 소비 |
+| Integration 09 | Backend·Frontend | Data 의미·Team Leader 보안 | 영역별 observability 브랜치 → `develop` | 읽기 전용 데이터·로그·감사 E2E |
+| Integration 06 | Backend·Frontend | Data·Team Leader | 영역별 recommendation 브랜치 → `develop` | 결정적 추천·이유·미확정 E2E |
+| Frontend 05 | Frontend | Team Leader | `feature/frontend/user-service-features` → `develop` | 저장·D-Day·알림·`.ics` Browser 검증 |
+| Integration 07 | Team Leader | 전 담당 | cross-area domain 합의 전 생성 금지 | W4-G1~G4와 midpoint 근거 |
+
+Schema·Migration·Adapter 겹침은 Data 03이 CollectionRun 품질 집계 의미를,
+Data 04가 웹 Source Adapter·Raw HTML·공통 정규화 연결을 소유한다. Integration
+08의 Data evidence 구조는 DTL4-1에서 계약을 승인한 뒤 Data 04 기반 위에서
+추가하며, 같은 Schema나 Migration을 병렬 브랜치에서 동시에 수정하지 않는다.
+OpenAPI는 Backend, TypeScript·Mock은 Frontend가 소유하고 Data는 field 의미와
+provenance를 검토한다.
+
+### Backend 선행 구현 처리
+
+Backend 담당 결과는 별도 원격 브랜치
+`origin/feature/backend/admin-access-control`의
+`f7ffca4254a52cc94666a575567cbf73b7cb92de`까지 진행돼 있다. 여기에는 PIN
+session·token·rate limit·관리자 dependency와 계약·테스트가 포함되지만,
+Integration 05 승인 전에는 실제 OpenAPI 후보로만 대조했다. Team Leader의
+W4-G0 승인 뒤에도 해당 구현을 완료 기능으로 소급하지 않으며 승인 계약과의
+적합성은 W4-G1에서 확인한다.
+
+Backend에는 이 구현과 함께 CollectionRun·관리자 데이터·로그·자격요건·추천
+OpenAPI를, Frontend에는 PIN·관리자·핵심 조건·추천·로컬 기능 TypeScript·Mock을
+W4-G1 소비 검토 입력으로 요구한다. FE 미착수 상태를 승인 증거로 기록하지
+않았으며, 구현 차이는 계약 변경 없이 임의 수용하지 않는다.
+
+### DTL4-1 Data inventory
+
+- 현재 Policy upsert는 identity·immutable field 외 모든 write field를 mutable로
+  비교한다. `collected_at`과 provenance도 포함돼 재수집 metadata만 달라진
+  동일 policy가 `updated`로 집계될 수 있다.
+- CollectionRun은 requested·Raw·extracted·accepted·partial·invalid·inserted·
+  updated·unchanged·skipped·failed count를 저장하지만 duplicate·rejected 전용
+  count는 없다.
+- 현재 Normalized Schema는 `eligibility_text`와 required·preferred·excluded
+  string 배열을 제공하지만 항목별 evidence·제출서류·coverage 구조가 없다.
+- Release 1 offline replay에서 온통청년 2,695건 중 `eligibility_text` 1,024건,
+  복지로 461건 중 5건만 존재했다. 두 Source 모두 required·preferred·excluded,
+  education·employment 구조화 배열은 0건이었다.
+- 기존 field를 제거하거나 의미를 바꾸지 않고 `eligibility_summary` 호환 확장
+  후보와 business 비교 field 분리를 Integration 05 계획에 기록했다.
+
+### DTL4-1 Backend 소비 대조
+
+`f7ffca4254a52cc94666a575567cbf73b7cb92de`의 실제 문서·Schema·service·endpoint·
+dependency를 정적으로 대조했다. 4자리 PIN, session 응답, 60분 token, role,
+오류 상태와 progressive cooldown은 계획 후보와 일치한다.
+
+다음 차이는 Backend action item으로 분류했다.
+
+- 기본 `0000` 허용이 localhost host·bind가 아니라 `ENVIRONMENT` 문자열에만
+  의존한다.
+- production에서도 `ADMIN_TOKEN_SECRET`이 없으면 기본값이 있는 `SECRET_KEY`로
+  fallback할 수 있다.
+- process-local rate limit은 단일 process 로컬·시연 기준으로만 유효하고
+  다중 worker·reverse proxy 보장은 하지 않는다.
+
+Backend 브랜치명이나 W4-G0 전 구현 시작 자체는 계약 차이로 분류하지 않았다.
+
+### DTL4-1 공식 웹 Source preflight
+
+`2026-08-10`에 [천안청년센터 이음 공지 674번](https://www.ch2030youth.kr/bbs/board.php?bo_table=notice&wr_id=674)을
+익명 공개 화면으로 확인했다.
+
+- Source ID `cheonan-youthcenter-web`, identity `notice:674`로 확정
+- 제목·게시일·대상·지원 내용·제출서류·유의사항이 공개 정적 본문에 존재
+- 신청 링크는 회원가입·로그인이 필요하므로 crawler 추적 대상에서 제외
+- 첨부·이미지·이메일·전화번호·개인정보를 추출·저장하지 않음
+- 목록 1회·승인 상세 1건, 동시 요청 1개·최소 2초 간격만 승인
+- `/robots.txt`는 directive가 아닌 404 페이지를 반환하고 별도 이용약관은
+  찾지 못했으며 footer는 `all rights reserved`를 표시
+- actual HTML은 Runtime 전용, Git에는 합성·최소 구조 Fixture만 허용
+
+`2026-08-10` DTL4-3A 구현 시 사용자 결정으로 연락처 경계를 구체화했다.
+공개 시설 대표전화와 공식 문의 채널은 이용자 문의에 필요한 기관 정보이므로
+Runtime Raw와 Source 전용 필드에 보존한다. 개인 휴대전화·개인 이메일·성명은
+계속 구조화 추출 대상에서 제외한다. 이는 공통 Policy/API 연락처 필드의 승인을
+의미하지 않으며, 소비 계약은 후속 Slice에서 별도로 결정한다.
+
+게시일은 `2026-07-24`지만 본문 신청기간은
+`2026-04-22`~`2026-05-06 23:00`이고 제목에는 “곧 마감”이 있어 충돌한다.
+표본은 `data_quality_status=partial`, 신청 상태 `unknown`으로 승인했으며
+Extractor가 현재 신청 가능 여부를 추정하거나 원문을 덮어쓰지 않도록 했다.
+
+### DTL4-1 Gate 상태
+
+Team Leader가 `W4-G0_APPROVED`로 판정했다. FE TypeScript·Mock 미착수와 Backend
+localhost `0000`·별도 token secret 차이는 승인 계약의 미확정이 아니라
+`W4-G1` 구현 적합성 항목으로 이관했다. 이에 DTL4-2A·3A·4A 기반 구현을
+해제하며 실제 Schema·Migration·actual 구현은 각 후속 Forest에서 수행한다.
+
+### DTL4-5 소비 계약 대조와 W4-G1 (`2026-08-14`)
+
+시작 기준은 `feature/integration/dtl4-5-contract-parity`의
+`c4c6434aa18eb5c5f9e77498a80ea54149546c51`이다. 실제 병합 순서는 다음과 같다.
+
+1. `5343b55650794886c9b6ea8ebbdaae9257d33454`: Frontend 브랜치에 develop 병합
+2. `ac2b64d79128a1b5e74a88d010b8534faad32404`: 지역 정책 Data 결과 병합
+3. `c4c6434aa18eb5c5f9e77498a80ea54149546c51`: develop에 Week 4 Data·Frontend 병합
+
+대조 결과와 조치는 다음과 같다.
+
+| 영역 | 발견한 차이 | DTL4-5 결과 |
+| --- | --- | --- |
+| 관리자 인증 | `0000`이 environment 문자열에만 의존, production token secret fallback | local client+local/test에서만 기본 PIN 허용, production 전용 secret fail-closed |
+| 관리자 Policy | FE proposal의 `size`·`pages`·추가 sort/row field가 Backend와 다름 | Backend `{items,total,page,limit}`·allowlist sort·detail DTO로 통일 |
+| 관리자 로그 | FE proposal path/envelope와 Backend가 다르고 rotate endpoint 누락 | `/admin/logs/*` DTO 통일, rotate→생성 archive 삭제→감사 API 추가 |
+| Eligibility | 과거 FE proposal과 Integration 08 승인 DTO가 중복 | 실제 소비 중인 `coverage/documents/unknowns/evidence`만 보존 |
+| correlation·비밀 | 로그 DTO는 correlation field가 있으나 producer가 연결되지 않음 | request/run/source producer 연결, PIN·token·Raw·SQL parameter 회귀 보강 |
+| Data 05 | 새 지역 Source의 중복 row 위험 | NormalizedProgram 1.2.0·기존 Runtime Importer·상세/검색 projection 재사용과 교차 Source duplicate Gate 테스트 확인 |
+| 사용자 기능 | 일정상 누락 가능성 | 즐겨찾기·KST D-Day·D-7 내부 알림·all-day `.ics` 소비 테스트 존재 확인 |
+
+W4-G1 승인 조건인 공개 DTO fixture 소비, 비밀 비노출, 계약 우선 변경과 실제
+병합 순서 기록을 충족해 `W4-G1_APPROVED`로 판정한다. 실제 PostgreSQL·Runtime
+log·Real API Browser 종단 검증은 W4-G2/AO5 범위이며, `TEST_DATABASE_URL`
+미주입으로 이번 집중 테스트 중 PostgreSQL 2건은 skip됐다. 관리자 Mock Browser
+E2E는 19건 통과했고 Real API 조건부 1건은 skip됐다.
+
+### DTL4-6 영역별 검증과 W4-G2 (`2026-08-14`)
+
+시작 기준은 `feature/integration/week-04-acceptance`의
+`1036e8a0d3e872f52ba4bfdc54fec5cd849bac56`이다. PostgreSQL 18 서비스와
+격리된 `cheongnyeon_alimi_test` DB, Alembic 단일 head `20260810_0006`,
+Chromium과 Playwright 실행 환경을 확인했다. 접속 비밀은 출력하거나 문서에
+기록하지 않았고 테스트 뒤 임시 pgpass를 삭제한다.
+
+| 검증 | 결과 |
+| --- | --- |
+| Backend·Data 전체 Python, 실제 PostgreSQL | 487 passed, 0 skipped, 95 subtests passed |
+| Regional Browser Runtime | 52 passed |
+| Frontend unit | 162 passed |
+| Frontend lint·production build | passed |
+| Mock Browser 전체 분할 실행 | 79 passed, 11 Real API conditional skips |
+| Eligibility UI + Week 4 regression | 10 passed, 2 Real API conditional skips |
+
+첫 PostgreSQL 전체 실행에서 DTL4-5가 추가한 request correlation과 맞지 않는
+`test_unhandled_exception_log_does_not_expose_details` 한 건이 실패했다. 테스트를
+현재 로깅 계약의 `request_id`·`component`·`error_type`까지 검증하도록 수정한 뒤
+전체 487건을 다시 통과했다.
+
+또한 DTL4-5에서 과거 Eligibility proposal 구현을 제거한 뒤에도 fixture id
+`9101`~`9103`, summary 전용 refetch hook, 개인 조건 비교 E2E·CSS와 오래된 문서가
+남아 있음을 확인했다. 승인된 Integration 08 DTO와 현재 seed 기준으로 Browser
+회귀를 다시 작성하고 미사용 API option·spec·CSS를 제거했다. 활성 Frontend
+source·test에는 해당 proposal 식별자가 남아 있지 않다.
+
+Data 03~05와 Integration 08의 실제 수집·PostgreSQL·API·Browser 인수 기록,
+이번 실제 PostgreSQL 전체 회귀, Backend·Frontend 자체 검증, Migration·fixture·
+Chromium 준비를 근거로 `W4-G2_APPROVED`로 판정한다. DTL4-7에서는 실제 FastAPI와
+React를 연결해 조건부 Real API Browser 11건과 관리자·자격요건·추천 세 Critical
+Path를 실행한다. Runtime 로그 rotate·감사 지속성도 같은 actual E2E에서 확인한다.
+
+### DTL4-7 세 actual E2E와 W4-G3 (`2026-08-14`)
+
+시작 기준은 `feature/integration/week-04-acceptance`의
+`c163235a734b3168fe13e726047348a1c3f63b3e`다. 기존
+`cheongnyeon_alimi` DB는 pgpass 역할이 테이블 조회 권한을 갖지 않아 정책 검색과
+관리자 실행 목록이 500을 반환했다. 기존 DB 권한을 바꾸지 않고 역할이 소유한
+격리 `cheongnyeon_alimi_test`를 선택하려 했으나 `run_local.ps1`가 DB 이름을
+고정한 결함을 확인했다. 실행기에 검증된 `DatabaseName` 입력을 추가하고 기본값은
+기존 `cheongnyeon_alimi`로 유지했다.
+
+격리 DB에 Alembic `20260810_0006`, 행정구역 538건·alias 1,080건과 canonical
+Seed 4건을 적용했다. 저장된 Runtime Raw를 외부 호출 없이 재생해 온통청년
+2,695건, 복지로 461건, 천안 웹 1건을 실패 없이 적재했다. 대표 지역 Source는
+부산 accepted 1건을 적재했고 경북·서울은 현재 Gate에 따라 각 3건을 격리했다.
+review·closed를 accepted로 승격하지 않았다.
+
+| 검증 | 결과 |
+| --- | --- |
+| 기존 Real API golden | 7 passed: 관리자 run·observability, 검색, Eligibility, 추천, 북마크, Week 4 회귀 |
+| ES4 PostgreSQL 상세 대조 | 1 passed |
+| DTL4-7 actual Critical Path | 3 passed: 관리자·웹 Source·사용자 |
+| Frontend unit·lint·build | 162 passed, lint passed, production build passed |
+| 관련 Backend 단위·API | 65 passed, 기존 deprecation warning 1건 |
+| PostgreSQL Seed·API·CollectionRun 통합 | 최종 3 passed, 기존 deprecation warning 1건 |
+
+관리자 actual은 실제 Policy 표·상세, CollectionRun 목록·상세, 구조화 log,
+rotate, 임시 archive typed-delete와 감사 ID, invalid token `401`, active log 삭제
+`400`, 잘못된 PIN 4회 `401` 뒤 5회째 `429`를 확인했다. 웹 Source actual은
+Release 1 golden 검색, 정책 ID 167의 evidence·비확정 안내와 부산 대표 partial
+정책 ID 3162를 대조했다. 사용자 actual은 추천 의미, 북마크 reload, 달력·알림,
+정책 ID 1566의 `.ics` 다운로드와 손상 localStorage 복구를 확인했다.
+
+PostgreSQL 통합 첫 실행은 actual 데이터가 남은 DB에서 canonical Seed가 신규
+4건이 아니라 unchanged 4건으로 판정돼 1건 실패했다. 테스트 정리 뒤 동일 3건을
+재실행해 모두 통과했다. 첫 실패를 기능 성공으로 숨기지 않는다. 실제 E2E 뒤
+서비스를 종료했고 통합 테스트가 격리 DB Migration과 데이터를 정리했다.
+
+최종 Git Gate에서 과거 `backend/logs/app.log`가 추적 중인 사실을 확인했다.
+actual 실행으로 바뀐 내용은 시작 HEAD로 먼저 복원해 기존 기록과 섞이지 않게 한
+뒤, Runtime log 비추적 계약에 맞춰 파일을 Git에서 제거하고 `backend/logs/`를
+ignore했다. 로그 디렉터리와 활성 파일은 Backend 시작 시 다시 생성된다.
+
+세 actual E2E와 Release 1 검색·상세 회귀, 비밀·Runtime 비추적 경계를 근거로
+`W4-G3_APPROVED`로 판정한다. DTL4-8의 전체 회귀·문서 대조·W4-G4 midpoint와
+5주차 독립 QA·사용성 리뷰는 수행하지 않았으며 완료로 판정하지 않는다.
+
+### DTL4-8 전체 회귀·문서 대조와 W4-G4 (`2026-08-14`)
+
+시작 기준은 `feature/integration/week-04-acceptance`의
+`d8952a4b058e640b01e3448db4880010e2aef319`다. DTL4-8은 새 기능을 추가하지
+않고 Data 03~05, Backend·Frontend 승인 기본 기능과 DTL4-7 actual 결과를 전체
+회귀하고 계약·운영 문서·Git 경계를 대조했다.
+
+| 검증 | 결과 |
+| --- | --- |
+| Data 전체 단위 | 282 passed |
+| Backend 전체 | PostgreSQL 포함 187 passed, 기존 deprecation warning 1건 |
+| Data PostgreSQL Integration | 8 passed, 기존 deprecation warning 1건 |
+| Frontend unit·lint·build | 162 passed, lint·production build passed |
+| Frontend 전체 Browser | Mock 79 passed, Real API/ES4 조건부 14 skipped |
+| DTL4-7 actual 보완 증거 | Real API 8 passed, actual Critical Path 3 passed |
+| Migration | 단일 head `20260810_0006` |
+| 비밀·Runtime 경계 | 금지 경로·파일 Git 추적 0건 |
+| test DB 정리 | `alembic_version` 외 테이블 0건 |
+
+전체 Python과 Frontend 회귀가 NormalizedProgram Schema, Migration, OpenAPI,
+TypeScript·Mock 소비 계약을 함께 통과했다. README·환경 예시·Collector 운영 문서의
+4자리 관리자 PIN, pgpass 기반 DB 선택, Runtime Raw와 구조화 file log 비추적
+경계도 실제 구현과 일치한다. Browser 14건 skip은 Mock 전체 회귀에서 환경변수로
+분리한 actual 시나리오이며, DTL4-7에서 실제 PostgreSQL·FastAPI·React를 연결해
+해당 핵심 경로를 별도로 통과했으므로 미실행을 성공으로 바꾸어 기록하지 않는다.
+
+완료 직후 사용자 기본 PowerShell에서 `run.bat`가 `node.exe`를 PATH에서만 찾아
+시작하지 못하는 실행기 결함을 재현했다. PATH 우선 계약은 유지하고 Codex 데스크톱
+번들 Node fallback과 `-NodeExecutable` 명시 인자를 추가했다. 같은 셸에서
+`run.bat -NoBrowser -ExitAfterReady`를 실행해 Backend health `200`, Frontend
+`127.0.0.1:3000` 준비와 두 서비스 정상 종료를 확인했다.
+
+이어 기본 `cheongnyeon_alimi` DB가 PostgreSQL에는 존재하지만 pgpass
+애플리케이션 역할에 DML·sequence 권한이 없고 Alembic version도 `20260803_0004`에
+머물러 실제 UI가 데이터를 읽지 못하는 환경 불일치를 확인했다. DB 소유자 권한으로
+최소 schema usage, 테이블 DML, sequence 권한과 Migration `0005`·`0006`을 적용한
+뒤 기존 온통청년·복지로 3,159건을 보존했다.
+
+Git 제외 Runtime Raw와 완료 checkpoint를 먼저 dry-run해 천안 1건·지역 109건,
+교차중복 2건 제외·충북 open 0건·실패 0건을 확인한 후 같은 기본 DB에 실제
+적재했다. 최종 DB는 3,269건이며 Source별 지역 projection은 부산 16·경북 2·
+경남 7·전북 16·광주 10·인천 15·대전 1·강원 2·대구 33·서울 1·울산 5·제주 1,
+충북 0이다. 동일 Raw 재실행은 천안 1건과 지역 109건 모두 unchanged이고
+실패·prune 0건이다.
+
+실제 `run.bat`의 PostgreSQL → FastAPI → React에서 서울 `청년` 검색 결과에
+`2025 서울시 고립 은둔청년 지원사업` 카드가 나타나고, 상세의 지역·연령·접수
+상태·신청 방법·공식 evidence를 확인했다. 지역명 검색의 regional hit는 서울 1,
+대구 33, 부산 16으로 DB projection과 일치한다.
+
+서울 Source는 110건 중 accepted 1·review 94·closed 15다. 이는 서울 정책이
+1건뿐이라는 의미가 아니라 명시적 지역·시행 기관·청년 대상·현재 신청 근거를
+동시에 확인하지 못한 후보를 보수적으로 review에 둔 결과다. 거짓 accepted나
+필수 기능 결함은 아니므로 W4-G4를 막지 않되 후속 데이터 품질 보강 후보로 남긴다.
+
+Data 06을 제외한 4주차 승인 기본 기능, 실제 관리자·웹 Source·사용자 E2E,
+담당자 전체 회귀와 문서 대조가 완료돼 `W4-G4_MIDPOINT_PASS`로 판정한다. 5주차는
+Data 06, 승인 추가 기능, 결함 수정, UI/UX 최적화와 독립 QA·사용성 리뷰·보고서
+대조를 시작할 수 있다. 이 판정은 Release 2 최종 Gate나 `v0.5.0` tag 승인이
+아니다.
+
+DB 선택·권한·Migration, Node 탐색과 Runtime log 비추적을 실제 환경에서 복구한
+과정은
+[Windows actual Runtime·DB 연결 환경 복구](../../../troubleshooting/integration/windows_actual_runtime_acceptance.md)에
+별도로 기록했다.
+
+## 주요 변경 파일
+
+- `.gitignore`
+- `backend/logs/app.log` (추적 제거)
+- `docs/development/develop_plan/integration/05_v0_5_0_contract_baseline.md`
+- `docs/development/weekly_plan/week_04_data_team_leader.md`
+- `docs/development/development_notes/integration/v0_5_0_contract_baseline.md`
+- `docs/development/development_notes/README.md`
+- `docs/index.md`
+- `docs/data/data_sources.md`
+- `docs/data/collection_policy.md`
+- `docs/data/source_profiles.md`
+- `docs/development/develop_plan/data/04_public_https_policy_ingestion.md`
+- `scripts/run_local.ps1`
+- `frontend/e2e/dtl4-7-actual.spec.ts`
+- `README.md`
+- `docs/contest/release_1_evidence_guide.md`
+- `CHANGELOG.md`
+
+## 설계 결정
+
+- DTL4-0은 환경·책임 경계만 완료하고 계약 승인이나 기능 구현을 선행하지 않는다.
+- Release 1 offline snapshot은 재사용하되 인증하지 않은 Runtime PostgreSQL의
+  현재 상태를 추정하지 않는다.
+- 외부 API key·pgpass 값은 문서·명령 출력·Git에 포함하지 않는다.
+- BE 선행 구현은 되돌리거나 완료 기능으로 소급하지 않고 W4-G1에서 적합성을
+  검토한다.
+- FE 사전 구현 없이 Team Leader가 W4-G0을 승인하고 FE TypeScript·Mock parity는
+  W4-G1 완료 조건으로 이관한다.
+- 천안청년센터 원문 HTML·이미지는 Git에 재배포하지 않고 공개 사실과 최소
+  합성 Fixture만 사용한다.
+
+## 검증 결과
+
+| 검증 | 결과 |
+| --- | --- |
+| Git Release·branch·worktree 대조 | 통과: Release refs 일치, 시작 worktree 변경 0건 |
+| PostgreSQL readiness | 통과: `127.0.0.1:5432` accepting connections |
+| PostgreSQL 인증·전용 test DB | 미실행: `pgpass`·`TEST_DATABASE_URL` 미주입 |
+| Release 1 strict offline profile | 통과: accepted 3,156, invalid 0, period safety pass |
+| Python·Node 실행 | 통과: Python 3.11.9, Node 24.18.0, npm 11.16.0 |
+| Browser 실행 | 통과: Playwright Chromium headless launch·close |
+| API key·자료 경계 | 통과: 존재·read access만 확인, 값 미열람 |
+| Release profile 집중 단위 테스트 | 11건 통과 |
+| Data Integration pytest | 4건 skip: `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
+| 문서 검증 | 통과: `scripts/validate_docs.py` |
+| diff 검사 | 통과: `git diff --check` |
+| DTL4-1 Release snapshot coverage replay | 통과: 3,156건 offline, eligibility field 존재 건수 집계 |
+| DTL4-1 runtime replay·release profile 집중 unittest | 16건 통과 |
+| DTL4-1 Data Integration pytest | 4건 skip: `TEST_DATABASE_URL` 미주입, 기존 warning 1건 |
+| DTL4-1 Backend contract static review | 완료: BE commit의 문서·Schema·service·endpoint·dependency 대조 |
+| DTL4-1 공식 웹 Source preflight | 완료: 공지 674번 공개 사실·robots 404·이용 조건·요청/보존 경계 확인 |
+| DTL4-1 Frontend 소비 검토 | 미실행: FE 미착수, W4-G1 적합성 확인으로 이관 |
+| DTL4-1 Gate 판정 | `W4-G0_APPROVED`: Team Leader 승인 |
+
+## 남은 작업
+
+- W4-G1에서 FE TypeScript·Mock을 전달받아 승인 계약과 대조한다.
+- Backend localhost `0000`·production 별도 token secret action item을
+  W4-G1 Backend 결과와 다시 대조한다.
+- Data 04는 천안청년센터 승인 경계 안에서 합성 Fixture·Adapter·제한 actual
+  수집을 구현하고 착수 시 DOM·이용 조건을 재확인한다.
+- PostgreSQL 통합 검증 전에 별도 `_test` DB용 credential과 `TEST_DATABASE_URL`
+  을 명시적으로 주입한다. 준비 전 skip을 성공으로 간주하지 않는다.

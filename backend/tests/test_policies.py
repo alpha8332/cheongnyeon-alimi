@@ -157,8 +157,9 @@ def test_current_api_sources_reject_null_external_id(db):
     result = import_programs(db, programs)
 
     assert result.total == 2
-    assert result.skipped == 1
-    assert result.rejected == 1
+    assert result.skipped == 0
+    assert result.invalid == 1
+    assert result.rejected == 2
     assert result.inserted == 0
     assert result.failed == 0
     assert "missing_external_id" in {
@@ -407,24 +408,24 @@ def test_get_policies_quality_filter(client, db):
     """품질 필터링 테스트 (3-A: 기본 valid만, include_partial=True시 partial 포함)"""
     import_seed_data(db, SEED_FILE_PATH)
 
-    # 1. 기본 조회 (include_partial=False) -> valid 2건만 반환
+    # 1. 기본 조회는 마감된 valid 정책을 제외한다.
     response = client.get("/api/v1/policies")
     assert response.status_code == 200
     data = response.json()
-    assert data["total"] == 2
+    assert data["total"] == 1
     assert all(item["data_quality_status"] == "valid" for item in data["items"])
 
-    # 2. partial 포함 조회 (include_partial=True) -> valid 2건 + partial 2건 = 4건 반환
+    # 2. partial 포함 조회도 마감 정책은 제외한다.
     response_partial = client.get("/api/v1/policies?include_partial=true")
     assert response_partial.status_code == 200
     data_partial = response_partial.json()
-    assert data_partial["total"] == 4
+    assert data_partial["total"] == 3
 
 
 def test_get_policy_detail_no_provenance(client, db):
     """일반 사용자 API 응답 패킷에 provenance 비노출 검증 (4-A)"""
     import_seed_data(db, SEED_FILE_PATH)
-    first_policy = db.query(Policy).first()
+    first_policy = db.query(Policy).filter(Policy.application_end.is_(None)).first()
 
     response = client.get(f"/api/v1/policies/{first_policy.id}")
     assert response.status_code == 200
@@ -436,7 +437,10 @@ def test_get_policy_detail_no_provenance(client, db):
 def test_policy_date_and_text(client, db):
     """Date 파싱 및 원문 Text 동시 보존 검증 (5-A)"""
     import_seed_data(db, SEED_FILE_PATH)
-    valid_policy = db.query(Policy).filter(Policy.data_quality_status == "valid").first()
+    valid_policy = db.query(Policy).filter(
+        Policy.data_quality_status == "valid",
+        Policy.application_end.is_(None),
+    ).first()
 
     response = client.get(f"/api/v1/policies/{valid_policy.id}")
     assert response.status_code == 200

@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.1.0 구현
+- 현재 구현 상태: Normalizer·Validator와 Normalized Schema 1.2.0 구현
 
 정규화는 `ExtractedPolicy`의 소스별 표현을 공통
 `NormalizedProgram`으로 변환한다. 원문에 없는 값을 추정해 정확한 값처럼
@@ -66,6 +66,12 @@
 - `예산 소진 시`는 `application_schedule=until_budget_exhausted`로 두고
   실제 소진 여부를 알 수 없어 상태는 null이다.
 - 알 수 없는 상태를 `"unknown"`으로 만들지 않고 null로 둔다.
+
+지역 포털 정책은 Normalizer 이전 RYP3 Gate를 먼저 통과한다. Source 전용 mapper가
+전달한 신청기간에서 현재 open을 확인한 정책만 Normalizer로 넘긴다. `scheduled`,
+`closed`, 기간 누락·오류와 실제 소진 여부를 모르는 `예산 소진 시까지`는
+Runtime 판정에 보존하고 사용자 정책으로 승격하지 않는다. 이 Gate는 기존
+`application_status` enum이나 공개 API 계약을 확장하지 않는다.
 
 ### Source 근거 경계
 
@@ -190,6 +196,25 @@ Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가
 - 같은 canonical 지역에 동일 relation을 중복하거나 include와 exclude를
   동시에 선언할 수 없다.
 
+지역 포털은 Source 지역·시행기관·지원 대상이라는 독립 evidence가 같은 관할을
+가리킬 때만 RYP3의 `regional_confirmed`를 얻는다. 포털의 소재지만 확인되면
+`regional_review_required`, 전국 재게시나 다른 지역은 `non_regional`이다.
+confirmed이면서 현재 open인 정책만 `coverage_scope=regional`과 canonical include
+rule을 붙여 이 Normalizer에 전달한다. 광역 관할 아래 시·군·구가 명시되면
+ancestor 관계를 확인하고 더 구체적인 canonical rule을 사용한다.
+
+RYP4 교차 Source 판정은 정규화 뒤 Importer 전달 전에 수행한다. 명시적
+aggregator ID·canonical URL·발행기관 포함 공고 ID exact 일치만 확정 중복으로
+제외한다. 정규화 제목·기관·canonical include 지역·신청 시작/종료일·지원내용이
+모두 같아도 자동 병합하지 않고 검토 대상으로 둔다. 제목만 같은 경우 비교
+필드가 모두 존재하고 하나 이상 다르면 신규 지역 정책을 유지하며, 근거가
+누락되면 검토 대상으로 둔다. 판정용 text는 Unicode NFKC 후 문자·숫자만
+case-insensitive 비교하고 URL은 fragment와 `utm_*`만 제거한다.
+
+교차 Source 판정은 NormalizedProgram 필드나 기존 aggregator row를 변경하지
+않는다. 확정 제외·검토는 `skipped_count`, 같은 Source identity 반복은 기존
+`duplicate_count`로 구분한다.
+
 ## 카테고리
 
 Normalized 1.1.0은 실제 복지로 관심주제의 다중값을 보존하기 위해
@@ -264,6 +289,7 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 `region_rules`와 versioned projection을 Policy upsert와 같은 transaction에
 저장한다. Runtime replay는 Normalizer warning을 accepted program과 함께
 전달하므로 canonical 필드만으로 재구성할 수 없는 partial 분류도 유지한다.
-Frontend는 `schema_version` 1.0.0·1.1.0을 허용하지만 새 검색 필드는 기존
-공개 Policy DTO에 노출하지 않는다. 검색 응답 계약은 후속 Backend·Frontend
-Slice에서 별도로 연결한다.
+Frontend는 ES3에서 `schema_version` 1.0.0·1.1.0·1.2.0을 허용해야 한다. 새
+검색 필드는 기존 공개 Policy DTO에 노출하지 않고, `eligibility_summary`는 상세
+DTO에서만 소비한다. Source별 Eligibility mapper는 등록 source ID에만 적용하며
+generic legacy 입력은 자격 원문을 구조화 조건으로 추정하지 않는다.

@@ -1,67 +1,54 @@
 import { Link } from 'react-router';
+import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PartialBadge from '@/components/policy/PartialBadge';
+import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
+import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
 import type { PolicyDto } from '@/types/policy';
+import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
 import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
+import { getPolicyCardDDayBadgeLabel } from '@/utils/policyDeadline';
 import {
   formatAge,
-  formatApplicationStatus,
+  formatApplicationPeriodCard,
   formatOrganization,
   formatRegion,
-  getDDayLabel,
 } from '@/utils/policyDisplay';
 
 interface PolicyCardProps {
   policy: PolicyDto;
 }
 
-function getCardTag(policy: PolicyDto): { label: string; variant: '' | 'warn' | 'hot' } {
-  if (policy.data_quality_status === 'partial') {
-    return { label: '정보 미확인', variant: 'warn' };
-  }
-
-  const dDay = getDDayLabel(policy);
-  if (dDay.startsWith('D-')) {
-    const days = Number(dDay.replace('D-', ''));
-    if (!Number.isNaN(days) && days <= 7) {
-      return { label: '마감 임박', variant: 'hot' };
-    }
-  }
-
-  if (policy.application_status === 'open') {
-    return { label: '모집중', variant: '' };
-  }
-
-  if (policy.application_status) {
-    return { label: formatApplicationStatus(policy.application_status), variant: '' };
-  }
-
-  return { label: '정책', variant: '' };
-}
-
 export default function PolicyCard({ policy }: PolicyCardProps) {
-  const tag = getCardTag(policy);
   const detailPath = buildProgramDetailRoutePath(policy.id, {
     includePartial: policy.data_quality_status === 'partial',
   });
+  const primaryCategory = getPrimaryPolicyCategory(policy);
+  const dDayBadgeLabel = getPolicyCardDDayBadgeLabel(policy);
 
   return (
     <article className="policy-card">
       <div className="policy-card__visual">
-        <span
-          className={`policy-card__tag${tag.variant ? ` policy-card__tag--${tag.variant}` : ''}`}
-        >
-          {tag.label}
-        </span>
+        <div className="policy-card__visual-badges">
+          <PolicyStatusBadge policy={policy} compact />
+          <PolicyCategoryBadge category={primaryCategory} compact />
+        </div>
       </div>
       <div className="policy-card__body">
         <h3 className="policy-card__title">
           <Link to={detailPath}>{policy.title}</Link>
           <PartialBadge policy={policy} />
+          <span className="policy-card__title-actions">
+            {dDayBadgeLabel ? (
+              <span className="policy-card__dday" aria-label={`마감 ${dDayBadgeLabel}`}>
+                {dDayBadgeLabel}
+              </span>
+            ) : null}
+            <FavoriteToggleButton policyId={policy.id} />
+          </span>
         </h3>
+        <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
-          {[formatRegion(policy), formatOrganization(policy), getDDayLabel(policy)]
-            .filter(Boolean)
-            .join(' · ')}
+          {[formatRegion(policy), formatOrganization(policy)].filter(Boolean).join(' · ')}
         </p>
         <div className="policy-card__footer">
           <span className="policy-card__eligibility">

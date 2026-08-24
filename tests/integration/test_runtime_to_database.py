@@ -27,7 +27,16 @@ from collectors.normalized import NormalizedProgram  # noqa: E402
 
 RAW_ROOT = ROOT / "data" / "fixtures" / "raw"
 SEED_PATH = ROOT / "data" / "seeds" / "initial_programs.json"
-SYSTEM_FIELDS = frozenset({"id", "created_at", "updated_at"})
+SYSTEM_FIELDS = frozenset(
+    {
+        "id",
+        "created_at",
+        "updated_at",
+        "last_seen_at",
+        "last_verified_at",
+        "inactive_at",
+    }
+)
 ROLLBACK_FUNCTION = "reject_d4_runtime_policy"
 ROLLBACK_EXTERNAL_ID = "SYN-YOUTH-002"
 
@@ -235,6 +244,18 @@ def test_runtime_raw_replay_to_postgresql_is_atomic_and_idempotent():
         for program in seed:
             identity = (program["source_id"], program["external_id"])
             assert stored_by_identity[identity] == _normalized_seed(program)
+        for policy in policies:
+            source = next(
+                program
+                for program in seed
+                if (program["source_id"], program["external_id"])
+                == (policy.source_id, policy.external_id)
+            )
+            assert policy.last_seen_at == datetime.fromisoformat(
+                source["collected_at"].replace("Z", "+00:00")
+            )
+            assert policy.last_verified_at is not None
+            assert policy.inactive_at is None
     finally:
         try:
             with db_engine.begin() as connection:

@@ -7,7 +7,7 @@ import json
 import sys
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +16,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from collectors.bokjiro import SOURCE_ID as BOKJIRO_SOURCE_ID
+from collectors.cheonan_youthcenter import (
+    APPROVED_EXTERNAL_ID as CHEONAN_EXTERNAL_ID,
+    BOARD_URL as CHEONAN_BOARD_URL,
+    SOURCE_ID as CHEONAN_SOURCE_ID,
+    CheonanYouthCenterExtractor,
+)
+from collectors.eligibility_mapping import map_eligibility
+from collectors.extracted import ExtractedPolicy
 from collectors.extractors import BokjiroExtractor, YouthCenterExtractor
 from collectors.normalizer import Normalizer
 from collectors.raw import (
@@ -36,6 +44,10 @@ DETAIL_COLLECTED_AT = datetime(
     tzinfo=timezone.utc,
 )
 COLLECTOR_VERSION = "synthetic-fixture/1.0.0"
+CHEONAN_COLLECTED_AT = datetime(2026, 8, 10, 3, 0, tzinfo=timezone.utc)
+CHEONAN_FIXTURE_ROOT = (
+    ROOT / "data/fixtures/html/cheonan-youthcenter-web"
+)
 
 YOUTH_LIST_ID = "10000000000000000000000000000000"
 YOUTH_ITEM_IDS = (
@@ -85,6 +97,12 @@ def build_outputs() -> dict[Path, bytes]:
         if result.program is None
     ]
     search_contract_cases = _search_contract_cases(accepted)
+    recurrent_quality_cases = _recurrent_quality_cases()
+    eligibility_contract_cases = _eligibility_contract_cases(
+        extracted,
+        accepted,
+    )
+    review_admission_cases = _review_admission_cases()
 
     return {
         **raw_outputs,
@@ -103,10 +121,638 @@ def build_outputs() -> dict[Path, bytes]:
         Path(
             "data/fixtures/contracts/policy_search_region_cases.json"
         ): _json_bytes(search_contract_cases, pretty=True),
+        Path(
+            "data/fixtures/contracts/recurrent_quality_cases.json"
+        ): _json_bytes(recurrent_quality_cases, pretty=True),
+        Path(
+            "data/fixtures/contracts/eligibility_evidence_cases.json"
+        ): _json_bytes(eligibility_contract_cases, pretty=True),
+        Path(
+            "data/fixtures/contracts/review_admission_cases.json"
+        ): _json_bytes(review_admission_cases, pretty=True),
         Path("data/seeds/initial_programs.json"): _json_bytes(
             accepted,
             pretty=True,
         ),
+    }
+
+
+def _review_admission_cases() -> dict[str, Any]:
+    def case(
+        case_id: str,
+        item_text: str,
+        application: str,
+        reason_codes: list[str],
+        expected_outcome: str,
+        **extra: Any,
+    ) -> dict[str, Any]:
+        return {
+            "id": case_id,
+            "item_texts": [item_text],
+            "application": application,
+            "reason_codes": reason_codes,
+            "expected_outcome": expected_outcome,
+            **extra,
+        }
+
+    regional_open = [
+        "target_region_confirmed",
+        "application_period_open",
+        "youth_target_unconfirmed",
+    ]
+    return {
+        "schema_version": "1.0.0",
+        "rule_version": "review-admission-v1",
+        "cases": [
+            case(
+                "scope-open-without-period",
+                "취업준비생 자격증 지원",
+                "open",
+                [
+                    "target_region_confirmed",
+                    "source_scope_application_open",
+                    "youth_target_unconfirmed",
+                ],
+                "promote_partial",
+            ),
+            case(
+                "no-currentness-evidence",
+                "구직자 역량 강화",
+                "review_required",
+                [
+                    "target_region_confirmed",
+                    "application_period_missing",
+                    "youth_target_unconfirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "unknown-eligibility-preserved",
+                "사회초년생 주거 지원",
+                "open",
+                regional_open,
+                "promote_partial",
+                unknown_codes=[
+                    "missing_age_condition",
+                    "missing_income_condition",
+                ],
+            ),
+            case(
+                "fully-structured-valid",
+                "1인가구 생활 지원",
+                "open",
+                regional_open,
+                "promote_partial",
+                normalization_status="valid",
+                unknown_codes=[],
+            ),
+            case(
+                "youth-target-unconfirmed",
+                "주거비 지원사업",
+                "open",
+                regional_open,
+                "hold_review",
+            ),
+            case(
+                "ambiguous-parent-region",
+                "1인가구 지원",
+                "open",
+                [
+                    "ambiguous_parent_region",
+                    "application_period_open",
+                    "youth_target_unconfirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "explicitly-closed",
+                "대학원생 장학금",
+                "closed",
+                [
+                    "target_region_confirmed",
+                    "application_period_ended",
+                    "youth_target_unconfirmed",
+                ],
+                "exclude_closed",
+            ),
+            case(
+                "budget-exhaustion-unknown",
+                "예비창업자 지원",
+                "review_required",
+                [
+                    "target_region_confirmed",
+                    "budget_exhaustion_state_unknown",
+                    "youth_target_unconfirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "confirmed-duplicate",
+                "학자금 지원",
+                "open",
+                regional_open,
+                "exclude_duplicate",
+                duplicate_outcome="excluded_aggregator_duplicate",
+            ),
+            case(
+                "source-scope-only",
+                "청년 문화 지원",
+                "open",
+                [
+                    "source_scope_region_confirmed",
+                    "source_scope_application_open",
+                    "youth_target_confirmed",
+                ],
+                "hold_review",
+            ),
+            case(
+                "missing-provenance",
+                "신혼부부 주거 지원",
+                "open",
+                regional_open,
+                "exclude_invalid",
+                provenance_ids=[],
+            ),
+            case(
+                "year-2030-is-not-cohort",
+                "2030년 지역 발전 계획",
+                "open",
+                regional_open,
+                "hold_review",
+            ),
+            case(
+                "explicit-2030-cohort",
+                "2030 세대 자문단",
+                "open",
+                regional_open,
+                "promote_partial",
+            ),
+            case(
+                "normalized-one-person-household",
+                "여성 1인 가구 지원",
+                "open",
+                [
+                    "implementing_region_confirmed",
+                    "source_scope_application_open",
+                    "youth_target_unconfirmed",
+                ],
+                "promote_partial",
+            ),
+            case(
+                "fingerprint-duplicate-review",
+                "귀농 정착 지원",
+                "open",
+                regional_open,
+                "hold_review",
+                duplicate_outcome="duplicate_review_required",
+            ),
+        ],
+    }
+
+
+def _eligibility_contract_cases(
+    extracted: Iterable[ExtractedPolicy],
+    accepted_programs: Iterable[dict[str, Any]],
+) -> dict[str, Any]:
+    def evidence(
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+        locator_type: str,
+        locator: str,
+    ) -> list[dict[str, str]]:
+        return [
+            {
+                "source_id": source_id,
+                "source_url": source_url,
+                "collected_at": collected_at,
+                "locator_type": locator_type,
+                "locator": locator,
+            }
+        ]
+
+    def condition(
+        category: str,
+        text: str,
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+        locator_type: str,
+        locator: str,
+    ) -> dict[str, Any]:
+        return {
+            "category": category,
+            "text": text,
+            "evidence": evidence(
+                source_id,
+                source_url,
+                collected_at,
+                locator_type,
+                locator,
+            ),
+        }
+
+    def document(
+        text: str,
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+        locator_type: str,
+        locator: str,
+    ) -> dict[str, Any]:
+        return {
+            "text": text,
+            "evidence": evidence(
+                source_id,
+                source_url,
+                collected_at,
+                locator_type,
+                locator,
+            ),
+        }
+
+    def contact(
+        kind: str,
+        label: str,
+        value: str,
+        source_id: str,
+        source_url: str,
+        collected_at: str,
+    ) -> dict[str, Any]:
+        return {
+            "kind": kind,
+            "label": label,
+            "value": value,
+            "evidence": evidence(
+                source_id,
+                source_url,
+                collected_at,
+                "css_selector",
+                "#bo_v_con",
+            ),
+        }
+
+    contract_source_id = "eligibility-contract-fixture"
+    contract_source = "https://fixture.invalid/eligibility/complete"
+    web_source = "https://fixture.invalid/cheonan/notice/674"
+    return {
+        "contract_version": "1.0.0",
+        "source_handoff": _eligibility_source_handoff(
+            extracted,
+            accepted_programs,
+        ),
+        "cases": [
+            {
+                "case_id": "complete_contract_fixture",
+                "profile": "normal",
+                "summary": {
+                    "coverage": "complete",
+                    "requirements": [
+                        condition(
+                            "age",
+                            "만 19세 이상 34세 이하",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.requirements.age",
+                        ),
+                        condition(
+                            "region",
+                            "합성시 거주 청년",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.requirements.region",
+                        ),
+                    ],
+                    "exclusions": [
+                        condition(
+                            "education",
+                            "합성 재학생은 지원 대상에서 제외",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.exclusions.education",
+                        )
+                    ],
+                    "preferences": [],
+                    "documents": [
+                        document(
+                            "합성 거주 확인서",
+                            contract_source_id,
+                            contract_source,
+                            "2026-08-10T03:00:00+00:00",
+                            "source_field",
+                            "synthetic.documents",
+                        )
+                    ],
+                    "unknowns": [],
+                    "institutional_contacts": [],
+                },
+            },
+            {
+                "case_id": "partial_web_source",
+                "profile": "boundary",
+                "summary": {
+                    "coverage": "partial",
+                    "requirements": [
+                        condition(
+                            "other",
+                            "합성시에 거주하는 1인가구 청년",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "exclusions": [
+                        condition(
+                            "other",
+                            "타 지역 이사 시 합성 지원 종료",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "preferences": [],
+                    "documents": [
+                        document(
+                            "합성 거주 사실 확인서류",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "unknowns": [
+                        condition(
+                            "other",
+                            "설치 환경에 따라 합성 지원이 제한될 수 있음",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        )
+                    ],
+                    "institutional_contacts": [
+                        contact(
+                            "phone",
+                            "대표전화",
+                            "041-000-0000",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                        ),
+                        contact(
+                            "official_channel",
+                            "공식 문의 채널",
+                            "카카오채널",
+                            "cheonan-youthcenter-web",
+                            web_source,
+                            "2026-08-10T04:00:00+00:00",
+                        ),
+                    ],
+                },
+            },
+            {
+                "case_id": "unknown_missing_source_fields",
+                "profile": "missing",
+                "summary": {
+                    "coverage": "unknown",
+                    "requirements": [],
+                    "exclusions": [],
+                    "preferences": [],
+                    "documents": [],
+                    "unknowns": [],
+                    "institutional_contacts": [],
+                },
+            },
+            {
+                "case_id": "partial_long_condition",
+                "profile": "long",
+                "summary": {
+                    "coverage": "partial",
+                    "requirements": [],
+                    "exclusions": [],
+                    "preferences": [],
+                    "documents": [],
+                    "unknowns": [
+                        condition(
+                            "household",
+                            (
+                                "합성 기준연도의 가구 구성과 소득 산정 범위가 "
+                                "신청자의 세대 분리 시점 및 주민등록 상태에 따라 "
+                                "달라질 수 있으므로 공식 안내문과 접수 기관의 "
+                                "확인이 필요합니다."
+                            ),
+                            BOKJIRO_SOURCE_ID,
+                            "https://fixture.invalid/welfare/SYN-LONG-001",
+                            "2026-08-10T05:00:00+00:00",
+                            "source_field",
+                            "tgtrDtlCn",
+                        )
+                    ],
+                    "institutional_contacts": [],
+                },
+            },
+            {
+                "case_id": "partial_source_conflict",
+                "profile": "conflict",
+                "summary": {
+                    "coverage": "partial",
+                    "requirements": [],
+                    "exclusions": [],
+                    "preferences": [],
+                    "documents": [],
+                    "unknowns": [
+                        condition(
+                            "other",
+                            "합성 API 원문: 신청기간은 8월 31일까지",
+                            YOUTHCENTER_SOURCE_ID,
+                            "https://fixture.invalid/policies/SYN-CONFLICT-001",
+                            "2026-08-10T06:00:00+00:00",
+                            "source_field",
+                            "aplyYmd",
+                        ),
+                        condition(
+                            "other",
+                            "합성 웹 원문: 신청기간은 8월 20일까지",
+                            "cheonan-youthcenter-web",
+                            "https://fixture.invalid/cheonan/notice/conflict",
+                            "2026-08-10T06:05:00+00:00",
+                            "css_selector",
+                            "#bo_v_con",
+                        ),
+                    ],
+                    "institutional_contacts": [],
+                },
+            },
+        ],
+    }
+
+
+def _eligibility_source_handoff(
+    extracted: Iterable[ExtractedPolicy],
+    accepted_programs: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    accepted_identities = {
+        (program["source_id"], program["external_id"])
+        for program in accepted_programs
+    }
+    policies = [
+        policy
+        for policy in extracted
+        if (policy.source_id, policy.external_id) in accepted_identities
+    ]
+    policies.append(_cheonan_fixture_policy())
+    return [
+        {
+            "source_id": policy.source_id,
+            "external_id": policy.external_id,
+            "title": policy.title,
+            "eligibility_summary": map_eligibility(policy).to_dict(),
+        }
+        for policy in sorted(
+            policies,
+            key=lambda item: (item.source_id, item.external_id or ""),
+        )
+    ]
+
+
+def _cheonan_fixture_policy() -> ExtractedPolicy:
+    def document(
+        number: int,
+        role: RawDocumentRole,
+        fixture_name: str,
+        *,
+        external_id: str | None = None,
+        parent_document_id: str | None = None,
+        collected_at: datetime = CHEONAN_COLLECTED_AT,
+    ) -> RawPolicyDocument:
+        return RawPolicyDocument.from_bytes(
+            document_id=f"{number:032x}",
+            source_id=CHEONAN_SOURCE_ID,
+            source_type=SourceType.WEB,
+            document_role=role,
+            external_id=external_id,
+            parent_document_id=parent_document_id,
+            source_url=CHEONAN_BOARD_URL,
+            collected_at=collected_at,
+            content_type="text/html; charset=utf-8",
+            raw_format=RawFormat.HTML,
+            raw_payload=(CHEONAN_FIXTURE_ROOT / fixture_name).read_bytes(),
+            http_status=200,
+            collector_version=COLLECTOR_VERSION,
+        )
+
+    parent = document(
+        0x301,
+        RawDocumentRole.LIST_RESPONSE,
+        "list_normal.html",
+    )
+    item = document(
+        0x302,
+        RawDocumentRole.LIST_ITEM,
+        "list_normal.html",
+        external_id=CHEONAN_EXTERNAL_ID,
+        parent_document_id=parent.document_id,
+    )
+    detail = document(
+        0x303,
+        RawDocumentRole.DETAIL_RESPONSE,
+        "detail_normal.html",
+        external_id=CHEONAN_EXTERNAL_ID,
+        collected_at=CHEONAN_COLLECTED_AT + timedelta(minutes=1),
+    )
+    return CheonanYouthCenterExtractor().extract((parent, item, detail))[0]
+
+
+def _recurrent_quality_cases() -> dict[str, Any]:
+    return {
+        "schema_version": "1.0.0",
+        "base_seed_indexes": [0, 1],
+        "cases": [
+            {
+                "id": "same_snapshot",
+                "operation": "rerun",
+                "expected": {
+                    "updated": 0,
+                    "unchanged": 2,
+                    "duplicate": 0,
+                },
+            },
+            {
+                "id": "collection_metadata_only",
+                "operation": "patch",
+                "target_index": 0,
+                "patch": {
+                    "collected_at": "2026-08-10T03:00:00+00:00",
+                    "provenance_collected_at": (
+                        "2026-08-10T03:00:00+00:00"
+                    ),
+                },
+                "expected": {
+                    "updated": 0,
+                    "unchanged": 2,
+                    "duplicate": 0,
+                },
+            },
+            {
+                "id": "single_business_field",
+                "operation": "patch",
+                "target_index": 0,
+                "patch": {"title": "변경된 합성 반복 수집 정책"},
+                "expected": {
+                    "updated": 1,
+                    "unchanged": 1,
+                    "duplicate": 0,
+                },
+            },
+            {
+                "id": "duplicate_in_run",
+                "operation": "append_duplicate",
+                "target_index": 0,
+                "expected": {
+                    "accepted": 2,
+                    "inserted": 2,
+                    "duplicate": 1,
+                    "stored": 2,
+                    "issue_code": "duplicate_identity",
+                    "issue_stage": "validate",
+                },
+            },
+            {
+                "id": "invalid_batch",
+                "operation": "remove_required_field",
+                "target_index": 1,
+                "field": "application_start",
+                "expected": {
+                    "inserted": 0,
+                    "rejected": 1,
+                    "committed": False,
+                    "issue_stage": "validate",
+                },
+            },
+            {
+                "id": "persist_failure",
+                "operation": "fail_second_write",
+                "expected": {
+                    "inserted": 0,
+                    "failed": 1,
+                    "committed": False,
+                    "issue_code": "database_write_failed",
+                    "issue_stage": "persist",
+                },
+            },
+        ],
     }
 
 

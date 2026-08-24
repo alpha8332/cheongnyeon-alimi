@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:cheongnyeon-alimi:schema:normalized-program:1.1.0",
+  "$id": "urn:cheongnyeon-alimi:schema:normalized-program:1.2.0",
   "title": "NormalizedProgram",
   "description": "Canonical policy data with quality status and Raw provenance.",
   "type": "object",
@@ -31,6 +31,7 @@
     "age_max",
     "age_condition_text",
     "eligibility_text",
+    "eligibility_summary",
     "support_content",
     "application_method",
     "education_statuses",
@@ -45,7 +46,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "source_id": {
       "type": "string",
@@ -172,6 +173,9 @@
     "eligibility_text": {
       "$ref": "#/$defs/nullableText"
     },
+    "eligibility_summary": {
+      "$ref": "#/$defs/eligibilitySummary"
+    },
     "support_content": {
       "$ref": "#/$defs/nullableText"
     },
@@ -220,6 +224,211 @@
     }
   },
   "$defs": {
+    "eligibilitySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coverage",
+        "requirements",
+        "exclusions",
+        "preferences",
+        "documents",
+        "unknowns",
+        "institutional_contacts"
+      ],
+      "properties": {
+        "coverage": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "unknown"
+          ]
+        },
+        "requirements": {
+          "$ref": "#/$defs/eligibilityItems"
+        },
+        "exclusions": {
+          "$ref": "#/$defs/eligibilityItems"
+        },
+        "preferences": {
+          "$ref": "#/$defs/eligibilityItems"
+        },
+        "documents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/requiredDocument"
+          }
+        },
+        "unknowns": {
+          "$ref": "#/$defs/eligibilityItems"
+        },
+        "institutional_contacts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/institutionalContact"
+          }
+        }
+      }
+    },
+    "eligibilityItems": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/eligibilityItem"
+      }
+    },
+    "eligibilityItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "text",
+        "evidence"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "age",
+            "region",
+            "income",
+            "asset",
+            "employment",
+            "education",
+            "housing",
+            "household",
+            "other"
+          ]
+        },
+        "text": {
+          "$ref": "#/$defs/eligibilitySourceText"
+        },
+        "evidence": {
+          "$ref": "#/$defs/eligibilityEvidenceArray"
+        }
+      }
+    },
+    "requiredDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "evidence"
+      ],
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/eligibilityDocumentText"
+        },
+        "evidence": {
+          "$ref": "#/$defs/eligibilityEvidenceArray"
+        }
+      }
+    },
+    "institutionalContact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "label",
+        "value",
+        "evidence"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "phone",
+            "official_channel"
+          ]
+        },
+        "label": {
+          "$ref": "#/$defs/eligibilityContactLabel"
+        },
+        "value": {
+          "$ref": "#/$defs/eligibilityContactValue"
+        },
+        "evidence": {
+          "$ref": "#/$defs/eligibilityEvidenceArray"
+        }
+      }
+    },
+    "eligibilityEvidenceArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/eligibilityEvidence"
+      }
+    },
+    "eligibilityEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "source_url",
+        "collected_at",
+        "locator_type",
+        "locator"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://(?![^/?#]*@)[^\\s]+$"
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "locator_type": {
+          "type": "string",
+          "enum": [
+            "source_field",
+            "css_selector"
+          ]
+        },
+        "locator": {
+          "$ref": "#/$defs/eligibilityLocatorText"
+        }
+      }
+    },
+    "eligibilitySourceText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+    },
+    "eligibilityDocumentText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+    },
+    "eligibilityContactLabel": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "eligibilityContactValue": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^(?!.*@)(?!.*(?:^|\\D)(?:\\+?82[- .]?)?0?1(?:0|1|6|7|8|9)[- .]?\\d{3,4}[- .]?\\d{4}(?:\\D|$))\\S(?:.*\\S)?$"
+    },
+    "eligibilityLocatorText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
     "nullableText": {
       "type": [
         "string",

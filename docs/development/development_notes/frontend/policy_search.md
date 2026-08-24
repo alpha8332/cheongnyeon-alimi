@@ -57,21 +57,26 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 
 ### FE4-20 — Home → `/search` IA
 
-#### HomePage hero 검색
+#### HomePage hero 검색 (2026-07-28 UX slice)
 
-- submit/Enter → `buildPolicySearchEntryPath(q)` → `navigate('/search?q=…')`
-- 빈 q submit 시 이동하지 않음 (Policy Search 422 계약)
+- submit/Enter·추천 칩 → `buildPolicySearchEntryPath(q)` → `navigate('/?q=…')` (홈 URL state)
+- 검색 활성 시 동일 페이지에서 결과·필터·sidebar; clear 시 기본 추천/주요 정책 뷰 복귀
+- legacy `/search?q=…` → `PolicySearchRedirect` → `/?q=…`
+
+#### HomePage hero 검색 (FE4-20 baseline)
+
+- submit/Enter → `buildPolicySearchEntryPath(q)` → `navigate('/search?q=…')` (2026-08-06; 2026-07-28에 홈 통합으로 대체)
 
 #### 추천 검색어 칩
 
 - `HOME_RECOMMENDED_SEARCHES`: 천안시 24세 청년 지원금, 청년도약계좌, 서울 주거, 전국 청년
-- 칩 클릭 → 동일 `/search?q=` 진입
+- 칩 클릭 → 동일 `/?q=` 진입
 
-#### Route 경계
+#### Route 경계 (2026-07-28 UX slice 갱신)
 
-- `/search?q=` — NL Policy Search (FE4-14~)
+- `/?q=` — NL Policy Search (FE4-14~); 홈 hero·검색 결과·필터 칩·sidebar 통합
+- legacy `/search` — `PolicySearchRedirect` → `/?q=…` (query preserve)
 - `/programs?search=` — 목록 exact filter + client keyword (`SearchPage`, Forest 범위 밖 유지)
-- `/search` route는 `App.tsx`에 등록 (계획서 `routes/index.tsx` 대응)
 
 ### FE4-19 — Reason & Uninterpreted UX (우측 사이드바)
 
@@ -159,6 +164,31 @@ cd frontend && npm test           — passed (43/43)
   실행 모드별 기대값으로 교정한 뒤 통과했다. actual E2E 최초 실행은 detail
   URL의 승인된 `include_partial=true` 전달을 누락해 1건 실패했고 기대 계약을
   바로잡은 뒤 통과했다.
+
+## W5-F1 인수 보완 — 상세 접수 상태 뱃지 복구 (`2026-08-17`)
+
+### 문제
+
+`getPolicyStatusBadge`가 `application_schedule=always`와
+`application_status=open`을 「상시」 단일 뱃지로 병합해 상세 화면에서
+「접수 중」이 누락됐고, actual E2E golden(`policy-search-audit` #8)이
+실패했다.
+
+### 조치
+
+- `getPolicyDetailStatusBadges` — 상세 전용: 일정(`상시` 등)과 접수
+  상태(`접수 중` 등)를 독립 뱃지로 반환
+- `PolicyDetailStatusBadges` — `PolicyDetailSummaryHeader`에 적용
+- 목록·카드 compact `PolicyStatusBadge`는 기존 단일 뱃지 유지
+
+### 검증 (실행 완료)
+
+| 항목 | 결과 |
+| --- | --- |
+| `npm test` | 216 pass (+ detail badge unit) |
+| `npm run lint` / `build` | pass |
+| `VITE_USE_MOCK=false` E2E golden #8 | pass |
+| `python3 scripts/validate_docs.py` | pass |
 
 ## 남은 작업
 

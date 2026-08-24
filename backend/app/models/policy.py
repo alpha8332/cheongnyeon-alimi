@@ -29,6 +29,27 @@ DATA_QUALITY_STATUS_VALUES = ("valid", "partial", "invalid")
 COVERAGE_SCOPE_VALUES = ("nationwide", "regional", "unknown")
 
 JSON_DOCUMENT = JSON().with_variant(JSONB(), "postgresql")
+EMPTY_ELIGIBILITY_SUMMARY = {
+    "coverage": "unknown",
+    "requirements": [],
+    "exclusions": [],
+    "preferences": [],
+    "documents": [],
+    "unknowns": [],
+    "institutional_contacts": [],
+}
+EMPTY_ELIGIBILITY_SUMMARY_SQL = (
+    "'{\"coverage\":\"unknown\",\"requirements\":[],"
+    "\"exclusions\":[],\"preferences\":[],\"documents\":[],"
+    "\"unknowns\":[],\"institutional_contacts\":[]}'"
+)
+
+
+def empty_eligibility_summary_document() -> dict[str, object]:
+    return {
+        key: list(value) if isinstance(value, list) else value
+        for key, value in EMPTY_ELIGIBILITY_SUMMARY.items()
+    }
 
 
 def utc_now() -> datetime:
@@ -36,7 +57,7 @@ def utc_now() -> datetime:
 
 
 class Policy(Base):
-    """Database representation of the NormalizedProgram 1.1.0 contract."""
+    """Database representation of the NormalizedProgram 1.2.0 contract."""
 
     __tablename__ = "policies"
 
@@ -45,8 +66,8 @@ class Policy(Base):
     schema_version = Column(
         String(32),
         nullable=False,
-        default="1.1.0",
-        server_default="1.1.0",
+        default="1.2.0",
+        server_default="1.2.0",
     )
     source_id = Column(Text, nullable=False)
     source_name = Column(String(255), nullable=False)
@@ -117,6 +138,12 @@ class Policy(Base):
     age_max = Column(Integer, nullable=True)
     age_condition_text = Column(Text, nullable=True)
     eligibility_text = Column(Text, nullable=True)
+    eligibility_summary = Column(
+        JSON_DOCUMENT,
+        nullable=False,
+        default=empty_eligibility_summary_document,
+        server_default=text(EMPTY_ELIGIBILITY_SUMMARY_SQL),
+    )
 
     support_content = Column(Text, nullable=True)
     application_method = Column(Text, nullable=True)
@@ -140,6 +167,20 @@ class Policy(Base):
         ),
         nullable=False,
     )
+
+    last_seen_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utc_now,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
+    last_verified_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utc_now,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
+    inactive_at = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(
         DateTime(timezone=True),
@@ -181,9 +222,15 @@ class Policy(Base):
             "updated_at >= created_at",
             name="ck_policies_timestamp_order",
         ),
+        CheckConstraint(
+            "inactive_at IS NULL OR inactive_at >= last_seen_at",
+            name="ck_policies_inactive_after_last_seen",
+        ),
         Index("ix_policies_source_id", "source_id"),
         Index("ix_policies_external_id", "external_id"),
         Index("ix_policies_data_quality_status", "data_quality_status"),
+        Index("ix_policies_application_end", "application_end"),
+        Index("ix_policies_inactive_at", "inactive_at"),
         Index(
             "ix_policies_categories_gin",
             "categories",

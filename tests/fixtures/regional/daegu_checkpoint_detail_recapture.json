@@ -1,0 +1,19 @@
+{
+  "source_id": "regional-daegu-youth-platform",
+  "list_url": "https://www.dgjump.com/open_content/info/info_list_01?search_flag=1&page=1",
+  "items": [
+    {
+      "external_id": "6104",
+      "title": "중구 청년 부동산중개수수료 및 이사비 지원 사업",
+      "detail_url": "https://www.dgjump.com/open_content/info/info_list_01_view?ap_seq=6104&pg_param=search_flag%3D1"
+    }
+  ],
+  "repeated_category_title": {
+    "observed": "[ 교육/강연/토론] [ 커뮤니티활동] 고립청년을 위한 1박2일 선라이즈캠프",
+    "expected": "고립청년을 위한 1박2일 선라이즈캠프"
+  },
+  "bracketed_policy_title": {
+    "observed": "[ 지원사업] [Pre D-Link 5기] 동구 청년 예비창업자 성공 창업 지원사업",
+    "expected": "[Pre D-Link 5기] 동구 청년 예비창업자 성공 창업 지원사업"
+  }
+}

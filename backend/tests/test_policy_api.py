@@ -53,9 +53,12 @@ async def test_unhandled_exception_log_does_not_expose_details():
         "postgresql://service:R2_DB_PASSWORD@database:5432/policies"
     )
 
+    request = Mock()
+    request.state.request_id = "req-policy-api-test"
+
     with patch("app.main.logger.critical") as critical:
         response = await unhandled_exception_handler(
-            Mock(),
+            request,
             RuntimeError(secret_url),
         )
 
@@ -63,6 +66,11 @@ async def test_unhandled_exception_log_does_not_expose_details():
     critical.assert_called_once_with(
         "Unhandled exception. error_type=%s",
         "RuntimeError",
+        extra={
+            "component": "api",
+            "request_id": "req-policy-api-test",
+            "error_type": "RuntimeError",
+        },
     )
     assert "R2_DB_PASSWORD" not in repr(critical.call_args)
     assert secret_url not in repr(critical.call_args)
@@ -99,7 +107,7 @@ def test_repository_uses_exact_array_membership(db):
 
     assert finance.total == 2
     assert category_prefix.total == 0
-    assert seoul.total == 1
+    assert seoul.total == 0
     assert region_prefix.total == 0
 
 
@@ -145,15 +153,15 @@ def test_list_api_filters_and_paginates(client, db):
     )
 
     assert first_page.status_code == 200
-    assert first_page.json()["total"] == 4
+    assert first_page.json()["total"] == 3
     assert len(first_page.json()["items"]) == 1
-    assert second_page.json()["total"] == 4
+    assert second_page.json()["total"] == 3
     assert (
         first_page.json()["items"][0]["id"]
         != second_page.json()["items"][0]["id"]
     )
     assert category.json()["total"] == 2
-    assert region.json()["total"] == 1
+    assert region.json()["total"] == 0
     assert region_prefix.json()["total"] == 0
     assert open_status.json()["total"] == 1
     assert all(
@@ -184,6 +192,11 @@ def test_partial_detail_requires_opt_in_and_invalid_is_never_public(
     assert opted_in_detail.status_code == 200
     assert opted_in_detail.json()["data_quality_status"] == "partial"
     assert "provenance" not in opted_in_detail.json()
+    assert "eligibility_summary" in opted_in_detail.json()
+    assert "eligibility_summary" not in client.get(
+        "/api/v1/policies",
+        params={"include_partial": "true"},
+    ).json()["items"][0]
 
     partial.data_quality_status = "invalid"
     db.commit()

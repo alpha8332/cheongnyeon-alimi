@@ -1,0 +1,12 @@
+{
+  "source_id": "regional-incheon-youth-platform",
+  "list_url": "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoList.do?acptrun=ing&pgno=1",
+  "items": [
+    {
+      "external_id": "420",
+      "title": "(계양구) 청년 자격증 응시료 지원",
+      "detail_url": "https://youth.incheon.go.kr/youthpolicy/youthPolicyInfoDetail.do?poly_seq=420&acptrun=ing"
+    }
+  ],
+  "observed_title": "(계양구) 청년 자격증 응시료 지원(예산소진 마감)"
+}

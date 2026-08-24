@@ -3,7 +3,7 @@
 ## 문서 정보
 
 - 상태: approved
-- 기준일: 2026-08-06
+- 기준일: 2026-08-19
 - 범위: 1~6주차 실행 순서
 - 역할: Release와 Forest 계획을 주차별 인계 순서로 변환
 
@@ -30,8 +30,8 @@
 | 1주차 | Source·Schema·Fixture·Seed 기준선 | FastAPI·DB 기반과 Policy 계약 | React·TypeScript·Mock UI 기반 | 공통 계약·문서 체계와 병렬 개발 조정 | 목표·구조·초기 근거 정리 | 미배정, 사용자 시나리오 후보 검토 | 미배정, 테스트 가능성 검토 |
 | 2주차 | 제한 수집·Runtime 재처리 경계 | Migration·Importer·Policy API·안전성 | 실제 API 연결·Browser 회귀 | Seed/Runtime → DB → API → UI 통합 확인 | 완료 Forest·테스트·화면 근거 누적 | Release 1 검색 문장 후보 제공 가능 | 통합 기준과 회귀 항목 초안 |
 | 3주차 | 실데이터 근거·Source 검색 필드·지역 정규화·DB bootstrap·품질 보고 | 지역 관계·search projection 공동 기반, 자연어 해석·서버 검색·성능 | 데이터·API 소비 검토, 자연어 조건·검색 이유·미확인 조건 UI | 검색 데이터 기반 Gate, 실제 데이터 E2E, golden query와 `v0.1.0` 결정 | Release 1 데이터·검색·검증 근거 정리 | golden query 결과의 이해도 사전 확인 | Release 1 핵심 검색 smoke와 결함 기록 |
-| 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 기능별 설계 결정·화면·테스트 근거 정리 | 5주차 사용자 시나리오와 평가 항목 준비 | `v0.5.0` 테스트 계획·데이터·환경 준비 |
-| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정 | UX·접근성·반응형·오류 화면 수정 | 기능 동결, 결함 triage와 `v0.5.0` 결정 | 리뷰·QA 결과와 수정 근거를 Release 2 자료에 반영 | 실제 사용자 시나리오 수행·재확인 | 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
+| 4주차 | 반복 수집·중복·수정·품질 운영 | 추천·사용자 기능·관리자 인증·실행 API | 추천·즐겨찾기·알림·캘린더·관리자 UI | 사용자·관리자 계약 조정과 중간 통합 | 4주차 수행 없음 | 4주차 수행 없음 | 4주차 수행 없음 |
+| 5주차 | 실패·partial·invalid·품질 결함 재현과 수정 지원 | API·DB·권한·transaction 결함 수정, Acceptance image 지원 | UX·접근성·반응형·오류 화면 수정, Acceptance build 지원 | 기능 통합 종료, review admission·동일 snapshot Acceptance 환경·결함 triage와 `v0.5.0` 결정 | 기능 연결 종료 뒤 리뷰·QA·수정 근거 정리 | 동일 Git SHA·snapshot 환경에서 실제 사용자 시나리오 수행·재확인 | 동일 Git SHA·snapshot 환경에서 전체 기능·통합·회귀·탐색 테스트와 수정본 재검증 |
 | 6주차 | 초기 실데이터 절차·Source 라이선스·복구 자료 | Production image·migration·health·로그 지원 | Production build·Nginx·배포 UI 회귀 | Docker·Compose·Nginx·CI, clean-room과 `v1.0.0` 결정 | README·LICENSE·SBOM·최종보고서·시연·제출 정리 | 새 환경 실행·최종 사용성 확인 | clean-room 설치·build·재시작·Volume·보안·복구 검증 |
 
 ## 전체 흐름
@@ -42,7 +42,7 @@
   → 3주차 검색 데이터 기반·실데이터 검색 MVP
   → v0.1.0
   → 4주차 사용자·관리자 기능
-  → 5주차 전체 기능 통합·리뷰어 안정화
+  → 5주차 전체 기능 통합·동일 snapshot Acceptance 환경·리뷰어 안정화
   → v0.5.0
   → 6주차 배포·clean-room·최종 정리
   → v1.0.0
@@ -177,17 +177,35 @@ Frontend actual API E2E·Browser와 경량 QA·사용성 리뷰도 통과했다.
 API 오류 UX 검증은 실행하지 않은 채 `v0.5.0` 후속으로 이관했으며 Release 1
 완료 범위에 포함하지 않는다.
 
-Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐다. `main` 릴리스
-PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
+Release 1 구현과 근거는 `2026-08-06` `develop`에 병합됐고 PR #15의 `main`
+커밋 `2b33ed7`과 `v0.1.0` tag로 발행됐다. `develop`도 같은 커밋으로
+fast-forward해 4주차의 공통 시작점으로 사용한다.
 
-## 4주차 - 사용자·관리자 핵심 기능
+## 4주차 - 공식 웹 Source·자격요건과 사용자·관리자 기반
+
+상세 실행 순서, 병렬 작업과 Gate는
+[4주차 상세 계획](../weekly_plan/week_04_v0_5_0.md)을 따른다.
+
+### 상태
+
+completed (`W4-G4_MIDPOINT_PASS`; `W4-G0`, Data 03·04와 Integration 08 기반 완료;
+Data 05 `RYP0`~`RYP9`·`RYP-G6` 완료 (광주·인천·대전·강원·대구·서울·울산·제주
+보강, 충북 open 0건 확정, accepted 109·review 1,140, Source 필드 상태 전건
+reconcile, legacy null 0과 고정 outcome·종료 이력·실패 분류 감사 통과),
+Data 06 계획 확정; 실제 DB 3,269건·Migration `20260810_0006`·지역 검색
+DB → API → Browser 확인)
 
 ### 목표
 
-`v0.5.0`의 기능 완성을 시작하되, API·DB·UI 계약을 기능별로 끝까지 연결한다.
+`v0.5.0`의 설계된 기본 기능을 모두 구현한다. 공공 API 보강, 지역·보완 공식
+Source 수집과 핵심 신청
+조건을 추가하되 추천·즐겨찾기·D-Day·내부 알림·`.ics`, 관리자와 품질 기능도
+동일한 4주차 필수 범위로 유지하고 API·DB·UI를 끝까지 연결한다.
 
 ### Backend·Frontend
 
+- 정책 상세의 필수·제외·우대·서류·확인 필요 구조와 근거
+- 핵심 신청 조건 상세 API·UI와 자격 비단정 문구
 - 조건 기반 추천, 추천 점수와 추천 이유
 - 사용자 조건 저장 경계
 - 즐겨찾기와 D-Day
@@ -197,36 +215,92 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 
 ### Admin
 
-다음 기존 Forest 순서를 유지한다.
+관리자 인증 기준선 뒤 실행·데이터·로그 기능을 병렬로 연결한다.
 
 1. Backend 04 Admin Access Control
 2. Backend 05 CollectionRun Admin API
 3. Frontend 03 CollectionRun Admin UI
+4. Integration 09 Admin Data and Log Console
+
+- 승인 Policy projection의 읽기 전용 CSV형 표·row 상세·pagination·filter
+- 구조화 파일 로그, rotation·retention·redaction과 run/request correlation
+- 관리자 로그 조회·필터·상세와 회전 archive 삭제·별도 감사 기록
 
 ### Data
 
+- 승인된 공식 HTTPS Source 한 곳의 목록·상세 제한 수집과 DB 적재
+- 광역자치단체 공식 포털의 지역 고유 정책 수집, 신청 가능성 판정과 온통청년·
+  복지로 교차 Source 중복 제외
+- Data 06은 계획·입력 기준선까지만 4주차에 유지하고 구현은 일정 재승인에
+  따라 5주차로 이동
+- 기존 API의 소득·추가 자격·제외·서류 원문 필드 재매핑
+- 자격요건 항목의 Source URL·수집 시각·원문 evidence
 - 실제 갱신 반복 실행과 실패 데이터 분리
 - 중복·수정 감지와 품질 통계
 - 관리자 화면에 필요한 안전한 품질 DTO 검토
 
 ### 주 후반 통합
 
+- 공식 HTTPS Source → Raw·정규화·DB → 핵심 신청 조건 상세 UI
+- 지역 공식 Source → 지역 고유성·중복 제외 → DB·검색·상세·Browser
+- 보완 공식 Source(Data 06)는 5주차에 중복·마감·근거 부족 제외 →
+  DB·검색·상세·Browser를 검증
 - 사용자 조건 → 검색·추천 → 이유 → 즐겨찾기·알림·캘린더
 - 관리자 인증 → 실행 이력 → 수동 실행 → 상태·오류 확인
+- 관리자 인증 → 정책 데이터 표·row 상세 → 오류 로그 검색·archive 삭제 확인
 
-### Team Leader·보고서·리뷰어·QA
+공식 웹 Source·자격요건·지역 고유 정책, 추천, 즐겨찾기·D-Day·내부 알림·`.ics`, 관리자
+실행·데이터 표·영속 로그 기본 기능은 W4-G4 필수다. Data 06만 `2026-08-14`
+일정 재승인으로 5주차에 이동하며, 다른 미구현 기능을 같은 방식으로 이월하지
+않는다.
+
+### Team Leader와 후속 역할
 
 - Team Leader는 사용자 인증·저장 경계와 관리자 권한 계약을 조정하고 중간
   E2E를 확인한다.
-- 보고서 담당은 기능별 결정, 화면과 실제 테스트 근거를 누적한다.
-- 사용성 리뷰어는 5주차에 수행할 독립 시나리오와 질문을 준비한다.
-- QA는 요구사항별 테스트 항목, 실제·경계 데이터와 지원 환경을 준비한다.
+- 보고서 담당·사용성 리뷰어·QA는 4주차에 수행하지 않는다. 5주차 추가 기능,
+  오류 수정과 UI/UX 최적화 및 담당자 자체 검증이 끝난 뒤 Integration 07
+  A2에서 독립 근거를 만들고 Release 2 Gate 전에 완료한다.
 
-## 5주차 - 전체 기능 통합, 리뷰어 테스트와 Release 2
+## 5주차 - 추가 기능·오류 수정·UI/UX 최적화와 Release 2
 
-### 기능 동결
+역할별 실행 순서와 Gate는
+[5주차 상세 계획](../weekly_plan/week_05_release_2.md)과
+[5주차 Data·Team Leader 실행 계획](../weekly_plan/week_05_data_team_leader.md),
+[Integration 10 Review Admission](integration/10_review_admission_docker_acceptance.md),
+[Deploy 01 Docker Acceptance Environment](deploy/01_docker_acceptance_environment.md)을
+따른다.
 
-승인되지 않은 새 기능 추가보다 검증과 오류 수정에 집중한다.
+### 기본 기능 기준선
+
+4주차 W4-G4 결과와 5주차 계획이 `develop`에 동기화된 `29b2dd5`를 실제
+시작점으로 사용한다. W5-G0에서 Migration `20260810_0006`·실제 DB 3,269건·
+지역정책 109건·actual API mode를 재확인해 `2026-08-17` 통과했다. 이어 Data 06
+SOP0~SOP5를 구현·검증하고 기능을 동결한 뒤 오류 수정·UI/UX 최적화와 독립
+검증을 진행한다.
+
+### 실행 순서
+
+1. W5-G0: 4주차 병합 SHA·Migration·Data 05 snapshot·actual API mode 고정
+2. Data 06 SOP0~SOP3: 후보 정제·중복 감사·Source 승인·Adapter fixture
+3. Data 06 SOP4~SOP5: 최소 4개 Source actual·DB·API·Browser·재실행
+4. W5-G1: Data 06 포함 전체 기능 동결과 실제 E2E
+5. Integration 10 RA0~RA4: 최신 review 재판정·partial 적재·새 기준선과
+   `W5-G1_REVALIDATED`
+6. Deploy 01 DEP0~DEP5: 동일 Git SHA·snapshot을 Docker로 복원하고
+   `DOCKER_ACCEPTANCE_PASS`
+7. 동일 Acceptance 환경에서 사용성 리뷰·QA → 결함 수정 → 같은 snapshot과
+   시나리오 재검증
+8. W5-G2: `v0.5.0` Release 2 판정
+
+W5-G0 이전 값은 4주차 인수 기준이지 5주차 재검증 결과가 아니다. Data 06
+적재 뒤 최종 정책 건수는 accepted·duplicate·review·closed·failed 판정에 따라
+결정하며 계획에서 미리 목표 row 수를 만들지 않는다.
+
+Deploy 01은 BE·FE 담당자, 리뷰어와 QA가 서로 다른 PC에서도 같은 Git SHA와
+실제 데이터 snapshot을 사용하기 위한 5주차 검증 환경이다. Nginx, 공개 운영
+이미지, CI image build·배포와 최종 bootstrap은 포함하지 않으며 6주차
+Production 배포 범위를 대체하지 않는다.
 
 ### 안정화
 
@@ -239,9 +313,10 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 
 ### 리뷰어 테스트
 
-팀 외 리뷰어가 검색, 상세, 추천 이유, 즐겨찾기, 알림, 캘린더와 관리자
-시나리오를 수행한다. 관찰 결과를 재현 조건·심각도·기대 결과와 함께 기록하고,
-승인한 문제를 수정한 뒤 재검증한다.
+팀 외 리뷰어가 `DOCKER_ACCEPTANCE_PASS`를 받은 동일 Git SHA·snapshot
+환경에서 검색, 상세, 추천 이유, 즐겨찾기, 알림, 캘린더와 관리자 시나리오를
+수행한다. 관찰 결과를 재현 조건·심각도·기대 결과와 함께 기록하고, 승인한
+문제를 수정한 뒤 같은 입력으로 재검증한다.
 
 ### QA 테스트
 
@@ -262,6 +337,9 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 [Release 2 완료 조건](release_roadmap.md#릴리스-완료-조건-1)을 모두 충족한
 `develop`만 `v0.5.0` 후보로 삼는다.
 
+`REVIEW_ADMISSION_PASS`, `W5-G1_REVALIDATED`와 `DOCKER_ACCEPTANCE_PASS`가
+없으면 독립 리뷰·QA 근거를 Release 2 완료 근거로 사용하지 않는다.
+
 ## 6주차 - 배포 파이프라인과 Final Release
 
 ### 기능 원칙
@@ -269,20 +347,46 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 새 사용자 기능은 원칙적으로 동결하고 배포, 재현성, 테스트와 최종 문서에
 집중한다. 릴리스 차단 버그와 보안 문제만 수정한다.
 
+5주차 Deploy 01의 Acceptance 구성을 입력으로 삼되, 6주차에는 Production
+image·Nginx·CI·초기 bootstrap·운영 복구까지 확장하고 다시 clean-room으로
+검증한다. 5주차 Gate 통과만으로 Final 배포 완료를 선언하지 않는다.
+
+6주차 최우선 작업은
+[Deploy 02 Production Data Refresh and Delivery](deploy/02_production_data_refresh_delivery.md)다.
+`W6-P0` 공개 데이터 계약부터 `W6-P5` clean-room까지 순서대로 수행하며,
+Redis broker·Celery worker·단일 Beat를 실제 수동·정기 수집 queue로 사용한다.
+정책과 `CollectionRun` 상태 원본은 PostgreSQL에 유지한다.
+
+### Production Data Refresh Critical Path
+
+```text
+W6-P0 공개 데이터·라이선스 계약
+  → W6-P1 정책 생명주기
+  → W6-P2 Celery·Redis 중앙 수집
+  → W6-P3 clone/ZIP 최초 실행
+  → W6-P4 Production Compose·CI/CD
+  → W6-P5 clean-room
+  → W6-G0_FINAL_RELEASE_PASS
+```
+
 ### 배포
 
 - Frontend·Backend Production Dockerfile
 - PostgreSQL을 포함한 Compose, Volume과 health check
 - Nginx 정적 파일과 `/api` reverse proxy
 - 환경변수·비밀 분리와 초기 migration·실데이터 bootstrap
+- 공개 normalized dataset manifest·SHA-256과 API key 없는 bootstrap
+- Redis broker·Celery collector worker·단일 Beat scheduler
+- 완전 수집에서만 미발견 inactive, 실패·부분 수집에서는 기존 데이터 유지
 - Frontend build, Backend·Data test와 이미지 build CI
 - 로그, 장애 확인, 백업·복구와 버전 tag 안내
 
 ### Clean-room 검증
 
 - 새 PC 또는 깨끗한 환경에서 clone
-- README만 보고 설정·build·migration·초기 적재·실행
+- README만 보고 clone/ZIP·설정·dataset hash·migration·초기 적재·실행
 - 컨테이너 재시작과 데이터 유지
+- Redis·worker 장애, task 재전달·중복 방지와 dataset rollback
 - 실제 검색·추천·사용자·관리자 시나리오
 - 실패 시 로그 확인과 복구
 
@@ -302,7 +406,7 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 - 사용성 리뷰어는 새 환경에서 핵심 사용자 흐름과 실행 안내의 이해도를
   확인한다.
 - QA는 설치, build, migration, bootstrap, 컨테이너 재시작, Volume, 로그,
-  권한·비밀, 실패 복구와 전체 회귀를 검증한다.
+  권한·비밀, Celery·Redis 장애, task 멱등성, 실패 복구와 전체 회귀를 검증한다.
 
 ### 완료
 
@@ -325,5 +429,6 @@ PR과 `v0.1.0` tag는 publication 절차로 남아 있다.
 - [Release와 Milestone 계획](release_roadmap.md)
 - [전체 Forest 로드맵](forest_roadmap.md)
 - [검색 계약 Gate G1 인수인계](../weekly_plan/week_03_search_contract_handoff.md)
+- [4주차 상세 실행 계획](../weekly_plan/week_04_v0_5_0.md)
 - [개발 계획 안내](README.md)
 - [문서화 정책](../../governance/documentation_policy.md)

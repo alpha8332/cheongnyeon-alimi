@@ -29,13 +29,22 @@ from collectors.snapshot import (  # noqa: E402
     collect_snapshot,
 )
 from collectors.storage import RawDocumentStore  # noqa: E402
+from collectors.supplemental_official import (  # noqa: E402
+    SUPPLEMENTAL_SOURCE_IDS,
+    SupplementalOfficialCollector,
+    supplemental_http_config_from_environment,
+)
 from collectors.youthcenter import (  # noqa: E402
     SOURCE_ID as YOUTHCENTER_SOURCE_ID,
     YouthCenterCollector,
 )
 
 
-SOURCE_IDS = (BOKJIRO_SOURCE_ID, YOUTHCENTER_SOURCE_ID)
+SOURCE_IDS = (
+    BOKJIRO_SOURCE_ID,
+    YOUTHCENTER_SOURCE_ID,
+    *tuple(sorted(SUPPLEMENTAL_SOURCE_IDS)),
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -70,16 +79,27 @@ def main(
 
     try:
         store = RawDocumentStore(args.raw_root)
-        http_client = HttpClient(config=http_config_from_environment())
+        http_config = (
+            supplemental_http_config_from_environment()
+            if args.source in SUPPLEMENTAL_SOURCE_IDS
+            else http_config_from_environment()
+        )
+        http_client = HttpClient(config=http_config)
         if args.source == YOUTHCENTER_SOURCE_ID:
             collector = YouthCenterCollector(
                 api_key=required_secret("YOUTHCENTER_API_KEY"),
                 http_client=http_client,
                 store=store,
             )
-        else:
+        elif args.source == BOKJIRO_SOURCE_ID:
             collector = BokjiroCollector(
                 api_key=required_secret("BOKJIRO_API_KEY"),
+                http_client=http_client,
+                store=store,
+            )
+        else:
+            collector = SupplementalOfficialCollector(
+                args.source,
                 http_client=http_client,
                 store=store,
             )

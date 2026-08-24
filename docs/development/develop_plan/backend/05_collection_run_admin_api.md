@@ -4,8 +4,10 @@
 
 - 번호: Backend 05
 - 담당 영역: Backend
-- 상태: draft
+- 상태: completed
 - 작업 브랜치: `feature/backend/admin-run-management`
+- 공통 선행 계약:
+  [Integration 05 v0.5.0 Contract Baseline](../integration/05_v0_5_0_contract_baseline.md)
 - 공유 Forest:
   [Backend Admin Access Control](04_admin_access_control.md),
   [Frontend CollectionRun Admin UI](../frontend/03_collection_run_admin_ui.md)
@@ -59,7 +61,7 @@
 
 ### C0 - 관리자 API·상태 계약 확정
 
-- 상태: draft
+- 상태: completed
 - 목적:
   목록·상세·수동 실행과 stale 판정의 API 계약을 정의한다.
 - 산출물:
@@ -72,7 +74,7 @@
 
 ### C1 - 실행 이력 목록·상세 구현
 
-- 상태: draft
+- 상태: completed
 - 목적:
   관리자에게 안전한 CollectionRun 조회 기능을 제공한다.
 - 산출물:
@@ -87,7 +89,7 @@
 
 ### C2 - 수동 실행과 stale 판정 구현
 
-- 상태: draft
+- 상태: completed
 - 목적:
   중복·동시 실행에 안전한 관리자 수동 실행 경계를 제공한다.
 - 산출물:
@@ -102,7 +104,7 @@
 
 ### C3 - PostgreSQL·권한·문서 통합 검증
 
-- 상태: draft
+- 상태: completed
 - 목적:
   실제 PostgreSQL과 관리자 권한 경계에서 전체 기능을 검증한다.
 - 산출물:
@@ -138,7 +140,9 @@
 
 ## 위험과 미확정 사항
 
-- 실행이 process 내부 동기 호출인지 별도 worker인지 아직 확정되지 않았다.
+- 2026-08-23 actual 결함 수정에서 단일 API process 내부 background task로
+  Collector·Raw replay·DB 반영과 같은 `run_id`의 terminal 상태를 연결했다.
+  다중 instance queue·worker와 자동 Scheduler는 여전히 별도 범위다.
 - stale 판정은 배포 topology와 heartbeat 제공 여부에 영향을 받는다.
 - 수동 실행의 idempotency key 저장 경계가 새 DB 필드를 요구할 수 있다.
 - DB 계약 변경 시 Migration과 Backend·Frontend DTO를 함께 검토해야 한다.

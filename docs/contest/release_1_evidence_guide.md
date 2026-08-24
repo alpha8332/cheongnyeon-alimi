@@ -51,6 +51,30 @@ pgpass는 `PGPASSFILE`,
 run.bat "C:\path\to\pgpass.conf"
 ```
 
+기본 `cheongnyeon_alimi` 대신 명시적으로 준비한 격리 DB를 검증할 때는 다음처럼
+DB 이름을 함께 전달한다. 실행기는 DB 이름을 연결 URL에 반영하고 pgpass의 해당
+DB 또는 `*` 항목을 사용한다.
+
+```bat
+run.bat -PgpassFile "C:\path\to\pgpass.conf" -DatabaseName cheongnyeon_alimi_test
+```
+
+DTL4-7 actual 자동 인수는 Migration·행정구역·승인 Runtime 데이터를 준비한 격리
+DB에서 Backend와 Frontend를 먼저 실행한 뒤 `frontend` 디렉터리에서 수행한다.
+세 Policy ID는 각각 golden Eligibility, accepted 대표 지역, 종료일이 있는 open
+정책의 실제 DB ID다. 관리자 시나리오가 마지막에 PIN `429`를 만들므로 이전
+rate-limit 상태가 없는 새 Backend 프로세스에서 전체 3건을 시작한다.
+
+```powershell
+$env:VITE_USE_MOCK = 'false'
+$env:VITE_API_BASE_URL = 'http://127.0.0.1:8000'
+$env:DTL47_ACTUAL = 'true'
+$env:DTL47_ELIGIBILITY_POLICY_ID = '<actual-policy-id>'
+$env:DTL47_REGIONAL_POLICY_ID = '<actual-regional-policy-id>'
+$env:DTL47_DEADLINE_POLICY_ID = '<actual-open-deadline-policy-id>'
+npm run test:e2e -- dtl4-7-actual.spec.ts
+```
+
 종료할 때는 실행 중인 터미널에서 `Ctrl+C`를 누른다. 별도 종료 BAT, Runtime
 상태 파일이나 전용 로그 파일은 만들지 않으며 브라우저 창이나 탭은 임의로
 닫지 않는다.
@@ -85,9 +109,9 @@ Gate 통과 판정이 아니다. 검증 도구의 `gate_verdict`는 DT7F 전까�
 
 DT7F의 최종 Team Leader 판정은
 [`release_1_gate_decision.json`](release_1_gate_decision.json)에 별도로
-기록한다. 현재 G4는 `pass`이며 `develop` 병합은 `2026-08-06` 커밋
-`4629a61`로 완료됐다. `main` 릴리스 PR과 `v0.1.0` tag는 저장소 publication
-절차로 남아 있다.
+기록한다. 현재 G4는 `pass`이며 Release 1은 `main` 커밋 `2b33ed7`에 병합되고
+`v0.1.0` tag로 발행됐다. 이후 `develop`도 같은 커밋으로 fast-forward해
+다음 Forest의 공통 기준점을 맞췄다.
 
 ## QA 검증
 
