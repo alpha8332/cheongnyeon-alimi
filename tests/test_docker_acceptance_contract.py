@@ -152,9 +152,11 @@ def test_compose_env_initializer_keeps_pin_plaintext_out_of_file():
     assert "ADMIN_PIN=$Pin" not in initializer
     assert "refusing overwrite" in initializer
     assert "RandomNumberGenerator" in initializer
-    assert "Import-Module Microsoft.PowerShell.Security -ErrorAction Stop" in initializer
-    assert "Set-Acl" in initializer
+    assert "[IO.File]::SetAccessControl($TemporaryPath, $Acl)" in initializer
+    assert "Set-Acl" not in initializer
     assert "check-ignore --quiet -- .env.compose" in initializer
+    assert '$GitIgnoreRules -notcontains ".env.*"' in initializer
+    assert "ZIP .gitignore does not protect" in initializer
 
 
 def test_windows_one_command_bootstrap_is_fail_closed_and_cache_aware():
