@@ -8,7 +8,7 @@
 - 계획: [Deploy 02 계획](../../develop_plan/deploy/02_production_data_refresh_delivery.md)
 - 주차 계획: [6주차 Final Release](../../weekly_plan/week_06_final_release.md)
 - 시작 SHA: `f838d4191cb5cc33c324d3e946c7a12ed8a56b1b`
-- 현재 Gate: `W6-P3_BOOTSTRAP_PASS`
+- 현재 Gate: `W6-P4_PRODUCTION_PASS`
 
 ## 목적
 
@@ -33,7 +33,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | W6-P1 | completed | 3 timestamp, soft-deactivation, 마감 기본 제외, `W6-P1_LIFECYCLE_PASS` |
 | W6-P2 | completed | Redis AOF·Celery worker·단일 Beat·actual queue, `W6-P2_QUEUE_PASS` |
 | W6-P3 | completed | actual 451건 clean Volume·offline 멱등 bootstrap, `W6-P3_BOOTSTRAP_PASS` |
-| W6-P4 | in-progress | Compose·Nginx·CI/CD·promotion/rollback 구현 및 local actual PASS, 원격 GHCR·Release 대기 |
+| W6-P4 | completed | 중앙 dataset Release·GHCR digest·SLSA provenance·clean Production smoke, `W6-P4_PRODUCTION_PASS` |
 | W6-P5 | pending | clean-room·Final Gate |
 
 ## 구현 내용
@@ -281,7 +281,8 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | Production health | PostgreSQL·Redis·Backend·worker·Beat·Frontend·Nginx healthy |
 | Nginx actual | `/health` 200, `/api` 451건 조회, SPA `/` 200 |
 | Production network | host 공개 Nginx 1개, DB·Redis host port 0개 |
-| 원격 GHCR·Release | 미실행, P4 최종 Gate blocker로 명시 |
+| 중앙 공개 수집·Release | run `32687869888`, 후보·accepted 461건, 제외 4건, 발행 457건 |
+| 원격 GHCR·Production Release | run `32688600713`, digest image 2개·SLSA provenance 2건·clean smoke·`v1.0.0` PASS |
 | P4 기본 로컬 pytest | 576 passed, 28 skipped, 241 subtests passed |
 | P4 Linux·PostgreSQL CI 동등 환경 | 602 passed, 2 skipped, 241 subtests passed |
 | P4 Frontend | 222 passed, lint·same-origin production build PASS |
@@ -305,13 +306,43 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
   `602 passed, 2 skipped, 241 subtests passed`, P4 계약 8건과 actionlint가
   모두 통과했다.
 
+### P4 중앙 dataset·Production Release 실제 발행
+
+- `public-dataset-release.yml`의 완전 수집은 후보 461건을 전부 처리하고
+  `invalid=0`, `rejected=0`, `failed=0`, complete snapshot을 기록했다.
+- 공개 연락처 경계에서 개인 휴대전화 패턴 4건을 제외해 457건을 발행했다.
+  발행 artifact의 비밀·이메일·개인 휴대전화 match count는 모두 0이다.
+- dataset version은 `public-bootstrap-20260824-f5883bb79c594f`, artifact
+  SHA-256은
+  `6457a37f109381384eb238bb84fd43dd5b60f0d37bc3a262d2c4e483a27ed1f9`다.
+- `dataset-latest`를 실제 공개 URL에서 다시 내려받아 version·457건·artifact
+  hash를 재검증했다.
+- `v1.0.0` Production workflow는 Backend·Frontend digest image를 GHCR에
+  발행하고 SLSA provenance 2건을 생성했다. 이어 공개 dataset 다운로드·검증과
+  clean Migration `0001 → 20260824_0010`, Production Compose smoke를 통과한 뒤
+  `production-release.json`을 Release에 올렸다.
+- 실제 원격 실행과 불변 값은
+  [Production 배포 문서](../../../operations/production_delivery.md#v100-실제-발행-증거)에
+  고정했다.
+
+### P4 공개 dataset activation 트러블슈팅
+
+최초 네 번의 중앙 수집 시도는 발행 전에 fail-closed로 중단됐고 불변 Release와
+`dataset-latest`를 변경하지 않았다. worker readiness의 hostname 의존과 Celery
+remote-control 응답 의존을 제거하고, 안전한 오류 유형·worker log 진단을
+보강한 뒤 GitHub Secret에는 라벨이나 줄바꿈이 아닌 복지로 key 값 한 줄만
+등록했다. 다섯 번째 실행은 57초에 완료됐고 readiness는 79초에서 4초로
+94.9% 감소했다. 전체 원인·수정·측정 근거는
+[공개 dataset 중앙 발행 activation 복구](../../../troubleshooting/integration/public_dataset_release_activation.md)에
+분리해 기록했다.
+
 ## 남은 작업
 
-1. GitHub `production-data` Environment에 `BOKJIRO_API_KEY`를 등록하고
-   GitHub-hosted 일회성 중앙 수집으로 최초 dataset Release를 발행한다.
-2. `v1.0.0` 후보 Workflow의 GHCR digest·attestation·Production smoke와
-   `production-release.json`을 대조한 뒤 `W6-P4_PRODUCTION_PASS`를 기록한다.
-3. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
+1. `W6-P5`에서 새 clone과 GitHub ZIP을 각각 독립 Volume에 올려 README만으로
+   최초 실행·재실행·복구·Browser actual을 검증한다.
+2. 공개 제외 4건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.
-4. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
+3. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
    인증·TLS 오류를 Source별 운영 지표로 계속 구분한다.
+4. clean-room blocker/high 0건과 제출 문서·SBOM·CHANGELOG 대조가 끝난 뒤에만
+   `W6-G0_FINAL_RELEASE_PASS`를 판정한다.

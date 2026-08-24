@@ -10,6 +10,11 @@
 
 ### Changed
 
+- Git `f5883bb`를 `v1.0.0`으로 발행하고 중앙 완전 수집 461건 중 개인정보
+  경계를 통과한 457건의 versioned dataset, GHCR Backend·Frontend digest,
+  SLSA provenance 2건과 clean Production Compose smoke를 하나의
+  `production-release.json`으로 고정해 `W6-P4_PRODUCTION_PASS`를 확정했다
+  ([운영 문서](docs/operations/production_delivery.md#v100-실제-발행-증거))
 - 최종 Docker Acceptance commit과 AES-256 package receipt를 고정하고 BE·FE·
   사용성·QA를 역할별 project·secret·Volume으로 분리해 4건 모두 같은 Git SHA·
   snapshot·dump·archive hash로 통과시켜 `DOCKER_ACCEPTANCE_PASS`를 확정했다
@@ -68,6 +73,12 @@
 
 ### Fixed
 
+- 중앙 공개 dataset 발행이 worker destination hostname·Celery remote-control
+  readiness와 불충분한 오류 정보 때문에 원인을 드러내지 못하던 문제를 PID·ready
+  log 기반 검증과 안전한 오류 유형·worker log 진단으로 수정했다. GitHub Secret의
+  라벨·줄바꿈 혼입을 key 값 한 줄로 바로잡아 다섯 번째 실행에서 발행을 완료했고
+  readiness를 79초에서 4초로 94.9% 줄였다
+  ([문제 해결 기록](docs/troubleshooting/integration/public_dataset_release_activation.md))
 - Docker 관리자 수동 수집이 `running` 행만 만들고 실행되지 않던 문제를 실제
   Collector·Raw replay·DB 반영·terminal 상태로 연결하고, snapshot 고정 count를
   모든 재시작에 강제해 운영 데이터가 바뀌면 기동이 막히던 restore 검증을
