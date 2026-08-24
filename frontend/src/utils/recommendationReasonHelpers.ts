@@ -36,6 +36,12 @@ export function hasRecommendationUnknownConditions(
   return item.unknown_conditions.length > 0;
 }
 
+export function hasRecommendationUnconfirmedRegion(
+  item: RecommendationItemDto,
+): boolean {
+  return item.reasons.some((reason) => reason.code === 'REGION_UNCONFIRMED');
+}
+
 export function hasQueryLevelRecommendationWarnings(
   response: RecommendationResponse | null | undefined,
 ): boolean {
@@ -52,17 +58,25 @@ export function countRecommendationUnknownItems(
   return response.items.filter(hasRecommendationUnknownConditions).length;
 }
 
+export function countRecommendationUnconfirmedRegionItems(
+  response: RecommendationResponse,
+): number {
+  return response.items.filter(hasRecommendationUnconfirmedRegion).length;
+}
+
 export function buildRecommendationQueryWarningMessage(
   response: RecommendationResponse,
 ): string {
   const unknownCount = countRecommendationUnknownItems(response);
+  const unconfirmedRegionCount = countRecommendationUnconfirmedRegionItems(response);
 
   if (unknownCount === 0) {
     return '';
   }
 
-  return (
-    `${unknownCount}건의 추천 결과에 확인되지 않은 조건 정보가 있습니다. ` +
-    '자격을 단정하지 않으며 공식 원문 확인이 필요합니다.'
-  );
+  const regionNotice = unconfirmedRegionCount > 0
+    ? `${unconfirmedRegionCount}건은 선택한 거주지와의 일치 여부가 확인되지 않았으며, 해당 지역 정책으로 확인된 결과가 아닙니다. `
+    : '';
+
+  return `${regionNotice}${unknownCount}건의 추천 결과에 확인되지 않은 조건 정보가 있습니다. 자격을 단정하지 않으며 공식 원문 확인이 필요합니다.`;
 }

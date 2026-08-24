@@ -67,6 +67,12 @@ def evaluate_policy_recommendation(
         elif region_decision.state is MatchState.MISMATCH:
             return None
         else:
+            reasons.append(
+                RecommendationReason(
+                    code="REGION_UNCONFIRMED",
+                    label="거주지 일치 미확인",
+                )
+            )
             unknown_conditions.append(
                 "지역 제한 근거가 없어 거주지 일치 여부를 확인할 수 없습니다. "
                 "공식 원문을 확인해 주세요."

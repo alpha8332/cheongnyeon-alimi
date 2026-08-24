@@ -45,4 +45,7 @@ def test_unknown_region_is_unconfirmed_candidate_not_nationwide() -> None:
     assert not any(
         reason.code == "MATCHED_REGION" for reason in item.reasons
     )
+    assert any(
+        reason.code == "REGION_UNCONFIRMED" for reason in item.reasons
+    )
     assert any("지역 제한 근거" in message for message in item.unknown_conditions)

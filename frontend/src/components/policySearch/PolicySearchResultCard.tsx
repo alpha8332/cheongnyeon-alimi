@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import PartialBadge from '@/components/policy/PartialBadge';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
+import { RegionUnconfirmedBadge } from '@/components/policySearch/PolicySearchBadges';
 import type { PolicySearchHit } from '@/types/policySearch';
 import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
 import { buildPolicySearchHitDetailPath } from '@/utils/policyDetailNavigation';
@@ -53,6 +54,7 @@ export default function PolicySearchResultCard({
         <div className="policy-card__visual-badges">
           <PolicyStatusBadge policy={hit.policy} compact />
           <PolicyCategoryBadge category={primaryCategory} compact />
+          {hit.verdicts.region === 'unknown' ? <RegionUnconfirmedBadge /> : null}
         </div>
       </div>
       <div className="policy-card__body">
