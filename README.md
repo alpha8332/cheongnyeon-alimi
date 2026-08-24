@@ -40,8 +40,9 @@ Source 주기를 설정하지 않고 웹 UI만 켠 상태에서는 신규 정책
 dataset을 버전화하여 사용자가 최초 실행·갱신 때 검증 후 로컬 PostgreSQL에
 적재한다. Windows 실행기, hash·Schema 검증, immutable cache, Migration과
 멱등 bootstrap과 Production Compose·CI promotion/rollback은 구현됐다. 실제
-공개 Release는 보호된 중앙 runner의 성공한 완전 수집과 GitHub Workflow 검증
-뒤에만 갱신한다.
+공개 Release는 보호된 `production-data` Environment의 GitHub-hosted 일회성
+PostgreSQL·Redis·Celery 수집과 완전성 검증 뒤에만 갱신한다. 사용자 PC의 DB
+접속 정보나 장기 Self-hosted Runner는 사용하지 않는다.
 실제 정책 Raw와 DB dump는 Git에 커밋하지 않는다.
 
 Windows에서 Backend와 PostgreSQL 통합 테스트를 실행하는 절차는

@@ -6,9 +6,11 @@
 하나의 Production release로 발행하고 배포하는 절차를 정의한다. 일반 사용자의
 clone/ZIP 최초 실행은 [Windows Docker 최초 실행](docker_first_run.md)을 따른다.
 
-Production은 사용자 PC마다 원본 API를 수집하지 않는다. 승인된 중앙
-`production-data` runner만 API key와 운영 DB에 접근하며, 일반 배포는 GHCR image와
-공개 dataset GitHub Release만 소비한다.
+Production은 사용자 PC마다 원본 API를 수집하지 않는다. 보호된
+`production-data` Environment의 GitHub-hosted 일회성 job만 API key에 접근하며,
+job마다 새 PostgreSQL·Redis·Celery worker에서 완전 수집과 promotion을 수행한다.
+사용자 PC DB와 장기 Self-hosted Runner는 연결하지 않는다. 일반 배포는 GHCR
+image와 공개 dataset GitHub Release만 소비한다.
 
 ## 배포 단위
 
@@ -67,12 +69,15 @@ unit·lint·build, Backend·Frontend image build와 Production 계약 회귀를 
 
 ## Dataset promotion Gate
 
-`public-dataset-release.yml`은 보호된 `production-data` environment와
-`[self-hosted, linux, x64, production-data]` runner에서만 수동 실행한다. secret
-`PRODUCTION_DATASET_DATABASE_URL`은 이 runner에만 제공한다.
+`public-dataset-release.yml`은 보호된 `production-data` Environment와
+GitHub-hosted `ubuntu-latest`에서 실행한다. Environment secret은 공개 재배포가
+허용된 Source의 `BOKJIRO_API_KEY` 하나이며 DB URL·password는 저장하지 않는다.
+Workflow 내부 PostgreSQL과 Redis는 매 실행 종료 시 폐기된다. 수동 실행과 매일
+03:17 KST schedule은 같은 `concurrency` 그룹을 사용해 중복 실행하지 않는다.
 
-입력한 CollectionRun은 공개 allowlist Source마다 정확히 하나여야 하며 다음을
-모두 만족해야 한다.
+Workflow는 Migration 뒤 격리 Celery worker를 시작하고
+`scripts/run_complete_collection.py`로 공개 allowlist Source를 queue에 넣는다.
+그 실행에서 생성된 CollectionRun은 다음을 모두 만족해야 한다.
 
 - 해당 Source의 최신 `run_type=collection`
 - terminal `status=succeeded`
@@ -85,13 +90,15 @@ unit·lint·build, Backend·Frontend image build와 Production 계약 회귀를 
 pointer를 갱신한다. 실패·`partial_failure`·더 최신 실행 존재 시 기존 latest는
 그대로 남는다.
 
-완전 Source 실행은 중앙 scheduler에서만 명시적으로 활성화한다. 공개 dataset의
-현재 Source를 기준으로 `COLLECTION_SCHEDULE_SOURCE_ID=bokjiro-central-welfare-api`,
-`COLLECTION_SCHEDULE_COMPLETE_SNAPSHOT=true`, 적절한 page size와
-`COLLECTION_SNAPSHOT_REQUEST_BUDGET`을 설정하고 API key를 secret으로 주입한다.
-worker는 bounded multi-page snapshot manifest를 만든 뒤 그 snapshot ID만 재생해
-완전성 증거를 CollectionRun에 기록한다. 관리자 UI의 일반 제한 수집은 성공해도
-`is_complete_snapshot=false`이며 promotion 입력으로 사용할 수 없다.
+공개 dataset의 현재 Source는 `bokjiro-central-welfare-api` 하나다. Worker는
+bounded multi-page snapshot manifest를 만든 뒤 그 snapshot ID만 재생해 완전성
+증거를 CollectionRun에 기록한다. 일반 관리자 제한 수집은 성공해도
+`is_complete_snapshot=false`이며 promotion 입력으로 사용할 수 없다. 신규 Source는
+라이선스 allowlist와 해당 API secret, 완전 수집 회귀를 함께 추가해야 한다.
+
+공개 저장소에 장기 Self-hosted Runner를 연결하지 않는다. PR 코드가 runner와
+secret을 탈취할 수 있는 공격 표면을 피하고, GitHub-hosted job의 폐기 가능한 DB와
+queue만 사용한다.
 
 ## Rollback
 

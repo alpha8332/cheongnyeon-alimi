@@ -260,6 +260,13 @@ def test_ci_release_and_rollback_workflows_are_fail_closed():
     assert "provenance: true" in release and "sbom: true" in release
     assert "docker compose -f compose.production.yaml up --detach --wait" in release
     assert "scripts/promote_public_dataset.py" in dataset
+    assert "runs-on: ubuntu-latest" in dataset
+    assert "environment: production-data" in dataset
+    assert "scripts/run_complete_collection.py" in dataset
+    assert "BOKJIRO_API_KEY: ${{ secrets.BOKJIRO_API_KEY }}" in dataset
+    assert "PRODUCTION_DATASET_DATABASE_URL" not in dataset
+    assert "self-hosted" not in dataset
+    assert "postgres:" in dataset and "redis:" in dataset
     assert dataset.index("--verify-manifest") < dataset.rindex("dataset-latest")
     assert "scripts/build_public_dataset_pointer.py" in rollback
     assert rollback.index("--verify-manifest") < rollback.index("--clobber")

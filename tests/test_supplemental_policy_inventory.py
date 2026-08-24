@@ -8,6 +8,7 @@ from pathlib import Path
 
 from collectors.supplemental_inventory import SupplementalInventoryValidator
 from collectors.validation import JsonSchemaValidator
+from scripts.audit_supplemental_policy_duplicates import canonical_source_bytes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -161,7 +162,9 @@ class SupplementalPolicyInventoryTests(unittest.TestCase):
     def test_actual_duplicate_audit_matches_schema_and_inventory_hash(self) -> None:
         self.assertEqual((), self.audit_schema.schema_issues(self.audit))
         self.assertEqual(
-            hashlib.sha256(INVENTORY_PATH.read_bytes()).hexdigest(),
+            hashlib.sha256(
+                canonical_source_bytes(INVENTORY_PATH.read_bytes())
+            ).hexdigest(),
             self.audit["inventory_sha256"],
         )
         self.assertEqual(

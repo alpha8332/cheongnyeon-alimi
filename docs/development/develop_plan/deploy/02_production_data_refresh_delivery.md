@@ -216,6 +216,9 @@ GitHub dataset Release가 아직 발행되지 않았으므로 현재 공식 Gate
 - 최신 Source별 성공·`is_complete_snapshot=true` CollectionRun만 허용하는
   promotion Gate와 불변 asset
   재다운로드 검증 뒤 latest pointer 갱신 순서를 구현함
+- 공개 저장소 Self-hosted Runner 대신 보호된 `production-data` Environment와
+  GitHub-hosted 일회성 PostgreSQL·Redis·Celery 완전 수집을 사용함. 사용자 PC의
+  DB credential은 GitHub에 전송하지 않음
 - tag/release Workflow를 원격에서 실행해 GHCR digest·attestation,
   `production-release.json`, dataset Release가 일치해야
   `W6-P4_PRODUCTION_PASS`로 닫음
