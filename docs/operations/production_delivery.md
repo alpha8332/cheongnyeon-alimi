@@ -93,6 +93,36 @@ Workflow는 공개 dataset을 다시 내려받아 hash·Schema를 검증하고, 
 image로 clean Migration·bootstrap·Nginx smoke를 통과한 뒤에만 Release 영수증을
 올렸다. 이 실제 원격 증거를 기준으로 `W6-P4_PRODUCTION_PASS`를 판정했다.
 
+## v1.0.1 MIT 라이선스 패치 발행 증거
+
+`2026-08-24`에 Final Gate Git
+`ea6d3fac8d012c4f4216bbb472a1446508c46049`를 annotated `v1.0.1` tag로
+발행하고
+[Production workflow](https://github.com/alpha8332/cheongnyeon-alimi/actions/runs/32693225940)를
+끝까지 통과했다. 이 패치 릴리스는 `v1.0.0`의 공개 dataset 계약을 유지하면서
+GitHub source archive에 표준 MIT `LICENSE`를 포함한다. Release 영수증은
+[production-release.json](https://github.com/alpha8332/cheongnyeon-alimi/releases/download/v1.0.1/production-release.json)이며
+asset SHA-256은
+`e89ed2f62b412c65472713506c64117f1447fbaef96a2fcf49e99af2e6683a6f`다.
+
+| 항목 | 고정 값 |
+| --- | --- |
+| Release | [`v1.0.1`](https://github.com/alpha8332/cheongnyeon-alimi/releases/tag/v1.0.1) |
+| Git SHA | `ea6d3fac8d012c4f4216bbb472a1446508c46049` |
+| Alembic head | `20260824_0010` |
+| normalized Schema | `1.2.0`, SHA-256 `e9169e69869ffd77cdc6f5d26c04fbc660c018859cea886949d98219be3a7b49` |
+| 공개 dataset | `public-bootstrap-20260824-f5883bb79c594f`, 457건 |
+| dataset manifest | SHA-256 `03bc9ce4d396c727a1277c1525d1a10a2fff7eb6d23cc08a2d31ac6113930487` |
+| latest pointer | SHA-256 `35b7d11ea440c6bc2cca0cfff20879113acfc66864f68ec6f0683b0f61820c5a` |
+| Backend image | `ghcr.io/alpha8332/cheongnyeon-alimi-backend@sha256:b5e54f0a568020f24a81570d9c750f7883678e72fee62cccd1e177a95a483878` |
+| Frontend image | `ghcr.io/alpha8332/cheongnyeon-alimi-frontend@sha256:d3aaf747127e62f2a5de933cd4955dd6e003dbed6f7abc1ca7bccd50712148fd` |
+| 공급망 증거 | [SLSA provenance 2건](https://github.com/alpha8332/cheongnyeon-alimi/attestations) |
+
+검증 시 GitHub tag source ZIP을 새 디렉터리에 내려받아 루트 `LICENSE`의
+`MIT License` 표제와 `Copyright (c) 2026 cheongnyeon-alimi contributors`를
+확인했다. 자동 생성 source archive의 hash는 배포 계약으로 사용하지 않고,
+불변 배포 식별은 위 tag Git SHA와 Release 영수증 SHA-256으로 판정한다.
+
 ## Dataset promotion Gate
 
 `public-dataset-release.yml`은 보호된 `production-data` Environment와

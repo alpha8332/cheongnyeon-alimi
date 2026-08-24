@@ -4,6 +4,7 @@
 
 - 상태: completed (`2026-08-24`, `W6-G0_FINAL_RELEASE_PASS`)
 - 대상 Release: `v1.0.0`
+- 라이선스 패치 Release: `v1.0.1` (`ea6d3fa`, MIT `LICENSE` 포함)
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
 - 최종 Gate: `W6-G0_FINAL_RELEASE_PASS`
@@ -179,6 +180,8 @@ dataset version으로 합친다.
 - [x] README·Collector·운영·복구·MIT LICENSE·SBOM attestation·CHANGELOG·제출 문서 대조
 - [x] blocker/high 결함 0건과 `W6-G0_FINAL_RELEASE_PASS`
 - [x] 사용자 승인 뒤 `main` 병합·annotated `v1.0.0` tag·GitHub Release 발행
+- [x] Final Gate SHA를 MIT `LICENSE`가 포함된 annotated `v1.0.1` tag로
+  발행하고 Production workflow·source ZIP·release receipt 재검증
 
 ## 관련 문서
 
