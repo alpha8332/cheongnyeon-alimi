@@ -147,6 +147,11 @@ Workflow는 Migration 뒤 격리 Celery worker를 시작하고
 pointer를 갱신한다. 실패·`partial_failure`·더 최신 실행 존재 시 기존 latest는
 그대로 남는다.
 
+완전 수집 직후에는 `audit_public_dataset_parity.py --require-parity`를 실행한다.
+수집 DB에서 사용자에게 노출될 수 있지만 공개 Source·content safety 경계를 통과하지
+못하는 레코드가 하나라도 있으면 dataset 작성 전에 중단한다. Source 누락과 안전성
+제외를 조용히 row 감소로 처리하지 않는다.
+
 공개 dataset 수집 Source는 `bokjiro-central-welfare-api`, `youthcenter-api`,
 `data-go-kr-incheon-youth-programs`다. Worker는 bounded multi-page snapshot
 manifest를 만든 뒤 그 snapshot ID만 재생해 완전성 증거를 CollectionRun에
