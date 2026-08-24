@@ -105,7 +105,9 @@ services:
     command:
       - sh
       - -ec
-      - alembic upgrade head
+      - >-
+        alembic upgrade head &&
+        python -m app.cli.import_regions
     networks:
       - database
     read_only: true

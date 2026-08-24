@@ -187,7 +187,9 @@ def policy_to_normalized_program(
             "database schema version"
         )
     candidate["schema_version"] = NormalizedProgram.SCHEMA_VERSION
-    schema_issues = NormalizedProgramValidator().schema_issues(candidate)
+    validator = NormalizedProgramValidator()
+    candidate["data_quality_status"] = validator.classify(candidate).value
+    schema_issues = validator.schema_issues(candidate)
     if schema_issues:
         codes = ",".join(issue.code for issue in schema_issues)
         raise PublicDatasetError(

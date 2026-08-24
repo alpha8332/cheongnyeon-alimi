@@ -115,6 +115,14 @@ class PublicBootstrapDatasetTest(unittest.TestCase):
             self.assertEqual(manifest["sources"][0]["row_count"], 1)
             self.assertTrue(dataset_path.is_file())
 
+    def test_database_quality_status_is_reclassified_for_the_release(self) -> None:
+        program = public_program()
+        program["data_quality_status"] = "partial"
+
+        record = policy_to_normalized_program(policy_from_program(program))
+
+        self.assertEqual(record["data_quality_status"], "valid")
+
     def test_verifier_rejects_modified_artifact(self) -> None:
         contract = load_source_contract(DEFAULT_CONTRACT)
         record = policy_to_normalized_program(

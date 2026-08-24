@@ -25,6 +25,7 @@ from sqlalchemy import select  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from app.core.database import create_db_engine  # noqa: E402
+from app.models.administrative_region import AdministrativeRegion  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.models.policy_search import PolicyRegionRule  # noqa: E402
 from app.repositories.policy_lifecycle import public_policy_predicates  # noqa: E402
@@ -85,6 +86,66 @@ def _unsafe_reasons(
     )
 
 
+def build_regional_coverage(
+    policies: Sequence[Policy],
+    *,
+    required_jurisdictions: Sequence[str],
+) -> dict[str, Any]:
+    required = tuple(sorted(set(required_jurisdictions)))
+    represented_counts: Counter[str] = Counter()
+    targeted_counts: Counter[str] = Counter()
+    for policy in policies:
+        regions = tuple(policy.regions or ())
+        matched = {
+            jurisdiction
+            for jurisdiction in required
+            if any(
+                region == jurisdiction
+                or region.startswith(jurisdiction + " ")
+                for region in regions
+            )
+        }
+        represented_counts.update(matched)
+        if len(matched) == 1:
+            targeted_counts.update(matched)
+
+    missing_represented = tuple(
+        jurisdiction
+        for jurisdiction in required
+        if represented_counts[jurisdiction] == 0
+    )
+    missing_targeted = tuple(
+        jurisdiction
+        for jurisdiction in required
+        if targeted_counts[jurisdiction] == 0
+    )
+    status = (
+        "not_evaluated"
+        if not required
+        else "pass"
+        if not missing_represented and not missing_targeted
+        else "blocked"
+    )
+    return {
+        "status": status,
+        "required_jurisdiction_count": len(required),
+        "represented_jurisdiction_count": (
+            len(required) - len(missing_represented)
+        ),
+        "targeted_jurisdiction_count": len(required) - len(missing_targeted),
+        "missing_represented_jurisdictions": list(missing_represented),
+        "missing_targeted_jurisdictions": list(missing_targeted),
+        "jurisdictions": [
+            {
+                "name": jurisdiction,
+                "represented_policy_count": represented_counts[jurisdiction],
+                "targeted_policy_count": targeted_counts[jurisdiction],
+            }
+            for jurisdiction in required
+        ],
+    }
+
+
 def build_report(
     policies: Sequence[Policy],
     *,
@@ -92,6 +153,7 @@ def build_report(
     contract: Mapping[str, Any],
     as_of: date,
     dataset_scope: str = "provided_policy_set",
+    required_jurisdictions: Sequence[str] = (),
 ) -> dict[str, Any]:
     allowed_source_ids = {
         str(item["source_id"]) for item in contract["included_sources"]
@@ -171,6 +233,10 @@ def build_report(
 
     user_visible_row_count = len(policies)
     parity_gap_row_count = user_visible_row_count - publishable_row_count
+    regional_coverage = build_regional_coverage(
+        policies,
+        required_jurisdictions=required_jurisdictions,
+    )
     return {
         "schema_version": "1.0.0",
         "as_of": as_of.isoformat(),
@@ -183,7 +249,12 @@ def build_report(
             "raw_payload_compared": False,
         },
         "summary": {
-            "parity_status": "pass" if parity_gap_row_count == 0 else "blocked",
+            "parity_status": (
+                "pass"
+                if parity_gap_row_count == 0
+                and regional_coverage["status"] in {"pass", "not_evaluated"}
+                else "blocked"
+            ),
             "user_visible_row_count": user_visible_row_count,
             "public_source_candidate_row_count": public_candidate_row_count,
             "publishable_row_count": publishable_row_count,
@@ -196,6 +267,7 @@ def build_report(
             "unique_title_gap_count": unique_title_gap_count,
             "parity_gap_row_count": parity_gap_row_count,
         },
+        "regional_coverage": regional_coverage,
         "sources": sources,
     }
 
@@ -209,6 +281,35 @@ def audit_database(
     engine = create_db_engine(database_url, sql_echo=False)
     try:
         with Session(engine) as session:
+            countries = list(
+                session.scalars(
+                    select(AdministrativeRegion).where(
+                        AdministrativeRegion.status == "active",
+                        AdministrativeRegion.level == "country",
+                    )
+                )
+            )
+            if len(countries) != 1:
+                raise PublicDatasetParityError(
+                    "exactly one active country region is required"
+                )
+            country = countries[0]
+            required_jurisdictions = tuple(
+                session.scalars(
+                    select(AdministrativeRegion.name)
+                    .where(
+                        AdministrativeRegion.scheme == country.scheme,
+                        AdministrativeRegion.status == "active",
+                        AdministrativeRegion.parent_code == country.code,
+                        AdministrativeRegion.level.in_(("province", "district")),
+                    )
+                    .order_by(AdministrativeRegion.code)
+                )
+            )
+            if not required_jurisdictions:
+                raise PublicDatasetParityError(
+                    "no active top-level jurisdiction was found"
+                )
             policies = list(
                 session.scalars(
                     select(Policy)
@@ -239,6 +340,7 @@ def audit_database(
                 contract=contract,
                 as_of=as_of,
                 dataset_scope="active_public_dataset_membership",
+                required_jurisdictions=required_jurisdictions,
             )
     finally:
         engine.dispose()
@@ -277,6 +379,7 @@ def main() -> int:
         )
         _atomic_write(args.output, report)
         summary = report["summary"]
+        regional_coverage = report["regional_coverage"]
         print(
             json.dumps(
                 {
@@ -284,6 +387,22 @@ def main() -> int:
                     + str(summary["parity_status"]).upper(),
                     "as_of": report["as_of"],
                     **summary,
+                    "regional_coverage_status": regional_coverage["status"],
+                    "required_jurisdiction_count": regional_coverage[
+                        "required_jurisdiction_count"
+                    ],
+                    "represented_jurisdiction_count": regional_coverage[
+                        "represented_jurisdiction_count"
+                    ],
+                    "targeted_jurisdiction_count": regional_coverage[
+                        "targeted_jurisdiction_count"
+                    ],
+                    "missing_represented_jurisdictions": regional_coverage[
+                        "missing_represented_jurisdictions"
+                    ],
+                    "missing_targeted_jurisdictions": regional_coverage[
+                        "missing_targeted_jurisdictions"
+                    ],
                     "output": str(args.output),
                 },
                 ensure_ascii=False,

@@ -16,6 +16,7 @@ for import_root in (ROOT, ROOT / "backend"):
         sys.path.insert(0, str(import_root))
 
 from app.core.database import Base  # noqa: E402
+from app.models.administrative_region import AdministrativeRegion  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
 from app.models.public_dataset import (  # noqa: E402
     PublicDatasetInstallation,
@@ -43,6 +44,7 @@ def _policy(
     title: str,
     summary: str = "공개 정책 요약",
     application_end: date | None = None,
+    regions: list[str] | None = None,
 ) -> Policy:
     program = deepcopy(json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))[0])
     program["source_id"] = source_id
@@ -51,6 +53,9 @@ def _policy(
     program["title"] = title
     program["summary"] = summary
     program["source_url"] = f"https://example.invalid/policies/{policy_id}"
+    if regions is not None:
+        program["regions"] = regions
+        program["region_text"] = ", ".join(regions)
     for collection_name in (
         "requirements",
         "exclusions",
@@ -154,6 +159,52 @@ def test_parity_report_passes_when_every_visible_record_is_publishable():
     assert report["summary"]["parity_gap_row_count"] == 0
 
 
+def test_parity_report_requires_represented_and_targeted_regional_coverage():
+    contract = load_source_contract(DEFAULT_CONTRACT)
+    report = build_report(
+        [
+            _policy(
+                1,
+                source_id="youthcenter-api",
+                title="서울 청년 정책",
+                regions=["서울특별시"],
+            ),
+            _policy(
+                2,
+                source_id="youthcenter-api",
+                title="양산 청년 정책",
+                regions=["경상남도 양산시"],
+            ),
+        ],
+        rules_by_policy={},
+        contract=contract,
+        as_of=date(2026, 8, 24),
+        required_jurisdictions=("서울특별시", "경상남도"),
+    )
+
+    assert report["summary"]["parity_status"] == "pass"
+    assert report["regional_coverage"] == {
+        "status": "pass",
+        "required_jurisdiction_count": 2,
+        "represented_jurisdiction_count": 2,
+        "targeted_jurisdiction_count": 2,
+        "missing_represented_jurisdictions": [],
+        "missing_targeted_jurisdictions": [],
+        "jurisdictions": [
+            {
+                "name": "경상남도",
+                "represented_policy_count": 1,
+                "targeted_policy_count": 1,
+            },
+            {
+                "name": "서울특별시",
+                "represented_policy_count": 1,
+                "targeted_policy_count": 1,
+            },
+        ],
+    }
+
+
 def test_database_audit_uses_active_membership_and_public_lifecycle(
     tmp_path, monkeypatch
 ):
@@ -162,23 +213,62 @@ def test_database_audit_uses_active_membership_and_public_lifecycle(
     engine = create_engine(database_url)
     Base.metadata.create_all(engine)
     with Session(engine) as session:
+        session.add(
+            AdministrativeRegion(
+                scheme="kr-bjd-test",
+                code="0000000000",
+                name="대한민국",
+                full_name="대한민국",
+                level="country",
+                status="active",
+                external_codes={},
+            )
+        )
+        session.flush()
+        session.add_all(
+            [
+                AdministrativeRegion(
+                    scheme="kr-bjd-test",
+                    code="1100000000",
+                    name="서울특별시",
+                    full_name="서울특별시",
+                    level="province",
+                    status="active",
+                    parent_code="0000000000",
+                    external_codes={},
+                ),
+                AdministrativeRegion(
+                    scheme="kr-bjd-test",
+                    code="4800000000",
+                    name="경상남도",
+                    full_name="경상남도",
+                    level="province",
+                    status="active",
+                    parent_code="0000000000",
+                    external_codes={},
+                ),
+            ]
+        )
         session.add_all(
             [
                 _policy(
                     1,
                     source_id="bokjiro-central-welfare-api",
                     title="현재 정책",
+                    regions=["서울특별시"],
                 ),
                 _policy(
                     2,
                     source_id="bokjiro-central-welfare-api",
                     title="과거 정책",
                     application_end=date(2026, 8, 23),
+                    regions=["경상남도 양산시"],
                 ),
                 _policy(
                     3,
                     source_id="regional-busan-youth-platform",
                     title="비공개 로컬 정책",
+                    regions=["경상남도 양산시"],
                 ),
             ]
         )
@@ -222,8 +312,11 @@ def test_database_audit_uses_active_membership_and_public_lifecycle(
         as_of=date(2026, 8, 24),
     )
 
-    assert report["summary"]["parity_status"] == "pass"
+    assert report["summary"]["parity_status"] == "blocked"
     assert report["summary"]["user_visible_row_count"] == 1
     assert report["comparison_contract"]["dataset_scope"] == (
         "active_public_dataset_membership"
     )
+    assert report["regional_coverage"]["missing_targeted_jurisdictions"] == [
+        "경상남도"
+    ]

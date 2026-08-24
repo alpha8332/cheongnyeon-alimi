@@ -132,7 +132,8 @@ GitHub-hosted `ubuntu-latest`에서 실행한다. Environment secret은 공개 �
 Workflow 내부 PostgreSQL과 Redis는 매 실행 종료 시 폐기된다. 수동 실행과 매일
 03:17 KST schedule은 같은 `concurrency` 그룹을 사용해 중복 실행하지 않는다.
 
-Workflow는 Migration 뒤 격리 Celery worker를 시작하고
+Workflow는 Migration 뒤 잠긴 행정구역 기준정보를 먼저 적재하고 격리 Celery
+worker를 시작한다. 이후
 `scripts/run_complete_collection.py`로 공개 allowlist Source를 queue에 넣는다.
 그 실행에서 생성된 CollectionRun은 다음을 모두 만족해야 한다.
 
@@ -144,11 +145,17 @@ Workflow는 Migration 뒤 격리 Celery worker를 시작하고
 
 조건이 맞지 않으면 artifact 작성 전 중단한다. 통과하면 Source contract와 content
 safety 검증을 거쳐 artifact를 만들고, 같은 임시 DB에 artifact를 설치·활성화한다.
+Artifact 생성 시 DB에 저장된 과거 품질 판정을 그대로 신뢰하지 않고 현재
+NormalizedProgram validator로 `data_quality_status`를 다시 분류한다.
 설치는 manifest·artifact hash와 전체 row를 단일 트랜잭션으로 검증하며, 활성
 membership에 포함된 정책만 사용자 조회 경계가 된다.
 
 활성화 직후 `audit_public_dataset_parity.py --require-parity`를 실행해 실제 사용자
 projection이 허용 Source와 content safety 경계를 모두 만족하는지 확인한다. 이
+감사는 활성 행정구역 기준의 모든 최상위 관할이 하나 이상의 정책으로 표현되고,
+각 관할을 단독 대상으로 하는 정책도 하나 이상 존재하는지 함께 검사한다. 따라서
+서울만 있거나 전국형 정책 하나에 모든 지역 이름만 붙은 artifact는 발행할 수 없다.
+또한 manifest에는 allowlist의 세 Source가 모두 1건 이상 존재해야 한다. 이
 감사가 통과해야만 불변 Release를 업로드한다. 업로드된 파일을 다시 내려받아 검증한
 뒤에만 `dataset-latest` pointer를 갱신하며, 어느 단계든 실패하거나 더 최신 수집이
 존재하면 기존 latest는 그대로 남는다. 수집 원본 중 안전 경계에서 제외된 row와
@@ -161,6 +168,11 @@ manifest를 만든 뒤 그 snapshot ID만 재생해 완전성 증거를 Collecti
 기록한다. 일반 관리자 제한 수집은 성공해도
 `is_complete_snapshot=false`이며 promotion 입력으로 사용할 수 없다. 신규 Source는
 라이선스 allowlist와 해당 API secret, 완전 수집 회귀를 함께 추가해야 한다.
+
+전국 지역정책의 주 공급원은 `youthcenter-api`다. 인천 Source는 재배포 근거가
+확인된 공공파일을 보강하는 별도 Source일 뿐, 지역 범위를 인천으로 제한하지 않는다.
+`regional-*` 웹 수집 결과는 운영 검토와 원문 연결에는 사용할 수 있어도 명시적
+재배포 허가가 없는 동안 공개 bootstrap artifact에는 포함하지 않는다.
 
 공개 저장소에 장기 Self-hosted Runner를 연결하지 않는다. PR 코드가 runner와
 secret을 탈취할 수 있는 공격 표면을 피하고, GitHub-hosted job의 폐기 가능한 DB와

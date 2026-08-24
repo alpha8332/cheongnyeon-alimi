@@ -63,6 +63,8 @@ jobs:
       - name: Migrate the ephemeral collection database
         working-directory: backend
         run: alembic upgrade head
+      - name: Import the locked administrative-region reference
+        run: python -m app.cli.import_regions
       - name: Start the isolated collection worker
         shell: bash
         run: |
