@@ -1,6 +1,38 @@
 import type { ApplicationStatus, PolicyCategory, PolicyDto } from '../types/policy.js';
 import type { RecommendationItemDto } from '../types/recommendation.js';
 
+const POLICY_CATEGORIES = new Set<PolicyCategory>([
+  'housing',
+  'finance',
+  'welfare',
+  'employment',
+  'startup',
+  'education',
+  'other',
+]);
+
+const APPLICATION_STATUSES = new Set<ApplicationStatus>([
+  'open',
+  'closed',
+  'scheduled',
+]);
+
+export function normalizeRecommendationCategory(
+  category: string,
+): PolicyCategory {
+  return POLICY_CATEGORIES.has(category as PolicyCategory)
+    ? (category as PolicyCategory)
+    : 'other';
+}
+
+function normalizeRecommendationApplicationStatus(
+  status: string,
+): ApplicationStatus | null {
+  return APPLICATION_STATUSES.has(status as ApplicationStatus)
+    ? (status as ApplicationStatus)
+    : null;
+}
+
 export function recommendationItemToPolicyDto(
   item: RecommendationItemDto,
 ): PolicyDto {
@@ -13,12 +45,15 @@ export function recommendationItemToPolicyDto(
     organization: null,
     summary: null,
     category_text: null,
-    categories: [item.category as PolicyCategory],
+    categories: [normalizeRecommendationCategory(item.category)],
     application_period_text: null,
     application_start: item.application_start,
     application_end: item.application_end,
-    application_schedule: 'fixed_period',
-    application_status: item.application_status as ApplicationStatus,
+    application_schedule:
+      item.application_start || item.application_end ? 'fixed_period' : null,
+    application_status: normalizeRecommendationApplicationStatus(
+      item.application_status,
+    ),
     region_text: null,
     regions: item.regions,
     age_min: item.min_age,
