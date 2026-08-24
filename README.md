@@ -121,7 +121,8 @@ FastAPI Backend, Celery worker·scheduler, React Frontend입니다. 자세한 �
 ## 정책 데이터와 최신성
 
 - 최초 실행에는 온통청년·복지로 API key가 필요하지 않습니다.
-- 현재 공개 bootstrap dataset은 검증된 청년정책 457건으로 구성됩니다.
+- 현재 공개 bootstrap dataset은 `dataset-latest` pointer가 가리키는 검증된
+  versioned artifact이며, 정책 수·Source별 건수·SHA-256은 manifest로 확인합니다.
 - `run_docker.bat` 재실행 시 최신 dataset pointer와 hash를 다시 검증합니다.
 - 신규·변경 정책은 중앙 완전 수집이 성공한 경우에만 새 dataset으로 승격됩니다.
 - 종료일이 지난 정책은 KST 기준 기본 검색·추천에서 즉시 제외됩니다.

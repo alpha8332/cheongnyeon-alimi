@@ -8,8 +8,10 @@
 [Collector 실행](collector.md)의 중앙 운영자 범위다.
 
 W6-P3 실행기와 W6-P5 clone·GitHub ZIP clean-room 검증을 완료했다. 기본 GitHub
-Release pointer는 활성 상태이며 API key 없이 공개 dataset 457건을 내려받는다.
-`-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만 사용한다.
+Release pointer는 활성 상태이며 API key 없이 pointer가 가리키는 검증된 공개
+dataset을 내려받는다. 현재 정책 수·Source별 건수·SHA-256은 함께 받은 manifest로
+확인한다. `-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만
+사용한다.
 
 ## 요구 환경
 
