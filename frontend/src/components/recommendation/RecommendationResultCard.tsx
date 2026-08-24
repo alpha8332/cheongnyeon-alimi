@@ -21,7 +21,10 @@ import {
   formatRecommendationReasonSummary,
   hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
-import { recommendationItemToPolicyDto } from '@/utils/recommendationPolicyMapping';
+import {
+  normalizeRecommendationCategory,
+  recommendationItemToPolicyDto,
+} from '@/utils/recommendationPolicyMapping';
 
 interface RecommendationResultCardProps {
   item: RecommendationItemDto;
@@ -58,7 +61,7 @@ export default function RecommendationResultCard({
   const showUnknown = hasRecommendationUnknownConditions(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
-  const category = item.category as PolicyCategory;
+  const category = normalizeRecommendationCategory(item.category);
 
   return (
     <article className="policy-card recommendation-result-card">

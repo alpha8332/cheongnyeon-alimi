@@ -43,6 +43,9 @@ integration/seed_api_contract_mismatch.md
 
 ## 현재 문서
 
+- [Windows clone·ZIP clean-room 복구](integration/windows_clone_zip_clean_room_recovery.md):
+  project Volume 소유권·PowerShell hash/ACL·ZIP env·partial 목록·추천 렌더 문제를
+  새 GitHub ZIP과 독립 Volume actual로 수정·재검증한 기록
 - [공개 dataset 중앙 발행 activation 복구](integration/public_dataset_release_activation.md):
   worker readiness·오류 진단·GitHub Secret 형식 문제로 네 차례 fail-closed된
   중앙 수집을 실제 Release까지 복구하고 readiness 시간을 94.9% 줄인 기록

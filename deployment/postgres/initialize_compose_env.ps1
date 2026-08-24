@@ -123,7 +123,7 @@ try {
         [Security.AccessControl.AccessControlType]::Allow
     )
     [void]$Acl.AddAccessRule($Rule)
-    Set-Acl -LiteralPath $TemporaryPath -AclObject $Acl
+    [IO.File]::SetAccessControl($TemporaryPath, $Acl)
 
     Move-Item -LiteralPath $TemporaryPath -Destination $TargetPath
 }
@@ -133,10 +133,26 @@ finally {
     }
 }
 
-git -C $RepositoryRoot check-ignore --quiet -- .env.compose
-if ($LASTEXITCODE -ne 0) {
-    Remove-Item -LiteralPath $TargetPath -Force
-    throw "DEP3_BLOCKED: generated Compose env file is not ignored by Git"
+$GitMetadataPath = Join-Path $RepositoryRoot ".git"
+if (Test-Path -LiteralPath $GitMetadataPath) {
+    git -C $RepositoryRoot check-ignore --quiet -- .env.compose
+    if ($LASTEXITCODE -ne 0) {
+        Remove-Item -LiteralPath $TargetPath -Force
+        throw "DEP3_BLOCKED: generated Compose env file is not ignored by Git"
+    }
+}
+else {
+    $GitIgnorePath = Join-Path $RepositoryRoot ".gitignore"
+    $GitIgnoreRules = if (Test-Path -LiteralPath $GitIgnorePath -PathType Leaf) {
+        @(Get-Content -LiteralPath $GitIgnorePath -Encoding UTF8)
+    }
+    else {
+        @()
+    }
+    if ($GitIgnoreRules -notcontains ".env.*") {
+        Remove-Item -LiteralPath $TargetPath -Force
+        throw "DEP3_BLOCKED: ZIP .gitignore does not protect the Compose env file"
+    }
 }
 
 Write-Output "DEP3_COMPOSE_ENV_CREATED: local secrets generated; PIN plaintext was not stored"

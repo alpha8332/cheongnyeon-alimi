@@ -12,8 +12,8 @@
 PostgreSQL 재처리, Seed·Runtime 최소 실행 이력 기반이 구현되어 있다.
 환경변수와 안전한 실행 범위는
 [Collector 실행 문서](docs/operations/collector.md)를 따른다. Source 전체 수집과
-공개 dataset의 GitHub Release·GHCR 자동 발행 Workflow는 구현됐지만 원격
-Production 실행이 성공하기 전에는 발행 완료로 안내하지 않는다.
+공개 dataset의 GitHub Release·GHCR 자동 발행 Workflow가 구현됐고 `v1.0.0`
+원격 Production과 공개 dataset 457건 발행을 완료했다.
 
 ## 데이터 수집과 최신성
 
@@ -75,9 +75,8 @@ dataset bootstrap·Backend·worker·Beat·Frontend를 함께 시작한다. API k
 .\run_docker.bat
 ```
 
-기본 GitHub Release dataset pointer는 P4 원격 promotion 성공 뒤 활성화한다.
-활성화 전에는 P0 actual artifact를 가진 개발자가 `-DatasetManifestPath`를 지정한
-검증 경로만 사용할 수 있다. 요구 환경, cache, offline 재실행과 실패 복구는
+기본 GitHub Release dataset pointer가 활성화되어 공개 dataset 457건을 자동으로
+검증·적재한다. 요구 환경, cache, offline 재실행과 실패 복구는
 [Windows Docker 최초 실행](docs/operations/docker_first_run.md)을 따른다.
 
 운영 image·Nginx Compose, GHCR release와 dataset 승격·롤백은

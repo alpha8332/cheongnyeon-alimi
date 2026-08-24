@@ -5,7 +5,8 @@
 - 번호: Deploy 02
 - 담당 영역: Team Leader - Integration·Deploy
 - 상태: in-progress
-- 현재 Gate: `W6-P3_BOOTSTRAP_PASS` (`2026-08-24`)
+- 진행: `W6-P5` clean-room completed, Final Gate pending LICENSE
+- 현재 Gate: `W6-P4_PRODUCTION_PASS` (`2026-08-24`)
 - 계획일: `2026-08-23`
 - 권장 구현 브랜치: `feature/deploy/production-data-refresh`
 - 대상 Release: `v1.0.0`
@@ -159,10 +160,9 @@ Admin API ───┘                                      ├→ Policy lifecy
 
 ### W6-P3 - clone/ZIP 최초 실행
 
-상태: completed (`2026-08-24`, `W6-P3_BOOTSTRAP_PASS`). actual 공개 dataset
-451건을 API key 없는 새 Compose project·새 PostgreSQL Volume에 `insert 451`로
-적재하고, offline 재실행에서 `unchanged 451`과 전체 service health를 확인했다.
-기본 GitHub Release pointer 발행은 W6-P4 promotion 입력으로 넘긴다.
+상태: completed (`2026-08-24`, `W6-P3_BOOTSTRAP_PASS`). 발행된 공개 dataset
+457건을 API key 없는 새 Compose project·새 PostgreSQL Volume에 `insert 457`로
+적재하고, offline 재실행에서 `unchanged 457`과 전체 service health를 확인했다.
 
 #### 목적
 
@@ -185,10 +185,9 @@ Windows 사용자가 저장소와 README만으로 공개 dataset을 검증·복�
 
 ### W6-P4 - Production Compose·CI/CD
 
-상태: in-progress (`2026-08-24`). Production Compose·Nginx·dataset promotion·
-rollback·GHCR Workflow 구현과 로컬 actual smoke는 통과했다. 원격 GHCR image와
-GitHub dataset Release가 아직 발행되지 않았으므로 현재 공식 Gate는
-`W6-P3_BOOTSTRAP_PASS`를 유지한다.
+상태: completed (`2026-08-24`, `W6-P4_PRODUCTION_PASS`). Git `f5883bb`를
+`v1.0.0`으로 발행하고 GHCR Backend·Frontend digest, SBOM·SLSA attestation,
+457건 versioned dataset과 clean Production Compose smoke를 대조했다.
 
 #### 목적
 
@@ -208,9 +207,9 @@ GitHub dataset Release가 아직 발행되지 않았으므로 현재 공식 Gate
 - Nginx `/api` reverse proxy와 정적 UI, health·로그·Volume이 검증됨
 - 실제 secret과 Raw·dump가 image·Git·CI artifact에 없음
 
-#### 현재 검증 증거와 남은 활성화
+#### 현재 검증 증거
 
-- clean project에서 Migration `20260824_0010`, 공개 dataset 451건 import,
+- clean project에서 Migration `20260824_0010`, 공개 dataset 457건 import,
   PostgreSQL·Redis·Backend·worker·Beat·Frontend·Nginx health를 확인함
 - Nginx `/health`, `/api/v1/policies`, SPA 정적 응답과 단일 host port를 확인함
 - 최신 Source별 성공·`is_complete_snapshot=true` CollectionRun만 허용하는
@@ -219,11 +218,14 @@ GitHub dataset Release가 아직 발행되지 않았으므로 현재 공식 Gate
 - 공개 저장소 Self-hosted Runner 대신 보호된 `production-data` Environment와
   GitHub-hosted 일회성 PostgreSQL·Redis·Celery 완전 수집을 사용함. 사용자 PC의
   DB credential은 GitHub에 전송하지 않음
-- tag/release Workflow를 원격에서 실행해 GHCR digest·attestation,
-  `production-release.json`, dataset Release가 일치해야
-  `W6-P4_PRODUCTION_PASS`로 닫음
+- tag/release Workflow에서 GHCR digest·attestation, `production-release.json`,
+  dataset Release가 일치함을 확인함
 
 ### W6-P5 - clean-room과 Final Gate
+
+상태: clean-room completed (`2026-08-24`, candidate `d420608`). clone과 GitHub
+ZIP을 독립 project·Volume에 실행하고 장애·복구·Browser actual을 통과했다.
+저장소에 프로젝트 코드 `LICENSE`가 없어 `W6-G0_FINAL_RELEASE_PASS`만 보류한다.
 
 #### 목적
 

@@ -73,6 +73,19 @@
 
 ### Fixed
 
+- Windows clone·GitHub ZIP clean-room에서 공개 dataset 457건이 모두 partial이라
+  정책 목록이 0건으로 보이고 첫 100건 뒤에 접근할 수 없던 문제를 수정했다.
+  사용자 UI는 partial을 명시적으로 포함하고 5페이지 전체를 탐색하며, 추천 API의
+  비표준 `기타`·`unknown` 값을 안전하게 정규화해 결과 렌더 crash를 제거했다
+  ([문제 해결 기록](docs/troubleshooting/integration/windows_clone_zip_clean_room_recovery.md))
+- Windows PowerShell clean-room에서 명시 project의 Volume 대신 기본 project를
+  검사하던 문제, 없는 Volume의 native error, `Get-FileHash`·ACL module 자동 로드,
+  `.git` 없는 ZIP의 env 보호 검사를 수정해 clone과 ZIP 양쪽 최초 실행·offline
+  재실행을 통과시켰다
+  ([문제 해결 기록](docs/troubleshooting/integration/windows_clone_zip_clean_room_recovery.md))
+- Frontend 개발 dependency high 취약점 4건을 lockfile 갱신으로 0건으로 줄이고
+  CI에 `npm audit --audit-level=high`를 추가했다
+
 - 중앙 공개 dataset 발행이 worker destination hostname·Celery remote-control
   readiness와 불충분한 오류 정보 때문에 원인을 드러내지 못하던 문제를 PID·ready
   log 기반 검증과 안전한 오류 유형·worker log 진단으로 수정했다. GitHub Secret의

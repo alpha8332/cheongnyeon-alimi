@@ -3,6 +3,7 @@
 ## 작업 정보
 
 - 상태: in-progress
+- 진행: W6-P5 clean-room PASS, Final Gate pending LICENSE
 - 작업일: `2026-08-24`
 - 담당 영역: Data, Team Leader - Integration·Deploy
 - 계획: [Deploy 02 계획](../../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -34,7 +35,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | W6-P2 | completed | Redis AOF·Celery worker·단일 Beat·actual queue, `W6-P2_QUEUE_PASS` |
 | W6-P3 | completed | actual 451건 clean Volume·offline 멱등 bootstrap, `W6-P3_BOOTSTRAP_PASS` |
 | W6-P4 | completed | 중앙 dataset Release·GHCR digest·SLSA provenance·clean Production smoke, `W6-P4_PRODUCTION_PASS` |
-| W6-P5 | pending | clean-room·Final Gate |
+| W6-P5 | clean-room completed | clone·ZIP·장애·복구·actual Browser PASS; Final Gate는 LICENSE 결정 대기 |
 
 ## 구현 내용
 
@@ -336,13 +337,41 @@ remote-control 응답 의존을 제거하고, 안전한 오류 유형·worker lo
 [공개 dataset 중앙 발행 activation 복구](../../../troubleshooting/integration/public_dataset_release_activation.md)에
 분리해 기록했다.
 
+### W6-P5 Windows clean-room actual
+
+- 최종 runtime 후보는 Git `d420608bc1cc3d782603afc1eea1f2670fcf7449`다.
+  GitHub ZIP SHA-256은
+  `5ba8cc02de44a17f56ee92c509e295ab085affd65d4e261b8785dd5ef0ea0914`이며
+  ZIP에 `.git`이 없는 조건에서 `.env.compose`를 안전하게 생성했다.
+- clone과 ZIP은 서로 다른 Compose project·port·cache·PostgreSQL·Redis·Log
+  Volume을 사용했다. 최초 Migration `0001 → 20260824_0010`, 공개 dataset
+  `inserted 457`, 6개 장기 service health를 확인했다.
+- offline 재실행은 `inserted 0`, `unchanged 457`이었고 전후 공개 행 수 457와
+  4개 named Volume이 유지됐다. hash 불일치 dataset은 DB 쓰기 전에 중단됐다.
+- Redis 재시작·worker 중지 후 durable task 전달과 terminal task 재전달에서
+  같은 CollectionRun 한 건만 성공했다. 임시 active·expired·inactive 정책의
+  공개 상세 응답은 각각 `200·404·404`였고 제거 후 기준 457건으로 돌아왔다.
+- PostgreSQL custom dump를 격리 test Volume에 복원해 원본·복원본의 정책 457건,
+  identity aggregate와 CollectionRun 수가 일치했다. immutable manifest 기반
+  rollback pointer도 실제 latest를 변경하지 않는 dry-run으로 검증했다.
+- actual Browser에서 정책 목록 `1-100 / 457`, 마지막 `401-457 / 457`, partial
+  경고, 상세 공식 원문, 북마크 폴더, 추천 457건·미확정 안내, PIN 로그인,
+  관리자 정책·CollectionRun·구조화 Log를 확인했다.
+- 최초 Browser 검증에서 목록 0건, 100건 이후 접근 불가, 추천 결과 렌더 crash를
+  발견했다. UI partial opt-in, 5페이지 pagination, 외부 category·status 정규화를
+  추가하고 새 SHA·새 ZIP·새 Volume으로 전부 재검증했다.
+- Frontend production dependency audit는 high 4건에서 0건으로 줄였고 Node 22
+  격리 환경에서 `225 tests`, lint, production build를 통과했다.
+
+상세 원인과 Windows 실행기 복구는
+[Windows clone·ZIP clean-room 복구](../../../troubleshooting/integration/windows_clone_zip_clean_room_recovery.md)에
+기록했다.
+
 ## 남은 작업
 
-1. `W6-P5`에서 새 clone과 GitHub ZIP을 각각 독립 Volume에 올려 README만으로
-   최초 실행·재실행·복구·Browser actual을 검증한다.
+1. 프로젝트 코드 라이선스를 소유자가 선택해 루트 `LICENSE`로 추가하고 README·
+   제출 문서와 대조한 뒤 `W6-G0_FINAL_RELEASE_PASS`를 판정한다.
 2. 공개 제외 4건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이
    생기기 전까지 제외 상태를 유지한다.
 3. Production에서는 `collector-egress`를 worker에만 허용하고 제공기관 장애와
    인증·TLS 오류를 Source별 운영 지표로 계속 구분한다.
-4. clean-room blocker/high 0건과 제출 문서·SBOM·CHANGELOG 대조가 끝난 뒤에만
-   `W6-G0_FINAL_RELEASE_PASS`를 판정한다.

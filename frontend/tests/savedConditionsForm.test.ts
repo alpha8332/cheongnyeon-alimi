@@ -56,6 +56,7 @@ test('toRecommendationRequestFromConditions는 RecommendationRequest 필드를 �
     region: '서울특별시',
     age: 24,
     category: 'housing',
+    include_partial: true,
   });
 });
 
