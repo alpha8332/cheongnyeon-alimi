@@ -246,6 +246,12 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
             ),
             AdministrativeRegionAlias(
                 scheme=SCHEME,
+                alias="충청남도",
+                region_code=chungnam.code,
+                kind="official_full",
+            ),
+            AdministrativeRegionAlias(
+                scheme=SCHEME,
                 alias="중구",
                 region_code=seoul_junggu.code,
                 kind="official_short",
@@ -312,6 +318,7 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
 
     service = PolicySearchEvaluationService(db)
     cheonan_query = service.resolve_region_alias("  천안 ")
+    chungnam_query = service.resolve_region_alias("충청남도")
     dongnam_query = service.resolve_region_alias("천안시 동남구")
     ambiguous_query = service.resolve_region_alias("중구")
     unmapped_query = service.resolve_region_alias("없는 지역")
@@ -329,6 +336,12 @@ def test_region_service_handles_hierarchy_ambiguity_and_exclusion(db):
     assert service.evaluate_policy_region(
         policies["ancestor"].id, cheonan_query
     ).reason is RegionDecisionReason.ANCESTOR
+    assert service.evaluate_policy_region(
+        policies["exact"].id, chungnam_query
+    ).reason is RegionDecisionReason.DESCENDANT
+    assert service.evaluate_policy_region(
+        policies["other"].id, chungnam_query
+    ).reason is RegionDecisionReason.DESCENDANT
     assert service.evaluate_policy_region(
         policies["nationwide"].id, ambiguous_query
     ).reason is RegionDecisionReason.NATIONWIDE
