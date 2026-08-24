@@ -43,6 +43,9 @@ integration/seed_api_contract_mismatch.md
 
 ## 현재 문서
 
+- [공개 dataset 중앙 발행 activation 복구](integration/public_dataset_release_activation.md):
+  worker readiness·오류 진단·GitHub Secret 형식 문제로 네 차례 fail-closed된
+  중앙 수집을 실제 Release까지 복구하고 readiness 시간을 94.9% 줄인 기록
 - [실측 기반 문제 해결·개선율 보고서](integration/measured_improvement_report.md):
   실제 전후 수치로 확인한 응답시간·데이터 오류·지역정책 판정 개선을 퍼센트와
   해석 경계로 종합한 보고서

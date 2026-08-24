@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`2026-08-24`, `W6-P3_BOOTSTRAP_PASS`)
+- 상태: in-progress (`2026-08-24`, `W6-P4_PRODUCTION_PASS`)
 - 대상 Release: `v1.0.0`
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -31,8 +31,10 @@ Production Compose·CI/CD를 완성한다. 새 PC 사용자는 API key 없이 �
   Source singleton·재전달·broker restart 회귀를 통과함
 - 공개 dataset 계약·정책 inactive·중앙 queue와 `run_docker.bat` actual clean
   bootstrap은 완료됨
-- Production Nginx·CI·dataset promotion/rollback 구현과 local actual은 통과했고,
-  원격 GHCR·dataset Release 실행이 P4 최종 Gate로 남음
+- Production Nginx·CI·dataset promotion/rollback 구현과 local actual을 통과했다.
+- 중앙 완전 수집 461건 중 개인 휴대전화 패턴 4건을 제외한 457건을 공개
+  dataset으로 발행했고, `v1.0.0` GHCR digest image·SLSA provenance·clean
+  Production Compose smoke·release manifest를 대조해 P4를 닫았다.
 
 ## 범위
 
@@ -170,11 +172,12 @@ dataset version으로 합친다.
   PostgreSQL Source lock)
 - [x] `W6-P3_BOOTSTRAP_PASS` (API key 없는 451건 clean Volume·offline 멱등·
   hash fail-closed)
-- [ ] `W6-P4_PRODUCTION_PASS`
+- [x] `W6-P4_PRODUCTION_PASS` (`v1.0.0`, Git `f5883bb`, 공개 dataset 457건,
+  GHCR Backend·Frontend digest, SLSA provenance 2건, clean Production smoke)
 - [ ] clone·ZIP 독립 clean-room과 전체 actual 회귀
 - [ ] README·Collector·운영·복구·LICENSE·SBOM·CHANGELOG·제출 문서 대조
 - [ ] blocker/high 결함 0건과 `W6-G0_FINAL_RELEASE_PASS`
-- [ ] 사용자 승인 뒤 `main`·`v1.0.0` 후보 지정
+- [x] 사용자 승인 뒤 `main` 병합·annotated `v1.0.0` tag·GitHub Release 발행
 
 ## 관련 문서
 

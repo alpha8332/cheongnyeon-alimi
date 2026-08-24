@@ -67,6 +67,32 @@ unit·lint·build, Backend·Frontend image build와 Production 계약 회귀를 
 실제 Workflow가 완료되기 전에는 로컬 image digest를 GHCR 발행 증거로 사용하지
 않으며 `W6-P4_PRODUCTION_PASS`를 부여하지 않는다.
 
+## v1.0.0 실제 발행 증거
+
+`2026-08-24`에 Git `f5883bbbc5a830f18114cb6677251389505e9ecc`를
+annotated `v1.0.0` tag로 발행하고
+[Production workflow](https://github.com/alpha8332/cheongnyeon-alimi/actions/runs/32688600713)를
+끝까지 통과했다. Release 영수증은
+[production-release.json](https://github.com/alpha8332/cheongnyeon-alimi/releases/download/v1.0.0/production-release.json)이며
+asset SHA-256은
+`2ce4eada7e50c653ac52804bab1df41f7987a5cdbbbe43385a12bfa64be6da69`다.
+
+| 항목 | 고정 값 |
+| --- | --- |
+| Release | [`v1.0.0`](https://github.com/alpha8332/cheongnyeon-alimi/releases/tag/v1.0.0) |
+| Alembic head | `20260824_0010` |
+| normalized Schema | `1.2.0`, SHA-256 `e9169e69869ffd77cdc6f5d26c04fbc660c018859cea886949d98219be3a7b49` |
+| 공개 dataset | `public-bootstrap-20260824-f5883bb79c594f`, 457건 |
+| dataset manifest | SHA-256 `03bc9ce4d396c727a1277c1525d1a10a2fff7eb6d23cc08a2d31ac6113930487` |
+| latest pointer | SHA-256 `35b7d11ea440c6bc2cca0cfff20879113acfc66864f68ec6f0683b0f61820c5a` |
+| Backend image | `ghcr.io/alpha8332/cheongnyeon-alimi-backend@sha256:96d4eb098dbac89570b691b8836dbe8d4134823f73aab527e8bf7f4ef9852898` |
+| Frontend image | `ghcr.io/alpha8332/cheongnyeon-alimi-frontend@sha256:ea721d7b0990d5a5da43d33e461d3d69bd2744b415b45785d4be4bd51b3f353b` |
+| 공급망 증거 | [SLSA provenance 2건](https://github.com/alpha8332/cheongnyeon-alimi/attestations) |
+
+Workflow는 공개 dataset을 다시 내려받아 hash·Schema를 검증하고, 위 digest
+image로 clean Migration·bootstrap·Nginx smoke를 통과한 뒤에만 Release 영수증을
+올렸다. 이 실제 원격 증거를 기준으로 `W6-P4_PRODUCTION_PASS`를 판정했다.
+
 ## Dataset promotion Gate
 
 `public-dataset-release.yml`은 보호된 `production-data` Environment와
