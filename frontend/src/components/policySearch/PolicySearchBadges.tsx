@@ -60,3 +60,14 @@ export function UnknownVerdictBadge() {
     </span>
   );
 }
+
+export function RegionUnconfirmedBadge() {
+  return (
+    <span
+      className="policy-search-badge policy-search-badge--unknown"
+      title="출처 데이터에 지역 정보가 없어 선택한 지역과의 일치 여부를 확인할 수 없습니다."
+    >
+      지역 일치 미확인
+    </span>
+  );
+}

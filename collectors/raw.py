@@ -40,6 +40,7 @@ class RawFormat(str, Enum):
     JSON = "json"
     XML = "xml"
     HTML = "html"
+    CSV = "csv"
 
 
 @dataclass(frozen=True, slots=True)

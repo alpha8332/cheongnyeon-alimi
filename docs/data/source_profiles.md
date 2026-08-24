@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 기준선
-- 마지막 공식 자료 확인: 2026-08-17
+- 마지막 공식 자료 확인: 2026-08-24
 - 마지막 실호출 확인: 2026-08-17 (Data 06 제한 actual, Raw Git 미저장)
 - 범위: 온통청년·복지로 API, 천안청년센터·지역 Source와 Data 06 승인 Source actual
 
@@ -15,7 +15,7 @@
 
 | Source ID | 표시 이름 | 공식 요청 계약 | 실응답 |
 | --- | --- | --- | --- |
-| `youthcenter-api` | 온통청년 청년정책 API | 로컬 제공 계약 채택 | JSON 전체 목록 2,698건 Raw 확인 |
+| `youthcenter-api` | 온통청년 청년정책 API | 공식 API 이용·정규화 재배포 승인 | JSON 전체 목록 2,698건 Raw 확인 |
 | `bokjiro-central-welfare-api` | 복지로 중앙부처 복지서비스 API | 확인 | XML 전체 목록 461건·상세 5건 Raw 확인 |
 | `cheonan-youthcenter-web` | 천안청년센터 이음 공지 | W4-G0 승인 | 공지 674 HTML Raw → PostgreSQL·API 확인 |
 | `regional-gyeongbuk-youth-platform` | 경북청년포털 청년e끌림 | RYP1 승인 | 목록 243건·상세 표본 1건 제한 확인 |

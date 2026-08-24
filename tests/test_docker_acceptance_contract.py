@@ -118,7 +118,10 @@ def test_restore_bootstraps_snapshot_schema_before_transactional_data_load():
         "python",
         "/opt/acceptance/verify_restored_database.py",
     ]
-    assert COMPOSE["services"]["migrate"]["command"][-1] == "alembic upgrade head"
+    migrate_command = COMPOSE["services"]["migrate"]["command"][-1]
+    assert migrate_command.index("alembic upgrade head") < migrate_command.index(
+        "python -m app.cli.import_regions"
+    )
     assert "--data-only" in restore_script
     assert "--disable-triggers" in restore_script
     assert "--single-transaction" in restore_script

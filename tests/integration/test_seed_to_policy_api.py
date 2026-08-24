@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +24,10 @@ from app.api.v1.endpoints.policies import get_policy_service  # noqa: E402
 from app.core.database import create_db_engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.policy import Policy  # noqa: E402
+from app.models.public_dataset import (  # noqa: E402
+    PublicDatasetInstallation,
+    PublicDatasetMembership,
+)
 from app.services.seed_importer import import_programs  # noqa: E402
 from collectors.normalized import NormalizedProgram  # noqa: E402
 
@@ -108,6 +112,33 @@ def _assert_public_program(
     _parse_datetime(response_item["updated_at"])
 
 
+def _publish_test_dataset(db) -> None:
+    policies = tuple(db.scalars(sa.select(Policy)).all())
+    version = "public-bootstrap-20260824-abcde34"
+    db.add(
+        PublicDatasetInstallation(
+            dataset_version=version,
+            manifest_sha256="a" * 64,
+            artifact_sha256="b" * 64,
+            expected_policy_count=len(policies),
+            status="active",
+            activated_at=datetime.now(timezone.utc),
+        )
+    )
+    db.flush()
+    db.add_all(
+        PublicDatasetMembership(
+            dataset_version=version,
+            source_id=policy.source_id,
+            external_id=policy.external_id,
+            policy_id=policy.id,
+        )
+        for policy in policies
+        if policy.external_id is not None
+    )
+    db.commit()
+
+
 def test_canonical_seed_postgresql_policy_api_contract():
     database_url = _require_test_database_url()
     config = _migration_config(database_url)
@@ -129,6 +160,7 @@ def test_canonical_seed_postgresql_policy_api_contract():
                     sa.select(Policy).order_by(Policy.id)
                 )
             }
+            _publish_test_dataset(db)
 
         assert imported.committed is True
         assert imported.inserted == 4

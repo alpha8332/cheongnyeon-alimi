@@ -7,6 +7,9 @@ from sqlalchemy import ColumnElement, or_, update
 from sqlalchemy.orm import Session
 
 from app.models.policy import Policy
+from app.repositories.public_dataset import (
+    active_public_dataset_membership_predicate,
+)
 
 
 def public_policy_predicates(
@@ -56,6 +59,7 @@ def mark_missing_policies_inactive(
     statement = update(Policy).where(
         Policy.source_id == source_id,
         Policy.inactive_at.is_(None),
+        ~active_public_dataset_membership_predicate(Policy.id),
     )
     if normalized_ids:
         statement = statement.where(

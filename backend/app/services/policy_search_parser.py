@@ -163,6 +163,18 @@ QUERY_FILLER_TERMS = frozenset(
     }
 )
 
+REGION_ADMINISTRATIVE_SUFFIXES = (
+    "특별자치시",
+    "특별자치도",
+    "광역시",
+    "특별시",
+    "자치구",
+    "시",
+    "군",
+    "구",
+    "도",
+)
+
 
 def parse_search_query(
     *,
@@ -434,6 +446,24 @@ def _extract_region_from_query(query_text: str, db: Session | None = None) -> st
             for name_str in sorted(names, key=len, reverse=True):
                 if len(name_str) >= 2 and name_str in query_text:
                     return name_str
+
+            # 사용자는 보통 '양산시'보다 '양산', '김해시'보다 '김해'처럼
+            # 행정구역 접미사를 생략한다. active 지역명에서 안전하게 파생한
+            # 2자 이상 shorthand도 후보로 사용하고, 실제 해석 단계에서
+            # 중복 지역은 ambiguous로 돌려보낸다.
+            active_names = db.scalars(
+                select(AdministrativeRegion.name).where(
+                    AdministrativeRegion.status == "active"
+                )
+            ).all()
+            shorthand_names = {
+                shorthand
+                for name in active_names
+                if (shorthand := _strip_region_suffix(name)) is not None
+            }
+            for shorthand in sorted(shorthand_names, key=len, reverse=True):
+                if shorthand in query_text:
+                    return shorthand
         except Exception:
             pass
 
@@ -466,9 +496,48 @@ def _resolve_region_name(region_name: str, db: Session | None) -> tuple[str, lis
                 cands = [c.full_name for c in res.candidates]
                 return "ambiguous", cands
             else:
+                suffixless_candidates = _resolve_suffixless_region_candidates(
+                    name_clean,
+                    db,
+                )
+                if len(suffixless_candidates) == 1:
+                    return "resolved", suffixless_candidates
+                if len(suffixless_candidates) > 1:
+                    return "ambiguous", suffixless_candidates
                 return "unmapped", []
         except Exception:
             pass
 
     # 기본 키워드 맵에 없고 ambiguous에도 없는 일반 문자열의 경우 unmapped 판정
     return "unmapped", []
+
+
+def _strip_region_suffix(name: str) -> str | None:
+    normalized = name.strip()
+    for suffix in REGION_ADMINISTRATIVE_SUFFIXES:
+        if normalized.endswith(suffix):
+            shorthand = normalized[: -len(suffix)].strip()
+            return shorthand if len(shorthand) >= 2 else None
+    return None
+
+
+def _resolve_suffixless_region_candidates(
+    shorthand: str,
+    db: Session,
+) -> list[str]:
+    from sqlalchemy import select
+
+    from app.models.administrative_region import AdministrativeRegion
+
+    active_regions = db.scalars(
+        select(AdministrativeRegion).where(
+            AdministrativeRegion.status == "active"
+        )
+    ).all()
+    return sorted(
+        {
+            region.full_name
+            for region in active_regions
+            if _strip_region_suffix(region.name) == shorthand
+        }
+    )

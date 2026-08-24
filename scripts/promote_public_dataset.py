@@ -35,6 +35,26 @@ class DatasetPromotionError(ValueError):
     """Raised when collection evidence cannot authorize a release."""
 
 
+def assert_published_source_coverage(
+    manifest: dict[str, object], *, source_ids: set[str]
+) -> None:
+    sources = manifest.get("sources")
+    if not isinstance(sources, list):
+        raise DatasetPromotionError("generated manifest has no Source coverage")
+    published = {
+        str(item.get("source_id"))
+        for item in sources
+        if isinstance(item, dict) and int(item.get("row_count", 0)) > 0
+    }
+    missing = sorted(source_ids - published)
+    unexpected = sorted(published - source_ids)
+    if missing or unexpected:
+        raise DatasetPromotionError(
+            "published Source coverage mismatch: "
+            f"missing={missing}, unexpected={unexpected}"
+        )
+
+
 def assert_promotable_runs(
     session: Session, *, source_ids: set[str], run_ids: list[UUID]
 ) -> dict[str, str]:
@@ -120,6 +140,7 @@ def main() -> int:
             git_sha=args.git_sha,
             previous_dataset_version=args.previous_dataset_version,
         )
+        assert_published_source_coverage(manifest, source_ids=source_ids)
         verify_release(manifest_path, contract_path=args.source_contract)
         pointer = build_pointer(
             manifest_path=manifest_path, manifest_url=args.manifest_url

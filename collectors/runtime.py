@@ -23,6 +23,10 @@ from collectors.gyeongbuk_youth import (
     decide_gyeongbuk_regional_policy,
     map_gyeongbuk_duplicate_evidence,
 )
+from collectors.incheon_youth_programs import (
+    SOURCE_ID as INCHEON_YOUTH_PROGRAMS_SOURCE_ID,
+    IncheonYouthProgramsExtractor,
+)
 from collectors.regional_pilot import (
     BUSAN_SOURCE_ID,
     SEOUL_SOURCE_ID,
@@ -59,6 +63,7 @@ from collectors.youthcenter import SOURCE_ID as YOUTHCENTER_SOURCE_ID
 
 SUPPORTED_SOURCE_IDS = (
     BOKJIRO_SOURCE_ID,
+    INCHEON_YOUTH_PROGRAMS_SOURCE_ID,
     CHEONAN_YOUTHCENTER_SOURCE_ID,
     GYEONGBUK_YOUTH_SOURCE_ID,
     BUSAN_SOURCE_ID,
@@ -79,6 +84,7 @@ REGIONAL_RUNTIME_SOURCE_IDS = frozenset(
 
 _EXTRACTOR_TYPES = {
     BOKJIRO_SOURCE_ID: BokjiroExtractor,
+    INCHEON_YOUTH_PROGRAMS_SOURCE_ID: IncheonYouthProgramsExtractor,
     CHEONAN_YOUTHCENTER_SOURCE_ID: CheonanYouthCenterExtractor,
     GYEONGBUK_YOUTH_SOURCE_ID: GyeongbukYouthExtractor,
     BUSAN_SOURCE_ID: BusanYouthExtractor,

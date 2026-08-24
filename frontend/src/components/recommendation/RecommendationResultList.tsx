@@ -1,4 +1,5 @@
 import RecommendationResultCard from '@/components/recommendation/RecommendationResultCard';
+import RecommendationUnconfirmedBanner from '@/components/recommendation/RecommendationUnconfirmedBanner';
 import type { RecommendationResponse } from '@/types/recommendation';
 import { RECOMMENDATION_DEFAULT_DISCLAIMER } from '@/types/recommendation';
 
@@ -26,6 +27,8 @@ export default function RecommendationResultList({
       <p role="note" className="policy-eligibility-notice recommendation-result-list__disclaimer">
         {disclaimer}
       </p>
+
+      <RecommendationUnconfirmedBanner response={response} />
 
       <div className="cards-grid">
         {response.items.map((item) => (

@@ -86,7 +86,8 @@
       "enum": [
         "json",
         "xml",
-        "html"
+        "html",
+        "csv"
       ]
     },
     "raw_payload_base64": {

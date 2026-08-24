@@ -76,8 +76,9 @@ async def test_unhandled_exception_log_does_not_expose_details():
     assert secret_url not in repr(critical.call_args)
 
 
-def test_repository_uses_exact_array_membership(db):
+def test_repository_uses_exact_array_membership(db, activate_all_policies):
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
     repository = PolicyRepository(db)
 
     finance = repository.list(
@@ -124,8 +125,9 @@ def test_postgresql_array_membership_compiles_to_jsonb_contains():
     assert " LIKE " not in sql
 
 
-def test_list_api_filters_and_paginates(client, db):
+def test_list_api_filters_and_paginates(client, db, activate_all_policies):
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
 
     first_page = client.get(
         "/api/v1/policies",
@@ -173,8 +175,10 @@ def test_list_api_filters_and_paginates(client, db):
 def test_partial_detail_requires_opt_in_and_invalid_is_never_public(
     client,
     db,
+    activate_all_policies,
 ):
     import_seed_data(db, SEED_FILE_PATH)
+    activate_all_policies()
     partial = db.scalar(
         select(Policy).where(
             Policy.data_quality_status == "partial"

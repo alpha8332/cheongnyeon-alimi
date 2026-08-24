@@ -7,6 +7,10 @@ from alembic.script import ScriptDirectory
 
 from app.models.collection_run import CollectionRun
 from app.models.policy import Policy
+from app.models.public_dataset import (
+    PublicDatasetInstallation,
+    PublicDatasetMembership,
+)
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +23,8 @@ ELIGIBILITY_REVISION = "20260810_0006"
 LIFECYCLE_REVISION = "20260824_0007"
 QUEUE_REVISION = "20260824_0008"
 ACTIVE_SOURCE_REVISION = "20260824_0009"
-HEAD_REVISION = "20260824_0010"
+COMPLETENESS_REVISION = "20260824_0010"
+HEAD_REVISION = "20260824_0011"
 
 
 def alembic_config() -> Config:
@@ -57,6 +62,10 @@ def test_collection_quality_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == COMPLETENESS_REVISION
+    )
+    assert (
+        scripts.get_revision(COMPLETENESS_REVISION).down_revision
         == ACTIVE_SOURCE_REVISION
     )
     assert (
@@ -186,10 +195,30 @@ def test_upgrade_sql_matches_collection_run_contract():
             assert f"\n    {column.name} " in sql
 
 
+def test_upgrade_sql_matches_public_dataset_projection_contract():
+    sql = render_upgrade_sql()
+
+    assert "CREATE TABLE public_dataset_installations" in sql
+    assert "CREATE TABLE public_dataset_memberships" in sql
+    assert "CREATE TYPE public_dataset_installation_status AS ENUM" in sql
+    assert "uq_public_dataset_installations_one_active" in sql
+    assert "status = 'active'" in sql
+    assert "ck_public_dataset_installations_manifest_sha256_length" in sql
+    assert "ck_public_dataset_installations_artifact_sha256_length" in sql
+    assert "FOREIGN KEY(policy_id) REFERENCES policies (id) ON DELETE RESTRICT" in sql
+
+    for model in (PublicDatasetInstallation, PublicDatasetMembership):
+        for column in model.__table__.columns:
+            assert f"\n    {column.name} " in sql
+
+
 def test_downgrade_sql_removes_table_indexes_and_enum_types():
     sql = render_downgrade_sql()
 
     assert "DROP COLUMN rejected_count" in sql
+    assert "DROP TABLE public_dataset_memberships" in sql
+    assert "DROP TABLE public_dataset_installations" in sql
+    assert "DROP TYPE public_dataset_installation_status" in sql
     assert "DROP COLUMN duplicate_count" in sql
     assert "DROP COLUMN is_complete_snapshot" in sql
     assert "DROP COLUMN eligibility_summary" in sql

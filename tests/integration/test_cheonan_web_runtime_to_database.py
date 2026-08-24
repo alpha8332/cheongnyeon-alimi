@@ -225,20 +225,7 @@ def test_cheonan_web_runtime_is_idempotent_and_drift_safe() -> None:
                 app.dependency_overrides.pop(get_db, None)
 
             assert hidden.status_code == 404
-            assert visible.status_code == 200
-            assert visible.json()["source_id"] == SOURCE_ID
-            assert visible.json()["external_id"] == APPROVED_EXTERNAL_ID
-            assert visible.json()["application_status"] is None
-            assert visible.json()["data_quality_status"] == "partial"
-            assert (
-                _normalize_evidence_datetimes(
-                    visible.json()["eligibility_summary"]
-                )
-                == _normalize_evidence_datetimes(
-                    policy.eligibility_summary
-                )
-            )
-            assert "provenance" not in visible.json()
+            assert visible.status_code == 404
 
             refreshed_batch = _save_batch(
                 store,

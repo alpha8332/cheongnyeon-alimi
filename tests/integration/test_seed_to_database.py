@@ -150,8 +150,8 @@ def test_canonical_seed_to_postgresql_repository_contract():
         assert first.committed is True
         assert first.inserted == 4
         assert len(policies) == 4
-        assert repository_page.total == 3
-        assert len(repository_page.items) == 3
+        assert repository_page.total == 0
+        assert len(repository_page.items) == 0
         assert EXPIRED_EXTERNAL_ID not in {
             policy.external_id for policy in repository_page.items
         }

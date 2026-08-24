@@ -19,6 +19,7 @@ import {
 import {
   formatRecommendationAge,
   formatRecommendationReasonSummary,
+  hasRecommendationUnconfirmedRegion,
   hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
 import {
@@ -59,6 +60,7 @@ export default function RecommendationResultCard({
   const policy = recommendationItemToPolicyDto(item);
   const showPartial = item.data_quality_status === 'partial';
   const showUnknown = hasRecommendationUnknownConditions(item);
+  const showUnconfirmedRegion = hasRecommendationUnconfirmedRegion(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
   const category = normalizeRecommendationCategory(item.category);
@@ -77,6 +79,14 @@ export default function RecommendationResultCard({
           {showPartial ? (
             <span className="badge-partial" title={PARTIAL_QUALITY_BADGE_HELP}>
               {PARTIAL_QUALITY_BADGE_LABEL}
+            </span>
+          ) : null}
+          {showUnconfirmedRegion ? (
+            <span
+              className="recommendation-region-unconfirmed-badge"
+              title="출처 데이터에 지역 정보가 없어 선택한 거주지와의 일치 여부를 확인할 수 없습니다."
+            >
+              지역 일치 미확인
             </span>
           ) : null}
           <FavoriteToggleButton policyId={item.id} />

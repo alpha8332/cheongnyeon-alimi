@@ -20,6 +20,10 @@ from app.core.database import (
 )
 from app.main import app
 from app.models.policy import Policy
+from app.models.public_dataset import (
+    PublicDatasetInstallation,
+    PublicDatasetMembership,
+)
 from app.services.seed_importer import import_programs
 from collectors.normalized import NormalizedProgram
 
@@ -81,6 +85,32 @@ def current_storage_program(program: dict[str, Any]) -> dict[str, Any]:
     return selected
 
 
+def publish_test_dataset(db, policies: list[Policy]) -> None:
+    version = "public-bootstrap-20260824-abcde01"
+    db.add(
+        PublicDatasetInstallation(
+            dataset_version=version,
+            manifest_sha256="a" * 64,
+            artifact_sha256="b" * 64,
+            expected_policy_count=len(policies),
+            status="active",
+            activated_at=datetime.now(timezone.utc),
+        )
+    )
+    db.flush()
+    db.add_all(
+        PublicDatasetMembership(
+            dataset_version=version,
+            source_id=policy.source_id,
+            external_id=policy.external_id,
+            policy_id=policy.id,
+        )
+        for policy in policies
+        if policy.external_id is not None
+    )
+    db.commit()
+
+
 def test_postgresql_seed_repository_api_end_to_end():
     database_url = require_test_database_url()
     config = migration_config(database_url)
@@ -89,6 +119,7 @@ def test_postgresql_seed_repository_api_end_to_end():
         autocommit=False,
         autoflush=False,
         bind=db_engine,
+        expire_on_commit=False,
     )
     programs = json.loads(SEED_PATH.read_text(encoding="utf-8"))
 
@@ -111,6 +142,7 @@ def test_postgresql_seed_repository_api_end_to_end():
                 (policy.source_id, policy.external_id): policy.updated_at
                 for policy in policies
             }
+            publish_test_dataset(db, policies)
 
         assert first.inserted == 4
         assert first.committed is True

@@ -5,11 +5,12 @@ from app.models.policy import Policy
 from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
 
 
-def test_search_api_basic_200_ok(client, db):
+def test_search_api_basic_200_ok(client, db, activate_all_policies):
     now = datetime.now(timezone.utc)
     # DB 테스트 데이터 준비
     p = Policy(
         source_id="test_search_1",
+        external_id="SEARCH-1",
         source_name="온통청년",
         title="서울 청년 월세 특별지원",
         summary="서울 청년 월세 지원금",
@@ -63,6 +64,7 @@ def test_search_api_basic_200_ok(client, db):
     )
     db.add_all([reg, alias, rule, doc])
     db.commit()
+    activate_all_policies()
 
     # GET /api/v1/policies/search 요청
     response = client.get("/api/v1/policies/search?q=서울 24세 월세 모집중")
