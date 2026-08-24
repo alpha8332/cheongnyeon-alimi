@@ -5,6 +5,7 @@ import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
 import PolicyFilters from '@/components/policy/PolicyFilters';
+import SearchPagination from '@/components/policySearch/SearchPagination';
 import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
 import type { PolicyDto } from '@/types/policy';
 import {
@@ -19,6 +20,7 @@ const EMPTY_POLICIES: PolicyDto[] = [];
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const urlSearch = searchParams.get('search') ?? '';
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<ProgramFilterState>(() => ({
     ...EMPTY_PROGRAM_FILTERS,
     search: urlSearch,
@@ -29,8 +31,10 @@ export default function SearchPage() {
     isError,
     refetch,
   } = usePoliciesQuery({
-    page: 1,
+    page,
     limit: 100,
+    category: filters.category || undefined,
+    region: filters.region || undefined,
     include_partial: filters.includePartial,
   });
   const policies = policyList?.items ?? EMPTY_POLICIES;
@@ -65,7 +69,10 @@ export default function SearchPage() {
       <PolicyFilters
         filters={effectiveFilters}
         regionOptions={regionOptions}
-        onChange={setFilters}
+        onChange={(nextFilters) => {
+          setFilters(nextFilters);
+          setPage(1);
+        }}
       />
 
       {effectiveFilters.search ? (
@@ -93,11 +100,20 @@ export default function SearchPage() {
       ) : null}
 
       {!isLoading && !isError && filteredPolicies.length > 0 ? (
-        <div className="cards-grid">
-          {filteredPolicies.map((policy) => (
-            <PolicyCard key={policy.id} policy={policy} />
-          ))}
-        </div>
+        <>
+          <div className="cards-grid">
+            {filteredPolicies.map((policy) => (
+              <PolicyCard key={policy.id} policy={policy} />
+            ))}
+          </div>
+          <SearchPagination
+            total={policyList?.total ?? 0}
+            page={page}
+            limit={policyList?.limit ?? 100}
+            onPageChange={setPage}
+            disabled={isLoading}
+          />
+        </>
       ) : null}
     </div>
   );
