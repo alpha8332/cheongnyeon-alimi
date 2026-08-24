@@ -436,8 +436,11 @@ if (-not (Test-Path -LiteralPath $ComposeEnvFile -PathType Leaf)) {
     else {
         $ComposeProjectName
     }
-    & docker volume inspect "$OwnershipProjectName`_acceptance-db" 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
+    $ExistingVolumeNames = @(& docker volume ls --quiet)
+    if ($LASTEXITCODE -ne 0) {
+        Stop-WithCode "failed to inspect existing Docker Volumes"
+    }
+    if ($ExistingVolumeNames -contains "$OwnershipProjectName`_acceptance-db") {
         Stop-WithCode (
             "an existing database Volume for Compose project " +
             "'$OwnershipProjectName' was found without its env file"
