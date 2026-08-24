@@ -79,12 +79,16 @@ class PublicBootstrapDatasetTest(unittest.TestCase):
             [item["source_id"] for item in contract["included_sources"]],
             [
                 "bokjiro-central-welfare-api",
+                "youthcenter-api",
                 "data-go-kr-incheon-youth-programs",
             ],
         )
         self.assertEqual(
             frozenset(contract["normalized_program"]["allowed_fields"]),
             NormalizedProgram.FIELD_NAMES,
+        )
+        self.assertIn(
+            "apikeynm", contract["content_rules"]["forbidden_query_keys"]
         )
 
     def test_release_round_trip_has_stable_hash_and_manifest(self) -> None:

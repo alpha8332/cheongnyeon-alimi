@@ -45,6 +45,7 @@ jobs:
       COLLECTION_QUEUE_NAME: collection
       COLLECTION_SNAPSHOT_REQUEST_BUDGET: "12"
       BOKJIRO_API_KEY: ${{ secrets.BOKJIRO_API_KEY }}
+      YOUTHCENTER_API_KEY: ${{ secrets.YOUTHCENTER_API_KEY }}
       PYTHONPATH: backend:.
     steps:
       - uses: actions/checkout@v7
@@ -56,7 +57,9 @@ jobs:
       - run: python -m pip install --require-hashes --no-deps -r backend/requirements.lock
       - name: Refuse a missing source secret
         shell: bash
-        run: test -n "$BOKJIRO_API_KEY"
+        run: |
+          test -n "$BOKJIRO_API_KEY"
+          test -n "$YOUTHCENTER_API_KEY"
       - name: Migrate the ephemeral collection database
         working-directory: backend
         run: alembic upgrade head
@@ -89,6 +92,7 @@ jobs:
         run: |
           for source_id in \
             bokjiro-central-welfare-api \
+            youthcenter-api \
             data-go-kr-incheon-youth-programs; do
             if ! collection_json=$(python scripts/run_complete_collection.py \
                 --source-id "$source_id" \
@@ -101,6 +105,8 @@ jobs:
               <<<"$collection_json")
             if [ "$source_id" = "bokjiro-central-welfare-api" ]; then
               echo "bokjiro_run_id=$run_id" >> "$GITHUB_OUTPUT"
+            elif [ "$source_id" = "youthcenter-api" ]; then
+              echo "youthcenter_run_id=$run_id" >> "$GITHUB_OUTPUT"
             else
               echo "incheon_run_id=$run_id" >> "$GITHUB_OUTPUT"
             fi
@@ -148,6 +154,7 @@ jobs:
         env:
           DATASET_VERSION: ${{ steps.version.outputs.dataset_version }}
           BOKJIRO_COLLECTION_RUN_ID: ${{ steps.collection.outputs.bokjiro_run_id }}
+          YOUTHCENTER_COLLECTION_RUN_ID: ${{ steps.collection.outputs.youthcenter_run_id }}
           INCHEON_COLLECTION_RUN_ID: ${{ steps.collection.outputs.incheon_run_id }}
           PREVIOUS_VERSION: ${{ steps.previous.outputs.version }}
         run: |
@@ -158,6 +165,7 @@ jobs:
           python scripts/promote_public_dataset.py \
             --database-url "$DATABASE_URL" \
             --collection-run-id "$BOKJIRO_COLLECTION_RUN_ID" \
+            --collection-run-id "$YOUTHCENTER_COLLECTION_RUN_ID" \
             --collection-run-id "$INCHEON_COLLECTION_RUN_ID" \
             --output-dir release \
             --dataset-version "$DATASET_VERSION" \

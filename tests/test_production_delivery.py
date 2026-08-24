@@ -294,9 +294,11 @@ def test_ci_release_and_rollback_workflows_are_fail_closed():
     assert "runs-on: ubuntu-latest" in dataset
     assert "environment: production-data" in dataset
     assert "scripts/run_complete_collection.py" in dataset
+    assert "youthcenter-api" in dataset
     assert "data-go-kr-incheon-youth-programs" in dataset
-    assert dataset.count('--collection-run-id "$') == 2
+    assert dataset.count('--collection-run-id "$') == 3
     assert "BOKJIRO_API_KEY: ${{ secrets.BOKJIRO_API_KEY }}" in dataset
+    assert "YOUTHCENTER_API_KEY: ${{ secrets.YOUTHCENTER_API_KEY }}" in dataset
     assert "PRODUCTION_DATASET_DATABASE_URL" not in dataset
     assert "self-hosted" not in dataset
     assert "postgres:" in dataset and "redis:" in dataset

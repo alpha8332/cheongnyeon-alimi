@@ -127,7 +127,8 @@ asset SHA-256은
 
 `public-dataset-release.yml`은 보호된 `production-data` Environment와
 GitHub-hosted `ubuntu-latest`에서 실행한다. Environment secret은 공개 재배포가
-허용된 Source의 `BOKJIRO_API_KEY` 하나이며 DB URL·password는 저장하지 않는다.
+허용된 API Source의 `BOKJIRO_API_KEY`, `YOUTHCENTER_API_KEY`이며 DB URL·password는
+저장하지 않는다.
 Workflow 내부 PostgreSQL과 Redis는 매 실행 종료 시 폐기된다. 수동 실행과 매일
 03:17 KST schedule은 같은 `concurrency` 그룹을 사용해 중복 실행하지 않는다.
 
@@ -146,9 +147,10 @@ Workflow는 Migration 뒤 격리 Celery worker를 시작하고
 pointer를 갱신한다. 실패·`partial_failure`·더 최신 실행 존재 시 기존 latest는
 그대로 남는다.
 
-공개 dataset의 현재 Source는 `bokjiro-central-welfare-api` 하나다. Worker는
-bounded multi-page snapshot manifest를 만든 뒤 그 snapshot ID만 재생해 완전성
-증거를 CollectionRun에 기록한다. 일반 관리자 제한 수집은 성공해도
+공개 dataset 수집 Source는 `bokjiro-central-welfare-api`, `youthcenter-api`,
+`data-go-kr-incheon-youth-programs`다. Worker는 bounded multi-page snapshot
+manifest를 만든 뒤 그 snapshot ID만 재생해 완전성 증거를 CollectionRun에
+기록한다. 일반 관리자 제한 수집은 성공해도
 `is_complete_snapshot=false`이며 promotion 입력으로 사용할 수 없다. 신규 Source는
 라이선스 allowlist와 해당 API secret, 완전 수집 회귀를 함께 추가해야 한다.
 

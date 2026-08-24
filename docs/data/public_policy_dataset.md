@@ -3,8 +3,8 @@
 ## 문서 상태
 
 - 상태: current
-- 계약 버전: `1.0.0`
-- 확정일: `2026-08-23`
+- 계약 버전: `1.1.0`
+- 확정일: `2026-08-24`
 - Gate: `W6-P0_DATASET_CONTRACT_PASS`
 - 대상 Schema: `NormalizedProgram 1.2.0`
 
@@ -27,7 +27,7 @@ API key와 작성자 로컬 PostgreSQL이 없는 사용자도 공개 재배포�
 | Source 또는 범위 | 공개 판정 | 근거 |
 | --- | --- | --- |
 | `bokjiro-central-welfare-api` | include | 공공데이터포털의 한국사회보장정보원 중앙부처복지서비스가 이용허락범위를 `제한 없음`으로 표시 |
-| `youthcenter-api` | exclude | 온통청년 약관이 대량 이용을 별도 계약으로 두고, 얻은 정보의 제3자 제공과 사전 승낙 없는 가공·판매를 제한 |
+| `youthcenter-api` | include | 공공데이터포털 이용허락범위 `제한 없음` 및 프로젝트의 API 이용·최소 정규화 데이터 재배포 승인 확인 |
 | `regional-*` | exclude | Source별 수집은 승인됐으나 명시적 개방 라이선스가 없고 원문·이미지 비재배포 경계로 운영 |
 | `cheonan-youthcenter-web` | exclude | 별도 이용약관을 찾지 못했고 사이트가 `all rights reserved`를 표시 |
 | `kosaf-scholarship-web` 등 보완 웹 Source | exclude | 공개 접근은 가능하지만 정규화 결과의 재배포 허가가 명시되지 않음 |
@@ -40,6 +40,7 @@ API key와 작성자 로컬 PostgreSQL이 없는 사용자도 공개 재배포�
 공식 근거:
 
 - [한국사회보장정보원 중앙부처복지서비스](https://www.data.go.kr/data/15090532/openapi.do)
+- [한국고용정보원 온통청년 청년정책API](https://www.data.go.kr/data/15143273/openapi.do)
 - [온통청년 OPEN API 이용방법](https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide)
 - [온통청년 이용약관](https://www.youthcenter.go.kr/cmnFooter/termsInfo)
 - [고용24 저작권정책](https://m.work24.go.kr/cm/c/d/0130/retrieveCpyrPoly.do)

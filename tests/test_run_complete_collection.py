@@ -181,10 +181,36 @@ def test_queue_and_wait_allows_keyless_incheon_public_source(
     )
 
 
+def test_queue_and_wait_allows_approved_youthcenter_source(
+    monkeypatch, session_factory
+):
+    published = []
+
+    def fake_wait(run_id, **kwargs):
+        return _state(run_id, source_id="youthcenter-api")
+
+    monkeypatch.setattr(
+        "scripts.run_complete_collection.wait_for_promotable_run",
+        fake_wait,
+    )
+    result = queue_and_wait(
+        source_id="youthcenter-api",
+        page_size=500,
+        timeout_seconds=10,
+        poll_interval_seconds=1,
+        session_factory=session_factory,
+        publisher=lambda run_id, source_id, page_size, **kwargs: published.append(
+            (run_id, source_id, page_size, kwargs["complete_snapshot"])
+        ),
+    )
+    assert result["source_id"] == "youthcenter-api"
+    assert published[0][1:] == ("youthcenter-api", 500, True)
+
+
 def test_queue_and_wait_refuses_non_public_source(session_factory):
     with pytest.raises(ValueError, match="not approved"):
         queue_and_wait(
-            source_id="youthcenter-api",
+            source_id="cheonan-youthcenter-web",
             page_size=500,
             timeout_seconds=10,
             poll_interval_seconds=1,

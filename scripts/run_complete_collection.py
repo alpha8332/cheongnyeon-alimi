@@ -32,6 +32,7 @@ SAFE_SOURCE_IDS = frozenset(
     {
         "bokjiro-central-welfare-api",
         "data-go-kr-incheon-youth-programs",
+        "youthcenter-api",
     }
 )
 
