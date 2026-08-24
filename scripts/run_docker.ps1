@@ -428,9 +428,20 @@ if (-not (Test-Path -LiteralPath $ComposeEnvFile -PathType Leaf)) {
     if ($ComposeEnvFile -ne (Join-Path $RepositoryRoot ".env.compose")) {
         Stop-WithCode "the requested Compose env file does not exist"
     }
-    & docker volume inspect "$DefaultProjectName`_acceptance-db" 2>$null | Out-Null
+    $OwnershipProjectName = if (
+        [string]::IsNullOrWhiteSpace($ComposeProjectName)
+    ) {
+        $DefaultProjectName
+    }
+    else {
+        $ComposeProjectName
+    }
+    & docker volume inspect "$OwnershipProjectName`_acceptance-db" 2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) {
-        Stop-WithCode "an existing default database Volume was found without its env file"
+        Stop-WithCode (
+            "an existing database Volume for Compose project " +
+            "'$OwnershipProjectName' was found without its env file"
+        )
     }
     & powershell.exe `
         -NoLogo `

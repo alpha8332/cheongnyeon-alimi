@@ -174,5 +174,7 @@ def test_windows_one_command_bootstrap_is_fail_closed_and_cache_aware():
     assert '"run", "--rm", "migrate"' in runner
     assert "Wait-HttpHealth" in runner
     assert "Remove-DownloadDirectory" in runner
+    assert '"$OwnershipProjectName`_acceptance-db"' in runner
+    assert "[string]::IsNullOrWhiteSpace($ComposeProjectName)" in runner
     assert "docker volume rm" not in runner
     assert "down --volumes" not in runner
