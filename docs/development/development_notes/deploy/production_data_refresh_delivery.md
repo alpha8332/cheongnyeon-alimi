@@ -286,6 +286,7 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 | P4 Linux·PostgreSQL CI 동등 환경 | 602 passed, 2 skipped, 241 subtests passed |
 | P4 Frontend | 222 passed, lint·same-origin production build PASS |
 | Workflow lint | actionlint 1.7.12, 4 Workflow 0건 |
+| 공개 수집 실행 구조 | GitHub-hosted ephemeral PostgreSQL·Redis·Celery, Self-hosted 제거 |
 
 ### P4 원격 CI 첫 실행 회귀
 
@@ -306,8 +307,8 @@ API key와 로컬 DB dump 없이 배포 가능한 공개 normalized bootstrap �
 
 ## 남은 작업
 
-1. 현재 변경을 commit·push한 뒤 공통 CI를 실행하고 보호된 중앙 runner에서
-   최신 완전 수집 run으로 dataset Release를 발행한다.
+1. GitHub `production-data` Environment에 `BOKJIRO_API_KEY`를 등록하고
+   GitHub-hosted 일회성 중앙 수집으로 최초 dataset Release를 발행한다.
 2. `v1.0.0` 후보 Workflow의 GHCR digest·attestation·Production smoke와
    `production-release.json`을 대조한 뒤 `W6-P4_PRODUCTION_PASS`를 기록한다.
 3. 공개 제외 10건은 제공기관 연락처와 개인 연락처를 구분하는 승인 규칙이

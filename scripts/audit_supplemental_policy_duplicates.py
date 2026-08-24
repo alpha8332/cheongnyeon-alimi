@@ -44,7 +44,7 @@ def main() -> int:
     parser.add_argument("--raw-root", type=Path, default=ROOT / "runtime/raw")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    inventory_bytes = args.inventory.read_bytes()
+    inventory_bytes = canonical_source_bytes(args.inventory.read_bytes())
     inventory = json.loads(inventory_bytes.decode("utf-8"))
 
     engine = create_db_engine(settings.DATABASE_URL, sql_echo=False)
@@ -71,6 +71,11 @@ def main() -> int:
         f"not_assessed={summary['not_assessed']} output={args.output}"
     )
     return 0
+
+
+def canonical_source_bytes(value: bytes) -> bytes:
+    """Keep evidence hashes stable across LF and CRLF worktrees."""
+    return value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
 def build_report(
