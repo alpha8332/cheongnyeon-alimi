@@ -7,10 +7,9 @@
 절차다. 실제 Source 수집과 정기 scheduler 활성화는
 [Collector 실행](collector.md)의 중앙 운영자 범위다.
 
-W6-P3에서 실행기와 실제 공개 artifact clean Volume 검증을 완료했다. 기본
-GitHub Release pointer는 W6-P4 원격 promotion 성공 때 발행한다. 그 전에는 공개
-배포용 기본 URL이 아직 활성화되지 않으므로 P0 artifact를 가진 개발자만
-`-DatasetManifestPath` 검증 경로를 사용한다.
+W6-P3 실행기와 W6-P5 clone·GitHub ZIP clean-room 검증을 완료했다. 기본 GitHub
+Release pointer는 활성 상태이며 API key 없이 공개 dataset 457건을 내려받는다.
+`-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만 사용한다.
 
 ## 요구 환경
 
@@ -50,10 +49,10 @@ manifest 전체 검증과 DB import가 성공한 뒤에만 cache의 `latest.poin
 갱신한다. 다운로드 중단·hash 불일치·Schema drift에서는 기존 latest cache와
 Volume을 변경하지 않는다.
 
-## P3 개발 검증 경로
+## 고정 manifest 개발 검증 경로
 
-외부 Release 발행 전 실제 P0 artifact를 가진 개발자는 manifest와 같은
-디렉터리에 dataset을 둔 뒤 다음처럼 실행한다.
+검증된 별도 artifact를 가진 개발자는 manifest와 같은 디렉터리에 dataset을 둔
+뒤 다음처럼 실행한다.
 
 ```powershell
 .\run_docker.bat `
@@ -82,6 +81,11 @@ Volume을 변경하지 않는다.
 Browser를 자동으로 열지 않으려면 `-NoBrowser`를 추가한다. `.env.compose`에서
 host port를 바꿨으면 실행기가 해당 값을 읽는다. 일시적으로 지정하려면
 `-FrontendPort`, `-BackendPort`를 사용한다.
+
+port 인자는 해당 실행에만 적용된다. 같은 project를 다시 시작할 때는 최초와
+같은 `-FrontendPort`, `-BackendPort`를 다시 전달하거나 `.env.compose`의 host
+port를 영구 변경한다. 인자를 생략하면 기본 3000·8000으로 돌아가며 다른
+project가 사용 중이면 안전하게 중단한다.
 
 ## 상태 확인과 종료
 

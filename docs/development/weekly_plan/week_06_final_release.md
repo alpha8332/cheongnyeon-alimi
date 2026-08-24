@@ -2,7 +2,7 @@
 
 ## 계획 정보
 
-- 상태: in-progress (`2026-08-24`, `W6-P4_PRODUCTION_PASS`)
+- 상태: in-progress (`2026-08-24`, W6-P5 clean-room PASS, Final Gate pending LICENSE)
 - 대상 Release: `v1.0.0`
 - 선행 Gate: `W5-G2_PASS`, `DOCKER_ACCEPTANCE_PASS`
 - 핵심 Forest: [Deploy 02 Production Data Refresh and Delivery](../develop_plan/deploy/02_production_data_refresh_delivery.md)
@@ -174,8 +174,10 @@ dataset version으로 합친다.
   hash fail-closed)
 - [x] `W6-P4_PRODUCTION_PASS` (`v1.0.0`, Git `f5883bb`, 공개 dataset 457건,
   GHCR Backend·Frontend digest, SLSA provenance 2건, clean Production smoke)
-- [ ] clone·ZIP 독립 clean-room과 전체 actual 회귀
+- [x] clone·ZIP 독립 clean-room과 전체 actual 회귀 (`d420608`, 공개 457건,
+  offline·Volume·queue·lifecycle·restore·actual Browser)
 - [ ] README·Collector·운영·복구·LICENSE·SBOM·CHANGELOG·제출 문서 대조
+  (README·운영·복구·SBOM attestation·CHANGELOG 완료, 루트 LICENSE 미결정)
 - [ ] blocker/high 결함 0건과 `W6-G0_FINAL_RELEASE_PASS`
 - [x] 사용자 승인 뒤 `main` 병합·annotated `v1.0.0` tag·GitHub Release 발행
 
