@@ -11,6 +11,9 @@ from app.models.administrative_region import (
 )
 from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
 from app.repositories.policy_lifecycle import public_policy_predicates
+from app.repositories.public_dataset import (
+    active_public_dataset_membership_predicate,
+)
 
 
 REGION_RULE_FIELDS = (
@@ -328,6 +331,7 @@ class PolicySearchRepository:
         query = select(Policy).where(
             Policy.data_quality_status != "invalid",
             *public_policy_predicates(),
+            active_public_dataset_membership_predicate(Policy.id),
         )
         if not include_partial:
             query = query.where(Policy.data_quality_status == "valid")

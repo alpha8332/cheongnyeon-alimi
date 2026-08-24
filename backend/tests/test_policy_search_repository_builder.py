@@ -11,13 +11,14 @@ from app.services.policy_search_parser import parse_search_query
 
 
 @pytest.fixture
-def sample_policies(db):
+def sample_policies(db, activate_all_policies):
     """테스트용 정책 DB 샘플 생성"""
     now = datetime.now(timezone.utc)
 
     # 1. 서울 24세 지원 가능 open 정책 (housing)
     p1 = Policy(
         source_id="test_1",
+        external_id="TEST-1",
         source_name="온통청년",
         title="서울 청년 월세 특별지원",
         summary="서울 청년 대상 월세 지원금",
@@ -35,6 +36,7 @@ def sample_policies(db):
     # 2. 전국 30세 지원 가능 scheduled 정책 (finance)
     p2 = Policy(
         source_id="test_2",
+        external_id="TEST-2",
         source_name="복지로",
         title="청년 도약 계좌 적금",
         summary="전국 청년 자산 형성 대출 적금 지원",
@@ -52,6 +54,7 @@ def sample_policies(db):
     # 3. 마감된 정책 (closed)
     p3 = Policy(
         source_id="test_3",
+        external_id="TEST-3",
         source_name="온통청년",
         title="마감된 서울 주거 지원",
         categories=["housing"],
@@ -126,6 +129,7 @@ def sample_policies(db):
 
     db.add_all([d1, d2])
     db.commit()
+    activate_all_policies()
 
     return [p1, p2, p3]
 

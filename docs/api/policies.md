@@ -13,6 +13,12 @@
 `valid`·`partial`을 함께 허용한다. `invalid` 정책은 어떤 경우에도 공개하지
 않는다.
 
+모든 사용자 목록·상세·자연어 검색·추천은 검증을 마치고 원자적으로 활성화된
+공개 dataset의 membership에 포함된 정책만 반환한다. 로컬 수집, 과거 개발
+데이터와 수동 수집 결과는 `policies`에 보존될 수 있지만 membership 승격 전에는
+이 API에서 조회되지 않는다. active dataset이 없으면 임의의 DB row로 대체하지
+않고 빈 결과 또는 상세 404를 반환한다.
+
 모든 사용자 목록·상세·자연어 검색·추천은 `inactive_at IS NULL`인 행 중
 `application_end`가 없거나 Asia/Seoul 오늘 이상인 정책만 반환한다. 종료일
 경과와 inactive 행은 명시적 `status=closed`에도 공개하지 않으며 관리자

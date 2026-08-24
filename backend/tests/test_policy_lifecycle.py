@@ -112,7 +112,10 @@ def _normalized_program(external_id: str) -> dict[str, object]:
     }
 
 
-def test_public_repository_excludes_expired_and_inactive_rows(db) -> None:
+def test_public_repository_excludes_expired_and_inactive_rows(
+    db,
+    activate_all_policies,
+) -> None:
     db.add_all(
         [
             Policy(**_policy_values("active")),
@@ -134,6 +137,7 @@ def test_public_repository_excludes_expired_and_inactive_rows(db) -> None:
         ]
     )
     db.commit()
+    activate_all_policies()
 
     page = PolicyRepository(db).list(
         quality_statuses=("valid",),

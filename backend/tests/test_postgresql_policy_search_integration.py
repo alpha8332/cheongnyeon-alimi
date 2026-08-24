@@ -15,6 +15,10 @@ from sqlalchemy.orm import sessionmaker
 from app.core.database import create_db_engine
 from app.models.policy import Policy, utc_now
 from app.models.policy_search import PolicyRegionRule, PolicySearchDocument
+from app.models.public_dataset import (
+    PublicDatasetInstallation,
+    PublicDatasetMembership,
+)
 from app.repositories.policy import PolicyRepository
 from app.repositories.policy_search import PolicySearchRepository
 from app.services.policy_search_parser import parse_search_query
@@ -85,6 +89,35 @@ def postgresql_session(postgresql_session_factory):
             session.rollback()
 
 
+def publish_test_policies(session, *policies: Policy) -> None:
+    version = "public-bootstrap-20260824-abcde12"
+    installation = session.get(PublicDatasetInstallation, version)
+    if installation is None:
+        installation = PublicDatasetInstallation(
+            dataset_version=version,
+            manifest_sha256="a" * 64,
+            artifact_sha256="b" * 64,
+            expected_policy_count=len(policies),
+            status="active",
+            activated_at=utc_now(),
+        )
+        session.add(installation)
+        session.flush()
+    else:
+        installation.expected_policy_count += len(policies)
+    session.add_all(
+        PublicDatasetMembership(
+            dataset_version=version,
+            source_id=policy.source_id,
+            external_id=policy.external_id,
+            policy_id=policy.id,
+        )
+        for policy in policies
+        if policy.external_id is not None
+    )
+    session.commit()
+
+
 def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
     session = postgresql_session
     now = utc_now()
@@ -92,6 +125,7 @@ def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
     # 테스트 정책 적재 (천안 27세 청년 단기숙소 지원)
     p1 = Policy(
         source_id="pg_test_cheonan_1",
+        external_id="PG-CHEONAN-1",
         source_name="온통청년",
         title="청년단기숙소 지원사업",
         summary="충남 천안시 청년 단기숙소 주거 지원",
@@ -112,6 +146,7 @@ def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
 
     distractor = Policy(
         source_id="pg_test_cheonan_generic",
+        external_id="PG-CHEONAN-GENERIC",
         source_name="온통청년",
         title="천안 청년 생활지원 사업",
         summary="충남 천안시 청년을 위한 일반 생활 지원",
@@ -172,6 +207,7 @@ def test_postgresql_golden_query_27_cheonan_short_stay(postgresql_session):
     )
     session.add_all([r1, doc1, distractor_rule, distractor_doc])
     session.commit()
+    publish_test_policies(session, p1, distractor)
 
     golden_query = "천안 사는 27살 청년 단기숙소 지원 받을 수 있나?"
     interpreted = parse_search_query(q=golden_query, db=session)
@@ -216,6 +252,7 @@ def test_explicit_and_inferred_region_keep_unknown_as_unconfirmed_candidate(
     session = postgresql_session
     unknown = Policy(
         source_id="pg_test_unknown_region",
+        external_id="PG-UNKNOWN-REGION",
         source_name="테스트",
         title="청년 지역 미확인 지원",
         summary="지역 근거가 없는 청년 지원",
@@ -245,6 +282,7 @@ def test_explicit_and_inferred_region_keep_unknown_as_unconfirmed_candidate(
         )
     )
     session.commit()
+    publish_test_policies(session, unknown)
 
     repo = PolicySearchRepository(session)
     inferred = parse_search_query(q="천안 청년", db=session)

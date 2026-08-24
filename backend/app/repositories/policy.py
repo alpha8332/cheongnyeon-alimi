@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 
 from app.models.policy import Policy
 from app.repositories.policy_lifecycle import public_policy_predicates
+from app.repositories.public_dataset import (
+    active_public_dataset_membership_predicate,
+)
 
 
 @dataclass(frozen=True)
@@ -50,6 +53,7 @@ class PolicyRepository:
         predicates: list[ColumnElement[bool]] = [
             Policy.data_quality_status.in_(quality_statuses),
             *public_policy_predicates(),
+            active_public_dataset_membership_predicate(Policy.id),
         ]
         if category is not None:
             predicates.append(
@@ -98,5 +102,6 @@ class PolicyRepository:
                 Policy.id == policy_id,
                 Policy.data_quality_status.in_(quality_statuses),
                 *public_policy_predicates(),
+                active_public_dataset_membership_predicate(Policy.id),
             )
         )

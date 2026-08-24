@@ -30,6 +30,15 @@
 중복 삭제 근거로 사용하지 않는다. Raw HTML·API 응답과 정책 본문은 보고서에
 포함하지 않고 Source별 집계만 기록한다.
 
+## 설치 후 공개 경계
+
+Release artifact 검증과 후보 parity는 발행 전 gate다. 설치 시에는 별도로
+manifest·artifact SHA-256과 모든 row·identity·예상 건수를 다시 확인한 뒤,
+`public_dataset_installations`와 `public_dataset_memberships`를 정책 upsert와
+같은 트랜잭션에서 활성화한다. 사용자 API는 active membership만 읽기 때문에
+작성자 DB에 추가 정책이 남아 있어도 깨끗한 심사자 DB와 같은 identity 집합을
+반환한다. 설치 실패는 이전 active version을 변경하지 않는다.
+
 ## 실행
 
 DB URL은 명령행 기록이나 문서에 평문으로 남기지 말고 운영 환경변수에서

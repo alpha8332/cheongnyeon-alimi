@@ -11,6 +11,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.policy import Policy, utc_now
+from app.models.public_dataset import (
+    PublicDatasetInstallation,
+    PublicDatasetMembership,
+)
 from app.services.policy_search_projection import (
     synchronize_policy_search_storage,
 )
@@ -507,6 +511,8 @@ def import_programs(
     dry_run: bool = False,
     validator: NormalizedProgramValidator | None = None,
     normalization_issues: Sequence[Sequence[ValidationIssue]] | None = None,
+    transaction_owner: bool = True,
+    allow_active_public_updates: bool = False,
 ) -> ImportResult:
     items = list(programs)
     selected_validator = validator or NormalizedProgramValidator()
@@ -551,42 +557,77 @@ def import_programs(
     use_postgresql = db.get_bind().dialect.name == "postgresql"
     current_index = -1
     current_values: Mapping[str, Any] = {}
-    try:
-        with db.begin():
-            for current_index, item in accepted:
-                current_values = _policy_values(item)
-                if use_postgresql:
-                    outcome, policy_id = _postgresql_upsert(
-                        db,
-                        current_values,
+    def persist() -> None:
+        nonlocal current_index, current_values
+        protected_identities = (
+            set()
+            if allow_active_public_updates
+            else set(
+                db.execute(
+                    select(
+                        PublicDatasetMembership.source_id,
+                        PublicDatasetMembership.external_id,
                     )
-                else:
-                    outcome, policy_id = _portable_upsert(
-                        db,
-                        current_values,
+                    .join(
+                        PublicDatasetInstallation,
+                        PublicDatasetInstallation.dataset_version
+                        == PublicDatasetMembership.dataset_version,
                     )
-                db.flush()
-                search_sync = synchronize_policy_search_storage(
+                    .where(PublicDatasetInstallation.status == "active")
+                ).all()
+            )
+        )
+        for current_index, item in accepted:
+            current_values = _policy_values(item)
+            identity = (
+                current_values["source_id"],
+                current_values["external_id"],
+            )
+            if identity in protected_identities:
+                counts["unchanged"] += 1
+                continue
+            if use_postgresql:
+                outcome, policy_id = _postgresql_upsert(
                     db,
-                    policy_id=policy_id,
-                    policy=item,
-                    updated_at=current_values["updated_at"],
+                    current_values,
                 )
-                if outcome == "unchanged" and search_sync.changed:
-                    policy = db.get(Policy, policy_id)
-                    if policy is None:
-                        raise RuntimeError(
-                            "search storage policy was not found"
-                        )
-                    policy.updated_at = _nondecreasing_datetime(
-                        policy.updated_at,
-                        current_values["updated_at"],
+            else:
+                outcome, policy_id = _portable_upsert(
+                    db,
+                    current_values,
+                )
+            db.flush()
+            search_sync = synchronize_policy_search_storage(
+                db,
+                policy_id=policy_id,
+                policy=item,
+                updated_at=current_values["updated_at"],
+            )
+            if outcome == "unchanged" and search_sync.changed:
+                policy = db.get(Policy, policy_id)
+                if policy is None:
+                    raise RuntimeError(
+                        "search storage policy was not found"
                     )
-                    outcome = "updated"
-                db.flush()
-                counts[outcome] += 1
-            if dry_run:
-                raise _DryRunRollback
+                policy.updated_at = _nondecreasing_datetime(
+                    policy.updated_at,
+                    current_values["updated_at"],
+                )
+                outcome = "updated"
+            db.flush()
+            counts[outcome] += 1
+
+    if dry_run and not transaction_owner:
+        raise ValueError("dry_run requires transaction_owner=True")
+
+    try:
+        if transaction_owner:
+            with db.begin():
+                persist()
+                if dry_run:
+                    raise _DryRunRollback
+        else:
+            persist()
     except _DryRunRollback:
         pass
     except SQLAlchemyError as exc:
@@ -626,7 +667,7 @@ def import_programs(
         accepted=len(accepted),
         partial=partial,
         invalid=invalid,
-        committed=not dry_run,
+        committed=transaction_owner and not dry_run,
         dry_run=dry_run,
         issues=tuple(issues),
         duplicate=duplicate,
@@ -640,6 +681,8 @@ def import_seed_data(
     *,
     dry_run: bool = False,
     validator: NormalizedProgramValidator | None = None,
+    transaction_owner: bool = True,
+    allow_active_public_updates: bool = False,
 ) -> ImportResult:
     if not seed_file_path.exists():
         raise FileNotFoundError(f"Seed file not found at: {seed_file_path}")
@@ -668,4 +711,6 @@ def import_seed_data(
         seed_data,
         dry_run=dry_run,
         validator=validator,
+        transaction_owner=transaction_owner,
+        allow_active_public_updates=allow_active_public_updates,
     )
