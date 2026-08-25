@@ -1,4 +1,9 @@
 import type { PolicyDto } from '../types/policy.js';
+import type {
+  InterpretedCondition,
+  PolicySearchHit,
+} from '../types/policySearch.js';
+import { sortByPolicy } from '../utils/policySort.js';
 import {
   materializePolicySearchResponse,
   POLICY_SEARCH_SCENARIO_FIXTURES,
@@ -87,22 +92,90 @@ function filterPartialHits(
   };
 }
 
+function materializeExplicitFilterResponse(
+  policies: readonly PolicyDto[],
+  query: ResolvedPolicySearchQuery,
+  qRaw: string,
+): PolicySearchResponse {
+  const conditions: InterpretedCondition[] = [];
+  if (query.region) {
+    conditions.push({
+      dimension: 'region',
+      value: query.region,
+      source: 'explicit',
+      resolution: 'resolved',
+      candidates: [],
+    });
+  }
+  if (query.category) {
+    conditions.push({
+      dimension: 'category',
+      value: query.category,
+      source: 'explicit',
+      resolution: 'resolved',
+      candidates: [],
+    });
+  }
+
+  const hits: PolicySearchHit[] = policies
+    .filter((policy) => policy.application_status !== 'closed')
+    .filter(
+      (policy) => !query.category || policy.categories.includes(query.category),
+    )
+    .filter((policy) => {
+      const isNationwide =
+        policy.region_text?.includes('전국') ||
+        policy.regions.some((region) => region === '전국' || region === '0000000000');
+      if (!query.region || isNationwide) {
+        return true;
+      }
+      const district = query.region.split(/\s+/).at(-1) ?? query.region;
+      return Boolean(
+        policy.region_text?.includes(query.region) ||
+          policy.region_text?.includes(district),
+      );
+    })
+    .map((policy) => ({
+      policy,
+      score: 1,
+      verdicts: {
+        region: query.region ? 'match' : null,
+        age: null,
+        status: null,
+        category: query.category ? 'match' : null,
+      },
+      unknown_count: 0,
+      reason_codes: [
+        ...(query.region ? ['REGION_MATCH'] : []),
+        ...(query.category ? ['CATEGORY_MATCH'] : []),
+      ],
+      message: '선택한 검색 조건과 일치하는 정책입니다.',
+      unconfirmed_conditions: [],
+    }));
+  const sorted = sortByPolicy(hits, (hit) => hit.policy, query.sort);
+  const offset = (query.page - 1) * query.limit;
+
+  return {
+    total: sorted.length,
+    page: query.page,
+    limit: query.limit,
+    interpreted_conditions: {
+      q_raw: qRaw,
+      q_clean: query.q,
+      conditions,
+      override_fields: conditions.map((condition) => condition.dimension),
+      uninterpreted_terms: [],
+    },
+    items: sorted.slice(offset, offset + query.limit),
+  };
+}
+
 export function handlePolicySearchMock(
   input: PolicySearchQueryParams | URLSearchParams,
   policies: readonly PolicyDto[],
 ): PolicySearchMockResult {
   const rawQ =
     input instanceof URLSearchParams ? (input.get('q') ?? '') : (input.q ?? '');
-
-  if (rawQ.trim().length === 0) {
-    return {
-      status: 422,
-      body: {
-        detail:
-          'q is required and must contain non-whitespace characters after trim.',
-      },
-    };
-  }
 
   let query: ResolvedPolicySearchQuery;
 
@@ -120,6 +193,16 @@ export function handlePolicySearchMock(
   }
 
   const scenarioId = detectScenarioId(query);
+
+  if (scenarioId === null && query.q === '') {
+    return {
+      status: 200,
+      body: filterPartialHits(
+        materializeExplicitFilterResponse(policies, query, rawQ),
+        query.include_partial,
+      ),
+    };
+  }
 
   if (scenarioId === null) {
     return {

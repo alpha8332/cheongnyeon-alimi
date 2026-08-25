@@ -202,6 +202,15 @@ test('flat query parameter resolve와 URLSearchParams 직렬화를 검증한다'
     sort: 'default',
   });
 
+  assert.deepEqual(resolvePolicySearchQuery({ q: '', category: 'housing' }), {
+    q: '',
+    category: 'housing',
+    include_partial: true,
+    page: 1,
+    limit: 20,
+    sort: 'default',
+  });
+
   assert.throws(() => resolvePolicySearchQuery({ q: '   ' }));
   assert.throws(() => resolvePolicySearchQuery({ q: 'x', page: 0 }));
   assert.throws(() => resolvePolicySearchQuery({ q: 'x', limit: 101 }));
@@ -279,7 +288,7 @@ test('M3 age match와 M4 partial-only multi-unknown 시나리오를 검증한다
   assert.deepEqual(m4.body.interpreted_conditions.uninterpreted_terms, ['복지로']);
 });
 
-test('M5 empty q는 422 validation을 반환한다', () => {
+test('M5 empty q와 명시 조건 없음은 422 validation을 반환한다', () => {
   const m5Fixture = loadScenarioFixture('m5-empty-q.validation.json') as ValidationFixtureFile;
   const result = searchMock(SCENARIO_QUERIES.M5);
 

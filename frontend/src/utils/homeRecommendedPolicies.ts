@@ -13,9 +13,6 @@ import {
 
 export const HOME_RECOMMENDED_POLICY_LIMIT = 3;
 
-export const HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION =
-  '저장된 조건으로 추천된 정책입니다.';
-
 /** Recommendation API fetch size before client-side open·always filter. */
 export const HOME_RECOMMENDATION_FETCH_LIMIT = 12;
 

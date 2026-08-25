@@ -161,7 +161,7 @@ export function buildPolicySearchUrlParams(
     params.set('q', trimmedQ);
   }
 
-  if (trimmedQ && state.use_saved_conditions === false) {
+  if (state.use_saved_conditions === false) {
     params.set('use_saved_conditions', 'false');
   }
 
@@ -199,18 +199,28 @@ export function buildPolicySearchUrlParams(
     params.set('limit', String(state.limit));
   }
 
-  if (trimmedQ && state.sort !== POLICY_SEARCH_DEFAULTS.sort) {
+  if (hasPolicySearchQuery(state) && state.sort !== POLICY_SEARCH_DEFAULTS.sort) {
     params.set('sort', state.sort);
   }
 
   return params;
 }
 
-/** Whether the URL state contains a non-empty trimmed `q` suitable for API fetch. */
+/** Whether the URL state contains a natural-language query or an explicit filter. */
 export function hasPolicySearchQuery(
-  state: Pick<PolicySearchUrlQueryState, 'q'>,
+  state: Pick<
+    PolicySearchUrlQueryState,
+    'q' | 'keyword' | 'region' | 'age' | 'category' | 'status'
+  >,
 ): boolean {
-  return state.q.trim().length > 0;
+  return Boolean(
+    state.q.trim() ||
+      state.keyword?.trim() ||
+      state.region?.trim() ||
+      state.age !== null && state.age !== undefined ||
+      state.category ||
+      state.status,
+  );
 }
 
 /**

@@ -34,7 +34,7 @@ GET /api/v1/policies/search
 
 | 이름 | 타입 | 기본값 | 규칙 |
 | --- | --- | --- | --- |
-| `q` | string | **필수** | 자연어 검색어 (공백 제거 후 1자 이상 200자 이하, 필수) |
+| `q` | string | 빈 문자열 | 자연어 검색어 (최대 200자). 명시 조건이 있으면 생략 가능 |
 | `keyword` | string | 없음 | 명시적 키워드 필터 (최대 100자) |
 | `region` | string | 없음 | 명시적 지역 alias/name 문자열 (최대 100자) |
 | `age` | integer | 없음 | 명시적 만 연령 (0~150세) |
@@ -43,6 +43,11 @@ GET /api/v1/policies/search
 | `include_partial` | boolean | `true` | partial 정책 포함 여부 (기본값: true) |
 | `page` | integer | `1` | 1 이상 |
 | `limit` | integer | `20` | 1~100 |
+
+`q`가 비어 있으면 `keyword`, `region`, `age`, `category`, `status` 중 하나
+이상의 명시 조건이 필요하다. 자연어 검색어와 명시 조건이 모두 없으면 `422`를
+반환한다. 따라서 홈에서는 지역이나 관심 분야만 선택해도 검색할 수 있지만,
+아무 조건도 없는 전체 정책 요청으로 이 endpoint를 사용하지 않는다.
 
 `region`을 명시적으로 전달하거나 `q`에서 지역을 해석한 경우, 다른 지역으로
 확인된 `mismatch`는 반환하지 않는다. 지역 근거가 없는 `unknown`은 공개

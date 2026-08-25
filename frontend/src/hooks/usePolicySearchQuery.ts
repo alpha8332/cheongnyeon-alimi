@@ -4,7 +4,7 @@ import type { PolicySearchQueryParams } from '@/types/policySearch';
 import { hasPolicySearchQuery } from '@/utils/policySearchUrl';
 
 export function usePolicySearchQuery(query: PolicySearchQueryParams) {
-  const enabled = hasPolicySearchQuery({ q: query.q });
+  const enabled = hasPolicySearchQuery(query);
 
   return useQuery({
     queryKey: ['policySearch', query],

@@ -35,16 +35,25 @@ def _execute_policy_search(
     *,
     preferences: PolicySearchPreferences | None = None,
 ) -> PolicySearchResponse:
-    # 1. q 파라미터 공백 검증 (q_raw 원문 보존 전달)
+    # 1. 자연어 검색어 또는 명시 조건이 하나 이상인지 검증
     q_raw = request.q
     q_clean = request.q.strip()
-    if not q_clean:
+    has_explicit_condition = any(
+        (
+            bool(request.keyword and request.keyword.strip()),
+            bool(request.region and request.region.strip()),
+            request.age is not None,
+            request.category is not None,
+            request.status is not None,
+        )
+    )
+    if not q_clean and not has_explicit_condition:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=[
                 {
                     "loc": ["query", "q"],
-                    "msg": "q parameter must not be empty or blank",
+                    "msg": "q or at least one explicit search condition is required",
                     "type": "value_error",
                 }
             ],
@@ -114,11 +123,18 @@ def _execute_policy_search(
     )
 
 
-@router.get("/search", response_model=PolicySearchResponse, summary="정책 자연어 검색")
+@router.get(
+    "/search",
+    response_model=PolicySearchResponse,
+    summary="정책 자연어·조건 검색",
+)
 def search_policies_api(
     q: str = Query(
-        ...,
-        description="자연어 검색어 (공백 제거 후 1자 이상 필수, 권장 최대 200자)",
+        "",
+        description=(
+            "자연어 검색어. 비어 있으면 region, age, category, status, "
+            "keyword 중 하나 이상의 명시 조건 필요"
+        ),
         max_length=200,
     ),
     keyword: Annotated[
@@ -174,7 +190,7 @@ def search_policies_api(
 @router.post(
     "/search",
     response_model=PolicySearchResponse,
-    summary="프로필 우선순위 정책 자연어 검색",
+    summary="프로필 우선순위 정책 검색",
 )
 def search_policies_with_preferences_api(
     request: PolicySearchPostRequest,

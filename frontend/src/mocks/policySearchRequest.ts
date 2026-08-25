@@ -81,9 +81,17 @@ export function resolvePolicySearchQuery(
   const q = raw.q ?? '';
   const trimmedQ = q.trim();
 
-  if (trimmedQ.length === 0) {
+  const hasExplicitCondition = Boolean(
+    raw.keyword?.trim() ||
+      raw.region?.trim() ||
+      raw.age !== undefined && raw.age !== null ||
+      raw.category ||
+      raw.status,
+  );
+
+  if (trimmedQ.length === 0 && !hasExplicitCondition) {
     throw new PolicySearchQueryValidationError(
-      'q is required and must contain non-whitespace characters after trim.',
+      'q or at least one explicit search condition is required.',
     );
   }
 

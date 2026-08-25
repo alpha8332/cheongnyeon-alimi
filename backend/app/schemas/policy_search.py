@@ -12,8 +12,11 @@ SearchDimension = Literal["keyword", "region", "age", "category", "status"]
 
 class PolicySearchQueryParams(BaseModel):
     q: str = Field(
-        ...,
-        description="자연어 검색어 (공백 제거 후 1자 이상 필수, 권장 최대 200자, 미입력/빈값 시 422 반환)",
+        default="",
+        description=(
+            "자연어 검색어 (권장 최대 200자). q가 비어 있으면 region, age, "
+            "category, status, keyword 중 하나 이상의 명시 조건이 필요함"
+        ),
         max_length=200,
     )
     keyword: str | None = Field(

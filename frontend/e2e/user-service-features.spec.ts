@@ -64,7 +64,7 @@ test.describe('User Service browser flow (FE5-07)', () => {
     const form = page.getByRole('form', { name: '저장 조건 편집' });
     await form.getByPlaceholder('예: 서울특별시').fill('서울특별시');
     await form.getByPlaceholder('예: 24').fill('24');
-    await form.getByLabel('관심 분야').selectOption('housing');
+    await form.getByRole('checkbox', { name: '주거', exact: true }).check();
     await form.getByRole('button', { name: '조건 저장' }).click();
 
     await expect(page.getByText('저장 조건을 브라우저에 저장했습니다.')).toBeVisible();
@@ -208,10 +208,13 @@ test.describe('User Service browser flow (FE5-07)', () => {
     await expect(icsButton).toBeDisabled();
   });
 
-  test('10. sidebar nav — 추천·달력 cross-route', async ({ page }) => {
+  test('10. 홈 추천 진입·달력 cross-route', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('link', { name: '맞춤 추천' }).click();
+    await page.getByRole('button', { name: '프로필 설정하고 추천받기' }).click();
+    await expect(page).toHaveURL(/\/profile$/);
+
+    await page.goto('/recommendations');
     await expect(page).toHaveURL(/\/recommendations$/);
     await expect(page.getByRole('heading', { name: '맞춤 추천', level: 1 })).toBeVisible();
     await expect(page.getByRole('form', { name: '맞춤 추천 조건 편집' })).toBeVisible();

@@ -4,7 +4,7 @@
  * Aligns with Backend 06 W3-B0 `GET /api/v1/policies/search`.
  *
  * Fixed consumption constraints:
- * - Frontend sends raw Korean `q` (trimmed, required); no Frontend NL parser.
+ * - Frontend sends raw Korean `q` without NL parsing. Explicit filters may be used without `q`.
  * - Flat query params only on the wire; no nested `structured` object.
  * - Explicit flat filters override the same dimension interpreted from `q`.
  * - Region·age·status·category verdicts: match | mismatch | unknown | null (Backend sole authority).
@@ -96,7 +96,7 @@ export interface UnconfirmedCondition {
  * Mirrors Backend Pydantic request model field names, nullability, and defaults.
  */
 export interface PolicySearchQueryParams {
-  /** Natural-language query. Required after trim; empty → 422. Max 200 chars. */
+  /** Natural-language query. Optional when an explicit filter is present. Max 200 chars. */
   q: string;
   /** Optional keyword text filter. Max 100 chars. */
   keyword?: string | null;

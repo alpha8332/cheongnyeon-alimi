@@ -205,7 +205,7 @@ test.describe('DTL4-7 actual PostgreSQL → FastAPI → React acceptance', () =>
     const form = page.getByRole('form', { name: '맞춤 추천 조건 편집' });
     await form.getByPlaceholder('예: 서울특별시').fill('천안시');
     await form.getByPlaceholder('예: 24').fill('27');
-    await form.getByLabel('관심 분야').selectOption('housing');
+    await form.getByRole('checkbox', { name: '주거', exact: true }).check();
     await form.getByRole('button', { name: '추천 받기' }).click();
     await expect(page.getByLabel('추천 결과 로딩 중')).toHaveCount(0, {
       timeout: 15_000,

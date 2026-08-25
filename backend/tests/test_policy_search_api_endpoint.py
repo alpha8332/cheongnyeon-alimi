@@ -82,6 +82,16 @@ def test_search_api_basic_200_ok(client, db, activate_all_policies):
     assert top_item["verdicts"]["age"] == "match"
     assert top_item["verdicts"]["region"] == "match"
 
+    condition_only_response = client.get(
+        "/api/v1/policies/search",
+        params={"region": "서울특별시", "category": "housing"},
+    )
+    assert condition_only_response.status_code == 200
+    condition_only_data = condition_only_response.json()
+    assert condition_only_data["total"] == 1
+    assert condition_only_data["items"][0]["policy"]["id"] == p.id
+    assert condition_only_data["interpreted_conditions"]["q_clean"] == ""
+
 
 def test_search_api_resolves_compound_local_region(
     client,
