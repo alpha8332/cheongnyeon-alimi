@@ -21,6 +21,12 @@
   ([관리자 인증 API 계약](docs/api/admin_access.md),
   [Docker 운영 절차](docs/operations/docker_first_run.md#관리자-pin-변경과-분실-복구))
 
+### Fixed
+
+- Windows PowerShell 5.1이 `reset_admin_pin.bat`의 Docker 표준입력 시작에
+  UTF-8 BOM을 붙여 정상적인 4자리 PIN을 5글자로 거부하던 문제를 수정했다.
+  복구 CLI는 첫 입력의 BOM 하나만 제거하며 기존 길이·숫자·확인 검증은 유지한다.
+
 ## [1.0.2] - 2026-08-25
 
 ### Added

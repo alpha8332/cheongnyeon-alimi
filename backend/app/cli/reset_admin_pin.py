@@ -16,7 +16,7 @@ PIN_PATTERN = re.compile(r"^\d{4}$")
 
 
 def main() -> int:
-    new_pin = sys.stdin.readline().rstrip("\r\n")
+    new_pin = sys.stdin.readline().removeprefix("\ufeff").rstrip("\r\n")
     confirmation = sys.stdin.readline().rstrip("\r\n")
 
     if not PIN_PATTERN.fullmatch(new_pin):
