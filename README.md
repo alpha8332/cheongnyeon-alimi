@@ -91,7 +91,7 @@ docker compose --env-file .env.compose down
 | 운영 관리 | 관리자 PIN 보호, 정책·수집 이력·데이터 품질·로그 확인 |
 
 화면별 동작과 데이터·개인정보·관리자 기능은
-[청년정책알리미 기능 설명서](docs/product/system_features.md)에 자세히 정리되어
+[제품 기능 설명서](docs/product/README.md)에 기능별로 자세히 정리되어
 있습니다.
 
 북마크와 맞춤 조건은 현재 브라우저의 `localStorage`에 저장됩니다. 검색·추천을
