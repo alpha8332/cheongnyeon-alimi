@@ -38,7 +38,11 @@ export function mergeSavedConditionsIntoSearchState(
   state: PolicySearchUrlQueryState,
   saved: UserSavedConditions | null,
 ): PolicySearchUrlQueryState {
-  if (!saved || !hasActiveSearchQuery(state)) {
+  if (
+    !saved ||
+    !hasActiveSearchQuery(state) ||
+    state.use_saved_conditions === false
+  ) {
     return state;
   }
 

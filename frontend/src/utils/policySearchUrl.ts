@@ -100,12 +100,16 @@ export function parsePolicySearchUrl(
   searchParams: URLSearchParams,
 ): PolicySearchUrlQueryState {
   const includePartial = parseOptionalBoolean(searchParams.get('include_partial'));
+  const useSavedConditions = parseOptionalBoolean(
+    searchParams.get('use_saved_conditions'),
+  );
   const page = parseOptionalInt(searchParams.get('page'));
   const limit = parseOptionalInt(searchParams.get('limit'));
   const age = parseOptionalInt(searchParams.get('age'));
 
   return {
     q: searchParams.get('q') ?? '',
+    use_saved_conditions: useSavedConditions ?? true,
     keyword: searchParams.get('keyword'),
     region: searchParams.get('region'),
     age,
@@ -133,6 +137,10 @@ export function buildPolicySearchUrlParams(
   const trimmedQ = state.q.trim();
   if (trimmedQ) {
     params.set('q', trimmedQ);
+  }
+
+  if (trimmedQ && state.use_saved_conditions === false) {
+    params.set('use_saved_conditions', 'false');
   }
 
   const keyword = state.keyword?.trim();

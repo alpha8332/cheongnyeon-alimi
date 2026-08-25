@@ -63,3 +63,20 @@ test('검색어에 분야가 명시되면 저장된 분야보다 검색 의도�
   assert.equal(merged.category, null);
   assert.equal(merged.age, 24);
 });
+
+test('예시 검색은 저장된 프로필 조건을 강제 필터로 합치지 않는다', () => {
+  const exampleState = {
+    ...BASE_STATE,
+    q: '천안 취업',
+    use_saved_conditions: false,
+  } satisfies PolicySearchUrlQueryState;
+
+  assert.deepEqual(
+    mergeSavedConditionsIntoSearchState(exampleState, {
+      region: '경상남도',
+      age: 25,
+      category: 'housing',
+    }),
+    exampleState,
+  );
+});

@@ -48,6 +48,7 @@ import { HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION } from '@/utils/homeRecomm
 import {
   HOME_RECOMMENDED_SEARCHES,
   buildPolicySearchEntryPath,
+  getRelatedPolicySearches,
 } from '@/utils/policySearchNavigation';
 import '@/components/policySearch/PolicySearchSidebar.css';
 import './HomePage.css';
@@ -71,6 +72,10 @@ export default function HomePage() {
     [effectiveUrlState],
   );
   const shouldFetch = hasPolicySearchQuery(urlState);
+  const relatedSearches = useMemo(
+    () => getRelatedPolicySearches(urlState.q),
+    [urlState.q],
+  );
 
   const {
     policies: homeRecommendedPolicies,
@@ -147,7 +152,9 @@ export default function HomePage() {
   };
 
   const handleRecommendedSearch = (term: string) => {
-    const path = buildPolicySearchEntryPath(term);
+    const path = buildPolicySearchEntryPath(term, {
+      useSavedConditions: false,
+    });
     if (path) {
       navigate(path);
     }
@@ -226,6 +233,24 @@ export default function HomePage() {
         onClear={handleSearchClear}
         isSubmitting={showLoading}
       />
+
+      {shouldFetch && relatedSearches.length > 0 ? (
+        <section className="home-search-suggestions" aria-label="관련 검색어">
+          <p className="chips-label">관련 검색어</p>
+          <div className="chips-row home-search-suggestions__row">
+            {relatedSearches.map((term) => (
+              <button
+                key={term}
+                type="button"
+                className="chip home-search-suggestions__chip"
+                onClick={() => submitSearchQuery(term)}
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {!shouldFetch ? (
         <>
