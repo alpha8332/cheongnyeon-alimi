@@ -36,6 +36,14 @@ function normalizeRecommendationApplicationStatus(
 export function recommendationItemToPolicyDto(
   item: RecommendationItemDto,
 ): PolicyDto {
+  const categories = Array.from(
+    new Set(
+      (item.categories?.length ? item.categories : [item.category]).map(
+        normalizeRecommendationCategory,
+      ),
+    ),
+  );
+
   return {
     schema_version: '1.2.0',
     source_id: item.source_id,
@@ -45,7 +53,7 @@ export function recommendationItemToPolicyDto(
     organization: null,
     summary: null,
     category_text: null,
-    categories: [normalizeRecommendationCategory(item.category)],
+    categories,
     application_period_text: null,
     application_start: item.application_start,
     application_end: item.application_end,

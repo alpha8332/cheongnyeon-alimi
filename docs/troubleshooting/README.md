@@ -43,6 +43,9 @@ integration/seed_api_contract_mismatch.md
 
 ## 현재 문서
 
+- [v1.0.2 공개 데이터·검색·추천 QA 개선](integration/v1_0_2_qa_improvements.md):
+  작성자·심사자 활성 dataset 동등성, 지역 검색, 예시·복수 분야·프로필·정렬 오류를
+  실제 API·Docker·Browser로 수정·검증한 기록
 - [Windows clone·ZIP clean-room 복구](integration/windows_clone_zip_clean_room_recovery.md):
   project Volume 소유권·PowerShell hash/ACL·ZIP env·partial 목록·추천 렌더 문제를
   새 GitHub ZIP과 독립 Volume actual로 수정·재검증한 기록

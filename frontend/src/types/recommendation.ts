@@ -31,6 +31,8 @@ export interface RecommendationRequest {
   region?: string | null;
   /** Backend accepts string category code (e.g. finance, housing). */
   category?: PolicyCategory | string | null;
+  /** Match any one of the selected interest categories. */
+  categories?: Array<PolicyCategory | string>;
   status?: RecommendationStatusFilter | string | null;
   include_partial?: boolean;
   limit?: number;
@@ -48,6 +50,8 @@ export interface RecommendationItemDto {
   title: string;
   lead: string | null;
   category: string;
+  /** Complete category membership; category remains the legacy primary value. */
+  categories?: string[];
   regions: string[];
   min_age: number | null;
   max_age: number | null;
@@ -87,6 +91,7 @@ export interface ResolvedRecommendationRequest {
   age?: number;
   region?: string;
   category?: string;
+  categories?: string[];
   status?: string;
   include_partial: boolean;
   limit: number;
@@ -122,6 +127,13 @@ export function resolveRecommendationRequest(
 
   const region = request.region?.trim();
   const category = request.category?.toString().trim();
+  const categories = Array.from(
+    new Set(
+      (request.categories ?? [])
+        .map((item) => item.toString().trim())
+        .filter(Boolean),
+    ),
+  );
   const status = request.status?.toString().trim();
 
   return {
@@ -130,6 +142,7 @@ export function resolveRecommendationRequest(
     ...(request.age !== undefined && request.age !== null ? { age: request.age } : {}),
     ...(region ? { region } : {}),
     ...(category ? { category } : {}),
+    ...(categories.length > 0 ? { categories } : {}),
     ...(status ? { status } : {}),
   };
 }

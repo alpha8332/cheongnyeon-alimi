@@ -159,7 +159,16 @@ test('Mock과 실제 Client가 같은 query 범위를 사용한다', () => {
       region: '서울특별시',
       status: 'open',
       include_partial: true,
+      sort: 'default',
     },
+  );
+
+  assert.equal(
+    resolvePolicyListQuery({ sort: 'deadline_asc' }).sort,
+    'deadline_asc',
+  );
+  assert.throws(() =>
+    resolvePolicyListQuery({ sort: 'raw_sql' as 'default' }),
   );
 });
 

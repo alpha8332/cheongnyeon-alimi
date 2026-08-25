@@ -1,5 +1,9 @@
 import { POLICY_SEARCH_DEFAULTS } from '../types/policySearch.js';
-import type { ApplicationStatus, PolicyCategory } from '../types/policy.js';
+import type {
+  ApplicationStatus,
+  PolicyCategory,
+  PolicySort,
+} from '../types/policy.js';
 import { withPolicySearchPage } from './policySearchPagination.js';
 
 /** URL state fields consumed by flat filter mutations. */
@@ -13,6 +17,7 @@ export interface PolicySearchFilterUrlState {
   include_partial: boolean;
   page: number;
   limit: number;
+  sort: PolicySort;
 }
 
 /** Flat filter dimensions that map to URL query params (excluding `q`). */

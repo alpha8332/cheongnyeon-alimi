@@ -8,8 +8,20 @@
 
 ## [Unreleased]
 
+### Added
+
+- 재배포가 허용된 온통청년 1,587건과 인천 청년 프로그램 4건을 복지로 461건과
+  함께 공개해, API key 없이 실행하는 사용자가 전국·지역 청년정책 2,052건을
+  동일하게 검색할 수 있게 했다. 활성 dataset 설치·membership·결과 parity와
+  지역 coverage Gate로 작성자 DB의 로컬 정책이 사용자 결과에 섞이지 않게 했다
+  ([QA 개선 기록](docs/troubleshooting/integration/v1_0_2_qa_improvements.md))
+
 ### Changed
 
+- 홈에 시·도→시·군·구·분야 검색 조건과 프로필 관련도 보정을 통합하고,
+  복수 관심 분야·복수 정책 분야 표시, 실제 결과가 있는 예시·관련 검색어,
+  관련도·가나다·마감·수집일 결정적 정렬을 추가했다
+  ([QA 개선 기록](docs/troubleshooting/integration/v1_0_2_qa_improvements.md))
 - 대회 제출과 일반 사용자의 최초 실행을 기준으로 README를 Quick Start·기능·
   데이터 최신성·문제 해결 중심으로 재구성하고, 기여 가이드와 제출 clean-room
   Gate를 추가했다
@@ -17,6 +29,17 @@
   Python·Frontend·테스트·로그·임시 package의 ignore 경계를 보강했다
 - 코드와 CSS에서 사용하지 않는 Vite·React starter image와 social icon sprite를
   공개 tree에서 제거했다
+
+### Fixed
+
+- `양산` 같은 접미사 없는 복합 지역 검색, 하위 시·군·구와 상위 관할·전국 정책
+  포함, 지역 미확정 안내와 지역 정책 우선순위를 보정하고, 예시 검색 무결과·
+  프로필 단일 관심 분야·주거 필터에서 복지 배지만 보이던 문제를 수정했다
+  ([QA 개선 기록](docs/troubleshooting/integration/v1_0_2_qa_improvements.md))
+- 깨끗한 심사자 DB와 작성자 DB가 서로 다른 공개 정책 집합을 반환하던 문제를
+  활성 dataset projection으로 수정했다. 새 dataset 설치 실패 시 이전 version을
+  유지하고 수동 수집 결과는 별도 승격 전까지 공개하지 않는다
+  ([공개 dataset 동등성 계약](docs/data/public_dataset_parity.md))
 
 ## [1.0.1] - 2026-08-24
 

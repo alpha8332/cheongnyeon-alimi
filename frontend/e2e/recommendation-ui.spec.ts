@@ -9,6 +9,16 @@ import {
 
 const USER_LOCAL_STORAGE_KEY = 'cheongnyeon-alimi.user-local.v1';
 
+const CATEGORY_LABELS: Record<string, string> = {
+  housing: '주거',
+  finance: '금융',
+  welfare: '복지',
+  employment: '취업',
+  startup: '창업',
+  education: '교육',
+  other: '기타',
+};
+
 async function clearUserLocalStorage(page: Page) {
   await page.goto('/');
   await page.evaluate((key) => {
@@ -41,7 +51,11 @@ async function fillRecommendationForm(
   }
 
   if (values.category !== undefined) {
-    await form.getByLabel('관심 분야').selectOption(values.category);
+    const categoryLabel = CATEGORY_LABELS[values.category];
+    if (categoryLabel === undefined) {
+      throw new Error(`지원하지 않는 관심 분야 테스트 값: ${values.category}`);
+    }
+    await form.getByRole('checkbox', { name: categoryLabel, exact: true }).check();
   }
 }
 

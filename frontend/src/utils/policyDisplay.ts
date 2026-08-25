@@ -37,6 +37,25 @@ export function getCategoryLabel(category: PolicyCategory): string {
   return CATEGORY_LABELS[category];
 }
 
+export function getPolicyCategoryDisplayOrder(
+  policy: Pick<PolicyDto, 'categories'>,
+  highlightedCategory?: PolicyCategory | null,
+): PolicyCategory[] {
+  const categories = Array.from(new Set(policy.categories));
+  if (categories.length === 0) {
+    return ['other'];
+  }
+
+  if (!highlightedCategory || !categories.includes(highlightedCategory)) {
+    return categories;
+  }
+
+  return [
+    highlightedCategory,
+    ...categories.filter((category) => category !== highlightedCategory),
+  ];
+}
+
 export function formatCategoryTags(
   policy: Pick<PolicyDto, 'categories' | 'category_text'>,
 ): string[] {

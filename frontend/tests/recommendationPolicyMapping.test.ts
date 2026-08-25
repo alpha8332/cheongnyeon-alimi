@@ -44,3 +44,14 @@ test('공개 bootstrap의 unknown 상태를 안전한 PolicyDto로 변환한다'
   assert.equal(policy.application_schedule, null);
   assert.equal(policy.data_quality_status, 'partial');
 });
+
+test('추천 응답의 복수 categories를 PolicyDto에 모두 유지한다', () => {
+  const policy = recommendationItemToPolicyDto(
+    createRecommendationItem({
+      category: 'welfare',
+      categories: ['welfare', 'housing', 'welfare'],
+    }),
+  );
+
+  assert.deepEqual(policy.categories, ['welfare', 'housing']);
+});

@@ -64,6 +64,31 @@ function normalizeOptionalAge(value: unknown): number | null {
   return value;
 }
 
+function normalizeOptionalStrings(
+  value: unknown,
+  maxItems: number,
+  maxLength: number,
+): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    const text = normalizeOptionalString(item, maxLength);
+    if (text === null || seen.has(text)) {
+      continue;
+    }
+    seen.add(text);
+    normalized.push(text);
+    if (normalized.length >= maxItems) {
+      break;
+    }
+  }
+  return normalized;
+}
+
 function normalizeConditions(value: unknown): UserSavedConditions | null {
   if (value === null || value === undefined) {
     return null;
@@ -75,16 +100,25 @@ function normalizeConditions(value: unknown): UserSavedConditions | null {
 
   const region = normalizeOptionalString(value.region, MAX_CONDITION_TEXT_LENGTH);
   const age = normalizeOptionalAge(value.age);
-  const category = normalizeOptionalString(
+  const legacyCategory = normalizeOptionalString(
     value.category,
     MAX_CONDITION_TEXT_LENGTH,
   );
+  const categories = normalizeOptionalStrings(
+    value.categories,
+    7,
+    MAX_CONDITION_TEXT_LENGTH,
+  );
+  if (categories.length === 0 && legacyCategory !== null) {
+    categories.push(legacyCategory);
+  }
+  const category = categories[0] ?? null;
 
-  if (region === null && age === null && category === null) {
+  if (region === null && age === null && categories.length === 0) {
     return null;
   }
 
-  return { region, age, category };
+  return { region, age, category, categories };
 }
 
 function normalizeUpdatedAt(value: unknown): string | null {

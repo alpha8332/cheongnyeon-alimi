@@ -13,6 +13,15 @@ PolicyCategory = Literal[
     "education",
     "other",
 ]
+PolicySort = Literal[
+    "default",
+    "title_asc",
+    "title_desc",
+    "deadline_asc",
+    "deadline_desc",
+    "collected_desc",
+    "collected_asc",
+]
 ApplicationSchedule = Literal[
     "fixed_period",
     "always",

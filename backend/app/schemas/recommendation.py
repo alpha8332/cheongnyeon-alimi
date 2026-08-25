@@ -11,6 +11,11 @@ class RecommendationRequest(BaseModel):
     age: Optional[int] = Field(default=None, ge=0, le=120, description="사용자 만 연령")
     region: Optional[str] = Field(default=None, description="거주지 (예: 서울특별시, 경기도)")
     category: Optional[str] = Field(default=None, description="관심 정책 분야 (예: finance, housing, employment, education)")
+    categories: List[str] = Field(
+        default_factory=list,
+        max_length=7,
+        description="복수 관심 정책 분야. 하나 이상 부합하면 추천 후보로 평가",
+    )
     status: Optional[RecommendationStatus] = Field(
         default=None,
         description="신청 상태 필터 (open, upcoming, closed)",
@@ -33,6 +38,7 @@ class RecommendationItem(BaseModel):
     title: str
     lead: Optional[str] = None
     category: str
+    categories: List[str] = Field(default_factory=list)
     regions: List[str] = Field(default_factory=list)
     min_age: Optional[int] = None
     max_age: Optional[int] = None

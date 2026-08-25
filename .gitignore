@@ -7,6 +7,17 @@
 APIkey.txt
 opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx
 
+# Local review documents and Office lock files
+/청년 알리미 수정안.docx
+~$*.doc
+~$*.docx
+~$*.xls
+~$*.xlsx
+~$*.ppt
+~$*.pptx
+.~lock.*#
+codex-clipboard-*.png
+
 # Operating system and editor metadata
 .DS_Store
 Thumbs.db

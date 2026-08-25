@@ -4,7 +4,7 @@
  * Aligns with Backend 06 W3-B0 `GET /api/v1/policies/search`.
  *
  * Fixed consumption constraints:
- * - Frontend sends raw Korean `q` (trimmed, required); no Frontend NL parser.
+ * - Frontend sends raw Korean `q` without NL parsing. Explicit filters may be used without `q`.
  * - Flat query params only on the wire; no nested `structured` object.
  * - Explicit flat filters override the same dimension interpreted from `q`.
  * - Region·age·status·category verdicts: match | mismatch | unknown | null (Backend sole authority).
@@ -12,7 +12,12 @@
  * - Existing GET /api/v1/policies list/detail unchanged until search API ships.
  */
 
-import type { ApplicationStatus, PolicyCategory, PolicyDto } from './policy.js';
+import type {
+  ApplicationStatus,
+  PolicyCategory,
+  PolicyDto,
+  PolicySort,
+} from './policy.js';
 
 /** Backend evaluation verdict for a searchable dimension. Aligns with Backend `MatchVerdict`. */
 export type MatchVerdict = 'match' | 'mismatch' | 'unknown';
@@ -91,7 +96,7 @@ export interface UnconfirmedCondition {
  * Mirrors Backend Pydantic request model field names, nullability, and defaults.
  */
 export interface PolicySearchQueryParams {
-  /** Natural-language query. Required after trim; empty → 422. Max 200 chars. */
+  /** Natural-language query. Optional when an explicit filter is present. Max 200 chars. */
   q: string;
   /** Optional keyword text filter. Max 100 chars. */
   keyword?: string | null;
@@ -104,6 +109,15 @@ export interface PolicySearchQueryParams {
   include_partial?: boolean;
   page?: number;
   limit?: number;
+  sort?: PolicySort;
+  /** Browser-only profile preferences sent in a POST body, never as URL filters. */
+  preferences?: PolicySearchPreferences | null;
+}
+
+export interface PolicySearchPreferences {
+  region?: string | null;
+  age?: number | null;
+  categories: PolicyCategory[];
 }
 
 /** Backend defaults — keep in sync with Backend 06 W3-B0. */
@@ -111,6 +125,7 @@ export const POLICY_SEARCH_DEFAULTS = {
   include_partial: true,
   page: 1,
   limit: 20,
+  sort: 'default',
 } as const;
 
 /** Recommended query string length limits (422 when exceeded). */
@@ -150,5 +165,6 @@ export interface PolicySearchResponse {
 /** Approved search endpoint (G1 integration). */
 export const POLICY_SEARCH_ENDPOINT = {
   method: 'GET' as const,
+  preferenceMethod: 'POST' as const,
   path: '/api/v1/policies/search' as const,
 };

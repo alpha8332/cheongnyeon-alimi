@@ -11,7 +11,6 @@ export default function AppShellLayout() {
   const { pathname } = useLocation();
 
   const isHome = pathname === '/';
-  const isRecommendations = pathname.startsWith('/recommendations');
   const isPrograms = pathname.startsWith('/programs');
   const isFavorites = pathname.startsWith('/favorites');
   const isCalendar = pathname.startsWith('/calendar');
@@ -28,14 +27,6 @@ export default function AppShellLayout() {
         </Link>
         <Link to="/" className={navClass(isHome)} title="홈" aria-label="홈">
           🏠
-        </Link>
-        <Link
-          to="/recommendations"
-          className={navClass(isRecommendations)}
-          title="맞춤 추천"
-          aria-label="맞춤 추천"
-        >
-          🎯
         </Link>
         <Link
           to="/programs"

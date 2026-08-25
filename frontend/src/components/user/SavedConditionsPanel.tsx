@@ -1,17 +1,17 @@
 import { useId, useState, type FormEvent } from 'react';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
+import SavedCategorySelector from '@/components/user/SavedCategorySelector';
 import { useSavedConditions } from '@/hooks/useSavedConditions';
 import {
-  SAVED_CONDITIONS_CATEGORY_OPTIONS,
   SAVED_CONDITIONS_MAX_AGE,
   SAVED_CONDITIONS_MIN_AGE,
   buildSavedConditionsKey,
   formatSavedConditionsSummary,
+  getSavedConditionCategories,
   parseSavedConditionsDraft,
   toSavedConditionsDraft,
 } from '@/utils/savedConditionsForm';
-import { getCategoryLabel } from '@/utils/policyDisplay';
 
 export default function SavedConditionsPanel() {
   const formId = useId();
@@ -114,26 +114,16 @@ export default function SavedConditionsPanel() {
           />
         </label>
 
-        <label className="saved-conditions-form__field">
-          <span className="saved-conditions-form__label">관심 분야</span>
-          <select
-            className="saved-conditions-form__input"
-            value={draft.category ?? ''}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                category: event.target.value.length > 0 ? event.target.value : null,
-              }))
-            }
-          >
-            <option value="">선택 안 함</option>
-            {SAVED_CONDITIONS_CATEGORY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {getCategoryLabel(option)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SavedCategorySelector
+          value={getSavedConditionCategories(draft)}
+          onChange={(categories) =>
+            setDraft((current) => ({
+              ...current,
+              category: categories[0] ?? null,
+              categories,
+            }))
+          }
+        />
 
         <div className="saved-conditions-form__actions">
           <Button type="submit">조건 저장</Button>

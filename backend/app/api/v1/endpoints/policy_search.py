@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories.policy_search import PolicySearchRepository
-from app.schemas.policy_search import PolicySearchResponse
+from app.schemas.policy import PolicySort
+from app.schemas.policy_search import (
+    PolicySearchPostRequest,
+    PolicySearchPreferences,
+    PolicySearchQueryParams,
+    PolicySearchResponse,
+)
 from app.services.policy_search_parser import parse_search_query
 
 router = APIRouter()
@@ -23,52 +29,31 @@ CategoryQuery = Literal[
 ApplicationStatusQuery = Literal["open", "closed", "scheduled"]
 
 
-@router.get("/search", response_model=PolicySearchResponse, summary="정책 자연어 검색")
-def search_policies_api(
-    q: str = Query(
-        ...,
-        description="자연어 검색어 (공백 제거 후 1자 이상 필수, 권장 최대 200자)",
-        max_length=200,
-    ),
-    keyword: Annotated[
-        str | None,
-        Query(max_length=100, description="명시적 키워드 필터"),
-    ] = None,
-    region: Annotated[
-        str | None,
-        Query(max_length=100, description="명시적 지역 alias/name 문자열"),
-    ] = None,
-    age: Annotated[
-        int | None,
-        Query(ge=0, le=150, description="명시적 만 연령"),
-    ] = None,
-    category: Annotated[
-        CategoryQuery | None,
-        Query(description="명시적 정책 카테고리"),
-    ] = None,
-    status_param: Annotated[
-        ApplicationStatusQuery | None,
-        Query(alias="status", description="신청 상태 필터"),
-    ] = None,
-    include_partial: bool = Query(
-        True,
-        description="partial 정책 포함 여부 (기본값: true)",
-    ),
-    page: int = Query(1, ge=1, description="페이지 번호"),
-    limit: int = Query(20, ge=1, le=100, description="페이지 당 결과 수"),
-    db: Session = Depends(get_db),
+def _execute_policy_search(
+    request: PolicySearchQueryParams,
+    db: Session,
+    *,
+    preferences: PolicySearchPreferences | None = None,
 ) -> PolicySearchResponse:
-
-    # 1. q 파라미터 공백 검증 (q_raw 원문 보존 전달)
-    q_raw = q
-    q_clean = q.strip()
-    if not q_clean:
+    # 1. 자연어 검색어 또는 명시 조건이 하나 이상인지 검증
+    q_raw = request.q
+    q_clean = request.q.strip()
+    has_explicit_condition = any(
+        (
+            bool(request.keyword and request.keyword.strip()),
+            bool(request.region and request.region.strip()),
+            request.age is not None,
+            request.category is not None,
+            request.status is not None,
+        )
+    )
+    if not q_clean and not has_explicit_condition:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=[
                 {
                     "loc": ["query", "q"],
-                    "msg": "q parameter must not be empty or blank",
+                    "msg": "q or at least one explicit search condition is required",
                     "type": "value_error",
                 }
             ],
@@ -77,11 +62,11 @@ def search_policies_api(
     # 2. q_raw 원문을 파서에 넘김 (q_raw 보존 계약)
     interpreted = parse_search_query(
         q=q_raw,
-        keyword=keyword,
-        region=region,
-        age=age,
-        category=category,
-        status=status_param,
+        keyword=request.keyword,
+        region=request.region,
+        age=request.age,
+        category=request.category,
+        status=request.status,
         db=db,
     )
 
@@ -122,15 +107,97 @@ def search_policies_api(
     repo = PolicySearchRepository(db)
     items, total = repo.search_policies(
         interpreted,
-        include_partial=include_partial,
-        page=page,
-        limit=limit,
+        preferences=preferences,
+        include_partial=request.include_partial,
+        page=request.page,
+        limit=request.limit,
+        sort=request.sort,
     )
 
     return PolicySearchResponse(
         total=total,
-        page=page,
-        limit=limit,
+        page=request.page,
+        limit=request.limit,
         interpreted_conditions=interpreted,
         items=items,
+    )
+
+
+@router.get(
+    "/search",
+    response_model=PolicySearchResponse,
+    summary="정책 자연어·조건 검색",
+)
+def search_policies_api(
+    q: str = Query(
+        "",
+        description=(
+            "자연어 검색어. 비어 있으면 region, age, category, status, "
+            "keyword 중 하나 이상의 명시 조건 필요"
+        ),
+        max_length=200,
+    ),
+    keyword: Annotated[
+        str | None,
+        Query(max_length=100, description="명시적 키워드 필터"),
+    ] = None,
+    region: Annotated[
+        str | None,
+        Query(max_length=100, description="명시적 지역 alias/name 문자열"),
+    ] = None,
+    age: Annotated[
+        int | None,
+        Query(ge=0, le=150, description="명시적 만 연령"),
+    ] = None,
+    category: Annotated[
+        CategoryQuery | None,
+        Query(description="명시적 정책 카테고리"),
+    ] = None,
+    status_param: Annotated[
+        ApplicationStatusQuery | None,
+        Query(alias="status", description="신청 상태 필터"),
+    ] = None,
+    include_partial: bool = Query(
+        True,
+        description="partial 정책 포함 여부 (기본값: true)",
+    ),
+    page: int = Query(1, ge=1, description="페이지 번호"),
+    limit: int = Query(20, ge=1, le=100, description="페이지 당 결과 수"),
+    sort: PolicySort = Query(
+        "default",
+        description=(
+            "정렬: default(관련도), title_asc, title_desc, deadline_asc, "
+            "deadline_desc, collected_desc, collected_asc"
+        ),
+    ),
+    db: Session = Depends(get_db),
+) -> PolicySearchResponse:
+    request = PolicySearchQueryParams(
+        q=q,
+        keyword=keyword,
+        region=region,
+        age=age,
+        category=category,
+        status=status_param,
+        include_partial=include_partial,
+        page=page,
+        limit=limit,
+        sort=sort,
+    )
+    return _execute_policy_search(request, db)
+
+
+@router.post(
+    "/search",
+    response_model=PolicySearchResponse,
+    summary="프로필 우선순위 정책 검색",
+)
+def search_policies_with_preferences_api(
+    request: PolicySearchPostRequest,
+    db: Session = Depends(get_db),
+) -> PolicySearchResponse:
+    return _execute_policy_search(
+        request,
+        db,
+        preferences=request.preferences,
     )

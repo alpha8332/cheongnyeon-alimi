@@ -94,3 +94,34 @@ DB URL은 명령행 기록이나 문서에 평문으로 남기지 말고 운영 
 따라서 다음 해소 순서는 허용 Source 56건의 안전한 정규화 방식 확정, 지역 92건의
 재배포 권한·완전 수집 보강, 제목 일치 16건의 실제 중복 판정이다. 현재 판정은
 `blocked`이며 이 수치를 Release 완료 증거로 사용하지 않는다.
+
+## 2026-08-24 해소 결과
+
+앞 절의 `blocked`는 수정 전 감사 결과다. 이후 다음 변경으로 현재 공개 Release
+후보의 사용자 결과 동등성 Gate를 통과했다.
+
+1. 재배포가 허용된 온통청년 전체 청년정책과 인천 파일 데이터를 공개 Source에
+   추가했다.
+2. 공개할 수 없는 지역 웹 Source는 작성자 DB에서 삭제하지 않되 사용자 API의
+   활성 membership에서 제외했다.
+3. 후보 artifact를 격리 DB에 설치하고 사용자 목록·검색·추천·상세 projection과
+   identity hash를 비교하는 release Gate를 추가했다.
+4. 활성 최상위 관할과 관할별 단독 대상 정책이 없으면 발행을 막는 지역 coverage
+   Gate를 추가했다.
+5. manifest·artifact·row·identity 검증과 Policy upsert를 한 트랜잭션으로 묶고,
+   실패 시 이전 활성 version을 유지했다.
+
+현재 활성 version `public-bootstrap-20260824-897152e7a18c15`은 2,052건이며
+복지로 461건, 온통청년 1,587건, 인천 공공데이터 4건으로 구성된다. 활성 identity
+SHA-256은
+`9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5`다.
+
+`2026-08-25` 현재 브랜치에서 `run_docker.bat -NoBrowser`로 다시 설치한 뒤
+사용자 목록 API `total=2052`, 주거 목록·자연어 검색·추천의 category 불일치 0건,
+Compose 장기 서비스 6개 health를 확인했다. 상세 구현과 Browser 결과는
+[v1.0.2 QA 개선 기록](../troubleshooting/integration/v1_0_2_qa_improvements.md)에
+기록한다.
+
+이 통과는 같은 dataset version의 공개 identity 동등성을 의미한다.
+`CollectionRun`은 각 PC의 bootstrap·수동 수집·재실행 감사 기록이므로 환경마다
+건수가 달라도 정상이며 parity 비교 대상이 아니다.

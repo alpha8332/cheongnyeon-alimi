@@ -104,6 +104,9 @@
   `W6-P0`~`W6-P5` Critical Path와 `W6-G0_FINAL_RELEASE_PASS`
 - [오픈소스 개발대회 제출 준비 체크리스트](contest/open_source_submission_checklist.md):
   `v1.0.2` 공개 저장소·README·clone/ZIP·신규 Windows clean-room Gate
+- [v1.0.2 공개 데이터·검색·추천 QA 개선 기록](troubleshooting/integration/v1_0_2_qa_improvements.md):
+  작성자·심사자 활성 dataset 동등성, 지역 검색, 복수 분야·관심 분야, 정렬과
+  홈 추천 통합의 실제 구현·Docker·API·Browser 검증
 - [Production Data Refresh and Delivery 개발 기록](development/development_notes/deploy/production_data_refresh_delivery.md):
   W6-P0 공개 dataset 계약부터 W6-P5 clone·ZIP clean-room 457건 actual 결과
 - [Production 배포와 데이터셋 발행](operations/production_delivery.md): GHCR
@@ -254,13 +257,13 @@
   DTL4-0 시작 SHA·환경·Forest 소유 경계와 W4-G0 진행 근거
 - [Release 2 Feature Acceptance 개발 기록](development/development_notes/integration/release_2_feature_acceptance.md):
   DTL5-0 W5-G0 기준선, Data 06 포함 actual E2E·독립 검증과 Release 2 판정 근거
-- [Policy API 계약](api/policies.md): 정책 목록·상세, pagination,
-  category·region·status 필터와 partial 노출 규칙
+- [Policy API 계약](api/policies.md): 정책 목록·상세·자연어 검색, pagination,
+  category·region·status 필터, 복수 프로필 선호도·정렬과 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약
 - [CollectionRun 관리자 API 계약](api/admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 실행 및 stale 판정 계약
 - [관리자 정책 데이터 표 API 계약](api/admin_policies.md): 관리자 읽기 전용 정책 데이터 표 목록·상세, 페이징 및 Allowlist 정렬 계약
 - [관리자 로그 및 감사 API 계약](api/admin_logs.md): 관리자 서버 로그 파일/이벤트 조회, 회전 archive 삭제 및 Audit 감사 기록 계약
-- [맞춤 정책 추천 API 계약](api/recommendation.md): 결정적 맞춤 정책 추천, 부합도 점수, 추천 사유 및 비단정 계약
+- [맞춤 정책 추천 API 계약](api/recommendation.md): 복수 관심 분야·지역·연령 기반 결정적 추천, 부합도 점수, 추천 사유 및 비단정 계약
 - [문서 품질 검증](development/documentation_validation.md): 로컬 검증 명령,
   검사 범위와 CI 연동 기준
 - [Backend Windows 로컬 환경](development/backend_local_setup.md):

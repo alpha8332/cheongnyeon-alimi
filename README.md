@@ -84,17 +84,36 @@ docker compose --env-file .env.compose down
 
 | 영역 | 제공 기능 |
 | --- | --- |
-| 정책 탐색 | 키워드·지역·연령·분야·신청 상태 검색, 일부 정보 정책 선택 조회 |
+| 정책 탐색 | 키워드·시·도·시·군·구·연령·분야·신청 상태 검색, 관련도·가나다·마감·수집일 정렬 |
 | 정책 상세 | 핵심 신청 조건, 제외 조건, 필요 서류, D-Day, 공식 원문 연결 |
-| 맞춤 추천 | 사용자가 저장한 지역·연령·관심 분야에 따른 결정적 추천과 이유 |
+| 맞춤 추천 | 저장한 지역·연령·복수 관심 분야에 따른 결정적 추천, 프로필 우선순위와 추천 이유 |
 | 개인 도구 | 브라우저 기반 조건 저장, 폴더형 북마크, 마감 알림·달력, `.ics` 다운로드 |
 | 관리자 | 4자리 PIN 세션, 정책 데이터 조회, CollectionRun 실행·이력·상세·stale 표시 |
 | 품질·감사 | 수집 품질 집계, 구조화 로그 조회·보관 로그 정리와 감사 기록 |
 | 데이터 운영 | 중앙 Celery·Redis 수집 queue, 정책 생명주기, 공개 dataset 검증·승격·rollback |
 
-북마크와 맞춤 조건은 현재 브라우저의 `localStorage`에만 저장되며 서버로 전송하지
-않습니다. 추천 결과는 신청 자격의 최종 판정이 아니므로 반드시 공식 원문을 함께
-확인해야 합니다.
+북마크와 맞춤 조건은 현재 브라우저의 `localStorage`에 저장됩니다. 검색·추천을
+실행할 때 필요한 지역·연령·관심 분야만 사용자의 로컬 Backend로 전달하며 외부
+정책 Source나 중앙 운영 서버에 저장하지 않습니다. 추천 결과는 신청 자격의 최종
+판정이 아니므로 반드시 공식 원문을 함께 확인해야 합니다.
+
+### v1.0.2 QA 개선
+
+- 홈 예시 검색어는 실제 결과가 있는 query로 연결하고, 넓거나 유사한 표현에는
+  사용자가 선택할 수 있는 관련 검색어를 제공합니다.
+- 지역을 선택하면 해당 시·군·구, 상위 시·도와 전국 대상 정책을 함께 찾습니다.
+  지역 근거가 없는 정책은 전국으로 추정하지 않고 `지역 일치 미확인`으로
+  구분합니다.
+- 프로필 관심 분야는 여러 개 저장할 수 있으며, 자연어 검색 조건을 덮지 않고
+  결과의 관련도 우선순위를 보정합니다.
+- 복지·주거처럼 여러 분야에 해당하는 정책은 목록·검색·추천·상세에서 모든 분야를
+  표시합니다.
+- 작성자 DB의 로컬 수집 정책과 공개 dataset을 분리해, 같은 dataset version을
+  설치한 심사자와 일반 사용자가 같은 공개 정책 identity 집합을 조회합니다.
+
+구현 범위와 실제 API·Docker·모바일 검증 결과는
+[v1.0.2 공개 데이터·검색·추천 QA 개선 기록](docs/troubleshooting/integration/v1_0_2_qa_improvements.md)에서
+확인할 수 있습니다.
 
 ## 서비스 구조
 
@@ -121,13 +140,24 @@ FastAPI Backend, Celery worker·scheduler, React Frontend입니다. 자세한 �
 ## 정책 데이터와 최신성
 
 - 최초 실행에는 온통청년·복지로 API key가 필요하지 않습니다.
-- 현재 공개 bootstrap dataset은 검증된 청년정책 457건으로 구성됩니다.
+- 현재 공개 bootstrap dataset은 `dataset-latest` pointer가 가리키는 검증된
+  versioned artifact이며, 정책 수·Source별 건수·SHA-256은 manifest로 확인합니다.
 - `run_docker.bat` 재실행 시 최신 dataset pointer와 hash를 다시 검증합니다.
 - 신규·변경 정책은 중앙 완전 수집이 성공한 경우에만 새 dataset으로 승격됩니다.
 - 종료일이 지난 정책은 KST 기준 기본 검색·추천에서 즉시 제외됩니다.
 - 실패·부분 수집에서는 기존 정책을 임의로 비활성화하지 않습니다.
 - 실제 Raw, PostgreSQL dump, API key와 개인정보는 GitHub Release에 포함하지
   않습니다.
+
+`2026-08-25`에 검증한 latest pointer는
+`public-bootstrap-20260824-897152e7a18c15`이며 총 2,052건입니다. Source별로
+복지로 461건, 온통청년 1,587건, 인천 공공데이터 4건이고, 후보 2,114건 중
+내용 안전성 경계를 통과하지 못한 62건은 제외됐습니다. 이 수치는 날짜가 고정된
+검증 snapshot이며 이후 latest pointer가 승격되면 manifest의 값을 우선합니다.
+
+관리자 화면의 `CollectionRun` 수는 설치·재실행·수동 수집에 따른 로컬 감사
+기록이므로 환경마다 다를 수 있습니다. 사용자에게 공개되는 정책 수와 identity는
+활성 dataset version과 manifest를 기준으로 비교합니다.
 
 데이터의 재배포 Source·허용 필드·출처 표시는
 [공개 정책 dataset 계약](docs/data/public_policy_dataset.md), 생명주기 규칙은
@@ -159,6 +189,7 @@ FastAPI Backend, Celery worker·scheduler, React Frontend입니다. 자세한 �
 - Backend Windows 환경: [backend_local_setup.md](docs/development/backend_local_setup.md)
 - Collector 실행과 API key 경계: [collector.md](docs/operations/collector.md)
 - Production 배포·dataset 승격: [production_delivery.md](docs/operations/production_delivery.md)
+- v1.0.2 QA 개선 기록: [v1_0_2_qa_improvements.md](docs/troubleshooting/integration/v1_0_2_qa_improvements.md)
 - 변경 이력: [CHANGELOG.md](CHANGELOG.md)
 - 기여 방법: [CONTRIBUTING.md](CONTRIBUTING.md)
 

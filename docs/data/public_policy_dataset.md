@@ -28,6 +28,7 @@ API key와 작성자 로컬 PostgreSQL이 없는 사용자도 공개 재배포�
 | --- | --- | --- |
 | `bokjiro-central-welfare-api` | include | 공공데이터포털의 한국사회보장정보원 중앙부처복지서비스가 이용허락범위를 `제한 없음`으로 표시 |
 | `youthcenter-api` | include | 공공데이터포털 이용허락범위 `제한 없음` 및 프로젝트의 API 이용·최소 정규화 데이터 재배포 승인 확인 |
+| `data-go-kr-incheon-youth-programs` | include | 공공데이터포털의 인천광역시 청년공간 유유기지 프로그램 파일 데이터가 이용허락범위를 `제한 없음`으로 표시 |
 | `regional-*` | exclude | Source별 수집은 승인됐으나 명시적 개방 라이선스가 없고 원문·이미지 비재배포 경계로 운영 |
 | `cheonan-youthcenter-web` | exclude | 별도 이용약관을 찾지 못했고 사이트가 `all rights reserved`를 표시 |
 | `kosaf-scholarship-web` 등 보완 웹 Source | exclude | 공개 접근은 가능하지만 정규화 결과의 재배포 허가가 명시되지 않음 |
@@ -41,6 +42,7 @@ API key와 작성자 로컬 PostgreSQL이 없는 사용자도 공개 재배포�
 
 - [한국사회보장정보원 중앙부처복지서비스](https://www.data.go.kr/data/15090532/openapi.do)
 - [한국고용정보원 온통청년 청년정책API](https://www.data.go.kr/data/15143273/openapi.do)
+- [인천광역시 청년공간 유유기지 프로그램 정보](https://www.data.go.kr/data/15038491/fileData.do?recommendDataYn=Y)
 - [온통청년 OPEN API 이용방법](https://www.youthcenter.go.kr/cmnFooter/openapiIntro/oaiGuide)
 - [온통청년 이용약관](https://www.youthcenter.go.kr/cmnFooter/termsInfo)
 - [고용24 저작권정책](https://m.work24.go.kr/cm/c/d/0130/retrieveCpyrPoly.do)
@@ -130,6 +132,34 @@ Acceptance DB `f838d4191cb5cc33c324d3e946c7a12ed8a56b1b` 기준:
 
 Artifact는 `runtime/public_dataset/`에 생성해 Git에서 제외했다. 공개 발행은
 P4 promotion Gate 뒤 새 SHA·새 version으로 다시 생성한다.
+
+## 2026-08-25 활성 공개 dataset
+
+위 W6-P0 표는 최초 계약 검증의 역사적 기준선이다. 현재 `dataset-latest`
+pointer는 이후 Source 확대와 parity·지역 coverage Gate를 통과한 다음 version을
+가리킨다.
+
+| 지표 | 결과 |
+| --- | ---: |
+| dataset version | `public-bootstrap-20260824-897152e7a18c15` |
+| 발행 후보 | 2,114건 |
+| 내용 안전성 제외 | 62건 |
+| 공개 artifact | 2,052건 |
+| 복지로 | 461건 |
+| 온통청년 | 1,587건 |
+| 인천 공공데이터 | 4건 |
+| artifact bytes | 27,740,580 |
+| artifact SHA-256 | `98703dc79ca53063c3685008d8cede04c4ed8f79dbad53c993e9ac480d6a0860` |
+| 활성 identity SHA-256 | `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5` |
+
+제외 62건은 이메일 60건과 개인 휴대전화 형식 2건이다. Raw payload, DB dump,
+비밀 query key와 기관 연락처는 artifact에 포함되지 않았다. 숫자는 해당 version의
+immutable manifest에 고정되며, 향후 pointer가 바뀌면 새 manifest를 권위값으로
+사용한다.
+
+설치 시에는 [공개 dataset 사용자 결과 동등성 계약](public_dataset_parity.md)에
+따라 활성 membership을 교체한다. 작성자 DB에 allowlist 밖의 지역 웹 정책이
+남아 있어도 사용자 API 결과에는 포함하지 않는다.
 
 ## 생성과 검증
 
