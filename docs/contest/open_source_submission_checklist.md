@@ -2,10 +2,10 @@
 
 ## 기준
 
-- 상태: QA 브랜치 actual 통과, 현재 HEAD 원격 clone·ZIP Final Gate 대기
+- 상태: `v1.0.2` Production Release 발행 완료, 제출 패키지 최종 대조 진행
 - 대상 Release: `v1.0.2`
-- 현재 작업 브랜치: `fix/qa/v1.0.2-v1`
-- 현재 검증 SHA: `03eb506176ff6b081febdbcee013eece3fcc28e9`
+- Release Git SHA: `c3d3935a196a024037168e9afb5a94dfef4542e3`
+- 기능 QA 기준 SHA: `03eb506176ff6b081febdbcee013eece3fcc28e9`
 - 목표: 심사자가 README만 읽고 Git clone 또는 GitHub ZIP에서 전체 서비스를
   재현하고, 공개 저장소의 코드·문서·라이선스·데이터 경계를 확인할 수 있게 한다.
 
@@ -40,7 +40,7 @@ history의 `venv/`와 안내 문서 blob은 남아 있지만 현재 checkout과 
 - [x] v1.0.2 지역 검색·dataset 동등성·정렬·복수 분야·프로필 추천 개선 기록
 - [x] `CONTRIBUTING.md` 추가
 - [ ] 최종 UI 대표 화면과 대체 텍스트 확정
-- [ ] `v1.0.2` Release와 CHANGELOG 확정
+- [x] `v1.0.2` Release와 CHANGELOG 확정
 
 ## v1.0.2 사전 clean-room actual
 
@@ -130,16 +130,33 @@ hash가 달랐지만, 줄바꿈 정규화 내용과 GitHub ZIP의 Git blob ID는
 고정했다. `CollectionRun`은 로컬 실행 감사이므로 환경별 건수는 비교하지 않고,
 활성 dataset row 수와 identity hash를 사용자 결과 동등성 기준으로 사용한다.
 
+## v1.0.2 최종 발행 actual
+
+`2026-08-25`에 QA 개선을 PR #37로 `develop`, PR #38로 `main`에 병합하고,
+출시 CHANGELOG를 PR #39와 #40으로 같은 순서에 반영했다. 네 PR의 CI가 모두
+통과한 뒤 최종 `main` `c3d3935`에 annotated `v1.0.2` tag를 생성했다.
+
+| 항목 | 실제 결과 |
+| --- | --- |
+| 최종 local smoke | `ed20ab7`에서 현재 image 재빌드, Backend health `ok`, 공개 정책 2,052건, 장기 서비스 6개 healthy |
+| Production workflow | [run 32840085712](https://github.com/alpha8332/cheongnyeon-alimi/actions/runs/32840085712), 3분 51초, 전체 성공 |
+| Release | [`v1.0.2`](https://github.com/alpha8332/cheongnyeon-alimi/releases/tag/v1.0.2), latest·non-draft·non-prerelease |
+| Release Git SHA | `c3d3935a196a024037168e9afb5a94dfef4542e3` |
+| dataset | `public-bootstrap-20260824-897152e7a18c15`, 2,052건 |
+| Release 영수증 | `production-release.json`, SHA-256 `440bc6b40f47b8f91d1d2ee4c73c8ec8ab67c77fa2abcc55f9bd62eb658057d2` |
+| 공급망 증거 | GHCR Backend·Frontend digest, SBOM·provenance 2건 생성 |
+| source archive | GitHub source ZIP HTTP `200`, `application/zip` 확인 |
+
 ## 최종 제출 Gate
 
-- [ ] 후보 commit·PR CI 통과와 `main`·`develop` 동기화
+- [x] 후보 commit·PR CI 통과와 `main`·`develop` content 동기화
 - [ ] 원격 `main`의 fresh clone에서 README 절차 통과
 - [ ] 원격 `main` Download ZIP에서 README 절차 통과
 - [x] 이전 원격 후보 `92f52fe` clone·ZIP 각각 고유 env·cache·Volume에서 457건과 Browser 흐름 대조
 - [ ] 현재 QA HEAD `03eb506` fresh clone에서 2,052건·identity hash·Browser 흐름 대조
 - [ ] 현재 QA HEAD `03eb506` Download ZIP에서 2,052건·identity hash·Browser 흐름 대조
 - [ ] Docker image/cache가 없는 별도 Windows PC 또는 동등한 신규 환경 검증
-- [ ] `v1.0.2` annotated tag·Production Release·source archive 검증
+- [x] `v1.0.2` annotated tag·Production Release·source archive 발행 검증
 - [ ] 대회 제출 양식·시연 URL·대표 화면·라이선스·SBOM·성과 근거 최종 대조
 
 위 항목이 모두 끝나기 전에는 “README만으로 신규 PC 실행 완료”라고 판정하지
