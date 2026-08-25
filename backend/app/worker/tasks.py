@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import random
+import os
 from uuid import UUID
 
+from celery.worker.control import inspect_command
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
@@ -17,6 +19,19 @@ from app.services.manual_collection import execute_manual_collection_run
 from app.services.manual_collection import execute_complete_collection_run
 from app.services.source_collection_lock import source_collection_lock
 from app.worker.celery_app import celery_app
+from collectors import default_registry
+
+
+@inspect_command()
+def collector_runtime_status(_state) -> dict[str, object]:
+    """Expose only registry and credential-presence booleans to admin probes."""
+    return {
+        "registered_source_ids": list(default_registry.source_ids()),
+        "credential_configured": {
+            "bokjiro-central-welfare-api": bool(os.getenv("BOKJIRO_API_KEY", "").strip()),
+            "youthcenter-api": bool(os.getenv("YOUTHCENTER_API_KEY", "").strip()),
+        },
+    }
 
 
 def _retry_delay(retries: int) -> int:
