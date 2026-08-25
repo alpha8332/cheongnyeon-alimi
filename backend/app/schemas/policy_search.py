@@ -43,6 +43,19 @@ class PolicySearchQueryParams(BaseModel):
     limit: int = Field(default=20, ge=1, le=100, description="페이지당 결과 수")
 
 
+class PolicySearchPreferences(BaseModel):
+    region: str | None = Field(default=None, max_length=100)
+    age: int | None = Field(default=None, ge=0, le=150)
+    categories: list[PolicyCategory] = Field(
+        default_factory=list,
+        max_length=7,
+    )
+
+
+class PolicySearchPostRequest(PolicySearchQueryParams):
+    preferences: PolicySearchPreferences | None = None
+
+
 class ConditionItem(BaseModel):
     dimension: SearchDimension = Field(..., description="해석된 차원 종류")
     value: Any = Field(..., description="추출 또는 명시 지정된 차원 값")

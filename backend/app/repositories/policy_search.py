@@ -291,6 +291,7 @@ class PolicySearchRepository:
         self,
         interpreted: "InterpretedConditions",
         *,
+        preferences: "PolicySearchPreferences | None" = None,
         include_partial: bool = True,
         page: int = 1,
         limit: int = 20,
@@ -298,8 +299,9 @@ class PolicySearchRepository:
         """PostgreSQL/DB 기반 정책 검색 Query Builder.
 
         mismatch 항목을 확정 제외하고 결정적 정렬을 적용한다:
-        score DESC -> 지역 직접성/범위 -> unknown_count ASC
-        -> status 우선순위 -> policy.id ASC
+        score DESC -> 프로필 일치 차원 DESC -> 프로필 미확인 차원 ASC
+        -> 지역 직접성/범위 -> unknown_count ASC -> status 우선순위
+        -> policy.id ASC. 프로필 선호도는 검색 후보를 제외하지 않는다.
         """
         from app.models.policy import Policy
         from app.schemas.policy import PolicyRead
@@ -376,13 +378,34 @@ class PolicySearchRepository:
 
         policies = tuple(self.db.scalars(query).all())
 
+        preference_region_decisions = {}
+        if preferences is not None and preferences.region:
+            preference_region_resolution = eval_service.resolve_region_alias(
+                preferences.region
+            )
+            preference_region_decisions = eval_service.evaluate_policy_regions(
+                policies,
+                preference_region_resolution,
+            )
+
         # 지역 조건 사전 해석
         query_resolution = None
         if req_region is not None:
             query_resolution = eval_service.resolve_region_alias(str(req_region.value))
 
         evaluated_items: list[
-            tuple[float, int, int, int, int, int, int, PolicySearchResultItem]
+            tuple[
+                float,
+                int,
+                int,
+                int,
+                int,
+                int,
+                int,
+                int,
+                int,
+                PolicySearchResultItem,
+            ]
         ] = []
 
         for policy in policies:
@@ -423,6 +446,48 @@ class PolicySearchRepository:
 
             if is_mismatch:
                 continue
+
+            # --- 저장 프로필 선호도 판정 ---
+            # 검색 후보를 제외하지 않고 동일 관련도 안에서만 우선 정렬한다.
+            preference_match_count = 0
+            preference_unknown_count = 0
+            if preferences is not None:
+                if preferences.categories:
+                    if policy.categories:
+                        if set(policy.categories).intersection(
+                            preferences.categories
+                        ):
+                            preference_match_count += 1
+                            reason_codes.append("PROFILE_CATEGORY_MATCH")
+                    else:
+                        preference_unknown_count += 1
+
+                if preferences.age is not None:
+                    preference_age = eval_service.evaluate_policy_age(
+                        policy.id,
+                        preferences.age,
+                    )
+                    if preference_age.state == MatchState.MATCH:
+                        preference_match_count += 1
+                        reason_codes.append("PROFILE_AGE_MATCH")
+                    elif preference_age.state == MatchState.UNKNOWN:
+                        preference_unknown_count += 1
+
+                if preferences.region:
+                    preference_region = preference_region_decisions.get(
+                        policy.id
+                    )
+                    if (
+                        preference_region is not None
+                        and preference_region.state == MatchState.MATCH
+                    ):
+                        preference_match_count += 1
+                        reason_codes.append("PROFILE_REGION_MATCH")
+                    elif (
+                        preference_region is None
+                        or preference_region.state == MatchState.UNKNOWN
+                    ):
+                        preference_unknown_count += 1
 
             # --- Age 판정 ---
             if req_age is not None:
@@ -570,6 +635,8 @@ class PolicySearchRepository:
             evaluated_items.append(
                 (
                     score,
+                    preference_match_count,
+                    preference_unknown_count,
                     region_group,
                     region_breadth,
                     region_relation,
@@ -582,12 +649,22 @@ class PolicySearchRepository:
 
         # score가 같은 지역 검색은 직접·좁은 범위 정책을 광역/전국/미확정보다 우선한다.
         evaluated_items.sort(
-            key=lambda x: (-x[0], x[1], x[2], x[3], x[4], x[5], x[6])
+            key=lambda x: (
+                -x[0],
+                -x[1],
+                x[2],
+                x[3],
+                x[4],
+                x[5],
+                x[6],
+                x[7],
+                x[8],
+            )
         )
 
         total = len(evaluated_items)
         start_idx = (page - 1) * limit
         end_idx = start_idx + limit
-        paginated_items = [x[7] for x in evaluated_items[start_idx:end_idx]]
+        paginated_items = [x[9] for x in evaluated_items[start_idx:end_idx]]
 
         return paginated_items, total

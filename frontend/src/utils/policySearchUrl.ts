@@ -2,6 +2,7 @@ import {
   POLICY_SEARCH_DEFAULTS,
   POLICY_SEARCH_QUERY_LIMITS,
   type PolicySearchQueryParams,
+  type PolicySearchPreferences,
 } from '@/types/policySearch';
 import {
   POLICY_SEARCH_URL_DEFAULTS,
@@ -193,6 +194,7 @@ export function hasPolicySearchQuery(
  */
 export function toPolicySearchRequest(
   state: PolicySearchUrlQueryState,
+  preferences: PolicySearchPreferences | null = null,
 ): PolicySearchQueryParams {
   const trimmedQ = state.q.trim();
 
@@ -206,6 +208,7 @@ export function toPolicySearchRequest(
     include_partial: state.include_partial,
     page: state.page,
     limit: state.limit,
+    preferences,
   };
 }
 

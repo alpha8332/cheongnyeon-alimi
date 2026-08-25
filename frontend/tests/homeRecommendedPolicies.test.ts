@@ -96,6 +96,7 @@ test('buildHomeRecommendationRequest는 공식 프로필 필드만 사용한다'
     region: '서울',
     age: 25,
     category: 'housing',
+    categories: ['housing'],
     include_partial: true,
     limit: 12,
   });

@@ -3860,6 +3860,41 @@ a.policy-card__arrow {
   line-height: 1.45;
 }
 
+.saved-conditions-form__categories {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.saved-conditions-form__category-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.saved-conditions-form__category-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.saved-conditions-form__category-option:has(input:checked) {
+  border-color: var(--sky);
+  background: var(--sky-soft);
+}
+
+.saved-conditions-form__category-option input:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
 .recommendation-region-unconfirmed-badge {
   display: inline-flex;
   margin-left: 8px;

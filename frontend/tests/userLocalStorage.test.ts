@@ -78,6 +78,38 @@ test('normalizeUserLocalStoragePayload는 유효 payload를 정규화한다', ()
     region: '서울',
     age: 24,
     category: null,
+    categories: [],
+  });
+});
+
+test('normalizeUserLocalStoragePayload는 기존 단일 category를 categories로 호환한다', () => {
+  const normalized = normalizeUserLocalStoragePayload(samplePayload());
+
+  assert.deepEqual(normalized?.conditions, {
+    region: '천안시',
+    age: 27,
+    category: 'housing',
+    categories: ['housing'],
+  });
+});
+
+test('normalizeUserLocalStoragePayload는 다중 categories의 순서와 대표 category를 유지한다', () => {
+  const normalized = normalizeUserLocalStoragePayload(
+    samplePayload({
+      conditions: {
+        region: '경기도',
+        age: 30,
+        category: 'housing',
+        categories: ['finance', 'housing', 'finance'],
+      },
+    }),
+  );
+
+  assert.deepEqual(normalized?.conditions, {
+    region: '경기도',
+    age: 30,
+    category: 'finance',
+    categories: ['finance', 'housing'],
   });
 });
 
@@ -203,7 +235,10 @@ test('writeUserLocalStorage와 readUserLocalStorage round-trip', () => {
   const snapshot = readUserLocalStorage(storage);
   assert.equal(snapshot.source, 'storage');
   assert.deepEqual(snapshot.data.bookmarks, payload.bookmarks);
-  assert.deepEqual(snapshot.data.conditions, payload.conditions);
+  assert.deepEqual(snapshot.data.conditions, {
+    ...payload.conditions,
+    categories: ['housing'],
+  });
 });
 
 test('updateUserLocalStorage는 bookmarks만 갱신하고 conditions를 유지한다', () => {
@@ -224,7 +259,10 @@ test('updateUserLocalStorage는 bookmarks만 갱신하고 conditions를 유지�
     { policy_id: 9, folder_id: DEFAULT_BOOKMARK_FOLDER_ID },
     { policy_id: 10, folder_id: DEFAULT_BOOKMARK_FOLDER_ID },
   ]);
-  assert.deepEqual(snapshot.data.conditions, samplePayload().conditions);
+  assert.deepEqual(snapshot.data.conditions, {
+    ...samplePayload().conditions,
+    categories: ['housing'],
+  });
 });
 
 test('clearUserLocalStorage는 key를 제거한다', () => {

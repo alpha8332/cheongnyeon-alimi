@@ -42,6 +42,23 @@ test('parseSavedConditionsDraft는 trim과 age 경계를 정규화한다', () =>
     region: '서울특별시',
     age: 24,
     category: 'finance',
+    categories: ['finance'],
+  });
+});
+
+test('parseSavedConditionsDraft는 관심 분야 여러 개를 중복 없이 유지한다', () => {
+  const parsed = parseSavedConditionsDraft({
+    region: null,
+    age: null,
+    category: 'housing',
+    categories: ['housing', 'finance', 'housing'],
+  });
+
+  assert.deepEqual(parsed, {
+    region: null,
+    age: null,
+    category: 'housing',
+    categories: ['housing', 'finance'],
   });
 });
 
@@ -56,6 +73,7 @@ test('toRecommendationRequestFromConditions는 RecommendationRequest 필드를 �
     region: '서울특별시',
     age: 24,
     category: 'housing',
+    categories: ['housing'],
     include_partial: true,
   });
 });
@@ -77,6 +95,7 @@ test('saved conditions storage round-trip은 홈·추천 공유 snapshot을 유�
       region: '부산광역시',
       age: 27,
       category: 'employment',
+      categories: ['employment'],
     });
 
     clearSavedConditions();
@@ -98,4 +117,23 @@ test('buildSavedConditionsKey는 draft sync key를 생성한다', () => {
     formatSavedConditionsSummary(draft),
     '대전 · 20세 · 교육',
   );
+});
+
+test('다중 관심 분야는 추천 요청과 요약에 모두 반영된다', () => {
+  const conditions = parseSavedConditionsDraft({
+    region: '경기도',
+    age: 29,
+    category: 'housing',
+    categories: ['housing', 'finance'],
+  });
+
+  assert.deepEqual(toRecommendationRequestFromConditions(conditions), {
+    region: '경기도',
+    age: 29,
+    category: 'housing',
+    categories: ['housing', 'finance'],
+    include_partial: true,
+  });
+  assert.equal(formatSavedConditionsSummary(conditions), '경기도 · 29세 · 주거, 금융');
+  assert.equal(buildSavedConditionsKey(conditions), '경기도|29|housing,finance');
 });

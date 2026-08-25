@@ -108,3 +108,36 @@ def test_recommendation_region_sort_prioritizes_local_scope() -> None:
     assert _recommendation_region_sort_key(
         broad, request
     ) < _recommendation_region_sort_key(nationwide, request)
+
+
+def test_multiple_interest_categories_use_or_matching() -> None:
+    policy = Policy(
+        id=10,
+        source_id="public-test",
+        source_name="공개 테스트",
+        external_id="PUBLIC-MULTI-CATEGORY",
+        title="청년 금융 지원",
+        categories=["finance"],
+        regions=[],
+        coverage_scope="nationwide",
+        application_status="open",
+        data_quality_status="valid",
+    )
+
+    matched = evaluate_policy_recommendation(
+        policy,
+        RecommendationRequest(categories=["housing", "finance"]),
+        region_decision=None,
+    )
+    mismatched = evaluate_policy_recommendation(
+        policy,
+        RecommendationRequest(categories=["housing", "education"]),
+        region_decision=None,
+    )
+
+    assert matched is not None
+    assert matched.score == 40
+    assert any(
+        reason.code == "MATCHED_CATEGORY" for reason in matched.reasons
+    )
+    assert mismatched is None

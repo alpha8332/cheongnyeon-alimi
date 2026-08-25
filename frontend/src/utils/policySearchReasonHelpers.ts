@@ -64,6 +64,9 @@ const KNOWN_REASON_CODE_LABELS: Record<string, string> = {
   STATUS_MATCH: '신청 상태 조건이 일치합니다.',
   KEYWORD_MATCH: '키워드 텍스트 매칭이 적용되었습니다.',
   PARTIAL_POLICY_DATA: '정책 데이터가 partial 품질입니다.',
+  PROFILE_REGION_MATCH: '저장 프로필의 거주 지역과 부합합니다.',
+  PROFILE_AGE_MATCH: '저장 프로필의 연령과 부합합니다.',
+  PROFILE_CATEGORY_MATCH: '저장 프로필의 관심 분야와 부합합니다.',
 };
 
 function formatConditionValue(
