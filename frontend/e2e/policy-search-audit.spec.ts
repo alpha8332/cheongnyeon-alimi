@@ -113,6 +113,27 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(sort).toHaveValue('title_asc');
   });
 
+  test('3c. 복수 분야 정책은 검색 결과 카드에 모든 분야를 표시', async ({
+    page,
+  }) => {
+    skipIfActualApi(test);
+
+    await page.goto('/?q=%EC%A0%84%EA%B5%AD+%EC%B2%AD%EB%85%84');
+
+    await waitForSearchSettled(page);
+
+    const multiCategoryCard = page
+      .getByRole('link', { name: /합성 상시 생활 지원/ })
+      .first();
+    await expect(multiCategoryCard).toBeVisible();
+    await expect(
+      multiCategoryCard.getByText('금융', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      multiCategoryCard.getByText('복지', { exact: true }),
+    ).toBeVisible();
+  });
+
   test('4a. 로딩 Skeleton 표시', async ({ page }) => {
     await page.goto('/search?q=%EC%84%9C%EC%9A%B8+%EC%A3%BC%EA%B1%B0');
 
