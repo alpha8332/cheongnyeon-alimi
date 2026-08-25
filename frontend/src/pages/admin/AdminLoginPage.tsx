@@ -15,6 +15,7 @@ import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 interface LoginLocationState {
   from?: string;
+  pinChanged?: boolean;
 }
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
@@ -37,6 +38,8 @@ function AdminLoginPageContent() {
   const redirectTarget =
     (location.state as LoginLocationState | null)?.from ??
     ADMIN_APP_ROUTES.dashboard;
+  const pinChanged =
+    (location.state as LoginLocationState | null)?.pinChanged === true;
 
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -130,6 +133,12 @@ function AdminLoginPageContent() {
         PIN과 access token은 URL·브라우저 로그·영구 localStorage에 저장하지
         않습니다. 세션은 브라우저 메모리에만 유지됩니다.
       </p>
+
+      {pinChanged ? (
+        <p role="status" className="admin-login-page__success">
+          PIN이 변경되었습니다. 새 PIN으로 다시 로그인해 주세요.
+        </p>
+      ) : null}
 
       <form
         id={formId}

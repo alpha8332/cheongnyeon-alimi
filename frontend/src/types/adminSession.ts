@@ -12,6 +12,11 @@ export const ADMIN_SESSION_ENDPOINT = {
   path: '/api/v1/admin/session',
 };
 
+export const ADMIN_PIN_ENDPOINT = {
+  method: 'PUT' as const,
+  path: '/api/v1/admin/pin',
+};
+
 export interface AdminSessionRequest {
   /** Exactly four numeric digits. Sent in JSON body only. */
   pin: string;
@@ -23,6 +28,11 @@ export interface AdminSessionResponse {
   /** Token lifetime in seconds. */
   expires_in: number;
   role: 'admin';
+}
+
+export interface AdminPinChangeRequest {
+  current_pin: string;
+  new_pin: string;
 }
 
 /** Session login failures (401/429) use nested `error.message`. */
