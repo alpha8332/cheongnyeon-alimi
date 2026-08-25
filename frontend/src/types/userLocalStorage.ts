@@ -29,7 +29,10 @@ export const DEFAULT_BOOKMARK_FOLDER_NAME = '기본 폴더';
 export interface UserSavedConditions {
   region: string | null;
   age: number | null;
+  /** Legacy primary category retained for v2 payload compatibility. */
   category: string | null;
+  /** Ordered, deduplicated interest categories. */
+  categories?: string[];
 }
 
 export interface BookmarkFolder {

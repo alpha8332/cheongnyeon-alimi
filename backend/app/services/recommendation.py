@@ -46,6 +46,13 @@ def _recommendation_region_sort_key(
     return (0, max(len(item.regions), 1))
 
 
+def _selected_categories(request: RecommendationRequest) -> tuple[str, ...]:
+    values = [*request.categories]
+    if request.category:
+        values.append(request.category)
+    return tuple(dict.fromkeys(value.strip() for value in values if value.strip()))
+
+
 def evaluate_policy_recommendation(
     policy: Policy,
     request: RecommendationRequest,
@@ -59,14 +66,18 @@ def evaluate_policy_recommendation(
         "소득 및 자산 세부 자격 요건은 공식 원문 확인이 필요합니다."
     ]
 
-    # 1. 관심 분야 (Category) 판정 (+30점)
-    if request.category:
-        if policy.categories and request.category in policy.categories:
+    # 1. 관심 분야 (Category) 판정 (+30점). 복수 선택은 OR로 평가한다.
+    selected_categories = _selected_categories(request)
+    if selected_categories:
+        matched_categories = sorted(
+            set(policy.categories or []).intersection(selected_categories)
+        )
+        if matched_categories:
             score += 30
             reasons.append(
                 RecommendationReason(
                     code="MATCHED_CATEGORY",
-                    label=f"관심 분야 부합 ({request.category})",
+                    label=f"관심 분야 부합 ({', '.join(matched_categories)})",
                 )
             )
         elif policy.categories:

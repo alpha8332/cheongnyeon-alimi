@@ -2,6 +2,7 @@ import {
   POLICY_SEARCH_DEFAULTS,
   POLICY_SEARCH_QUERY_LIMITS,
   type PolicySearchQueryParams,
+  type PolicySearchPreferences,
 } from '@/types/policySearch';
 import {
   POLICY_SEARCH_URL_DEFAULTS,
@@ -100,12 +101,16 @@ export function parsePolicySearchUrl(
   searchParams: URLSearchParams,
 ): PolicySearchUrlQueryState {
   const includePartial = parseOptionalBoolean(searchParams.get('include_partial'));
+  const useSavedConditions = parseOptionalBoolean(
+    searchParams.get('use_saved_conditions'),
+  );
   const page = parseOptionalInt(searchParams.get('page'));
   const limit = parseOptionalInt(searchParams.get('limit'));
   const age = parseOptionalInt(searchParams.get('age'));
 
   return {
     q: searchParams.get('q') ?? '',
+    use_saved_conditions: useSavedConditions ?? true,
     keyword: searchParams.get('keyword'),
     region: searchParams.get('region'),
     age,
@@ -133,6 +138,10 @@ export function buildPolicySearchUrlParams(
   const trimmedQ = state.q.trim();
   if (trimmedQ) {
     params.set('q', trimmedQ);
+  }
+
+  if (trimmedQ && state.use_saved_conditions === false) {
+    params.set('use_saved_conditions', 'false');
   }
 
   const keyword = state.keyword?.trim();
@@ -185,6 +194,7 @@ export function hasPolicySearchQuery(
  */
 export function toPolicySearchRequest(
   state: PolicySearchUrlQueryState,
+  preferences: PolicySearchPreferences | null = null,
 ): PolicySearchQueryParams {
   const trimmedQ = state.q.trim();
 
@@ -198,6 +208,7 @@ export function toPolicySearchRequest(
     include_partial: state.include_partial,
     page: state.page,
     limit: state.limit,
+    preferences,
   };
 }
 

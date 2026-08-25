@@ -43,11 +43,12 @@ import {
   toPolicySearchRequest,
   withPolicySearchPage,
 } from '@/utils/policySearchUrl';
-import { mergeSavedConditionsIntoSearchState } from '@/utils/policySearchSavedConditions';
+import { buildSavedConditionSearchPreferences } from '@/utils/policySearchSavedConditions';
 import { HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION } from '@/utils/homeRecommendedPolicies';
 import {
   HOME_RECOMMENDED_SEARCHES,
   buildPolicySearchEntryPath,
+  getRelatedPolicySearches,
 } from '@/utils/policySearchNavigation';
 import '@/components/policySearch/PolicySearchSidebar.css';
 import './HomePage.css';
@@ -62,15 +63,24 @@ export default function HomePage() {
     () => parsePolicySearchUrl(searchParams),
     [searchParams],
   );
-  const effectiveUrlState = useMemo(
-    () => mergeSavedConditionsIntoSearchState(urlState, savedConditions),
-    [urlState, savedConditions],
+  const effectiveUrlState = urlState;
+  const searchPreferences = useMemo(
+    () =>
+      buildSavedConditionSearchPreferences(
+        savedConditions,
+        urlState.use_saved_conditions !== false,
+      ),
+    [savedConditions, urlState.use_saved_conditions],
   );
   const request = useMemo(
-    () => toPolicySearchRequest(effectiveUrlState),
-    [effectiveUrlState],
+    () => toPolicySearchRequest(effectiveUrlState, searchPreferences),
+    [effectiveUrlState, searchPreferences],
   );
   const shouldFetch = hasPolicySearchQuery(urlState);
+  const relatedSearches = useMemo(
+    () => getRelatedPolicySearches(urlState.q),
+    [urlState.q],
+  );
 
   const {
     policies: homeRecommendedPolicies,
@@ -128,15 +138,12 @@ export default function HomePage() {
       return;
     }
 
-    const nextState = mergeSavedConditionsIntoSearchState(
-      withPolicySearchPage(
-        {
-          ...urlState,
-          q: trimmedQ,
-        },
-        1,
-      ),
-      savedConditions,
+    const nextState = withPolicySearchPage(
+      {
+        ...urlState,
+        q: trimmedQ,
+      },
+      1,
     );
 
     applyUrlState(nextState);
@@ -147,7 +154,9 @@ export default function HomePage() {
   };
 
   const handleRecommendedSearch = (term: string) => {
-    const path = buildPolicySearchEntryPath(term);
+    const path = buildPolicySearchEntryPath(term, {
+      useSavedConditions: false,
+    });
     if (path) {
       navigate(path);
     }
@@ -226,6 +235,31 @@ export default function HomePage() {
         onClear={handleSearchClear}
         isSubmitting={showLoading}
       />
+
+      {shouldFetch && relatedSearches.length > 0 ? (
+        <section className="home-search-suggestions" aria-label="관련 검색어">
+          <p className="chips-label">관련 검색어</p>
+          <div className="chips-row home-search-suggestions__row">
+            {relatedSearches.map((term) => (
+              <button
+                key={term}
+                type="button"
+                className="chip home-search-suggestions__chip"
+                onClick={() => submitSearchQuery(term)}
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {shouldFetch && searchPreferences ? (
+        <p className="home-search-profile-note" role="note">
+          저장 프로필은 검색 결과를 제외하지 않고, 관련도가 같은 정책의 우선순위에
+          반영됩니다.
+        </p>
+      ) : null}
 
       {!shouldFetch ? (
         <>

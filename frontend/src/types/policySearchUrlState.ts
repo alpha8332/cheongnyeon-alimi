@@ -23,6 +23,8 @@ export const LEGACY_POLICY_SEARCH_ROUTE = '/search';
  */
 export interface PolicySearchUrlQueryState {
   q: string;
+  /** false when a curated example search must run without saved profile filters. */
+  use_saved_conditions?: boolean;
   keyword?: string | null;
   region?: string | null;
   age?: number | null;

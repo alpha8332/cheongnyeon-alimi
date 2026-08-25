@@ -157,6 +157,7 @@ function stripHitFixture(item: PolicySearchHitFixture): PolicySearchHitFixture {
 
 test('Policy Search endpoint와 G1 default query 계약을 고정한다', () => {
   assert.equal(POLICY_SEARCH_ENDPOINT.method, 'GET');
+  assert.equal(POLICY_SEARCH_ENDPOINT.preferenceMethod, 'POST');
   assert.equal(POLICY_SEARCH_ENDPOINT.path, '/api/v1/policies/search');
 
   assert.deepEqual(POLICY_SEARCH_DEFAULTS, {

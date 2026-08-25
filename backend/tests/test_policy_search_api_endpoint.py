@@ -204,3 +204,75 @@ def test_search_api_no_matching_results_200_ok(client, db):
     data = response.json()
     assert data["total"] == 0
     assert data["items"] == []
+
+
+def test_search_api_profile_preferences_rank_without_excluding(
+    client,
+    db,
+    activate_all_policies,
+):
+    now = datetime.now(timezone.utc)
+    housing = Policy(
+        source_id="test_profile_rank",
+        external_id="PROFILE-HOUSING",
+        source_name="테스트",
+        title="공통프로필검색 청년 지원",
+        summary="공통프로필검색 대상 정책",
+        categories=["housing"],
+        application_status="open",
+        coverage_scope="nationwide",
+        data_quality_status="valid",
+        source_url="https://example.com/profile-housing",
+        collected_at=now,
+    )
+    finance = Policy(
+        source_id="test_profile_rank",
+        external_id="PROFILE-FINANCE",
+        source_name="테스트",
+        title="공통프로필검색 청년 지원",
+        summary="공통프로필검색 대상 정책",
+        categories=["finance"],
+        application_status="open",
+        coverage_scope="nationwide",
+        data_quality_status="valid",
+        source_url="https://example.com/profile-finance",
+        collected_at=now,
+    )
+    db.add_all([housing, finance])
+    db.flush()
+    db.add_all(
+        [
+            PolicySearchDocument(
+                policy_id=policy.id,
+                title_text="공통프로필검색 청년 지원",
+                keyword_text="공통프로필검색",
+                summary_text="공통프로필검색 대상 정책",
+                eligibility_text="",
+                support_text="",
+                search_text="공통프로필검색 청년 지원 대상 정책",
+                projection_version="1.1.0",
+                updated_at=now,
+            )
+            for policy in (housing, finance)
+        ]
+    )
+    db.commit()
+    activate_all_policies()
+
+    response = client.post(
+        "/api/v1/policies/search",
+        json={
+            "q": "공통프로필검색",
+            "preferences": {"categories": ["finance"]},
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+    assert [item["policy"]["id"] for item in data["items"]] == [
+        finance.id,
+        housing.id,
+    ]
+    assert "PROFILE_CATEGORY_MATCH" in data["items"][0]["reason_codes"]
+    assert "PROFILE_CATEGORY_MATCH" not in data["items"][1]["reason_codes"]

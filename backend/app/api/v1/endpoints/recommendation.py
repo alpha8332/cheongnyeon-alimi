@@ -49,6 +49,10 @@ def get_recommendations(
     age: Optional[int] = Query(default=None, ge=0, le=120, description="사용자 만 연령"),
     region: Optional[str] = Query(default=None, description="거주지"),
     category: Optional[str] = Query(default=None, description="관심 분야"),
+    categories: list[str] = Query(
+        default=[],
+        description="복수 관심 분야. 같은 query key를 반복해 전달",
+    ),
     status_param: Optional[RecommendationStatus] = Query(
         default=None,
         alias="status",
@@ -63,6 +67,7 @@ def get_recommendations(
         age=age,
         region=region,
         category=category,
+        categories=categories,
         status=status_param,
         include_partial=include_partial,
         limit=limit,

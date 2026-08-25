@@ -16,13 +16,32 @@ export const SAVED_CONDITIONS_CATEGORY_OPTIONS: PolicyCategory[] = [
 export const SAVED_CONDITIONS_MIN_AGE = 1;
 export const SAVED_CONDITIONS_MAX_AGE = 120;
 
+export function getSavedConditionCategories(
+  conditions: UserSavedConditions | null,
+): PolicyCategory[] {
+  const raw = conditions?.categories?.length
+    ? conditions.categories
+    : conditions?.category
+      ? [conditions.category]
+      : [];
+  const known = new Set<PolicyCategory>(SAVED_CONDITIONS_CATEGORY_OPTIONS);
+  return Array.from(
+    new Set(
+      raw.filter((category): category is PolicyCategory =>
+        known.has(category as PolicyCategory),
+      ),
+    ),
+  );
+}
+
 export function toSavedConditionsDraft(
   conditions: UserSavedConditions | null,
 ): UserSavedConditions {
   return {
     region: conditions?.region ?? null,
     age: conditions?.age ?? null,
-    category: conditions?.category ?? null,
+    category: getSavedConditionCategories(conditions)[0] ?? null,
+    categories: getSavedConditionCategories(conditions),
   };
 }
 
@@ -30,7 +49,17 @@ export function parseSavedConditionsDraft(
   draft: UserSavedConditions,
 ): UserSavedConditions {
   const region = draft.region?.trim() ?? '';
-  const category = draft.category?.trim() ?? '';
+  const draftCategories = draft.categories?.length
+    ? draft.categories
+    : draft.category
+      ? [draft.category]
+      : [];
+  const categories = getSavedConditionCategories({
+    region: null,
+    age: null,
+    category: draftCategories[0]?.trim() || null,
+    categories: draftCategories.map((category) => category.trim()),
+  });
 
   let age: number | null = draft.age;
   if (
@@ -45,7 +74,8 @@ export function parseSavedConditionsDraft(
   return {
     region: region.length > 0 ? region : null,
     age,
-    category: category.length > 0 ? category : null,
+    category: categories[0] ?? null,
+    categories,
   };
 }
 
@@ -66,15 +96,9 @@ export function formatSavedConditionsSummary(
     parts.push(`${conditions.age}세`);
   }
 
-  if (conditions.category) {
-    const knownCategory = SAVED_CONDITIONS_CATEGORY_OPTIONS.find(
-      (option) => option === conditions.category,
-    );
-    parts.push(
-      knownCategory
-        ? getCategoryLabel(knownCategory)
-        : conditions.category,
-    );
+  const categories = getSavedConditionCategories(conditions);
+  if (categories.length > 0) {
+    parts.push(categories.map(getCategoryLabel).join(', '));
   }
 
   return parts.length > 0 ? parts.join(' · ') : null;
@@ -87,7 +111,7 @@ export function buildSavedConditionsKey(
     return 'empty';
   }
 
-  return `${conditions.region ?? ''}|${conditions.age ?? ''}|${conditions.category ?? ''}`;
+  return `${conditions.region ?? ''}|${conditions.age ?? ''}|${getSavedConditionCategories(conditions).join(',')}`;
 }
 
 export function toRecommendationRequestFromConditions(
@@ -97,6 +121,7 @@ export function toRecommendationRequestFromConditions(
     region: conditions.region,
     age: conditions.age,
     category: conditions.category,
+    categories: getSavedConditionCategories(conditions),
     include_partial: true,
   };
 }

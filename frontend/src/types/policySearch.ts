@@ -104,6 +104,14 @@ export interface PolicySearchQueryParams {
   include_partial?: boolean;
   page?: number;
   limit?: number;
+  /** Browser-only profile preferences sent in a POST body, never as URL filters. */
+  preferences?: PolicySearchPreferences | null;
+}
+
+export interface PolicySearchPreferences {
+  region?: string | null;
+  age?: number | null;
+  categories: PolicyCategory[];
 }
 
 /** Backend defaults — keep in sync with Backend 06 W3-B0. */
@@ -150,5 +158,6 @@ export interface PolicySearchResponse {
 /** Approved search endpoint (G1 integration). */
 export const POLICY_SEARCH_ENDPOINT = {
   method: 'GET' as const,
+  preferenceMethod: 'POST' as const,
   path: '/api/v1/policies/search' as const,
 };

@@ -55,6 +55,7 @@ test('readSavedConditions는 storage conditions를 반환한다', () => {
       region: '서울특별시',
       age: 24,
       category: 'housing',
+      categories: ['housing'],
     });
     unsubscribe();
   } finally {
@@ -80,6 +81,7 @@ test('saveSavedConditions는 region·age·category를 저장한다', () => {
       region: '천안시',
       age: 24,
       category: 'employment',
+      categories: ['employment'],
     });
 
     const raw = storage.getItem(USER_LOCAL_STORAGE_KEY);
@@ -171,7 +173,35 @@ test('getSavedConditionsSnapshot은 연속 호출에서 동일 참조를 유지�
       region: '대전광역시',
       age: 22,
       category: 'education',
+      categories: ['education'],
     });
+    unsubscribe();
+  } finally {
+    windowPatch.restore();
+  }
+});
+
+test('saveSavedConditions는 관심 분야 여러 개를 저장한다', () => {
+  const storage = new MemoryStorage();
+  const windowPatch = new PatchedWindowStorage();
+  windowPatch.install(storage);
+
+  try {
+    const unsubscribe = subscribeSavedConditions(() => undefined);
+    const result = saveSavedConditions({
+      region: '경기도',
+      age: 31,
+      category: 'housing',
+      categories: ['housing', 'finance'],
+    });
+
+    assert.deepEqual(result.conditions, {
+      region: '경기도',
+      age: 31,
+      category: 'housing',
+      categories: ['housing', 'finance'],
+    });
+    assert.deepEqual(readSavedConditions()?.categories, ['housing', 'finance']);
     unsubscribe();
   } finally {
     windowPatch.restore();

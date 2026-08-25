@@ -35,10 +35,16 @@ export async function getPolicySearch(
   }
 
   try {
-    const response = await apiClient.get<PolicySearchResponse>(
-      POLICY_SEARCH_ENDPOINT.path,
-      { params: query },
-    );
+    const { preferences, ...params } = query;
+    const response = preferences
+      ? await apiClient.post<PolicySearchResponse>(
+          POLICY_SEARCH_ENDPOINT.path,
+          { ...params, preferences },
+        )
+      : await apiClient.get<PolicySearchResponse>(
+          POLICY_SEARCH_ENDPOINT.path,
+          { params },
+        );
 
     return response.data;
   } catch (error: unknown) {
