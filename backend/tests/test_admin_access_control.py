@@ -2,8 +2,6 @@ import hashlib
 import time
 import hmac
 import pytest
-from fastapi.testclient import TestClient
-
 from app.main import app
 from app.core.config import settings
 from app.services.admin_access import (
@@ -13,12 +11,12 @@ from app.services.admin_access import (
     get_admin_token_secret,
     calculate_cooldown_seconds,
     verify_admin_pin,
+    reset_admin_pin,
 )
+from app.models.admin_auth import AdminAuthState
+from app.models.collection_run import CollectionRun
 from app.api.deps import get_current_admin_payload
 from app.api.v1.endpoints.admin_access import router as admin_router
-
-client = TestClient(app)
-
 
 @pytest.fixture(autouse=True)
 def reset_state():
@@ -33,7 +31,7 @@ def reset_state():
     settings.ADMIN_TOKEN_SECRET = original_secret
 
 
-def test_admin_session_success_local_default_pin():
+def test_admin_session_success_local_default_pin(client):
     """개발/로컬 환경에서 기본 4자리 PIN '0000'으로 관리자 세션 생성 성공."""
     settings.ENVIRONMENT = "development"
     settings.ADMIN_PIN_HASH = None
@@ -52,7 +50,7 @@ def test_admin_session_success_local_default_pin():
     assert payload["role"] == "admin"
 
 
-def test_admin_session_invalid_pin_401():
+def test_admin_session_invalid_pin_401(client):
     """잘못된 PIN(예: 9999) 입력 시 401 Unauthorized 반환 및 사유 최소화."""
     settings.ENVIRONMENT = "development"
     settings.ADMIN_PIN_HASH = None
@@ -65,13 +63,13 @@ def test_admin_session_invalid_pin_401():
 
 
 @pytest.mark.parametrize("invalid_pin", ["123", "12345", "abcd", "", "000a"])
-def test_admin_session_invalid_format_422(invalid_pin):
+def test_admin_session_invalid_format_422(client, invalid_pin):
     """4자리 숫자가 아닌 PIN 입력 시 Pydantic 422 Unprocessable Entity 반환."""
     response = client.post("/api/v1/admin/session", json={"pin": invalid_pin})
     assert response.status_code == 422
 
 
-def test_admin_session_production_fail_closed():
+def test_admin_session_production_fail_closed(client):
     """Production 환경에서 ADMIN_PIN_HASH 미설정 시 기본 PIN '0000' 요청도 401 fail-closed 거부."""
     settings.ENVIRONMENT = "production"
     settings.ADMIN_PIN_HASH = None
@@ -89,7 +87,7 @@ def test_default_pin_requires_local_request_boundary():
     assert verify_admin_pin("0000", allow_local_default_pin=True) is True
 
 
-def test_admin_session_custom_hash_success():
+def test_admin_session_custom_hash_success(client):
     """명시적 ADMIN_PIN_HASH(예: 1234 해시) 설정 시 해당 PIN으로만 성공."""
     settings.ENVIRONMENT = "production"
     settings.ADMIN_PIN_HASH = hashlib.sha256(b"1234").hexdigest()
@@ -105,7 +103,7 @@ def test_admin_session_custom_hash_success():
     assert resp_ok.json()["role"] == "admin"
 
 
-def test_admin_session_production_requires_dedicated_token_secret():
+def test_admin_session_production_requires_dedicated_token_secret(client):
     """Production은 공용 SECRET_KEY fallback 없이 전용 token secret 미설정을 거부한다."""
     settings.ENVIRONMENT = "production"
     settings.ADMIN_PIN_HASH = hashlib.sha256(b"1234").hexdigest()
@@ -128,7 +126,7 @@ def test_progressive_lockout_calculation():
     assert calculate_cooldown_seconds(15) == 300
 
 
-def test_admin_session_progressive_rate_limit_429():
+def test_admin_session_progressive_rate_limit_429(client):
     """5회차 실패 시 점진적 락아웃(첫 락아웃 5초) 적용 및 429 반환 검증."""
     settings.ENVIRONMENT = "development"
     settings.ADMIN_PIN_HASH = None
@@ -159,7 +157,7 @@ def test_admin_token_verification_cases():
     assert verify_admin_session_token(expired_token) is None
 
     parts = valid_token.split(".")
-    tampered_token = f"{parts[0]}.{parts[1]}.invalid_signature"
+    tampered_token = f"{parts[0]}.{parts[1]}.{parts[2]}.invalid_signature"
     assert verify_admin_session_token(tampered_token) is None
 
     assert verify_admin_session_token("invalid_token_format") is None
@@ -176,7 +174,7 @@ def test_admin_token_custom_secret():
     assert verify_admin_session_token(token) is None
 
 
-def test_credential_non_exposure_in_errors():
+def test_credential_non_exposure_in_errors(client):
     """인증 실패 응답 및 예외 응답에 PIN 원문 및 시크릿이 노출되지 않는지 검사."""
     settings.ENVIRONMENT = "development"
     settings.ADMIN_PIN_HASH = None
@@ -193,13 +191,13 @@ def test_credential_non_exposure_in_errors():
 # --- Slice A2 & A3: 권한 경계 및 OpenAPI 보안 명세 테스트 ---
 
 
-def test_protected_route_missing_token_401():
+def test_protected_route_missing_token_401(client):
     """Authorization 헤더 없이 보호 라우트 GET /api/v1/admin/me 접근 시 401 Unauthorized 반환."""
     response = client.get("/api/v1/admin/me")
     assert response.status_code == 401
 
 
-def test_protected_route_invalid_token_401():
+def test_protected_route_invalid_token_401(client):
     """변조되거나 유효하지 않은 Bearer 토큰으로 GET /api/v1/admin/me 접근 시 401 Unauthorized 반환."""
     response = client.get(
         "/api/v1/admin/me",
@@ -208,14 +206,18 @@ def test_protected_route_invalid_token_401():
     assert response.status_code == 401
 
 
-def test_protected_route_non_admin_role_403(monkeypatch):
+def test_protected_route_non_admin_role_403(client, monkeypatch):
     """서명은 유효하지만 역할(role)이 admin이 아닌 사용자 접근 시 403 Forbidden 반환."""
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+    assert client.post("/api/v1/admin/session", json={"pin": "0000"}).status_code == 200
+
     expires_at = int(time.time()) + 3600
     non_admin_payload = {"sub": "user123", "role": "user", "expires_at": expires_at}
 
     monkeypatch.setattr(
         "app.api.deps.verify_admin_session_token",
-        lambda token: non_admin_payload,
+        lambda token, **kwargs: non_admin_payload,
     )
 
     response = client.get(
@@ -228,7 +230,7 @@ def test_protected_route_non_admin_role_403(monkeypatch):
     assert data["detail"] == "Admin authorization required."
 
 
-def test_protected_route_valid_admin_token_200():
+def test_protected_route_valid_admin_token_200(client):
     """정상 세션 생성 후 발급받은 Bearer 토큰으로 GET /api/v1/admin/me 접근 시 200 OK 성공."""
     settings.ENVIRONMENT = "development"
     settings.ADMIN_PIN_HASH = None
@@ -257,7 +259,7 @@ def test_protected_route_dependency_leak_detection():
     assert get_current_admin_payload in dep_functions
 
 
-def test_openapi_security_scheme_registered():
+def test_openapi_security_scheme_registered(client):
     """OpenAPI 명세에 HTTPBearer security scheme이 정상 등록되어 있는지 검사."""
     response = client.get("/api/v1/openapi.json")
     assert response.status_code == 200
@@ -267,3 +269,90 @@ def test_openapi_security_scheme_registered():
     assert "securitySchemes" in schema["components"]
     assert "HTTPBearer" in schema["components"]["securitySchemes"]
     assert schema["components"]["securitySchemes"]["HTTPBearer"]["scheme"] == "bearer"
+
+
+def test_admin_pin_change_invalidates_old_session_and_changes_login_pin(client):
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+
+    login = client.post("/api/v1/admin/session", json={"pin": "0000"})
+    assert login.status_code == 200
+    old_token = login.json()["access_token"]
+
+    changed = client.put(
+        "/api/v1/admin/pin",
+        headers={"Authorization": f"Bearer {old_token}"},
+        json={"current_pin": "0000", "new_pin": "2468"},
+    )
+    assert changed.status_code == 204
+    assert changed.content == b""
+
+    old_session = client.get(
+        "/api/v1/admin/me",
+        headers={"Authorization": f"Bearer {old_token}"},
+    )
+    assert old_session.status_code == 401
+    assert client.post("/api/v1/admin/session", json={"pin": "0000"}).status_code == 401
+    assert client.post("/api/v1/admin/session", json={"pin": "2468"}).status_code == 200
+
+
+def test_admin_pin_change_rejects_wrong_or_reused_pin_without_exposure(client):
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+
+    login = client.post("/api/v1/admin/session", json={"pin": "0000"})
+    token = login.json()["access_token"]
+
+    wrong = client.put(
+        "/api/v1/admin/pin",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_pin": "1357", "new_pin": "2468"},
+    )
+    assert wrong.status_code == 401
+    assert "1357" not in wrong.text
+    assert "2468" not in wrong.text
+
+    reused = client.put(
+        "/api/v1/admin/pin",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_pin": "0000", "new_pin": "0000"},
+    )
+    assert reused.status_code == 409
+    assert client.get(
+        "/api/v1/admin/me",
+        headers={"Authorization": f"Bearer {token}"},
+    ).status_code == 200
+
+
+def test_host_pin_recovery_preserves_collection_runs_and_invalidates_sessions(
+    client,
+    db,
+):
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+
+    login = client.post("/api/v1/admin/session", json={"pin": "0000"})
+    old_token = login.json()["access_token"]
+    run = CollectionRun(
+        source_id=None,
+        run_type="seed_import",
+        trigger_type="cli",
+        status="running",
+    )
+    db.add(run)
+    db.commit()
+    run_id = run.run_id
+
+    reset_admin_pin(db, new_pin="8642")
+    db.commit()
+
+    assert db.get(CollectionRun, run_id) is not None
+    auth_state = db.get(AdminAuthState, 1)
+    assert auth_state is not None
+    assert auth_state.pin_hash != "8642"
+    assert verify_admin_pin("8642", pin_hash=auth_state.pin_hash) is True
+    assert client.get(
+        "/api/v1/admin/me",
+        headers={"Authorization": f"Bearer {old_token}"},
+    ).status_code == 401
+    assert client.post("/api/v1/admin/session", json={"pin": "8642"}).status_code == 200

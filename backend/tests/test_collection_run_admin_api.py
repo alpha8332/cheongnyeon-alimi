@@ -9,7 +9,7 @@ from app.main import app
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.collection_run import CollectionRun
-from app.services.admin_access import create_admin_session_token, clear_rate_limit_state
+from app.services.admin_access import clear_rate_limit_state
 from app.api.deps import get_current_admin_payload
 from app.api.v1.endpoints.collection_run_admin import router as collection_run_admin_router
 from app.services.collection_queue import CollectionQueuePublishError
@@ -35,7 +35,9 @@ def reset_state(db):
 
 @pytest.fixture
 def admin_token():
-    return create_admin_session_token(expires_minutes=60)
+    response = client.post("/api/v1/admin/session", json={"pin": "0000"})
+    assert response.status_code == 200
+    return response.json()["access_token"]
 
 
 @pytest.fixture
@@ -105,10 +107,15 @@ def test_list_collection_runs_missing_token_401():
 
 def test_list_collection_runs_non_admin_403(monkeypatch):
     """서명은 정상이지만 role != 'admin'인 유저가 접근 시 403 Forbidden 반환."""
+    assert client.post("/api/v1/admin/session", json={"pin": "0000"}).status_code == 200
     expires_at = int(datetime.now(timezone.utc).timestamp()) + 3600
     monkeypatch.setattr(
         "app.api.deps.verify_admin_session_token",
-        lambda token: {"sub": "user123", "role": "user", "expires_at": expires_at},
+        lambda token, **kwargs: {
+            "sub": "user123",
+            "role": "user",
+            "expires_at": expires_at,
+        },
     )
 
     response = client.get(

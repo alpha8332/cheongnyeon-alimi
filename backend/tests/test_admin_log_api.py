@@ -5,11 +5,28 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.logging_config import LOG_DIR
+from app.services.admin_access import clear_rate_limit_state
 from app.services.admin_log import AUDIT_TRAIL, rotate_current_log_service
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def admin_database(db):
+    original_environment = settings.ENVIRONMENT
+    original_pin_hash = settings.ADMIN_PIN_HASH
+    settings.ENVIRONMENT = "development"
+    settings.ADMIN_PIN_HASH = None
+    clear_rate_limit_state()
+    app.dependency_overrides[get_db] = lambda: db
+    yield
+    app.dependency_overrides.pop(get_db, None)
+    clear_rate_limit_state()
+    settings.ENVIRONMENT = original_environment
+    settings.ADMIN_PIN_HASH = original_pin_hash
 
 
 @pytest.fixture

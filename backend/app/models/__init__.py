@@ -1,3 +1,4 @@
+from app.models.admin_auth import AdminAuthState
 from app.models.administrative_region import (
     AdministrativeRegion,
     AdministrativeRegionAlias,
@@ -11,6 +12,7 @@ from app.models.public_dataset import (
 )
 
 __all__ = [
+    "AdminAuthState",
     "AdministrativeRegion",
     "AdministrativeRegionAlias",
     "CollectionRun",
