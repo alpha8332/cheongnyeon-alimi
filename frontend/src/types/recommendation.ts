@@ -50,6 +50,8 @@ export interface RecommendationItemDto {
   title: string;
   lead: string | null;
   category: string;
+  /** Complete category membership; category remains the legacy primary value. */
+  categories?: string[];
   regions: string[];
   min_age: number | null;
   max_age: number | null;

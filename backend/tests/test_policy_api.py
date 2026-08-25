@@ -163,6 +163,14 @@ def test_list_api_filters_and_paginates(client, db, activate_all_policies):
         != second_page.json()["items"][0]["id"]
     )
     assert category.json()["total"] == 2
+    assert all(
+        "finance" in item["categories"]
+        for item in category.json()["items"]
+    )
+    assert any(
+        item["categories"][0] != "finance"
+        for item in category.json()["items"]
+    )
     assert region.json()["total"] == 0
     assert region_prefix.json()["total"] == 0
     assert open_status.json()["total"] == 1

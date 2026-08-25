@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
+import type { PolicyDto } from '../src/types/policy.js';
 import { handleRecommendationMock } from '../src/mocks/recommendationHandlers.js';
 import {
+  buildMockRecommendationResponse,
   MOCK_RECOMMENDATION_EMPTY_REGION,
   MOCK_RECOMMENDATION_EVALUATED_AT,
 } from '../src/mocks/recommendationFixtures.js';
@@ -110,6 +112,28 @@ test('Mock 추천 정렬은 score DESC, id ASC를 따른다', () => {
       );
     }
   }
+});
+
+test('Mock 추천은 복수 관심 분야를 OR로 평가하고 전체 categories를 반환한다', () => {
+  const base = mockPolicies[0];
+  assert.ok(base);
+  const financeOnly = {
+    ...base,
+    id: 999_001,
+    categories: ['finance'] as PolicyDto['categories'],
+  };
+
+  const result = buildMockRecommendationResponse(
+    [financeOnly],
+    resolveRecommendationRequest({
+      category: 'housing',
+      categories: ['housing', 'finance'],
+      limit: 10,
+    }),
+  );
+
+  assert.equal(result.total, 1);
+  assert.deepEqual(result.items[0]?.categories, ['finance']);
 });
 
 test('Recommendation item DTO는 PolicySearch hit nested shape와 분리된다', () => {

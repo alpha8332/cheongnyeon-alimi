@@ -3,8 +3,7 @@ import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PartialBadge from '@/components/policy/PartialBadge';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
-import type { PolicyDto } from '@/types/policy';
-import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
+import type { PolicyCategory, PolicyDto } from '@/types/policy';
 import { buildProgramDetailRoutePath } from '@/utils/policyDetailNavigation';
 import { getPolicyCardDDayBadgeLabel } from '@/utils/policyDeadline';
 import {
@@ -12,17 +11,22 @@ import {
   formatApplicationPeriodCard,
   formatOrganization,
   formatRegion,
+  getPolicyCategoryDisplayOrder,
 } from '@/utils/policyDisplay';
 
 interface PolicyCardProps {
   policy: PolicyDto;
+  highlightedCategory?: PolicyCategory | null;
 }
 
-export default function PolicyCard({ policy }: PolicyCardProps) {
+export default function PolicyCard({
+  policy,
+  highlightedCategory = null,
+}: PolicyCardProps) {
   const detailPath = buildProgramDetailRoutePath(policy.id, {
     includePartial: policy.data_quality_status === 'partial',
   });
-  const primaryCategory = getPrimaryPolicyCategory(policy);
+  const categories = getPolicyCategoryDisplayOrder(policy, highlightedCategory);
   const dDayBadgeLabel = getPolicyCardDDayBadgeLabel(policy);
 
   return (
@@ -30,7 +34,9 @@ export default function PolicyCard({ policy }: PolicyCardProps) {
       <div className="policy-card__visual">
         <div className="policy-card__visual-badges">
           <PolicyStatusBadge policy={policy} compact />
-          <PolicyCategoryBadge category={primaryCategory} compact />
+          {categories.map((category) => (
+            <PolicyCategoryBadge key={category} category={category} compact />
+          ))}
         </div>
       </div>
       <div className="policy-card__body">

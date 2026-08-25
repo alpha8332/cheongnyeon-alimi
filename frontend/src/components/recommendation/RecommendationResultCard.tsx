@@ -8,7 +8,6 @@ import {
   PARTIAL_QUALITY_BADGE_HELP,
   PARTIAL_QUALITY_BADGE_LABEL,
 } from '@/constants/policySearchDisplay';
-import type { PolicyCategory } from '@/types/policy';
 import type { RecommendationItemDto } from '@/types/recommendation';
 import { buildRecommendationItemDetailPath } from '@/utils/policyDetailNavigation';
 import { getPolicyDeadlineInfo } from '@/utils/policyDeadline';
@@ -22,10 +21,7 @@ import {
   hasRecommendationUnconfirmedRegion,
   hasRecommendationUnknownConditions,
 } from '@/utils/recommendationReasonHelpers';
-import {
-  normalizeRecommendationCategory,
-  recommendationItemToPolicyDto,
-} from '@/utils/recommendationPolicyMapping';
+import { recommendationItemToPolicyDto } from '@/utils/recommendationPolicyMapping';
 
 interface RecommendationResultCardProps {
   item: RecommendationItemDto;
@@ -33,24 +29,6 @@ interface RecommendationResultCardProps {
 
 function formatRecommendationDDay(item: RecommendationItemDto): string {
   return getPolicyDeadlineInfo(recommendationItemToPolicyDto(item)).label;
-}
-
-function formatCategoryLabel(category: string): string {
-  const known = [
-    'housing',
-    'finance',
-    'welfare',
-    'employment',
-    'startup',
-    'education',
-    'other',
-  ] as const;
-
-  if (known.includes(category as (typeof known)[number])) {
-    return getCategoryLabel(category as PolicyCategory);
-  }
-
-  return category;
 }
 
 export default function RecommendationResultCard({
@@ -63,14 +41,15 @@ export default function RecommendationResultCard({
   const showUnconfirmedRegion = hasRecommendationUnconfirmedRegion(item);
   const reasonSummary = formatRecommendationReasonSummary(item);
   const dDay = formatRecommendationDDay(item);
-  const category = normalizeRecommendationCategory(item.category);
 
   return (
     <article className="policy-card recommendation-result-card">
       <div className="policy-card__visual">
         <div className="policy-card__visual-badges">
           <PolicyStatusBadge policy={policy} compact />
-          <PolicyCategoryBadge category={category} compact />
+          {policy.categories.map((category) => (
+            <PolicyCategoryBadge key={category} category={category} compact />
+          ))}
         </div>
       </div>
       <div className="policy-card__body">
@@ -98,7 +77,8 @@ export default function RecommendationResultCard({
 
         <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
-          <RegionListCollapse regions={item.regions} /> · {formatCategoryLabel(item.category)}
+          <RegionListCollapse regions={item.regions} /> ·{' '}
+          {policy.categories.map(getCategoryLabel).join(', ')}
           {dDay ? ` · ${dDay}` : ''}
         </p>
 
