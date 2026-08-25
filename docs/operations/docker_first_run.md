@@ -13,6 +13,11 @@ dataset을 내려받는다. 현재 정책 수·Source별 건수·SHA-256은 함�
 확인한다. `-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만
 사용한다.
 
+`2026-08-25` actual 재검증에서 latest pointer는
+`public-bootstrap-20260824-897152e7a18c15` 2,052건을 제공했고, 복지로 461건,
+온통청년 1,587건, 인천 공공데이터 4건을 설치했다. 이 값은 해당 version의
+검증 snapshot이며 pointer가 승격되면 새 manifest의 row 수와 hash를 우선한다.
+
 ## 요구 환경
 
 - Windows 10 또는 11
@@ -68,6 +73,12 @@ Volume을 변경하지 않는다.
 
 두 번째 이후 실행도 같은 명령을 사용한다. 정책 identity upsert가 멱등하므로
 변경이 없으면 `unchanged`로 끝나며 기존 PostgreSQL Volume을 재사용한다.
+
+Git pull 또는 새 ZIP으로 소스 코드를 갱신한 뒤에는 기존 컨테이너만 재시작하지
+말고 `run_docker.bat`을 다시 실행한다. 실행기가 Backend·Frontend image를 현재
+소스로 재빌드하므로 새 API·UI 계약과 실행 이미지가 어긋나지 않는다. 공개
+dataset version이 같아도 로컬 dataset 설치 `CollectionRun`은 재실행마다 감사
+행이 추가될 수 있다.
 
 네트워크 없이 마지막으로 성공한 dataset을 사용하려면 다음과 같이 실행한다.
 

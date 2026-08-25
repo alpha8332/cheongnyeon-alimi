@@ -20,7 +20,7 @@
 {
   "age": 25,
   "region": "서울특별시",
-  "category": "finance",
+  "categories": ["finance", "housing"],
   "status": "open",
   "include_partial": false,
   "limit": 10
@@ -31,7 +31,8 @@
 | --- | --- | --- | --- | --- | --- |
 | `age` | `integer` | 선택 | `null` | 0~120 (예: `25`) | 사용자 만 연령 |
 | `region` | `string` | 선택 | `null` | 예: `서울특별시` | 거주 지역 |
-| `category` | `string` | 선택 | `null` | `finance`, `housing`, `employment`, `education` | 관심 분야 |
+| `category` | `string` | 선택 | `null` | `finance`, `housing`, `employment`, `education` | 이전 단일 관심 분야 호환 필드 |
+| `categories` | `string[]` | 선택 | `[]` | 최대 7개, 중복 제거 | 복수 관심 분야. 하나 이상 부합하면 후보로 평가 |
 | `status` | `string` | 선택 | `null` | `open`, `upcoming`, `closed` | 신청 상태 필터 |
 | `include_partial` | `boolean` | 선택 | `false` | `true`, `false` | partial 품질 상태 정책 포함 여부 |
 | `limit` | `integer` | 선택 | `10` | 1~50 | 최대 반환 정책 수 |
@@ -50,6 +51,7 @@
       "title": "청년 월세 특별지원",
       "lead": "무주택 청년 월세 지원 정책",
       "category": "housing",
+      "categories": ["housing", "welfare"],
       "regions": ["서울특별시"],
       "min_age": 19,
       "max_age": 34,
@@ -89,12 +91,19 @@
 
 1. **정렬 기준**: `score DESC`, `id ASC` (동일 점수 시 ID 오름차순으로 결정성 보장)
 2. **점수 부여 규칙 (Scoring Rules)**:
-   - `category` 일치: +30점
-   - `region` 일치 (전국 포함 또는 해당 거주지 포함): +30점
+   - `category`와 `categories` 중 하나 이상 일치: +30점. 분류가 존재하지만
+     모두 불일치하면 후보에서 제외
+   - `region` 일치 (선택 지역, 상위 관할 또는 전국): +30점. 확정 불일치는
+     후보에서 제외하고 지역 근거가 없으면 미확정으로 유지
    - `age` 일치 (`min_age <= age <= max_age`): +30점
    - `status == 'open'`: +10점
+   - 기본 요청에서도 마감 정책은 제외
 3. **미확정 조건 (`unknown_conditions`)**:
    - 데이터 원문에 소득/자산 등 세부 자산 조건이 자동 판정 불가능한 경우 상시 포함하여 정보 과장 방지
+
+`category`는 하위 호환 대표값이고 `categories`가 전체 정책 분야다. Frontend는
+목록·추천·상세에서 `categories` 전체를 표시하며, 응답에 배열이 없는 이전
+서버와 연결될 때만 `category` 하나를 fallback으로 사용한다.
 
 ---
 

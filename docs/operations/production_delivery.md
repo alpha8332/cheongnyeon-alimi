@@ -123,6 +123,27 @@ asset SHA-256은
 확인했다. 자동 생성 source archive의 hash는 배포 계약으로 사용하지 않고,
 불변 배포 식별은 위 tag Git SHA와 Release 영수증 SHA-256으로 판정한다.
 
+## 현재 dataset-latest 후보
+
+`2026-08-24` 공개 dataset workflow에서 Source 확대·활성 projection·parity·지역
+coverage Gate를 통과한
+`public-bootstrap-20260824-897152e7a18c15`를 `dataset-latest`로 승격했다.
+이 dataset은 독립적인 공개 데이터 Release이며 아직 생성하지 않은 애플리케이션
+`v1.0.2` tag·Production Release의 완료 증거로 사용하지 않는다.
+
+| 항목 | 고정 값 |
+| --- | --- |
+| dataset Git SHA | `897152e1321a4c50b4846975abbe65fb2beaa0df` |
+| 공개 정책 | 2,052건 |
+| Source | 복지로 461, 온통청년 1,587, 인천 공공데이터 4 |
+| artifact SHA-256 | `98703dc79ca53063c3685008d8cede04c4ed8f79dbad53c993e9ac480d6a0860` |
+| 활성 identity SHA-256 | `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5` |
+| 이전 version | `public-bootstrap-20260824-f5883bb79c594f` |
+
+현재 애플리케이션 후보의 세부 QA 결과와 남은 clone·ZIP Gate는
+[v1.0.2 QA 개선 기록](../troubleshooting/integration/v1_0_2_qa_improvements.md)과
+[제출 체크리스트](../contest/open_source_submission_checklist.md)를 따른다.
+
 ## Dataset promotion Gate
 
 `public-dataset-release.yml`은 보호된 `production-data` Environment와

@@ -5,7 +5,7 @@
 - Base path: `/api/v1/policies`
 - 인증: 현재 없음
 - 응답 형식: JSON
-- 정렬: `id` 오름차순
+- 정렬: 정책 목록은 기본 `id` 오름차순, 자연어 검색은 요청한 결정적 정렬
 - 데이터 기준: `NormalizedProgram` 1.0.0·1.1.0·1.2.0 전환 호환
 
 일반 사용자 Policy API는 Raw provenance를 반환하지 않는다. 목록과 상세는
@@ -43,11 +43,35 @@ GET /api/v1/policies/search
 | `include_partial` | boolean | `true` | partial 정책 포함 여부 (기본값: true) |
 | `page` | integer | `1` | 1 이상 |
 | `limit` | integer | `20` | 1~100 |
+| `sort` | enum | `default` | `default`, `title_asc`, `title_desc`, `deadline_asc`, `deadline_desc`, `collected_desc`, `collected_asc` |
 
 `q`가 비어 있으면 `keyword`, `region`, `age`, `category`, `status` 중 하나
 이상의 명시 조건이 필요하다. 자연어 검색어와 명시 조건이 모두 없으면 `422`를
 반환한다. 따라서 홈에서는 지역이나 관심 분야만 선택해도 검색할 수 있지만,
 아무 조건도 없는 전체 정책 요청으로 이 endpoint를 사용하지 않는다.
+
+프로필 우선순위 보정이 필요하면 같은 검색 필드와 다음 `preferences`를 JSON으로
+보내는 `POST /api/v1/policies/search`를 사용한다.
+
+```json
+{
+  "q": "대학생 지원",
+  "include_partial": true,
+  "page": 1,
+  "limit": 20,
+  "sort": "default",
+  "preferences": {
+    "region": "경상남도 양산시",
+    "age": 25,
+    "categories": ["education", "welfare"]
+  }
+}
+```
+
+`preferences.categories`는 최대 7개의 복수 관심 분야를 OR로 평가한다. 프로필은
+명시적 검색 조건을 추가하거나 자연어에서 해석한 지역·분야를 덮지 않고, 후보의
+결정적 관련도와 추천 이유만 보정한다. `preferences`가 없으면 GET과 같은 결과
+계약을 사용한다.
 
 `region`을 명시적으로 전달하거나 `q`에서 지역을 해석한 경우, 다른 지역으로
 확인된 `mismatch`는 반환하지 않는다. 지역 근거가 없는 `unknown`은 공개
@@ -146,6 +170,10 @@ bootstrap처럼 지역 필드가 누락된 전국 단위 정책의 발견 가능
   가능성을 위해 term 중 하나가 일치하는 후보를 허용한다.
 - 이 규칙은 후보 집합만 제한한다. 최종 결정적 정렬은 `score DESC`, 지역
   직접성·적용 범위, `unknown_count ASC`, 상태, `policy.id ASC` 순서다.
+- `sort=title_*`는 한국어 제목, `deadline_*`는 신청 종료일,
+  `collected_*`는 수집 시각을 기준으로 정렬한다. 마감일 미확정 정책은
+  `deadline_asc`와 `deadline_desc` 모두 확정 날짜 뒤에 두고, 모든 모드에서
+  최종 identity tie-break를 적용한다.
 
 ## 정책 목록
 
