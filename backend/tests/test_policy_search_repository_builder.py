@@ -200,6 +200,41 @@ def test_repository_search_policies_deterministic_sorting(db, sample_policies):
     assert items[0].policy.id == sample_policies[1].id
 
 
+def test_repository_search_supports_user_sorting_before_pagination(
+    db,
+    sample_policies,
+):
+    first, second, _closed = sample_policies
+    today = date.today()
+    now = datetime.now(timezone.utc)
+    first.title = "나 정책"
+    first.application_end = today + timedelta(days=1)
+    first.collected_at = now
+    second.title = "가 정책"
+    second.application_end = today + timedelta(days=5)
+    second.collected_at = now + timedelta(minutes=1)
+    db.commit()
+
+    interpreted = parse_search_query(q="청년", db=db)
+    repo = PolicySearchRepository(db)
+
+    def ids(sort: str) -> list[int]:
+        items, total = repo.search_policies(
+            interpreted,
+            page=1,
+            limit=10,
+            sort=sort,
+        )
+        assert total == 2
+        return [item.policy.id for item in items]
+
+    assert ids("title_asc") == [second.id, first.id]
+    assert ids("title_desc") == [first.id, second.id]
+    assert ids("deadline_asc") == [first.id, second.id]
+    assert ids("deadline_desc") == [second.id, first.id]
+    assert ids("collected_desc") == [second.id, first.id]
+
+
 def test_repository_search_policies_unmatched_term_returns_zero(db, sample_policies):
     repo = PolicySearchRepository(db)
 

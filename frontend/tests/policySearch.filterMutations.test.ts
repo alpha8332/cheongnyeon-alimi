@@ -16,6 +16,7 @@ const baseState = {
   include_partial: true,
   page: 3,
   limit: 20,
+  sort: 'default' as const,
 };
 
 test('hasPolicySearchFilterParam은 URL flat filter 존재 여부를 판별한다', () => {

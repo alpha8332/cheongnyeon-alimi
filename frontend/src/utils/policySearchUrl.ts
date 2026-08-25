@@ -8,7 +8,11 @@ import {
   POLICY_SEARCH_URL_DEFAULTS,
   type PolicySearchUrlQueryState,
 } from '@/types/policySearchUrlState';
-import type { ApplicationStatus, PolicyCategory } from '@/types/policy';
+import type {
+  ApplicationStatus,
+  PolicyCategory,
+  PolicySort,
+} from '@/types/policy';
 import {
   buildPolicySearchPageNumbers,
   getPolicySearchTotalPages,
@@ -42,6 +46,16 @@ const APPLICATION_STATUSES = new Set<ApplicationStatus>([
   'open',
   'closed',
   'scheduled',
+]);
+
+const POLICY_SORTS = new Set<PolicySort>([
+  'default',
+  'title_asc',
+  'title_desc',
+  'deadline_asc',
+  'deadline_desc',
+  'collected_desc',
+  'collected_asc',
 ]);
 
 function parseOptionalInt(value: string | null): number | null {
@@ -93,6 +107,12 @@ function parseOptionalStatus(value: string | null): ApplicationStatus | null {
     : null;
 }
 
+function parsePolicySort(value: string | null): PolicySort {
+  return value && POLICY_SORTS.has(value as PolicySort)
+    ? (value as PolicySort)
+    : POLICY_SEARCH_URL_DEFAULTS.sort;
+}
+
 /**
  * Read flat browser URL params into {@link PolicySearchUrlQueryState}.
  * Does not validate `q` for API — empty `q` means no search has been submitted.
@@ -123,6 +143,7 @@ export function parsePolicySearchUrl(
       limit && limit >= 1 && limit <= 100
         ? limit
         : POLICY_SEARCH_URL_DEFAULTS.limit,
+    sort: parsePolicySort(searchParams.get('sort')),
   };
 }
 
@@ -178,6 +199,10 @@ export function buildPolicySearchUrlParams(
     params.set('limit', String(state.limit));
   }
 
+  if (trimmedQ && state.sort !== POLICY_SEARCH_DEFAULTS.sort) {
+    params.set('sort', state.sort);
+  }
+
   return params;
 }
 
@@ -208,6 +233,7 @@ export function toPolicySearchRequest(
     include_partial: state.include_partial,
     page: state.page,
     limit: state.limit,
+    sort: state.sort,
     preferences,
   };
 }

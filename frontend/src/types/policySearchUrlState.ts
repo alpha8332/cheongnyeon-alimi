@@ -9,7 +9,11 @@
  */
 
 import type { PolicySearchQueryParams } from './policySearch.js';
-import type { ApplicationStatus, PolicyCategory } from './policy.js';
+import type {
+  ApplicationStatus,
+  PolicyCategory,
+  PolicySort,
+} from './policy.js';
 
 /** Planned Frontend route for NL search (home `/?q=…`; legacy `/search` redirects). */
 export const POLICY_SEARCH_ROUTE = '/';
@@ -33,16 +37,18 @@ export interface PolicySearchUrlQueryState {
   include_partial: boolean;
   page: number;
   limit: number;
+  sort: PolicySort;
 }
 
 /** Defaults when URL omits optional params (align with POLICY_SEARCH_DEFAULTS). */
 export const POLICY_SEARCH_URL_DEFAULTS: Pick<
   PolicySearchUrlQueryState,
-  'include_partial' | 'page' | 'limit'
+  'include_partial' | 'page' | 'limit' | 'sort'
 > = {
   include_partial: true,
   page: 1,
   limit: 20,
+  sort: 'default',
 };
 
 /**

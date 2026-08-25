@@ -4,6 +4,7 @@ import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
+import PolicySortSelect from '@/components/policy/PolicySortSelect';
 import SearchBar from '@/components/policySearch/SearchBar';
 import SearchPagination from '@/components/policySearch/SearchPagination';
 import PolicySearchResultCard from '@/components/policySearch/PolicySearchResultCard';
@@ -204,6 +205,18 @@ export default function HomePage() {
     applyUrlState(withPolicySearchPage(effectiveUrlState, nextPage));
   };
 
+  const handleSortChange = (sort: typeof effectiveUrlState.sort) => {
+    applyUrlState(
+      withPolicySearchPage(
+        {
+          ...effectiveUrlState,
+          sort,
+        },
+        1,
+      ),
+    );
+  };
+
   const showLoading =
     shouldFetch && (isLoading || (isFetching && !isResponseCurrent));
   const showError = shouldFetch && isError && !showLoading;
@@ -352,6 +365,17 @@ export default function HomePage() {
                 <p className="policy-eligibility-notice" role="note">
                   {POLICY_ELIGIBILITY_NOTICE}
                 </p>
+                <div className="policy-results-toolbar">
+                  <span className="policy-results-toolbar__count">
+                    검색 결과 {data.total}건
+                  </span>
+                  <PolicySortSelect
+                    value={effectiveUrlState.sort}
+                    defaultLabel="관련도순"
+                    onChange={handleSortChange}
+                    disabled={showLoading}
+                  />
+                </div>
                 <div className="cards-grid">
                   {data.items.map((hit) => (
                     <PolicySearchResultCard

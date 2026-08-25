@@ -1,6 +1,11 @@
 from typing import Any, Literal
 from pydantic import BaseModel, Field, ConfigDict
-from app.schemas.policy import ApplicationStatus, PolicyCategory, PolicyRead
+from app.schemas.policy import (
+    ApplicationStatus,
+    PolicyCategory,
+    PolicyRead,
+    PolicySort,
+)
 
 SearchDimension = Literal["keyword", "region", "age", "category", "status"]
 
@@ -41,6 +46,13 @@ class PolicySearchQueryParams(BaseModel):
     )
     page: int = Field(default=1, ge=1, description="페이지 번호")
     limit: int = Field(default=20, ge=1, le=100, description="페이지당 결과 수")
+    sort: PolicySort = Field(
+        default="default",
+        description=(
+            "정렬: default(관련도), title_asc, title_desc, deadline_asc, "
+            "deadline_desc, collected_desc, collected_asc"
+        ),
+    )
 
 
 class PolicySearchPreferences(BaseModel):

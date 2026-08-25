@@ -16,6 +16,15 @@ export type ApplicationStatus = 'open' | 'closed' | 'scheduled';
 
 export type PublicDataQualityStatus = 'valid' | 'partial';
 
+export type PolicySort =
+  | 'default'
+  | 'title_asc'
+  | 'title_desc'
+  | 'deadline_asc'
+  | 'deadline_desc'
+  | 'collected_desc'
+  | 'collected_asc';
+
 export type EligibilityCoverage = 'complete' | 'partial' | 'unknown';
 
 export type EligibilityCategory =
@@ -119,4 +128,5 @@ export interface PolicyListQuery {
   region?: string;
   status?: ApplicationStatus;
   include_partial?: boolean;
+  sort?: PolicySort;
 }

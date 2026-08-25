@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories.policy_search import PolicySearchRepository
+from app.schemas.policy import PolicySort
 from app.schemas.policy_search import (
     PolicySearchPostRequest,
     PolicySearchPreferences,
@@ -101,6 +102,7 @@ def _execute_policy_search(
         include_partial=request.include_partial,
         page=request.page,
         limit=request.limit,
+        sort=request.sort,
     )
 
     return PolicySearchResponse(
@@ -145,6 +147,13 @@ def search_policies_api(
     ),
     page: int = Query(1, ge=1, description="페이지 번호"),
     limit: int = Query(20, ge=1, le=100, description="페이지 당 결과 수"),
+    sort: PolicySort = Query(
+        "default",
+        description=(
+            "정렬: default(관련도), title_asc, title_desc, deadline_asc, "
+            "deadline_desc, collected_desc, collected_asc"
+        ),
+    ),
     db: Session = Depends(get_db),
 ) -> PolicySearchResponse:
     request = PolicySearchQueryParams(
@@ -157,6 +166,7 @@ def search_policies_api(
         include_partial=include_partial,
         page=page,
         limit=limit,
+        sort=sort,
     )
     return _execute_policy_search(request, db)
 

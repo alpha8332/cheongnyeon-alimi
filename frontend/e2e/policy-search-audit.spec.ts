@@ -74,6 +74,22 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     expect(page.url()).not.toMatch(/page=2/);
   });
 
+  test('3b. 검색 결과 정렬 변경 시 URL 반영 및 page=1 리셋', async ({
+    page,
+  }) => {
+    await page.goto('/?q=%EC%A0%84%EA%B5%AD+%EC%B2%AD%EB%85%84&limit=1&page=2');
+
+    await waitForSearchSettled(page);
+    const sort = page.getByRole('combobox', { name: '검색 결과 정렬' });
+    await expect(sort).toBeVisible();
+    await sort.selectOption('title_asc');
+
+    await expect(page).toHaveURL(/sort=title_asc/);
+    expect(page.url()).not.toMatch(/page=2/);
+    await waitForSearchSettled(page);
+    await expect(sort).toHaveValue('title_asc');
+  });
+
   test('4a. 로딩 Skeleton 표시', async ({ page }) => {
     await page.goto('/search?q=%EC%84%9C%EC%9A%B8+%EC%A3%BC%EA%B1%B0');
 

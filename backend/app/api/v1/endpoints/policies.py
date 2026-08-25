@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories.policy import PolicyRepository
-from app.schemas.policy import PolicyDetailRead, PolicyListResponse, PolicyRead
+from app.schemas.policy import (
+    PolicyDetailRead,
+    PolicyListResponse,
+    PolicyRead,
+    PolicySort,
+)
 from app.schemas.policy_search import PolicySearchResponse
 from app.services.policy import PolicyListRequest, PolicyService
 
@@ -54,6 +59,13 @@ def get_policies(
         False,
         description="partial 정책 포함 여부; 기본값은 valid만",
     ),
+    sort: PolicySort = Query(
+        "default",
+        description=(
+            "정렬: default, title_asc, title_desc, deadline_asc, "
+            "deadline_desc, collected_desc, collected_asc"
+        ),
+    ),
     service: PolicyService = Depends(get_policy_service),
 ) -> PolicyListResponse:
     selected = service.list(
@@ -64,6 +76,7 @@ def get_policies(
             region=region,
             application_status=application_status,
             include_partial=include_partial,
+            sort=sort,
         )
     )
 

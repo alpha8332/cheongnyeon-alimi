@@ -164,6 +164,7 @@ test('Policy Search endpoint와 G1 default query 계약을 고정한다', () => 
     include_partial: true,
     page: 1,
     limit: 20,
+    sort: 'default',
   });
 
   assert.deepEqual(manifest.defaults, POLICY_SEARCH_DEFAULTS);
@@ -173,6 +174,7 @@ test('Policy Search endpoint와 G1 default query 계약을 고정한다', () => 
     include_partial: true,
     page: 1,
     limit: 20,
+    sort: 'default',
   });
 });
 
@@ -197,11 +199,15 @@ test('flat query parameter resolve와 URLSearchParams 직렬화를 검증한다'
     include_partial: false,
     page: 2,
     limit: 5,
+    sort: 'default',
   });
 
   assert.throws(() => resolvePolicySearchQuery({ q: '   ' }));
   assert.throws(() => resolvePolicySearchQuery({ q: 'x', page: 0 }));
   assert.throws(() => resolvePolicySearchQuery({ q: 'x', limit: 101 }));
+  assert.throws(() =>
+    resolvePolicySearchQuery({ q: 'x', sort: 'raw_sql' as 'default' }),
+  );
   assert.throws(() =>
     resolvePolicySearchQuery({ q: 'x'.repeat(POLICY_SEARCH_QUERY_LIMITS.q + 1) }),
   );

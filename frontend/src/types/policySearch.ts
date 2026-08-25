@@ -12,7 +12,12 @@
  * - Existing GET /api/v1/policies list/detail unchanged until search API ships.
  */
 
-import type { ApplicationStatus, PolicyCategory, PolicyDto } from './policy.js';
+import type {
+  ApplicationStatus,
+  PolicyCategory,
+  PolicyDto,
+  PolicySort,
+} from './policy.js';
 
 /** Backend evaluation verdict for a searchable dimension. Aligns with Backend `MatchVerdict`. */
 export type MatchVerdict = 'match' | 'mismatch' | 'unknown';
@@ -104,6 +109,7 @@ export interface PolicySearchQueryParams {
   include_partial?: boolean;
   page?: number;
   limit?: number;
+  sort?: PolicySort;
   /** Browser-only profile preferences sent in a POST body, never as URL filters. */
   preferences?: PolicySearchPreferences | null;
 }
@@ -119,6 +125,7 @@ export const POLICY_SEARCH_DEFAULTS = {
   include_partial: true,
   page: 1,
   limit: 20,
+  sort: 'default',
 } as const;
 
 /** Recommended query string length limits (422 when exceeded). */

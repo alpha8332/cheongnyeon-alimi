@@ -179,6 +179,14 @@ def test_search_api_empty_q_422(client):
     assert "detail" in data
 
 
+def test_search_api_invalid_sort_422(client):
+    response = client.get(
+        "/api/v1/policies/search",
+        params={"q": "청년", "sort": "raw_sql"},
+    )
+    assert response.status_code == 422
+
+
 def test_search_api_filler_only_q_400(client):
     response = client.get("/api/v1/policies/search?q=찾아줘 받을 수 있나?")
 

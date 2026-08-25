@@ -3,7 +3,8 @@
   "defaults": {
     "include_partial": true,
     "page": 1,
-    "limit": 20
+    "limit": 20,
+    "sort": "default"
   },
   "scenarios": [
     {

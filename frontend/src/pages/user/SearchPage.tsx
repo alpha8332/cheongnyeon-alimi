@@ -5,9 +5,11 @@ import ErrorState from '@/components/common/ErrorState';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
 import PolicyFilters from '@/components/policy/PolicyFilters';
+import PolicySortSelect from '@/components/policy/PolicySortSelect';
 import SearchPagination from '@/components/policySearch/SearchPagination';
 import { usePoliciesQuery } from '@/hooks/usePoliciesQuery';
 import type { PolicyDto } from '@/types/policy';
+import type { PolicySort } from '@/types/policy';
 import {
   collectRegionOptions,
   EMPTY_PROGRAM_FILTERS,
@@ -21,6 +23,7 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const urlSearch = searchParams.get('search') ?? '';
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<PolicySort>('default');
   const [filters, setFilters] = useState<ProgramFilterState>(() => ({
     ...EMPTY_PROGRAM_FILTERS,
     search: urlSearch,
@@ -36,6 +39,7 @@ export default function SearchPage() {
     category: filters.category || undefined,
     region: filters.region || undefined,
     include_partial: filters.includePartial,
+    sort,
   });
   const policies = policyList?.items ?? EMPTY_POLICIES;
 
@@ -83,7 +87,18 @@ export default function SearchPage() {
 
       <div className="section-head">
         <h2 className="section-title">검색 결과</h2>
-        <span className="section-badge">{filteredPolicies.length}건</span>
+        <div className="policy-results-toolbar">
+          <span className="section-badge">{policyList?.total ?? 0}건</span>
+          <PolicySortSelect
+            value={sort}
+            defaultLabel="기본순"
+            onChange={(nextSort) => {
+              setSort(nextSort);
+              setPage(1);
+            }}
+            disabled={isLoading}
+          />
+        </div>
       </div>
 
       {isLoading ? <LoadingState message="정책 목록을 불러오는 중입니다." /> : null}
