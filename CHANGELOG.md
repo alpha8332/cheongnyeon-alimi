@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- 관리자 보안 화면에서 현재 PIN을 새 PIN으로 변경하고, 서버 PC의
+  `reset_admin_pin.bat`으로 정책 DB와 CollectionRun을 보존한 채 분실 PIN을
+  복구할 수 있게 했다. PIN 변경·복구 시 기존 관리자 세션을 모두 무효화하며,
+  새 PIN verifier는 salted PBKDF2로 저장한다
+  ([관리자 인증 API 계약](docs/api/admin_access.md),
+  [Docker 운영 절차](docs/operations/docker_first_run.md#관리자-pin-변경과-분실-복구))
+
 ## [1.0.2] - 2026-08-25
 
 ### Added

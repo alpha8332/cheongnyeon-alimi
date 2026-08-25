@@ -56,6 +56,29 @@ manifest 전체 검증과 DB import가 성공한 뒤에만 cache의 `latest.poin
 갱신한다. 다운로드 중단·hash 불일치·Schema drift에서는 기존 latest cache와
 Volume을 변경하지 않는다.
 
+## 관리자 PIN 변경과 분실 복구
+
+현재 PIN을 알고 있으면 관리자 로그인 후 `관리자 > 보안`에서 현재 PIN, 새 PIN과
+확인을 입력한다. 성공하면 모든 기존 관리자 세션이 무효화되고 로그인 화면으로
+이동한다. 정책과 CollectionRun 데이터는 변경하지 않는다.
+
+PIN을 잊었으면 서버 PC의 저장소 루트에서 다음 host-only 복구 도구를 실행한다.
+
+```powershell
+.\reset_admin_pin.bat
+```
+
+Backend가 실행 중이어야 하며 새 4자리 PIN을 두 번 보안 프롬프트로 입력한다.
+도구는 PIN을 명령 인자, shell history 또는 로그에 넣지 않고 실행 중인 Backend
+컨테이너의 표준입력으로만 전달한다. DB의 관리자 인증 상태만 transaction으로
+갱신하므로 PostgreSQL Volume, 공개 정책, 즐겨찾기 참조와 CollectionRun 감사
+기록은 보존된다. 기존 관리자 세션은 모두 무효화된다.
+
+`.env.compose` 삭제나 `docker compose down -v`는 PIN 복구 절차가 아니다.
+특히 `down -v`는 PostgreSQL Volume을 삭제하므로 데이터 보존이 필요한 복구에
+사용하지 않는다. DB Volume을 새로 만든 경우에는 `.env.compose`의 최초 설치
+verifier가 다시 bootstrap 기준이 된다.
+
 ## 고정 manifest 개발 검증 경로
 
 검증된 별도 artifact를 가진 개발자는 manifest와 같은 디렉터리에 dataset을 둔

@@ -88,7 +88,7 @@ docker compose --env-file .env.compose down
 | 정책 상세 | 핵심 신청 조건, 제외 조건, 필요 서류, D-Day, 공식 원문 연결 |
 | 맞춤 추천 | 저장한 지역·연령·복수 관심 분야에 따른 결정적 추천, 프로필 우선순위와 추천 이유 |
 | 개인 도구 | 브라우저 기반 조건 저장, 폴더형 북마크, 마감 알림·달력, `.ics` 다운로드 |
-| 관리자 | 4자리 PIN 세션, 정책 데이터 조회, CollectionRun 실행·이력·상세·stale 표시 |
+| 관리자 | 4자리 PIN 로그인·변경·DB 보존 분실 복구, 정책 데이터 조회, CollectionRun 실행·이력·상세·stale 표시 |
 | 품질·감사 | 수집 품질 집계, 구조화 로그 조회·보관 로그 정리와 감사 기록 |
 | 데이터 운영 | 중앙 Celery·Redis 수집 queue, 정책 생명주기, 공개 dataset 검증·승격·rollback |
 
@@ -172,6 +172,7 @@ FastAPI Backend, Celery worker·scheduler, React Frontend입니다. 자세한 �
 | `3000` 또는 `8000` 포트 충돌 | 사용 중인 프로그램을 종료하거나 [포트 변경 방법](docs/operations/docker_first_run.md#재실행과-offline-cache) 사용 |
 | dataset endpoint 접속 실패 | 이전 검증 cache가 있으면 `run_docker.bat -Offline`, 없으면 네트워크 확인 |
 | `.env.compose` 없이 기존 DB Volume 발견 | 기존 환경의 `.env.compose`를 복구하고 소유 관계를 확인한 뒤 실행 |
+| 관리자 PIN을 잊음 | Backend 실행 후 저장소 루트에서 `reset_admin_pin.bat` 실행; DB·CollectionRun은 보존됨 |
 | 브라우저가 자동으로 열리지 않음 | <http://127.0.0.1:3000>을 직접 열거나 `docker compose --env-file .env.compose ps` 확인 |
 
 실행기의 cache·offline·실패 안전 경계와 상세 복구 절차는
@@ -189,6 +190,7 @@ FastAPI Backend, Celery worker·scheduler, React Frontend입니다. 자세한 �
 - Backend Windows 환경: [backend_local_setup.md](docs/development/backend_local_setup.md)
 - Collector 실행과 API key 경계: [collector.md](docs/operations/collector.md)
 - Production 배포·dataset 승격: [production_delivery.md](docs/operations/production_delivery.md)
+- 관리자 PIN 변경·복구: [docker_first_run.md](docs/operations/docker_first_run.md#관리자-pin-변경과-분실-복구)
 - v1.0.2 QA 개선 기록: [v1_0_2_qa_improvements.md](docs/troubleshooting/integration/v1_0_2_qa_improvements.md)
 - 변경 이력: [CHANGELOG.md](CHANGELOG.md)
 - 기여 방법: [CONTRIBUTING.md](CONTRIBUTING.md)

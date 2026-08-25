@@ -259,7 +259,7 @@
   DTL5-0 W5-G0 기준선, Data 06 포함 actual E2E·독립 검증과 Release 2 판정 근거
 - [Policy API 계약](api/policies.md): 정책 목록·상세·자연어 검색, pagination,
   category·region·status 필터, 복수 프로필 선호도·정렬과 partial 노출 규칙
-- [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 세션 생성 API 및 상태코드 계약
+- [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 로그인·변경, 세션 무효화와 상태코드 계약
 - [CollectionRun 관리자 API 계약](api/admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 실행 및 stale 판정 계약
 - [관리자 정책 데이터 표 API 계약](api/admin_policies.md): 관리자 읽기 전용 정책 데이터 표 목록·상세, 페이징 및 Allowlist 정렬 계약
 - [관리자 로그 및 감사 API 계약](api/admin_logs.md): 관리자 서버 로그 파일/이벤트 조회, 회전 archive 삭제 및 Audit 감사 기록 계약
