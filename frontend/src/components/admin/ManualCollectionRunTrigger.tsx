@@ -8,6 +8,9 @@ import { mapAdminApiErrorToToast } from '@/utils/adminApiErrorToast';
 
 interface ManualCollectionRunTriggerProps {
   accessToken?: string;
+  sourceId?: string;
+  sourceDisplayName?: string;
+  compact?: boolean;
   disabled?: boolean;
   disabledReason?: string;
   onTriggered: (response: CollectionRunTriggerResponse) => void;
@@ -16,6 +19,9 @@ interface ManualCollectionRunTriggerProps {
 
 export default function ManualCollectionRunTrigger({
   accessToken,
+  sourceId,
+  sourceDisplayName,
+  compact = false,
   disabled = false,
   disabledReason,
   onTriggered,
@@ -26,6 +32,7 @@ export default function ManualCollectionRunTrigger({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isDisabled = disabled || isSubmitting;
+  const dialogTitleId = `manual-run-trigger-title-${sourceId ?? 'default'}`;
 
   const closeConfirmDialog = () => {
     setIsConfirmOpen(false);
@@ -53,7 +60,10 @@ export default function ManualCollectionRunTrigger({
     setIsSubmitting(true);
 
     try {
-      const response = await triggerManualCollectionRun({}, { accessToken });
+      const response = await triggerManualCollectionRun(
+        sourceId ? { source_id: sourceId } : {},
+        { accessToken },
+      );
       closeConfirmDialog();
       onTriggered(response);
     } catch (error) {
@@ -87,14 +97,17 @@ export default function ManualCollectionRunTrigger({
   };
 
   return (
-    <section className="manual-run-trigger" aria-label="수동 CollectionRun 실행">
-      <div className="manual-run-trigger__header">
+    <section
+      className={`manual-run-trigger${compact ? ' manual-run-trigger--compact' : ''}`}
+      aria-label={`${sourceDisplayName ?? '수집기'} 수동 CollectionRun 실행`}
+    >
+      {!compact ? <div className="manual-run-trigger__header">
         <h2 className="manual-run-trigger__title">수동 실행</h2>
         <p className="manual-run-trigger__description">
           관리자 trigger로 새 CollectionRun을 queue에 등록합니다. 대기·실행 중인
           run이 있으면 버튼이 비활성화됩니다.
         </p>
-      </div>
+      </div> : null}
 
       <Button
         type="button"
@@ -103,7 +116,7 @@ export default function ManualCollectionRunTrigger({
         aria-disabled={isDisabled}
         onClick={() => setIsConfirmOpen(true)}
       >
-        수동 실행 요청
+        {compact ? '이 수집기 실행' : '수동 실행 요청'}
       </Button>
 
       {disabled && disabledReason ? (
@@ -117,14 +130,15 @@ export default function ManualCollectionRunTrigger({
           className="manual-run-trigger__dialog"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="manual-run-trigger-title"
+          aria-labelledby={dialogTitleId}
         >
-          <h3 id="manual-run-trigger-title" className="manual-run-trigger__dialog-title">
+          <h3 id={dialogTitleId} className="manual-run-trigger__dialog-title">
             수동 실행 확인
           </h3>
           <p className="manual-run-trigger__dialog-message">
-            새 CollectionRun을 queue에 등록합니다. 중복 제출을 방지하기 위해
-            확인 후 한 번만 요청합니다. 계속할까요?
+            {sourceDisplayName ? `${sourceDisplayName} 수집 작업을 ` : '새 수집 작업을 '}
+            CollectionRun queue에 등록합니다. 확인 후 한 번만 요청합니다.
+            계속할까요?
           </p>
 
           <div className="manual-run-trigger__dialog-actions">
