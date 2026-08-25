@@ -10,6 +10,10 @@
 
 ### Added
 
+- placeholder였던 관리자 수집기 화면을 등록 source 11개, 중앙 queue·worker·
+  scheduler, 활성 공개 dataset source별 정책 수, 최근 CollectionRun과 source별
+  수동 실행을 확인하는 비밀 비노출 운영 화면으로 교체했다
+  ([관리자 수집기 상태 API](docs/api/admin_collectors.md))
 - 관리자 보안 화면에서 현재 PIN을 새 PIN으로 변경하고, 서버 PC의
   `reset_admin_pin.bat`으로 정책 DB와 CollectionRun을 보존한 채 분실 PIN을
   복구할 수 있게 했다. PIN 변경·복구 시 기존 관리자 세션을 모두 무효화하며,

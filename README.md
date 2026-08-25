@@ -88,7 +88,7 @@ docker compose --env-file .env.compose down
 | 정책 상세 | 핵심 신청 조건, 제외 조건, 필요 서류, D-Day, 공식 원문 연결 |
 | 맞춤 추천 | 저장한 지역·연령·복수 관심 분야에 따른 결정적 추천, 프로필 우선순위와 추천 이유 |
 | 개인 도구 | 브라우저 기반 조건 저장, 폴더형 북마크, 마감 알림·달력, `.ics` 다운로드 |
-| 관리자 | 4자리 PIN 로그인·변경·DB 보존 분실 복구, 정책 데이터 조회, CollectionRun 실행·이력·상세·stale 표시 |
+| 관리자 | 4자리 PIN 로그인·변경·DB 보존 분실 복구, 수집기·queue·worker·스케줄 상태, 정책 데이터 조회, CollectionRun 실행·이력·상세·stale 표시 |
 | 품질·감사 | 수집 품질 집계, 구조화 로그 조회·보관 로그 정리와 감사 기록 |
 | 데이터 운영 | 중앙 Celery·Redis 수집 queue, 정책 생명주기, 공개 dataset 검증·승격·rollback |
 

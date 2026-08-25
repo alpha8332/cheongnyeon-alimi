@@ -261,6 +261,7 @@
   category·region·status 필터, 복수 프로필 선호도·정렬과 partial 노출 규칙
 - [관리자 인증 API 계약](api/admin_access.md): 관리자 PIN 로그인·변경, 세션 무효화와 상태코드 계약
 - [CollectionRun 관리자 API 계약](api/admin_collection_runs.md): CollectionRun 실행 이력 목록·상세, 수동 실행 및 stale 판정 계약
+- [관리자 수집기 상태 API 계약](api/admin_collectors.md): 등록 source와 중앙 queue·worker·스케줄, 공개 dataset 포함 건수 및 최근 실행 상태
 - [관리자 정책 데이터 표 API 계약](api/admin_policies.md): 관리자 읽기 전용 정책 데이터 표 목록·상세, 페이징 및 Allowlist 정렬 계약
 - [관리자 로그 및 감사 API 계약](api/admin_logs.md): 관리자 서버 로그 파일/이벤트 조회, 회전 archive 삭제 및 Audit 감사 기록 계약
 - [맞춤 정책 추천 API 계약](api/recommendation.md): 복수 관심 분야·지역·연령 기반 결정적 추천, 부합도 점수, 추천 사유 및 비단정 계약

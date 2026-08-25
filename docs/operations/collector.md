@@ -5,18 +5,38 @@
 ```text
 youthcenter-api
 bokjiro-central-welfare-api
+data-go-kr-incheon-youth-programs
 cheonan-youthcenter-web
 regional-gyeongbuk-youth-platform
 regional-busan-youth-platform
+work24-policy-web
+lh-housing-announcement-web
+kosaf-scholarship-web
+kinfa-financial-product-web
+kpass-transit-refund-web
 ```
 
 서울과 RYP6의 Browser 구현 지역은 HTTP Collector 목록에는 없고, 검증된 실제
 Browser 캡처를 Runtime Raw로 가져온 뒤 재처리 CLI에서 지원한다.
 
-현재 Collector는 명시적 CLI 실행만 지원한다. 단일 페이지 제한 수집과
+현재 Collector는 명시적 CLI·관리자 수동 실행과 기본 비활성인 중앙 scheduler를
+지원한다. 단일 페이지 제한 수집과
 호출 예산 안에서 전체 목록을 순회하는 릴리스 snapshot 수집을 구분한다.
 저장된 Runtime Raw는 별도 재처리 CLI로 추가 외부 호출 없이 PostgreSQL에
-적재할 수 있다. Scheduler와 자동 주기 적재는 구현하지 않았다.
+적재할 수 있다. scheduler는 `COLLECTION_SCHEDULE_ENABLED=true`인 중앙 운영
+환경에서만 작업을 등록하며 일반 clone·ZIP 실행에는 필요하지 않다.
+
+## 관리자 상태 화면
+
+`/admin/collectors`는 등록된 11개 source와 중앙 queue·worker·scheduler, 활성
+공개 dataset의 source별 정책 수, 최근 CollectionRun을 함께 보여준다. API key
+값은 화면이나 Backend에 전달하지 않고 collection worker가 `설정됨/미설정`만
+응답한다. 따라서 화면에서 인증정보가 미설정으로 보여도 이미 설치된 공개
+dataset 검색에는 영향이 없다.
+
+수동 실행 결과는 로컬 DB와 CollectionRun에 남지만 공개 dataset 검증·승격 전에는
+사용자 검색에 노출되지 않는다. 전체 응답 계약과 상태 의미는
+[관리자 수집기 상태 API](../api/admin_collectors.md)를 따른다.
 
 ## 실행 환경
 
