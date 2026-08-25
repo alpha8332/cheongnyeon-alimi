@@ -137,6 +137,8 @@ def test_multiple_interest_categories_use_or_matching() -> None:
 
     assert matched is not None
     assert matched.score == 40
+    assert matched.category == "finance"
+    assert matched.categories == ["finance"]
     assert any(
         reason.code == "MATCHED_CATEGORY" for reason in matched.reasons
     )

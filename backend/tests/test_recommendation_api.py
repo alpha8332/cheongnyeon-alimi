@@ -47,6 +47,7 @@ def test_post_recommendations_success():
     if data["items"]:
         first_item = data["items"][0]
         assert "score" in first_item
+        assert first_item["category"] in first_item["categories"]
         assert "reasons" in first_item
         assert "unknown_conditions" in first_item
         assert "disclaimer" in first_item

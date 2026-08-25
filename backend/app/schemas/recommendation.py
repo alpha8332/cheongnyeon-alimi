@@ -38,6 +38,7 @@ class RecommendationItem(BaseModel):
     title: str
     lead: Optional[str] = None
     category: str
+    categories: List[str] = Field(default_factory=list)
     regions: List[str] = Field(default_factory=list)
     min_age: Optional[int] = None
     max_age: Optional[int] = None

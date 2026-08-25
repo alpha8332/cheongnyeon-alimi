@@ -15,6 +15,18 @@ export const MOCK_RECOMMENDATION_EMPTY_REGION = 'MOCK_EMPTY';
 
 export const MOCK_RECOMMENDATION_EVALUATED_AT = '2026-08-11T12:00:00.000Z';
 
+function selectedCategories(
+  request: ResolvedRecommendationRequest,
+): string[] {
+  return Array.from(
+    new Set(
+      [request.category, ...(request.categories ?? [])].filter(
+        (category): category is string => Boolean(category),
+      ),
+    ),
+  );
+}
+
 function mapApplicationStatusForFilter(
   status: string | undefined,
 ): string | undefined {
@@ -31,10 +43,8 @@ function buildReasons(
 ): RecommendationReasonDto[] {
   const reasons: RecommendationReasonDto[] = [];
 
-  if (
-    request.category &&
-    policy.categories.includes(request.category as PolicyDto['categories'][number])
-  ) {
+  if (selectedCategories(request).some((category) =>
+    policy.categories.includes(category as PolicyDto['categories'][number]))) {
     reasons.push({
       code: 'MATCHED_CATEGORY',
       label: '관심 분야와 일치하는 정책입니다.',
@@ -85,10 +95,8 @@ function computeScore(
 ): number {
   let score = 0;
 
-  if (
-    request.category &&
-    policy.categories.includes(request.category as PolicyDto['categories'][number])
-  ) {
+  if (selectedCategories(request).some((category) =>
+    policy.categories.includes(category as PolicyDto['categories'][number]))) {
     score += 30;
   }
 
@@ -130,6 +138,7 @@ export function toRecommendationItem(
     title: policy.title,
     lead: policy.summary,
     category: policy.categories[0] ?? 'other',
+    categories: [...policy.categories],
     regions: [...policy.regions],
     min_age: policy.age_min,
     max_age: policy.age_max,
@@ -152,9 +161,11 @@ function matchesRecommendationFilters(
     return false;
   }
 
+  const requestedCategories = selectedCategories(request);
   if (
-    request.category &&
-    !policy.categories.includes(request.category as PolicyDto['categories'][number])
+    requestedCategories.length > 0 &&
+    !requestedCategories.some((category) =>
+      policy.categories.includes(category as PolicyDto['categories'][number]))
   ) {
     return false;
   }

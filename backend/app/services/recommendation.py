@@ -178,6 +178,7 @@ def evaluate_policy_recommendation(
         title=policy.title,
         lead=policy.summary,
         category=policy.categories[0] if policy.categories else (policy.category_text or "기타"),
+        categories=list(policy.categories or []),
         # 빈 지역은 전국이 아니라 미확정이다. Frontend가 빈 배열을
         # '지역 미정'으로 표시하고 unknown_conditions를 함께 안내한다.
         regions=policy.regions or [],

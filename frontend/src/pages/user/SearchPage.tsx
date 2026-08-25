@@ -103,7 +103,11 @@ export default function SearchPage() {
         <>
           <div className="cards-grid">
             {filteredPolicies.map((policy) => (
-              <PolicyCard key={policy.id} policy={policy} />
+              <PolicyCard
+                key={policy.id}
+                policy={policy}
+                highlightedCategory={effectiveFilters.category || null}
+              />
             ))}
           </div>
           <SearchPagination

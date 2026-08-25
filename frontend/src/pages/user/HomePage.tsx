@@ -358,6 +358,7 @@ export default function HomePage() {
                       key={hit.policy.id}
                       hit={hit}
                       searchIncludePartial={effectiveUrlState.include_partial}
+                      highlightedCategory={effectiveUrlState.category}
                       isSelected={activeSelectedPolicyId === hit.policy.id}
                       onSelect={(nextHit) =>
                         setSelectedPolicyId(nextHit.policy.id)

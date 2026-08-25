@@ -3,8 +3,8 @@ import PartialBadge from '@/components/policy/PartialBadge';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
 import { RegionUnconfirmedBadge } from '@/components/policySearch/PolicySearchBadges';
+import type { PolicyCategory } from '@/types/policy';
 import type { PolicySearchHit } from '@/types/policySearch';
-import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
 import { buildPolicySearchHitDetailPath } from '@/utils/policyDetailNavigation';
 import {
   formatAge,
@@ -12,6 +12,7 @@ import {
   formatOrganization,
   formatRegion,
   getDDayLabel,
+  getPolicyCategoryDisplayOrder,
 } from '@/utils/policyDisplay';
 
 function formatCardMeta(hit: PolicySearchHit): string {
@@ -29,6 +30,7 @@ interface PolicySearchResultCardProps {
   searchIncludePartial?: boolean;
   isSelected?: boolean;
   onSelect?: (hit: PolicySearchHit) => void;
+  highlightedCategory?: PolicyCategory | null;
 }
 
 export default function PolicySearchResultCard({
@@ -36,10 +38,14 @@ export default function PolicySearchResultCard({
   searchIncludePartial = false,
   isSelected = false,
   onSelect,
+  highlightedCategory = null,
 }: PolicySearchResultCardProps) {
   const detailPath = buildPolicySearchHitDetailPath(hit, searchIncludePartial);
   const isHoverSelectable = Boolean(onSelect);
-  const primaryCategory = getPrimaryPolicyCategory(hit.policy);
+  const categories = getPolicyCategoryDisplayOrder(
+    hit.policy,
+    highlightedCategory,
+  );
   const showPartialBadge = hit.policy.data_quality_status === 'partial';
 
   return (
@@ -53,7 +59,9 @@ export default function PolicySearchResultCard({
       <div className="policy-card__visual">
         <div className="policy-card__visual-badges">
           <PolicyStatusBadge policy={hit.policy} compact />
-          <PolicyCategoryBadge category={primaryCategory} compact />
+          {categories.map((category) => (
+            <PolicyCategoryBadge key={category} category={category} compact />
+          ))}
           {hit.verdicts.region === 'unknown' ? <RegionUnconfirmedBadge /> : null}
         </div>
       </div>
