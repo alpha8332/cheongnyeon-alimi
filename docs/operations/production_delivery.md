@@ -123,13 +123,42 @@ asset SHA-256은
 확인했다. 자동 생성 source archive의 hash는 배포 계약으로 사용하지 않고,
 불변 배포 식별은 위 tag Git SHA와 Release 영수증 SHA-256으로 판정한다.
 
-## 현재 dataset-latest 후보
+## v1.0.2 공개 데이터·검색·추천 개선 발행 증거
+
+`2026-08-25`에 최종 `main` Git
+`c3d3935a196a024037168e9afb5a94dfef4542e3`을 annotated `v1.0.2` tag로
+발행하고
+[Production workflow](https://github.com/alpha8332/cheongnyeon-alimi/actions/runs/32840085712)를
+3분 51초 만에 통과했다. Workflow는 CI 전체 재검증, GHCR image 발행,
+SBOM·provenance, 공개 dataset 재다운로드, clean Production Compose Migration·
+bootstrap·smoke와 Release 영수증 업로드를 순서대로 완료했다.
+
+| 항목 | 고정 값 |
+| --- | --- |
+| Release | [`v1.0.2`](https://github.com/alpha8332/cheongnyeon-alimi/releases/tag/v1.0.2) |
+| Git SHA | `c3d3935a196a024037168e9afb5a94dfef4542e3` |
+| Alembic head | `20260824_0011` |
+| normalized Schema | `1.2.0`, SHA-256 `e9169e69869ffd77cdc6f5d26c04fbc660c018859cea886949d98219be3a7b49` |
+| 공개 dataset | `public-bootstrap-20260824-897152e7a18c15`, 2,052건 |
+| dataset manifest | SHA-256 `8658ae447eae7cc5e005d90e41e3c2007658fc38e9110cc369dd902323d1d1a9` |
+| latest pointer | SHA-256 `2972488c65d0a6659663e9527690db1b380cee7b868e22a2dd274c8933de358a` |
+| Backend image | `ghcr.io/alpha8332/cheongnyeon-alimi-backend@sha256:60b8cb9f960f2d61130778ad36f0fb7b917293ed6d3721c46dd9007b33bebfe7` |
+| Frontend image | `ghcr.io/alpha8332/cheongnyeon-alimi-frontend@sha256:940967f5d9328277f7ed4e9b3909055e2159c3ddf56ea2541041074a1a71b98a` |
+| Release 영수증 | SHA-256 `440bc6b40f47b8f91d1d2ee4c73c8ec8ab67c77fa2abcc55f9bd62eb658057d2` |
+| 공급망 증거 | [SLSA provenance 2건](https://github.com/alpha8332/cheongnyeon-alimi/attestations) |
+
+GitHub Release는 draft·prerelease가 아닌 latest Release이며
+`production-release.json`과 자동 생성 source ZIP·tarball을 제공한다. Source ZIP
+HTTP `200`과 `application/zip`, 영수증의 tag·Git SHA·image digest·dataset version을
+원격에서 다시 대조했다.
+
+## v1.0.2 적용 dataset-latest
 
 `2026-08-24` 공개 dataset workflow에서 Source 확대·활성 projection·parity·지역
 coverage Gate를 통과한
 `public-bootstrap-20260824-897152e7a18c15`를 `dataset-latest`로 승격했다.
-이 dataset은 독립적인 공개 데이터 Release이며 아직 생성하지 않은 애플리케이션
-`v1.0.2` tag·Production Release의 완료 증거로 사용하지 않는다.
+이 dataset은 독립적인 공개 데이터 Release이며 애플리케이션 `v1.0.2`
+Production workflow가 다시 내려받아 검증한 입력이다.
 
 | 항목 | 고정 값 |
 | --- | --- |
