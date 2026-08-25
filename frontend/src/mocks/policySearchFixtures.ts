@@ -8,6 +8,7 @@ import type {
   UnconfirmedCondition,
 } from '../types/policySearch.js';
 import type { ResolvedPolicySearchQuery } from './policySearchRequest.js';
+import { sortByPolicy } from '../utils/policySort.js';
 
 export type PolicySearchMockScenarioId = 'M1' | 'M2' | 'M3' | 'M4' | 'M6';
 
@@ -64,8 +65,10 @@ export function materializePolicySearchResponse(
   fixture: PolicySearchScenarioFixture,
   query: ResolvedPolicySearchQuery,
 ): PolicySearchResponse {
-  const hits = fixture.items.map((item) =>
-    materializePolicySearchHit(policies, item),
+  const hits = sortByPolicy(
+    fixture.items.map((item) => materializePolicySearchHit(policies, item)),
+    (hit) => hit.policy,
+    query.sort,
   );
   const offset = (query.page - 1) * query.limit;
 

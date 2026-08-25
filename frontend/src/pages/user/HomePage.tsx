@@ -4,6 +4,7 @@ import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import LoadingState from '@/components/common/LoadingState';
 import PolicyCard from '@/components/policy/PolicyCard';
+import PolicySortSelect from '@/components/policy/PolicySortSelect';
 import SearchBar from '@/components/policySearch/SearchBar';
 import SearchPagination from '@/components/policySearch/SearchPagination';
 import PolicySearchResultCard from '@/components/policySearch/PolicySearchResultCard';
@@ -11,7 +12,9 @@ import PolicySearchEmptyShell from '@/components/policySearch/PolicySearchEmptyS
 import PolicySearchErrorShell from '@/components/policySearch/PolicySearchErrorShell';
 import PolicySearchLoadingShell from '@/components/policySearch/PolicySearchLoadingShell';
 import InterpretedConditionChips from '@/components/policySearch/InterpretedConditionChips';
+import HomeSearchConditions from '@/components/policySearch/HomeSearchConditions';
 import PolicySearchSidebar from '@/components/policySearch/PolicySearchSidebar';
+import RecommendationResultCard from '@/components/recommendation/RecommendationResultCard';
 import { useHomeRecommendedPolicies } from '@/hooks/useHomeRecommendedPolicies';
 import { useSavedConditions } from '@/hooks/useSavedConditions';
 import { usePolicySearchQuery } from '@/hooks/usePolicySearchQuery';
@@ -33,6 +36,7 @@ import {
 } from '@/utils/policySearchErrors';
 import { findSelectedHit } from '@/utils/policySearchReason';
 import { POLICY_ELIGIBILITY_NOTICE } from '@/utils/policyDisplay';
+import { splitHomeSearchRegion } from '@/utils/homeSearchRegions';
 import {
   buildPolicySearchUrlParams,
   getPolicySearchTotalPages,
@@ -44,7 +48,7 @@ import {
   withPolicySearchPage,
 } from '@/utils/policySearchUrl';
 import { buildSavedConditionSearchPreferences } from '@/utils/policySearchSavedConditions';
-import { HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION } from '@/utils/homeRecommendedPolicies';
+import { formatSavedConditionsSummary } from '@/utils/savedConditionsForm';
 import {
   HOME_RECOMMENDED_SEARCHES,
   buildPolicySearchEntryPath,
@@ -62,6 +66,10 @@ export default function HomePage() {
   const urlState = useMemo(
     () => parsePolicySearchUrl(searchParams),
     [searchParams],
+  );
+  const initialRegionSelection = useMemo(
+    () => splitHomeSearchRegion(urlState.region),
+    [urlState.region],
   );
   const effectiveUrlState = urlState;
   const searchPreferences = useMemo(
@@ -84,9 +92,11 @@ export default function HomePage() {
 
   const {
     policies: homeRecommendedPolicies,
+    recommendationItems: homeRecommendationItems,
     isPersonalized: isHomeRecommendationPersonalized,
     isLoading: isHomeRecommendationLoading,
   } = useHomeRecommendedPolicies(savedConditions);
+  const savedConditionsSummary = formatSavedConditionsSummary(savedConditions);
 
   const {
     data,
@@ -134,7 +144,7 @@ export default function HomePage() {
 
   const submitSearchQuery = (draftQ: string) => {
     const trimmedQ = draftQ.trim();
-    if (!trimmedQ) {
+    if (!trimmedQ && !urlState.region && !urlState.category) {
       return;
     }
 
@@ -204,6 +214,31 @@ export default function HomePage() {
     applyUrlState(withPolicySearchPage(effectiveUrlState, nextPage));
   };
 
+  const handleSearchConditionReset = () => {
+    applyUrlState(
+      withPolicySearchPage(
+        {
+          ...urlState,
+          region: null,
+          category: null,
+        },
+        1,
+      ),
+    );
+  };
+
+  const handleSortChange = (sort: typeof effectiveUrlState.sort) => {
+    applyUrlState(
+      withPolicySearchPage(
+        {
+          ...effectiveUrlState,
+          sort,
+        },
+        1,
+      ),
+    );
+  };
+
   const showLoading =
     shouldFetch && (isLoading || (isFetching && !isResponseCurrent));
   const showError = shouldFetch && isError && !showLoading;
@@ -234,6 +269,43 @@ export default function HomePage() {
         onSubmit={handleSearchSubmit}
         onClear={handleSearchClear}
         isSubmitting={showLoading}
+        allowEmptyQuery={Boolean(urlState.region || urlState.category)}
+      />
+
+      <HomeSearchConditions
+        province={initialRegionSelection.province}
+        district={initialRegionSelection.district}
+        category={urlState.category ?? null}
+        useSavedConditions={urlState.use_saved_conditions !== false}
+        disabled={showLoading}
+        onProvinceChange={(province) => {
+          applyUrlState(
+            withPolicySearchPage(
+              { ...urlState, region: province || null },
+              1,
+            ),
+          );
+        }}
+        onDistrictChange={(district) => {
+          applyUrlState(
+            withPolicySearchPage(
+              {
+                ...urlState,
+                region: district || initialRegionSelection.province || null,
+              },
+              1,
+            ),
+          );
+        }}
+        onCategoryChange={(category) => {
+          applyUrlState(
+            withPolicySearchPage({ ...urlState, category }, 1),
+          );
+        }}
+        onUseSavedConditionsChange={(enabled) => {
+          applyUrlState({ ...urlState, use_saved_conditions: enabled });
+        }}
+        onReset={handleSearchConditionReset}
       />
 
       {shouldFetch && relatedSearches.length > 0 ? (
@@ -279,35 +351,67 @@ export default function HomePage() {
             </div>
           </section>
 
-          {isHomeRecommendationLoading ? (
-            <LoadingState message="정책을 불러오는 중입니다." />
-          ) : (
-            <section
-              className="home-recommended-policies"
-              aria-label={
-                isHomeRecommendationPersonalized
-                  ? '저장된 조건 추천 정책'
-                  : '추천 정책'
-              }
-            >
-              {isHomeRecommendationPersonalized ? (
+          <section
+            className="home-recommended-policies"
+            aria-label={
+              isHomeRecommendationPersonalized
+                ? '내 프로필 맞춤 추천'
+                : '추천 정책'
+            }
+          >
+            <header className="home-recommended-policies__header">
+              <div>
+                <h2>
+                  {isHomeRecommendationPersonalized
+                    ? '내 프로필 맞춤 추천'
+                    : '추천 정책'}
+                </h2>
                 <p className="home-recommended-policies__caption" role="note">
-                  {HOME_SAVED_CONDITIONS_RECOMMENDATION_CAPTION}
+                  {isHomeRecommendationPersonalized && savedConditionsSummary
+                    ? `적용 조건: ${savedConditionsSummary}`
+                    : '프로필을 설정하면 거주 지역·연령·관심 분야에 맞춰 추천합니다.'}
                 </p>
-              ) : null}
-              {homeRecommendedPolicies.length > 0 ? (
-                <div className="cards-grid">
-                  {homeRecommendedPolicies.map((policy) => (
-                    <PolicyCard key={policy.id} policy={policy} />
-                  ))}
-                </div>
-              ) : isHomeRecommendationPersonalized ? (
-                <p className="home-recommended-policies__empty" role="status">
-                  저장된 조건에 맞는 추천 정책을 찾지 못했습니다.
-                </p>
-              ) : null}
-            </section>
-          )}
+              </div>
+              <div className="home-recommended-policies__actions">
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/profile')}
+                >
+                  {isHomeRecommendationPersonalized
+                    ? '프로필 수정'
+                    : '프로필 설정하고 추천받기'}
+                </Button>
+                {isHomeRecommendationPersonalized ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate('/recommendations')}
+                  >
+                    추천 전체 보기
+                  </Button>
+                ) : null}
+              </div>
+            </header>
+
+            {isHomeRecommendationLoading ? (
+              <LoadingState message="정책을 불러오는 중입니다." />
+            ) : homeRecommendationItems.length > 0 ? (
+              <div className="cards-grid">
+                {homeRecommendationItems.map((item) => (
+                  <RecommendationResultCard key={item.id} item={item} />
+                ))}
+              </div>
+            ) : homeRecommendedPolicies.length > 0 ? (
+              <div className="cards-grid">
+                {homeRecommendedPolicies.map((policy) => (
+                  <PolicyCard key={policy.id} policy={policy} />
+                ))}
+              </div>
+            ) : isHomeRecommendationPersonalized ? (
+              <p className="home-recommended-policies__empty" role="status">
+                저장된 조건에 맞는 추천 정책을 찾지 못했습니다.
+              </p>
+            ) : null}
+          </section>
 
           <Card title="📋 더 많은 정책 보기">
             <p className="hint-text">
@@ -352,6 +456,17 @@ export default function HomePage() {
                 <p className="policy-eligibility-notice" role="note">
                   {POLICY_ELIGIBILITY_NOTICE}
                 </p>
+                <div className="policy-results-toolbar">
+                  <span className="policy-results-toolbar__count">
+                    검색 결과 {data.total}건
+                  </span>
+                  <PolicySortSelect
+                    value={effectiveUrlState.sort}
+                    defaultLabel="관련도순"
+                    onChange={handleSortChange}
+                    disabled={showLoading}
+                  />
+                </div>
                 <div className="cards-grid">
                   {data.items.map((hit) => (
                     <PolicySearchResultCard

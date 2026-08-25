@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 
 from sqlalchemy import delete, select
@@ -110,6 +110,27 @@ def _normalized_datetime(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=timezone.utc)
     return value.astimezone(timezone.utc)
+
+
+def _search_sort_key(
+    entry: tuple[Any, ...],
+    sort: str,
+) -> tuple[Any, ...]:
+    """Sort evaluated search rows while keeping missing deadlines last."""
+    policy = entry[9].policy
+    if sort in ("title_asc", "title_desc"):
+        return (policy.title.casefold(),)
+    if sort == "deadline_asc":
+        deadline = policy.application_end
+        return (deadline is None, deadline or date.max)
+    if sort == "deadline_desc":
+        deadline = policy.application_end
+        return (deadline is None, -(deadline.toordinal() if deadline else 0))
+    if sort == "collected_desc":
+        return (-_normalized_datetime(policy.collected_at).timestamp(),)
+    if sort == "collected_asc":
+        return (_normalized_datetime(policy.collected_at).timestamp(),)
+    return ()
 
 
 class PolicySearchRepository:
@@ -295,6 +316,7 @@ class PolicySearchRepository:
         include_partial: bool = True,
         page: int = 1,
         limit: int = 20,
+        sort: str = "default",
     ) -> tuple[list["PolicySearchResultItem"], int]:
         """PostgreSQL/DB 기반 정책 검색 Query Builder.
 
@@ -661,6 +683,14 @@ class PolicySearchRepository:
                 x[8],
             )
         )
+
+        if sort == "title_desc":
+            evaluated_items.sort(
+                key=lambda entry: _search_sort_key(entry, sort),
+                reverse=True,
+            )
+        elif sort != "default":
+            evaluated_items.sort(key=lambda entry: _search_sort_key(entry, sort))
 
         total = len(evaluated_items)
         start_idx = (page - 1) * limit

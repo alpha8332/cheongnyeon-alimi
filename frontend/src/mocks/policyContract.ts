@@ -9,6 +9,7 @@ import {
   resolvePolicyListQuery,
   type ResolvedPolicyListQuery,
 } from '../api/policyRequest.js';
+import { sortByPolicy } from '../utils/policySort.js';
 
 type SeedQualityStatus = PublicDataQualityStatus | 'invalid';
 
@@ -134,8 +135,10 @@ export function createMockPolicyListResponse(
   policies: readonly PolicyDto[],
   query = resolvePolicyListQuery(),
 ): PolicyListResponse {
-  const filteredPolicies = policies.filter((policy) =>
-    matchesQuery(policy, query),
+  const filteredPolicies = sortByPolicy(
+    policies.filter((policy) => matchesQuery(policy, query)),
+    (policy) => policy,
+    query.sort,
   );
   const offset = (query.page - 1) * query.limit;
 

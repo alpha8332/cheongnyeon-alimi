@@ -130,7 +130,8 @@ Frontend NL parser, Backend search endpoint 구현, Data Schema·Fixture·Seed
 
 ## 설계 결정
 
-- Home empty search는 `/programs`로 fallback하지 않고 no-op (Search API q 필수)
+- Home은 자연어 검색어 또는 지역·관심 분야 명시 조건 중 하나 이상일 때 검색한다.
+  아무 조건도 없으면 `/programs`로 fallback하지 않고 no-op 처리한다.
 - Search result 카드 클릭은 상세 이동; sidebar 선택은 hover/focus로 유지
 - partial 상세 404 방지: hit partial 또는 search include_partial opt-in 시 query 전달
 - Reason panel은 카드 하단이 아닌 우측 sticky sidebar에 배치 (search_ux_preview 정렬)

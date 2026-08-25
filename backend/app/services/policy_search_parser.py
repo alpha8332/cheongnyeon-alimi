@@ -188,7 +188,7 @@ def parse_search_query(
 ) -> InterpretedConditions:
     """한국어 자연어 검색어 q 및 명시적 파라미터를 규칙 기반으로 해석하고 override를 적용한다."""
     q_raw = q
-    q_clean_normalized = normalize_search_text(q.strip() if q else "")
+    q_clean_normalized = normalize_search_text(q.strip() if q else "") or ""
 
     override_fields: list[SearchDimension] = []
     conditions: list[ConditionItem] = []

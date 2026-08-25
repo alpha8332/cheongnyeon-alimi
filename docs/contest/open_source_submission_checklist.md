@@ -2,8 +2,10 @@
 
 ## 기준
 
-- 상태: remote branch clean-room passed, release gate in progress
+- 상태: QA 브랜치 actual 통과, 현재 HEAD 원격 clone·ZIP Final Gate 대기
 - 대상 Release: `v1.0.2`
+- 현재 작업 브랜치: `fix/qa/v1.0.2-v1`
+- 현재 검증 SHA: `03eb506176ff6b081febdbcee013eece3fcc28e9`
 - 목표: 심사자가 README만 읽고 Git clone 또는 GitHub ZIP에서 전체 서비스를
   재현하고, 공개 저장소의 코드·문서·라이선스·데이터 경계를 확인할 수 있게 한다.
 
@@ -35,6 +37,7 @@ history의 `venv/`와 안내 문서 blob은 남아 있지만 현재 checkout과 
 - [x] `run_docker.bat` 한 줄 실행, PIN, 성공 marker, URL, 종료·재실행 명시
 - [x] API key 불필요 범위와 중앙 dataset 최신화 구조 명시
 - [x] 제한사항·문제 해결·보안·코드/데이터 라이선스 경계 명시
+- [x] v1.0.2 지역 검색·dataset 동등성·정렬·복수 분야·프로필 추천 개선 기록
 - [x] `CONTRIBUTING.md` 추가
 - [ ] 최종 UI 대표 화면과 대체 텍스트 확정
 - [ ] `v1.0.2` Release와 CHANGELOG 확정
@@ -99,12 +102,42 @@ Windows clone의 README는 checkout 과정에서 LF가 CRLF로 변환되어 일�
 hash가 달랐지만, 줄바꿈 정규화 내용과 GitHub ZIP의 Git blob ID는 원격 commit과
 일치했다.
 
+## v1.0.2 QA 안정화 후 현재 후보
+
+앞의 457건 clean-room은 당시 원격 commit `92f52fe`의 역사적 실행 증거다. 이후
+작성자 DB와 심사자 DB의 사용자 결과 차이, 지역 정책 누락과 검색·추천 UX를
+수정했으므로 현재 HEAD의 Final Gate를 대신하지 않는다.
+
+`2026-08-25`에 `fix/qa/v1.0.2-v1`의 `03eb506`을 push하고 현재 source에서
+`run_docker.bat -NoBrowser`를 재실행했다.
+
+| 항목 | 실제 결과 |
+| --- | --- |
+| 원격 동기화 | local·`origin/fix/qa/v1.0.2-v1` SHA `03eb506` 일치 |
+| 공개 dataset | `public-bootstrap-20260824-897152e7a18c15`, 2,052건 |
+| Source 구성 | 복지로 461, 온통청년 1,587, 인천 공공데이터 4 |
+| 활성 identity SHA-256 | `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5` |
+| Docker | Backend·Frontend image 재빌드, 장기 서비스 6개 healthy |
+| 정책 API | 주거 목록 213건·자연어 검색 123건, category 불일치 0 |
+| 추천 API | 주거 추천 135건, 첫 20건 category 불일치 0 |
+| 실제 Browser | 복수 분야 카드·상세, 390×844 overflow 없음 |
+| Backend 관련 회귀 | `19 passed` |
+| 검색 actual E2E | `12 passed, 2 skipped` |
+| 추천 actual E2E | `9 passed, 4 skipped` |
+
+세부 변경과 커밋·검증은
+[v1.0.2 QA 개선 기록](../troubleshooting/integration/v1_0_2_qa_improvements.md)에
+고정했다. `CollectionRun`은 로컬 실행 감사이므로 환경별 건수는 비교하지 않고,
+활성 dataset row 수와 identity hash를 사용자 결과 동등성 기준으로 사용한다.
+
 ## 최종 제출 Gate
 
 - [ ] 후보 commit·PR CI 통과와 `main`·`develop` 동기화
 - [ ] 원격 `main`의 fresh clone에서 README 절차 통과
 - [ ] 원격 `main` Download ZIP에서 README 절차 통과
-- [x] 원격 후보 브랜치 clone·ZIP 각각 고유 env·cache·Volume에서 457건과 Browser 흐름 대조
+- [x] 이전 원격 후보 `92f52fe` clone·ZIP 각각 고유 env·cache·Volume에서 457건과 Browser 흐름 대조
+- [ ] 현재 QA HEAD `03eb506` fresh clone에서 2,052건·identity hash·Browser 흐름 대조
+- [ ] 현재 QA HEAD `03eb506` Download ZIP에서 2,052건·identity hash·Browser 흐름 대조
 - [ ] Docker image/cache가 없는 별도 Windows PC 또는 동등한 신규 환경 검증
 - [ ] `v1.0.2` annotated tag·Production Release·source archive 검증
 - [ ] 대회 제출 양식·시연 URL·대표 화면·라이선스·SBOM·성과 근거 최종 대조

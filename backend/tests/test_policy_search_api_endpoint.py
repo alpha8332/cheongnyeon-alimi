@@ -82,6 +82,16 @@ def test_search_api_basic_200_ok(client, db, activate_all_policies):
     assert top_item["verdicts"]["age"] == "match"
     assert top_item["verdicts"]["region"] == "match"
 
+    condition_only_response = client.get(
+        "/api/v1/policies/search",
+        params={"region": "서울특별시", "category": "housing"},
+    )
+    assert condition_only_response.status_code == 200
+    condition_only_data = condition_only_response.json()
+    assert condition_only_data["total"] == 1
+    assert condition_only_data["items"][0]["policy"]["id"] == p.id
+    assert condition_only_data["interpreted_conditions"]["q_clean"] == ""
+
 
 def test_search_api_resolves_compound_local_region(
     client,
@@ -177,6 +187,14 @@ def test_search_api_empty_q_422(client):
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
+
+
+def test_search_api_invalid_sort_422(client):
+    response = client.get(
+        "/api/v1/policies/search",
+        params={"q": "청년", "sort": "raw_sql"},
+    )
+    assert response.status_code == 422
 
 
 def test_search_api_filler_only_q_400(client):

@@ -3,9 +3,10 @@ import {
   POLICY_SEARCH_QUERY_LIMITS,
   type PolicySearchQueryParams,
 } from '../types/policySearch.js';
+import { isPolicySort } from '../utils/policySort.js';
 
 export type ResolvedPolicySearchQuery = Required<
-  Pick<PolicySearchQueryParams, 'include_partial' | 'page' | 'limit'>
+  Pick<PolicySearchQueryParams, 'include_partial' | 'page' | 'limit' | 'sort'>
 > & {
   q: string;
   keyword?: string | null;
@@ -73,15 +74,24 @@ export function resolvePolicySearchQuery(
           include_partial: parseOptionalBoolean(input.get('include_partial')),
           page: parseOptionalInt(input.get('page')),
           limit: parseOptionalInt(input.get('limit')),
+          sort: input.get('sort') as PolicySearchQueryParams['sort'],
         }
       : input;
 
   const q = raw.q ?? '';
   const trimmedQ = q.trim();
 
-  if (trimmedQ.length === 0) {
+  const hasExplicitCondition = Boolean(
+    raw.keyword?.trim() ||
+      raw.region?.trim() ||
+      raw.age !== undefined && raw.age !== null ||
+      raw.category ||
+      raw.status,
+  );
+
+  if (trimmedQ.length === 0 && !hasExplicitCondition) {
     throw new PolicySearchQueryValidationError(
-      'q is required and must contain non-whitespace characters after trim.',
+      'q or at least one explicit search condition is required.',
     );
   }
 
@@ -107,6 +117,11 @@ export function resolvePolicySearchQuery(
 
   const page = raw.page ?? POLICY_SEARCH_DEFAULTS.page;
   const limit = raw.limit ?? POLICY_SEARCH_DEFAULTS.limit;
+  const sort = raw.sort ?? POLICY_SEARCH_DEFAULTS.sort;
+
+  if (!isPolicySort(sort)) {
+    throw new PolicySearchQueryValidationError('sort is not supported.');
+  }
 
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new PolicySearchQueryValidationError(
@@ -138,5 +153,6 @@ export function resolvePolicySearchQuery(
     include_partial: raw.include_partial ?? POLICY_SEARCH_DEFAULTS.include_partial,
     page,
     limit,
+    sort,
   };
 }

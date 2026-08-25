@@ -1,8 +1,8 @@
 {
   "scenario": "M5",
-  "description": "q=(empty trim) — 422 validation",
+  "description": "q=(empty trim), explicit filters absent — 422 validation",
   "expect": {
     "status": 422,
-    "detail": "q is required and must contain non-whitespace characters after trim."
+    "detail": "q or at least one explicit search condition is required."
   }
 }

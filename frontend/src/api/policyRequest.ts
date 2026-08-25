@@ -1,4 +1,5 @@
 import type { PolicyListQuery } from '../types/policy.js';
+import { isPolicySort } from '../utils/policySort.js';
 
 export const POLICY_COLLECTION_PATH = '/api/v1/policies';
 
@@ -9,6 +10,7 @@ export interface ResolvedPolicyListQuery {
   region?: string;
   status?: PolicyListQuery['status'];
   include_partial: boolean;
+  sort: NonNullable<PolicyListQuery['sort']>;
 }
 
 export function resolvePolicyListQuery(
@@ -32,6 +34,10 @@ export function resolvePolicyListQuery(
     throw new Error('Policy list region must contain from 1 to 100 characters.');
   }
 
+  if (query.sort !== undefined && !isPolicySort(query.sort)) {
+    throw new Error('Policy list sort is not supported.');
+  }
+
   return {
     page,
     limit,
@@ -39,6 +45,7 @@ export function resolvePolicyListQuery(
     ...(query.region ? { region: query.region } : {}),
     ...(query.status ? { status: query.status } : {}),
     include_partial: query.include_partial ?? false,
+    sort: query.sort ?? 'default',
   };
 }
 

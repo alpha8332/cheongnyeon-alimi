@@ -18,6 +18,23 @@ class PolicyPage:
     items: tuple[Policy, ...]
 
 
+def _policy_order_by(sort: str) -> tuple[Any, ...]:
+    """Return deterministic public policy ordering for an allowlisted sort."""
+    if sort == "title_asc":
+        return (func.lower(Policy.title).asc(), Policy.id.asc())
+    if sort == "title_desc":
+        return (func.lower(Policy.title).desc(), Policy.id.asc())
+    if sort == "deadline_asc":
+        return (Policy.application_end.asc().nulls_last(), Policy.id.asc())
+    if sort == "deadline_desc":
+        return (Policy.application_end.desc().nulls_last(), Policy.id.asc())
+    if sort == "collected_desc":
+        return (Policy.collected_at.desc(), Policy.id.asc())
+    if sort == "collected_asc":
+        return (Policy.collected_at.asc(), Policy.id.asc())
+    return (Policy.id.asc(),)
+
+
 def _json_array_contains(
     column: Any,
     value: str,
@@ -49,6 +66,7 @@ class PolicyRepository:
         category: str | None = None,
         region: str | None = None,
         application_status: str | None = None,
+        sort: str = "default",
     ) -> PolicyPage:
         predicates: list[ColumnElement[bool]] = [
             Policy.data_quality_status.in_(quality_statuses),
@@ -82,7 +100,7 @@ class PolicyRepository:
         items = self.db.scalars(
             select(Policy)
             .where(*predicates)
-            .order_by(Policy.id.asc())
+            .order_by(*_policy_order_by(sort))
             .offset((page - 1) * limit)
             .limit(limit)
         ).all()

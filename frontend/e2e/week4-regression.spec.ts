@@ -151,11 +151,11 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
     const conditionsForm = page.getByRole('form', { name: '저장 조건 편집' });
     await conditionsForm.getByPlaceholder('예: 서울특별시').fill('서울특별시');
     await conditionsForm.getByPlaceholder('예: 24').fill('24');
-    await conditionsForm.getByLabel('관심 분야').selectOption('housing');
+    await conditionsForm.getByRole('checkbox', { name: '주거', exact: true }).check();
     await conditionsForm.getByRole('button', { name: '조건 저장' }).click();
     await expect(page.getByText('저장 조건을 브라우저에 저장했습니다.')).toBeVisible();
 
-    await page.getByRole('link', { name: '맞춤 추천' }).click();
+    await page.goto('/recommendations');
     await page.getByRole('button', { name: '추천 받기' }).click();
     await waitForRecommendationSettled(page);
     await expect(page.getByRole('region', { name: '추천 결과' })).toBeVisible();
@@ -173,7 +173,7 @@ test.describe('Week 4 Frontend regression matrix (FE9-02)', () => {
       timeout: 15_000,
     });
     await expect(
-      page.getByText('저장된 조건으로 추천된 정책입니다.'),
+      page.getByText(/적용 조건: 서울특별시 · 24세 · 주거/),
     ).toBeVisible();
 
     await page.getByRole('link', { name: '달력' }).click();

@@ -16,6 +16,7 @@ class PolicyListRequest:
     region: str | None = None
     application_status: str | None = None
     include_partial: bool = False
+    sort: str = "default"
 
 
 class PolicyService:
@@ -40,6 +41,7 @@ class PolicyService:
             category=request.category,
             region=request.region,
             application_status=request.application_status,
+            sort=request.sort,
         )
 
     def get(

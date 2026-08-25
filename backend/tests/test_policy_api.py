@@ -1,3 +1,4 @@
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -180,6 +181,77 @@ def test_list_api_filters_and_paginates(client, db, activate_all_policies):
     )
 
 
+def test_list_api_sorts_before_pagination(client, db, activate_all_policies):
+    import_seed_data(db, SEED_FILE_PATH)
+    policies = list(
+        db.scalars(
+            select(Policy)
+            .where(Policy.data_quality_status != "invalid")
+            .order_by(Policy.id)
+        ).all()
+    )
+    assert len(policies) == 4
+
+    today = date.today()
+    now = datetime.now(timezone.utc)
+    titles = ["나 정책", "가 정책", "다 정책", "라 정책"]
+    deadlines = [
+        today + timedelta(days=2),
+        None,
+        today + timedelta(days=1),
+        None,
+    ]
+    for index, policy in enumerate(policies):
+        policy.title = titles[index]
+        policy.application_end = deadlines[index]
+        policy.collected_at = now + timedelta(minutes=index)
+    db.commit()
+    activate_all_policies()
+
+    def sorted_titles(sort: str) -> list[str]:
+        response = client.get(
+            "/api/v1/policies",
+            params={
+                "include_partial": "true",
+                "limit": 100,
+                "sort": sort,
+            },
+        )
+        assert response.status_code == 200
+        return [item["title"] for item in response.json()["items"]]
+
+    assert sorted_titles("title_asc") == [
+        "가 정책",
+        "나 정책",
+        "다 정책",
+        "라 정책",
+    ]
+    assert sorted_titles("title_desc") == [
+        "라 정책",
+        "다 정책",
+        "나 정책",
+        "가 정책",
+    ]
+    assert sorted_titles("deadline_asc") == [
+        "다 정책",
+        "나 정책",
+        "가 정책",
+        "라 정책",
+    ]
+    assert sorted_titles("deadline_desc") == [
+        "나 정책",
+        "다 정책",
+        "가 정책",
+        "라 정책",
+    ]
+    assert sorted_titles("collected_desc") == [
+        "라 정책",
+        "다 정책",
+        "가 정책",
+        "나 정책",
+    ]
+
+
 def test_partial_detail_requires_opt_in_and_invalid_is_never_public(
     client,
     db,
@@ -236,6 +308,10 @@ def test_policy_api_404_and_query_validation(client, db):
         "/api/v1/policies",
         params={"status": "unknown"},
     )
+    invalid_sort = client.get(
+        "/api/v1/policies",
+        params={"sort": "raw_sql"},
+    )
 
     assert missing.status_code == 404
     assert missing.json() == {"detail": "Policy not found"}
@@ -243,3 +319,4 @@ def test_policy_api_404_and_query_validation(client, db):
     assert invalid_limit.status_code == 422
     assert invalid_category.status_code == 422
     assert invalid_status.status_code == 422
+    assert invalid_sort.status_code == 422

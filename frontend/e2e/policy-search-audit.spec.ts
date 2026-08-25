@@ -34,6 +34,29 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await expect(page.getByLabel('예시 검색어')).toBeVisible();
   });
 
+  test('1b. 검색어 없이 지역·관심 분야 조건으로 검색', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('combobox', { name: '시·도' }).selectOption('경상남도');
+    await page.getByRole('combobox', { name: '시·군·구' }).selectOption(
+      '경상남도 양산시',
+    );
+    await page
+      .getByRole('combobox', { name: '관심 분야 검색 조건' })
+      .selectOption('housing');
+
+    await expect(page).toHaveURL(/region=/);
+    await expect(page).toHaveURL(/category=housing/);
+    expect(page.url()).not.toMatch(/[?&]q=/);
+    await waitForSearchSettled(page);
+    await expect(
+      page.getByRole('button', { name: '지역: 경상남도 양산시 제거' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: '카테고리: 주거 제거' }),
+    ).toBeVisible();
+  });
+
   test('2. 필터 칩 삭제 시 URL 반영 및 page=1 리셋', async ({ page }) => {
     await page.goto('/search?q=%EC%84%9C%EC%9A%B8+%EC%A3%BC%EA%B1%B0&region=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C&page=2');
 
@@ -72,6 +95,43 @@ test.describe('Policy Search browser audit (FE4-14~21)', () => {
     await waitForSearchSettled(page);
     await expect(page).toHaveURL(/q=/);
     expect(page.url()).not.toMatch(/page=2/);
+  });
+
+  test('3b. 검색 결과 정렬 변경 시 URL 반영 및 page=1 리셋', async ({
+    page,
+  }) => {
+    await page.goto('/?q=%EC%A0%84%EA%B5%AD+%EC%B2%AD%EB%85%84&limit=1&page=2');
+
+    await waitForSearchSettled(page);
+    const sort = page.getByRole('combobox', { name: '검색 결과 정렬' });
+    await expect(sort).toBeVisible();
+    await sort.selectOption('title_asc');
+
+    await expect(page).toHaveURL(/sort=title_asc/);
+    expect(page.url()).not.toMatch(/page=2/);
+    await waitForSearchSettled(page);
+    await expect(sort).toHaveValue('title_asc');
+  });
+
+  test('3c. 복수 분야 정책은 검색 결과 카드에 모든 분야를 표시', async ({
+    page,
+  }) => {
+    skipIfActualApi(test);
+
+    await page.goto('/?q=%EC%A0%84%EA%B5%AD+%EC%B2%AD%EB%85%84');
+
+    await waitForSearchSettled(page);
+
+    const multiCategoryCard = page
+      .getByRole('link', { name: /합성 상시 생활 지원/ })
+      .first();
+    await expect(multiCategoryCard).toBeVisible();
+    await expect(
+      multiCategoryCard.getByText('금융', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      multiCategoryCard.getByText('복지', { exact: true }),
+    ).toBeVisible();
   });
 
   test('4a. 로딩 Skeleton 표시', async ({ page }) => {

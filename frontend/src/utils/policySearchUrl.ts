@@ -8,7 +8,11 @@ import {
   POLICY_SEARCH_URL_DEFAULTS,
   type PolicySearchUrlQueryState,
 } from '@/types/policySearchUrlState';
-import type { ApplicationStatus, PolicyCategory } from '@/types/policy';
+import type {
+  ApplicationStatus,
+  PolicyCategory,
+  PolicySort,
+} from '@/types/policy';
 import {
   buildPolicySearchPageNumbers,
   getPolicySearchTotalPages,
@@ -42,6 +46,16 @@ const APPLICATION_STATUSES = new Set<ApplicationStatus>([
   'open',
   'closed',
   'scheduled',
+]);
+
+const POLICY_SORTS = new Set<PolicySort>([
+  'default',
+  'title_asc',
+  'title_desc',
+  'deadline_asc',
+  'deadline_desc',
+  'collected_desc',
+  'collected_asc',
 ]);
 
 function parseOptionalInt(value: string | null): number | null {
@@ -93,6 +107,12 @@ function parseOptionalStatus(value: string | null): ApplicationStatus | null {
     : null;
 }
 
+function parsePolicySort(value: string | null): PolicySort {
+  return value && POLICY_SORTS.has(value as PolicySort)
+    ? (value as PolicySort)
+    : POLICY_SEARCH_URL_DEFAULTS.sort;
+}
+
 /**
  * Read flat browser URL params into {@link PolicySearchUrlQueryState}.
  * Does not validate `q` for API — empty `q` means no search has been submitted.
@@ -123,6 +143,7 @@ export function parsePolicySearchUrl(
       limit && limit >= 1 && limit <= 100
         ? limit
         : POLICY_SEARCH_URL_DEFAULTS.limit,
+    sort: parsePolicySort(searchParams.get('sort')),
   };
 }
 
@@ -140,7 +161,7 @@ export function buildPolicySearchUrlParams(
     params.set('q', trimmedQ);
   }
 
-  if (trimmedQ && state.use_saved_conditions === false) {
+  if (state.use_saved_conditions === false) {
     params.set('use_saved_conditions', 'false');
   }
 
@@ -178,14 +199,28 @@ export function buildPolicySearchUrlParams(
     params.set('limit', String(state.limit));
   }
 
+  if (hasPolicySearchQuery(state) && state.sort !== POLICY_SEARCH_DEFAULTS.sort) {
+    params.set('sort', state.sort);
+  }
+
   return params;
 }
 
-/** Whether the URL state contains a non-empty trimmed `q` suitable for API fetch. */
+/** Whether the URL state contains a natural-language query or an explicit filter. */
 export function hasPolicySearchQuery(
-  state: Pick<PolicySearchUrlQueryState, 'q'>,
+  state: Pick<
+    PolicySearchUrlQueryState,
+    'q' | 'keyword' | 'region' | 'age' | 'category' | 'status'
+  >,
 ): boolean {
-  return state.q.trim().length > 0;
+  return Boolean(
+    state.q.trim() ||
+      state.keyword?.trim() ||
+      state.region?.trim() ||
+      state.age !== null && state.age !== undefined ||
+      state.category ||
+      state.status,
+  );
 }
 
 /**
@@ -208,6 +243,7 @@ export function toPolicySearchRequest(
     include_partial: state.include_partial,
     page: state.page,
     limit: state.limit,
+    sort: state.sort,
     preferences,
   };
 }
