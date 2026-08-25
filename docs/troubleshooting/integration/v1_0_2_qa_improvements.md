@@ -2,7 +2,7 @@
 
 ## 문서 상태
 
-- 상태: 해결 완료, 현재 HEAD Final Gate 대기
+- 상태: 해결 완료, `v1.0.2` Production Release 발행 완료
 - 성격: 실제 재현 오류·개선사항과 회귀 검증 기록
 
 ## 작업 정보
@@ -12,6 +12,7 @@
 - 작업 브랜치: `fix/qa/v1.0.2-v1`
 - 시작 기준: `eb968431bfb1169e608f468746cde6fb2c868bf3`
 - 현재 검증 기준: `03eb506176ff6b081febdbcee013eece3fcc28e9`
+- Release 기준: `c3d3935a196a024037168e9afb5a94dfef4542e3`
 - 대상 Release: `v1.0.2` 후보
 
 ## 목적
@@ -43,7 +44,8 @@
 | 검색·프로필 UX | 완료 | 예시 검색 보정, 복수 관심 분야, 정렬, 홈 조건·추천 통합 |
 | 복수 분야 표시 | 완료 | 목록·자연어 검색·추천·상세에 전체 `categories` 표시 |
 | 현재 PC actual | 완료 | 공개 2,052건, API·Docker·데스크톱·390px 검증 |
-| 다른 물리 PC Final Gate | 대기 | 현재 HEAD clone·ZIP과 `v1.0.2` tag·Release 검증 필요 |
+| Production Release | 완료 | `v1.0.2` tag, GHCR image, provenance, clean Production smoke, Release 영수증 |
+| 외부 clone·ZIP 제출 Gate | 대기 | 발행된 tag source archive를 별도 물리 PC에서 README 절차로 최종 대조 |
 
 ## 구현 내용
 
@@ -194,8 +196,10 @@ DB 적재 없이 지역 정책을 검색할 수 있다.
 - 현재 HEAD의 다른 물리 Windows PC clone·Download ZIP 검증은 아직 완료되지
   않았다. 이전 457건 clean-room 결과는 역사적 증거이며 현재 2,052건 후보의
   Final Gate를 대신하지 않는다.
-- `v1.0.2` tag와 GitHub Release는 아직 생성하지 않는다. `develop`·`main` 병합,
-  CI와 현재 HEAD clean-room 완료 후 진행한다.
+- `v1.0.2`는 최종 `main` `c3d3935`에서 발행됐다. Production workflow
+  [run 32840085712](https://github.com/alpha8332/cheongnyeon-alimi/actions/runs/32840085712)가
+  CI, GHCR image·provenance, dataset 검증, clean Production Compose smoke와
+  Release 영수증 업로드를 모두 통과했다.
 - Production Frontend build는 약 594 KiB JavaScript chunk에 대해 500 KiB 경고를
   낸다. 기능 오류는 아니며 후속 code splitting 성능 개선 후보로 남긴다.
 - 코드를 pull한 뒤 이전 Docker 컨테이너를 계속 사용하면 새 API 계약이 보이지
