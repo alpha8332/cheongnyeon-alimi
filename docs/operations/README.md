@@ -1,31 +1,17 @@
 # 운영 문서
 
-이 디렉터리는 실행 중인 시스템과 데이터 파이프라인을 안전하게 운영하고
-복구하기 위한 절차를 관리한다.
+이 디렉터리는 현재 시스템의 설치, 수집, Production 발행과 복구 절차를
+관리한다.
 
-## 포함하는 내용
+- [Windows Docker 최초 실행](docker_first_run.md): clone·ZIP 사용자의 API key
+  없는 공개 dataset 설치와 Web UI 실행
+- [Collector 실행](collector.md): 중앙 수집기, queue, scheduler와 Runtime 처리
+- [Production 배포와 dataset 발행](production_delivery.md): image·manifest·
+  promotion과 공급망 검증
 
-- Collector 실행, 상태 확인과 재실행
-- Scheduler 작업과 실패 처리
-- 환경별 운영 설정
-- 데이터 백업, 복원과 보존
-- 로그와 데이터 품질 상태 확인
-- 운영 장애 대응 및 복구 절차
+구조적 책임은 `docs/architecture/`, 데이터 판정은 `docs/data/`, API 계약은
+`docs/api/`, 실제 장애의 원인과 해결은 `docs/troubleshooting/`를 따른다.
 
-## 포함하지 않는 내용
-
-- 구현 전 운영 설계: `docs/development/develop_plan/`
-- 시스템 구성 요소의 구조적 책임: `docs/architecture/`
-- 실제 발생한 개발 환경 문제의 해결 기록: `docs/troubleshooting/`
-
-실제로 사용할 수 있는 명령과 검증된 절차만 기록한다. 운영 기능이 구현되기
-전에는 예시 명령을 실행 가능한 절차처럼 안내하지 않는다.
-
-## 현재 문서
-
-- [Collector 실행](collector.md): 지원 source, 환경변수, 제한 수집, Raw
-  저장, 저장된 Runtime Raw의 PostgreSQL 재처리와 최소 실행 이력
-- [Windows Docker 최초 실행](docker_first_run.md): 공개 dataset 검증 cache,
-  Migration·bootstrap·health·재실행과 fail-closed 복구 경계
-- [Production 배포와 데이터셋 발행](production_delivery.md): digest image·Nginx
-  Compose, GHCR·CI, dataset promotion과 rollback Gate
+삭제·초기화 명령은 정확한 Compose project와 Volume을 확인한 뒤 실행한다.
+실제 API key, 관리자 PIN, token, DB 비밀번호와 Raw payload를 명령 기록·로그·
+문서에 남기지 않는다.

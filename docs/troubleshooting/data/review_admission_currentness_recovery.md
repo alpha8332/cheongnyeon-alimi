@@ -9,8 +9,6 @@
   `603a0bcd4c7e2b6ef6c0926f768adebfcdd5e51a`,
   `424514165b1e2c92f477d04005521d9d5e5d4bb2`,
   `f3f67aac242b29e0494dd1a3f667fcaa7d9ca9d0`
-- 관련 Forest:
-  [Integration 10 Review Admission](../../development/develop_plan/integration/10_review_admission_docker_acceptance.md)
 
 ## 문제 상황
 
@@ -117,7 +115,6 @@ post-admission 서비스 재적용도 `unchanged 3`으로 통과했다.
 
 ## 관련 근거
 
-- [Review Admission 개발 기록](../../development/development_notes/integration/review_admission_docker_acceptance.md)
 - [Review Admission 규칙](../../data/review_admission_rules.md)
 - `collectors/review_admission.py`
 - `scripts/audit_review_admission.py`

@@ -5,7 +5,7 @@
 - 상태: 현재 구현 기준
 - 입력 계약: `NormalizedProgram` 1.0.0·1.1.0·1.2.0
 - 저장 모델: Backend `Policy`, 행정구역·정책 지역 관계·검색 projection 모델
-- Migration head: `20260824_0011`
+- 현재 저장소 Migration head: `20260825_0012`
 
 이 문서는 Data의 canonical JSON, Backend importer, PostgreSQL `policies`
 테이블과 공개 Policy API 사이의 현재 필드 매핑을 정의한다. 논리 필드의 의미와
@@ -145,10 +145,8 @@ Importer는 최초 insert에 하나의 UTC aware write instant를 생성해 두 
 전에 기존 역전 행의 `updated_at`을 `created_at`으로 보정한다. Importer 밖의
 insert에서는 ORM Python default와 DB `CURRENT_TIMESTAMP` server default가
 방어적 fallback이며, Policy를 변경하는 writer는 `updated_at`을 명시해야
-한다. 상세 결정과 검증은
-[Backend Policy Runtime Safety 계획](../development/develop_plan/backend/03_policy_runtime_safety.md)과
-[개발 기록](../development/development_notes/backend/policy_runtime_safety.md)에
-기록한다.
+한다. writer 변경은 importer·Repository와 PostgreSQL 왕복 테스트에서 함께
+검증한다.
 
 Migration `20260824_0007`은 기존 행의 `collected_at`, `updated_at`으로 두
 생명주기 시각을 backfill하고 `inactive_at`은 추정하지 않는다. 공개 조회는
@@ -162,7 +160,7 @@ Policy API에 도달하지 않는다. partial은 저장하며
 
 ## Normalized 1.2.0 저장 경계
 
-PSF1에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
+Normalized 1.1.0에서 논리 Schema는 기존 31개 필드에 `keywords`, `life_stages`,
 `target_groups`, `coverage_scope`, `region_rules`를 더한 36개 필드가 됐다.
 Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저장한다.
 
@@ -171,7 +169,7 @@ Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저�
 - 신규 ORM·DB default는 1.1.0이며 importer는 입력 version을 그대로 쓴다.
 - 현재 importer는 `keywords`, `life_stages`, `target_groups`,
   `coverage_scope`를 저장한다.
-- PSF4 canonical Seed와 Runtime Normalized 결과는 Source 근거가 있는 검색
+- canonical Seed와 Runtime Normalized 결과는 Source 근거가 있는 검색
   배열·coverage를 실제 값으로 채운다. 온통청년 숫자 `zipCd`는
   `kr-bjd-prefix5` exact resolver를 거쳐 관계 후보가 되며 복지로는 지역
   key가 없어 `unknown`을 유지한다.
@@ -181,18 +179,18 @@ Migration `20260803_0004`와 Policy ORM은 세 검색 배열과 coverage를 저�
 - 1.0.0 입력은 Normalized compatibility adapter에서 검색 안전 기본값을 먼저
   추가하며 지역·전국 여부를 추정하지 않는다.
 
-Integration 08 ES2는 1.2.0에 `eligibility_summary`를 추가했다. Migration
+Normalized 1.2.0은 `eligibility_summary`를 추가했다. Migration
 `20260810_0006`은 non-null JSONB를 추가하고 기존 행에는 빈 unknown 요약을
 backfill하지만 기존 `schema_version`을 소급 변경하지 않는다. 신규 ORM default는
 1.2.0이다. 1.0.0·1.1.0 adapter도 기존 자격 원문을 구조화 조건으로 추정하지
 않고 같은 빈 unknown 요약만 추가한다.
 
 Importer는 요약의 조건·문서·연락처·공개 evidence를 business 값으로 비교한다.
-동일 근거를 다시 수집해 evidence `collected_at`만 달라진 경우에는 기존 Data 03
-metadata-only 규칙과 같이 `unchanged`이며 저장 시각도 바꾸지 않는다. 요약 text,
+동일 근거를 다시 수집해 evidence `collected_at`만 달라진 경우에는 metadata-only
+규칙에 따라 `unchanged`이며 저장 시각도 바꾸지 않는다. 요약 text,
 category, source URL, locator 또는 연락처가 달라지면 `updated`다.
 
-PSF2의 파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 identity로
+파일 기준정보는 `kr-bjd-20260803` scheme과 10자리 code를 identity로
 사용한다. `administrative_regions`는 공식 `parent_code`와 별도로 nullable
 `aggregate_parent_code`를 저장해야 한다. 비자치구의 원천 parent를 집계 시로
 덮어쓰지 않으며 alias 다중 후보, active·retired와 유효기간을 보존한다.
@@ -230,12 +228,13 @@ NFKC와 공백 정규화 뒤 다음 필드군을 순서 보존·중복 제거해
 
 projection service는 commit하지 않으며 importer 또는 재생성 호출자가
 transaction을 소유한다. 값과 version이 같으면 행과 `updated_at`을 바꾸지
-않는다. 최종 점수는 Backend 06에서 확정한다. downgrade는 공용일 수 있는
-extension은 제거하지 않고 PSF3가 만든 index·table·enum·trigger만 제거한다.
+않는다. 최종 점수는 검색 service가 요청 조건과 함께 계산한다. downgrade는
+공용일 수 있는 extension은 제거하지 않고 해당 Migration이 만든
+index·table·enum·trigger만 제거한다.
 
 ### query별 판정 primitive
 
-PSF6의 `PolicySearchEvaluationService`는 저장 계약을 바꾸지 않고 검색 요청별
+`PolicySearchEvaluationService`는 저장 계약을 바꾸지 않고 검색 요청별
 판정 근거를 만든다. 결과는 공통 `match|mismatch|unknown`이며 정책 원본이나
 projection에 다시 저장하지 않는다.
 
@@ -250,14 +249,14 @@ projection에 다시 저장하지 않는다.
   경계가 없거나 모호한 원문은 unknown이다. 신청 상태가 null이면 unknown이다.
 - projection match는 입력받은 검색어의 NFKC·공백 정규화와 공백 제거 비교만
   수행해 field별 일치어와 미일치어를 반환한다. 동의어·축약 확장, parser와
-  최종 관련도 점수는 Backend 06 책임이다.
+  최종 관련도 점수는 검색 service가 계산한다.
 
-### Backend 06 소비와 성능 경계
+### 검색 소비와 성능 경계
 
-Backend 06은 자연어를 구조화한 뒤 다음 PSF6 내부 값을 조합한다. 이 값은
-아직 공개 검색 API 응답 이름을 확정한 것이 아니다.
+검색 service는 자연어를 구조화한 뒤 다음 내부 판정 값을 조합한다. 이 타입은
+저장 모델이며 공개 API 응답 이름으로 직접 노출하지 않는다.
 
-| 내부 값 | Backend 06 소비 목적 |
+| 내부 값 | 검색 소비 목적 |
 | --- | --- |
 | `RegionQueryResolution` | alias 해석 상태와 canonical 후보·모호성 표시 |
 | `RegionDecision` | 지역 3값, exact·ancestor·exclude 등 reason과 rule evidence |
@@ -265,32 +264,25 @@ Backend 06은 자연어를 구조화한 뒤 다음 PSF6 내부 값을 조합한�
 | `ApplicationStatusDecision` | 신청 상태 일치·불일치·미상 reason |
 | `ProjectionMatchEvidence` | field별 일치어와 미일치어, 검색 이유·점수 입력 |
 
-PSF7 로컬 PostgreSQL 18.4, `Korean_Korea.949`, 기본 `random_page_cost=4`에서
+로컬 PostgreSQL 18.4, `Korean_Korea.949`, 기본 `random_page_cost=4`에서
 합성 policy와 projection 20,000건 중 200건이 일치하는 query를 측정했다.
 기본 `ILIKE '%청년 월세%'`는 Sequential Scan 19.258ms, 기본 `LIKE`는
 Sequential Scan 2.597ms, `enable_seqscan=off`의 `ILIKE`는 trigram GIN
 Bitmap Scan 2.030ms였다. 이는 단일 로컬 실행 결과이며 Release 성능 보장이
 아니다.
 
-현재 GIN index는 사용 가능하지만 planner가 기본 선택하지 않고 `ILIKE`의
-case-insensitive 비교 비용도 관찰됐다. Backend 06은 실제 snapshot과 최종
-query·정렬·pagination을 대상으로 다음을 다시 확인한다.
-
-- 한국어와 이미 정규화된 field에 `LIKE`를 사용할 수 있는 범위
-- 영문 case-insensitive 요구와 `lower(...)` projection·expression index 필요성
-- 실제 match 비율에서 기본 planner 선택과 통계 정확도
-- 지역·연령·상태 join 및 정렬을 포함한 전체 plan과 batch 조회
-
-PSF7은 이 측정만으로 index, locale 또는 DB 설정을 바꾸지 않는다.
+GIN index는 사용 가능하지만 query의 선택도와 통계에 따라 planner가
+Sequential Scan을 선택할 수 있다. 성능 회귀는 실제 공개 snapshot에서
+query·정렬·pagination과 지역·연령·상태 조건을 함께 측정한다. 위 단일 측정만으로
+index, locale 또는 DB 설정을 바꾸지 않는다.
 
 ## 식별자와 upsert
 
 - DB identity는 `(source_id, external_id)` unique constraint다.
-- 현재 `youthcenter-api`와 `bokjiro-central-welfare-api`는 비어 있지 않은
-  `external_id`가 필수다.
-- 두 Source의 null ID는 `missing_external_id`, 그 밖의 아직 합의되지 않은
-  Source의 null ID는 `unsupported_null_external_id`로 적재하지 않는다.
-- DB 컬럼과 논리 Schema의 nullable은 향후 Source 계약 확장 경계를 보존하기
+- 현재 등록 Source는 비어 있지 않은 `external_id`가 필수다.
+- null ID는 `missing_external_id` 또는 `unsupported_null_external_id`로
+  분류하고 적재하지 않는다.
+- DB 컬럼과 논리 Schema의 nullable은 추가 Source 계약 확장 경계를 보존하기
   위한 것이며 현재 importer가 null identity를 허용한다는 뜻이 아니다.
 - 같은 identity의 Policy 컬럼·지역 rule 집합·projection 값과 version이 모두
   같을 때만 `unchanged`이고 각 `updated_at`을 바꾸지 않는다. 관계 행은
@@ -298,7 +290,7 @@ PSF7은 이 측정만으로 index, locale 또는 DB 설정을 바꾸지 않는�
 - 같은 identity의 변경 값은 identity를 제외한 Normalized 필드를 원자적으로
   update한다. `updated_at`은 기존 시각과 새 write instant 중 늦은 값이므로
   시스템 시각이 역행해도 감소하지 않는다.
-- 향후 Source의 대체 ID 생성 규칙은 이 매핑에서 일반화하지 않는다.
+- Source별 대체 ID 생성 규칙은 이 공통 매핑에서 일반화하지 않는다.
 
 ## Seed와 DB 조회 비교 기준
 

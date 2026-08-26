@@ -122,8 +122,7 @@ Critical Path 3건으로 검증했다.
 
 ## 관련 근거
 
-- [v0.5.0 Contract Baseline 개발 기록](../../development/development_notes/integration/v0_5_0_contract_baseline.md)
-- [4주차 Data·Team Leader 실행 기록](../../development/weekly_plan/week_04_data_team_leader.md)
+- [현재 컨테이너 구조](../../architecture/container_structure.md)
 - `run.bat`
 - `scripts/run_local.ps1`
 - `.gitignore`

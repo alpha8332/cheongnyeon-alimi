@@ -3,8 +3,7 @@
 - 상태: accepted
 - 작성일: 2026-07-31
 - 승인일: 2026-08-03
-- 결정자: Data·Backend·Frontend 소비 계약 검토, Team Leader Gate
-- 관련 Issue/PR: 미정
+- 구현 상태: 현재 Schema·Migration·검색 API에 반영 완료
 
 ## 맥락
 
@@ -20,7 +19,7 @@
 - 온통청년·복지로와 향후 지역 웹사이트의 서로 다른 key 통합
 - 사용자 표시 text와 검색 전용 projection 분리
 
-2026-07-31 DT1 실제 표본에서 온통청년 10건은 `zipCd` 원문이 있지만 승인된
+2026-07-31 실제 표본에서 온통청년 10건은 `zipCd` 원문이 있지만 승인된
 code-to-name 표가 없어 정규화 지역이 모두 비었고, 복지로 10건은
 지역·연령·신청기간이 모두 없었다. 누락을 전국으로 추정하면 오탐이 되고,
 현재 partial 기본 비노출을 유지하면 실제 정책이 검색에서 사라진다.
@@ -31,8 +30,8 @@ code-to-name 표가 없어 정규화 지역이 모두 비었고, 복지로 10건
 
 ## 결정
 
-Integration 03 PSF0에서 현재 Data 모델, Backend ORM·Importer·공개 API와
-Frontend `PolicyDto`·Mock 소비를 대조하고 다음 구조를 채택한다.
+Data 모델, Backend ORM·Importer·공개 API와 Frontend `PolicyDto`·Mock 소비를
+대조하고 다음 구조를 채택했다.
 
 1. Source Adapter가 원본 key를 Source 중립 공통 필드로 변환한다.
 2. 정책 지역 적용 범위는 `nationwide`, `regional`, `unknown`으로 구분한다.
@@ -49,8 +48,8 @@ Frontend `PolicyDto`·Mock 소비를 대조하고 다음 구조를 채택한다.
 8. 지역·연령·상태 판정은 `match`, `mismatch`, `unknown` 3값을 사용한다.
 9. 기존 row에 근거가 없으면 `coverage_scope=unknown`으로 backfill하고
    전국이나 지역을 추정하지 않는다.
-10. Source 간 canonical deduplication과 최종 자연어 검색 가중치는 별도
-    Forest에 남긴다.
+10. Source 간 canonical deduplication과 자연어 검색 가중치는 독립 계약으로
+    관리한다.
 11. 기존 목록·상세 API의 필드 집합, 숫자 `id`, 품질 opt-in과 provenance
     비노출은 유지한다. 새 검색 내부 필드와 query별 판정 근거는 기존
     `PolicyRead`에 넣지 않고 Backend 06 검색 응답에서만 제공한다.
@@ -266,11 +265,15 @@ canonical layer를 추가할 수 있게만 한다.
 - 기존 Policy API·Frontend 타입 회귀
 - 합성 규모 `EXPLAIN (ANALYZE, BUFFERS)` 기록
 
-## 후속 작업
+## 구현 상태
 
-- PSF1에서 1.1.0 실행 계약, legacy adapter와 소비 Fixture 구현
-- PSF2에서 권위 있는 행정구역 scheme·version·license 확정
-- PSF3~PSF7에서 Migration·mapping·transaction·판정과 회귀 검증
-- 구현과 검증이 완료된 Slice에서 데이터 Schema·정규화·DB·API 기준 문서 갱신
-- Data 02 DT2에서 검색 노출 의미와 Backend 06 계약 승인
-- 별도 지역 Source Forest에서 공식 웹사이트 crawler 구현
+- `NormalizedProgram` 1.1.0 검색 필드는 이후 1.2.0 자격요건 필드와 함께 유지된다.
+- versioned 행정구역 code·parent·alias와 정책 include·exclude 관계를 구현했다.
+- Migration, importer transaction, 3값 판정과 PostgreSQL 회귀를 적용했다.
+- 자연어 검색, 계층 지역 검색과 판정 이유 API를 구현했다.
+- 지역 웹 Collector는 별도 Source 모듈로 구현했으며 공개 재배포는 Source 계약의
+  default-deny 경계를 따른다.
+
+현재 계약은 [정규화 규칙](../../data/normalization_rules.md),
+[정책 DB 매핑](../policy_database_mapping.md)과
+[정책 검색 API](../../api/policies.md)를 따른다.

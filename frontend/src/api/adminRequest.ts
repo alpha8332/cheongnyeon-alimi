@@ -8,6 +8,7 @@ import {
 } from '../types/collectionRun.js';
 
 export const ADMIN_SESSION_PATH = '/api/v1/admin/session';
+export const ADMIN_PIN_PATH = '/api/v1/admin/pin';
 export const COLLECTION_RUNS_PATH = COLLECTION_RUN_ADMIN_PATH;
 export const COLLECTION_RUN_TRIGGER_PATH =
   COLLECTION_RUN_ADMIN_ENDPOINTS.trigger.path;
@@ -122,6 +123,7 @@ export function resolveCollectionRunListQuery(
 export const ADMIN_APP_ROUTES = {
   login: '/admin/login',
   dashboard: '/admin',
+  security: '/admin/security',
   collectors: '/admin/collectors',
   runs: '/admin/runs',
   runDetail: (runId: string) => `/admin/runs/${encodeURIComponent(runId.trim())}`,

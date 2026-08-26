@@ -30,10 +30,9 @@ def test_transfer_package_uses_interactive_encrypted_7zip_outside_workspace():
 def test_handoff_requires_matching_identity_and_independent_role_receipts():
     handoff = (
         ROOT
-        / "docs"
-        / "development"
-        / "handoff"
-        / "docker_acceptance"
+        / "tests"
+        / "fixtures"
+        / "docker_acceptance_handoff"
         / "README.md"
     ).read_text(encoding="utf-8")
 
@@ -54,18 +53,16 @@ def test_handoff_requires_matching_identity_and_independent_role_receipts():
 def test_result_and_defect_templates_separate_skip_and_independent_retest():
     result_template = (
         ROOT
-        / "docs"
-        / "development"
-        / "handoff"
-        / "docker_acceptance"
+        / "tests"
+        / "fixtures"
+        / "docker_acceptance_handoff"
         / "acceptance_result_template.md"
     ).read_text(encoding="utf-8")
     defect_template = (
         ROOT
-        / "docs"
-        / "development"
-        / "handoff"
-        / "docker_acceptance"
+        / "tests"
+        / "fixtures"
+        / "docker_acceptance_handoff"
         / "defect_report_template.md"
     ).read_text(encoding="utf-8")
 

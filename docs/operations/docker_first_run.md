@@ -7,8 +7,8 @@
 절차다. 실제 Source 수집과 정기 scheduler 활성화는
 [Collector 실행](collector.md)의 중앙 운영자 범위다.
 
-W6-P3 실행기와 W6-P5 clone·GitHub ZIP clean-room 검증을 완료했다. 기본 GitHub
-Release pointer는 활성 상태이며 API key 없이 pointer가 가리키는 검증된 공개
+Git clone·GitHub ZIP clean-room 검증을 완료했다. 기본 GitHub Release pointer는
+활성 상태이며 API key 없이 pointer가 가리키는 검증된 공개
 dataset을 내려받는다. 현재 정책 수·Source별 건수·SHA-256은 함께 받은 manifest로
 확인한다. `-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만
 사용한다.
@@ -49,12 +49,35 @@ DB dump도 최초 공개 실행에 필요하지 않다.
 6. PostgreSQL Migration
 7. 컨테이너 안에서 manifest·Schema·Source allowlist·내용 안전성 재검증
 8. 공개 dataset 멱등 import
-9. PostgreSQL·Redis·Backend·worker·Beat·Frontend health 대기
+9. PostgreSQL·Redis·Backend·worker·scheduler·Frontend health 대기
 10. `http://127.0.0.1:3000` Browser 열기
 
 manifest 전체 검증과 DB import가 성공한 뒤에만 cache의 `latest.pointer.json`을
 갱신한다. 다운로드 중단·hash 불일치·Schema drift에서는 기존 latest cache와
 Volume을 변경하지 않는다.
+
+## 관리자 PIN 변경과 분실 복구
+
+현재 PIN을 알고 있으면 관리자 로그인 후 `관리자 > 보안`에서 현재 PIN, 새 PIN과
+확인을 입력한다. 성공하면 모든 기존 관리자 세션이 무효화되고 로그인 화면으로
+이동한다. 정책과 CollectionRun 데이터는 변경하지 않는다.
+
+PIN을 잊었으면 서버 PC의 저장소 루트에서 다음 host-only 복구 도구를 실행한다.
+
+```powershell
+.\reset_admin_pin.bat
+```
+
+Backend가 실행 중이어야 하며 새 4자리 PIN을 두 번 보안 프롬프트로 입력한다.
+도구는 PIN을 명령 인자, shell history 또는 로그에 넣지 않고 실행 중인 Backend
+컨테이너의 표준입력으로만 전달한다. DB의 관리자 인증 상태만 transaction으로
+갱신하므로 PostgreSQL Volume, 공개 정책, 즐겨찾기 참조와 CollectionRun 감사
+기록은 보존된다. 기존 관리자 세션은 모두 무효화된다.
+
+`.env.compose` 삭제나 `docker compose down -v`는 PIN 복구 절차가 아니다.
+특히 `down -v`는 PostgreSQL Volume을 삭제하므로 데이터 보존이 필요한 복구에
+사용하지 않는다. DB Volume을 새로 만든 경우에는 `.env.compose`의 최초 설치
+verifier가 다시 bootstrap 기준이 된다.
 
 ## 고정 manifest 개발 검증 경로
 

@@ -1,185 +1,140 @@
-# 컨테이너 구조
+# 현재 컨테이너 구조
 
-## 문서 상태
+## 기준
 
-- 상태: Acceptance 기준선 구현 완료, Production 목표 승인
-- 현재 구현 상태: Deploy 01 `DOCKER_ACCEPTANCE_PASS`; Deploy 02 Production
-  Data Refresh는 계획 승인·구현 전
+이 문서는 현재 `compose.yaml`, `compose.dev.yaml`과
+`compose.production.yaml`의 실제 실행 단위를 설명한다. 사용자가
+`run_docker.bat`을 실행하는 Acceptance 구성과 중앙 운영용 Production 구성은
+노출 포트와 dataset 준비 방식이 다르다.
 
-이 문서는 초기 개발과 Release 1에서 목표로 하는 실행 단위를 정의한다.
-아래 서비스 이름과 연결은 구현 시 검증해야 하며, 현재 실행 가능하다는
-의미가 아니다.
+## 사용자·심사자 실행 구조
 
-구현은 두 단계로 나눈다. 5주차
-[Deploy 01 Docker Acceptance Environment](../development/develop_plan/deploy/01_docker_acceptance_environment.md)은
-BE·FE 담당자, 리뷰어와 QA가 동일 Git SHA·실제 DB snapshot으로 검증하기 위한
-내부 Acceptance 환경을 만든다. 6주차 `v1.0.0` 배포 Forest는 이를 Nginx,
-Production image, CI, 초기 bootstrap과 운영 복구까지 확장한다. Deploy 01
-통과만으로 Production 배포가 완료된 것은 아니다.
+`run_docker.bat`은 다음 순서로 실행한다.
 
-## 초기 구성
+1. Docker Desktop·Compose v2, 포트, 디스크와 로컬 env 소유권 확인
+2. `dataset-latest` pointer, manifest와 artifact를 HTTPS로 다운로드
+3. manifest·artifact SHA-256, byte 수와 row 수 검증
+4. Backend·Frontend image 빌드
+5. PostgreSQL과 Redis 시작
+6. 일회성 `migrate` 실행과 행정구역 기준 적재
+7. 일회성 `public-dataset-bootstrap` 실행
+8. Backend·worker·scheduler·Frontend 시작
+9. Backend·Frontend health check 후 브라우저 열기
 
-초기에는 다음 세 컨테이너로 시작한다.
+네트워크가 없으면 마지막으로 검증된 immutable cache가 있을 때만 `-Offline`
+재실행을 허용한다. 검증된 cache도 없으면 임의의 내장 Seed로 대체하지 않고
+실행을 중단한다.
 
-```text
-Browser
-   ↓
-frontend
-   ↓ HTTP / API
-backend
-   ↓ SQL
-database
-```
+### 장기 실행 서비스 6개
 
-```yaml
-services:
-  frontend:
-  backend:
-  database:
-```
-
-목표 완료 상태는 `docker compose up`으로 세 서비스가 시작되고, 프론트엔드,
-백엔드 health check와 PostgreSQL 연결을 확인할 수 있는 것이다.
-
-## 서비스별 책임
-
-### `frontend`
-
-- React 정적 자산의 개발 또는 배포
-- 사용자·관리자 Web UI 제공
-- `/api` 계약에 따른 Backend 호출
-- 런타임 비밀정보를 번들에 포함하지 않음
-
-Frontend Dockerfile의 목표 위치는 `frontend/`이다. 파일 작성과 이미지 빌드는
-Frontend Forest의 기본 책임이 아니라 통합·배포 Forest에서 수행한다.
-
-### `backend`
-
-- FastAPI 애플리케이션 실행
-- 정책 조회·검색·추천과 운영 API 제공
-- PostgreSQL 접근
-- 초기 단계에서 Collector와 Scheduler 실행 진입점 제공
-
-Collector 코드는 최상위 `collectors/`의 독립 모듈로 유지한다. 초기에는 별도
-상시 컨테이너를 만들지 않고 Backend 이미지 또는 개발 환경에서 명시적인
-명령으로 실행한다. API 요청 처리 과정에서 긴 수집 작업을 동기 실행하는
-구조를 의미하지 않는다.
-
-Backend Dockerfile의 목표 위치는 `backend/`이다. 파일 작성과 이미지 빌드는
-Backend Forest의 기본 책임이 아니라 통합·배포 Forest에서 수행한다.
-
-### `database`
-
-- PostgreSQL 실행
-- 정규화된 정책, 출처, 수집 실행과 서비스 데이터 저장
-- 영속 Volume을 사용해 컨테이너 재시작 후 데이터 유지
-- health check를 제공해 Backend 연결 순서를 검증
-
-DB 비밀번호와 실제 연결 정보는 `.env` 또는 배포 환경의 비밀 관리 수단에서
-주입하고 Git에 커밋하지 않는다.
-
-## 코드와 실행 단위의 관계
-
-```text
-repository
-├── frontend/       → frontend container
-├── backend/        → backend container
-├── collectors/     → backend image에서 초기 실행, 향후 분리 가능
-├── data/schema/    → 데이터 계약
-├── data/fixtures/  → 개발·테스트 입력
-├── database/       → ERD와 초기 DB 자료
-└── deployment/     → 공통 배포 설정
-```
-
-논리적 모듈과 컨테이너를 반드시 1:1로 만들지 않는다. Collector를 최상위
-모듈로 분리하는 이유는 책임과 테스트 경계를 유지하기 위해서이며, 초기부터
-별도 운영 컨테이너가 필요하다는 뜻은 아니다.
-
-## 개발 산출물과 컨테이너 통합
-
-각 영역은 컨테이너 파일보다 먼저 재현 가능한 애플리케이션 산출물을
-제공한다.
-
-| 영역 | 통합 전에 제공할 산출물 |
-| --- | --- |
-| Frontend | 소스 코드, `package.json`, 단일 lockfile, 환경변수 예시, 실행·테스트 명령 |
-| Backend | 소스 코드, 합의된 Python manifest·lockfile, 환경변수 예시, 실행·테스트 명령 |
-| Data | 데이터 처리 코드, Schema·Fixture·Seed와 확정된 실행 환경에 반영한 Python 의존성 |
-
-관련 Forest 결과가 `develop`에 병합된 뒤 통합·배포 Forest에서 다음을
-수행한다.
-
-1. Frontend와 Backend Dockerfile 작성
-2. Database를 포함한 Compose 구성
-3. 서비스 네트워크, 환경변수, Volume과 health check 설정
-4. manifest와 lockfile을 이용한 재현 가능한 이미지 빌드
-5. `docker compose up` 기반 전체 실행과 통합 테스트
-
-통합 담당은 라이브러리와 버전을 추측하지 않고 각 영역이 제공한 manifest와
-lockfile을 사용한다. 개별 영역 Forest에서 컨테이너 작업이 필요하면 해당
-Forest 계획에 범위와 완료 기준을 명시해야 한다.
-
-## 데이터 저장
-
-| 데이터 | 저장 위치 | Git 포함 |
+| 서비스 | 책임 | Host 노출 |
 | --- | --- | --- |
-| JSON Schema | `data/schema/` | 포함 |
-| 검토된 최소 Fixture·Seed | `data/fixtures/`, `data/seeds/` | 포함 |
-| 실제 수집 Raw | Runtime Volume 또는 운영 저장소 | 제외 |
-| 처리 결과와 rejected 데이터 | Runtime Volume 또는 DB | 제외 |
-| PostgreSQL 데이터 | Database Volume | 제외 |
+| `database` | PostgreSQL 정책·dataset·CollectionRun·관리자 상태 저장 | 없음 |
+| `redis` | Celery collection queue와 AOF | 없음 |
+| `backend` | FastAPI 사용자·관리자 API | `127.0.0.1:8000` 기본 |
+| `collection-worker` | 외부 Source 수집·정규화·DB import | 없음 |
+| `collection-scheduler` | 선택적 정기 수집 enqueue | 없음 |
+| `frontend` | React 정적 파일과 SPA fallback 제공 | `127.0.0.1:3000` 기본 |
 
-운영 Raw와 DB Volume을 컨테이너 이미지 안에 굽지 않는다. 백업과 복구 절차는
-운영 기능이 구현될 때 별도 문서로 검증한다.
-
-## Production 진입점
-
-최종 배포에서는 Nginx가 React 정적 파일을 제공하고 `/api` 요청을 FastAPI로
-전달하는 구성을 목표로 한다.
-
-```text
-Nginx
-├── React 정적 파일
-└── /api → FastAPI → PostgreSQL
-```
-
-Nginx 도입 시점, TLS, 도메인과 네트워크 설정은 배포 Slice에서 확정한다.
-초기 개발 기준선에 구현 완료 사항으로 포함하지 않는다.
-
-## 6주차 Production 분리 목표
-
-Deploy 01까지는 collector를 Backend image의 명시적 명령으로 실행했다. 정기·
-수동 수집의 비동기 실행, 독립 재시작과 중복 실행 제어가 Final Release 필수
-범위가 되어 Deploy 02에서 Redis broker·Celery Worker·단일 Beat 분리를
-승인했고 W6-P2에서 Acceptance Compose와 실제 회귀까지 구현했다.
-
-- 수집 작업이 API 프로세스의 자원 또는 안정성에 영향을 줌
-- 독립적인 재시작, 확장 또는 배포 주기가 필요함
-- 정기 작업과 수동 실행의 동시성 제어가 필요함
-
-승인된 목표 구조:
+`migrate`와 `public-dataset-bootstrap`은 작업을 마치고 종료되는 일회성
+서비스이므로 장기 서비스 수에 포함하지 않는다. `restore`, `schema-bootstrap`,
+`verify-restored`와 `database-test`는 명시적 profile에서만 실행한다.
 
 ```text
 Browser
-  ↓
-frontend-nginx → backend → database
-                    ↓ enqueue   ↑ Policy·CollectionRun
-                  redis → collector-worker
-                       ↑
-                    scheduler
+  ├─ http://127.0.0.1:3000 → frontend
+  └─ http://127.0.0.1:8000 → backend
+                                   ├→ database
+                                   └→ redis → collection-worker → official Sources
+                                                ↑
+                                      collection-scheduler
 ```
 
-Redis는 message broker로만 사용하고 Policy·CollectionRun 상태 원본은
-PostgreSQL에 둔다. scheduler는 단일 instance로 실행하고 Source별 DB lock과
-멱등 task로 중복 실행·재전달을 방어한다. 실행 단위를 변경하면
-[아키텍처 결정 기록](decisions/README.md)에 근거와 영향을 남긴다. 상세 Gate는
-[Deploy 02 계획](../development/develop_plan/deploy/02_production_data_refresh_delivery.md)을
-따른다.
+Frontend build에는 브라우저에서 접근할 Backend URL만 들어가며 API key와
+관리자 secret은 포함하지 않는다.
 
-현재 Compose의 `redis`는 AOF를 별도 Volume에 유지하고 외부 port를 공개하지
-않는다. `collection-worker`는 prefetch 1·late ack·worker lost 재전달, bounded
-retry·jitter·hard/soft timeout·task rate limit을 사용한다. `collection-scheduler`
-는 한 instance만 두며 기본 설정은 `COLLECTION_SCHEDULE_ENABLED=false`다. 운영
-API key를 설정하고 Source별 주기를 승인한 중앙 환경에서만 `true`로 바꾼다.
-DB·queue network는 `internal`로 유지하고 live Source HTTP가 필요한 worker만
-별도 `collector-egress` network에 연결한다.
+## Production 구조
+
+Production Compose는 digest-qualified Backend·Frontend image와 외부에서
+검증한 공개 dataset 디렉터리를 사용한다. Host에는 Nginx 하나만 노출한다.
+
+### 장기 실행 서비스 7개
+
+| 서비스 | 책임 |
+| --- | --- |
+| `database` | Production PostgreSQL |
+| `redis` | collection queue |
+| `backend` | FastAPI |
+| `collection-worker` | 중앙 수집 작업 |
+| `collection-scheduler` | 단일 Beat scheduler |
+| `frontend` | 정적 SPA 서버 |
+| `nginx` | `127.0.0.1:8080`, `/api/` Backend proxy와 Frontend routing |
+
+`migrate`와 `public-dataset-bootstrap`이 성공한 뒤 Backend와 worker가
+시작한다. Nginx는 Backend와 Frontend health가 모두 통과한 뒤 요청을 받는다.
+
+```text
+Browser → nginx:8080
+            ├─ /api/ → backend → database
+            └─ /*    → frontend
+
+backend → redis → collection-worker → official Sources
+                   ↑
+             collection-scheduler
+```
+
+TLS와 외부 공개 도메인은 저장소의 loopback-only Compose 바깥에 있는 운영
+reverse proxy 또는 플랫폼에서 종료한다. 기본 Production Compose 자체는
+인터넷에 직접 포트를 개방하지 않는다.
+
+## 네트워크
+
+| 네트워크 | 연결 서비스 | 경계 |
+| --- | --- | --- |
+| `app` | Frontend·Backend, Production Nginx | Web 요청 |
+| `database` | PostgreSQL·Migration·bootstrap·Backend·worker | internal |
+| `queue` | Redis·Backend·worker·scheduler | internal |
+| `collector-egress` | collection worker | 공식 Source HTTPS outbound |
+| `database-test` | 테스트 PostgreSQL | test profile 전용 internal |
+
+DB와 Redis는 Host port를 공개하지 않는다. 개발 override인
+`compose.dev.yaml`을 명시했을 때만 PostgreSQL을 loopback host port로 열고
+Backend·Frontend 소스 mount와 hot reload를 사용한다.
+
+## Volume과 데이터 보존
+
+| Acceptance Volume | 내용 |
+| --- | --- |
+| `acceptance-db` | PostgreSQL 데이터 |
+| `redis-data` | Redis AOF |
+| `backend-logs` | 구조화 로그 |
+| `backend-runtime` | Runtime Raw·checkpoint·처리 산출물 |
+| `acceptance-test-db` | test profile 전용 PostgreSQL |
+
+Production은 같은 역할의 `production-db`, `production-redis`,
+`production-logs`, `production-runtime` Volume을 사용한다. 일반 `down`은
+Volume을 보존한다. `down -v`는 DB·queue·로그·Runtime을 삭제하므로 명시적인
+초기화나 clean-room 검증에서만 정확한 Compose project를 확인한 뒤 사용한다.
+
+## 보안과 장애 격리
+
+- 장기 애플리케이션 컨테이너는 read-only root filesystem과 제한된 `tmpfs`를
+  사용한다.
+- 모든 서비스에 `no-new-privileges`를 적용한다.
+- PostgreSQL·Redis·Backend·Frontend에는 health check가 있다.
+- scheduler는 기본 비활성화이며 중앙 운영자가 승인한 Source와 시간에만 켠다.
+- Source별 DB lock, active run unique 조건과 멱등 import로 중복 실행을 방어한다.
+- 공개 dataset 설치가 실패하면 이전 활성 version을 유지한다.
+- worker 재시작과 CollectionRun 이력은 공개 dataset membership을 자동 변경하지
+  않는다.
+
+## 관련 파일
+
+- `compose.yaml`: 사용자·Acceptance 기준
+- `compose.dev.yaml`: 개발용 override
+- `compose.production.yaml`: 중앙 Production 기준
+- `backend/Dockerfile`, `frontend/Dockerfile`: image 정의
+- `scripts/run_docker.ps1`: Windows 한 줄 실행 orchestration
+- `deployment/nginx/nginx.conf`: Production proxy
+- [Windows Docker 최초 실행](../operations/docker_first_run.md)
+- [Production 배포](../operations/production_delivery.md)

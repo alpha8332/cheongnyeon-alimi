@@ -22,6 +22,25 @@ class AdminSessionResponse(BaseModel):
     role: Literal["admin"] = Field("admin", description="인증된 사용자 역할")
 
 
+class AdminPinChange(BaseModel):
+    """Authenticated administrator PIN change request."""
+
+    current_pin: str = Field(
+        ...,
+        min_length=4,
+        max_length=4,
+        pattern=r"^\d{4}$",
+        description="현재 4자리 숫자 관리자 PIN",
+    )
+    new_pin: str = Field(
+        ...,
+        min_length=4,
+        max_length=4,
+        pattern=r"^\d{4}$",
+        description="새 4자리 숫자 관리자 PIN",
+    )
+
+
 class AdminErrorDetail(BaseModel):
     """관리자 API 표준 에러 세부사항 DTO."""
     message: str = Field(..., description="오류 메시지")

@@ -32,9 +32,9 @@ External Response
 
 ## `RawPolicyDocument`
 
-API와 향후 HTML Collector가 같은 envelope를 사용할 수 있게 하되 소스별
-payload를 이 단계에서 억지로 통일하지 않는다. 현재 구현은 온통청년·복지로
-API의 JSON·XML Raw만 생성 대상으로 삼는다.
+API와 웹 Collector가 같은 envelope를 사용하되 소스별 payload를 이 단계에서
+억지로 통일하지 않는다. 현재 구현은 온통청년·복지로 API뿐 아니라 공공 CSV와
+지역·보완 공식 Source의 JSON·HTML 응답도 Raw로 보존한다.
 
 | 필드 | 논리 타입 | 기준 |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ API의 JSON·XML Raw만 생성 대상으로 삼는다.
 | `source_url` | HTTPS URI string | query·fragment·user information이 없는 endpoint |
 | `collected_at` | date-time string | timezone을 포함한 수집 시각 |
 | `content_type` | string | 응답의 media type |
-| `raw_format` | enum | `json`, `xml`, `html` |
+| `raw_format` | enum | `json`, `xml`, `html`, `csv` |
 | `raw_payload_base64` | string | 원본 byte를 Base64로 인코딩한 값 |
 | `content_hash` | string | 원본 byte의 `sha256:<64 lowercase hex>` |
 | `byte_length` | integer | Base64 디코딩 후 원본 byte 길이 |
@@ -69,7 +69,8 @@ API의 JSON·XML Raw만 생성 대상으로 삼는다.
 `list_response`와 `detail_response`는 HTTP body의 원본 byte를 권위 있는 원문으로
 보존한다. `list_item`은 추출 편의를 위한 파생 Raw이며 반드시 부모 전체 응답을
 참조한다. 목록 항목과 상세 응답은 같은 `source_id + external_id`로 연결한다.
-현재 external ID는 온통청년 `plcyNo`, 복지로 `servId`다.
+external ID의 구체적인 필드와 추출 규칙은 Source Adapter가 소유한다. 예를 들어
+온통청년은 `plcyNo`, 복지로는 `servId`를 사용한다.
 
 ### 원문과 Hash
 
@@ -132,7 +133,7 @@ Source Extractor가 소스별 Raw에서 의미 있는 중간 필드를 추출한
 | `provenance` | 기여 Raw 문서 배열 |
 | `extra` | object |
 
-현재 두 API의 목록 항목에는 source-scoped 외부 ID가 있으므로
+현재 등록된 Source의 목록 항목에는 source-scoped 외부 ID가 있으므로
 `ExtractedPolicy.external_id`는 필수 string이다. 선택 공통 필드의 원문이
 없거나 빈 문자열이면 해당 공통 필드는 null로 전달한다. 다만 누락과 빈
 문자열을 구분할 수 있도록 `extra.source_fields`에는 실제 필드 존재 여부와
@@ -148,7 +149,7 @@ provenance가 가리키는 Raw에서 재현한다.
 검색 필드는 Source Adapter가 명시적인 Source key만 승격한다. 온통청년은
 `plcyExplnCn`, `mclsfNm`, `plcyKywdNm`, `zipCd`를 사용하고 복지로는
 `wlfareInfoOutlCn`·`servDgst`, `intrsThemaArray`, `lifeArray`,
-`trgterIndvdlArray`를 사용한다. 향후 HTML Source도 `SourceRegionEvidence`에
+`trgterIndvdlArray`를 사용한다. HTML Source도 `SourceRegionEvidence`에
 include·exclude, 외부 code scheme과 원문 code·text를 명시하며 공통
 Normalizer가 Source별 JSON key나 HTML selector를 직접 해석하지 않게 한다.
 
@@ -338,54 +339,35 @@ invalid 데이터는 정상 Fixture, Seed 또는 PostgreSQL 입력과 분리하�
 `NormalizedProgram`을 유지하지만 invalid는 `program=null`인 rejected
 결과로 분리한다.
 
-### Backend·Frontend 영향과 승인 게이트
+### Backend·Frontend 저장과 소비 경계
 
-Normalized 1.0.0은 이전의 논리 문서를 실행 가능한 계약으로 만든 첫
-버전이고 1.1.0은 PSF1에서 검색 데이터 5개 필드를 추가한 minor version이다.
-1.2.0은 Integration 08에서 source-backed `eligibility_summary`를 추가했다.
-Data 6에서 합성 Raw → Extracted → Normalized Fixture와 canonical Seed를
-구현했다. Backend Policy ORM은 PSF3에서 `region_rules`를 제외한 35개 필드와
-관계형 지역·검색 projection 모델로 확장됐다. 배열·조건·provenance는
-PostgreSQL `JSONB`,
-수집 시각은 timezone-aware timestamp, 일정·상태·품질은 DB enum으로
-매핑한다. SQLite `JSON`과 CHECK constraint는 명시적인 단위 테스트
-대체 경계이며 PostgreSQL 검증 결과를 대신하지 않는다. Frontend 공개
-`PolicyDto`는 기존 31개 필드 중 provenance를 제외한 API 경계를 소비한다.
+Normalized 1.0.0은 최초 실행 계약, 1.1.0은 검색용 배열과 지역 coverage를
+추가한 호환 minor version, 1.2.0은 Source 근거 기반 `eligibility_summary`를
+추가한 현재 version이다. 합성 Raw → Extracted → Normalized Fixture와 canonical
+Seed로 이 변환을 검증한다.
 
-이 DB 매핑은 논리 Schema의 required·null·빈 배열·enum 규칙을 변경하지
-않는다. PostgreSQL 17.10의 빈 테스트 DB에서 Migration upgrade, JSONB와
-timezone 왕복, constraint와 downgrade를 검증했다. Backend 02 B3에서 현재
-두 공식 API 입력에는 비어 있지 않은 `external_id`를 요구하는 DB admission과
-`(source_id, external_id)` PostgreSQL 원자적 upsert를 검증했다. 동일 입력은
-unchanged로 분류되어 `updated_at`을 바꾸지 않고, null ID는 적재하지 않는다.
-이는 Normalized Schema의 nullable 계약을 바꾸지 않으며 향후 Source의 대체
-ID를 일반화하지 않는다. Backend 02 B4 importer는 이 문서와 실행 Schema를
-구현하는 기존 `NormalizedProgramValidator`로 전체 입력을 DB 접근 전에
-검증한다. valid·partial만 허용하며 invalid·Schema 위반·DB admission
-거부·DB write 실패가 있으면 같은 canonical batch의 DB 변경은 0건이다.
-날짜·null·빈 배열·enum에 importer 기본값을 적용하지 않으며 dry-run도 실제
-upsert 후 rollback한다.
+Backend Policy ORM은 배열·조건·provenance를 PostgreSQL `JSONB`, 수집 시각을
+timezone-aware timestamp, 일정·상태·품질을 DB enum으로 저장한다.
+`region_rules`는 관계형 지역 모델과 연결하고 검색 projection은 Policy upsert와
+같은 transaction에서 동기화한다. SQLite 기반 단위 테스트는 빠른 대체 경계일
+뿐 PostgreSQL Migration·constraint 검증을 대신하지 않는다.
 
-PSF3 Migration은 세 검색 배열과 coverage를 Policy에 저장하고 기존 row를
-`[]`·`unknown`으로 backfill한다. 실제 `schema_version`은 바꾸지 않는다.
-PSF5 importer는 `region_rules` 관계 교체와 versioned projection 동기화를
-Policy upsert와 같은 transaction에서 수행한다. Runtime replay는 accepted
-program과 Normalizer warning을 순서대로 전달하므로 `other` category fallback
-같이 canonical 객체만으로 재구성할 수 없는 partial 근거도 DB admission에서
-유실되지 않는다.
-ES2는 ORM에 `eligibility_summary` JSONB를 추가하고 기존 행을 빈 unknown
-요약으로 backfill했다. 상세 DTO만 이 객체를 공개하고 목록·검색 DTO에는
-포함하지 않는다. Frontend는 ES3에서 1.0.0·1.1.0·1.2.0 version union과 상세
-응답 타입을 반영한다.
+Importer는 DB 접근 전에 `NormalizedProgramValidator`로 전체 입력을 검증한다.
+valid·partial만 허용하고 invalid·Schema 위반·identity admission 거부·DB write
+실패가 있으면 같은 canonical batch 전체를 rollback한다. identity는
+`(source_id, external_id)`이며 현재 등록 Source는 비어 있지 않은 external ID를
+요구한다. 동일 입력은 `unchanged`로 분류해 `updated_at`을 바꾸지 않는다.
+
+Frontend 공개 `PolicyDto`는 provenance 같은 내부 감사 필드를 노출하지 않는다.
+`eligibility_summary`는 상세 DTO에서만 제공하고 목록·검색 DTO에는 포함하지
+않는다. Frontend type은 지원되는 1.0.0·1.1.0·1.2.0 응답을 읽을 수 있다.
 
 현재 1.2.0의 37개 필드와 PostgreSQL 컬럼·관계 매핑은
 [Policy 데이터베이스 매핑](../architecture/policy_database_mapping.md)을
 따른다.
 
 [Fixture와 Seed 계약](fixture_seed_contract.md)은 1.2.0의 Backend 저장 후보,
-Frontend 비노출 경계와 현재 승인 상태를 기록한다. 새 검색 필드의 PostgreSQL
-구조와 Source 값 채움은 PSF3·PSF4에서 구현됐고 관계·projection의 원자적
-transaction은 PSF5에서 완성했다.
+Frontend 비노출 경계와 현재 승인 상태를 기록한다.
 
 ## JSON Schema 동기화 규칙
 
@@ -397,8 +379,8 @@ transaction은 PSF5에서 완성했다.
 `coverage`, 조건·제외·우대·서류·unknown·공개 시설 연락처와 각 항목의 공개
 evidence를 별도 객체로 고정하며 배열은 required이고 값이 없으면 `[]`다.
 
-DTL4-4A에서는 독립 nested Schema로 먼저 승인했고 ES2에서
-`NormalizedProgram 1.2.0`의 required `$defs.eligibilitySummary`로 삽입했다.
+독립 nested Schema로 먼저 검증한 뒤 `NormalizedProgram 1.2.0`의 required
+`$defs.eligibilitySummary`로 삽입했다.
 Fixture·Seed·ORM·Importer는 37개 exact field parity를 사용한다. 1.0.0·1.1.0
 compatibility adapter는 근거 없는 조건을 만들지 않고 unknown 빈 객체만 추가한다.
 
@@ -424,6 +406,6 @@ Raw Schema는 Semantic Versioning 문자열을 사용한다. required·타입·�
 문서의 `schema_version`과 Schema `$id`를 함께 변경한다.
 
 Raw Schema는 Collector 재처리와 provenance를 위한 내부 계약이다.
-Normalized Schema는 향후 Backend·Frontend 소비 계약의 기준안이지만 현재
-소비 구현은 없다. Fixture·Seed 소비자 검토에서 변경 요청이 생기면 Schema,
-Fixture와 Seed를 같은 변경에서 동기화한다.
+Normalized Schema는 Backend importer, PostgreSQL, 공개 API와 Frontend 소비의
+현재 기준이다. 변경 요청이 생기면 Python 모델, Schema, Fixture, Seed, DB·API와
+Frontend 타입을 같은 변경에서 동기화한다.

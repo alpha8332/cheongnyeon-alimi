@@ -2,7 +2,7 @@
 
 ## 목적과 범위
 
-`collection_runs`는 향후 관리자 기능이 Seed 적재와 Runtime 재처리 결과를
+`collection_runs`는 관리자 기능이 Seed 적재와 Runtime 재처리 결과를
 조회할 수 있도록 실행 단위의 안전한 요약을 저장한다. 정책 데이터와 Raw
 payload, 상세 실패 목록, URL과 인증정보는 저장하지 않는다.
 

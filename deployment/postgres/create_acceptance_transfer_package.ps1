@@ -155,7 +155,7 @@ finally {
 Move-Item -LiteralPath $PartialArchivePath -Destination $ArchivePath
 
 $ComposePath = Join-Path $RepositoryRoot "compose.yaml"
-$SetupDocumentPath = Join-Path $RepositoryRoot "docs\development\docker_acceptance_setup.md"
+$SetupDocumentPath = Join-Path $RepositoryRoot "docs\operations\docker_first_run.md"
 $ArchiveItem = Get-Item -LiteralPath $ArchivePath
 $Receipt = [ordered]@{
     receipt_version = "1.0.0"

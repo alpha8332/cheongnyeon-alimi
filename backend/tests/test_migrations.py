@@ -6,6 +6,7 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 
 from app.models.collection_run import CollectionRun
+from app.models.admin_auth import AdminAuthState
 from app.models.policy import Policy
 from app.models.public_dataset import (
     PublicDatasetInstallation,
@@ -24,7 +25,8 @@ LIFECYCLE_REVISION = "20260824_0007"
 QUEUE_REVISION = "20260824_0008"
 ACTIVE_SOURCE_REVISION = "20260824_0009"
 COMPLETENESS_REVISION = "20260824_0010"
-HEAD_REVISION = "20260824_0011"
+PUBLIC_DATASET_REVISION = "20260824_0011"
+HEAD_REVISION = "20260825_0012"
 
 
 def alembic_config() -> Config:
@@ -62,6 +64,10 @@ def test_collection_quality_revision_is_the_single_alembic_head():
     assert revision == HEAD_REVISION
     assert (
         scripts.get_revision(revision).down_revision
+        == PUBLIC_DATASET_REVISION
+    )
+    assert (
+        scripts.get_revision(PUBLIC_DATASET_REVISION).down_revision
         == COMPLETENESS_REVISION
     )
     assert (
@@ -212,11 +218,24 @@ def test_upgrade_sql_matches_public_dataset_projection_contract():
             assert f"\n    {column.name} " in sql
 
 
+def test_upgrade_sql_matches_admin_auth_state_contract():
+    sql = render_upgrade_sql()
+
+    assert "CREATE TABLE admin_auth_state" in sql
+    assert "ck_admin_auth_state_singleton" in sql
+    assert "ck_admin_auth_state_pin_hash_length" in sql
+    assert "ck_admin_auth_state_session_generation_positive" in sql
+
+    for column in AdminAuthState.__table__.columns:
+        assert f"\n    {column.name} " in sql
+
+
 def test_downgrade_sql_removes_table_indexes_and_enum_types():
     sql = render_downgrade_sql()
 
     assert "DROP COLUMN rejected_count" in sql
     assert "DROP TABLE public_dataset_memberships" in sql
+    assert "DROP TABLE admin_auth_state" in sql
     assert "DROP TABLE public_dataset_installations" in sql
     assert "DROP TYPE public_dataset_installation_status" in sql
     assert "DROP COLUMN duplicate_count" in sql

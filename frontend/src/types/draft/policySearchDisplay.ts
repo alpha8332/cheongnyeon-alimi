@@ -2,7 +2,7 @@
  * W3-F0 DRAFT — Display token labels only (Gate G1 pending).
  *
  * Mapping functions (banner format, badge variant lookup) belong to post-G1 UI Slices.
- * See docs/development/develop_plan/frontend/04_policy_search.md § Display UX.
+ * See docs/product/features/search_and_discovery.md.
  */
 
 import type { MatchVerdict } from '@/types/policySearch';

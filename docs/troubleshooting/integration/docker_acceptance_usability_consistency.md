@@ -13,7 +13,7 @@
    `연령 정보 없음`으로 서로 다르게 표시됐다.
 4. 저장 조건이 `24세·주거`인 상태에서 예시 `천안 취업`을 누르면 저장된 주거
    분야가 검색어의 취업 의도를 덮었다.
-5. actual Browser 회귀에서 Mock-first 주차 통합 경로가 합성 정책명과 PIN
+5. actual Browser 회귀에서 초기 Mock-first 통합 경로가 합성 정책명과 PIN
    `0000`을 그대로 요구해 제품과 무관한 3건 실패를 만들었다.
 6. DTL5-5 상세 리뷰에서 정책 `3342`는 헤더와 구조화 자격에 각각
    `연령 정보 없음`, `구조화된 조건 미확인`을 표시하면서 지원 자격 본문에는
@@ -30,7 +30,7 @@ retired 중구·동구·서구 rule 때문에 충남 천안 질의까지 미확�
 같은 code·문구로 축약했다. 검색 조건 merge는 URL flat category가 없으면
 자연어에 분야가 이미 있어도 저장 category를 항상 명시 filter로 보냈다.
 
-주차 회귀 spec은 파일 주석대로 Mock-first였지만 actual 모드 skip 경계가 세
+초기 회귀 spec은 파일 주석대로 Mock-first였지만 actual 모드 skip 경계가 세
 Critical Path에 적용되지 않았다.
 
 정책 `3342`의 공개 API 원본은 `eligibility_text="제한 없음 해당없음"`이고
@@ -50,7 +50,7 @@ Critical Path에 적용되지 않았다.
 - 자연어에 Backend category taxonomy 키워드가 있으면 저장 category를 flat
   filter로 합치지 않고 자연어 의도를 우선했다. 지역·연령 저장 조건은 유지한다.
 - 홈 예시는 실제 상단에 지역 정책이 나오는 `천안 취업`으로 교체했다.
-- Mock-first 주차 경로는 actual 모드에서 이유를 남기고 skip하며, actual 전용
+- Mock-first 경로는 actual 모드에서 이유를 남기고 skip하며, actual 전용
   검색·추천·자격·사용자 서비스 spec과 관리자 API·Browser 검증을 별도로 쓴다.
 - 관리자 대시보드의 `run_id`, `source`, `started_at` 등은 한국어 의미와 API
   필드명을 함께 표시했다.
@@ -67,7 +67,7 @@ Critical Path에 적용되지 않았다.
 - 저장 분야가 주거여도 `천안 취업`은 `카테고리: 취업`, 주거 chip 없음
 - `0세 ~ 0세` 사용자 카드 노출 없음
 - actual 전용 5개 spec 최종 실행: 39 pass, 11 명시 skip, 0 fail
-- Mock-first actual 경계 수정 후 주차 spec: 3 pass, 3 명시 skip, 0 fail
+- Mock-first actual 경계 수정 후 legacy spec: 3 pass, 3 명시 skip, 0 fail
 - 정책 `3342`의 결합 결측 표식 노출: `1건 → 0건`, 자격 미확인 안내로 대체
 - DTL5-5 수정본 Frontend unit: 222 pass, lint·production build 통과
 - DTL5-5 actual 5개 spec: 39 pass, 11 명시 skip, 0 fail

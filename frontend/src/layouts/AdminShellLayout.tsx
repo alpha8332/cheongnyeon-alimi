@@ -15,6 +15,7 @@ const ADMIN_NAV_ITEMS = [
   { to: ADMIN_APP_ROUTES.policies, label: '정책 데이터' },
   { to: ADMIN_APP_ROUTES.logs, label: '구조화 Log' },
   { to: ADMIN_APP_ROUTES.quality, label: '데이터 품질' },
+  { to: ADMIN_APP_ROUTES.security, label: '보안' },
 ] as const;
 
 export default function AdminShellLayout() {
