@@ -21,16 +21,16 @@ dataset membership이다.
 
 ## 현재 공개 dataset
 
-2026-08-25에 검증한 `v1.0.2` snapshot은 다음과 같다.
+2026-08-26에 검증한 현재 `dataset-latest` snapshot은 다음과 같다.
 
 | 항목 | 값 |
 | --- | --- |
-| version | `public-bootstrap-20260824-897152e7a18c15` |
-| 전체 정책 | 2,052건 |
+| version | `public-bootstrap-20260825-38180bc7a837ef` |
+| 전체 정책 | 2,051건 |
 | 복지로 | 461건 |
-| 온통청년 | 1,587건 |
+| 온통청년 | 1,586건 |
 | 인천 공개 파일 | 4건 |
-| 활성 identity SHA-256 | `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5` |
+| 활성 identity SHA-256 | `85b70773cb64c7f97e2ffb7270be4dd68c892c23624f807a971b1585b808d76e` |
 
 이 값은 고정된 snapshot 증거다. 이후 `dataset-latest` pointer가 승격되면 새
 manifest가 정책 수, source 구성과 hash의 권위값이 된다.

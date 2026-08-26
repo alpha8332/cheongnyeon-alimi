@@ -160,16 +160,16 @@ Docker Volume을 삭제합니다. 완전 초기화가 목적일 때만 사용하
 GitHub Release의 `dataset-latest` pointer가 가리키는 artifact를 내려받고
 manifest의 SHA-256, 파일 크기와 정책 수를 모두 확인한 뒤 설치합니다.
 
-2026-08-25에 검증한 `v1.0.2` dataset은 다음과 같습니다.
+2026-08-26에 검증한 현재 `dataset-latest`는 다음과 같습니다.
 
 | Source | 정책 수 |
 | --- | ---: |
 | 복지로 중앙부처 복지서비스 | 461건 |
-| 온통청년 청년정책 API | 1,587건 |
+| 온통청년 청년정책 API | 1,586건 |
 | 인천광역시 청년공간 유유기지 공개 파일 | 4건 |
-| 합계 | 2,052건 |
+| 합계 | 2,051건 |
 
-dataset version은 `public-bootstrap-20260824-897152e7a18c15`입니다. 이후 새
+dataset version은 `public-bootstrap-20260825-38180bc7a837ef`입니다. 이후 새
 dataset이 승격되면 내려받은 manifest의 version과 정책 수가 우선합니다.
 
 같은 dataset version을 설치한 PC는 같은 공개 정책 identity 집합을 검색합니다.
@@ -217,6 +217,8 @@ dataset이 승격되면 내려받은 manifest의 version과 정책 수가 우선
 
 - 관리자 PIN 평문, API key, DB 비밀번호와 token을 문서·Issue·commit에 올리지
   마세요.
+- 보안 취약점은 공개 Issue 대신 [보안 정책](SECURITY.md)의 비공개 제보 절차를
+  사용하세요.
 - `.env.compose`, Runtime Raw·로그와 PostgreSQL 데이터는 Git에서 제외됩니다.
 - 프로필과 즐겨찾기는 현재 브라우저의 `localStorage`에 저장됩니다.
 - 검색·추천에 필요한 조건은 사용자의 로컬 Backend에만 전달하며 외부 정책

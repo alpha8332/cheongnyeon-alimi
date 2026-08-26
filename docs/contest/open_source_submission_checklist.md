@@ -2,16 +2,17 @@
 
 ## 현재 기준
 
-- 공개 Release: `v1.0.2`
-- Release Git SHA: `c3d3935a196a024037168e9afb5a94dfef4542e3`
-- 공개 dataset: `public-bootstrap-20260824-897152e7a18c15`
-- 공개 정책: 2,052건
-- Source 구성: 복지로 461건, 온통청년 1,587건, 인천 공공데이터 4건
+- 공개 Release: `v1.1.0`
+- Release Git SHA: annotated `v1.1.0` tag가 가리키는 commit
+- 공개 dataset: `public-bootstrap-20260825-38180bc7a837ef`
+- 공개 정책: 2,051건
+- Source 구성: 복지로 461건, 온통청년 1,586건, 인천 공공데이터 4건
 - 활성 identity SHA-256:
-  `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5`
+  `85b70773cb64c7f97e2ffb7270be4dd68c892c23624f807a971b1585b808d76e`
 
-이 값은 `v1.0.2` 검증 기준이다. 제출 직전에 `dataset-latest`가 새 version을
-가리키면 함께 받은 manifest의 version, row count와 hash를 우선한다.
+이 값은 `2026-08-26`의 `v1.1.0` 검증 기준이다. 제출 직전에
+`dataset-latest`가 새 version을 가리키면 함께 받은 manifest의 version, row
+count와 hash를 우선한다.
 
 ## 공개 저장소
 
@@ -21,13 +22,16 @@
 - [x] API key 없이 공개 dataset을 설치하는 경계 명시
 - [x] `.env*`, API key, PIN, DB, Raw, Runtime, log와 build 산출물 ignore
 - [x] `CONTRIBUTING.md`, 보안·브랜치·리뷰·커밋 규칙 제공
+- [x] `SECURITY.md`에 비공개 취약점 제보와 비밀정보 제외 절차 명시
 - [x] 완료된 계획·주차 문서와 초기 릴리스 증거를 제출본에서 정리
 - [x] 제품·아키텍처·API·데이터·운영 문서를 현재 구현 기준으로 연결
-- [ ] GitHub description, topics, social preview와 비공개 취약점 제보 경로 확인
+- [ ] GitHub description과 topics 확인
+- [ ] GitHub 비공개 취약점 제보 기능 확인
+- [ ] GitHub social preview 확인
 
 ## 설치와 데이터 동등성
 
-- [x] 깨끗한 Docker Volume에서 API key 없이 2,052건 설치
+- [x] 깨끗한 Docker Volume에서 API key 없이 2,051건 설치
 - [x] manifest·artifact hash와 row count 검증
 - [x] 작성자 DB의 기존 로컬 정책과 분리된 활성 dataset projection 검증
 - [x] 양산·경남·인천·부산·제주 등 다중 지역 검색 검증
