@@ -172,4 +172,3 @@ Backend는 UTF-8 JSON Lines 구조화 이벤트를 파일에 기록한다. 관�
 - [관리자 로그 API](../../api/admin_logs.md)
 - [CollectionRun 관리자 API](../../api/admin_collection_runs.md)
 - [정책 DB 매핑](../../architecture/policy_database_mapping.md)
-- [관리자 데이터·로그 개발 기록](../../development/development_notes/integration/admin_data_log_console.md)

@@ -139,4 +139,3 @@ provenance는 일반 상세 응답에 포함하지 않는다.
 - [자격정보 요약 계약](../../data/eligibility_summary_contract.md)
 - [정규화 규칙](../../data/normalization_rules.md)
 - [정책 생명주기](../../data/policy_lifecycle.md)
-- [Eligibility 상세 실제 검증 기록](../../development/development_notes/integration/eligibility_evidence_summary.md)

@@ -1,8 +1,7 @@
 /**
- * Admin PIN session API contract (Frontend 03 / FE3-00).
+ * Admin PIN session API contract.
  *
- * Aligns with Backend 04 `POST /api/v1/admin/session`
- * (docs/api/admin_access.md on `feature/backend/collection-run-admin-api`).
+ * Aligns with docs/api/admin_access.md and `POST /api/v1/admin/session`.
  *
  * Security: PIN and access_token must never appear in URL query strings or logs.
  */

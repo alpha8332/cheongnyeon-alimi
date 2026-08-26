@@ -18,7 +18,7 @@
 
 ```json
 {
-  "pin": "0000"
+  "pin": "<four-digits>"
 }
 ```
 
@@ -158,7 +158,8 @@ salted PBKDF2 verifier로 승격한다. PIN 평문은 저장하지 않는다.
 1. **로컬 / 개발 환경 (`ENVIRONMENT` = `development` / `local` / `test`)**:
    - `ADMIN_PIN_HASH` 환경변수가 설정되지 않고 실제 요청 client가 loopback인 경우에만
      로컬 시연용 최초 PIN `0000`을 허용한다. 외부 client 요청에는 개발 환경이어도
-     기본 PIN을 허용하지 않는다.
+     기본 PIN을 허용하지 않는다. 이 fallback은 `run_docker.bat` 환경에는 적용되지
+     않으며 Docker 사용자는 최초 실행에서 직접 설정한 PIN을 사용한다.
 2. **배포 / 프로덕션 환경 (`ENVIRONMENT` = `production`)**:
    - 명시적 `ADMIN_PIN_HASH`가 지정되지 않은 경우 **Fail-closed** 정책을 적용하여 `0000`을 포함한 모든 PIN 로그인을 `401`로 즉시 거부한다.
    - `ADMIN_TOKEN_SECRET`을 별도로 지정해야 하며, 미설정 시 공용 `SECRET_KEY`로

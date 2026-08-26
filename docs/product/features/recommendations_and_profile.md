@@ -145,5 +145,3 @@
 - [맞춤 정책 추천 API](../../api/recommendation.md)
 - [Policy 검색 API](../../api/policies.md)
 - [자격정보 요약 계약](../../data/eligibility_summary_contract.md)
-- [추천 UI 개발 기록](../../development/development_notes/frontend/recommendation_ui.md)
-- [사용자 서비스 기능 기록](../../development/development_notes/frontend/user_service_features.md)

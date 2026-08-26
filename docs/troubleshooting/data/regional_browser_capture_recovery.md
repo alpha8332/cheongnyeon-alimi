@@ -5,8 +5,6 @@
 - 발생·해결 기간: 2026-08-13~2026-08-14
 - 환경: 지역 Source 13개, Browser capture, Runtime Raw·checkpoint
 - 영역: Data 수집·재현·현재성·실패 복구
-- 관련 Forest:
-  [Regional Youth Policy Ingestion](../../development/develop_plan/data/05_regional_youth_policy_ingestion.md)
 
 ## 문제 상황
 
@@ -128,7 +126,7 @@ Data 05 결과는 `accepted 109`, `duplicate 2`, `review 1,140`, `closed 3,033`,
 
 ## 관련 근거
 
-- [Regional Youth Policy Ingestion 개발 기록](../../development/development_notes/data/regional_youth_policy_ingestion.md)
+- [현재 데이터 Source 경계](../../data/data_sources.md)
 - `collectors/regional_expansion.py`
 - `collectors/regional_pilot.py`
 - `scripts/audit_regional_ryp8.py`

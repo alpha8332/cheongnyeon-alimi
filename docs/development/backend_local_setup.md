@@ -133,26 +133,22 @@ try {
 테스트는 실제 Alembic Migration을 적용하고 종료 시 `base`로 downgrade한다.
 빈 `alembic_version` 테이블은 남을 수 있다.
 
-## 관리자 PIN 설정 및 해시 생성 (Backend 04)
+## 관리자 PIN 검증
 
-`development`, `local`, `test` 환경에서는 별도 설정이 없고 실제 요청 client가
-loopback일 경우에만 기본 PIN `0000`을 사용한다.
-프로덕션 배포 또는 커스텀 PIN을 사용하려면 4자리 숫자 PIN의 SHA-256 해시를 생성하여 `.env`에 설정한다.
+직접 실행한 `development`, `local`, `test` Backend는 설정이 없고 요청 client가
+loopback일 때만 테스트 호환 fallback을 사용할 수 있다. `run_docker.bat`은 이
+fallback을 사용하지 않고 최초 실행에서 관리자가 입력한 PIN의 verifier와 무작위
+token secret을 생성한다.
 
-1. **PowerShell에서 4자리 PIN 해시 생성**:
-   ```powershell
-   .\.venv\Scripts\python.exe -c "import hashlib; print(hashlib.sha256(b'1234').hexdigest())"
-   ```
-2. **`.env` 파일 설정 및 교체**:
-   ```env
-   ADMIN_PIN_HASH=03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
-   ADMIN_TOKEN_SECRET=your-production-admin-token-secret
-   ADMIN_SESSION_EXPIRE_MINUTES=60
-   ```
-3. **전체 서명 토큰 일괄 폐기**:
-   - production은 `ADMIN_TOKEN_SECRET`이 필수이며 `SECRET_KEY`로 fallback하지 않는다.
-   - 사용 중인 `ADMIN_TOKEN_SECRET`을 교체하면 기존 관리자 세션 토큰이 즉시
-     서버 검증에서 무효화된다.
+Docker 관리자는 PIN을 명령행에서 해시로 만들지 않고 다음 도구를 사용한다.
+
+- 최초 설정: `run_docker.bat`
+- 현재 PIN 변경: `/admin/security`
+- 분실 복구: `reset_admin_pin.bat`
+
+Production은 별도 `ADMIN_TOKEN_SECRET`이 필수이며 `SECRET_KEY`로 fallback하지
+않는다. token secret을 교체하거나 PIN을 변경·복구하면 기존 관리자 세션이 모두
+무효화된다.
 
 ## 안전 수칙
 

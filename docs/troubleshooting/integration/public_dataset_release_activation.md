@@ -1,5 +1,8 @@
 # 공개 dataset 중앙 발행 activation 복구
 
+> 이 문서는 최초 457건 dataset 발행 당시의 장애 기록이다. 현재 공개 기준은
+> [2,052건 공개 dataset 계약](../../data/public_policy_dataset.md)을 따른다.
+
 ## 요약
 
 - 발생일: `2026-08-24`

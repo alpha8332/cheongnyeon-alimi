@@ -135,7 +135,6 @@ PostgreSQL 정책, 공개 dataset, 관리자 PIN과 CollectionRun에는 영향�
 
 ## 관련 계약
 
-- [사용자 서비스 기능 개발 기록](../../development/development_notes/frontend/user_service_features.md)
+- [정책 API](../../api/policies.md)
 - [정책 생명주기](../../data/policy_lifecycle.md)
-- [Policy API](../../api/policies.md)
 - [공개 dataset 동등성](../../data/public_dataset_parity.md)

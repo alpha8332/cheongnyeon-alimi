@@ -5,8 +5,6 @@
 - 발생일: 2026-07-29~2026-07-30
 - 환경: Windows, Python 3.11.9, PostgreSQL 18
 - 영역: Backend 로컬 개발·PostgreSQL 통합 테스트
-- 관련 Forest:
-  [Policy Data Database Integration](../../development/develop_plan/integration/02_policy_data_database_integration.md)
 
 ## 증상
 

@@ -7,8 +7,8 @@
 절차다. 실제 Source 수집과 정기 scheduler 활성화는
 [Collector 실행](collector.md)의 중앙 운영자 범위다.
 
-W6-P3 실행기와 W6-P5 clone·GitHub ZIP clean-room 검증을 완료했다. 기본 GitHub
-Release pointer는 활성 상태이며 API key 없이 pointer가 가리키는 검증된 공개
+Git clone·GitHub ZIP clean-room 검증을 완료했다. 기본 GitHub Release pointer는
+활성 상태이며 API key 없이 pointer가 가리키는 검증된 공개
 dataset을 내려받는다. 현재 정책 수·Source별 건수·SHA-256은 함께 받은 manifest로
 확인한다. `-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만
 사용한다.
@@ -49,7 +49,7 @@ DB dump도 최초 공개 실행에 필요하지 않다.
 6. PostgreSQL Migration
 7. 컨테이너 안에서 manifest·Schema·Source allowlist·내용 안전성 재검증
 8. 공개 dataset 멱등 import
-9. PostgreSQL·Redis·Backend·worker·Beat·Frontend health 대기
+9. PostgreSQL·Redis·Backend·worker·scheduler·Frontend health 대기
 10. `http://127.0.0.1:3000` Browser 열기
 
 manifest 전체 검증과 DB import가 성공한 뒤에만 cache의 `latest.pointer.json`을

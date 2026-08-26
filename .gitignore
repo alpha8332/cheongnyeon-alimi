@@ -18,6 +18,13 @@ opensource_plan/api_info/공공 API 사용법 (온통청년, 복지로).docx
 .~lock.*#
 codex-clipboard-*.png
 
+# Retired internal planning and early-release evidence
+/docs/development/develop_plan/
+/docs/development/development_notes/
+/docs/development/weekly_plan/
+/docs/development/handoff/
+/docs/development/frontend_development_history_w1_w5.md
+
 # Operating system and editor metadata
 .DS_Store
 Thumbs.db

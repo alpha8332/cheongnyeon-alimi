@@ -1,8 +1,7 @@
 /**
- * CollectionRun admin API contract (Frontend 03 / FE3-00).
+ * CollectionRun admin API contract.
  *
- * Aligns with Backend 05 OpenAPI
- * (docs/api/admin_collection_runs.md on `feature/backend/collection-run-admin-api`).
+ * Aligns with docs/api/admin_collection_runs.md and the current OpenAPI schema.
  *
  * List items expose a safe subset; detail includes full count aggregates.
  */

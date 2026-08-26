@@ -162,5 +162,4 @@ PIN 변경과 분실 복구는 다음 데이터를 삭제하거나 다시 적재
 
 - [관리자 인증 API](../../api/admin_access.md)
 - [Windows Docker 최초 실행과 PIN 복구](../../operations/docker_first_run.md)
-- [관리자 접근 제어 개발 기록](../../development/development_notes/backend/admin_access_control.md)
 - [브라우저 사용자 데이터 경계](favorites_calendar_notifications.md)

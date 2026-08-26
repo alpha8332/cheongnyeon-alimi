@@ -1,284 +1,116 @@
 # 데이터 수집 정책
 
-## 문서 상태
+## 적용 범위
 
-- 상태: 기준선
-- 현재 구현 상태: 공통 HTTP·Raw 기반, 두 공식 API와 승인 웹
-  Collector·Extractor·Runtime replay, 공통 Normalizer·Validator와 PostgreSQL
-  적재 경계 구현
+이 문서는 공식 API, 공개 파일과 웹 Source를 안전하고 재현 가능하게 수집하는
+현재 공통 원칙을 정의한다. 실제 실행 명령과 Source별 옵션은
+[Collector 운영](../operations/collector.md)을 따른다.
 
-이 문서는 외부 정책 데이터를 안전하고 재현 가능하게 수집하기 위한 공통
-원칙을 정의한다.
+## HTTP 경계
 
-## 수집 범위 관리
+공통 HTTP client의 기본값은 timeout 10초, 최대 재시도 3회, 요청 시작 간
+최소 간격 1초다. Source의 더 엄격한 공식 제한이 있으면 그 값을 우선한다.
 
-수집 소스, 검증 건수, 자동화 수준과 제외 범위는 Forest 계획에서 정한다.
-현재 Data Pipeline Forest의 실행 범위는
-[개발 계획](../development/develop_plan/data/01_data_pipeline.md)을 따른다.
-어떤 범위로 구현하더라도 이 문서의 HTTP, 보안, 원문 보존, 라이선스와 실패
-처리 원칙은 동일하게 적용한다.
-
-## 공통 HTTP 정책
-
-API와 Web Collector는 공통 HTTP Client를 사용한다.
-
-초기 기본값:
-
-```text
-timeout: 10 seconds
-max retries: 3
-request delay: 1.0 seconds
-```
-
-필수 기능:
-
-- 명시적 Timeout
-- 식별 가능한 User-Agent
-- 상태 코드 검사
-- 제한된 재시도와 재시도 가능 오류 구분
-- 웹 요청 간 간격
-- JSON과 XML 응답 처리
-- 테스트 가능한 Session 또는 Client 주입
-- 소스와 URL을 포함하되 비밀정보를 제외한 오류 메시지
-
-공식 소스의 호출 제한이 확인되면 해당 제한을 기본값보다 우선한다.
-
-현재 공통 `HttpClient`는 Timeout·전송 오류와 5xx만 최대 3회 재시도한다.
-`max retries`는 최초 요청 이후의 추가 시도 횟수이므로 기본 총 시도 횟수는
-최대 4회다. 401·403은 인증 오류, 429는 호출량 오류, 그 밖의 4xx는 요청
-오류로 즉시 중단한다. 5xx 재시도에는 0.5초부터 시작하는 지수 backoff를
-적용하고 모든 요청 시작 사이에는 최소 1초 간격을 둔다.
-
-공통 Client는 redirect를 자동 추적하지 않는다. 특히 query 인증정보가 다른
-origin이나 비표준 포트로 전달되는 일을 막고 3xx를 명시적 오류로 처리한다.
-오류 URL에서는 인증 파라미터만 선별하지 않고 모든 query 값과 URL user
-information을 `<redacted>`로 바꾼다. 응답 본문과 하위 전송 예외 메시지는
-공통 예외에 포함하지 않는다.
-
-HTML Collector는 Data 04 DTL4-3A~3B에서 `cheonan-youthcenter-web`의 승인
-표본만 구현하고 저장된 actual Raw를 PostgreSQL까지 검증했다. 아래 최소 경계
-밖의 확대 수집은 승인하지 않았다.
-
-## 웹 수집 원칙
-
-- 허용 목록은 `/bbs/board.php?bo_table=notice` 1회, 허용 상세는
-  `/bbs/board.php?bo_table=notice&wr_id={positive_integer}` 중 승인 표본 1건이다.
-- 동시 요청은 1개, 요청 시작 간격은 최소 2초이며 pagination과 bulk 순회는
-  하지 않는다.
-- 로그인·회원·신청·CAPTCHA·첨부·이미지·개인정보 URL을 따라가지
-  않는다.
-- 공개 시설 대표전화·공식 문의 채널은 기관 정보로 Raw와 Source 전용 필드에
-  보존한다. 개인 휴대전화·개인 이메일·성명은 구조화 추출하지 않는다.
-- robots 정책과 이용약관을 확인한다.
-- 공개 목록과 필요한 상세 페이지만 제한적으로 요청한다.
-- 정적 HTML을 우선한다.
-- 공개 내부 API가 있으면 이용 조건을 확인하고 안정적인 방법을 선택한다.
-- Selector는 소스별 모듈에서 관리한다.
-- Playwright나 Selenium은 정적 HTML과 공개 요청으로 데이터를 얻을 수 없을
-  때만 별도 검토한다.
-- 로그인 우회, CAPTCHA 우회와 접근 통제 회피를 구현하지 않는다.
-- robots directive와 별도 이용약관을 확인하지 못한 현재 상태에서는 승인
-  예산을 넘기지 않고 실제 원문·이미지를 Git에 재배포하지 않는다.
+- timeout·전송 오류와 5xx만 제한적으로 재시도한다.
+- 401·403은 인증, 429는 호출량, 그 밖의 4xx는 요청 오류로 즉시 중단한다.
+- 5xx는 지수 backoff를 적용한다.
+- redirect를 자동 추적하지 않아 인증 query가 다른 origin으로 전달되지 않게
+  한다.
+- User-Agent, content type과 응답 형식을 검증한다.
+- 오류에는 Source와 안전한 오류 유형만 남기고 response body·query 값과 하위
+  예외 메시지를 포함하지 않는다.
 
 ## 인증정보
 
-다음 환경변수를 사용한다.
+API key는 `YOUTHCENTER_API_KEY`, `BOKJIRO_API_KEY` 환경변수로만 주입한다.
+실제 값은 GitHub Environment secret 또는 Git에서 제외된 로컬 환경에 둔다.
 
-```text
-YOUTHCENTER_API_KEY
-BOKJIRO_API_KEY
-HTTP_TIMEOUT_SECONDS
-HTTP_MAX_RETRIES
-HTTP_REQUEST_DELAY_SECONDS
-```
-
-- 실제 값은 로컬 `.env` 또는 안전한 비밀 관리 수단에 둔다.
-- `.env`는 Git에 커밋하지 않는다.
-- `.env.example`에는 변수명과 비밀이 아닌 예시만 기록한다.
-- 인증키를 URL, 로그, 예외 메시지, Fixture와 문서에 포함하지 않는다.
-- 키가 없으면 모호한 네트워크 오류 대신 명확한 설정 오류를 반환한다.
-- 인증 파라미터 이름이 소스마다 달라도 `apiKeyNm`, `openApiVlak`,
-  `serviceKey`와 같은 값은 공통 redaction 대상으로 처리한다.
-- 요청 URL을 기록해야 하면 query string 전체를 제거하거나 허용된
-  비인증 파라미터만 다시 구성한다.
-
-현재 로컬 참고 자료 일부에는 실제 인증키가 포함되어 있다. 해당 파일은
-읽기 전용 비밀 자료로 취급하고 Git, Fixture, 테스트 snapshot과 개발 기록에
-복사하지 않는다.
-
-과거 Git 이력에 인증키 파일과 비밀 포함 참고 문서가 들어간 사실이 확인되면
-ignore와 인덱스 제외만으로 해결된 것으로 간주하지 않는다. 해당 키를
-폐기·재발급하고, 저장소 이력 정리는 협업 영향과 원격 상태를 확인한 뒤
-별도로 결정한다.
-
-## 공식 API 호출 예산
-
-실제 외부 API 호출은 단위 테스트와 분리된 명시적 통합 검증으로만 실행한다.
-
-- 기본 테스트는 검토된 JSON·XML Fixture를 사용한다.
-- Source Preflight는 현재 endpoint, 인증과 응답 형식을 확인하는 최소 호출만
-  수행한다.
-- 복지로 목록은 한 페이지를 재사용하고 상세는 대표 3~5건만 호출한다.
-- 호출 전에 현재 계정의 할당량과 공식 제한을 확인한다.
-- 429 또는 제공기관의 할당량 오류는 제한적으로 재시도하지 않고 실행을
-  중단해 남은 호출량을 보호한다.
-- 실제 호출 결과에는 키 값과 전체 query string을 제외한 소스, 실행 시각,
-  호출 건수, HTTP 결과와 응답 구조 확인 결과만 기록한다.
+- Frontend bundle, Fixture, 문서, CollectionRun과 구조화 로그에 저장하지 않는다.
+- URL을 기록할 때 user information과 query 값을 전부 redaction한다.
+- key가 없으면 명확한 설정 오류를 반환한다.
+- 사용자 PC의 공개 dataset 설치·검색은 API key 유무와 독립적이다.
 
 ## Raw 보존
 
-Raw는 받은 내용을 재현 가능한 형태로 보존한다.
+`RawPolicyDocument`는 source ID, 외부 identity, 문서 역할, source URL, 수집
+시각, content type·format, 원본 byte, byte 수와 SHA-256을 함께 보존한다.
 
-- 목록·상세 HTTP 응답 전체 byte를 Base64로 보존
-- 목록 항목별 파생 Raw는 부모 목록 응답을 참조
-- 출처 URL과 timezone을 포함한 수집 시각 기록
-- content type과 raw format 기록
-- 원본 byte의 SHA-256 content hash와 byte 길이 기록
-- Collector 버전 기록
-- 원문을 정규화된 필드로 덮어쓰지 않음
+- 원문을 정규화 값으로 덮어쓰지 않는다.
+- hash·byte 수가 payload와 다르면 저장·로드하지 않는다.
+- 실제 Raw는 Runtime Volume에만 두고 Git과 공개 dataset에서 제외한다.
+- 목록 item과 상세는 부모·identity 관계를 검증한다.
+- source URL은 credential query가 없는 안전한 형태만 보존한다.
 
-Hash는 다음을 위한 기반이다.
+## 웹 수집
 
-- 동일 원문 재수집 감지
-- 변경 여부 확인
-- 중복 저장 방지
+- 공개 목록과 필요한 상세만 allowlist로 요청한다.
+- 동시성과 요청 간격을 Source별로 제한한다.
+- 로그인·회원·신청·CAPTCHA·접근 통제를 우회하지 않는다.
+- 첨부, 이미지와 개인 연락처를 수집 대상에서 제외한다.
+- selector·locator는 Source 모듈에 격리하고 drift를 빈 값으로 가장하지 않는다.
+- Browser capture는 정적 HTML과 공개 요청으로 필요한 필드를 얻을 수 없을 때만
+  제한적으로 사용한다.
 
-현재 `RawPolicyDocument`는 Base64를 디코딩한 원본 byte로
-`sha256:<64 lowercase hex>`를 계산한다. Hash와 byte 길이가 payload와
-일치하지 않으면 저장·로드하지 않는다. 변경 이력과 소스 간 중복 판정은
-후속 Forest 범위다.
+명시적 재배포 허가가 없는 웹 Source의 Raw와 normalized 원문은 중앙 Runtime과
+관리자 검토 범위에만 두고 공개 artifact에서 제외한다.
 
-## Extracted 재처리
+## 추출·정규화·검증
 
-Source Extractor는 외부 API를 다시 호출하지 않고 저장된 Raw 문서를 입력으로
-받는다. 목록 항목은 부모 목록 전체 Raw를 반드시 참조하며 복지로 상세는 같은
-`source_id + external_id`의 목록 항목에만 결합한다. 중복 external ID,
-부모가 없는 항목, 목록에 없는 상세와 payload·Raw metadata의 ID 불일치는
-추출 오류로 분리한다.
+Extractor는 저장된 Raw를 외부 재호출 없이 처리한다. Normalizer는 날짜·지역·
+연령·분야를 공통 형식으로 바꾸고, Validator는 `valid`, `partial`, `invalid`를
+판정한다.
 
-공통 선택 필드는 빈 원문을 null로 전달하지만 `extra.source_fields`에는
-실제 source 필드 전체를 보존한다. JSON의 빈 문자열과 필드 누락, XML의 빈
-element와 누락, 반복 leaf 배열을 서로 같은 상태로 축약하지 않는다. 각 정책은
-기여 Raw의 ID, 역할, hash, 수집 시각과 안전한 endpoint를 provenance로
-유지한다. 자세한 필드 계약은 [데이터 Schema](data_schema.md)를 따른다.
+- 선택 필드 누락으로 전체 수집을 중단하지 않는다.
+- 필드 누락과 빈 문자열·빈 element를 가능한 범위에서 구분한다.
+- 근거 없는 지역·연령·상태를 만들지 않는다.
+- invalid는 정상 정책과 분리하고 DB batch admission을 fail-closed한다.
+- 동일 `(source_id, external_id)`는 멱등 upsert한다.
 
-## Git과 Runtime 데이터
+## CollectionRun과 queue
 
-| 구분 | 예 | Git 포함 |
-| --- | --- | --- |
-| Schema | `data/schema/*.schema.json` | 포함 |
-| 테스트 Raw Fixture | 축소·검토한 XML, JSON, HTML | 조건부 포함 |
-| 개발 Fixture | `data/fixtures/normalized/programs.json` | 포함 |
-| canonical 개발 Seed | `data/seeds/initial_programs.json` | 포함 |
-| 파생 CSV Seed | canonical JSON에서 생성한 CSV | 합의·검증 시 포함 |
-| 실제 수집 Raw | 전체 API 응답, 운영 HTML | 제외 |
-| 처리 결과 | runtime normalized, rejected | 제외 |
-| DB 데이터 | PostgreSQL Volume | 제외 |
+관리자 수동 실행과 scheduler는 PostgreSQL에 `queued` CollectionRun을 만든 뒤
+Redis queue에 publish한다. Celery worker가 수집·정규화·import를 수행한다.
 
-Git에 포함할 Fixture는 다음 조건을 모두 만족해야 한다.
+- Source별 active run unique 조건과 DB lock으로 중복 실행을 막는다.
+- publish 실패, worker 실패와 stale 상태를 구분한다.
+- raw payload나 secret 대신 삽입·갱신·실패 집계와 안전한 오류 유형만 남긴다.
+- scheduler는 기본 비활성화이며 중앙 운영자가 승인한 Source만 실행한다.
 
-- 테스트에 필요한 최소 범위
-- 개인정보와 비밀정보 제거
-- 이용 조건상 재배포 가능
-- 출처와 생성 또는 수집 방법 기록
-- 원본 구조를 검증하는 데 필요한 특성 유지
+## 생명주기
 
-현재 두 API Fixture는 실제 응답을 복사하지 않고 관찰된 필드 구조를 합성한
-자료다. 합성 경계, 재생성 명령과 소비자 검토 상태는
-[Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
+미발견 정책의 `inactive_at` 전이는 완전 snapshot, 검증과 DB commit이 모두
+성공한 실행에서만 허용한다. 일부 limit, invalid·rejected·failed와 미완료
+checkpoint에서는 기존 정책 상태를 유지한다. 재등장한 identity는 inactive를
+해제한다.
 
-Seed는 JSON을 canonical 표현으로 사용해 배열, `null`, enum과 provenance의
-타입을 보존한다. CSV는 Backend 초기 적재에 필요하다고 합의한 경우에만
-canonical JSON에서 결정적으로 생성하며, 배열 직렬화와 `null` 표현을
-문서화하고 두 표현의 일관성을 자동 검증한다.
+자세한 규칙은 [정책 생명주기](policy_lifecycle.md)를 따른다.
 
-실제 runtime 저장 경로는 `runtime/raw/`다. 저장 envelope도 운영 Raw이므로
-Git에 포함하지 않는다.
+## 공개 dataset 분리
 
-현재 재유입 방지 경계는 다음과 같다.
+수집 성공은 사용자 공개를 의미하지 않는다. 공개 후보는 별도의 Source
+allowlist, 필드 allowlist, 개인정보·비밀 pattern, lifecycle, row·hash와 격리
+DB projection Gate를 통과해야 한다.
 
-```text
-.env
-.env.*
-APIkey.txt
-runtime/raw/
-data/runtime/raw/
-```
+수동·정기 수집 결과는 중앙 promotion 전까지 공개 membership에 포함하지 않는다.
+새 dataset 발행이 실패하면 이전 `dataset-latest`를 유지한다.
 
-`.env.example`은 실제 값 없이 변수명과 안전한 예시만 포함하는 경우 Git에
-포함할 수 있다. 비밀이 포함된 로컬 참고 문서는 정확한 경로를 `.gitignore`에
-등록한다. `data/runtime/raw/`는 현재 저장기가 사용하지 않는 과거 후보지만
-잘못된 경로의 Raw가 Git에 재유입되지 않도록 ignore를 유지한다.
+## Git 포함 경계
 
-저장 경로는 다음과 같다.
+| 데이터 | Git |
+| --- | --- |
+| JSON Schema·합성 Fixture·합성 Seed | 포함 |
+| 공식 기준정보를 변환한 행정구역 Seed | 포함 |
+| 실제 API·HTML Raw, rejected, checkpoint | 제외 |
+| PostgreSQL dump·Volume | 제외 |
+| 공개 normalized artifact | Git이 아닌 versioned GitHub Release |
 
-```text
-runtime/raw/<source_id>/<document_role>/<UTC YYYY>/<MM>/<DD>/<document_id>.json
-```
+## 검증
 
-저장기는 설정 root 밖 경로, query나 user information이 포함된 `source_url`,
-형식에 맞지 않는 source ID·document ID와 기존 문서 덮어쓰기를 거부한다.
+- 단위 테스트는 외부 요청 대신 합성 JSON·XML·HTML Fixture를 사용한다.
+- 실제 API 호출은 명시적 중앙 통합 실행으로 분리한다.
+- 인증 누락, 빈 응답, 4xx·5xx, timeout, 중복 identity와 drift를 검증한다.
+- 공개 후보는 manifest 검증과 격리 DB 설치·검색 smoke를 추가로 수행한다.
 
-## 개인정보와 민감정보
-
-- 정책 정보 수집에 필요하지 않은 이름, 개인 연락처와 식별정보는 저장하지
-  않는다. 공개 시설 대표전화와 공식 문의 채널은 출처가 확인되는 기관
-  정보로 구분해 Source 전용 필드에 보존할 수 있다.
-- 개인정보가 포함된 게시물, 첨부파일 또는 응답 필드는 수집 대상에서
-  제외하거나 저장 전에 안전한 처리 기준을 별도로 확정한다.
-- 운영 원문을 Fixture로 복사하기 전에 민감정보를 검토한다.
-- 로그에는 인증키, 전체 query string과 개인정보를 남기지 않는다.
-- 개인정보 처리 필요성이 생기면 구현 전에 보존 기간, 접근권한과 삭제 절차를
-  문서화한다.
-
-## 라이선스와 출처
-
-소스를 구현하기 전에 다음을 확인하고 [데이터 소스](data_sources.md)에
-기록한다.
-
-- 제공 기관과 원문 URL
-- 공공데이터 또는 웹사이트 이용약관
-- 수집·저장·변환·재배포 허용 범위
-- 출처 표시 문구와 링크 요구사항
-- 호출 제한과 robots 정책
-- 상업적 이용 또는 2차 저작물 제한
-
-조건을 확인할 수 없거나 저장·재배포가 허용되는지 불명확하면 해당 원문을
-Git Fixture에 포함하지 않는다.
-
-공개 bootstrap dataset은 수집 승인과 별도로
-[공개 정책 dataset 계약](public_policy_dataset.md)의 Source·field allowlist를
-통과해야 한다. allowlist에 없는 Source, Raw·DB dump·비밀 query·개인 연락처는
-중앙 Runtime DB에 존재하더라도 공개 artifact에 포함하지 않는다.
-
-정책 미발견은 완전 snapshot·검증·DB commit이 모두 성공한 실행에서만
-`inactive_at`으로 전이한다. limit 일부 재생, invalid·rejected·failed와 지역
-checkpoint의 `FAILED` 결정에서는 기존 활성 상태를 유지한다. 종료일과 재등장
-규칙은 [정책 생명주기 계약](policy_lifecycle.md)을 따른다.
-
-## 실패 처리
-
-- 인증키 누락, Timeout, HTTP 오류, 파싱 오류를 구분한다.
-- 소스, 실행 시각, 오류 유형과 재시도 횟수를 기록한다.
-- 인증키와 전체 응답의 민감정보는 오류 기록에서 제외한다.
-- 특정 정책의 선택 필드 누락으로 전체 수집을 중단하지 않는다.
-- 실패한 응답을 정상 `RawPolicyDocument`나 정상화 데이터로 가장하지 않는다.
-- invalid 정규화 결과는 정상 출력과 분리한다.
-
-## 테스트 원칙
-
-- 외부 API를 매 테스트마다 호출하지 않는다.
-- 검토된 XML, JSON과 HTML Fixture로 대부분의 테스트를 수행한다.
-- 인증 누락, 정상 응답, 빈 응답, HTTP 오류와 선택 필드 누락을 검증한다.
-- 실제 API 호출 검증은 별도 통합 절차로 구분하고 실행 조건을 명시한다.
-
-## 정책 변경
-
-수집 대상, 저장 범위, 개인정보 처리 또는 이용 조건이 바뀌면 다음을 함께
-갱신한다.
-
-- 이 문서와 `data_sources.md`
-- Collector와 Extractor
-- Fixture와 테스트
-- 환경변수 및 운영 문서
-- 의미 있는 변경인 경우 `CHANGELOG.md`
+Source·저장 범위·개인정보·이용 조건이 바뀌면 이 문서,
+[데이터 소스](data_sources.md), Collector 테스트, 운영 문서와 공개 Source
+contract를 함께 갱신한다.

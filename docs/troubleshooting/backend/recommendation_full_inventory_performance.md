@@ -7,8 +7,6 @@
 - 영역: Backend 추천 API·정책 검색 판정·PostgreSQL 조회
 - 관련 구현 커밋:
   `874c0f808c4a3cd9ef73135b7dbd3a11cedb27aa`
-- 관련 Forest:
-  [Integration 10 Review Admission and Deploy Handoff](../../development/develop_plan/integration/10_review_admission_docker_acceptance.md)
 
 ## 문제 상황
 
@@ -175,4 +173,4 @@ round trip 수가 함께 증가하지 않는다.
 - `backend/app/schemas/recommendation.py`
 - `backend/app/api/v1/endpoints/recommendation.py`
 - `backend/tests/test_recommendation_api.py`
-- `docs/development/development_notes/integration/review_admission_docker_acceptance.md`
+- [추천 API 계약](../../api/recommendation.md)

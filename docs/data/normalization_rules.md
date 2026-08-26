@@ -67,7 +67,7 @@
   실제 소진 여부를 알 수 없어 상태는 null이다.
 - 알 수 없는 상태를 `"unknown"`으로 만들지 않고 null로 둔다.
 
-지역 포털 정책은 Normalizer 이전 RYP3 Gate를 먼저 통과한다. Source 전용 mapper가
+지역 포털 정책은 Normalizer 이전 지역 evidence Gate를 먼저 통과한다. Source 전용 mapper가
 전달한 신청기간에서 현재 open을 확인한 정책만 Normalizer로 넘긴다. `scheduled`,
 `closed`, 기간 누락·오류와 실제 소진 여부를 모르는 `예산 소진 시까지`는
 Runtime 판정에 보존하고 사용자 정책으로 승격하지 않는다. 이 Gate는 기존
@@ -83,8 +83,8 @@ Runtime 판정에 보존하고 사용자 정책으로 승격하지 않는다. �
   신청기간으로 추정하거나 승격하지 않는다.
 - 복지로의 현재 목록·상세 계약에는 신청기간 전용 필드가 없으므로 일반 본문에
   날짜가 있어도 기간·상태는 null로 유지한다.
-- Source 근거 없는 승격 여부는 Release 1 offline profile의
-  `application_period_safety`로 재검증한다.
+- Source 근거 없는 승격 여부는 저장된 Source profile의
+  `application_period_safety` 규칙으로 재검증한다.
 
 ## 연령
 
@@ -134,7 +134,7 @@ Runtime 판정에 보존하고 사용자 정책으로 승격하지 않는다. �
 `[]`이다. null이나 쉼표로 합친 단일 문자열은 허용하지 않는다. 각 값은
 앞뒤 공백을 제거하고 빈 값과 중복을 제외하되 원문 순서를 유지한다.
 
-PSF4 Source Adapter는 온통청년 `mclsfNm`·`plcyKywdNm`을 `keywords`로,
+Source Adapter는 온통청년 `mclsfNm`·`plcyKywdNm`을 `keywords`로,
 복지로 `intrsThemaArray`를 `keywords`, `lifeArray`를 `life_stages`,
 `trgterIndvdlArray`를 `target_groups`로 옮긴다. 쉼표와 반복 XML leaf를
 원문 순서대로 분리하고 공통 text 정규화 뒤 빈 값과 exact 중복을 제거한다.
@@ -156,9 +156,9 @@ Source에 없는 값은 계속 `[]`이며 API가 청년 정책을 제공한다�
 - `region_scheme`, `region_code`: 확정된 canonical 지역 identity
 - `source_code`, `source_text`: 원문 근거
 
-PSF2의 canonical 지역 scheme은 `kr-bjd-20260803`이며 공식 법정동 snapshot의
+canonical 지역 scheme은 `kr-bjd-20260803`이며 공식 법정동 snapshot의
 시·도와 시·군·구, 별칭, 유효기간과 계층을
-[행정구역 기준정보](administrative_regions.md)로 고정했다. PSF4 Normalizer는
+[행정구역 기준정보](administrative_regions.md)로 고정했다. Normalizer는
 Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가 없으면
 `coverage_scope=unknown`, `region_rules=[]`를 유지한다. 기준표가 존재한다는
 사실만으로 Source code를 시·도나 전국으로 추정하지 않는다.
@@ -183,7 +183,7 @@ Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가
 - exact 폐지 code는 당시 canonical identity로 보존하고 현행 후계 지역으로
   자동 치환하지 않는다. 미매핑·모호한 값은 Source 증거와 함께 unresolved
   rule로 보존한다.
-- 향후 HTML Adapter의 지역명은 Adapter가 `source_text` 증거로 명시한 경우만
+- HTML Adapter의 지역명은 Adapter가 `source_text` 증거로 명시한 경우만
   versioned alias resolver를 사용하며 `중구` 같은 다중 후보는 `ambiguous`다.
 - 서울·부산 등 시·도 축약과 문서에 정의된 포항 사례만 표준 이름으로
   치환하고, 이미 행정구역 접미사가 있는 이름은 그대로 보존한다.
@@ -197,13 +197,13 @@ Source Adapter가 명시한 지역 증거만 resolver에 전달하고, 증거가
   동시에 선언할 수 없다.
 
 지역 포털은 Source 지역·시행기관·지원 대상이라는 독립 evidence가 같은 관할을
-가리킬 때만 RYP3의 `regional_confirmed`를 얻는다. 포털의 소재지만 확인되면
+가리킬 때만 `regional_confirmed`를 얻는다. 포털의 소재지만 확인되면
 `regional_review_required`, 전국 재게시나 다른 지역은 `non_regional`이다.
 confirmed이면서 현재 open인 정책만 `coverage_scope=regional`과 canonical include
 rule을 붙여 이 Normalizer에 전달한다. 광역 관할 아래 시·군·구가 명시되면
 ancestor 관계를 확인하고 더 구체적인 canonical rule을 사용한다.
 
-RYP4 교차 Source 판정은 정규화 뒤 Importer 전달 전에 수행한다. 명시적
+교차 Source 판정은 정규화 뒤 Importer 전달 전에 수행한다. 명시적
 aggregator ID·canonical URL·발행기관 포함 공고 ID exact 일치만 확정 중복으로
 제외한다. 정규화 제목·기관·canonical include 지역·신청 시작/종료일·지원내용이
 모두 같아도 자동 병합하지 않고 검토 대상으로 둔다. 제목만 같은 경우 비교
@@ -268,9 +268,9 @@ invalid다. 선택 필드 파싱 경고와 주요 검색 필드 누락은 partia
 valid·partial 결과는 Schema-valid Python 모델을 포함하고 invalid 결과는
 candidate와 오류만 남겨 정상 결과와 분리한다.
 
-Data 5의 정상·경계·실패 사례는 개인정보나 외부 원문이 없는 합성 테스트
-데이터를 사용한다. Data 6의 Raw·Extracted·Normalized Fixture와 canonical
-Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합성 데이터다.
+정상·경계·실패 사례는 개인정보나 외부 원문이 없는 합성 테스트 데이터를
+사용한다. Raw·Extracted·Normalized Fixture와 canonical Seed도 실제 API 원문을
+복사하지 않고 source 구조를 재현한 합성 데이터다.
 구체적인 대표 사례와 소비자 검토 상태는
 [Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
 
@@ -289,7 +289,7 @@ Seed도 실제 API 원문을 복사하지 않고 source 구조를 재현한 합�
 `region_rules`와 versioned projection을 Policy upsert와 같은 transaction에
 저장한다. Runtime replay는 Normalizer warning을 accepted program과 함께
 전달하므로 canonical 필드만으로 재구성할 수 없는 partial 분류도 유지한다.
-Frontend는 ES3에서 `schema_version` 1.0.0·1.1.0·1.2.0을 허용해야 한다. 새
+Frontend는 `schema_version` 1.0.0·1.1.0·1.2.0을 허용한다. 새
 검색 필드는 기존 공개 Policy DTO에 노출하지 않고, `eligibility_summary`는 상세
 DTO에서만 소비한다. Source별 Eligibility mapper는 등록 source ID에만 적용하며
 generic legacy 입력은 자격 원문을 구조화 조건으로 추정하지 않는다.

@@ -5,8 +5,6 @@
 - 발생·해결일: 2026-08-04
 - 환경: 온통청년 완료 snapshot 2,698건, PostgreSQL 18
 - 영역: Data 정규화·검색 3값 판정·Runtime 재적재
-- 관련 Forest:
-  [Release Dataset Bootstrap](../../development/develop_plan/data/02_release_dataset_bootstrap.md)
 
 ## 문제 상황
 
@@ -73,8 +71,7 @@ offline Profile과 일치했다. 복지로 461건에는 이 보정을 소급 적
 
 ## 관련 근거
 
-- [Release Dataset Bootstrap 개발 기록](../../development/development_notes/data/release_dataset_bootstrap.md)
-- [Release 1 실데이터 품질 Profile](../../data/release_dataset_profile.md)
+- [정규화 규칙](../../data/normalization_rules.md)
 - `collectors/normalizer.py`
 - `scripts/profile_release_dataset.py`
 - `tests/test_normalization.py`
