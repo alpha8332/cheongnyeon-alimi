@@ -13,9 +13,9 @@ dataset을 내려받는다. 현재 정책 수·Source별 건수·SHA-256은 함�
 확인한다. `-DatasetManifestPath`는 별도 검증 artifact를 고정해 재현할 때만
 사용한다.
 
-`2026-08-25` actual 재검증에서 latest pointer는
-`public-bootstrap-20260824-897152e7a18c15` 2,052건을 제공했고, 복지로 461건,
-온통청년 1,587건, 인천 공공데이터 4건을 설치했다. 이 값은 해당 version의
+`2026-08-26` actual 재검증에서 latest pointer는
+`public-bootstrap-20260825-38180bc7a837ef` 2,051건을 제공했고, 복지로 461건,
+온통청년 1,586건, 인천 공공데이터 4건을 설치했다. 이 값은 해당 version의
 검증 snapshot이며 pointer가 승격되면 새 manifest의 row 수와 hash를 우선한다.
 
 ## 요구 환경

@@ -4,8 +4,8 @@
 
 - Source contract: `1.1.0`
 - NormalizedProgram Schema: `1.2.0`
-- 검증일: `2026-08-25`
-- 활성 version: `public-bootstrap-20260824-897152e7a18c15`
+- 검증일: `2026-08-26`
+- 활성 version: `public-bootstrap-20260825-38180bc7a837ef`
 
 API key와 기존 PostgreSQL이 없는 사용자도 같은 정책 집합으로 서비스를
 시작하게 하고, 로컬 수집·과거 개발 데이터가 사용자 검색에 섞이지 않게 하는
@@ -16,16 +16,17 @@ API key와 기존 PostgreSQL이 없는 사용자도 같은 정책 집합으로 �
 | 지표 | 값 |
 | --- | ---: |
 | 발행 후보 | 2,114건 |
-| 안전성 제외 | 62건 |
-| 공개 정책 | 2,052건 |
+| 안전성 제외 | 63건 |
+| 공개 정책 | 2,051건 |
 | 복지로 | 461건 |
-| 온통청년 | 1,587건 |
+| 온통청년 | 1,586건 |
 | 인천 공공데이터 | 4건 |
-| artifact bytes | 27,740,580 |
-| artifact SHA-256 | `98703dc79ca53063c3685008d8cede04c4ed8f79dbad53c993e9ac480d6a0860` |
-| 활성 identity SHA-256 | `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5` |
+| artifact bytes | 27,670,224 |
+| artifact SHA-256 | `50b80c93be31fceffedb8fbe8b4ab46fa98c6f461a79a4e5ccba7fe3f582a572` |
+| manifest SHA-256 | `8f5e07f2b9b6a3494bbfd00c50a34e41dbede1f839e26aeb1d01a2a273923ff8` |
+| 활성 identity SHA-256 | `85b70773cb64c7f97e2ffb7270be4dd68c892c23624f807a971b1585b808d76e` |
 
-제외 62건은 이메일 60건과 개인 휴대전화 형식 2건이다. 이 숫자는 위 불변
+제외 63건은 이메일 61건과 개인 휴대전화 형식 2건이다. 이 숫자는 위 불변
 manifest의 기준값이다. `dataset-latest`가 새 version으로 바뀌면 새 manifest의
 row count·Source 구성과 hash를 권위값으로 사용한다.
 

@@ -37,12 +37,12 @@ transaction으로 실행한다.
 
 | 항목 | 값 |
 | --- | --- |
-| version | `public-bootstrap-20260824-897152e7a18c15` |
-| 공개 정책 | 2,052건 |
-| Source | 복지로 461, 온통청년 1,587, 인천 4 |
-| identity SHA-256 | `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5` |
+| version | `public-bootstrap-20260825-38180bc7a837ef` |
+| 공개 정책 | 2,051건 |
+| Source | 복지로 461, 온통청년 1,586, 인천 4 |
+| identity SHA-256 | `85b70773cb64c7f97e2ffb7270be4dd68c892c23624f807a971b1585b808d76e` |
 
-`2026-08-25` clean Volume 검증에서 API key와 수동 DB 적재 없이 위 정책 수와
+`2026-08-26` clean Volume 검증에서 API key와 수동 DB 적재 없이 위 정책 수와
 identity hash가 일치했다. 주거 필터·자연어 검색·추천 category 불일치는 0건,
 Compose 장기 서비스 6개 health를 확인했다.
 

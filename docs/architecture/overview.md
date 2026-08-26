@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-- 대상 Release 기준: `v1.0.2`과 현재 공개 저장소
+- 대상 Release 기준: `v1.1.0`
 - 구현 상태: Docker 기반 사용자·관리자 Web UI와 중앙 데이터 파이프라인 운영
 - 사용자 실행 기준: Windows 10/11, Docker Desktop, `run_docker.bat`
 

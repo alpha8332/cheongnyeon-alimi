@@ -59,7 +59,7 @@ unit·lint·build, image와 Production 계약을 검증한다.
 4. digest image로 clean Production Migration·bootstrap·smoke
 5. `production-release.json` 생성과 GitHub Release 업로드
 
-## 현재 공개 Release 증거
+## v1.0.2 공개 Release 증거
 
 `2026-08-25`에 `main` Git
 `c3d3935a196a024037168e9afb5a94dfef4542e3`을 annotated `v1.0.2`로 발행하고
@@ -79,12 +79,18 @@ unit·lint·build, image와 Production 계약을 검증한다.
 | Release 영수증 | SHA-256 `440bc6b40f47b8f91d1d2ee4c73c8ec8ab67c77fa2abcc55f9bd62eb658057d2` |
 | 공급망 증거 | [SLSA provenance](https://github.com/alpha8332/cheongnyeon-alimi/attestations) |
 
-현재 dataset의 Source 구성은 복지로 461건, 온통청년 1,587건, 인천 공공데이터
-4건이며 활성 identity SHA-256은
+이 Release가 검증한 dataset의 Source 구성은 복지로 461건, 온통청년 1,587건,
+인천 공공데이터 4건이며 활성 identity SHA-256은
 `9f65f2b1dae66b7f07b61310f5f3d07c024e0ab9e86eee843387f06d04afd0e5`다.
 
 이 값은 `v1.0.2`의 불변 증거다. `dataset-latest`가 이후 승격되면 사용자
 실행의 현재 수치는 새 manifest를 따른다.
+
+`v1.1.0`부터 관리자 PIN 변경·DB 보존 분실 복구와 수집기 상태 Console을
+제공한다. 태그 push로 실행되는 Production workflow가 해당 태그의 image digest,
+Migration head와 당시 `dataset-latest`를 검증하고 `production-release.json`을
+`v1.1.0` GitHub Release asset으로 기록한다. 따라서 최종 배포 식별자의 권위값은
+태그와 그 Release asset이다.
 
 ## 공개 dataset Workflow
 

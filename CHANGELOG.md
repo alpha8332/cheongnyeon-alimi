@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-26
+
 ### Added
 
 - placeholder였던 관리자 수집기 화면을 등록 source 11개, 중앙 queue·worker·
