@@ -7,6 +7,7 @@ import {
   formatAge,
   formatCollectedAt,
   formatPolicyDateDot,
+  formatRegionSummary,
   POLICY_ELIGIBILITY_NOTICE,
 } from '../src/utils/policyDisplay.js';
 
@@ -63,6 +64,25 @@ test('collected_at을 한국 표준시로 표시한다', () => {
 
 test('잘못된 collected_at은 미확인으로 표시한다', () => {
   assert.equal(formatCollectedAt('not-a-date'), '수집 시각 미확인');
+});
+
+test('다지역 정책은 카드에서 앞 2개 지역과 나머지 개수로 축약한다', () => {
+  assert.equal(
+    formatRegionSummary(
+      createPolicy({
+        regions: ['서울특별시', '부산광역시', '경상남도', '제주특별자치도'],
+      }),
+    ),
+    '서울특별시, 부산광역시 외 2곳',
+  );
+  assert.equal(
+    formatRegionSummary(createPolicy({ regions: ['경상남도 양산시'] })),
+    '경상남도 양산시',
+  );
+  assert.equal(
+    formatRegionSummary(createPolicy({ regions: [], region_text: '전국' })),
+    '전국',
+  );
 });
 
 test('0세~0세 sentinel은 실제 연령 조건처럼 표시하지 않는다', () => {

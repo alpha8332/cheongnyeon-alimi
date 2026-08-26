@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PartialBadge from '@/components/policy/PartialBadge';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyDetailStatusBadges from '@/components/policy/PolicyDetailStatusBadges';
+import RegionListCollapse from '@/components/policy/RegionListCollapse';
 import PolicyDetailHeaderActions from '@/components/policy/detail/PolicyDetailHeaderActions';
 import type { PolicyDetailDto } from '@/types/policy';
 import { getPrimaryPolicyCategory } from '@/utils/calendarCategoryTheme';
@@ -9,7 +11,6 @@ import {
   formatAge,
   formatApplicationPeriodDisplay,
   formatOrganization,
-  formatRegion,
   getDDayLabel,
   getCategoryLabel,
   getPolicyDisplayTitle,
@@ -24,7 +25,16 @@ interface PolicyDetailSummaryHeaderProps {
   policy: PolicyDetailDto;
 }
 
-function MetaItem({ label, value }: { label: string; value: string }) {
+function MetaItem({ label, value }: { label: string; value: ReactNode }) {
+  if (typeof value !== 'string') {
+    return (
+      <div className="policy-detail-meta-card__item">
+        <span className="policy-detail-meta-card__label">{label}</span>
+        <div className="policy-detail-meta-card__value-stack">{value}</div>
+      </div>
+    );
+  }
+
   const circleLines = splitCircleBulletLines(value);
   const lines =
     circleLines.length >= 2
@@ -107,7 +117,15 @@ export default function PolicyDetailSummaryHeader({
       <div className="policy-detail-meta-card" aria-label="핵심 신청 조건">
         <MetaItem label="신청 기간" value={formatApplicationPeriodDisplay(policy)} />
         <MetaItem label="대상 연령" value={formatAge(policy)} />
-        <MetaItem label="거주 지역" value={formatRegion(policy)} />
+        <MetaItem
+          label="거주 지역"
+          value={
+            <RegionListCollapse
+              regions={policy.regions}
+              fallback={policy.region_text}
+            />
+          }
+        />
         <MetaItem label="소득 기준" value={formatPolicyIncomeSummary(policy)} />
       </div>
 
