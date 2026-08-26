@@ -2,15 +2,15 @@
 
 ## 현재 기준
 
-- 공개 Release: `v1.1.0`
-- Release Git SHA: annotated `v1.1.0` tag가 가리키는 commit
+- 공개 Release: `v1.1.1`
+- Release Git SHA: annotated `v1.1.1` tag가 가리키는 commit
 - 공개 dataset: `public-bootstrap-20260825-38180bc7a837ef`
 - 공개 정책: 2,051건
 - Source 구성: 복지로 461건, 온통청년 1,586건, 인천 공공데이터 4건
 - 활성 identity SHA-256:
   `85b70773cb64c7f97e2ffb7270be4dd68c892c23624f807a971b1585b808d76e`
 
-이 값은 `2026-08-26`의 `v1.1.0` 검증 기준이다. 제출 직전에
+이 값은 `2026-08-26`의 `v1.1.1` 검증 기준이다. 제출 직전에
 `dataset-latest`가 새 version을 가리키면 함께 받은 manifest의 version, row
 count와 hash를 우선한다.
 
