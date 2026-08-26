@@ -10,7 +10,7 @@ import {
   formatAge,
   formatApplicationPeriodCard,
   formatOrganization,
-  formatRegion,
+  formatRegionSummary,
   getPolicyCategoryDisplayOrder,
 } from '@/utils/policyDisplay';
 
@@ -54,11 +54,11 @@ export default function PolicyCard({
         </h3>
         <p className="policy-card__period">{formatApplicationPeriodCard(policy)}</p>
         <p className="policy-card__meta">
-          {[formatRegion(policy), formatOrganization(policy)].filter(Boolean).join(' · ')}
+          {[formatRegionSummary(policy), formatOrganization(policy)].filter(Boolean).join(' · ')}
         </p>
         <div className="policy-card__footer">
           <span className="policy-card__eligibility">
-            {formatAge(policy)} · {formatRegion(policy)}
+            {formatAge(policy)} · {formatRegionSummary(policy)}
           </span>
           <Link to={detailPath} className="policy-card__arrow" aria-label="상세 보기">
             →

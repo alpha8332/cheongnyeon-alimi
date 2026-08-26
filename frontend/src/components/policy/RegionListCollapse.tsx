@@ -4,12 +4,14 @@ const DEFAULT_MAX_VISIBLE = 2;
 
 interface RegionListCollapseProps {
   regions: string[];
+  fallback?: string | null;
   maxVisible?: number;
   className?: string;
 }
 
 export default function RegionListCollapse({
   regions,
+  fallback = null,
   maxVisible = DEFAULT_MAX_VISIBLE,
   className = '',
 }: RegionListCollapseProps) {
@@ -17,12 +19,13 @@ export default function RegionListCollapse({
   const [expanded, setExpanded] = useState(false);
 
   if (regions.length === 0) {
-    return <span className={className}>지역 미정</span>;
+    return <span className={className}>{fallback ?? '지역 미정'}</span>;
   }
 
-  const needsCollapse = regions.length > maxVisible;
-  const visibleRegions = expanded ? regions : regions.slice(0, maxVisible);
-  const hiddenCount = regions.length - maxVisible;
+  const visibleCount = Math.max(1, Math.floor(maxVisible));
+  const needsCollapse = regions.length > visibleCount;
+  const visibleRegions = expanded ? regions : regions.slice(0, visibleCount);
+  const hiddenCount = regions.length - visibleCount;
 
   return (
     <span className={`region-list-collapse${className ? ` ${className}` : ''}`}>

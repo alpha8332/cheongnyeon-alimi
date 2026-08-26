@@ -3,7 +3,7 @@ import FavoriteToggleButton from '@/components/policy/FavoriteToggleButton';
 import PolicyCategoryBadge from '@/components/policy/PolicyCategoryBadge';
 import PolicyStatusBadge from '@/components/policy/PolicyStatusBadge';
 import RecommendationUnknownConditionsAccordion from '@/components/recommendation/RecommendationUnknownConditionsAccordion';
-import RegionListCollapse from '@/components/recommendation/RegionListCollapse';
+import RegionListCollapse from '@/components/policy/RegionListCollapse';
 import {
   PARTIAL_QUALITY_BADGE_HELP,
   PARTIAL_QUALITY_BADGE_LABEL,
