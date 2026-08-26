@@ -19,7 +19,7 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
             Path("data/release_1_acceptance.json")
         )
         cls.template = json.loads(
-            Path("docs/contest/release_1_evidence_template.json").read_text(
+            Path("tests/fixtures/release_1_evidence_template.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -76,7 +76,7 @@ class Release1EvidenceVerificationTests(unittest.TestCase):
                 check["status"] = "pass"
                 check["notes"] = "승인 기준과 실제 관찰 결과가 일치함."
                 check["evidence_refs"] = [
-                    "docs/contest/release_1_technical_evidence.json"
+                    "tests/fixtures/release_1_technical_evidence.json"
                 ]
         return evidence
 

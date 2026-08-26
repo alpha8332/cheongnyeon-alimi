@@ -2,13 +2,18 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   ADMIN_APP_ROUTES,
+  ADMIN_PIN_PATH,
   ADMIN_SESSION_PATH,
   buildCollectionRunDetailPath,
   COLLECTION_RUNS_PATH,
   COLLECTION_RUN_TRIGGER_PATH,
   resolveCollectionRunListQuery,
 } from '../src/api/adminRequest.js';
-import { handleAdminSessionMock } from '../src/mocks/adminSessionHandlers.js';
+import {
+  handleAdminPinChangeMock,
+  handleAdminSessionMock,
+  resetMockAdminPin,
+} from '../src/mocks/adminSessionHandlers.js';
 import {
   handleCollectionRunDetailMock,
   handleCollectionRunListMock,
@@ -16,6 +21,7 @@ import {
 import { MOCK_COLLECTION_RUN_DETAILS } from '../src/mocks/collectionRunFixtures.js';
 import {
   ADMIN_SESSION_ENDPOINT,
+  ADMIN_PIN_ENDPOINT,
   type AdminSessionResponse,
 } from '../src/types/adminSession.js';
 import {
@@ -53,6 +59,13 @@ test('Admin session endpoint는 POST body 경로만 사용한다', () => {
   assert.equal(ADMIN_SESSION_PATH.includes('pin='), false);
 });
 
+test('Admin PIN 변경 endpoint는 PUT body 경로만 사용한다', () => {
+  assert.equal(ADMIN_PIN_ENDPOINT.method, 'PUT');
+  assert.equal(ADMIN_PIN_PATH, ADMIN_PIN_ENDPOINT.path);
+  assert.equal(ADMIN_PIN_PATH.includes('?'), false);
+  assert.equal(ADMIN_PIN_PATH.includes('pin='), false);
+});
+
 test('CollectionRun admin list·detail·trigger 경로가 Backend 05와 일치한다', () => {
   assert.equal(COLLECTION_RUNS_PATH, COLLECTION_RUN_ADMIN_PATH);
   assert.equal(COLLECTION_RUN_TRIGGER_PATH, COLLECTION_RUN_ADMIN_PATH);
@@ -67,6 +80,7 @@ test('ADMIN_APP_ROUTES는 API 경로에 PIN·token query를 포함하지 않는�
   const paths = [
     ADMIN_APP_ROUTES.login,
     ADMIN_APP_ROUTES.dashboard,
+    ADMIN_APP_ROUTES.security,
     ADMIN_APP_ROUTES.collectors,
     ADMIN_APP_ROUTES.runs,
     ADMIN_APP_ROUTES.runDetail('test-run-id'),
@@ -84,6 +98,7 @@ test('ADMIN_APP_ROUTES는 API 경로에 PIN·token query를 포함하지 않는�
 });
 
 test('handleAdminSessionMock는 development PIN 0000으로 session을 발급한다', () => {
+  resetMockAdminPin();
   const result = handleAdminSessionMock({ pin: '0000' });
   assert.equal(result.status, 200);
 
@@ -96,7 +111,19 @@ test('handleAdminSessionMock는 development PIN 0000으로 session을 발급한�
   }
 });
 
+test('Mock PIN 변경은 기존 PIN을 폐기하고 새 PIN만 허용한다', () => {
+  resetMockAdminPin();
+  assert.equal(
+    handleAdminPinChangeMock({ current_pin: '0000', new_pin: '2468' }).status,
+    204,
+  );
+  assert.equal(handleAdminSessionMock({ pin: '0000' }).status, 401);
+  assert.equal(handleAdminSessionMock({ pin: '2468' }).status, 200);
+  resetMockAdminPin();
+});
+
 test('handleAdminSessionMock는 잘못된 PIN·429·422를 구분한다', () => {
+  resetMockAdminPin();
   assert.equal(handleAdminSessionMock({ pin: '1234' }).status, 401);
   assert.equal(handleAdminSessionMock({ pin: '4290' }).status, 429);
   assert.equal(handleAdminSessionMock({ pin: '12ab' }).status, 422);

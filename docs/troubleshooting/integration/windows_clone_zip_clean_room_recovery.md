@@ -1,5 +1,9 @@
 # Windows clone·ZIP clean-room 복구
 
+> 이 문서는 최초 457건 dataset의 clone·ZIP 장애를 재현한 역사적 기록이다.
+> 현재 설치 수치와 동등성 기준은
+> [공개 dataset 동등성 계약](../../data/public_dataset_parity.md)을 따른다.
+
 ## 문제 상황
 
 W6-P5에서 작성자 환경과 분리한 Git clone과 GitHub ZIP을 각각 새 Compose

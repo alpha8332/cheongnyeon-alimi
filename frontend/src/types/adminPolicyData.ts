@@ -4,7 +4,7 @@
  * Consumer contract aligned with the current Backend OpenAPI.
  * Exposes approved Policy projection only — no provenance, Raw, or arbitrary SQL.
  *
- * @see docs/development/develop_plan/integration/09_admin_data_log_console.md
+ * @see docs/product/features/admin_data_quality_and_logs.md
  */
 
 import type {

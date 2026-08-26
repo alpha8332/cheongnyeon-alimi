@@ -317,7 +317,7 @@ def test_pointer_and_production_manifest_bind_all_release_identities():
             dataset_pointer_path=pointer_path,
             generated_at="2026-08-24T02:00:00Z",
         )
-    assert release["alembic_revision"] == "20260824_0011"
+    assert release["alembic_revision"] == "20260825_0012"
     assert release["dataset"]["version"] == pointer["dataset_version"]
     assert release["images"]["backend"]["digest"] == "sha256:" + "c" * 64
 

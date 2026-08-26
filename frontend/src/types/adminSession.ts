@@ -1,8 +1,7 @@
 /**
- * Admin PIN session API contract (Frontend 03 / FE3-00).
+ * Admin PIN session API contract.
  *
- * Aligns with Backend 04 `POST /api/v1/admin/session`
- * (docs/api/admin_access.md on `feature/backend/collection-run-admin-api`).
+ * Aligns with docs/api/admin_access.md and `POST /api/v1/admin/session`.
  *
  * Security: PIN and access_token must never appear in URL query strings or logs.
  */
@@ -10,6 +9,11 @@
 export const ADMIN_SESSION_ENDPOINT = {
   method: 'POST' as const,
   path: '/api/v1/admin/session',
+};
+
+export const ADMIN_PIN_ENDPOINT = {
+  method: 'PUT' as const,
+  path: '/api/v1/admin/pin',
 };
 
 export interface AdminSessionRequest {
@@ -23,6 +27,11 @@ export interface AdminSessionResponse {
   /** Token lifetime in seconds. */
   expires_in: number;
   role: 'admin';
+}
+
+export interface AdminPinChangeRequest {
+  current_pin: string;
+  new_pin: string;
 }
 
 /** Session login failures (401/429) use nested `error.message`. */

@@ -489,34 +489,21 @@ Frontend 소비 테스트는 최소한 다음 상태를 확인한다.
 - 공개 응답과 화면 상태에 provenance가 포함되지 않음
 - 상세의 Eligibility Summary 7개 필드와 목록 비노출 경계
 
-### 현재 Frontend branch 검토 결과
+### 현재 Frontend 소비 경계
 
-2026-07-30 `feature/frontend/policy-discovery`의 FE 2A는 공개 `PolicyDto`,
-`/api/v1/policies`, pagination envelope, 숫자 `id`와 partial opt-in을
-타입·Mock·API Client·화면에 반영했다.
+Frontend는 공개 `PolicyDto`, `/api/v1/policies`, pagination envelope, 숫자
+`id`와 partial opt-in을 타입·API Client·화면에 반영한다.
 
 - 사용자 DTO에서 `provenance`와 `invalid` 제거
 - canonical Seed를 공개 DTO로 변환하면서 양의 `id`와 DB 시각 추가
 - 기본 valid 2건, `include_partial=true`에서 valid·partial 4건 반환
 - 목록·상세가 같은 partial opt-in을 사용하도록 상세 링크 query 유지
-- TypeScript 컴파일러와 Node 내장 테스트 러너 기반 소비 계약 테스트 추가
+- TypeScript 소비 계약 테스트로 목록·상세 경계를 검증
 
-Node.js 24.18.0 환경에서 소비 테스트 7건, lint와 production build가
-통과했다. PostgreSQL canonical Seed의 실제 API도 기본 2건·partial opt-in
-4건, 숫자 ID 상세, partial 기본 404와 provenance 비노출을 확인했다. 실제
-API 모드 브라우저 캡처에서 홈·목록의 기본 valid 2건과 공개 필드 렌더링을
-확인해 D0·D6 Frontend 소비 검토를 완료했다.
-
-2026-08-10 ES2는 기존 목록 `PolicyDto`를 유지하면서 상세에만
-`eligibility_summary`를 추가했다. ES3는 1.2.0 version union과
-`PolicyDetailDto`, 제외 조건·필요 서류·문의처·공개 evidence UI 소비를
-구현했다. 목록 Mock과 실제 목록 응답에는 요약을 추가하지 않는다.
-
-ES4는 승인 천안 fixture를 실제 PostgreSQL에 Runtime 적재해 DB JSONB와 상세
-응답의 요약을 exact 대조하고, Chromium에서 모든 항목·시설 전화 `tel:` 링크·
-공식 채널·6개 evidence URL이 API와 일치함을 확인했다. 공개 상세 응답에는 내부
-`provenance`가 없었고 Release 1 실제 API golden 검색·상세 Browser 회귀도
-통과했다.
+목록 `PolicyDto`는 유지하고 상세 `PolicyDetailDto`에만
+`eligibility_summary`를 제공한다. Frontend는 1.2.0 version과 제외 조건·필요
+서류·문의처·공개 evidence를 표시한다. 공개 응답에는 내부 `provenance`가 없고
+목록에는 상세 자격 요약이 포함되지 않는다.
 
 ## 통합 검증
 

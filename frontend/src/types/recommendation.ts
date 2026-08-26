@@ -4,7 +4,7 @@
  * Aligns with Backend recommendation draft on `origin/feature/backend/policy-recommendation`.
  * W4-G0 proposal — not approved as current public API contract.
  *
- * @see docs/development/develop_plan/integration/06_recommendation_vertical_slice.md
+ * @see docs/product/features/recommendations_and_profile.md
  */
 
 import type { PolicyCategory } from './policy.js';

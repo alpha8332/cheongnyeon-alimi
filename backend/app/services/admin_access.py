@@ -1,9 +1,14 @@
 import hashlib
 import hmac
+import secrets
 import time
 from typing import Dict, Tuple, Optional
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
+from app.models.admin_auth import AdminAuthState
 
 # SHA-256 hash of default local PIN '0000'
 DEFAULT_LOCAL_PIN_HASH = "9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0"
@@ -13,6 +18,63 @@ PROGRESSIVE_LOCKOUT_STEPS = [5, 10, 30, 60, 120, 300]
 
 # In-memory rate limiting state for failed login attempts (ip -> (attempts, lock_until_timestamp))
 _failed_attempts: Dict[str, Tuple[int, float]] = {}
+PBKDF2_ITERATIONS = 310_000
+PBKDF2_PREFIX = "pbkdf2_sha256"
+
+
+class AdminAuthNotConfiguredError(RuntimeError):
+    """Raised when no secure administrator credential can be initialized."""
+
+
+class InvalidCurrentAdminPinError(ValueError):
+    """Raised when an authenticated PIN change supplies the wrong current PIN."""
+
+
+class ReusedAdminPinError(ValueError):
+    """Raised when a PIN change attempts to reuse the current PIN."""
+
+
+def hash_admin_pin(pin: str) -> str:
+    """Create a salted, deliberately expensive PIN verifier."""
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        pin.encode("utf-8"),
+        salt,
+        PBKDF2_ITERATIONS,
+    )
+    return (
+        f"{PBKDF2_PREFIX}${PBKDF2_ITERATIONS}"
+        f"${salt.hex()}${digest.hex()}"
+    )
+
+
+def verify_admin_pin_hash(pin: str, stored_hash: str) -> bool:
+    """Verify current PBKDF2 hashes and legacy 64-character SHA-256 hashes."""
+    normalized = stored_hash.strip().lower()
+    if len(normalized) == 64:
+        legacy_hash = hashlib.sha256(pin.encode("utf-8")).hexdigest().lower()
+        return hmac.compare_digest(legacy_hash, normalized)
+
+    parts = normalized.split("$")
+    if len(parts) != 4 or parts[0] != PBKDF2_PREFIX:
+        return False
+    try:
+        iterations = int(parts[1])
+        salt = bytes.fromhex(parts[2])
+        expected = bytes.fromhex(parts[3])
+    except (ValueError, TypeError):
+        return False
+    if iterations < PBKDF2_ITERATIONS or len(salt) != 16 or len(expected) != 32:
+        return False
+
+    actual = hashlib.pbkdf2_hmac(
+        "sha256",
+        pin.encode("utf-8"),
+        salt,
+        iterations,
+    )
+    return hmac.compare_digest(actual, expected)
 
 
 def get_effective_pin_hash(*, allow_local_default_pin: bool = False) -> Optional[str]:
@@ -34,20 +96,103 @@ def get_effective_pin_hash(*, allow_local_default_pin: bool = False) -> Optional
     return None
 
 
-def verify_admin_pin(pin: str, *, allow_local_default_pin: bool = False) -> bool:
+def verify_admin_pin(
+    pin: str,
+    *,
+    allow_local_default_pin: bool = False,
+    pin_hash: Optional[str] = None,
+) -> bool:
     """
-    입력된 4자리 PIN의 SHA-256 해시값을 유효 해시와 비교한다.
+    입력된 4자리 PIN을 legacy SHA-256 또는 PBKDF2 verifier와 비교한다.
     원문 PIN은 로그나 예외 메시지에 남기지 않는다.
     """
-    effective_hash = get_effective_pin_hash(
+    effective_hash = pin_hash or get_effective_pin_hash(
         allow_local_default_pin=allow_local_default_pin,
     )
     if not effective_hash:
         # Fail-closed: production에서 설정 미비 시 모든 PIN 거부
         return False
 
-    input_hash = hashlib.sha256(pin.encode("utf-8")).hexdigest().lower()
-    return hmac.compare_digest(input_hash, effective_hash)
+    return verify_admin_pin_hash(pin, effective_hash)
+
+
+def get_or_create_admin_auth_state(
+    db: Session,
+    *,
+    allow_local_default_pin: bool = False,
+) -> Optional[AdminAuthState]:
+    """Return the singleton DB state, bootstrapping it from existing config once."""
+    state = db.get(AdminAuthState, 1)
+    if state is not None:
+        return state
+
+    initial_hash = get_effective_pin_hash(
+        allow_local_default_pin=allow_local_default_pin,
+    )
+    if initial_hash is None:
+        return None
+
+    state = AdminAuthState(
+        id=1,
+        pin_hash=initial_hash,
+        session_generation=1,
+    )
+    db.add(state)
+    return state
+
+
+def change_admin_pin(
+    db: Session,
+    *,
+    current_pin: str,
+    new_pin: str,
+    allow_local_default_pin: bool = False,
+) -> AdminAuthState:
+    """Change the PIN and invalidate every token issued for the old generation."""
+    state = db.scalar(
+        select(AdminAuthState)
+        .where(AdminAuthState.id == 1)
+        .with_for_update()
+    )
+    if state is None:
+        state = get_or_create_admin_auth_state(
+            db,
+            allow_local_default_pin=allow_local_default_pin,
+        )
+    if state is None:
+        raise AdminAuthNotConfiguredError
+
+    if not verify_admin_pin_hash(current_pin, state.pin_hash):
+        raise InvalidCurrentAdminPinError
+
+    if verify_admin_pin_hash(new_pin, state.pin_hash):
+        raise ReusedAdminPinError
+
+    state.pin_hash = hash_admin_pin(new_pin)
+    state.session_generation += 1
+    db.flush()
+    return state
+
+
+def reset_admin_pin(db: Session, *, new_pin: str) -> AdminAuthState:
+    """Host-only recovery operation that preserves all non-authentication data."""
+    state = db.scalar(
+        select(AdminAuthState)
+        .where(AdminAuthState.id == 1)
+        .with_for_update()
+    )
+    if state is None:
+        state = AdminAuthState(
+            id=1,
+            pin_hash=hash_admin_pin(new_pin),
+            session_generation=1,
+        )
+        db.add(state)
+    else:
+        state.pin_hash = hash_admin_pin(new_pin)
+        state.session_generation += 1
+    db.flush()
+    return state
 
 
 def get_admin_token_secret() -> Optional[bytes]:
@@ -61,22 +206,30 @@ def get_admin_token_secret() -> Optional[bytes]:
     return None
 
 
-def create_admin_session_token(expires_minutes: Optional[int] = None) -> str:
+def create_admin_session_token(
+    expires_minutes: Optional[int] = None,
+    *,
+    session_generation: int = 1,
+) -> str:
     """
     짧은 수명의 관리자 서명 토큰(HMAC-SHA256)을 생성한다.
-    형식: admin.<expires_at_timestamp>.<signature_hex_16>
+    형식: admin.<expires_at_timestamp>.<session_generation>.<signature_hex_16>
     """
     minutes = expires_minutes if expires_minutes is not None else settings.ADMIN_SESSION_EXPIRE_MINUTES
     expires_at = int(time.time()) + (minutes * 60)
-    payload = f"admin:{expires_at}".encode("utf-8")
+    payload = f"admin:{expires_at}:{session_generation}".encode("utf-8")
     secret = get_admin_token_secret()
     if secret is None:
         raise RuntimeError("Admin token signing is not configured")
     signature = hmac.new(secret, payload, hashlib.sha256).hexdigest()[:16]
-    return f"admin.{expires_at}.{signature}"
+    return f"admin.{expires_at}.{session_generation}.{signature}"
 
 
-def verify_admin_session_token(token: str) -> Optional[dict]:
+def verify_admin_session_token(
+    token: str,
+    *,
+    expected_session_generation: Optional[int] = None,
+) -> Optional[dict]:
     """
     관리자 세션 토큰의 서명 및 만료 시간을 검증한다.
     유효한 경우 토큰 페이로드를 반환하고, 변조되거나 만료된 경우 None을 반환한다.
@@ -85,12 +238,21 @@ def verify_admin_session_token(token: str) -> Optional[dict]:
         return None
 
     parts = token.strip().split(".")
-    if len(parts) != 3 or parts[0] != "admin":
+    if len(parts) != 4 or parts[0] != "admin":
         return None
 
     try:
         expires_at = int(parts[1])
+        session_generation = int(parts[2])
     except ValueError:
+        return None
+
+    if session_generation < 1:
+        return None
+    if (
+        expected_session_generation is not None
+        and session_generation != expected_session_generation
+    ):
         return None
 
     # 만료 시간 검증
@@ -98,19 +260,20 @@ def verify_admin_session_token(token: str) -> Optional[dict]:
         return None
 
     # 서명 검증
-    payload = f"admin:{expires_at}".encode("utf-8")
+    payload = f"admin:{expires_at}:{session_generation}".encode("utf-8")
     secret = get_admin_token_secret()
     if secret is None:
         return None
     expected_signature = hmac.new(secret, payload, hashlib.sha256).hexdigest()[:16]
 
-    if not hmac.compare_digest(parts[2], expected_signature):
+    if not hmac.compare_digest(parts[3], expected_signature):
         return None
 
     return {
         "sub": "admin",
         "role": "admin",
         "expires_at": expires_at,
+        "session_generation": session_generation,
     }
 
 

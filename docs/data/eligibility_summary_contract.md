@@ -9,8 +9,6 @@
   [`eligibility_summary.schema.json`](../../data/schema/eligibility_summary.schema.json)
 - 대표 사례:
   [`eligibility_evidence_cases.json`](../../data/fixtures/contracts/eligibility_evidence_cases.json)
-- 관련 Forest:
-  [Integration 08 Eligibility Evidence and Summary](../development/develop_plan/integration/08_eligibility_evidence_summary.md)
 
 ## 목적과 현재 경계
 
@@ -19,10 +17,10 @@
 Source mapper, Backend의 DB·API와 Frontend의 TypeScript·UI가 같은 필드명과
 빈 값 의미를 사용한다.
 
-DTL4-4A에서는 독립 Schema와 Python 모델, Source mapping 및 합성 fixture를
-확정했다. DTL4-4B에서는 DB에 적재 가능한 합성 정책 4건과 승인 웹 Source
+독립 Schema와 Python 모델, Source mapping 및 합성 fixture를 확정했다.
+DB에 적재 가능한 합성 정책 4건과 승인 웹 Source
 `notice:674` 합성 표본 1건의 mapper 결과를 정책 identity와 묶은
-`source_handoff`를 대표 fixture에 추가했다. ES2에서는 이 객체를
+`source_handoff`를 대표 fixture에 추가했다. 이 객체를
 `NormalizedProgram 1.2.0`의 37번째 required 필드로 편입하고 PostgreSQL
 `policies.eligibility_summary` JSONB와 정책 상세 API까지 연결했다. 기존 1.0.0·
 1.1.0 객체는 compatibility adapter가 조건을 추정하지 않고 `coverage=unknown`과
@@ -175,5 +173,5 @@ TypeScript·Mock이 같은 Data JSON을 소비하는지 확인하기 위한 결�
 
 필드 삭제·이름 변경·필수 여부 완화처럼 기존 객체를 무효화하는 변경은 major,
 기존 객체를 계속 허용하는 추가는 minor로 올린다. Schema, Python 모델, 대표
-fixture, Backend OpenAPI와 Frontend TypeScript 소비 검토를 같은 Integration
-Forest에서 갱신한다.
+fixture, Backend OpenAPI와 Frontend TypeScript 소비 테스트를 같은 변경에서
+갱신한다.

@@ -23,6 +23,7 @@ import CollectionRunDetailPage from '@/pages/admin/CollectionRunDetailPage';
 import DataQualityPage from '@/pages/admin/DataQualityPage';
 import AdminPolicyDataPage from '@/pages/admin/AdminPolicyDataPage';
 import AdminLogsPage from '@/pages/admin/AdminLogsPage';
+import AdminSecurityPage from '@/pages/admin/AdminSecurityPage';
 
 // 에러 페이지
 import RootErrorFallback from '@/components/common/RootErrorFallback';
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
               { path: 'quality', element: <DataQualityPage /> },
               { path: 'policies', element: <AdminPolicyDataPage /> },
               { path: 'logs', element: <AdminLogsPage /> },
+              { path: 'security', element: <AdminSecurityPage /> },
             ],
           },
         ],

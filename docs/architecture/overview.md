@@ -1,130 +1,88 @@
 # 시스템 아키텍처 개요
 
-## 문서 상태
+## 현재 상태
 
-- 상태: 기준선
-- 대상: `cheongnyeon-alimi`
-- 현재 구현 상태: 문서 기반 구축 단계
+- 대상 Release 기준: `v1.1.0`
+- 구현 상태: Docker 기반 사용자·관리자 Web UI와 중앙 데이터 파이프라인 운영
+- 사용자 실행 기준: Windows 10/11, Docker Desktop, `run_docker.bat`
 
-이 문서는 팀이 구현 과정에서 따라야 할 목표 아키텍처와 책임 경계를
-정의한다. 현재 저장소에 실행 코드나 컨테이너가 존재한다는 의미는 아니다.
-구현이 시작되면 실제 코드와 배포 구성이 이 기준선과 일치하는지 함께
-검증한다.
-
-## 시스템 목적
-
-`cheongnyeon-alimi`는 공공기관의 청년정책을 수집하고 공통 형식으로 정제해,
-사용자가 정책을 검색하고 추천받을 수 있도록 제공하는 오픈소스 웹
-플랫폼이다. 데이터 출처와 수집 상태를 추적하고 관리할 수 있는 운영 기능도
-같은 시스템에 포함한다.
+청년정책알리미는 공식 API와 공개 웹 Source의 정책을 중앙에서 수집·정규화하고,
+검증된 공개 dataset을 사용자 PC에 설치해 검색·추천·관리자 기능을 제공한다.
+사용자 PC는 원본 Source API key 없이 실행하며, 사용자 API는 활성 공개 dataset
+membership에 포함된 정책만 반환한다.
 
 ## 전체 구조
 
 ```text
-External Sources
-→ Collector
-→ RawPolicyDocument
-→ Source Extractor
-→ ExtractedPolicy
-→ Normalizer
-→ NormalizedProgram
-→ Validator
-→ Fixture / Seed 또는 PostgreSQL
-→ FastAPI
-→ React
+공식 API·공개 웹 Source
+        ↓ 중앙 수집
+Collector → Extractor → Normalizer → Validator
+        ↓
+격리 PostgreSQL 검증 → versioned 공개 dataset → GitHub Release
+                                             ↓ HTTPS + SHA-256
+사용자 PC: PostgreSQL ← dataset bootstrap
+              ↑
+React UI ← FastAPI ← 검색·추천 Repository
+              ↑
+관리자 UI ← 인증·수집기·CollectionRun·품질·로그 API
+              ↓ enqueue
+       Redis → Celery worker ← Celery beat
 ```
 
-자세한 데이터 흐름과 실패 처리는 [시스템 흐름](system_flow.md), 초기 실행
-단위는 [컨테이너 구조](container_structure.md)에서 설명한다.
-
-## 아키텍처 영역
-
-### 외부 데이터 소스
-
-공식 API와 공개 HTTPS 웹사이트가 대상이다. 각 소스의 응답 구조, 이용 조건과
-변경 주기는 서로 다르므로 소스별 처리는 공통 계층과 분리한다.
-
-### 데이터 파이프라인
-
-최상위 `collectors/` 모듈이 수집, 소스별 추출, 공통 정규화와 검증을 담당한다.
-데이터 파이프라인은 백엔드 API 라우터에 포함시키지 않는다.
-
-### 데이터 계약과 개발 데이터
-
-`data/schema/`의 JSON Schema가 데이터·백엔드·프론트엔드 사이의 논리적
-계약이다. `data/fixtures/`와 `data/seeds/`는 실제 Collector나 DB가 준비되기
-전에도 병렬 개발과 테스트를 가능하게 한다.
-
-### Backend
-
-FastAPI가 정책 조회, 검색, 추천, 사용자 기능과 관리자 기능의 HTTP 경계를
-제공한다. API Route는 요청·응답을 담당하고, 비즈니스 로직과 DB 접근은
-Service와 Repository 계층으로 분리한다.
-
-### Database
-
-PostgreSQL이 정규화된 서비스 데이터, 출처, 수집 실행과 사용자 기능 데이터를
-저장한다. JSON Schema는 논리적 데이터 계약이고 DB Schema와 Migration은
-물리적 저장 구조이므로 서로 대신하지 않는다.
+## 주요 구성요소
 
 ### Frontend
 
-React와 TypeScript가 사용자 및 관리자 웹 UI를 제공한다. 확정된 API 계약과
-타입을 사용하며, 백엔드가 준비되지 않았을 때는 같은 계약을 따르는 Mock 또는
-Fixture를 사용한다.
+`frontend/`의 React·TypeScript 애플리케이션이 일반 사용자와 관리자 화면을
+제공한다. 사용자 프로필, 즐겨찾기와 폴더는 서버 계정 대신 브라우저
+`localStorage`에 저장한다. 관리자 access token은 브라우저 메모리에만 둔다.
 
-## 계층별 책임
+### Backend
 
-| 계층 | 입력 | 책임 | 출력 |
-| --- | --- | --- | --- |
-| Collector | 외부 API·HTML | 요청, 응답 확인, 원문 추출, 출처 기록 | `RawPolicyDocument` |
-| Raw Storage | `RawPolicyDocument` | 원문과 수집 메타데이터 보존 | 재처리 가능한 Raw |
-| Source Extractor | 소스별 Raw | XML 태그·CSS Selector 등 소스 의미 해석 | `ExtractedPolicy` |
-| Normalizer | `ExtractedPolicy` | 공통 필드 매핑과 날짜·지역·연령 변환 | `NormalizedProgram` |
-| Validator | `NormalizedProgram` | JSON Schema와 품질 규칙 검증 | valid·partial 또는 rejected 결과 |
-| Fixture·Seed | 검증된 데이터 | 병렬 개발과 초기 DB 구성 지원 | JSON Fixture·CSV Seed |
-| PostgreSQL | 검증된 서비스 데이터 | 조회 가능한 영속 저장 | 프로그램과 관련 데이터 |
-| FastAPI | DB 또는 합의된 Seed | 조회·검색·추천 및 운영 API | API 응답 |
-| React | API 응답 또는 Mock | 사용자·관리자 상호작용 | Web UI |
+`backend/app/`의 FastAPI 애플리케이션이 정책 목록·검색·상세·추천과 관리자
+API를 제공한다. Route는 HTTP 경계, Service는 업무 규칙, Repository는
+PostgreSQL 조회와 영속화를 담당한다.
+
+### PostgreSQL
+
+정규화 정책, 공개 dataset 설치·membership, 행정구역, CollectionRun, 관리자
+인증 상태와 감사 이벤트를 저장한다. 정책 전체 row 수와 사용자에게 공개되는
+정책 수는 다를 수 있으며, 공개 projection은 활성 membership으로 결정한다.
+
+### 데이터 파이프라인
+
+`collectors/`가 외부 요청, Raw envelope, source별 추출, 공통 정규화와 검증을
+담당한다. 실제 Raw와 rejected 결과는 Git에 넣지 않고 Runtime Volume 또는
+중앙 실행 환경에 둔다.
+
+### 비동기 수집
+
+Redis가 collection queue broker 역할을 하고 Celery worker가 실제 수집·import를
+수행한다. Celery beat는 선택적으로 정기 실행을 enqueue한다. Policy와
+CollectionRun의 권위 상태는 Redis가 아니라 PostgreSQL에 남는다.
+
+### 공개 dataset 배포
+
+중앙 Workflow가 허용된 Source만 완전 수집하고 격리 DB에서 row·Schema·hash·
+검색 projection을 검증한다. 성공한 artifact는 불변 Release로 발행하고
+`dataset-latest` pointer를 마지막에 승격한다.
 
 ## 고정된 책임 경계
 
-### Collector는 정규화하지 않는다
+- Collector는 원문 획득과 provenance를, Extractor는 source 의미 해석을 담당한다.
+- Normalizer는 날짜·지역·연령·분야를 공통 형식으로 변환한다.
+- Validator는 `valid`, `partial`, `invalid`를 구분하고 invalid를 공개 후보에서
+  제외한다.
+- 수동 수집 결과는 DB에 보존되지만 공개 dataset 승격 전에는 사용자 검색에
+  포함되지 않는다.
+- 확인되지 않은 조건은 전국·연령 무관·자격 충족으로 추정하지 않는다.
+- API key, PIN, token, DB 비밀번호와 Raw payload는 Frontend bundle·로그·
+  공개 문서·Release asset에 포함하지 않는다.
 
-Collector는 외부 요청과 원문 획득까지만 책임지고 `RawPolicyDocument`를
-반환한다. 날짜, 지역, 연령과 카테고리 변환을 Collector에 넣지 않는다.
+## 관련 문서
 
-### Raw 원문은 손실 없이 보존한다
-
-정규화 과정에서 사용하지 않는 필드도 Raw 단계에서 임의로 삭제하지 않는다.
-출처 URL, 수집 시각, 응답 형식과 Hash 등 재현 및 변경 확인에 필요한
-메타데이터를 함께 보존한다.
-
-### 소스별 의미 해석은 Extractor가 담당한다
-
-Extractor는 API 필드, XML 태그와 HTML Selector를 알고 있지만 공통 서비스
-표현을 결정하지 않는다. 소스 구조가 바뀌면 해당 Extractor의 변경으로
-격리한다.
-
-### 공통 형식 변환은 Normalizer가 담당한다
-
-Normalizer는 소스 구조를 알지 않고 `ExtractedPolicy`를 공통
-`NormalizedProgram`으로 변환한다. 해석할 수 없는 원문은 임의로 추정하지
-않고 원문과 누락 상태를 보존한다.
-
-### JSON Schema는 팀 간 계약이다
-
-필드명, 타입, 필수 여부, `null`, 빈 배열과 enum 변경은 데이터 담당자가
-단독으로 확정하지 않는다. 백엔드와 프론트엔드 영향을 공동 검토하고 Schema,
-Fixture, API와 관련 문서를 함께 갱신한다.
-
-### 운영 Raw 데이터는 Git에 저장하지 않는다
-
-Git에는 라이선스와 개인정보를 확인한 최소 테스트 Fixture만 포함한다. 실제
-수집 원문과 런타임 처리 결과는 Docker Volume, DB 또는 운영 저장소에 둔다.
-
-## 아키텍처 변경
-
-계층 책임, 데이터 흐름, 서비스 경계나 실행 단위를 바꾸는 결정은
-[아키텍처 결정 기록](decisions/README.md)에 ADR로 남긴다. 아직 합의되지 않은
-대안은 현재 아키텍처 문서에 확정 사항처럼 반영하지 않는다.
+- [현재 컨테이너 구조](container_structure.md)
+- [시스템 흐름](system_flow.md)
+- [공개 dataset 계약](../data/public_policy_dataset.md)
+- [API 문서](../api/README.md)
+- [운영 문서](../operations/README.md)

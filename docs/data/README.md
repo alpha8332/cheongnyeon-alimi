@@ -1,79 +1,44 @@
 # 데이터 문서
 
-이 디렉터리는 정책 데이터의 출처, 계약, 수집과 정규화 기준을 관리한다.
+이 디렉터리는 현재 정책 데이터의 출처, Schema, 수집·정규화, 공개 범위와
+생명주기 계약을 관리한다.
 
-## 포함하는 내용
+## 핵심 문서
 
-- 공식 API와 공개 웹사이트 등 데이터 출처
-- Raw, Extracted, Normalized 데이터의 책임과 Schema
-- 날짜, 지역, 연령, 카테고리 등의 정규화 규칙
-- 원문 보존, Hash, 중복, 누락값과 품질 상태 정책
-- Fixture, Seed, 런타임 데이터의 구분
-- 데이터 출처의 이용 조건과 개인정보 보호 기준
+- [데이터 소스](data_sources.md): 등록 수집기 11개와 공개 Source 3개의 차이
+- [데이터 수집 정책](collection_policy.md): HTTP, Raw, 비밀정보와 실패 경계
+- [데이터 Schema](data_schema.md): Raw·Extracted·Normalized 필드 계약
+- [정규화 규칙](normalization_rules.md): 날짜·지역·연령·분야 판정
+- [Eligibility Summary](eligibility_summary_contract.md): 자격 조건과 evidence
+- [Fixture와 Seed](fixture_seed_contract.md): 합성 개발 데이터와 재생성
+- [행정구역 기준](administrative_regions.md): 법정동 code·별칭·상하위 관계
+- [Review Admission](review_admission_rules.md): 웹 정책 검토·승격 규칙
+- [정책 생명주기](policy_lifecycle.md): active·inactive·재등장·종료일
+- [공개 정책 dataset](public_policy_dataset.md): 재배포 allowlist와 artifact
+- [환경 간 동등성](public_dataset_parity.md): 활성 membership과 identity hash
 
-## 현재 문서
+## 실행 가능한 계약
 
-- [데이터 소스](data_sources.md)
-- [API Source Profile](source_profiles.md)
-- [데이터 Schema 기준선](data_schema.md)
-- [Eligibility Summary 공통 계약](eligibility_summary_contract.md)
-- [데이터 정규화 규칙](normalization_rules.md)
-- [데이터 수집 정책](collection_policy.md)
-- [공개 정책 bootstrap dataset 계약](public_policy_dataset.md)
-- [정책 생명주기 계약](policy_lifecycle.md)
-- [Fixture와 Seed 계약](fixture_seed_contract.md)
-- [행정구역 기준정보](administrative_regions.md)
-- [Release 1 실데이터 품질 Profile](release_dataset_profile.md)
+| 계약 | 경로 |
+| --- | --- |
+| Raw envelope | `data/schema/raw_policy_document.schema.json` |
+| 정규화 정책 | `data/schema/normalized_program.schema.json` |
+| 자격요건 요약 | `data/schema/eligibility_summary.schema.json` |
+| 공개 Source allowlist | `data/reference/public_policy_dataset_sources.json` |
+| 공개 manifest | `data/schema/public_policy_dataset_manifest.schema.json` |
+| latest pointer | `data/schema/public_policy_dataset_pointer.schema.json` |
+| 행정구역 | `data/seeds/administrative_regions.json` |
+| 행정구역 별칭 | `data/seeds/administrative_region_aliases.json` |
 
-## 실행 가능한 Schema
+## 데이터 범위 구분
 
-- [RawPolicyDocument JSON Schema](../../data/schema/raw_policy_document.schema.json):
-  원본 byte와 목록·항목·상세 연결 메타데이터 계약
-- [NormalizedProgram JSON Schema](../../data/schema/normalized_program.schema.json):
-  정규화 필드, null·배열·enum, provenance와 품질 상태 계약
-- [EligibilitySummary JSON Schema](../../data/schema/eligibility_summary.schema.json):
-  조건·서류·공개 시설 연락처와 항목별 Source evidence 계약
-- [Regional Youth Policy Source Inventory JSON Schema](../../data/schema/regional_youth_policy_source_inventory.schema.json):
-  17개 지역 포털 후보·preflight·승인 경로와 행정구역 mapping 상태 계약
-- [Supplemental Official Policy Inventory JSON Schema](../../data/schema/supplemental_official_policy_inventory.schema.json):
-  Data 06 XLSX 후보 lineage·오류 격리와 공식 Source preflight 계약
-- [Supplemental Duplicate Audit JSON Schema](../../data/schema/supplemental_official_policy_duplicate_audit.schema.json):
-  승인 aggregator snapshot·PostgreSQL 선행 중복 판정 계약
-- [Review Admission 규칙](review_admission_rules.md):
-  taxonomy v2, hard exclusion과 versioned review 승격 계약
-- [Review Admission Audit JSON Schema](../../data/schema/review_admission_audit.schema.json):
-  identity-only 판정 manifest와 hash 검증 계약
-- [Public Dataset Source Contract JSON Schema](../../data/schema/public_policy_dataset_sources.schema.json):
-  default-deny Source·field 공개 allowlist 계약
-- [Public Dataset Manifest JSON Schema](../../data/schema/public_policy_dataset_manifest.schema.json):
-  version·Source attribution·artifact hash와 안전 경계 계약
-- [Public Dataset Pointer JSON Schema](../../data/schema/public_policy_dataset_pointer.schema.json):
-  immutable manifest를 가리키는 latest pointer 계약
+| 범위 | 설명 | Git 포함 |
+| --- | --- | --- |
+| 합성 Fixture·Seed | 테스트와 개발용 결정적 데이터 | 포함 |
+| Runtime Raw·rejected | 실제 수집 원문과 처리 산출물 | 제외 |
+| PostgreSQL 전체 정책 | 로컬 수집·과거 정책 포함 가능 | 제외 |
+| 공개 dataset | 허용 Source·필드와 안전 Gate를 통과한 normalized 정책 | GitHub Release |
 
-## 실행 가능한 개발 데이터
-
-- [Normalized Fixture](../../data/fixtures/normalized/programs.json)
-- [Eligibility Summary 계약 Fixture](../../data/fixtures/contracts/eligibility_evidence_cases.json)
-- [Canonical 개발 Seed](../../data/seeds/initial_programs.json)
-- [행정구역 Seed](../../data/seeds/administrative_regions.json)
-- [행정구역 별칭 Seed](../../data/seeds/administrative_region_aliases.json)
-- [지역 청년정책 Source inventory](../../data/reference/regional_youth_policy_sources.json)
-- [Data 06 후보·Source inventory](../../data/reference/supplemental_official_policy_inventory.json)
-- [Data 06 선행 중복 감사](../../data/reference/supplemental_official_policy_duplicate_audit.json)
-- [Review Admission 계약 Fixture](../../data/fixtures/contracts/review_admission_cases.json)
-- [Public Dataset Source Contract](../../data/reference/public_policy_dataset_sources.json)
-
-Normalized Fixture와 canonical 개발 Seed는 결정적으로 재생성되는 같은 JSON
-계약이며 실제 API 원문이 아닌 합성 데이터다. 행정구역 두 Seed는 잠긴 공식
-법정동 snapshot에서 별도로 재생성한다. Raw·Extracted·rejected 경계와 명령은
-[Fixture와 Seed 계약](fixture_seed_contract.md)을 따른다.
-
-## 포함하지 않는 내용
-
-- 미확정 데이터 설계: `docs/development/develop_plan/`
-- PostgreSQL의 물리 테이블과 마이그레이션 구현 상세
-- Collector 실행, 재시도와 장애 복구 절차: `docs/operations/`
-- API 응답 계약: `docs/api/`
-
-데이터 문서는 실제 JSON Schema, Fixture와 코드의 동작을 기준으로 유지한다.
-미확정 규칙은 확정된 데이터 계약과 명확히 구분한다.
+현재 공개 수치는 [공개 정책 dataset](public_policy_dataset.md)과 함께 받은
+manifest를 따른다. PostgreSQL 전체 row 수나 CollectionRun 수를 공개 정책
+수로 사용하지 않는다.

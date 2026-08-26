@@ -1,42 +1,27 @@
 # 개발 문서
 
-이 디렉터리는 개발 환경, 구현 지침과 완료된 개발 작업의 사실 기반 기록을
-관리한다.
+이 디렉터리는 현재 저장소를 실행하고 검증하려는 기여자를 위한 실무 문서만
+관리한다. 완료된 주차별 계획, 작업 Slice와 구현 일지는 현재 계약 문서에
+반영된 뒤 제출본에서 제거한다.
 
-## 포함하는 내용
+## 문서
 
-- 로컬 개발 환경과 설정 방법
-- 프로젝트 공통 코딩 지침
-- 구현된 기능과 주요 구조 변경의 개발 기록
-- 아직 완료하지 않은 Forest의 개발 계획
-- 실제로 실행한 테스트와 검증 결과
+- [문서 품질 검증](documentation_validation.md): 링크, 경로, 비밀정보와 문서
+  구조를 검사하는 방법
+- [Backend Windows 로컬 환경](backend_local_setup.md): Python 가상환경과
+  PostgreSQL 기반 Backend 테스트 방법
+- [Frontend 실제 API 수동 테스트](frontend_real_api_manual_testing_guide.md):
+  Mock이 아닌 Docker Backend와 UI를 함께 검증하는 방법
 
-개발 문서는 Forest를 기준으로 계획과 실제 결과를 대응시킨다.
+## 기록 원칙
 
-- [개발 계획](develop_plan/README.md): 아직 완료하지 않은 Forest의 범위,
-  Slice와 완료 기준, 여러 Forest의 Release·주차별 조정 로드맵
-- [주차별 상세 실행 계획](weekly_plan/README.md): 해당 주차의 선행 관계,
-  병렬 작업, 역할별 책임과 통합 Gate
-- [개발 기록](development_notes/README.md): Forest에서 실제로 구현하고
-  검증한 상세 결과
-- [프론트엔드 개발 히스토리 (1~5주차)](frontend_development_history_w1_w5.md):
-  주차별 UI/기능·UX 가치·구현 설계 종합 (Forest 개발 기록 요약)
-- [문서 품질 검증](documentation_validation.md): 문서 검증 명령과 검사 규칙
-- [Backend Windows 로컬 환경](backend_local_setup.md): Windows `.venv`,
-  PostgreSQL 테스트 역할·DB와 전체 Backend 테스트 절차
+- 현재 시스템 계약은 `docs/architecture/`, `docs/api/`, `docs/data/`와
+  `docs/operations/`에 기록한다.
+- 사용자 기능 설명은 `docs/product/`에 기록한다.
+- 실제로 발생했고 재사용 가능한 해결법이 확인된 문제는
+  `docs/troubleshooting/`에 기록한다.
+- 예정 작업과 논의는 GitHub Issue·Pull Request에서 관리한다.
+- 사용자에게 의미 있는 완료 변경은 루트 `CHANGELOG.md`에 요약한다.
 
-계획과 개발 기록은 담당 영역이 명확할 때 `data/`, `backend/`, `frontend/`,
-`integration/`, `deploy/`로 구분한다. 둘 이상의 애플리케이션 영역에 걸친
-공통 기반과 연결 작업은 `integration/`, 배포 구성·재현 환경·운영 인계가
-독립 완료 기준인 작업은 `deploy/`에서 관리한다. 폴더는 실제 Forest 문서가
-생길 때 생성하며, 담당자 이름이 아니라 작업 책임을 기준으로 분류한다.
-
-## 포함하지 않는 내용
-
-- Forest·Release 구현 범위와 직접 관련 없는 조직 일정
-- 사용자와 팀을 위한 변경 요약: 루트 `CHANGELOG.md`
-- 재사용 가능한 장애 해결 절차: `docs/troubleshooting/`
-- 운영 환경의 정기 작업과 복구 절차: `docs/operations/`
-
-실행하지 않은 명령이나 테스트를 성공한 결과로 기록하지 않는다. 환경이나
-기능이 실제로 추가될 때 관련 문서를 생성한다.
+실행하지 않은 명령이나 테스트를 성공했다고 기록하지 않으며, 실제 API key,
+PIN, access token, DB 비밀번호와 Raw 원문은 문서에 남기지 않는다.
