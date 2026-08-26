@@ -10,14 +10,14 @@ import {
   formatAge,
   formatApplicationPeriodCard,
   formatOrganization,
-  formatRegion,
+  formatRegionSummary,
   getDDayLabel,
   getPolicyCategoryDisplayOrder,
 } from '@/utils/policyDisplay';
 
 function formatCardMeta(hit: PolicySearchHit): string {
   return [
-    formatRegion(hit.policy),
+    formatRegionSummary(hit.policy),
     formatOrganization(hit.policy),
     getDDayLabel(hit.policy),
   ]
@@ -77,7 +77,7 @@ export default function PolicySearchResultCard({
         <p className="policy-card__meta">{formatCardMeta(hit)}</p>
         <div className="policy-card__footer">
           <span className="policy-card__eligibility">
-            {`${formatAge(hit.policy)} · ${formatRegion(hit.policy)}`}
+            {`${formatAge(hit.policy)} · ${formatRegionSummary(hit.policy)}`}
           </span>
           <span className="policy-card__arrow" aria-hidden="true">
             →

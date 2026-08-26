@@ -86,6 +86,23 @@ export function formatRegion(
   return policy.region_text ?? '지역 미정';
 }
 
+export function formatRegionSummary(
+  policy: Pick<PolicyDto, 'regions' | 'region_text'>,
+  maxVisible = 2,
+): string {
+  if (policy.regions.length === 0) {
+    return policy.region_text ?? '지역 미정';
+  }
+
+  const visibleCount = Math.max(1, Math.floor(maxVisible));
+  if (policy.regions.length <= visibleCount) {
+    return policy.regions.join(', ');
+  }
+
+  const visibleRegions = policy.regions.slice(0, visibleCount).join(', ');
+  return `${visibleRegions} 외 ${policy.regions.length - visibleCount}곳`;
+}
+
 export function formatAge(policy: PolicyDto): string {
   const compactAgeText = policy.age_condition_text?.replace(/\s+/g, '');
   if (

@@ -10,7 +10,7 @@ import {
   formatAge,
   formatApplicationPeriod,
   formatNullableText,
-  formatRegion,
+  formatRegionSummary,
 } from '@/utils/policyDisplay';
 
 interface CalendarEventDetailDialogProps {
@@ -68,7 +68,7 @@ export default function CalendarEventDetailDialog({
             지원 대상:{' '}
             {formatNullableText(
               policy.eligibility_text,
-              `${formatAge(policy)} · ${formatRegion(policy)}`,
+              `${formatAge(policy)} · ${formatRegionSummary(policy)}`,
             )}
           </p>
           {policy.application_method ? (

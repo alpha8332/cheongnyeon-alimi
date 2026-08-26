@@ -92,6 +92,11 @@ Migration head와 당시 `dataset-latest`를 검증하고 `production-release.js
 `v1.1.0` GitHub Release asset으로 기록한다. 따라서 최종 배포 식별자의 권위값은
 태그와 그 Release asset이다.
 
+`v1.1.1`은 전국·다지역 정책의 카드 표시를 축약하고 상세의 전체 지역
+펼치기를 제공하는 Frontend 패치다. 공개 dataset과 Migration 계약은
+`v1.1.0`에서 변경하지 않으며, 동일한 Production workflow가 `v1.1.1` 태그의
+image·smoke·릴리스 영수증을 새로 검증한다.
+
 ## 공개 dataset Workflow
 
 `public-dataset-release.yml`은 보호된 `production-data` Environment와
