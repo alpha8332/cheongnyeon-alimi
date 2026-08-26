@@ -67,4 +67,3 @@ export interface AdminCollectorStatusResponse {
   schedule: CollectorScheduleStatusDto;
   collectors: AdminCollectorStatusDto[];
 }
-

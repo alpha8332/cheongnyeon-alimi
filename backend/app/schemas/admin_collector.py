@@ -66,4 +66,3 @@ class AdminCollectorStatusResponse(BaseModel):
     queue: CollectorQueueStatus
     schedule: CollectorScheduleStatus
     collectors: list[AdminCollectorStatus]
-

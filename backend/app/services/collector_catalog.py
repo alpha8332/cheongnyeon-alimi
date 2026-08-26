@@ -76,4 +76,3 @@ COLLECTOR_CATALOG = (
         credential_required=True,
     ),
 )
-

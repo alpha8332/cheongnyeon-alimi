@@ -83,4 +83,3 @@ pointer가 승격되면 새 manifest의 version과 정책 수를 우선한다.
    [공개 dataset과 데이터 생명주기](features/public_dataset_and_data_lifecycle.md)를 따른다.
 
 전체 제품 기능 문서 색인은 [제품 기능 문서 안내](README.md)에서 확인한다.
-

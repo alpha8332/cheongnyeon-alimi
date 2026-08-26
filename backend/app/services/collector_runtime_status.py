@@ -63,4 +63,3 @@ def probe_collector_workers(*, timeout_seconds: float = 1.0) -> CollectorWorkerP
         registered_source_ids=frozenset(registered_source_ids),
         credential_configured=credential_configured,
     )
-

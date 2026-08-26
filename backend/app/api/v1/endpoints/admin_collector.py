@@ -29,4 +29,3 @@ def read_admin_collectors(
     _admin_payload: dict[str, Any] = Depends(get_current_admin_payload),
 ) -> AdminCollectorStatusResponse:
     return get_admin_collector_status(db)
-

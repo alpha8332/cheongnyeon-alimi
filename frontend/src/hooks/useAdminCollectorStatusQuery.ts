@@ -8,4 +8,3 @@ export function useAdminCollectorStatusQuery(accessToken?: string) {
     refetchInterval: 30_000,
   });
 }
-

@@ -44,4 +44,3 @@ export const MOCK_ADMIN_COLLECTOR_STATUS: AdminCollectorStatusResponse = {
     last_run: null,
   })) as AdminCollectorStatusResponse['collectors'],
 };
-

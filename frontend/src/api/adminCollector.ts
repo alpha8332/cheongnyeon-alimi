@@ -46,4 +46,3 @@ export async function getAdminCollectorStatus(
     throw error;
   }
 }
-

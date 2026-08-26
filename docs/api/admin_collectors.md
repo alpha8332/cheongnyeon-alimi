@@ -59,4 +59,3 @@ Authorization: Bearer <admin-session-token>
 | `200` | 상태 조회 성공; worker 장애도 안전한 상태 값으로 포함 |
 | `401` | 관리자 세션 누락·만료·무효 |
 | `403` | 관리자 역할 부족 |
-

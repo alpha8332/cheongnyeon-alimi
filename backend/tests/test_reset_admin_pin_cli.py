@@ -61,4 +61,3 @@ def test_reset_pin_rejects_invalid_or_mismatched_input(
     output = capsys.readouterr()
     assert output.out == ""
     assert expected_error in output.err
-

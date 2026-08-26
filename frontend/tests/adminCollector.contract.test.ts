@@ -44,4 +44,3 @@ test('collector status never exposes credential values or secret field names', (
     assert.equal(serialized.includes(forbidden), false, forbidden);
   }
 });
-
